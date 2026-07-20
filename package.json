@@ -1,11 +1,11 @@
-TradingBible/
-├── package.json
-├── index.html
-├── vite.config.js
-├── src/
-│   ├── main.tsx
-│   ├── App.tsx
-│   ├── pages/
-│   └── components/
-├── public/
-└── README.md
+{
+  "name": "tradingbible-app",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  }
+}
