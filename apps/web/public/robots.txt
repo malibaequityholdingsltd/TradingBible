@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://tradingbible.app/sitemap.xml

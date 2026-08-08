@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+apps/*/node_modules/
+
+# Environment
+.env
+.env.local
+apps/api/.env
+apps/web/.env
+
+# Build artifacts
+dist/
+build/
+.next/
+apps/web/dist/
+
+# PocketBase runtime data (keep migrations & hooks, ignore live db/storage)
+apps/pocketbase/pb_data/data.db
+apps/pocketbase/pb_data/data.db-*
+apps/pocketbase/pb_data/auxiliary.db
+apps/pocketbase/pb_data/auxiliary.db-*
+apps/pocketbase/pb_data/storage/
+apps/pocketbase/pb_data/backups/
+
+# Misc
+.DS_Store
+*.log
+npm-debug.log*
