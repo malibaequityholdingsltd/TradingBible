@@ -1,0 +1,70 @@
+{
+  "name": "TradingBible — AI Trading Journal & Terminal",
+  "short_name": "TradingBible",
+  "description": "The AI-powered trading journal built on a Bloomberg-grade terminal.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "any",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["finance", "productivity", "business"],
+  "icons": [
+    {
+      "src": "https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/f18f53c1fa5ec4181c7033589080fd00.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/f18f53c1fa5ec4181c7033589080fd00.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/f18f53c1fa5ec4181c7033589080fd00.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Your live performance terminal",
+      "url": "/app"
+    },
+    {
+      "name": "Journal",
+      "short_name": "Journal",
+      "description": "Trade journal",
+      "url": "/app/journal"
+    },
+    {
+      "name": "AI Coach",
+      "short_name": "Coach",
+      "description": "Ask your AI trading coach",
+      "url": "/app/coach"
+    },
+    {
+      "name": "Charts",
+      "short_name": "Charts",
+      "description": "Live charts and analysis",
+      "url": "/app/charts"
+    }
+  ],
+  "share_target": {
+    "action": "/app/journal",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}
