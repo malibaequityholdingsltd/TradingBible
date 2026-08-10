@@ -208,11 +208,16 @@ function useIntegratedAi() {
 
 				setMessages(chatMessages);
 			} catch (err) {
-				toast({
-					variant: 'destructive',
-					title: 'Error',
-					description: err.message,
-				});
+				// Chat history storage may not be provisioned yet — that's fine,
+				// the conversation simply starts fresh.
+				const message = String(err?.message || '');
+				if (!/relation .* does not exist|collection .*not found|table .*not found/i.test(message)) {
+					toast({
+						variant: 'destructive',
+						title: 'Error',
+						description: message,
+					});
+				}
 			} finally {
 				setIsLoadingHistory(false);
 			}
