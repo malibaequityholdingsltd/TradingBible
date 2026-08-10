@@ -149,24 +149,31 @@ const SquashableSSEEventTypes = new Set([
 
 /**
  * Uploads images to PocketBase and returns their URLs.
+ * Best-effort: if the storage backend is unavailable, returns [] so the
+ * conversation can still proceed (text-only).
  *
  * @param {{ images: Express.Multer.File[] }} params
  * @returns {Promise<string[]>}
  */
 export async function uploadImagesToPocketBase({ images }) {
-	const uploadPromises = images.map(async (file) => {
-		const formData = new FormData();
-		const blob = new Blob([file.buffer], { type: file.mimetype });
-		formData.append('file', blob, file.originalname);
+	try {
+		const uploadPromises = images.map(async (file) => {
+			const formData = new FormData();
+			const blob = new Blob([file.buffer], { type: file.mimetype });
+			formData.append('file', blob, file.originalname);
 
-		const record = await pocketbaseClient.collection('_integratedAiImages').create(formData);
+			const record = await pocketbaseClient.collection('_integratedAiImages').create(formData);
 
-		const url = pocketbaseClient.files.getURL(record, record.file);
+			const url = pocketbaseClient.files.getURL(record, record.file);
 
-		return url.replace('http://localhost:8090', `https://${process.env.WEBSITE_DOMAIN}/hcgi/platform`);
-	});
+			return url.replace('http://localhost:8090', `https://${process.env.WEBSITE_DOMAIN}/hcgi/platform`);
+		});
 
-	return Promise.all(uploadPromises);
+		return await Promise.all(uploadPromises);
+	} catch (error) {
+		logger.warn('Image upload skipped (storage unavailable):', String(error?.message || error));
+		return [];
+	}
 }
 
 /**
@@ -215,19 +222,31 @@ function signImageReference(reference, token) {
  * @returns {Promise<import('node:stream').Readable>}
  */
 export async function stream({ userId, systemPrompt, userMessage }) {
-	const fileToken = await pocketbaseClient.files.getToken();
+	const apiUrl = process.env.INTEGRATED_AI_API_URL;
+	const apiKey = process.env.INTEGRATED_AI_API_KEY;
+	const websiteId = process.env.WEBSITE_ID;
+	if (!apiUrl || !apiKey || !websiteId) {
+		throw new Error('The AI assistant is not configured yet (missing INTEGRATED_AI_API_URL / INTEGRATED_AI_API_KEY / WEBSITE_ID). Please contact support.');
+	}
+
+	let fileToken = '';
+	try {
+		fileToken = await pocketbaseClient.files.getToken();
+	} catch (error) {
+		logger.warn('AI file token unavailable:', String(error?.message || error));
+	}
 	const history = await getHistory({ userId, fileToken });
 
-	const response = await fetch(`${process.env.INTEGRATED_AI_API_URL}/generate`, {
+	const response = await fetch(`${apiUrl}/generate`, {
 		method: 'POST',
 		headers: {
 			'Accept': 'text/event-stream',
 			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${process.env.INTEGRATED_AI_API_KEY}`,
+			'Authorization': `Bearer ${apiKey}`,
 			...(process.env.PROXY_ENTRANCE_ID && { 'X-Proxy-Entrance-Id': process.env.PROXY_ENTRANCE_ID }),
 		},
 		body: JSON.stringify({
-			website_id: process.env.WEBSITE_ID,
+			website_id: websiteId,
 			history: [
 				...history,
 				mapUserMessage({ message: userMessage, fileToken }),
@@ -330,15 +349,19 @@ async function parseSSEEvents({ stream }) {
  * @returns {Promise<object>}
  */
 async function saveMessages({ userId, messages }) {
-	const batch = pocketbaseClient.createBatch();
+	try {
+		const batch = pocketbaseClient.createBatch();
 
-	messages.map(message => batch.collection('_integratedAiMessages').create({
-		...(userId && { userId }),
-		role: message.role,
-		content: message.content,
-	}));
+		messages.map(message => batch.collection('_integratedAiMessages').create({
+			...(userId && { userId }),
+			role: message.role,
+			content: message.content,
+		}));
 
-	await batch.send();
+		await batch.send();
+	} catch (error) {
+		logger.warn('AI history not persisted (storage backend not ready):', String(error?.message || error));
+	}
 }
 
 /**
@@ -352,12 +375,13 @@ export async function getHistory({ userId, fileToken }) {
 		return [];
 	}
 
-	const result = await pocketbaseClient.collection('_integratedAiMessages').getList(1, MAX_HISTORY_MESSAGES, {
-		sort: '-created',
-		...(userId && { filter: pocketbaseClient.filter('userId = {:userId}', { userId }) }),
-	});
+	try {
+		const result = await pocketbaseClient.collection('_integratedAiMessages').getList(1, MAX_HISTORY_MESSAGES, {
+			sort: '-created',
+			...(userId && { filter: pocketbaseClient.filter('userId = {:userId}', { userId }) }),
+		});
 
-	const records = result.items.reverse();
+		const records = result.items.reverse();
 
 	/** @type {HistoryMessage[]} */
 	const historyMessages = [];
@@ -372,6 +396,10 @@ export async function getHistory({ userId, fileToken }) {
 	}
 
 	return historyMessages;
+	} catch (error) {
+		logger.warn('AI history unavailable (storage backend not ready):', String(error?.message || error));
+		return [];
+	}
 }
 
 /**
