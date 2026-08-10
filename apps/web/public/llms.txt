@@ -12,6 +12,7 @@
 - [Admin Reports](/admin/reports): TradingBible application page.
 - [Admin Settings](/admin/settings): TradingBible application page.
 - [Admin Users](/admin/users): TradingBible application page.
+- [Affiliate](/app/affiliate): TradingBible application page.
 - [Alerts](/app/alerts): TradingBible application page.
 - [Analytics](/app/analytics): TradingBible application page.
 - [Api Docs](/app/api-docs): TradingBible application page.
@@ -45,6 +46,7 @@
 - [Policy](/policy): TradingBible application page.
 - [Pricing](/pricing): TradingBible application page.
 - [Profile](/app/profile): TradingBible application page.
+- [Prop Firms](/app/prop-firms): TradingBible application page.
 - [Refund](/refund): TradingBible application page.
 - [Reports](/app/reports): TradingBible application page.
 - [Reset](/reset): TradingBible application page.

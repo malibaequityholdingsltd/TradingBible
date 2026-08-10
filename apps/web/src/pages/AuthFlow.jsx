@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { homeRouteForUser } from '@/lib/homeRoute';
+import { readRefFromUrl, trackAffiliateSignup } from '@/lib/affiliate';
 
 const LOGO = TRADINGBIBLE_LOGO;
 const OTP_COOLDOWN_SECONDS = 60;
@@ -418,6 +419,10 @@ export function SignupPage() {
     return () => window.clearInterval(timer);
   }, [cooldownUntil]);
 
+  useEffect(() => {
+    readRefFromUrl();
+  }, []);
+
   const submit = async (e) => {
     e.preventDefault();
     if (!sent && cooldownSeconds > 0) {
@@ -440,6 +445,7 @@ export function SignupPage() {
         setCooldownUntil(until);
         setSent(true);
         toast({ title: 'One-time code sent', description: 'Check your email for the code to finish account creation.' });
+        trackAffiliateSignup(readRefFromUrl(), email.trim());
         return;
       }
       const token = normalizeOtpCode(code);
