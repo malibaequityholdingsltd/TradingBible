@@ -36,11 +36,24 @@ router.post('/stream', integratedAiRateLimit, uploadFiles({
 		});
 	}
 
-	const sseStream = await stream({
-		userId: req.pocketbaseUserId,
-		systemPrompt: SystemPrompt,
-		userMessage: parsedMessage,
-	});
+	let sseStream;
+	try {
+		sseStream = await stream({
+			userId: req.pocketbaseUserId,
+			systemPrompt: SystemPrompt,
+			userMessage: parsedMessage,
+		});
+	} catch (err) {
+		const message = String(err?.message || '');
+		let friendly = 'The AI assistant is temporarily unavailable. Please try again shortly.';
+		if (/insufficient balance/i.test(message)) {
+			friendly = 'The AI assistant is currently unavailable (the AI provider account needs a balance top-up). Please contact support.';
+		} else if (/not configured/i.test(message)) {
+			friendly = message;
+		}
+		logger.error('AI stream setup failed:', message);
+		return res.status(502).json({ error: { message: friendly } });
+	}
 
 	res.setHeader('Content-Type', 'text/event-stream');
 	res.setHeader('Cache-Control', 'no-cache');
