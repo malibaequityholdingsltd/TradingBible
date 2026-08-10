@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { Mail, ArrowRight, Check, User, Building2, KeyRound, BookOpen } from 'lucide-react';
+import { Mail, ArrowRight, Check, User, Building2, KeyRound, BookOpen, ShieldCheck } from 'lucide-react';
 import { MARKETS, EXPERIENCE, GOALS } from '@/lib/mockData';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { readRefFromUrl, trackAffiliateSignup } from '@/lib/affiliate';
+import { verifyTotpLogin, passkeyLogin, notifyLogin } from '@/lib/security';
 
 const LOGO = TRADINGBIBLE_LOGO;
 const OTP_COOLDOWN_SECONDS = 60;
@@ -257,8 +258,17 @@ export function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [oauthBusy, setOauthBusy] = useState('');
   const [sent, setSent] = useState(false);
+  const [needTotp, setNeedTotp] = useState(false);
+  const [totpCode, setTotpCode] = useState('');
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
+  const [pendingAuth, setPendingAuth] = useState(null);
   const [cooldownUntil, setCooldownUntil] = useState(0);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
+
+  const finishLogin = (auth) => {
+    notifyLogin();
+    nav(homeRouteForUser(auth?.record), { replace: true });
+  };
 
   useEffect(() => {
     if (isAuthReady && isAuthed) {
@@ -329,10 +339,49 @@ export function LoginPage() {
     setBusy(true);
     try {
       const auth = await loginWithCode(email.trim(), token);
-      nav(homeRouteForUser(auth?.record));
+      const totp = auth?.record?.user_settings?.totp;
+      if (totp?.enabled) {
+        setPendingAuth(auth);
+        setSent(false);
+        setNeedTotp(true);
+        toast({ title: 'Authenticator code required', description: 'Enter the 6-digit code from your authenticator app.' });
+        return;
+      }
+      finishLogin(auth);
     } catch (err) {
       toast({ variant: 'destructive', title: 'Invalid code', description: describeAuthError(err, 'Please request a new code and try again.') });
     } finally { setBusy(false); }
+  };
+
+  const verifyTotpStep = async (e) => {
+    e.preventDefault();
+    const token = normalizeOtpCode(totpCode);
+    if (token.length !== 6) {
+      toast({ variant: 'destructive', title: 'Enter your 6-digit code', description: 'Check your authenticator app and try again.' });
+      return;
+    }
+    setBusy(true);
+    try {
+      await verifyTotpLogin(token);
+      finishLogin(pendingAuth);
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Invalid authenticator code', description: String(err?.message || 'Please try again.') });
+    } finally { setBusy(false); }
+  };
+
+  const signInWithPasskey = async () => {
+    const normalized = normalizeEmail(email);
+    if (!normalized) {
+      toast({ variant: 'destructive', title: 'Enter your email address', description: 'We need your email to look up your passkey.' });
+      return;
+    }
+    setPasskeyBusy(true);
+    try {
+      const auth = await passkeyLogin(normalized);
+      finishLogin(auth);
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Face ID / passkey sign-in failed', description: String(err?.message || 'Please try again.') });
+    } finally { setPasskeyBusy(false); }
   };
 
   const startOAuth = async (provider) => {
@@ -360,16 +409,41 @@ export function LoginPage() {
         <div className="rounded-[1.25rem] border border-[#d4af37]/14 bg-gradient-to-b from-white/[0.06] to-transparent p-3 sm:rounded-[1.5rem] sm:p-4">
           <ProviderButtons busy={oauthBusy} onGoogle={() => startOAuth('google')} onApple={() => startOAuth('apple')} />
         </div>
-        <form className="mt-4 space-y-2.5 sm:mt-5 sm:space-y-3" onSubmit={sent ? verifyCode : sendCode}>
-          <Field icon={Mail} type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-          <p className="text-center text-xs text-[#8a8577]">We’ll send both a 6-digit code and a sign-in link so you can choose either one.</p>
-          {sent && (
+        <form className="mt-4 space-y-2.5 sm:mt-5 sm:space-y-3" onSubmit={needTotp ? verifyTotpStep : (sent ? verifyCode : sendCode)}>
+          {!needTotp && <Field icon={Mail} type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />}
+          {needTotp && (
+            <div className="rounded-xl bg-[#d4af37]/[0.07] p-3 text-sm text-[#e9e7df]">
+              <span className="font-semibold text-[#d4af37]">Step 2 — Authenticator app:</span> open Google Authenticator / Face ID app and enter the current 6-digit code.
+            </div>
+          )}
+          {!needTotp && sent && (
            <Field icon={KeyRound} type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="Enter your email code (6 digits)" value={code} onChange={(e) => setCode(normalizeOtpCode(e.target.value))} required />
           )}
-          <button disabled={busy || (!sent && cooldownSeconds > 0)} className={`${goldBtn} btn-spotlight`}>{busy ? 'Please wait…' : (sent ? 'Verify code' : 'Send one-time code')} <ArrowRight className="h-4 w-4" /></button>
+          {needTotp && (
+           <Field icon={KeyRound} type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="Enter authenticator code (6 digits)" value={totpCode} onChange={(e) => setTotpCode(normalizeOtpCode(e.target.value))} required autoFocus />
+          )}
+          <button disabled={busy || (!needTotp && !sent && cooldownSeconds > 0)} className={`${goldBtn} btn-spotlight`}>{busy ? 'Please wait…' : (needTotp ? 'Verify authenticator code' : (sent ? 'Verify code' : 'Send one-time code'))} <ArrowRight className="h-4 w-4" /></button>
         </form>
-        {sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={sendCode} className="auth-muted text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? `Resend in ${cooldownSeconds}s` : 'Resend code'}</button></div>}
-        {cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">To protect your account, new code requests are limited. Try again in {formatCooldownDuration(cooldownSeconds)}.</p>}
+        {needTotp && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy} onClick={() => { setNeedTotp(false); setTotpCode(''); setPendingAuth(null); }} className="auth-muted text-[#8a8577] hover:text-[#d4af37]">Back to email code</button></div>}
+        {!needTotp && sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={sendCode} className="auth-muted text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? `Resend in ${cooldownSeconds}s` : 'Resend code'}</button></div>}
+        {!needTotp && cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">To protect your account, new code requests are limited. Try again in {formatCooldownDuration(cooldownSeconds)}.</p>}
+        {!needTotp && (
+          <div className="mt-2 flex items-center gap-3">
+            <div className="h-px flex-1 bg-white/10" />
+            <span className="text-[11px] uppercase tracking-widest text-[#8a8577]">or</span>
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
+        )}
+        {!needTotp && (
+          <button
+            type="button"
+            disabled={passkeyBusy}
+            onClick={signInWithPasskey}
+            className="mt-1.5 w-full min-h-[44px] rounded-xl border border-white/10 bg-white/[0.04] py-2.5 text-sm font-medium text-[#e9e7df] transition hover:border-[#d4af37]/40 hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <span className="inline-flex items-center justify-center gap-2">{passkeyBusy ? 'Verifying…' : <>Face ID / passkey sign-in <ShieldCheck className="h-4 w-4" /></>}</span>
+          </button>
+        )}
         <p className="auth-muted mt-6 text-center text-sm text-[#8a8577]">New to TradingBible? <Link to="/signup" className="text-[#d4af37] hover:underline">Create an account</Link></p>
       </AuthFormFrame>
     </Shell>

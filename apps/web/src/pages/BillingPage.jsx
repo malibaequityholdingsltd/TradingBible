@@ -162,24 +162,28 @@ export default function BillingPage() {
 
       {/* Plans */}
       <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-[#8a8577]">Plans</h3>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid max-w-2xl gap-4">
         {PAID.map((p) => {
           const isCurrent = currentPlan === p.id;
           const canSwitch = hasSub && !isCurrent;
           return (
-            <div key={p.id} className={`relative flex flex-col rounded-2xl p-6 ${p.highlight ? 'glass gold-glow' : 'glass'}`}>
+            <div key={p.id} className={`relative flex flex-col rounded-2xl p-6 sm:flex-row sm:items-center sm:gap-6 ${p.highlight ? 'glass gold-glow' : 'glass'}`}>
               {p.highlight && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-0.5 text-[11px] font-bold text-[#0a0a0f]">MOST POPULAR</div>}
-              <h4 className="text-lg font-semibold text-[#f0ecdd]">{p.name}</h4>
-              <p className="mt-1 text-xs text-[#8a8577]">{p.tagline}</p>
-              <div className="mt-4 flex items-end gap-1"><span className="text-3xl font-bold gold-text">${p.price}</span><span className="mb-1 text-sm text-[#8a8577]">/{p.period}</span></div>
-              <ul className="mt-5 flex-1 space-y-2 text-sm text-[#b3ae9e]">{p.features.slice(0, 5).map((f) => <li key={f} className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-[#d4af37]" />{f}</li>)}</ul>
-              {isCurrent ? (
-                <div className="mt-6 flex items-center justify-center gap-1.5 rounded-lg border border-emerald-500/30 py-2.5 text-sm font-semibold text-emerald-400"><Check className="h-4 w-4" /> Current plan</div>
-              ) : canSwitch ? (
-                <button disabled={busy} onClick={() => handleSwitch(p.id)} className="mt-6 flex items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/25 py-2.5 text-sm font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60 disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowUpRight className="h-4 w-4" />} Switch to {p.name}</button>
-              ) : (
-                <button disabled={busy} onClick={() => handleCheckout(p.id)} className="mt-6 flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />} Subscribe</button>
-              )}
+              <div className="min-w-0 flex-1">
+                <h4 className="text-lg font-semibold text-[#f0ecdd]">{p.name}</h4>
+                <p className="mt-1 text-xs text-[#8a8577]">{p.tagline}</p>
+                <div className="mt-2 flex items-end gap-1"><span className="text-3xl font-bold gold-text">${p.price}</span><span className="mb-1 text-sm text-[#8a8577]">/{p.period}</span></div>
+                <ul className="mt-3 space-y-1.5 text-sm text-[#b3ae9e]">{p.features.slice(0, 5).map((f) => <li key={f} className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-[#d4af37]" />{f}</li>)}</ul>
+              </div>
+              <div className="mt-4 shrink-0 sm:mt-0 sm:w-44">
+                {isCurrent ? (
+                  <div className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-lg border border-emerald-500/30 py-2.5 text-sm font-semibold text-emerald-400"><Check className="h-4 w-4" /> Current plan</div>
+                ) : canSwitch ? (
+                  <button disabled={busy} onClick={() => handleSwitch(p.id)} className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/25 py-2.5 text-sm font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60 disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowUpRight className="h-4 w-4" />} Switch to {p.name}</button>
+                ) : (
+                  <button disabled={busy} onClick={() => handleCheckout(p.id)} className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />} Subscribe</button>
+                )}
+              </div>
             </div>
           );
         })}
@@ -187,25 +191,47 @@ export default function BillingPage() {
 
       {/* Billing history */}
       <h3 className="mb-3 mt-8 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-[#8a8577]"><Receipt className="h-4 w-4" /> Payment & invoice history</h3>
-      <div className="glass no-scrollbar overflow-x-auto rounded-2xl">
-        <table className="w-full min-w-[560px] text-sm">
-          <thead><tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">{['Date', 'Event', 'Plan', 'Amount', 'Status'].map((h) => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-[#8a8577]">Loading…</td></tr>
-            ) : events.length === 0 ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-[#8a8577]">No billing activity yet. Your receipts and invoices will appear here after your first payment.</td></tr>
-            ) : events.map((ev) => (
-              <tr key={ev.id} className="border-b border-white/5 hover:bg-white/[0.03]">
-                <td className="px-4 py-3 text-[#c9c4b4]">{fmtDate(ev.occurredAt || ev.created)}</td>
-                <td className="px-4 py-3 text-[#f0ecdd]">{ev.eventType?.replace(/[._]/g, ' ')}</td>
-                <td className="px-4 py-3 text-[#c9c4b4]">{ev.planName || '—'}</td>
-                <td className="px-4 py-3 font-mono text-[#c9c4b4]">{ev.amount ? money(ev.amount, ev.currency) : '—'}</td>
-                <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-xs ${STATUS_STYLE[ev.status] || 'bg-white/10 text-[#8a8577]'}`}>{ev.status || '—'}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="glass rounded-2xl">
+        {loading ? (
+          <div className="px-4 py-10 text-center text-sm text-[#8a8577]">Loading…</div>
+        ) : events.length === 0 ? (
+          <div className="px-4 py-12 text-center text-sm text-[#8a8577]">No billing activity yet. Your receipts and invoices will appear here after your first payment.</div>
+        ) : (
+          <>
+            {/* Desktop table */}
+            <div className="no-scrollbar hidden overflow-x-auto sm:block">
+              <table className="w-full min-w-[560px] text-sm">
+                <thead><tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">{['Date', 'Event', 'Plan', 'Amount', 'Status'].map((h) => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
+                <tbody>
+                  {events.map((ev) => (
+                    <tr key={ev.id} className="border-b border-white/5 hover:bg-white/[0.03]">
+                      <td className="px-4 py-3 text-[#c9c4b4]">{fmtDate(ev.occurredAt || ev.created)}</td>
+                      <td className="px-4 py-3 text-[#f0ecdd]">{ev.eventType?.replace(/[._]/g, ' ')}</td>
+                      <td className="px-4 py-3 text-[#c9c4b4]">{ev.planName || '—'}</td>
+                      <td className="px-4 py-3 font-mono text-[#c9c4b4]">{ev.amount ? money(ev.amount, ev.currency) : '—'}</td>
+                      <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-xs ${STATUS_STYLE[ev.status] || 'bg-white/10 text-[#8a8577]'}`}>{ev.status || '—'}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Mobile invoice cards */}
+            <div className="divide-y divide-white/5 sm:hidden">
+              {events.map((ev) => (
+                <div key={ev.id} className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium text-[#f0ecdd]">{ev.eventType?.replace(/[._]/g, ' ')}</div>
+                      <div className="mt-0.5 truncate text-xs text-[#8a8577]">{ev.planName || '—'} · {fmtDate(ev.occurredAt || ev.created)}</div>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${STATUS_STYLE[ev.status] || 'bg-white/10 text-[#8a8577]'}`}>{ev.status || '—'}</span>
+                  </div>
+                  <div className="mt-2 font-mono text-lg font-semibold text-[#f0ecdd]">{ev.amount ? money(ev.amount, ev.currency) : '—'}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </AppLayout>
   );
