@@ -273,8 +273,8 @@ router.post('/webauthn/verify-login', async (req, res) => {
 		await saveSettings(userRow.id, next);
 
 		const link = await supabase.generateMagicLinkToken(userRow.email);
-		if (!link.tokenHash) return res.status(500).json({ error: 'session mint failed' });
-		res.json({ ok: true, email: userRow.email, tokenHash: link.tokenHash });
+		if (!link.otp || !link.tokenHash) return res.status(500).json({ error: 'session mint failed' });
+		res.json({ ok: true, email: userRow.email, otp: link.otp, tokenHash: link.tokenHash });
 	} catch (err) {
 		logger.error('webauthn verify failed', String(err));
 		res.status(422).json({ error: 'verify failed', detail: String(err?.message || err) });

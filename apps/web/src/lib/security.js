@@ -67,7 +67,12 @@ export async function passkeyLogin(email) {
 		},
 	};
 	const verified = await api('/security/webauthn/verify-login', { method: 'POST', body: JSON.stringify(response) });
-	return pb.collection('users').authWithPasskey(verified.email, verified.tokenHash);
+	// The server mints a plaintext one-time OTP; exchange it through the
+	// standard Supabase OTP flow to obtain a real, renewable session.
+	return {
+		email: verified.email,
+		otp: verified.otp,
+	};
 }
 
 export const passkeyStatus = () => api('/security/webauthn/status');

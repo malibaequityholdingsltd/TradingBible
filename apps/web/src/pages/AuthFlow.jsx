@@ -377,7 +377,9 @@ export function LoginPage() {
     }
     setPasskeyBusy(true);
     try {
-      const auth = await passkeyLogin(normalized);
+      const result = await passkeyLogin(normalized);
+      if (!result?.otp) throw new Error('Session could not be created. Please sign in with your email code.');
+      const auth = await loginWithCode(result.email, result.otp);
       finishLogin(auth);
     } catch (err) {
       toast({ variant: 'destructive', title: 'Face ID / passkey sign-in failed', description: String(err?.message || 'Please try again.') });
