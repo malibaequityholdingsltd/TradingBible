@@ -1,12 +1,9 @@
 import { Router } from 'express';
 import crypto from 'crypto';
-import Pocketbase from 'pocketbase';
 import logger from '../utils/logger.js';
-import pocketbaseClient from '../utils/pocketbaseClient.js';
+import { supabase } from '../utils/supabaseClient.js';
 
 const router = Router();
-
-const PB_HOST = process.env.POCKETBASE_URL || 'http://localhost:8090';
 
 // ── Environment resolution: sandbox vs live ───────────────────────
 // Manual override (PADDLE_ENV_OVERRIDE=sandbox|live) wins when set; otherwise
@@ -71,22 +68,30 @@ async function paddleApi(path, method = 'GET', body) {
 	return data;
 }
 
-// Verify the caller's PocketBase JWT and return their user record.
+// Verify the caller's Supabase JWT and return their user record.
 async function getAuthedUser(req) {
 	const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
 	if (!token) return null;
-	const pb = new Pocketbase(PB_HOST);
-	pb.authStore.save(token, null);
 	try {
-		await pb.collection('users').authRefresh();
-		return pb.authStore.record;
+		const { getSupabaseUser } = await import('../utils/supabaseClient.js');
+		const authUser = await getSupabaseUser(token);
+		if (!authUser?.id) return null;
+		const record = await supabase.getUserById(authUser.id).catch(() => null);
+		const meta = authUser.user_metadata || {};
+		return {
+			id: authUser.id,
+			email: authUser.email,
+			name: record?.name || meta.name || null,
+			username: record?.username || meta.username || authUser.email?.split('@')[0] || null,
+			...record,
+		};
 	} catch {
 		return null;
 	}
 }
 
 async function updateUser(userId, data) {
-	return pocketbaseClient.collection('users').update(userId, data);
+	return supabase.updateUser(userId, data);
 }
 
 // ── Config: expose safe client values for Paddle.js ──────────────
@@ -210,14 +215,12 @@ async function findUser(customData, customerId) {
 	const uid = customData?.user_id;
 	if (uid) {
 		try {
-			return await pocketbaseClient.collection('users').getOne(uid);
+			return await supabase.getUserById(uid);
 		} catch { /* fall through */ }
 	}
 	if (customerId) {
 		try {
-			return await pocketbaseClient
-				.collection('users')
-				.getFirstListItem(`paddleCustomerId = "${customerId}"`);
+			return await supabase.getUserByCustomerId(customerId);
 		} catch { /* not found */ }
 	}
 	return null;
@@ -225,7 +228,7 @@ async function findUser(customData, customerId) {
 
 async function recordEvent(userId, fields) {
 	try {
-		await pocketbaseClient.collection('billing_events').create({ owner: userId, ...fields });
+		await supabase.createEvent({ owner: userId, ...fields });
 	} catch (err) {
 		logger.error('billing_events create failed', String(err));
 	}

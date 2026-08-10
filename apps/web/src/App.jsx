@@ -39,6 +39,8 @@ const SignalsPage = lazy(() => import('./pages/SignalsPage'));
 const EconomicCalendarPage = lazy(() => import('./pages/EconomicCalendarPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const BrokersPage = lazy(() => import('./pages/ExtraPages').then((m) => ({ default: m.BrokersPage })));
+const PropFirmsPage = lazy(() => import('./pages/PropFirmsPage'));
+const AffiliatePage = lazy(() => import('./pages/AffiliatePage'));
 const AdminDashboard = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminDashboard })));
 const AdminUsers = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminUsers })));
 const AdminAnalytics = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminAnalytics })));
@@ -182,6 +184,8 @@ function App() {
                     <Route path="/app/integrations" element={<SubscriberProtected><IntegrationsPage /></SubscriberProtected>} />
                     <Route path="/app/branding" element={<SubscriberProtected><BrandingPage /></SubscriberProtected>} />
                     <Route path="/app/brokers" element={<Protected><BrokersPage /></Protected>} />
+                    <Route path="/app/prop-firms" element={<Protected><PropFirmsPage /></Protected>} />
+                    <Route path="/app/affiliate" element={<Protected><AffiliatePage /></Protected>} />
                     <Route path="/app/billing" element={<Protected><BillingPage /></Protected>} />
                     <Route path="/app/wallet" element={<SubscriberProtected><WalletPage /></SubscriberProtected>} />
                     <Route path="/app/crypto-bank" element={<Navigate to="/app/wallet" replace />} />

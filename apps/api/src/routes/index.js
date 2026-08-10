@@ -10,6 +10,7 @@ import economicCalendar from './economic-calendar.js';
 import authSendEmail from './auth-send-email.js';
 import { intraday, daily, weekly, monthly } from './market-series.js';
 import paddleRouter from './paddle.js';
+import affiliateRouter from './affiliate.js';
 
 const router = Router();
 
@@ -28,6 +29,7 @@ export default () => {
     router.get('/weekly', weekly);
     router.get('/monthly', monthly);
     router.use('/paddle', paddleRouter);
+    router.use('/affiliate', affiliateRouter);
 
     return router;
 };

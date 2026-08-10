@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Lock, Code2, Palette, CreditCard, HelpCircle, CandlestickChart, Grid2x2, Gauge, Star, Bell, Radar, CalendarClock, Landmark, ListOrdered, KeyRound, Building2, Settings, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Lock, Code2, Palette, CreditCard, HelpCircle, CandlestickChart, Grid2x2, Gauge, Star, Bell, Radar, CalendarClock, Landmark, ListOrdered, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { avatarUrl } from '@/lib/avatar';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -36,6 +36,7 @@ const NAV_GROUPS = [
       { to: '/app/coach', label: 'AI Coach', icon: Bot, requiresSubscriber: true },
       { to: '/app/tools', label: 'Risk Tools', icon: Calculator, requiresSubscriber: true },
       { to: '/app/brokers', label: 'Brokers', icon: Plug },
+      { to: '/app/prop-firms', label: 'Prop Firms', icon: Trophy },
       { to: '/app/wallet', label: 'Wallet', icon: Landmark, requiresSubscriber: true },
     ],
   },
@@ -54,6 +55,7 @@ const NAV_GROUPS = [
       { to: '/app/profile', label: 'Profile', icon: User },
       { to: '/app/api-keys', label: 'API Keys', icon: KeyRound },
       { to: '/app/billing', label: 'Billing', icon: CreditCard },
+      { to: '/app/affiliate', label: 'Affiliate', icon: Share2 },
       { to: '/app/security', label: 'Security', icon: Lock },
       { to: '/app/branding', label: 'White-label', icon: Palette, requiresSubscriber: true },
     ],

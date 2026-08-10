@@ -343,6 +343,46 @@ alter table public.trades enable row level security;
 alter table public.trading_signals enable row level security;
 alter table public.chart_drawings enable row level security;
 alter table public.terminal_layouts enable row level security;
+create table if not exists public.prop_firm_accounts (
+  id uuid primary key default gen_random_uuid(),
+  owner uuid not null references auth.users(id) on delete cascade,
+  firm text not null,
+  accountSize numeric,
+  balance numeric,
+  equity numeric,
+  dailyLossLimit numeric,
+  maxDrawdown numeric,
+  profitTarget numeric,
+  currentDailyLoss numeric default 0,
+  currentDrawdown numeric default 0,
+  currentProfit numeric default 0,
+  status text default 'active',
+  created timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.affiliate_codes (
+  id uuid primary key default gen_random_uuid(),
+  owner uuid not null references auth.users(id) on delete cascade,
+  code text unique not null,
+  clicks integer default 0,
+  signups integer default 0,
+  commissionRate numeric default 0.15,
+  created timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.affiliate_signups (
+  id uuid primary key default gen_random_uuid(),
+  "codeId" uuid not null references public.affiliate_codes(id) on delete cascade,
+  code text not null,
+  email text not null,
+  plan text,
+  commission numeric default 0,
+  status text default 'signed_up',
+  created timestamptz default now()
+);
+
 alter table public.broker_accounts enable row level security;
 alter table public.crypto_accounts enable row level security;
 alter table public.bank_cards enable row level security;
@@ -382,7 +422,8 @@ begin
       'bank_cards','bank_transactions','branding_settings','forum_threads',
       'forum_replies','academy_waitlist','billing_events','admin_api_keys',
       'user_api_keys','school_classrooms','school_assessments','school_certificates',
-      'school_students','school_teachers','school_submissions'
+      'school_students','school_teachers','school_submissions',
+      'prop_firm_accounts','affiliate_codes'
     ])
   loop
     execute format('create policy %I_select_owner_or_admin on public.%I for select using (owner = auth.uid() or public.is_admin())', t, t);
@@ -392,6 +433,9 @@ begin
   end loop;
 exception when duplicate_object then null;
 end $$;
+
+create policy affiliate_signups_admin_only on public.affiliate_signups
+for all using (public.is_admin()) with check (public.is_admin());
 
 create policy admin_integrations_admin_only on public.admin_integrations
 for all using (public.is_admin()) with check (public.is_admin());
