@@ -48,9 +48,15 @@ export default function IndicatorsPage() {
     if (!candles.length) return [];
     return indicators.map((ind) => {
       const def = INDICATOR_DEFS[ind.type];
-      const out = def.compute(candles, { ...def.defaults, ...ind.params });
-      const values = Object.entries(out).map(([k, arr]) => ({ key: k.replace(/^[A-Z]+_/, ''), value: lastValue(arr) }));
-      return { ind, def, values };
+      if (!def || typeof def.compute !== 'function') return { ind: ind, def: def || { label: ind.type, color: '#d4af37' }, values: [] };
+      try {
+        const out = def.compute(candles, { ...def.defaults, ...ind.params });
+        if (!out) return { ind, def, values: [] };
+        const values = Object.entries(out).map(([k, arr]) => ({ key: k.replace(/^[A-Z]+_/, ''), value: lastValue(arr) }));
+        return { ind, def, values };
+      } catch {
+        return { ind, def, values: [] };
+      }
     });
   }, [candles, indicators]);
 

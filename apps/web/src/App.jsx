@@ -4,11 +4,14 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/hooks/useTheme';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
+import { I18nProvider } from '@/lib/i18n';
+import { homeRouteForUser } from '@/lib/homeRoute';
 import { NotificationsProvider } from '@/hooks/useNotifications';
 import ScrollToTop from './components/ScrollToTop';
 import GlobalTicker from './components/GlobalTicker';
 import AlertMonitor from './components/AlertMonitor';
 import PwaStatus from './components/PwaStatus';
+import ErrorBoundary from './components/ErrorBoundary';
 import LandingPage from './pages/LandingPage';
 import { LoginPage, SignupPage, ResetPage, OnboardingPage } from './pages/AuthFlow';
 
@@ -136,15 +139,22 @@ function AppChrome() {
     );
 }
 
-function App() {
+// Signed-in users hitting the bare domain land straight in their area
+// (.app/ instead of .app/app/).
+function RootRedirect() {
+    const { isAuthed, isAuthReady, user } = useAuth();
+    const { pathname } = useLocation();
+    if (!isAuthReady || !isAuthed || pathname !== '/') return null;
+    return <Navigate to={homeRouteForUser(user)} replace />;
+}
+
+// Remounts the page-level error boundary on navigation so one broken page
+// never poisons the rest of the app.
+function RoutesWithBoundary() {
+    const { pathname } = useLocation();
     return (
-        <ThemeProvider>
-        <AuthProvider>
-          <NotificationsProvider>
-            <div id="app-bg" aria-hidden="true" />
-            <Router>
-                <AppChrome />
-                <Suspense fallback={<PageFallback />}>
+        <ErrorBoundary key={pathname}>
+            <Suspense fallback={<PageFallback />}>
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/pricing" element={<PricingPage />} />
@@ -208,7 +218,22 @@ function App() {
                     <Route path="/admin/api-keys" element={<AdminProtected><AdminApiKeys /></AdminProtected>} />
                     <Route path="/admin/plugins" element={<AdminProtected><AdminPlugins /></AdminProtected>} />
                 </Routes>
-                </Suspense>
+            </Suspense>
+        </ErrorBoundary>
+    );
+}
+
+function App() {
+    return (
+        <I18nProvider>
+        <ThemeProvider>
+        <AuthProvider>
+          <NotificationsProvider>
+            <div id="app-bg" aria-hidden="true" />
+            <Router>
+                <RootRedirect />
+                <AppChrome />
+                <RoutesWithBoundary />
                 <PwaStatus />
                 <ThemeSwitcher />
                 <Toaster />
@@ -216,6 +241,7 @@ function App() {
           </NotificationsProvider>
         </AuthProvider>
         </ThemeProvider>
+        </I18nProvider>
     );
 }
 

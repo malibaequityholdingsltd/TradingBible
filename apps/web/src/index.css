@@ -343,7 +343,7 @@ html:not(.light) .border-\[\#d4af37\]\/10 { border-color: rgba(212,175,55,0.30);
 /* ─── LIGHT THEME SURFACE OVERRIDES ──────────────────────────────── */
 html.light body {
   background-color: #ffffff;
-  color: #4a5568;
+  color: #1f2937;
 }
 html.light .glass,
 html.light .shell-panel,
@@ -407,7 +407,7 @@ html.light .text-\[\#b3ae9e\],
 html.light .text-\[\#9a9587\],
 html.light .text-\[\#5f5b50\],
 html.light .text-\[\#6a665a\] {
-  color: #475569 !important;
+  color: #3f4c5f !important;
 }
 html.light .border-\[\#07070a\],
 html.light .border-\[\#0a0a0f\],
@@ -581,3 +581,19 @@ html.light .via-\[\#07070a\]\/45 { --tw-gradient-via: rgba(241,245,249,0.55) !im
 html.light .to-\[\#07070a\],
 html.light .to-\[\#0d0d12\] { --tw-gradient-to: #e2e8f0 !important; }
 html.light .bg-black\/\[0\.28\] { background-color: rgba(241,245,249,0.6) !important; }
+
+/* ─── TEXT FIT + TOUCH (items: no iOS auto-zoom, comfortable tap targets) ─── */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+[class*='-btn'],
+button {
+  touch-action: manipulation;
+}

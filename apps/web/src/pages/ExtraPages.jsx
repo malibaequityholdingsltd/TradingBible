@@ -22,14 +22,13 @@ function timeAgo(iso) {
 function ConnectedList({ items }) {
   if (!items.length) return null;
   return (
-    <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((c) => (
-        <div key={c.id} className="glass rounded-2xl p-5">
-          <div className="flex items-center justify-between"><span className="font-semibold text-[#f0ecdd]">{c.broker}</span><span className={`flex items-center gap-1 text-xs ${c.status === 'synced' ? 'text-emerald-400' : 'text-[#d4af37]'}`}>{c.status === 'syncing' && <RefreshCw className="h-3 w-3 animate-spin" />}{c.status === 'synced' ? 'Synced' : 'Syncing'}</span></div>
-          <div className="mt-1 font-mono text-xs text-[#8a8577]">{c.accountRef}</div>
-          <div className="mt-1 text-[11px] text-[#8a8577]">{(c.accountKind || 'live') === 'prop' ? 'Prop funded account' : 'Live account'}</div>
-          <div className="mt-4 font-mono text-xl font-semibold text-[#f0ecdd]">{fmtMoney(c.balance || 0)}</div>
-          <div className="mt-1 text-xs text-[#8a8577]">Last sync: {timeAgo(c.lastSync)}</div>
+        <div key={c.id} className="glass rounded-2xl p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-1"><span className="min-w-0 truncate font-semibold text-[#f0ecdd]">{c.broker}</span><span className={`flex shrink-0 items-center gap-1 text-xs ${c.status === 'synced' ? 'text-emerald-400' : 'text-[#d4af37]'}`}>{c.status === 'syncing' && <RefreshCw className="h-3 w-3 animate-spin" />}{c.status === 'synced' ? 'Synced' : 'Syncing'}</span></div>
+          <div className="mt-1 truncate font-mono text-xs text-[#8a8577]">{c.accountRef}</div>
+          <div className="mt-2 truncate font-mono text-xl font-semibold text-[#f0ecdd]">{fmtMoney(c.balance || 0)}</div>
+          <div className="mt-1 text-[11px] text-[#8a8577]">Last sync: {timeAgo(c.lastSync)}</div>
         </div>
       ))}
     </div>
@@ -95,45 +94,45 @@ export function BrokersPage() {
   const propAccts = connected.filter((c) => c.accountKind === 'prop');
 
   const Grid = ({ list, kind }) => (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {list.map((b) => {
         const acct = connected.find((c) => c.broker === b.name && (c.accountKind || 'live') === kind);
         const on = acct && acct.status === 'synced';
         const syncingAcct = acct && acct.status === 'syncing';
         const isBusy = busy === kind + b.name;
         return (
-          <div key={b.name} className="glass glass-hover rounded-2xl p-5">
-            <div className="flex items-center gap-3"><div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl font-mono text-xs font-bold" style={{ background: `${b.color}22`, color: b.color }}>{b.tag}</div><div className="min-w-0"><div className="truncate font-semibold text-[#f0ecdd]">{b.name}</div><div className="text-xs text-[#8a8577]">{b.kind}</div></div></div>
+          <div key={b.name} className="glass glass-hover rounded-2xl p-4 sm:p-5">
+            <div className="flex items-center gap-3"><div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl font-mono text-xs font-bold" style={{ background: `${b.color}22`, color: b.color }}>{b.tag}</div><div className="min-w-0"><div className="truncate font-semibold text-[#f0ecdd]">{b.name}</div><div className="truncate text-xs text-[#8a8577]">{b.kind}</div></div></div>
             <div className="mt-3 flex items-center gap-2">
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ${on ? 'bg-emerald-500/15 text-emerald-400' : syncingAcct ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'bg-white/5 text-[#8a8577]'}`}>
-                <span className={`h-1.5 w-1.5 rounded-full ${on ? 'bg-emerald-400' : syncingAcct ? 'bg-[#d4af37]' : 'bg-[#6a665a]'}`} />
-                {on ? 'Connected' : syncingAcct ? 'Syncing' : 'Not Connected'}
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ${on ? 'bg-emerald-500/15 text-emerald-400' : syncingAcct ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'bg-red-500/15 text-red-400'}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${on ? 'bg-emerald-400' : syncingAcct ? 'bg-[#d4af37]' : 'bg-red-400'}`} />
+                {on ? 'Connected' : syncingAcct ? 'Syncing' : 'Disconnected'}
               </span>
               <span className="inline-flex items-center gap-1 rounded-full border border-[#d4af37]/20 px-2 py-0.5 text-[11px] text-[#c9c4b4]">{kind === 'live' ? 'Live only' : 'Funded'}</span>
             </div>
-            <button disabled={on || isBusy || loading} onClick={() => connect(b, kind)}
-              className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition disabled:opacity-70 ${on ? 'border border-emerald-500/30 text-emerald-400' : 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] hover:opacity-90'}`}>
-            {on ? <><Check className="h-4 w-4" /> Connected</> : isBusy ? <><RefreshCw className="h-4 w-4 animate-spin" /> Opening…</> : <><Plug className="h-4 w-4" /> Open authorization</>}
+            <button disabled={on || isBusy || loading || syncingAcct} onClick={() => connect(b, kind)}
+              className={`mt-3 flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-medium transition disabled:opacity-70 ${on ? 'border border-emerald-500/30 text-emerald-400' : 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] hover:opacity-90'}`}>
+            {on ? <><Check className="h-4 w-4" /> Connected</> : isBusy ? <><RefreshCw className="h-4 w-4 animate-spin" /> Opening…</> : <><Plug className="h-4 w-4" /> Connect</>}
             </button>
             {on && acct && (
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <button
                   disabled={busy === `resync:${acct.id}`}
                   onClick={() => resync(acct)}
-                  className="inline-flex items-center justify-center gap-1 rounded-lg border border-[#d4af37]/25 px-2 py-2 text-xs text-[#d4af37] transition hover:border-[#d4af37]/50 disabled:opacity-60"
+                  className="inline-flex min-h-[44px] items-center justify-center gap-1 rounded-lg border border-[#d4af37]/25 px-2 py-2 text-xs text-[#d4af37] transition hover:border-[#d4af37]/50 disabled:opacity-60"
                 >
                   {busy === `resync:${acct.id}` ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />} Re-sync
                 </button>
                 <button
                   disabled={busy === `disconnect:${acct.id}`}
                   onClick={() => disconnect(acct)}
-                  className="inline-flex items-center justify-center gap-1 rounded-lg border border-red-500/35 px-2 py-2 text-xs text-red-400 transition hover:bg-red-500/10 disabled:opacity-60"
+                  className="inline-flex min-h-[44px] items-center justify-center gap-1 rounded-lg border border-red-500/35 px-2 py-2 text-xs text-red-400 transition hover:bg-red-500/10 disabled:opacity-60"
                 >
                   {busy === `disconnect:${acct.id}` ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Plug className="h-3.5 w-3.5" />} Disconnect
                 </button>
               </div>
             )}
-            <div className="mt-2 text-[11px] text-[#8a8577]">{b.authType}</div>
+            <div className="mt-2 truncate text-[11px] text-[#8a8577]">{b.authType}</div>
           </div>
         );
       })}

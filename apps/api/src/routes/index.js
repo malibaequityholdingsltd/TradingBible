@@ -11,6 +11,7 @@ import authSendEmail from './auth-send-email.js';
 import { intraday, daily, weekly, monthly } from './market-series.js';
 import paddleRouter from './paddle.js';
 import affiliateRouter from './affiliate.js';
+import securityRouter from './security.js';
 
 const router = Router();
 
@@ -30,6 +31,7 @@ export default () => {
     router.get('/monthly', monthly);
     router.use('/paddle', paddleRouter);
     router.use('/affiliate', affiliateRouter);
+    router.use('/security', securityRouter);
 
     return router;
 };

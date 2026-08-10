@@ -72,6 +72,14 @@ export const supabase = {
 	getUserById: (id) =>
 		request(`/rest/v1/users?id=eq.${encodeURIComponent(id)}`, { service: true, query: { select: '*', limit: 1 } })
 			.then((rows) => rows?.[0] || null),
+	getUserByEmail: (email) =>
+		request(`/rest/v1/users?email=eq.${encodeURIComponent(email)}`, { service: true, query: { select: 'id,email,user_settings', limit: 1 } })
+			.then((rows) => rows?.[0] || null),
+	findUserWithPasskey: (credId) =>
+		request('/rest/v1/users', {
+			service: true,
+			query: { select: 'id,email,user_settings', user_settings: `cs.{"passkeys":[{"credId":"${credId}"}]}`, limit: 1 },
+		}).then((rows) => rows?.[0] || null),
 	getUserByCustomerId: (customerId) =>
 		request(`/rest/v1/users?paddleCustomerId=eq.${encodeURIComponent(customerId)}`, { service: true, query: { select: '*', limit: 1 } })
 			.then((rows) => rows?.[0] || null),
@@ -112,4 +120,17 @@ export const supabase = {
 		request(`/rest/v1/affiliate_signups?codeId=eq.${encodeURIComponent(codeId)}&status=in.(signed_up,active)`, {
 			service: true, method: 'PATCH', body: { status: 'pending_payout' }, prefer: 'return=representation',
 		}),
+
+	// ── auth / sessions ──────────────────────────────────────
+	// Admin-generated magic link. GoTrue does NOT send an email for this; it
+	// just mints the token so we can hand out a real session after webauthn.
+	generateMagicLinkToken: async (email) => {
+		const data = await request('/auth/v1/admin/generate_link', {
+			service: true, method: 'POST', body: { type: 'magiclink', email },
+		});
+		return {
+			tokenHash: data?.hashed_token || null,
+			actionLink: data?.action_link || null,
+		};
+	},
 };
