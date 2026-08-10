@@ -225,8 +225,11 @@ export async function stream({ userId, systemPrompt, userMessage }) {
 	const apiUrl = process.env.INTEGRATED_AI_API_URL;
 	const apiKey = process.env.INTEGRATED_AI_API_KEY;
 	const websiteId = process.env.WEBSITE_ID;
-	if (!apiUrl || !apiKey || !websiteId) {
-		throw new Error('The AI assistant is not configured yet (missing INTEGRATED_AI_API_URL / INTEGRATED_AI_API_KEY / WEBSITE_ID). Please contact support.');
+	const openAiBaseUrl = process.env.OPENAI_BASE_URL;
+	const openAiKey = process.env.OPENAI_API_KEY;
+
+	if ((!apiUrl || !apiKey || !websiteId) && (!openAiBaseUrl || !openAiKey)) {
+		throw new Error('The AI assistant is not configured yet (missing INTEGRATED_AI_API_URL / INTEGRATED_AI_API_KEY / WEBSITE_ID or OPENAI_BASE_URL / OPENAI_API_KEY). Please contact support.');
 	}
 
 	let fileToken = '';
@@ -236,6 +239,11 @@ export async function stream({ userId, systemPrompt, userMessage }) {
 		logger.warn('AI file token unavailable:', String(error?.message || error));
 	}
 	const history = await getHistory({ userId, fileToken });
+
+	// OpenAI-compatible fallback (DeepSeek / OpenAI / Groq / any /v1/chat/completions provider).
+	if (!apiUrl || !apiKey || !websiteId) {
+		return streamOpenAiCompatible({ systemPrompt, userMessage });
+	}
 
 	const response = await fetch(`${apiUrl}/generate`, {
 		method: 'POST',
@@ -342,6 +350,82 @@ async function parseSSEEvents({ stream }) {
 	}
 
 	return events;
+}
+
+/**
+ * Streams a chat completion from any OpenAI-compatible endpoint
+ * (DeepSeek, OpenAI, Groq, etc.) and re-emits it as TradingBible SSE events
+ * so the client hook does not need to change.
+ *
+ * @param {{ systemPrompt: string, userMessage: ContentBlock[] }} params
+ * @returns {Promise<import('node:stream').Readable>}
+ */
+async function streamOpenAiCompatible({ systemPrompt, userMessage }) {
+	const text = userMessage
+		.filter((b) => b.type === ContentBlockType.Text)
+		.map((b) => b.text)
+		.join('\n')
+		.trim();
+
+	const endpoint = String(process.env.OPENAI_BASE_URL || '').replace(/\/+$/, '');
+	const model = process.env.OPENAI_MODEL || 'deepseek-chat';
+
+	const response = await fetch(`${endpoint}/chat/completions`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+		},
+		body: JSON.stringify({
+			model,
+			stream: true,
+			messages: [
+				{ role: 'system', content: systemPrompt },
+				{ role: 'user', content: text || 'Hello' },
+			],
+		}),
+	});
+
+	if (!response.ok) {
+		const errorBody = await response.text().catch(() => 'Unknown error');
+		throw new Error(`AI provider request failed with status ${response.status}: ${errorBody}`);
+	}
+
+	const passThrough = new PassThrough();
+	const decoder = new TextDecoderStream();
+
+	(async () => {
+		try {
+			let buffer = '';
+			for await (const chunk of response.body.pipeThrough(decoder)) {
+				buffer += chunk;
+				const lines = buffer.split('\n');
+				buffer = lines.pop() || '';
+				for (const line of lines) {
+					const trimmed = line.trim();
+					if (!trimmed.startsWith('data:')) continue;
+					const payload = trimmed.slice(5).trim();
+					if (!payload || payload === '[DONE]') continue;
+					const event = JSON.parse(payload);
+					const delta = event?.choices?.[0]?.delta?.content;
+					const reason = event?.choices?.[0]?.delta?.reasoning_content;
+					if (reason) {
+						passThrough.push(`data: ${JSON.stringify({ type: SSEEventType.Reasoning, data: { content: reason }, metadata: { agentName: model } })}\n\n`);
+					}
+					if (delta) {
+						passThrough.push(`data: ${JSON.stringify({ type: SSEEventType.Content, data: { content: delta }, metadata: { agentName: model } })}\n\n`);
+					}
+				}
+			}
+		} catch (error) {
+			logger.error('AI provider stream failed', String(error?.message || error));
+			passThrough.push(`data: ${JSON.stringify({ type: SSEEventType.Error, data: { content: error.message } })}\n\n`);
+		} finally {
+			passThrough.end(`data: ${JSON.stringify({ type: SSEEventType.Completed, data: { content: '[COMPLETED]' } })}\n\n`);
+		}
+	})();
+
+	return passThrough;
 }
 
 /**
