@@ -124,11 +124,16 @@ export const supabase = {
 	// ── auth / sessions ──────────────────────────────────────
 	// Admin-generated magic link. GoTrue does NOT send an email for this; it
 	// just mints the token so we can hand out a real session after webauthn.
+	// With get_hashed_token:false the API returns a plaintext one-time OTP
+	// ("email_otp") that the app can exchange through its standard login
+	// path (supabase.auth.verifyOtp with type 'email').
 	generateMagicLinkToken: async (email) => {
 		const data = await request('/auth/v1/admin/generate_link', {
-			service: true, method: 'POST', body: { type: 'magiclink', email },
+			service: true, method: 'POST',
+			body: { type: 'magiclink', email, get_hashed_token: false },
 		});
 		return {
+			otp: data?.email_otp || data?.otp || null,
 			tokenHash: data?.hashed_token || null,
 			actionLink: data?.action_link || null,
 		};

@@ -391,6 +391,15 @@ async function streamOpenAiCompatible({ systemPrompt, userMessage }) {
 		throw new Error(`AI provider request failed with status ${response.status}: ${errorBody}`);
 	}
 
+	// Some providers return error JSON with HTTP 200 — surface it instead of an empty bubble.
+	const contentType = response.headers.get('content-type') || '';
+	if (contentType.includes('application/json') || contentType.includes('text/plain')) {
+		const errorBody = await response.text().catch(() => '');
+		if (errorBody && !contentType.includes('text/event-stream')) {
+			throw new Error(`AI provider error: ${errorBody.slice(0, 400)}`);
+		}
+	}
+
 	const passThrough = new PassThrough();
 	const decoder = new TextDecoderStream();
 

@@ -384,21 +384,6 @@ function createSupabaseCompatClient() {
         await syncAuthFromSession(data?.session);
         return { token: authStore.token, record: authStore.record };
       },
-
-      // Complete a Face ID / passkey login with the admin-minted magic link
-      // token produced by the server after it verifies the WebAuthn assertion.
-      async authWithPasskey(email, tokenHash) {
-        if (!email || !tokenHash) throw new Error('Missing passkey session data.');
-        const { data, error } = await supabase.auth.verifyOtp({
-          email,
-          token: tokenHash,
-          type: 'email',
-          token_hash: true,
-        });
-        if (error) throw error;
-        await syncAuthFromSession(data?.session);
-        return { token: authStore.token, record: authStore.record };
-      },
     };
   }
 
@@ -441,7 +426,6 @@ function createSupabaseRequiredClient() {
         requestEmailChange: async () => { throw missingError(); },
         requestOTP: async () => { throw missingError(); },
         authWithOTP: async () => { throw missingError(); },
-        authWithPasskey: async () => { throw missingError(); },
       };
     },
     files: {
