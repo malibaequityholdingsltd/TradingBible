@@ -1,8 +1,9 @@
 import process from 'node:process';
+import { randomUUID } from 'node:crypto';
 import { PassThrough, Readable } from 'node:stream';
 import { NodeEnv } from '../constants/common.js';
 import logger from '../utils/logger.js';
-import pocketbaseClient from '../utils/pocketbaseClient.js';
+import { supabaseRest } from '../utils/supabaseClient.js';
 
 const MessageRole = Object.freeze({
 	User: 'user',
@@ -27,6 +28,8 @@ export const ContentBlockType = Object.freeze({
 });
 
 const MAX_HISTORY_MESSAGES = 60;
+
+const AI_IMAGE_BUCKET = 'integrated_ai_images';
 
 const HistoryEventTypes = new Set([
 	SSEEventType.Reasoning,
@@ -148,25 +151,35 @@ const SquashableSSEEventTypes = new Set([
  */
 
 /**
- * Uploads images to PocketBase and returns their URLs.
+ * Uploads images to Supabase Storage and returns their public URLs.
  * Best-effort: if the storage backend is unavailable, returns [] so the
  * conversation can still proceed (text-only).
  *
- * @param {{ images: Express.Multer.File[] }} params
+ * @param {{ images: Express.Multer.File[], userId?: string }} params
  * @returns {Promise<string[]>}
  */
-export async function uploadImagesToPocketBase({ images }) {
+export async function uploadImages({ images, userId }) {
 	try {
+		await ensureImageBucket();
+
 		const uploadPromises = images.map(async (file) => {
-			const formData = new FormData();
-			const blob = new Blob([file.buffer], { type: file.mimetype });
-			formData.append('file', blob, file.originalname);
+			const path = `${userId || 'anon'}/${randomUUID()}_${file.originalname}`;
+			const upload = await supabaseStorageUpload(`/object/${AI_IMAGE_BUCKET}/${path}`, {
+				body: file.buffer,
+				contentType: file.mimetype,
+			});
+			if (!upload.ok) {
+				throw new Error(`storage upload failed: ${upload.status} ${upload.statusText}`);
+			}
 
-			const record = await pocketbaseClient.collection('_integratedAiImages').create(formData);
+			const url = `${supabaseStorageBaseUrl()}/object/public/${AI_IMAGE_BUCKET}/${path}`;
 
-			const url = pocketbaseClient.files.getURL(record, record.file);
+			await supabaseRest('/rest/v1/_integratedAiImages', {
+				method: 'POST',
+				body: { owner: userId || null, userId: userId || null, file: url },
+			}).catch(() => {});
 
-			return url.replace('http://localhost:8090', `https://${process.env.WEBSITE_DOMAIN}/hcgi/platform`);
+			return url;
 		});
 
 		return await Promise.all(uploadPromises);
@@ -176,46 +189,66 @@ export async function uploadImagesToPocketBase({ images }) {
 	}
 }
 
-/**
- * Appends a file token to a URL, respecting any existing query string.
- *
- * @param {string} url
- * @param {string} token
- * @returns {string}
- */
-function appendToken(url, token) {
-	const signedUrl = new URL(url);
-	signedUrl.searchParams.append('token', token);
+function supabaseStorageBaseUrl() {
+	return `${(process.env.SUPABASE_URL || '').replace(/\/+$/, '')}/storage/v1`;
+}
 
-	return signedUrl.toString();
+let bucketEnsured = false;
+
+async function ensureImageBucket() {
+	if (bucketEnsured) return;
+
+	const bucketRequest = await fetch(`${supabaseStorageBaseUrl()}/bucket/${AI_IMAGE_BUCKET}`, {
+		headers: supabaseServiceHeaders(),
+	});
+	if (bucketRequest.ok) {
+		bucketEnsured = true;
+		return;
+	}
+
+	const created = await fetch(`${supabaseStorageBaseUrl()}/bucket`, {
+		method: 'POST',
+		headers: { ...supabaseServiceHeaders(), 'Content-Type': 'application/json' },
+		body: JSON.stringify({ name: AI_IMAGE_BUCKET, public: true }),
+	});
+	if (created.ok) {
+		bucketEnsured = true;
+		logger.info(`Created Supabase storage bucket "${AI_IMAGE_BUCKET}"`);
+		return;
+	}
+
+	throw new Error(`storage bucket "${AI_IMAGE_BUCKET}" unavailable: ${created.status}`);
+}
+
+function supabaseServiceHeaders() {
+	return {
+		apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+		Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+	};
+}
+
+async function supabaseStorageUpload(path, { body, contentType }) {
+	return fetch(`${supabaseStorageBaseUrl()}${path}`, {
+		method: 'POST',
+		headers: { ...supabaseServiceHeaders(), 'Content-Type': contentType },
+		body,
+	});
 }
 
 /**
- * Signs a stored image reference with a short-lived file token so the AI service can fetch it.
- * Handles both full URLs and origin-less `/api/files/...` paths.
+ * Kept for compatibility with legacy history references; public Supabase
+ * Storage URLs need no signing, so references are returned unchanged.
  *
  * @param {string} reference
- * @param {string} token
  * @returns {string}
  */
-function signImageReference(reference, token) {
-	if (!reference || !token) {
-		return reference;
-	}
-
-	if (/^https?:\/\//i.test(reference)) {
-		return appendToken(reference, token);
-	}
-
-	const base = `https://${process.env.WEBSITE_DOMAIN}/hcgi/platform`;
-	const path = reference.startsWith('/') ? reference : `/${reference}`;
-
-	return appendToken(`${base}${path}`, token);
+function signImageReference(reference) {
+	return reference;
 }
 
 /**
  * Sends a message to the AI proxy and pipes SSE events to the client.
- * Assistant message is saved to PocketBase when the stream ends.
+ * Assistant message is saved to Supabase when the stream ends.
  * This method should be used for text/text, image/text, image/image, text/image combinations.
  *
  * @param {{ userId: string, systemPrompt: string, userMessage: ContentBlock[] }} params
@@ -232,13 +265,7 @@ export async function stream({ userId, systemPrompt, userMessage }) {
 		throw new Error('The AI assistant is not configured yet (missing INTEGRATED_AI_API_URL / INTEGRATED_AI_API_KEY / WEBSITE_ID or OPENAI_BASE_URL / OPENAI_API_KEY). Please contact support.');
 	}
 
-	let fileToken = '';
-	try {
-		fileToken = await pocketbaseClient.files.getToken();
-	} catch (error) {
-		logger.warn('AI file token unavailable:', String(error?.message || error));
-	}
-	const history = await getHistory({ userId, fileToken });
+	const history = await getHistory({ userId });
 
 	// OpenAI-compatible fallback (DeepSeek / OpenAI / Groq / any /v1/chat/completions provider).
 	if (!apiUrl || !apiKey || !websiteId) {
@@ -257,7 +284,7 @@ export async function stream({ userId, systemPrompt, userMessage }) {
 			website_id: websiteId,
 			history: [
 				...history,
-				mapUserMessage({ message: userMessage, fileToken }),
+				mapUserMessage({ message: userMessage }),
 			],
 			system_prompt: systemPrompt,
 			stream: true,
@@ -287,7 +314,7 @@ export async function stream({ userId, systemPrompt, userMessage }) {
 
 /**
  * Consumes an SSE stream branch, parses history-relevant events,
- * and saves the assistant message to PocketBase.
+ * and saves the assistant message to Supabase.
  *
  * @param {{ userId: string, stream: ReadableStream, userMessage: ContentBlock[] }} params
  * @returns {Promise<void>}
@@ -443,15 +470,14 @@ async function streamOpenAiCompatible({ systemPrompt, userMessage }) {
  */
 async function saveMessages({ userId, messages }) {
 	try {
-		const batch = pocketbaseClient.createBatch();
-
-		messages.map(message => batch.collection('_integratedAiMessages').create({
-			...(userId && { userId }),
-			role: message.role,
-			content: message.content,
-		}));
-
-		await batch.send();
+		await Promise.all(messages.map(message => supabaseRest('/rest/v1/_integratedAiMessages', {
+			method: 'POST',
+			body: {
+				...(userId && { owner: userId, userId }),
+				role: message.role,
+				content: message.content,
+			},
+		})));
 	} catch (error) {
 		logger.warn('AI history not persisted (storage backend not ready):', String(error?.message || error));
 	}
@@ -460,32 +486,31 @@ async function saveMessages({ userId, messages }) {
 /**
  * Fetches message history and maps it to HistoryMessage format.
  *
- * @param {{ userId: string, fileToken?: string }} params
+ * @param {{ userId: string }} params
  * @returns {Promise<HistoryMessage[]>}
  */
-export async function getHistory({ userId, fileToken }) {
+export async function getHistory({ userId }) {
 	if (!userId) {
 		return [];
 	}
 
 	try {
-		const result = await pocketbaseClient.collection('_integratedAiMessages').getList(1, MAX_HISTORY_MESSAGES, {
-			sort: '-created',
-			...(userId && { filter: pocketbaseClient.filter('userId = {:userId}', { userId }) }),
-		});
+		const rows = await supabaseRest(`/rest/v1/_integratedAiMessages?owner=eq.${encodeURIComponent(userId)}`, {
+			query: { select: '*', order: 'created.desc', limit: String(MAX_HISTORY_MESSAGES) },
+		}).then((data) => data || []);
 
-		const records = result.items.reverse();
+		const records = rows.reverse();
 
 	/** @type {HistoryMessage[]} */
 	const historyMessages = [];
 
 	for (const record of records) {
 		if (record.role === MessageRole.User) {
-			historyMessages.push(mapUserMessage({ message: record.content, fileToken }));
+			historyMessages.push(mapUserMessage({ message: record.content }));
 			continue;
 		}
 
-		historyMessages.push(...mapAssistantMessages({ message: record.content, fileToken }));
+		historyMessages.push(...mapAssistantMessages({ message: record.content }));
 	}
 
 	return historyMessages;
@@ -496,14 +521,14 @@ export async function getHistory({ userId, fileToken }) {
 }
 
 /**
- * @param {{ message: ContentBlock[], fileToken?: string }} params
+ * @param {{ message: ContentBlock[] }} params
  * @returns {HistoryMessage}
  */
-function mapUserMessage({ message, fileToken }) {
+function mapUserMessage({ message }) {
 	const textParts = message.filter(b => b.type === ContentBlockType.Text).map(b => b.text);
 	const images = message
 		.filter(b => b.type === ContentBlockType.Image)
-		.map(b => signImageReference(b.image, fileToken));
+		.map(b => signImageReference(b.image));
 
 	return {
 		role: MessageRole.User,
@@ -513,10 +538,10 @@ function mapUserMessage({ message, fileToken }) {
 }
 
 /**
- * @param {{ message: SSEEventHistory[], fileToken?: string }} params
+ * @param {{ message: SSEEventHistory[] }} params
  * @returns {HistoryMessage[]}
  */
-function mapAssistantMessages({ message, fileToken }) {
+function mapAssistantMessages({ message }) {
 	/** @type {HistoryMessage[]} */
 	const messages = [];
 
@@ -531,7 +556,7 @@ function mapAssistantMessages({ message, fileToken }) {
 			messages.push({
 				role: MessageRole.Tool,
 				tool_call_id: event.data.tool_call_id,
-				content: isImageResult ? signImageReference(content, fileToken) : content,
+				content: isImageResult ? signImageReference(content) : content,
 				...(agentName && { agent_name: agentName }),
 			});
 			continue;

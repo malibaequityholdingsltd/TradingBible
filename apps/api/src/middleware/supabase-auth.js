@@ -10,7 +10,7 @@ function forbiddenError(message) {
 	return error;
 }
 
-export async function pocketbaseAuth(req, res, next) {
+export async function supabaseAuth(req, res, next) {
 	const token = req.headers.authorization?.split(' ')?.[1];
 
 	// Auth is enforced by default. To allow public (anonymous) access, remove this
@@ -39,7 +39,7 @@ export async function pocketbaseAuth(req, res, next) {
 		}
 
 		const user = await userResponse.json();
-		req.pocketbaseUserId = user?.id;
+		req.userId = user?.id;
 
 		if (!user?.email_confirmed_at) {
 			return next(forbiddenError('Please verify your email to use the chat. Check your inbox for the verification link.'));
