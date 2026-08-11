@@ -174,7 +174,7 @@ export async function uploadImages({ images, userId }) {
 
 			const url = `${supabaseStorageBaseUrl()}/object/public/${AI_IMAGE_BUCKET}/${path}`;
 
-			await supabaseRest('/rest/v1/_integratedAiImages', {
+			await supabaseRest('/rest/v1/_integratedaiimages', {
 				method: 'POST',
 				body: { owner: userId || null, userId: userId || null, file: url },
 			}).catch(() => {});
@@ -470,7 +470,7 @@ async function streamOpenAiCompatible({ systemPrompt, userMessage }) {
  */
 async function saveMessages({ userId, messages }) {
 	try {
-		await Promise.all(messages.map(message => supabaseRest('/rest/v1/_integratedAiMessages', {
+		await Promise.all(messages.map(message => supabaseRest('/rest/v1/_integratedaimessages', {
 			method: 'POST',
 			body: {
 				...(userId && { owner: userId, userId }),
@@ -495,7 +495,7 @@ export async function getHistory({ userId }) {
 	}
 
 	try {
-		const rows = await supabaseRest(`/rest/v1/_integratedAiMessages?owner=eq.${encodeURIComponent(userId)}`, {
+		const rows = await supabaseRest(`/rest/v1/_integratedaimessages?owner=eq.${encodeURIComponent(userId)}`, {
 			query: { select: '*', order: 'created.desc', limit: String(MAX_HISTORY_MESSAGES) },
 		}).then((data) => data || []);
 
