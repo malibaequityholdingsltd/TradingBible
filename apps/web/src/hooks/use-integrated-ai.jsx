@@ -178,7 +178,7 @@ function useIntegratedAi() {
 					return [];
 				}
 			
-				const records = await pocketbaseClient.collection('_integratedAiMessages').getFullList({
+				const records = await pocketbaseClient.collection('_integratedaimessages').getFullList({
 					sort: 'created',
 				});
 			
