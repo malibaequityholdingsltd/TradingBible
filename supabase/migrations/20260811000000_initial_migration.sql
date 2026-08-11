@@ -321,9 +321,11 @@ create table if not exists public.forum_threads (
   updated timestamptz default now()
 );
 alter table public.forum_threads enable row level security;
-drop policy if exists forum_threads_owner on public.forum_threads;
-create policy forum_threads_owner on public.forum_threads
-  for select using (true)
+drop policy if exists forum_threads_select on public.forum_threads;
+drop policy if exists forum_threads_insert on public.forum_threads;
+create policy forum_threads_select on public.forum_threads
+  for select using (true);
+create policy forum_threads_insert on public.forum_threads
   for insert with check (auth.uid() = owner);
 
 create table if not exists public.forum_replies (
@@ -334,9 +336,11 @@ create table if not exists public.forum_replies (
   created timestamptz default now()
 );
 alter table public.forum_replies enable row level security;
-drop policy if exists forum_replies_owner on public.forum_replies;
-create policy forum_replies_owner on public.forum_replies
-  for select using (true)
+drop policy if exists forum_replies_select on public.forum_replies;
+drop policy if exists forum_replies_insert on public.forum_replies;
+create policy forum_replies_select on public.forum_replies
+  for select using (true);
+create policy forum_replies_insert on public.forum_replies
   for insert with check (auth.uid() = owner);
 
 -- ── profiles (auth fallback mirror of users) ───────────────────────
@@ -350,9 +354,11 @@ create table if not exists public.profiles (
   created_at timestamptz default now()
 );
 alter table public.profiles enable row level security;
-drop policy if exists profiles_owner on public.profiles;
-create policy profiles_owner on public.profiles
-  for select using (auth.uid() = id)
+drop policy if exists profiles_select on public.profiles;
+drop policy if exists profiles_insert on public.profiles;
+create policy profiles_select on public.profiles
+  for select using (auth.uid() = id);
+create policy profiles_insert on public.profiles
   for insert with check (auth.uid() = id);
 
 -- ── platform admin / branding ──────────────────────────────────────
