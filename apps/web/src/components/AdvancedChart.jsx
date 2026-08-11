@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import { CandlestickChart, LineChart as LineIcon, BarChart3, AreaChart as AreaIcon, ZoomIn, ZoomOut, Maximize2, Minimize2, Download, RotateCcw, Plus, X } from 'lucide-react';
 import { INDICATOR_DEFS } from '@/lib/indicators';
+import { useTheme } from '@/hooks/useTheme';
 
 const GOLD = '#d4af37';
 const GREEN = '#34d399';
@@ -33,6 +34,8 @@ export default function AdvancedChart({
   const TXT = '#6a665a';
   const svgRef = useRef(null);
   const wrapRef = useRef(null);
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [dims, setDims] = useState({ w: 800, h: compact ? 260 : 460 });
   const [view, setView] = useState(null); // {start,end} index window
   const [hover, setHover] = useState(null); // index
