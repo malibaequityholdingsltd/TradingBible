@@ -417,3 +417,22 @@ returns void language plpgsql security definer as $$
 begin
   update public.academy_waitlist set status = 'enrolled' where email = lower(p_email);
 end $$;
+
+-- ── users RLS repair: drop any recursive/broken policies, install sane one ──
+do $$ declare p record; begin
+  for p in select policyname from pg_policies
+           where schemaname='public' and tablename='users' loop
+    execute format('drop policy %I on public.users', p.policyname);
+  end loop;
+end $$;
+alter table public.users enable row level security;
+drop policy if exists users_rls_default on public.users;
+create policy users_rls_default on public.users
+  for all using (auth.uid() = id) with check (auth.uid() = id);
+
+-- ── harden SECURITY DEFINER RPCs: no anonymous execution ───────────
+revoke execute on function public.save_user_settings(jsonb) from anon;
+revoke execute on function public.rls_auto_enable() from anon;
+revoke execute on function public.enroll_waitlist(text) from anon;
+grant execute on function public.save_user_settings(jsonb) to authenticated;
+grant execute on function public.rls_auto_enable() to authenticated;
