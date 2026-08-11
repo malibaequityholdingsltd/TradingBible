@@ -430,6 +430,15 @@ drop policy if exists users_rls_default on public.users;
 create policy users_rls_default on public.users
   for all using (auth.uid() = id) with check (auth.uid() = id);
 
+-- ── normalize base privileges (imported tables often lack grants) ────
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on all tables in schema public to authenticated;
+grant select on all tables in schema public to anon;
+alter default privileges in schema public
+  grant select, insert, update, delete on tables to authenticated;
+alter default privileges in schema public
+  grant select on tables to anon;
+
 -- ── harden SECURITY DEFINER RPCs: no anonymous execution ───────────
 revoke execute on function public.save_user_settings(jsonb) from anon;
 revoke execute on function public.rls_auto_enable() from anon;
