@@ -32,9 +32,9 @@ const MARKETS = [
 ];
 
 const TEAM = [
-  { name: 'Amadou Traoré', role: 'Founder & Chief Executive', img: 'https://images.hostinger.com/28aec44f-c6fe-4e36-9474-4a343f6c1dc7.png' },
-  { name: 'Ingrid Halvorsen', role: 'Chief Technology Officer', img: 'https://images.hostinger.com/2fed56c3-111a-4df6-8cb7-f247588320d1.png' },
-  { name: 'Rohan Mehta', role: 'Head of Quantitative Research', img: 'https://images.hostinger.com/280ec8c0-c966-44a7-beb3-afddf4f5f198.png' },
+  { name: 'Malik Nlem', role: 'Founder & Chief Executive' },
+  { name: 'Victor Okechukwu', role: 'Vice President' },
+  { name: 'Maliba AI', role: 'Head of Quantitative Research' },
 ];
 
 const TESTIMONIALS = [
@@ -166,7 +166,9 @@ export default function AboutPage() {
         <div className="grid gap-5 sm:grid-cols-3">
           {TEAM.map((t) => (
             <div key={t.name} className="glass glass-hover overflow-hidden rounded-2xl">
-              <img src={t.img} alt={t.name} className="h-56 w-full object-cover object-top" />
+              <div className="grid h-56 w-full place-items-center bg-[#d4af37]/8">
+                <div className="grid h-20 w-20 place-items-center rounded-full border border-[#d4af37]/30 bg-[#0f0f14] text-2xl font-bold text-[#d4af37]">{t.name.split(' ').map((n) => n[0]).join('')}</div>
+              </div>
               <div className="p-5">
                 <div className="font-semibold text-[#f0ecdd]">{t.name}</div>
                 <div className="mt-1 text-sm text-[#d4af37]">{t.role}</div>
