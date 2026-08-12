@@ -386,6 +386,8 @@ export default defineConfig({
 		allowedHosts: [
 			'.app-preview.com',
 			'.app-preview.io',
+			'tradingbible.app',
+			'.tradingbible.app',
 		],
 		fs: {
 			strict: true,

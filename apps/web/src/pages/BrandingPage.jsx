@@ -60,8 +60,8 @@ export default function BrandingPage() {
   return (
     <AppLayout title="White-label Branding">
       <div className="mb-5 flex items-start gap-3 rounded-2xl border border-[#d4af37]/15 bg-[#d4af37]/[0.06] p-4">
-        <img src={MALIBA_LOGO} alt="MALIBA EQUITY HOLDINGS LTD" className="h-11 w-11 shrink-0 rounded-lg object-contain" />
-        <p className="text-sm text-[#c9c4b4]">White-label branding is a <span className="text-[#d4af37]">MALIBA EQUITY HOLDINGS LTD</span> program. Resellers and prop firms can rebrand the platform with a custom company name, logo, colors and tagline. Changes here shape the client-facing experience for your seats.</p>
+        <img src={MALIBA_LOGO} alt="TradingBible LLC" className="h-11 w-11 shrink-0 rounded-lg object-contain" />
+        <p className="text-sm text-[#c9c4b4]">White-label branding is a <span className="text-[#d4af37]">TradingBible LLC</span> program. Resellers and prop firms can rebrand the platform with a custom company name, logo, colors and tagline. Changes here shape the client-facing experience for your seats.</p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">

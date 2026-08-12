@@ -27,8 +27,8 @@ function LegalShell({ title, subtitle, children }) {
         <div className="mt-10 space-y-8">{children}</div>
 
         <div className="mt-16 flex items-center gap-3 border-t border-[#d4af37]/10 pt-8">
-          <img src={MALIBA_LOGO} alt="MALIBA EQUITY HOLDINGS LTD" className="h-11 w-11 rounded-lg object-contain" />
-          <p className="text-xs leading-relaxed text-[#6a665a]">These terms are published by <span className="text-[#c9c4b4]">MALIBA EQUITY HOLDINGS LTD</span>, owner and operator of TradingBible.</p>
+          <img src={MALIBA_LOGO} alt="TradingBible LLC" className="h-11 w-11 rounded-lg object-contain" />
+          <p className="text-xs leading-relaxed text-[#6a665a]">These terms are published by <span className="text-[#c9c4b4]">TradingBible LLC</span>, owner and operator of TradingBible.</p>
         </div>
         <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 border-t border-[#d4af37]/10 pt-8 text-sm text-[#8a8577]">
           <Link to="/terms" className="hover:text-[#e9e7df]">Terms of Service</Link>
@@ -54,7 +54,7 @@ function Section({ heading, children }) {
 
 export function TermsPage() {
   return (
-    <LegalShell title="Terms of Service" subtitle="These Terms of Service (the &quot;Terms&quot;) form a binding agreement between you and MALIBA EQUITY HOLDINGS LTD (&quot;MALIBA&quot;, &quot;we&quot;, &quot;us&quot;), owner and operator of TradingBible (the &quot;Service&quot;). By creating an account or using the Service you accept these Terms in full.">
+    <LegalShell title="Terms of Service" subtitle="These Terms of Service (the &quot;Terms&quot;) form a binding agreement between you and TradingBible LLC (&quot;TradingBible LLC&quot;, &quot;we&quot;, &quot;us&quot;), owner and operator of TradingBible (the &quot;Service&quot;). By creating an account or using the Service you accept these Terms in full.">
       <Section heading="1. Eligibility and acceptance">
         <p>You confirm that you are at least 18 years old and legally capable of entering into a binding contract in your jurisdiction. If you use the Service on behalf of an entity, you represent that you are authorised to bind that entity. The Service is not offered where prohibited by law, and you are responsible for compliance with all laws applicable to you.</p>
       </Section>
@@ -77,16 +77,16 @@ export function TermsPage() {
         <p>You agree not to: (a) reverse engineer, decompile, scrape, or resell the Service; (b) upload unlawful, infringing, or misleading content; (c) use the Service to facilitate market manipulation, insider dealing, money laundering, fraud, or any illegal activity; (d) attempt to disrupt, overload, or gain unauthorised access to our systems or other users&apos; data; or (e) circumvent usage limits or security controls. Violations may result in immediate suspension or termination and referral to authorities.</p>
       </Section>
       <Section heading="8. Intellectual property">
-        <p>All software, design, trademarks, and content provided by TradingBible and MALIBA remain our exclusive property. You retain ownership of the trade data and notes you submit and grant us a limited, worldwide, royalty-free licence to host and process that data solely to operate and improve the Service for you. &quot;TradingBible&quot; and associated marks may not be used without written permission.</p>
+        <p>All software, design, trademarks, and content provided by TradingBible and TradingBible LLC remain our exclusive property. You retain ownership of the trade data and notes you submit and grant us a limited, worldwide, royalty-free licence to host and process that data solely to operate and improve the Service for you. &quot;TradingBible&quot; and associated marks may not be used without written permission.</p>
       </Section>
       <Section heading="9. Disclaimers of warranty">
         <p>The Service is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, whether express, implied, or statutory, including merchantability, fitness for a particular purpose, accuracy, and non-infringement. We do not warrant that the Service will be uninterrupted, error-free, secure, or that data (including third-party market and broker data) is accurate, complete, or timely.</p>
       </Section>
       <Section heading="10. Limitation of liability">
-        <p>To the maximum extent permitted by law, MALIBA, its affiliates, officers, and suppliers shall not be liable for any trading losses, lost profits, lost data, loss of goodwill, or any indirect, incidental, special, consequential, or punitive damages arising from or related to the Service, even if advised of the possibility. Our aggregate liability for any claim shall not exceed the greater of (a) the total fees you paid to us in the twelve months preceding the event giving rise to the claim, or (b) USD 100. Some jurisdictions do not allow certain exclusions, so parts of this section may not apply to you.</p>
+        <p>To the maximum extent permitted by law, TradingBible LLC, its affiliates, officers, and suppliers shall not be liable for any trading losses, lost profits, lost data, loss of goodwill, or any indirect, incidental, special, consequential, or punitive damages arising from or related to the Service, even if advised of the possibility. Our aggregate liability for any claim shall not exceed the greater of (a) the total fees you paid to us in the twelve months preceding the event giving rise to the claim, or (b) USD 100. Some jurisdictions do not allow certain exclusions, so parts of this section may not apply to you.</p>
       </Section>
       <Section heading="11. Indemnification">
-        <p>You agree to defend, indemnify, and hold harmless MALIBA, its affiliates, and their respective directors, officers, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising out of or connected with your use of the Service, your trading activity, your content, or your breach of these Terms or applicable law.</p>
+        <p>You agree to defend, indemnify, and hold harmless TradingBible LLC, its affiliates, and their respective directors, officers, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising out of or connected with your use of the Service, your trading activity, your content, or your breach of these Terms or applicable law.</p>
       </Section>
       <Section heading="12. Termination">
         <p>We may suspend or terminate your account at any time for violation of these Terms, suspected fraud, or legal requirement. You may close your account at any time from your profile settings. Sections that by their nature should survive termination (including IP, disclaimers, liability, indemnity, and governing law) will survive.</p>
@@ -95,7 +95,7 @@ export function TermsPage() {
         <p>These Terms are governed by the laws of England and Wales, without regard to conflict-of-law rules. The courts of England and Wales shall have exclusive jurisdiction, save that we may seek injunctive relief in any competent court. Before commencing formal proceedings, the parties agree to attempt good-faith resolution by contacting legal@tradingbible.app. Nothing in this section affects mandatory consumer-protection rights available to you in your country of residence.</p>
       </Section>
       <Section heading="14. Changes and contact">
-        <p>We may update these Terms from time to time; material changes will be notified in-app or by email, and continued use constitutes acceptance. Questions about these Terms can be sent to legal@tradingbible.app or to MALIBA EQUITY HOLDINGS LTD, the operator of TradingBible.</p>
+        <p>We may update these Terms from time to time; material changes will be notified in-app or by email, and continued use constitutes acceptance. Questions about these Terms can be sent to legal@tradingbible.app or to TradingBible LLC, the operator of TradingBible.</p>
       </Section>
     </LegalShell>
   );
@@ -103,7 +103,7 @@ export function TermsPage() {
 
 export function PolicyPage() {
   return (
-    <LegalShell title="Privacy Policy" subtitle="This policy explains what data TradingBible (operated by MALIBA EQUITY HOLDINGS LTD, the data controller) collects, why we collect it, and the choices you have. It is designed to comply with the EU/UK GDPR, the California Consumer Privacy Act (CCPA/CPRA), and other applicable data-protection laws.">
+    <LegalShell title="Privacy Policy" subtitle="This policy explains what data TradingBible (operated by TradingBible LLC, the data controller) collects, why we collect it, and the choices you have. It is designed to comply with the EU/UK GDPR, the California Consumer Privacy Act (CCPA/CPRA), and other applicable data-protection laws.">
       <Section heading="1. Data we collect">
         <p>We collect: (a) account data (email, username, phone, authentication metadata for one-time code access); (b) profile preferences (primary market, experience, goals); (c) trading data synced from brokers and prop firms you connect (symbols, entries, exits, sizes, P&amp;L, balances, timestamps); (d) billing metadata processed by Paddle; and (e) technical logs, device, and usage data needed to secure and operate the Service.</p>
       </Section>
@@ -135,7 +135,7 @@ export function PolicyPage() {
         <p>The Service is not directed to individuals under 18 and we do not knowingly collect their data. If you believe a minor has provided us data, contact us for deletion.</p>
       </Section>
       <Section heading="11. Contact">
-        <p>Privacy questions and data requests can be sent to privacy@tradingbible.app or to the data controller, MALIBA EQUITY HOLDINGS LTD.</p>
+        <p>Privacy questions and data requests can be sent to privacy@tradingbible.app or to the data controller, TradingBible LLC.</p>
       </Section>
     </LegalShell>
   );
