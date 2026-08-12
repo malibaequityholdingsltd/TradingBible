@@ -115,10 +115,10 @@ export default function AboutPage() {
       {/* Ownership */}
       <section className="mx-auto max-w-[96rem] px-6 py-6">
         <div className="glass flex flex-col items-start gap-5 rounded-2xl p-7 sm:flex-row sm:items-center">
-          <img src={MALIBA_LOGO} alt="MALIBA EQUITY HOLDINGS LTD" className="h-16 w-16 shrink-0 rounded-2xl object-contain" />
+          <img src={MALIBA_LOGO} alt="TradingBible LLC" className="h-16 w-16 shrink-0 rounded-2xl object-contain" />
           <div>
             <h2 className="text-xl font-semibold text-[#f0ecdd]">Ownership</h2>
-            <p className="mt-2 leading-relaxed text-[#8a8577]">TradingBible is owned and operated by <span className="text-[#d4af37]">MALIBA EQUITY HOLDINGS LTD</span>, an international holding company and private equity firm.</p>
+            <p className="mt-2 leading-relaxed text-[#8a8577]">TradingBible is owned and operated by <span className="text-[#d4af37]">TradingBible LLC</span>, a Delaware limited liability company.</p>
           </div>
         </div>
       </section>
@@ -200,7 +200,7 @@ export default function AboutPage() {
             <h2 className="text-2xl font-bold sm:text-3xl">Contact <span className="gold-text">us</span></h2>
             <p className="mt-3 leading-relaxed text-[#8a8577]">Questions about the platform, verification or partnerships? Our team responds within one business day.</p>
             <a href="mailto:support@tradingbible.app" className="mt-5 inline-flex items-center gap-2 text-[#d4af37] hover:underline"><Mail className="h-4 w-4" /> support@tradingbible.app</a>
-            <p className="mt-4 text-xs leading-relaxed text-[#6a665a]">MALIBA EQUITY HOLDINGS LTD — international holding &amp; private equity firm.</p>
+            <p className="mt-4 text-xs leading-relaxed text-[#6a665a]">TradingBible LLC — Delaware limited liability company.</p>
           </div>
           <ContactForm />
         </div>

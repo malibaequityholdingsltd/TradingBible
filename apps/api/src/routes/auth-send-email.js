@@ -39,7 +39,7 @@ function brandShell(title, body) {
         <div style="padding:26px 24px">
           <h1 style="color:#c99a25;font-size:20px;margin:0 0 14px">${escapeHtml(title)}</h1>
           ${body}
-          <p style="color:#64748b;font-size:12px;margin-top:26px">TradingBible by MALIBA EQUITY HOLDINGS LTD · Trade like the 1%. Journal like a fund.</p>
+          <p style="color:#64748b;font-size:12px;margin-top:26px">TradingBible LLC · Trade like the 1%. Journal like a fund.</p>
         </div>
       </div>
     </div>`;

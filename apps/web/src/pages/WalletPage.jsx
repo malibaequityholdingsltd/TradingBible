@@ -162,7 +162,7 @@ export default function WalletPage() {
         )}
       </div>
 
-      <div className="mt-4 flex items-center gap-2 text-xs text-[#8a8577]"><ShieldCheck className="h-4 w-4 text-emerald-400" /> Balances and cards are secured to your account. Operated by MALIBA EQUITY HOLDINGS LTD.</div>
+      <div className="mt-4 flex items-center gap-2 text-xs text-[#8a8577]"><ShieldCheck className="h-4 w-4 text-emerald-400" /> Balances and cards are secured to your account. Operated by TradingBible LLC.</div>
 
       {/* Modals */}
       {modal === 'deposit' && <AmountModal title="Deposit funds" cta="Deposit" busy={busy} onClose={() => setModal(null)} onSubmit={(amt) => run(() => bank.deposit(amt), 'Deposit completed')} />}

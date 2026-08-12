@@ -57,7 +57,7 @@ const COURSES = [
   { title: 'Algorithmic Trading', level: 'Professional', lessons: 14, mins: 132, tag: 'Systems', desc: 'Automation, bots and systematic strategies, integrating with TradingBible webhooks and API.', locked: true },
   { title: 'Portfolio Management', level: 'Professional', lessons: 11, mins: 104, tag: 'Portfolio', desc: 'Diversification, allocation and rebalancing across every connected account.', locked: true },
   { title: 'Advanced Risk Management', level: 'Professional', lessons: 12, mins: 118, tag: 'Risk', desc: 'Hedging, correlation and Value at Risk (VaR) for serious capital.', locked: true },
-  { title: 'Institutional Trading', level: 'Professional', lessons: 13, mins: 126, tag: 'Institutional', desc: 'Prop trading and fund management, informed by the expertise of MALIBA EQUITY HOLDINGS LTD.', locked: true },
+  { title: 'Institutional Trading', level: 'Professional', lessons: 13, mins: 126, tag: 'Institutional', desc: 'Prop trading and fund management, informed by the expertise of TradingBible LLC.', locked: true },
 ];
 
 const WEBINARS = [
@@ -106,7 +106,7 @@ function Waitlist() {
           <button disabled={busy} className="flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60"><Mail className="h-4 w-4" /> {busy ? 'Joining…' : 'Join the waitlist'}</button>
         </form>
       )}
-      <div className="mt-4 flex items-center gap-2 text-xs text-[#6a665a]"><Building2 className="h-3.5 w-3.5" /> A MALIBA EQUITY HOLDINGS LTD education initiative.</div>
+      <div className="mt-4 flex items-center gap-2 text-xs text-[#6a665a]"><Building2 className="h-3.5 w-3.5" /> A TradingBible LLC education initiative.</div>
     </div>
   );
 }
