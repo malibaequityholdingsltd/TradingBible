@@ -1,18 +1,24 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import QRCode from 'qrcode';
-import { Lock, ShieldCheck, Smartphone, KeyRound, Monitor, AlertTriangle, Plus, Trash2, Fingerprint, CheckCircle2 } from 'lucide-react';
+import { Lock, ShieldCheck, Smartphone, KeyRound, Monitor, AlertTriangle, Plus, Trash2, Fingerprint, CheckCircle2, Power, XCircle } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { totpStatus, totpSetup, totpEnable, totpDisable, registerPasskey, passkeyStatus, removePasskey } from '@/lib/security';
+import { totpStatus, totpSetup, totpEnable, totpDisable, registerPasskey, passkeyStatus, removePasskey, accountDeactivate, accountReactivate, accountClose } from '@/lib/security';
 
 function normalizeCode(value) {
   return String(value || '').replace(/\D/g, '').slice(0, 6);
 }
 
 export default function SecurityPage() {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Account lifecycle (deactivate / close)
+  const [accountBusy, setAccountBusy] = useState(false);
+  const [confirmClose, setConfirmClose] = useState(false);
 
   // Authenticator app (TOTP)
   const [totpEnabled, setTotpEnabled] = useState(false);
@@ -134,6 +140,40 @@ export default function SecurityPage() {
     } finally { setNotifyBusy(false); }
   };
 
+  const deactivateAccount = async () => {
+    setAccountBusy(true);
+    try {
+      await accountDeactivate();
+      await logout();
+      toast({ title: 'Account deactivated', description: 'Your account is paused. Log in again anytime to reactivate it.' });
+      navigate('/');
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Could not deactivate', description: String(err?.message || 'Please try again.') });
+    } finally { setAccountBusy(false); }
+  };
+
+  const reactivateAccount = async () => {
+    setAccountBusy(true);
+    try {
+      await accountReactivate();
+      toast({ title: 'Account reactivated', description: 'Your account is fully active again.' });
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Could not reactivate', description: String(err?.message || 'Please try again.') });
+    } finally { setAccountBusy(false); }
+  };
+
+  const closeAccount = async () => {
+    setAccountBusy(true);
+    try {
+      await accountClose();
+      await logout();
+      toast({ title: 'Account closed', description: 'Your account has been closed. Contact support to reopen it.' });
+      navigate('/');
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Could not close account', description: String(err?.message || 'Please try again.') });
+    } finally { setAccountBusy(false); }
+  };
+
   return (
     <AppLayout title="Security">
       <div className="grid gap-5 lg:grid-cols-3">
@@ -245,6 +285,30 @@ export default function SecurityPage() {
         <p className="text-sm text-[#8a8577]">Sign-in history is recorded for every login. You can review the most recent events below.</p>
         <div className="mt-4 rounded-xl bg-white/[0.03] p-4 text-sm text-[#8a8577]">
           Recent sign-ins appear here grouped by device — new logins are tracked automatically from your next sign-in.
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-2xl border border-red-400/25 bg-red-400/[0.05] p-6">
+        <h3 className="mb-1 flex items-center gap-2 font-semibold text-red-300"><AlertTriangle className="h-4 w-4" /> Danger zone</h3>
+        <p className="text-sm text-[#8a8577]">Account lifecycle actions. Deactivating pauses your account — you can reactivate it by logging in again. Closing permanently blocks login while keeping your data safe.</p>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <div className="flex items-center gap-2 font-medium text-[#e9e7df]"><Power className="h-4 w-4 text-[#d4af37]" /> Deactivate account</div>
+            <p className="mt-1 text-xs text-[#8a8577]">Pause your account temporarily. All data is kept; logging back in reactivates it instantly.</p>
+            <button onClick={deactivateAccount} disabled={accountBusy} className="mt-3 min-h-[44px] rounded-lg border border-[#d4af37]/40 px-4 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-50">Deactivate</button>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+            <div className="flex items-center gap-2 font-medium text-[#e9e7df]"><XCircle className="h-4 w-4 text-red-400" /> Close account</div>
+            <p className="mt-1 text-xs text-[#8a8577]">Permanently block login. Your data is retained for compliance and legal purposes.</p>
+            {confirmClose ? (
+              <div className="mt-3 flex items-center gap-2">
+                <button onClick={closeAccount} disabled={accountBusy} className="min-h-[44px] rounded-lg bg-red-500 px-4 text-sm font-semibold text-white transition hover:bg-red-600 disabled:opacity-50">Confirm close</button>
+                <button onClick={() => setConfirmClose(false)} disabled={accountBusy} className="min-h-[44px] rounded-lg border border-white/10 px-4 text-sm text-[#8a8577] transition hover:bg-white/5">Cancel</button>
+              </div>
+            ) : (
+              <button onClick={() => setConfirmClose(true)} disabled={accountBusy} className="mt-3 min-h-[44px] rounded-lg border border-red-400/40 px-4 text-sm font-semibold text-red-400 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-50">Close account</button>
+            )}
+          </div>
         </div>
       </div>
     </AppLayout>
