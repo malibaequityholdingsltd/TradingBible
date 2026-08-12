@@ -7,6 +7,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useI18n } from '@/lib/i18n';
 import OnboardingTutorial from '@/components/OnboardingTutorial';
 import LiveChatWidget from '@/components/LiveChatWidget';
+import TvWidget from '@/components/TvWidget';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { homeRouteForUser } from '@/lib/homeRoute';
@@ -210,6 +211,7 @@ const pluralS = (n) => (n === 1 ? '' : 's');
       </div>
       {tutorial && <OnboardingTutorial onClose={() => setTutorial(false)} onComplete={completeTutorial} />}
       <LiveChatWidget />
+      <TvWidget />
     </div>
   );
 }
