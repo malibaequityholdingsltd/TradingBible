@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const GOLD = '#d4af37';
 const PLAN_COLORS = { trial: '#6a665a', pro: '#3b82f6', elite: GOLD, professional: '#a855f7' };
-const PLAN_PRICES = { trial: 0, pro: 29.99, elite: 49.99, professional: 99.99 };
+const PLAN_PRICES = { trial: 0, pro: 19.99, elite: 49.99, professional: 99.00 };
 const DEFAULT_TRIAL_DAYS = 7;
 
 function computeTrialEndsAt(user, trialDays = DEFAULT_TRIAL_DAYS) {
