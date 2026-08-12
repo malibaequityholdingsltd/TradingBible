@@ -81,6 +81,12 @@ export const removePasskey = (credId) => api('/security/webauthn/remove', { meth
 // ── Login notifications ──────────────────────────────────────────
 export const notifyLogin = () => api('/security/notify-login', { method: 'POST' }).catch(() => null);
 
+// ── Account lifecycle (deactivate / reactivate / close) ─────────
+export const accountStatus = (email) => api('/security/account/status', { method: 'POST', body: JSON.stringify({ email }) });
+export const accountDeactivate = () => api('/security/account/deactivate', { method: 'POST' });
+export const accountReactivate = () => api('/security/account/reactivate', { method: 'POST' });
+export const accountClose = () => api('/security/account/close', { method: 'POST' });
+
 function b64ToArrayBuffer(value) {
 	const bin = atob(String(value).replace(/-/g, '+').replace(/_/g, '/'));
 	const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));

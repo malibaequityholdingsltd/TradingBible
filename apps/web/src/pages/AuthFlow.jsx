@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { readRefFromUrl, trackAffiliateSignup } from '@/lib/affiliate';
-import { verifyTotpLogin, passkeyLogin, notifyLogin } from '@/lib/security';
+import { verifyTotpLogin, passkeyLogin, notifyLogin, accountReactivate } from '@/lib/security';
 
 const LOGO = TRADINGBIBLE_LOGO;
 const OTP_COOLDOWN_SECONDS = 60;
@@ -251,7 +251,7 @@ function AuthFormFrame({ eyebrow, title, subtitle, stats, children, footer }) {
 
 export function LoginPage() {
   const nav = useNavigate();
-  const { requestOTP, loginWithCode, loginWithProvider, user, isAuthed, isAuthReady } = useAuth();
+  const { requestOTP, loginWithCode, loginWithProvider, user, isAuthed, isAuthReady, logout } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -339,6 +339,15 @@ export function LoginPage() {
     setBusy(true);
     try {
       const auth = await loginWithCode(email.trim(), token);
+      const account = auth?.record?.user_settings?.account;
+      if (account?.status === 'closed') {
+        await logout?.();
+        toast({ variant: 'destructive', title: 'This account has been closed', description: 'Your data is retained per our legal obligations. Contact support if you believe this is an error.' });
+        return;
+      }
+      if (account?.status === 'deactivated') {
+        await accountReactivate();
+      }
       const totp = auth?.record?.user_settings?.totp;
       if (totp?.enabled) {
         setPendingAuth(auth);
@@ -380,6 +389,15 @@ export function LoginPage() {
       const result = await passkeyLogin(normalized);
       if (!result?.otp) throw new Error('Session could not be created. Please sign in with your email code.');
       const auth = await loginWithCode(result.email, result.otp);
+      const account = auth?.record?.user_settings?.account;
+      if (account?.status === 'closed') {
+        await logout?.();
+        toast({ variant: 'destructive', title: 'This account has been closed', description: 'Your data is retained per our legal obligations. Contact support if you believe this is an error.' });
+        return;
+      }
+      if (account?.status === 'deactivated') {
+        await accountReactivate();
+      }
       finishLogin(auth);
     } catch (err) {
       toast({ variant: 'destructive', title: 'Face ID / passkey sign-in failed', description: String(err?.message || 'Please try again.') });

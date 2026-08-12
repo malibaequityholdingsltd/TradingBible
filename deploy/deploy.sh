@@ -10,7 +10,7 @@ WEB_DIST="$APP_DIR/dist/apps/web"
 DOMAIN="tradingbible.app"
 API_PORT="3001"
 CERTBOT_EMAIL="${CERTBOT_EMAIL:-}"
-REPO_URL="https://github.com/malibaequityholdingsltd/TradingBible"
+REPO_URL="https://github.com/malibaequityholdingsltd/tradingbible.app"
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "ERROR: run as root (sudo -i)."

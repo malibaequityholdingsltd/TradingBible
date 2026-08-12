@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Lock, Code2, Palette, CreditCard, HelpCircle, CandlestickChart, Grid2x2, Gauge, Star, Bell, Radar, CalendarClock, Landmark, ListOrdered, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2 } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Lock, Code2, Palette, CreditCard, HelpCircle, CandlestickChart, Grid2x2, Gauge, Star, Bell, Radar, CalendarClock, Landmark, ListOrdered, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, Tv } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { avatarUrl } from '@/lib/avatar';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -43,6 +43,7 @@ const NAV_GROUPS = [
       { to: '/app/alerts', labelKey: 'nav.alerts', icon: Bell },
       { to: '/app/economic-calendar', labelKey: 'nav.economic', icon: CalendarClock },
       { to: '/app/journal', labelKey: 'nav.journal', icon: BookOpen },
+      { to: '/tv', labelKey: 'nav.tv', icon: Tv },
       { to: '/app/reports', labelKey: 'nav.reports', icon: FileText },
       { to: '/app/coach', labelKey: 'nav.coach', icon: Bot, requiresSubscriber: true },
       { to: '/app/tools', labelKey: 'nav.tools', icon: Calculator, requiresSubscriber: true },
