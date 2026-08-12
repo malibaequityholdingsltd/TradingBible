@@ -6,7 +6,7 @@ import {
   ToggleLeft, ToggleRight, Key, Server, Database, Globe, Mail, X, UserCheck,
   Crown, TrendingDown, Clock, Zap, Settings2, Lock, Bell, Cpu, HardDrive,
   Wifi, Package, Plus, Copy, RotateCcw, Plug, TestTube, AlertCircle, Check,
-  Upload, ChevronDown, MoreVertical, Power, Code, Layers
+  Upload,   ChevronDown, MoreVertical, Power, Code, Layers, MonitorPlay
 } from 'lucide-react';
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar,
@@ -14,6 +14,7 @@ import {
 } from 'recharts';
 import AdminLayout from '@/components/AdminLayout';
 import pb from '@/lib/pocketbaseClient';
+import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useToast } from '@/hooks/use-toast';
 
 const GOLD = '#d4af37';
@@ -856,29 +857,396 @@ export function AdminBilling() {
 }
 
 /* ─── ADMIN CONTENT ──────────────────────────────────────────────── */
-const CONTENT_SECTIONS = [
-  { name: 'Academy Courses', desc: 'Manage course catalog, lessons, quizzes and certificates.', icon: LibraryBig },
-  { name: 'Trading Signals', desc: 'Publish and review AI-generated trading signals.', icon: BarChart3 },
-  { name: 'Community Forum', desc: 'Moderate threads, replies and reported content.', icon: Users },
-  { name: 'Economic Calendar', desc: 'Curate high-impact economic events feed.', icon: FileText },
+const CONTENT_TABS = [
+  { id: 'signals', label: 'Trading Signals', icon: BarChart3 },
+  { id: 'forum', label: 'Community Forum', icon: Users },
+  { id: 'courses', label: 'Academy Courses', icon: LibraryBig },
+  { id: 'calendar', label: 'Economic Calendar', icon: FileText },
 ];
 
-export function AdminContent() {
+const SIGNAL_STATUSES = ['published', 'draft', 'rejected'];
+
+function useAdminApi(prefix) {
   const { toast } = useToast();
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    const token = pb.authStore.token;
+    try {
+      const res = await fetch(`${API_SERVER_URL}/admin/content/${prefix}`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setItems(res.ok ? data : []);
+    } catch {
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [prefix]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const api = async (path, opts = {}) => {
+    const token = pb.authStore.token;
+    const res = await fetch(`${API_SERVER_URL}/admin/content/${prefix}${path}`, {
+      method: opts.method || 'GET',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'request failed');
+    return res.json();
+  };
+
+  const create = async (payload) => {
+    const row = await api('', { method: 'POST', body: payload });
+    await load();
+    toast({ title: 'Created' });
+    return row;
+  };
+  const update = async (id, payload) => {
+    await api(`/${id}`, { method: 'PATCH', body: payload });
+    await load();
+    toast({ title: 'Updated' });
+  };
+  const remove = async (id) => {
+    if (!window.confirm('Delete this item?')) return;
+    await api(`/${id}`, { method: 'DELETE' });
+    await load();
+    toast({ title: 'Deleted' });
+  };
+
+  return { items, setItems, loading, create, update, remove, api };
+}
+
+function SignalForm({ initial, onSave, onCancel }) {
+  const [f, setF] = useState({ symbol: 'BTCUSD', side: 'long', entry: '', target: '', stop: '', status: 'draft', timeframe: '', signalType: '', strength: '', reason: '', ...(initial || {}) });
+  const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
+  const label = 'mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider';
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); onSave(f); }} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div><label className={label}>Symbol *</label><input required className={input} value={f.symbol} onChange={(e) => setF({ ...f, symbol: e.target.value })} /></div>
+      <div><label className={label}>Side</label>
+        <select className={input} value={f.side} onChange={(e) => setF({ ...f, side: e.target.value })}>
+          <option value="long">Long</option><option value="short">Short</option>
+        </select></div>
+      <div><label className={label}>Status</label>
+        <select className={input} value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>
+          {SIGNAL_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select></div>
+      <div><label className={label}>Entry</label><input type="number" step="any" className={input} value={f.entry ?? ''} onChange={(e) => setF({ ...f, entry: e.target.value })} /></div>
+      <div><label className={label}>Target</label><input type="number" step="any" className={input} value={f.target ?? ''} onChange={(e) => setF({ ...f, target: e.target.value })} /></div>
+      <div><label className={label}>Stop</label><input type="number" step="any" className={input} value={f.stop ?? ''} onChange={(e) => setF({ ...f, stop: e.target.value })} /></div>
+      <div><label className={label}>Timeframe</label><input className={input} value={f.timeframe ?? ''} onChange={(e) => setF({ ...f, timeframe: e.target.value })} placeholder="H4" /></div>
+      <div><label className={label}>Type</label><input className={input} value={f.signalType ?? ''} onChange={(e) => setF({ ...f, signalType: e.target.value })} placeholder="Breakout" /></div>
+      <div><label className={label}>Strength</label><input className={input} value={f.strength ?? ''} onChange={(e) => setF({ ...f, strength: e.target.value })} placeholder="Strong" /></div>
+      <div className="sm:col-span-2 lg:col-span-3"><label className={label}>Reason</label>
+        <textarea rows="3" className={input} value={f.reason ?? ''} onChange={(e) => setF({ ...f, reason: e.target.value })} /></div>
+      <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-3">
+        <button type="submit" className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90"><Save className="h-4 w-4" /> Save</button>
+        {onCancel && <button type="button" onClick={onCancel} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
+      </div>
+    </form>
+  );
+}
+
+function SignalsTab() {
+  const { toast } = useToast();
+  const { items, loading, api } = useAdminApi('signals');
+  const [editing, setEditing] = useState(null);
+  const [creating, setCreating] = useState(false);
+
+  const saveSignal = async (f) => {
+    try {
+      if (editing) {
+        const meta = { timeframe: f.timeframe, signalType: f.signalType, strength: f.strength, reason: f.reason };
+        await api(`/${editing.id}`, { method: 'PATCH', body: { symbol: f.symbol, side: f.side, entry: f.entry === '' ? null : Number(f.entry), target: f.target === '' ? null : Number(f.target), stop: f.stop === '' ? null : Number(f.stop), status: f.status, meta } });
+        toast({ title: 'Signal updated' });
+      } else {
+        await api('', { method: 'POST', body: f });
+        toast({ title: 'Signal published' });
+      }
+      setEditing(null); setCreating(false);
+    } catch (err) { toast({ title: 'Save failed', description: String(err.message || err) }); }
+  };
+
+  const setStatus = async (id, status) => {
+    try { await api(`/${id}`, { method: 'PATCH', body: { status } }); toast({ title: `Signal ${status}` }); }
+    catch (err) { toast({ title: 'Failed', description: String(err.message || err) }); }
+  };
+
+  const removeSignal = async (id) => {
+    if (!window.confirm('Delete this signal?')) return;
+    try { await api(`/${id}`, { method: 'DELETE' }); toast({ title: 'Signal deleted' }); }
+    catch (err) { toast({ title: 'Failed', description: String(err.message || err) }); }
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="flex justify-between">
+        <h3 className="font-semibold text-[#f0ecdd]">Trading Signals</h3>
+        <button onClick={() => { setCreating(true); setEditing(null); }} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] hover:opacity-90"><Plus className="h-4 w-4" /> New signal</button>
+      </div>
+
+      {(creating || editing) && (
+        <div className="glass rounded-2xl p-5">
+          <h4 className="mb-4 text-sm font-semibold text-[#f0ecdd]">{editing ? `Edit ${editing.symbol}` : 'New signal'}</h4>
+          <SignalForm initial={editing} onSave={saveSignal} onCancel={() => { setCreating(false); setEditing(null); }} />
+        </div>
+      )}
+
+      <div className="glass overflow-hidden rounded-2xl">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[680px] text-sm">
+            <thead>
+              <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
+                <th className="px-5 py-3">Symbol</th><th className="px-5 py-3">Side</th><th className="px-5 py-3">Entry</th>
+                <th className="px-5 py-3">Target</th><th className="px-5 py-3">Stop</th><th className="px-5 py-3">Status</th>
+                <th className="px-5 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? <tr><td colSpan="7" className="px-5 py-10 text-center text-[#8a8577]">Loading signals…</td></tr>
+                : items.length === 0 ? <tr><td colSpan="7" className="px-5 py-10 text-center text-[#8a8577]">No signals yet.</td></tr>
+                : items.map((s) => (
+                  <tr key={s.id} className="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
+                    <td className="px-5 py-3 font-medium text-[#f0ecdd]">{s.symbol}</td>
+                    <td className="px-5 py-3"><span className={s.side === 'long' ? 'text-emerald-400' : 'text-red-400'}>{s.side}</span></td>
+                    <td className="px-5 py-3 text-[#c9c4b4]">{s.entry ?? '—'}</td>
+                    <td className="px-5 py-3 text-[#c9c4b4]">{s.target ?? '—'}</td>
+                    <td className="px-5 py-3 text-[#c9c4b4]">{s.stop ?? '—'}</td>
+                    <td className="px-5 py-3">
+                      <select value={s.status} onChange={(e) => setStatus(s.id, e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-1 text-xs text-[#c9c4b4] outline-none">
+                        {SIGNAL_STATUSES.map((st) => <option key={st} value={st}>{st}</option>)}
+                      </select>
+                    </td>
+                    <td className="px-5 py-3">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => { setEditing(s); setCreating(false); }} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
+                        <button onClick={() => removeSignal(s.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/20 text-red-400 hover:border-red-500/60" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ForumTab() {
+  const { toast } = useToast();
+  const [threads, setThreads] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    const token = pb.authStore.token;
+    try {
+      const res = await fetch(`${API_SERVER_URL}/admin/forum`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      setThreads(res.ok ? data.threads || [] : []);
+    } catch { setThreads([]); } finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const api = async (path, method, body) => {
+    const token = pb.authStore.token;
+    const res = await fetch(`${API_SERVER_URL}/admin${path}`, {
+      method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: body ? JSON.stringify(body) : undefined,
+    });
+    if (!res.ok) throw new Error('request failed');
+  };
+
+  const toggle = async (id, key) => {
+    const t = threads.find((x) => x.id === id);
+    try { await api(`/forum/${id}`, 'PATCH', { [key]: !t[key] }); await load(); toast({ title: `${key} toggled` }); }
+    catch { toast({ title: 'Failed' }); }
+  };
+
+  const removeThread = async (id) => {
+    if (!window.confirm('Delete this thread and all replies?')) return;
+    try { await api(`/forum/${id}`, 'DELETE'); await load(); toast({ title: 'Thread deleted' }); }
+    catch { toast({ title: 'Failed' }); }
+  };
+
+  return (
+    <div className="space-y-5">
+      <h3 className="font-semibold text-[#f0ecdd]">Community Forum</h3>
+      <div className="glass overflow-hidden rounded-2xl">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[680px] text-sm">
+            <thead>
+              <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
+                <th className="px-5 py-3">Thread</th><th className="px-5 py-3">Author</th><th className="px-5 py-3">Replies</th>
+                <th className="px-5 py-3">Flags</th><th className="px-5 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? <tr><td colSpan="5" className="px-5 py-10 text-center text-[#8a8577]">Loading threads…</td></tr>
+                : threads.length === 0 ? <tr><td colSpan="5" className="px-5 py-10 text-center text-[#8a8577]">No threads yet.</td></tr>
+                : threads.map((t) => (
+                  <tr key={t.id} className="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
+                    <td className="px-5 py-3">
+                      <div className="font-medium text-[#f0ecdd]">{t.title}</div>
+                      <div className="text-xs text-[#6a665a] line-clamp-1">{t.content}</div>
+                    </td>
+                    <td className="px-5 py-3 text-[#c9c4b4]">{t.authorName || t.owner || '—'}</td>
+                    <td className="px-5 py-3 text-[#c9c4b4]">{t.replyCount ?? 0}</td>
+                    <td className="px-5 py-3">
+                      <div className="flex gap-1.5">
+                        {t.pinned && <span className="rounded-full bg-[#d4af37]/15 px-2 py-0.5 text-[10px] text-[#d4af37]">PINNED</span>}
+                        {t.locked && <span className="rounded-full bg-white/8 px-2 py-0.5 text-[10px] text-[#8a8577]">LOCKED</span>}
+                      </div>
+                    </td>
+                    <td className="px-5 py-3">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => toggle(t.id, 'pinned')} className="rounded-lg border border-[#d4af37]/20 px-2.5 py-1.5 text-xs text-[#d4af37] hover:border-[#d4af37]/60">{t.pinned ? 'Unpin' : 'Pin'}</button>
+                        <button onClick={() => toggle(t.id, 'locked')} className="rounded-lg border border-[#d4af37]/20 px-2.5 py-1.5 text-xs text-[#d4af37] hover:border-[#d4af37]/60">{t.locked ? 'Unlock' : 'Lock'}</button>
+                        <button onClick={() => removeThread(t.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/20 text-red-400 hover:border-red-500/60" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GenericContentTab({ prefix, title, fields, subtitle }) {
+  const { items, loading, create, update, remove } = useAdminApi(prefix);
+  const [form, setForm] = useState(() => Object.fromEntries(fields.map((f) => [f.key, f.default ?? ''])));
+  const [editing, setEditing] = useState(null);
+  const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
+  const label = 'mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider';
+
+  const submit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editing) await update(editing.id, { config: { ...form, title: form.title }, enabled: form.enabled !== false });
+      else await create({ title: form.title, config: form, enabled: form.enabled !== false });
+      setEditing(null);
+      setForm(Object.fromEntries(fields.map((f) => [f.key, f.default ?? ''])));
+    } catch (err) { window.alert('Save failed: ' + (err.message || err)); }
+  };
+
+  const startEdit = (item) => {
+    setEditing(item);
+    const c = item.config || {};
+    setForm({ ...Object.fromEntries(fields.map((f) => [f.key, f.default ?? ''])), ...c, title: item.title || c.title || '' });
+  };
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h3 className="font-semibold text-[#f0ecdd]">{title}</h3>
+        {subtitle && <p className="mt-1 text-xs text-[#8a8577]">{subtitle}</p>}
+      </div>
+
+      <form onSubmit={submit} className="glass rounded-2xl p-5">
+        <h4 className="mb-4 text-sm font-semibold text-[#f0ecdd]">{editing ? `Edit ${editing.title || ''}` : 'New item'}</h4>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {fields.map((f) => (
+            <div key={f.key} className={f.full ? 'sm:col-span-2 lg:col-span-3' : ''}>
+              <label className={label}>{f.label}{f.required ? ' *' : ''}</label>
+              {f.type === 'textarea'
+                ? <textarea rows="3" required={f.required} className={input} value={form[f.key] ?? ''} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.placeholder} />
+                : f.type === 'number'
+                  ? <input type="number" required={f.required} className={input} value={form[f.key] ?? ''} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.placeholder} />
+                  : <input required={f.required} className={input} value={form[f.key] ?? ''} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.placeholder} />}
+            </div>
+          ))}
+          <label className="flex items-center gap-3 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
+            <input type="checkbox" checked={form.enabled !== false} onChange={(e) => setForm({ ...form, enabled: e.target.checked })} className="h-5 w-5 accent-[#d4af37]" />
+            <span className="text-sm text-[#c9c4b4]">Published</span>
+          </label>
+        </div>
+        <div className="mt-4 flex items-center gap-2">
+          <button type="submit" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90"><Save className="h-4 w-4" /> {editing ? 'Update' : 'Publish'}</button>
+          {editing && <button type="button" onClick={() => { setEditing(null); setForm(Object.fromEntries(fields.map((f) => [f.key, f.default ?? '']))); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
+        </div>
+      </form>
+
+      <div className="glass overflow-hidden rounded-2xl">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[680px] text-sm">
+            <thead>
+              <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
+                <th className="px-5 py-3">Title</th><th className="px-5 py-3">Status</th><th className="px-5 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? <tr><td colSpan="3" className="px-5 py-10 text-center text-[#8a8577]">Loading…</td></tr>
+                : items.length === 0 ? <tr><td colSpan="3" className="px-5 py-10 text-center text-[#8a8577]">Nothing published yet.</td></tr>
+                : items.map((item) => (
+                  <tr key={item.id} className="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
+                    <td className="px-5 py-3">
+                      <div className="font-medium text-[#f0ecdd]">{item.title || item.config?.title || item.key}</div>
+                      {item.config?.headline && <div className="text-xs text-[#6a665a]">{item.config.headline}</div>}
+                    </td>
+                    <td className="px-5 py-3"><span className={`rounded-full px-2.5 py-1 text-xs ${item.enabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[#8a8577]'}`}>{item.enabled ? 'Published' : 'Draft'}</span></td>
+                    <td className="px-5 py-3">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => startEdit(item)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
+                        <button onClick={() => remove(item.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/20 text-red-400 hover:border-red-500/60" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function AdminContent() {
+  const [tab, setTab] = useState('signals');
   return (
     <AdminLayout title="Content Management">
-      <div className="grid gap-4 sm:grid-cols-2">
-        {CONTENT_SECTIONS.map(({ name, desc, icon: Icon }) => (
-          <div key={name} className="glass glass-hover rounded-2xl p-5">
-            <div className="flex items-center gap-3">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Icon className="h-5 w-5" /></div>
-              <h3 className="font-semibold text-[#f0ecdd]">{name}</h3>
-            </div>
-            <p className="mt-3 text-sm text-[#8a8577]">{desc}</p>
-            <button onClick={() => toast({ title: name, description: 'Content editor opening…' })} className="mt-4 rounded-lg border border-[#d4af37]/25 px-4 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/60">Manage</button>
-          </div>
+      <div className="mb-6 flex flex-wrap gap-1 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] p-1 w-fit">
+        {CONTENT_TABS.map(({ id, label, icon: Icon }) => (
+          <button key={id} onClick={() => setTab(id)}
+            className={`flex items-center gap-2 rounded-lg px-3 sm:px-4 py-2 text-sm transition ${tab === id ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#c9c4b4]'}`}>
+            <Icon className="h-3.5 w-3.5" /><span className="hidden sm:inline">{label}</span>
+          </button>
         ))}
       </div>
+
+      {tab === 'signals' && <SignalsTab />}
+      {tab === 'forum' && <ForumTab />}
+      {tab === 'courses' && (
+        <GenericContentTab prefix="course" title="Academy Courses" subtitle="Course catalog shown in the Academy. Publish lessons, quizzes and certificates per course."
+          fields={[
+            { key: 'title', label: 'Course title', required: true, default: '', full: false },
+            { key: 'category', label: 'Category', default: '', full: false },
+            { key: 'level', label: 'Level', default: 'Beginner', full: false },
+            { key: 'lessons', label: 'Lessons', type: 'number', default: '0', full: false },
+            { key: 'durationMins', label: 'Duration (mins)', type: 'number', default: '0', full: false },
+            { key: 'price', label: 'Price (USD)', type: 'number', default: '0', full: false },
+            { key: 'imageUrl', label: 'Cover image URL', default: '', full: false },
+            { key: 'headline', label: 'Short description', default: '', full: true },
+            { key: 'syllabus', label: 'Syllabus / description', type: 'textarea', default: '', full: true },
+          ]} />
+      )}
+      {tab === 'calendar' && (
+        <GenericContentTab prefix="cal_event" title="Economic Calendar" subtitle="Curated events merged into the live economic calendar feed (shown first, above provider data)."
+          fields={[
+            { key: 'title', label: 'Event name', required: true, default: '', full: false },
+            { key: 'time', label: 'Time (e.g. 2026-08-15 14:30 UTC)', required: true, default: '', full: false },
+            { key: 'impact', label: 'Impact (low/medium/high)', default: 'medium', full: false },
+            { key: 'currency', label: 'Currency', default: 'USD', full: false },
+            { key: 'country', label: 'Country', default: 'US', full: false },
+            { key: 'headline', label: 'Headline', default: '', full: true },
+            { key: 'actual', label: 'Actual value', default: '', full: false },
+            { key: 'snippet', label: 'Notes', type: 'textarea', default: '', full: true },
+          ]} />
+      )}
     </AdminLayout>
   );
 }
@@ -1480,6 +1848,214 @@ export function AdminPlugins() {
           })}
         </div>
       )}
+    </AdminLayout>
+  );
+}
+
+/* ─── ADMIN TV ──────────────────────────────────────────────────── */
+export function AdminTvAds() {
+  const { toast } = useToast();
+  const [ads, setAds] = useState([]);
+  const [settings, setSettings] = useState({ rotationSeconds: 12, autoOpenIntervalMinutes: 0, headerText: 'TradingBible TV', footerText: 'Advertise with TradingBible', advertiserEmail: 'ads@tradingbible.app' });
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [form, setForm] = useState({ title: '', headline: '', imageUrl: '', logoUrl: '', linkUrl: '', cta: 'Learn more', accent: '#d4af37', durationSeconds: 12, snippet: '', enabled: true });
+
+  const load = useCallback(async () => {
+    const token = pb.authStore.token;
+    try {
+      const [adsRes, setRes] = await Promise.all([
+        fetch(`${API_SERVER_URL}/ads/admin/list`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_SERVER_URL}/ads`),
+      ]);
+      const [adsData, feedData] = await Promise.all([adsRes.json(), setRes.json()]);
+      setAds(adsRes.ok ? adsData.ads || [] : []);
+      if (feedData?.settings) setSettings((s) => ({ ...s, ...feedData.settings }));
+    } catch {
+      setAds([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const api = async (path, opts = {}) => {
+    const token = pb.authStore.token;
+    const res = await fetch(`${API_SERVER_URL}/ads${path}`, {
+      method: opts.method || 'GET',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'request failed');
+    return res.json();
+  };
+
+  const saveAd = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      if (editing) {
+        await api(`/admin/${editing.id}`, { method: 'PATCH', body: { config: form, enabled: form.enabled } });
+        toast({ title: 'Broadcast updated' });
+      } else {
+        await api('/admin', { method: 'POST', body: { title: form.title, config: form, enabled: form.enabled } });
+        toast({ title: 'Broadcast created' });
+      }
+      setEditing(null);
+      setForm({ title: '', headline: '', imageUrl: '', logoUrl: '', linkUrl: '', cta: 'Learn more', accent: '#d4af37', durationSeconds: 12, snippet: '', enabled: true });
+      await load();
+    } catch (err) {
+      toast({ title: 'Save failed', description: String(err.message || err) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const saveSettings = async () => {
+    setBusy(true);
+    try {
+      await api('/admin/settings', { method: 'PUT', body: settings });
+      toast({ title: 'TV settings saved' });
+    } catch (err) {
+      toast({ title: 'Save failed', description: String(err.message || err) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeAd = async (id) => {
+    if (!window.confirm('Remove this broadcast?')) return;
+    try {
+      await api(`/admin/${id}`, { method: 'DELETE' });
+      await load();
+      toast({ title: 'Broadcast removed' });
+    } catch (err) {
+      toast({ title: 'Delete failed', description: String(err.message || err) });
+    }
+  };
+
+  const startEdit = (ad) => {
+    setEditing(ad);
+    setForm({ ...ad.config, title: ad.title || ad.config?.title || '', enabled: ad.enabled !== false });
+  };
+
+  const setF = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+
+  const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
+  const label = 'mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider';
+
+  return (
+    <AdminLayout title="TradingBible TV">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-[#f0ecdd]">TV Broadcasts</h2>
+          <p className="mt-1 text-xs text-[#8a8577]">Fullscreen ad rotation shown at <span className="text-[#d4af37]">tradingbible.app/tv</span>.</p>
+        </div>
+        <a href="/tv" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/60 transition-colors">
+          <MonitorPlay className="h-4 w-4" /> View TV
+        </a>
+      </div>
+
+      {/* TV settings */}
+      <div className="glass mb-6 rounded-2xl p-5">
+        <h3 className="mb-4 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Settings2 className="h-4 w-4 text-[#d4af37]" /> TV Settings</h3>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div><label className={label}>Rotation (seconds)</label>
+            <input type="number" min="4" max="60" className={input} value={settings.rotationSeconds}
+              onChange={(e) => setSettings({ ...settings, rotationSeconds: Number(e.target.value) })} /></div>
+          <div><label className={label}>Header text</label>
+            <input className={input} value={settings.headerText} onChange={(e) => setSettings({ ...settings, headerText: e.target.value })} /></div>
+          <div><label className={label}>Footer text</label>
+            <input className={input} value={settings.footerText} onChange={(e) => setSettings({ ...settings, footerText: e.target.value })} /></div>
+          <div><label className={label}>Advertiser email</label>
+            <input className={input} value={settings.advertiserEmail} onChange={(e) => setSettings({ ...settings, advertiserEmail: e.target.value })} /></div>
+        </div>
+        <button onClick={saveSettings} disabled={busy} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90 disabled:opacity-50">
+          <Save className="h-4 w-4" /> Save settings
+        </button>
+      </div>
+
+      {/* Create / edit form */}
+      <div className="glass mb-6 rounded-2xl p-5">
+        <h3 className="mb-4 font-semibold text-[#f0ecdd]">{editing ? `Edit broadcast — ${editing.title || editing.key}` : 'New broadcast'}</h3>
+        <form onSubmit={saveAd} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div><label className={label}>Title *</label><input required className={input} value={form.title} onChange={setF('title')} placeholder="e.g. Acme Trading Summit" /></div>
+          <div><label className={label}>Headline</label><input className={input} value={form.headline} onChange={setF('headline')} placeholder="Short punchy line" /></div>
+          <div><label className={label}>CTA button text</label><input className={input} value={form.cta} onChange={setF('cta')} /></div>
+          <div><label className={label}>Background image URL</label><input className={input} value={form.imageUrl} onChange={setF('imageUrl')} placeholder="https://…" /></div>
+          <div><label className={label}>Logo URL</label><input className={input} value={form.logoUrl} onChange={setF('logoUrl')} placeholder="https://…" /></div>
+          <div><label className={label}>Link URL (opens on click)</label><input className={input} value={form.linkUrl} onChange={setF('linkUrl')} placeholder="https://…" /></div>
+          <div><label className={label}>Accent color</label><input type="color" className="h-12 w-full cursor-pointer rounded-xl border border-[#d4af37]/15 bg-[#0f0f14]" value={form.accent} onChange={setF('accent')} /></div>
+          <div><label className={label}>Duration (seconds)</label><input type="number" min="4" max="60" className={input} value={form.durationSeconds} onChange={setF('durationSeconds')} /></div>
+          <div className="sm:col-span-2 lg:col-span-3"><label className={label}>Snippet (body text)</label>
+            <textarea rows="4" className={input} value={form.snippet} onChange={setF('snippet')} placeholder="Longer description shown under the headline…" /></div>
+          <label className="flex items-center gap-3 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
+            <input type="checkbox" checked={form.enabled} onChange={setF('enabled')} className="h-5 w-5 accent-[#d4af37]" />
+            <span className="text-sm text-[#c9c4b4]">Live now</span>
+          </label>
+          <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-3">
+            <button type="submit" disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90 disabled:opacity-50">
+              <Save className="h-4 w-4" /> {editing ? 'Update broadcast' : 'Publish broadcast'}
+            </button>
+            {editing && <button type="button" onClick={() => { setEditing(null); setForm({ title: '', headline: '', imageUrl: '', logoUrl: '', linkUrl: '', cta: 'Learn more', accent: '#d4af37', durationSeconds: 12, snippet: '', enabled: true }); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
+          </div>
+        </form>
+      </div>
+
+      {/* Ad list */}
+      <div className="glass overflow-hidden rounded-2xl">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] text-sm">
+            <thead>
+              <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
+                <th className="px-5 py-3">Broadcast</th>
+                <th className="px-5 py-3">Status</th>
+                <th className="px-5 py-3">Views</th>
+                <th className="px-5 py-3">Clicks</th>
+                <th className="px-5 py-3">CTR</th>
+                <th className="px-5 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan="6" className="px-5 py-10 text-center text-[#8a8577]">Loading broadcasts…</td></tr>
+              ) : ads.length === 0 ? (
+                <tr><td colSpan="6" className="px-5 py-10 text-center text-[#8a8577]">No broadcasts yet — create one above.</td></tr>
+              ) : ads.map((ad) => {
+                const c = ad.config || {};
+                const clicks = Number(c.clicks) || 0;
+                const views = Number(c.views) || 0;
+                const ctr = views > 0 ? ((clicks / views) * 100).toFixed(2) + '%' : '—';
+                return (
+                  <tr key={ad.id} className="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        {c.logoUrl && <img src={c.logoUrl} alt="" className="h-9 w-9 rounded-lg object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />}
+                        <div>
+                          <div className="font-medium text-[#f0ecdd]">{ad.title || ad.key}</div>
+                          <div className="text-xs text-[#6a665a]">{c.headline || ad.key}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-xs ${ad.enabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[#8a8577]'}`}>{ad.enabled ? 'Live' : 'Paused'}</span></td>
+                    <td className="px-5 py-4 text-[#c9c4b4]">{views.toLocaleString()}</td>
+                    <td className="px-5 py-4 text-[#c9c4b4]">{clicks.toLocaleString()}</td>
+                    <td className="px-5 py-4 text-[#c9c4b4]">{ctr}</td>
+                    <td className="px-5 py-4">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => startEdit(ad)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
+                        <button onClick={() => removeAd(ad.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/20 text-red-400 hover:border-red-500/60" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </AdminLayout>
   );
 }

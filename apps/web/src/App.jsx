@@ -14,6 +14,7 @@ import PwaStatus from './components/PwaStatus';
 import ErrorBoundary from './components/ErrorBoundary';
 import LandingPage from './pages/LandingPage';
 import { LoginPage, SignupPage, ResetPage, OnboardingPage } from './pages/AuthFlow';
+import TvPage from './pages/TvPage';
 
 // Lazy-load heavy authenticated + secondary pages so the initial bundle stays
 // small and each surface is fetched on demand.
@@ -54,6 +55,7 @@ const AdminSettings = lazy(() => import('./pages/AdminPortal').then((m) => ({ de
 const AdminIntegrations = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminIntegrations })));
 const AdminApiKeys = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminApiKeys })));
 const AdminPlugins = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminPlugins })));
+const AdminTvAds = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminTvAds })));
 const PricingPage = lazy(() => import('./pages/ExtraPages').then((m) => ({ default: m.PricingPage })));
 const UserApiKeysPage = lazy(() => import('./pages/UserApiKeysPage'));
 const CompanyDashboardPage = lazy(() => import('./pages/CompanyDashboardPage'));
@@ -169,6 +171,7 @@ function RoutesWithBoundary() {
                     <Route path="/policy" element={<PolicyPage />} />
                     <Route path="/refund" element={<RefundPage />} />
                     <Route path="/faq" element={<FaqPage />} />
+                    <Route path="/tv" element={<TvPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />
                     <Route path="/reset" element={<ResetPage />} />
@@ -215,6 +218,7 @@ function RoutesWithBoundary() {
                     <Route path="/admin/reports" element={<AdminProtected><AdminReports /></AdminProtected>} />
                     <Route path="/admin/settings" element={<AdminProtected><AdminSettings /></AdminProtected>} />
                     <Route path="/admin/integrations" element={<AdminProtected><AdminIntegrations /></AdminProtected>} />
+                    <Route path="/admin/tv" element={<AdminProtected><AdminTvAds /></AdminProtected>} />
                     <Route path="/admin/api-keys" element={<AdminProtected><AdminApiKeys /></AdminProtected>} />
                     <Route path="/admin/plugins" element={<AdminProtected><AdminPlugins /></AdminProtected>} />
                 </Routes>

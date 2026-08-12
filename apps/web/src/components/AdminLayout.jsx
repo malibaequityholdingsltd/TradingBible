@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Settings, FileText, CreditCard, LibraryBig, BarChart3,
-  LogOut, Menu, Shield, X, ChevronRight, Plug, Key, Package, User, ChevronDown
+  LogOut, Menu, Shield, X, ChevronRight, Plug, Key, Package, User, ChevronDown, MonitorPlay
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
@@ -23,6 +23,7 @@ const NAV = [
   { to: '/admin/billing', label: 'Billing & Revenue', icon: CreditCard },
   { to: '/admin/content', label: 'Content', icon: LibraryBig },
   { to: '/admin/reports', label: 'Reports & Logs', icon: FileText },
+  { to: '/admin/tv', label: 'TradingBible TV', icon: MonitorPlay },
   { divider: true },
   { to: '/admin/integrations', label: 'Integrations', icon: Plug },
   { to: '/admin/api-keys', label: 'API Keys', icon: Key },
