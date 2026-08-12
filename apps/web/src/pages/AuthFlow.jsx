@@ -117,19 +117,50 @@ function describeAuthError(err, fallback = 'Please try again.') {
   return message || fallback;
 }
 
+const AUTH_POINTS = [
+  'No card required to start',
+  '8 broker integrations',
+  'AI trade reviews on every trade',
+  'Bank-grade security',
+];
+
 function Shell({ children }) {
   return (
     <div className="auth-shell relative min-h-screen overflow-hidden px-3 pb-8 pt-[calc(4.75rem+var(--safe-top))] sm:px-6 sm:pb-12 sm:pt-[calc(6.5rem+var(--safe-top))]">
       <div className="absolute inset-0 grain opacity-30" />
-      <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-3">
-       <Link to="/" className="flex items-center gap-2.5">
-          <img src={LOGO} alt="TradingBible logo" className="h-10 w-10 rounded-lg object-contain gold-glow sm:h-11 sm:w-11" />
-          <span className="text-base font-semibold sm:text-lg">Trading<span className="gold-text">Bible</span></span>
-        </Link>
-       <div className="hidden sm:block"><GuideButton /></div>
-      </div>
-      <div className="relative z-10 mt-6">
-       {children}
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-[#d4af37]/10 blur-[140px]" />
+      <div className="relative mx-auto w-full max-w-6xl">
+        <div className="flex items-center justify-between gap-3">
+          <Link to="/" className="flex items-center gap-2.5">
+            <img src={LOGO} alt="TradingBible logo" className="h-10 w-10 rounded-lg object-contain gold-glow sm:h-11 sm:w-11" />
+            <span className="text-base font-semibold sm:text-lg">Trading<span className="gold-text">Bible</span></span>
+          </Link>
+          <div className="hidden sm:block"><GuideButton /></div>
+        </div>
+        <div className="mt-8 grid items-center gap-10 lg:mt-12 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
+          <div className="hidden lg:block">
+            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-4 py-1.5 text-xs font-medium tracking-wide text-[#d4af37]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#d4af37]" />
+              AI-POWERED TRADING TERMINAL
+            </p>
+            <h1 className="text-5xl font-extrabold leading-[0.98] tracking-tight">
+              Trade like the <span className="gold-text">1%.</span><br />
+              Journal like a <span className="gold-text">fund.</span>
+            </h1>
+            <p className="mt-6 max-w-md text-base leading-relaxed text-[#b8b3a3]">
+              An AI-powered trading journal built on a Bloomberg-grade terminal. Track every edge, kill every mistake, and let the coach compound your discipline.
+            </p>
+            <ul className="mt-8 space-y-3">
+              {AUTH_POINTS.map((point) => (
+                <li key={point} className="flex items-center gap-2.5 text-sm text-[#c9c4b4]">
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#d4af37]/12 text-[#d4af37]"><Check className="h-3 w-3" /></span>
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="relative z-10">{children}</div>
+        </div>
       </div>
     </div>
   );
@@ -219,6 +250,7 @@ function AuthFormFrame({ eyebrow, title, subtitle, stats, children, footer }) {
   return (
     <div className="mx-auto w-full max-w-xl sm:max-w-2xl">
       <section className="auth-card glass relative overflow-hidden rounded-[1.5rem] p-4 shadow-[0_30px_80px_rgba(0,0,0,0.24)] ring-1 ring-white/8 sm:rounded-[2rem] sm:p-6 lg:p-8">
+        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
         <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#d4af37]/10 blur-3xl" />
         <div className="absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-white/5 blur-3xl" />
         <div className="relative space-y-4 sm:space-y-6">
@@ -237,7 +269,7 @@ function AuthFormFrame({ eyebrow, title, subtitle, stats, children, footer }) {
             </div>
           </div>
           {stats?.length ? (
-            <div className="hidden gap-3 sm:grid sm:grid-cols-3">
+            <div className="grid gap-2 sm:grid-cols-3">
               {stats.map((stat) => <AuthChip key={stat.value} value={stat.value} label={stat.label} />)}
             </div>
           ) : null}

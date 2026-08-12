@@ -6,11 +6,17 @@ import { PLANS } from '@/lib/mockData';
 import Footer from '@/components/Footer';
 import { TESTIMONIALS, TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import { homeRouteForUser } from '@/lib/homeRoute';
 
-const HERO = 'https://images.hostinger.com/e146456e-bc90-43b7-918f-eb856c540783.png';
 const LOGO = TRADINGBIBLE_LOGO;
-const BG = 'https://images.hostinger.com/9cbd061f-1905-472a-a6c1-df15fc5f0d8d.png';
+
+const HERO_STATS = [
+  { value: '8', label: 'Broker integrations' },
+  { value: '14', label: 'Technical indicators' },
+  { value: '99.9%', label: 'Platform uptime' },
+  { value: '0', label: 'Card required to start' },
+];
 
 function Nav({ homeTo, isAuthed }) {
   return (
@@ -33,7 +39,7 @@ function Nav({ homeTo, isAuthed }) {
             </Link>
           ) : (
             <>
-              <Link to="/login" className="hidden text-sm text-[#c9c4b4] hover:text-white sm:block">Log in</Link>
+              <Link to="/login" className="hidden text-sm text-[#c9c4b4] hover:text-[#e9e7df] sm:block">Log in</Link>
               <Link to="/signup" className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">
                 <span>Start Free Trial</span>
               </Link>
@@ -57,32 +63,49 @@ const FEATURES = [
 export default function LandingPage() {
   const { user, isAuthed } = useAuth();
   const homeTo = homeRouteForUser(isAuthed ? user : null);
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-transparent text-[#e9e7df]">
       <Nav homeTo={homeTo} isAuthed={isAuthed} />
       {/* Hero */}
-      <section className="relative flex flex-col justify-center overflow-hidden pb-14 pt-[calc(10rem+var(--safe-top))] sm:pt-[calc(12rem+var(--safe-top))] lg:pt-[calc(14rem+var(--safe-top))] lg:min-h-[92dvh]">
-        <div className="absolute inset-0 opacity-30" style={{ backgroundImage: `url(${BG})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+      <section className="relative flex flex-col justify-center overflow-hidden pb-16 pt-[calc(11rem+var(--safe-top))] sm:pt-[calc(13rem+var(--safe-top))] lg:min-h-[92dvh]">
         <div className="absolute inset-0 grain opacity-30" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#07070a]/70 via-[#07070a]/45 to-[#07070a]" />
-        <div className="pointer-events-none absolute -top-24 right-[-10%] h-[42rem] w-[42rem] rounded-full bg-[#d4af37]/10 blur-[120px]" />
-        <div className="relative mx-auto grid w-full max-w-[96rem] items-center gap-10 px-6 lg:grid-cols-[1.05fr_1fr] lg:gap-8">
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-xl">
-            <h1 className="pt-2 text-5xl font-extrabold leading-[0.98] tracking-tight sm:text-6xl lg:text-[5rem]">Trade like the <span className="gold-text">1%.</span><br />Journal like a <span className="gold-text">fund.</span></h1>
-            <p className="mt-6 max-w-lg text-base leading-relaxed text-[#b8b3a3] sm:text-lg">An AI-powered trading journal built on a Bloomberg-grade terminal. Track every edge, kill every mistake, and let the coach compound your discipline.</p>
-            <div className="mt-8 flex flex-col gap-3.5 sm:flex-row sm:items-center sm:gap-4">
-              <Link to="/signup" className="btn-neon inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f7ecb6] via-[#e2bd4f] to-[#c99a25] px-7 py-4 text-base font-bold text-[#0a0a0f]">Start 7-day Premium Trial <ArrowRight className="h-4 w-4" /></Link>
-              <Link to="/pricing" className="btn-glass inline-flex items-center justify-center rounded-xl border border-[#d4af37]/35 bg-white/[0.02] px-7 py-4 text-base font-semibold text-[#e9e7df]">View Pricing</Link>
-            </div>
-            <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[#9a9587]">
-              <span className="flex items-center gap-1.5"><Check className="h-4 w-4 text-[#d4af37]" /> No card required</span>
-              <span className="flex items-center gap-1.5"><Check className="h-4 w-4 text-[#d4af37]" /> 8 broker integrations</span>
+        <div className={`absolute inset-0 bg-gradient-to-b ${isLight ? 'from-white/55 via-white/30 to-white/60' : 'from-[#07070a]/45 via-[#07070a]/25 to-[#07070a]/55'}`} />
+        <div className="pointer-events-none absolute -top-24 left-1/2 h-[46rem] w-[46rem] -translate-x-1/2 rounded-full bg-[#d4af37]/10 blur-[140px]" />
+        <div className="pointer-events-none absolute bottom-[-14rem] right-[-12%] h-[36rem] w-[36rem] rounded-full bg-[#d4af37]/[0.06] blur-[120px]" />
+
+        <div className="relative mx-auto flex w-full max-w-[72rem] flex-col items-center px-6 text-center">
+          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+            <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium tracking-wide text-[#d4af37] ${isLight ? 'border-[#d4af37]/45 bg-[#d4af37]/[0.12]' : 'border-[#d4af37]/30 bg-[#d4af37]/[0.07]'}`}>
+              <span className="h-1.5 w-1.5 rounded-full bg-[#d4af37]" />
+              AI-POWERED TRADING TERMINAL
             </div>
           </motion.div>
-          <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.15 }} className="animate-floaty lg:scale-[1.08] lg:origin-right">
-            <div className="overflow-hidden rounded-2xl glass p-2 gold-glow">
-              <img src={HERO} alt="TradingBible luxury trading terminal dashboard" className="w-full rounded-xl" />
+
+          <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.08 }} className="mt-7 text-5xl font-extrabold leading-[0.98] tracking-tight sm:text-6xl lg:text-[5.5rem]">
+            Trade like the <span className="gold-text">1%.</span><br />
+            Journal like a <span className="gold-text">fund.</span>
+          </motion.h1>
+
+          <motion.p initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.16 }} className="mt-7 max-w-2xl text-base leading-relaxed text-[#b8b3a3] sm:text-lg">
+            An AI-powered trading journal built on a Bloomberg-grade terminal. Track every edge, kill every mistake, and let the coach compound your discipline.
+          </motion.p>
+
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.24 }} className="mt-10 flex flex-col gap-3.5 sm:flex-row sm:items-center sm:gap-4">
+            <Link to="/signup" className="btn-neon inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f7ecb6] via-[#e2bd4f] to-[#c99a25] px-8 py-4 text-base font-bold text-[#0a0a0f] transition hover:opacity-90">Start 7-day Premium Trial <ArrowRight className="h-4 w-4" /></Link>
+            <Link to="/pricing" className="btn-glass inline-flex items-center justify-center rounded-xl border border-[#d4af37]/35 bg-white/[0.02] px-8 py-4 text-base font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60 hover:text-[#e9e7df]">View Pricing</Link>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.34 }} className="mt-14 w-full max-w-3xl border-t border-[#d4af37]/12 pt-8">
+            <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+              {HERO_STATS.map((s) => (
+                <div key={s.label}>
+                  <div className="font-mono text-3xl font-bold gold-text">{s.value}</div>
+                  <div className="mt-1 text-xs uppercase tracking-[0.18em] text-[#8a8577]">{s.label}</div>
+                </div>
+              ))}
             </div>
           </motion.div>
         </div>
@@ -106,7 +129,7 @@ export default function LandingPage() {
       </section>
 
       {/* AI band */}
-      <section id="ai" className="border-y border-[#d4af37]/10 bg-gradient-to-b from-[#0a0a0f] to-[#07070a]">
+      <section id="ai" className={`border-y border-[#d4af37]/10 bg-gradient-to-b ${isLight ? 'from-[#f1f5f9] to-[#e2e8f0]' : 'from-[#0a0a0f]/85 to-[#07070a]/80'}`}>
         <div className="mx-auto grid max-w-[96rem] items-center gap-12 px-6 py-24 lg:grid-cols-2">
           <div>
             <p className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-[#d4af37]">Powered by OpenAI</p>
