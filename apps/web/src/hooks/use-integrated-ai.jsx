@@ -54,6 +54,36 @@ import { pocketbaseClient } from '@/lib/pocketbaseClient';
  * @property {string} [agent_name]
  */
 
+function stripMarkdown(text) {
+	if (!text) return text;
+	return String(text)
+		// code fences → inner text
+		.replace(/```[\s\S]*?```/g, (m) => m.replace(/```[^\n]*|```/g, '').trim())
+		// inline code
+		.replace(/`([^`]*)`/g, '$1')
+		// bold/italic
+		.replace(/\*\*\*([^*]+)\*\*\*/g, '$1')
+		.replace(/\*\*([^*]+)\*\*/g, '$1')
+		.replace(/\*([^*\n]+)\*/g, '$1')
+		// strikethrough
+		.replace(/~~([^~]+)~~/g, '$1')
+		// headings
+		.replace(/^#{1,6}\s*/gm, '')
+		// horizontal rules
+		.replace(/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/gm, '')
+		// images/links → alt/title text
+		.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+		.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+		// bulleted/numbered lists → readable plain text
+		.replace(/^\s*[-*+]\s+/gm, '• ')
+		.replace(/^\s*\d+\.\s+/gm, '')
+		// blockquotes
+		.replace(/^>\s?/gm, '')
+		// collapse excessive blank lines
+		.replace(/\n{3,}/g, '\n\n')
+		.trim();
+}
+
 const MessageRole = Object.freeze({
 	User: 'user',
 	Assistant: 'assistant',
@@ -201,7 +231,7 @@ function useIntegratedAi() {
 
 						return {
 							role: msg.role,
-							content: msg.content,
+							content: stripMarkdown(msg.content),
 							...(images.length > 0 && { images }),
 						};
 					});
@@ -241,7 +271,7 @@ function useIntegratedAi() {
 				const last = updated[updated.length - 1];
 				updated[updated.length - 1] = {
 					...last,
-					content: last.content + parsed.data.content,
+					content: (last.content || '') + stripMarkdown(parsed.data.content),
 				};
 
 				return updated;
