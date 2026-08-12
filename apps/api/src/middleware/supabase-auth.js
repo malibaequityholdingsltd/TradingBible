@@ -45,6 +45,23 @@ export async function supabaseAuth(req, res, next) {
 			return next(forbiddenError('Please verify your email to use the chat. Check your inbox for the verification link.'));
 		}
 
+		// Accounts that were closed are blocked from every API surface. Their
+		// data is never deleted — retention is by law. Deactivated (soft-paused)
+		// accounts may log back in and are auto-reactivated on next login.
+		try {
+			const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+			const settingsRes = await fetch(`${process.env.SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(user?.id)}`, {
+				headers: { apikey: supabaseServiceKey, Authorization: `Bearer ${supabaseServiceKey}` },
+			});
+			const rows = settingsRes.ok ? await settingsRes.json() : [];
+			const account = rows?.[0]?.user_settings?.account;
+			if (account?.status === 'closed') {
+				return next(forbiddenError('This account has been closed. Your data is retained per our legal obligations. Contact support if you believe this is an error.'));
+			}
+		} catch {
+			// If the settings check itself fails, fall through with the auth check above.
+		}
+
 		return next();
 	} catch {
 		return next(unauthorizedError('Your session has expired. Please sign in again.'));

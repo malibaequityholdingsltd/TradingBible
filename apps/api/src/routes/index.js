@@ -12,6 +12,8 @@ import { intraday, daily, weekly, monthly } from './market-series.js';
 import paddleRouter from './paddle.js';
 import affiliateRouter from './affiliate.js';
 import securityRouter from './security.js';
+import adsRouter from './ads.js';
+import adminRouter from './admin.js';
 
 const router = Router();
 
@@ -32,6 +34,8 @@ export default () => {
     router.use('/paddle', paddleRouter);
     router.use('/affiliate', affiliateRouter);
     router.use('/security', securityRouter);
+    router.use('/ads', adsRouter);
+    router.use('/admin', adminRouter);
 
     return router;
 };
