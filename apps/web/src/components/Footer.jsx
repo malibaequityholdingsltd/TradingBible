@@ -118,9 +118,10 @@ export default function Footer() {
               The AI-powered trading journal built on a Bloomberg-grade terminal. TradingBible unifies broker sync, institutional-style analytics, and a personal AI coach so serious traders can track every edge and eliminate every avoidable mistake.
             </p>
             <div className="mt-4 flex items-start gap-3">
-              <img src={MALIBA_LOGO} alt="MALIBA EQUITY HOLDINGS LTD" className="h-12 w-12 shrink-0 rounded-lg object-contain" />
+              <img src={MALIBA_LOGO} alt="TradingBible LLC" className="h-12 w-12 shrink-0 rounded-lg object-contain" />
               <p className="text-xs leading-relaxed text-[#6a665a]">
-                TradingBible is owned and operated by <span className="text-[#c9c4b4]">MALIBA EQUITY HOLDINGS LTD</span>.
+                TradingBible is owned and operated by <span className="text-[#c9c4b4]">TradingBible LLC</span>.
+                <br />Registered in Delaware, USA. c/o Delaware Registered Agent, Inc.
                 <br />Our mission: give every trader the institutional-grade tools, data, and discipline once reserved for professional funds.
               </p>
             </div>
@@ -172,7 +173,7 @@ export default function Footer() {
 
         {/* Copyright row */}
         <div className="flex flex-col items-center justify-between gap-4 border-t border-[#d4af37]/10 pt-8 text-sm text-[#8a8577] sm:flex-row">
-          <div className="flex items-center gap-2"><img src={MALIBA_LOGO} alt="" className="h-5 w-5 rounded object-contain" /> MALIBA EQUITY HOLDINGS LTD</div>
+          <div className="flex items-center gap-2"><img src={MALIBA_LOGO} alt="" className="h-5 w-5 rounded object-contain" /> TradingBible LLC</div>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             <Link to="/terms" className="hover:text-[#e9e7df]">Terms</Link>
             <Link to="/policy" className="hover:text-[#e9e7df]">Privacy</Link>
@@ -180,7 +181,7 @@ export default function Footer() {
             <Link to="/faq" className="hover:text-[#e9e7df]">FAQ</Link>
             <Link to="/pricing" className="hover:text-[#e9e7df]">Pricing</Link>
           </div>
-          <div>© {new Date().getFullYear()} MALIBA EQUITY HOLDINGS LTD · TradingBible. All rights reserved.</div>
+          <div>© {new Date().getFullYear()} TradingBible LLC · All rights reserved.</div>
         </div>
       </div>
     </footer>
