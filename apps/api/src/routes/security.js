@@ -372,4 +372,71 @@ router.post('/notify-login', async (req, res) => {
 	}
 });
 
+// ── Account lifecycle (deactivate / close) ──────────────────────
+// IMPORTANT: deactivating or closing an account NEVER deletes user data.
+
+// Soft pause: blocks API access until the user logs in again (auto-reactivates).
+router.post('/account/deactivate', async (req, res) => {
+	const user = await getAuthedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	try {
+		const settings = await getSettings(user.id);
+		const now = new Date().toISOString();
+		await saveSettings(user.id, { ...settings, account: { ...(settings?.account || {}), status: 'deactivated', deactivatedAt: now } });
+		res.json({ ok: true });
+	} catch (err) {
+		logger.error('account deactivate failed', String(err));
+		res.status(500).json({ error: 'deactivate failed' });
+	}
+});
+
+// Reverse a deactivation. Also called automatically on next successful login.
+router.post('/account/reactivate', async (req, res) => {
+	const user = await getAuthedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	try {
+		const settings = await getSettings(user.id);
+		if (settings?.account?.status === 'closed') {
+			return res.status(422).json({ error: 'closed accounts cannot be reactivated by the user' });
+		}
+		const next = { ...settings };
+		delete next.account;
+		await saveSettings(user.id, next);
+		res.json({ ok: true });
+	} catch (err) {
+		logger.error('account reactivate failed', String(err));
+		res.status(500).json({ error: 'reactivate failed' });
+	}
+});
+
+// Permanent close: login blocked, all data retained for compliance.
+router.post('/account/close', async (req, res) => {
+	const user = await getAuthedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	try {
+		const settings = await getSettings(user.id);
+		const now = new Date().toISOString();
+		await saveSettings(user.id, { ...settings, account: { ...(settings?.account || {}), status: 'closed', closedAt: now } });
+		res.json({ ok: true });
+	} catch (err) {
+		logger.error('account close failed', String(err));
+		res.status(500).json({ error: 'close failed' });
+	}
+});
+
+// Public read for the login screen (pre-auth is fine: only status + timestamps).
+router.post('/account/status', async (req, res) => {
+	const email = String(req.body?.email || '').trim().toLowerCase();
+	if (!email) return res.status(422).json({ error: 'email required' });
+	try {
+		const row = await supabase.getUserByEmail(email);
+		const account = row?.user_settings?.account;
+		if (!account?.status || account.status === 'active') return res.json({ status: 'active' });
+		return res.json({ status: account.status, deactivatedAt: account.deactivatedAt || null, closedAt: account.closedAt || null });
+	} catch (err) {
+		logger.error('account status failed', String(err));
+		res.status(500).json({ error: 'status failed' });
+	}
+});
+
 export default router;
