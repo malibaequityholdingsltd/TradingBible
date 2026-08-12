@@ -40,6 +40,7 @@ function brandShell(title, body) {
           <h1 style="color:#c99a25;font-size:20px;margin:0 0 14px">${escapeHtml(title)}</h1>
           ${body}
           <p style="color:#64748b;font-size:12px;margin-top:26px">TradingBible LLC · Trade like the 1%. Journal like a fund.</p>
+          <p style="color:#94a3b8;font-size:11px;margin-top:4px">TradingBible LLC, Delaware limited liability company (formed August 2026) · NAICS 511210 · c/o Delaware Registered Agent, Inc.</p>
         </div>
       </div>
     </div>`;

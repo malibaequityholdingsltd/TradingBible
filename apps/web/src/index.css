@@ -393,6 +393,7 @@ html.light .bg-black\/95 {
 }
 html.light .text-\[\#e9e7df\],
 html.light .text-\[\#f0ecdd\],
+html.light .text-\[\#f0ecdf\],
 html.light .text-\[\#f5f2e8\],
 html.light .text-\[\#f5f3ec\],
 html.light .text-white,
@@ -408,6 +409,17 @@ html.light .text-\[\#9a9587\],
 html.light .text-\[\#5f5b50\],
 html.light .text-\[\#6a665a\] {
   color: #3f4c5f !important;
+}
+
+/* Gold accents — darken for contrast on light surfaces */
+html.light .text-\[\#d4af37\] {
+  color: #a67c1e !important;
+}
+html.light .text-\[\#d4af37\]\/60 {
+  color: rgba(166,124,30,0.68) !important;
+}
+html.light .text-\[\#d4af37\]\/70 {
+  color: rgba(166,124,30,0.78) !important;
 }
 html.light .border-\[\#07070a\],
 html.light .border-\[\#0a0a0f\],

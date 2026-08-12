@@ -417,6 +417,142 @@ drop policy if exists academy_waitlist_insert on public.academy_waitlist;
 create policy academy_waitlist_insert on public.academy_waitlist
   for insert to anon, authenticated with check (true);
 
+-- ── company / school dashboard ─────────────────────────────────────
+create table if not exists public.school_classrooms (
+  id uuid primary key default gen_random_uuid(),
+  owner uuid references auth.users (id) on delete cascade,
+  name text,
+  "schoolName" text,
+  "studentsCount" integer default 0,
+  "teachersCount" integer default 0,
+  created timestamptz default now()
+);
+alter table public.school_classrooms enable row level security;
+drop policy if exists school_classrooms_owner on public.school_classrooms;
+create policy school_classrooms_owner on public.school_classrooms
+  for all using (auth.uid() = owner) with check (auth.uid() = owner);
+create index if not exists school_classrooms_owner_idx on public.school_classrooms (owner);
+
+create table if not exists public.school_students (
+  id uuid primary key default gen_random_uuid(),
+  owner uuid references auth.users (id) on delete cascade,
+  name text,
+  email text,
+  classroom text,
+  "academyInterest" boolean default false,
+  status text default 'active',
+  created timestamptz default now()
+);
+alter table public.school_students enable row level security;
+drop policy if exists school_students_owner on public.school_students;
+create policy school_students_owner on public.school_students
+  for all using (auth.uid() = owner) with check (auth.uid() = owner);
+create index if not exists school_students_owner_idx on public.school_students (owner);
+
+create table if not exists public.school_teachers (
+  id uuid primary key default gen_random_uuid(),
+  owner uuid references auth.users (id) on delete cascade,
+  name text,
+  email text,
+  subject text,
+  created timestamptz default now()
+);
+alter table public.school_teachers enable row level security;
+drop policy if exists school_teachers_owner on public.school_teachers;
+create policy school_teachers_owner on public.school_teachers
+  for all using (auth.uid() = owner) with check (auth.uid() = owner);
+create index if not exists school_teachers_owner_idx on public.school_teachers (owner);
+
+create table if not exists public.school_assessments (
+  id uuid primary key default gen_random_uuid(),
+  owner uuid references auth.users (id) on delete cascade,
+  title text,
+  type text,
+  status text default 'published',
+  payload jsonb default '{}'::jsonb,
+  created timestamptz default now()
+);
+alter table public.school_assessments enable row level security;
+drop policy if exists school_assessments_owner on public.school_assessments;
+create policy school_assessments_owner on public.school_assessments
+  for all using (auth.uid() = owner) with check (auth.uid() = owner);
+create index if not exists school_assessments_owner_idx on public.school_assessments (owner);
+
+create table if not exists public.school_submissions (
+  id uuid primary key default gen_random_uuid(),
+  owner uuid references auth.users (id) on delete cascade,
+  "studentName" text,
+  "assessmentTitle" text,
+  type text,
+  content text,
+  status text default 'submitted',
+  "submittedAt" timestamptz,
+  created timestamptz default now()
+);
+alter table public.school_submissions enable row level security;
+drop policy if exists school_submissions_owner on public.school_submissions;
+create policy school_submissions_owner on public.school_submissions
+  for all using (auth.uid() = owner) with check (auth.uid() = owner);
+create index if not exists school_submissions_owner_idx on public.school_submissions (owner, created);
+
+create table if not exists public.school_certificates (
+  id uuid primary key default gen_random_uuid(),
+  owner uuid references auth.users (id) on delete cascade,
+  title text,
+  "studentName" text,
+  "issuedAt" timestamptz,
+  created timestamptz default now()
+);
+alter table public.school_certificates enable row level security;
+drop policy if exists school_certificates_owner on public.school_certificates;
+create policy school_certificates_owner on public.school_certificates
+  for all using (auth.uid() = owner) with check (auth.uid() = owner);
+
+-- ── user API keys ──────────────────────────────────────────────────
+create table if not exists public.user_api_keys (
+  id uuid primary key default gen_random_uuid(),
+  owner uuid references auth.users (id) on delete cascade,
+  name text,
+  "keyPrefix" text,
+  "keyHash" text,
+  status text default 'active',
+  created timestamptz default now()
+);
+alter table public.user_api_keys enable row level security;
+drop policy if exists user_api_keys_owner on public.user_api_keys;
+create policy user_api_keys_owner on public.user_api_keys
+  for all using (auth.uid() = owner) with check (auth.uid() = owner);
+create index if not exists user_api_keys_owner_idx on public.user_api_keys (owner);
+
+-- ── admin-only tables: allow access for users flagged admin ────────
+create table if not exists public.admin_platform_settings (
+  id uuid primary key default gen_random_uuid(),
+  key text unique,
+  settings jsonb default '{}'::jsonb,
+  features jsonb default '{}'::jsonb,
+  updated timestamptz default now()
+);
+alter table public.admin_platform_settings enable row level security;
+drop policy if exists admin_platform_settings_admin on public.admin_platform_settings;
+create policy admin_platform_settings_admin on public.admin_platform_settings
+  for all using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'))
+  with check (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
+
+drop policy if exists admin_integrations_admin on public.admin_integrations;
+create policy admin_integrations_admin on public.admin_integrations
+  for all using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'))
+  with check (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
+
+drop policy if exists admin_plugins_admin on public.admin_plugins;
+create policy admin_plugins_admin on public.admin_plugins
+  for all using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'))
+  with check (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
+
+drop policy if exists admin_api_keys_admin on public.admin_api_keys;
+create policy admin_api_keys_admin on public.admin_api_keys
+  for all using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'))
+  with check (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
+
 -- ── RPC: sign up an auth user from the waitlist (used by admin) ────
 create or replace function public.enroll_waitlist(p_email text)
 returns void language plpgsql security definer as $$

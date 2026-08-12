@@ -6,7 +6,7 @@ import {
   ToggleLeft, ToggleRight, Key, Server, Database, Globe, Mail, X, UserCheck,
   Crown, TrendingDown, Clock, Zap, Settings2, Lock, Bell, Cpu, HardDrive,
   Wifi, Package, Plus, Copy, RotateCcw, Plug, TestTube, AlertCircle, Check,
-  Upload,   ChevronDown, MoreVertical, Power, Code, Layers, MonitorPlay
+  Upload,   ChevronDown, MoreVertical, Power, Code, Layers, MonitorPlay, Target
 } from 'lucide-react';
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar,
@@ -21,6 +21,29 @@ const GOLD = '#d4af37';
 const PLAN_COLORS = { trial: '#6a665a', pro: '#3b82f6', elite: GOLD, professional: '#a855f7' };
 const PLAN_PRICES = { trial: 0, pro: 19.99, elite: 49.99, professional: 99.00 };
 const DEFAULT_TRIAL_DAYS = 7;
+
+/* M1–M12 forecast from the financial model (loan file): M6 = 185 users / $7,102 MRR, M12 = 600 users / $23,034 MRR */
+const PLAN_FORECAST = (() => {
+  const anchors = [
+    { m: 1, users: 40, mrr: 1000 },
+    { m: 6, users: 185, mrr: 7102 },
+    { m: 12, users: 600, mrr: 23034 },
+  ];
+  const rows = [];
+  for (let m = 1; m <= 12; m += 1) {
+    const idx = anchors.findIndex((a, i) => m >= a.m && (i === anchors.length - 1 || m < anchors[i + 1].m));
+    const seg = anchors[idx];
+    const next = anchors[idx + 1] || seg;
+    const span = next.m - seg.m || 1;
+    const step = m - seg.m;
+    rows.push({
+      m: `M${m}`,
+      users: Math.round(seg.users * Math.pow(next.users / seg.users, step / span)),
+      mrr: Math.round(seg.mrr * Math.pow(next.mrr / seg.mrr, step / span)),
+    });
+  }
+  return rows;
+})();
 
 function computeTrialEndsAt(user, trialDays = DEFAULT_TRIAL_DAYS) {
   if (user.trialEndsAt) return user.trialEndsAt;
@@ -329,6 +352,22 @@ export function AdminDashboard() {
 
   const recent = useMemo(() => users.slice(0, 8), [users]);
 
+  const milestones = useMemo(() => {
+    const first = users.map(u => (u.created || '').slice(0, 7)).filter(Boolean).sort()[0];
+    let monthsLive = null;
+    if (first) {
+      const [fy, fm] = first.split('-').map(Number);
+      const now = new Date();
+      monthsLive = (now.getFullYear() - fy) * 12 + (now.getMonth() + 1 - fm) + 1;
+    }
+    const m6 = { label: 'M6 Target', users: 185, mrr: 7102 };
+    const m12 = { label: 'M12 Target', users: 600, mrr: 23034 };
+    return [
+      { ...m6, uPct: Math.min(100, Math.round(stats.total / m6.users * 100)), rPct: Math.min(100, Math.round(stats.mrr / m6.mrr * 100)) },
+      { ...m12, uPct: Math.min(100, Math.round(stats.total / m12.users * 100)), rPct: Math.min(100, Math.round(stats.mrr / m12.mrr * 100)) },
+    ].map(m => ({ ...m, monthsLive }));
+  }, [users, stats]);
+
   const sysHealth = [
     { label: 'Database', status: 'ok', icon: Database },
     { label: 'API Server', status: 'ok', icon: Server },
@@ -347,6 +386,31 @@ export function AdminDashboard() {
             <Stat icon={CreditCard} label="Paid Subscribers" value={stats.paid.toLocaleString()} sub={`${stats.total - stats.paid} on trial`} color="#3b82f6" />
             <Stat icon={DollarSign} label="Est. MRR" value={`$${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="Monthly recurring" trend="up" color="#10b981" />
             <Stat icon={Activity} label="Total Trades" value={stats.trades.toLocaleString()} sub="Across all users" color="#a855f7" />
+          </div>
+
+          <div className="mb-5 grid gap-4 lg:grid-cols-2">
+            {milestones.map(m => (
+              <div key={m.label} className="glass rounded-2xl p-4 sm:p-5">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="font-semibold text-[#f0ecdd]">{m.label} <span className="text-xs font-normal text-[#8a8577]">({m.monthsLive != null ? `Month ${m.monthsLive} of 12` : '—'})</span></h3>
+                  <Badge color="gold">Loan model</Badge>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <div className="mb-1 flex items-center justify-between text-xs text-[#8a8577]">
+                      <span>Users</span><span className="font-mono text-[#f0ecdd]">{stats.total.toLocaleString()} / {m.users.toLocaleString()}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-white/8"><div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25]" style={{ width: `${m.uPct}%` }} /></div>
+                  </div>
+                  <div>
+                    <div className="mb-1 flex items-center justify-between text-xs text-[#8a8577]">
+                      <span>MRR</span><span className="font-mono text-[#f0ecdd]">${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })} / ${m.mrr.toLocaleString()}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-white/8"><div className="h-full rounded-full bg-gradient-to-r from-[#10b981] to-[#059669]" style={{ width: `${m.rPct}%` }} /></div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="mb-5 grid gap-4 lg:grid-cols-3">
@@ -689,6 +753,54 @@ export function AdminAnalytics() {
   const paid = users.filter(u => u.plan && u.plan !== 'trial');
   const mrr = paid.reduce((s, u) => s + (PLAN_PRICES[u.plan] || 0), 0);
 
+  const churn = useMemo(() => {
+    const expired = users.filter(u => (u.plan === 'trial' || !u.plan) && u.trialEndsAt && new Date(u.trialEndsAt) < new Date());
+    const trialed = users.filter(u => u.trialEndsAt || u.plan === 'trial');
+    return trialed.length ? expired.length / trialed.length : 0;
+  }, [users]);
+  const arpu = paid.length ? mrr / paid.length : 0;
+  const ltv = churn > 0 ? arpu / churn : null;
+  const CAC = 150;
+  const ltvCac = ltv != null ? ltv / CAC : null;
+
+  const forecastRows = useMemo(() => {
+    const keys = users.map(u => (u.created || '').slice(0, 7)).filter(Boolean).sort();
+    const launch = keys[0];
+    if (!launch) return [];
+    const [ly, lm] = launch.split('-').map(Number);
+    const liveByMonth = {};
+    const mrrByMonth = {};
+    users.forEach(u => {
+      const d = (u.created || '').slice(0, 7);
+      if (!d) return;
+      liveByMonth[d] = (liveByMonth[d] || 0) + 1;
+      if (u.plan && u.plan !== 'trial') mrrByMonth[d] = (mrrByMonth[d] || 0) + (PLAN_PRICES[u.plan] || 0);
+    });
+    return PLAN_FORECAST.map((row, i) => {
+      const d = new Date(ly, lm - 1 + i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const liveUsers = liveByMonth[key] || 0;
+      const liveMrr = mrrByMonth[key] || 0;
+      return {
+        ...row,
+        liveUsers,
+        liveMrr,
+        win: row.users ? Math.min(100, Math.round((liveUsers / row.users) * 100)) : 0,
+      };
+    });
+  }, [users]);
+
+  const exportForecastCSV = () => {
+    const header = ['Month', 'Target Users', 'Live Users', 'Win Rate %', 'Target MRR', 'Live MRR', 'MRR Win %'];
+    const lines = forecastRows.map(r => [r.m, r.users, r.liveUsers, r.win, r.mrr, r.liveMrr, r.mrr ? Math.round((r.liveMrr / r.mrr) * 100) : 0]);
+    const csv = [header, ...lines].map(l => l.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
+    a.download = `forecast_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    toast({ title: 'Exported', description: 'Live vs forecast saved as CSV.' });
+  };
+
   return (
     <AdminLayout title="Analytics">
       {loading ? <Spinner /> : (
@@ -698,6 +810,13 @@ export function AdminAnalytics() {
             <Stat icon={UserCheck} label="Verified" value={users.filter(u => u.verified).length} sub="Email confirmed" color="#10b981" />
             <Stat icon={Crown} label="Paid" value={paid.length} sub={`${users.length ? Math.round(paid.length / users.length * 100) : 0}% conversion`} color={GOLD} />
             <Stat icon={TrendingUp} label="Est. MRR" value={`$${mrr.toFixed(0)}`} sub="Monthly recurring" color="#a855f7" />
+          </div>
+
+          <div className="mb-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
+            <Stat icon={UserCheck} label="Est. Churn" value={`${(churn * 100).toFixed(1)}%`} sub="Expired trials / trialed" color={churn > 0.3 ? '#ef4444' : '#10b981'} />
+            <Stat icon={DollarSign} label="ARPU" value={`$${arpu.toFixed(2)}`} sub="MRR per paid user" color="#3b82f6" />
+            <Stat icon={Crown} label="LTV : CAC" value={ltvCac != null ? `${ltvCac.toFixed(1)}x` : '—'} sub={`LTV $${(ltv ?? 0).toFixed(0)} / CAC $${CAC}`} color={ltvCac >= 3 ? '#10b981' : '#ef4444'} />
+            <Stat icon={Target} label="Plan Fit" value={forecastRows.length && mrr > 0 ? `${Math.round(mrr / PLAN_FORECAST[0].mrr * 100)}%` : '—'} sub="Live MRR vs M1 target" color={GOLD} />
           </div>
 
           <div className="mb-5 grid gap-4 lg:grid-cols-2">
@@ -750,6 +869,62 @@ export function AdminAnalytics() {
                   <Bar dataKey="value" name="Trades" fill={GOLD} radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+            </div>
+          )}
+
+          {forecastRows.length > 0 && (
+            <div className="glass rounded-2xl p-4 sm:p-5">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-semibold text-[#f0ecdd]">Live vs Plan — M1–M12 Forecast</h3>
+                  <p className="mt-1 text-xs text-[#8a8577]">Targets from the financial model (M6: 185 users / $7,102 MRR · M12: 600 users / $23,034 MRR).</p>
+                </div>
+                <button onClick={exportForecastCSV} className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/60">
+                  <Download className="h-4 w-4" /> Export live vs-forecast CSV
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[640px] text-sm">
+                  <thead>
+                    <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
+                      <th className="pb-3 font-medium">Month</th>
+                      <th className="pb-3 font-medium">Target Users</th>
+                      <th className="pb-3 font-medium">Live Users</th>
+                      <th className="pb-3 font-medium">Win Rate</th>
+                      <th className="pb-3 font-medium">Target MRR</th>
+                      <th className="pb-3 font-medium">Live MRR</th>
+                      <th className="pb-3 font-medium">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {forecastRows.map(r => {
+                      const ahead = r.liveUsers >= r.users;
+                      return (
+                        <tr key={r.m} className="border-b border-white/5">
+                          <td className="py-3 font-semibold text-[#f0ecdd]">{r.m}</td>
+                          <td className="py-3 font-mono text-[#c9c4b4]">{r.users.toLocaleString()}</td>
+                          <td className="py-3 font-mono text-[#f0ecdd]">{r.liveUsers.toLocaleString()}</td>
+                          <td className="py-3">
+                            <div className="flex items-center gap-2">
+                              <div className="h-1.5 w-24 rounded-full bg-white/8">
+                                <div className="h-full rounded-full" style={{ width: `${r.win}%`, background: ahead ? '#10b981' : GOLD }} />
+                              </div>
+                              <span className="font-mono text-xs text-[#8a8577]">{r.win}%</span>
+                            </div>
+                          </td>
+                          <td className="py-3 font-mono text-[#c9c4b4]">${r.mrr.toLocaleString()}</td>
+                          <td className="py-3 font-mono text-emerald-400">${r.liveMrr.toLocaleString()}</td>
+                          <td className="py-3">
+                            {r.win >= 100
+                              ? <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-2 py-0.5 text-xs text-emerald-400"><CheckCircle className="h-3 w-3" /> On track</span>
+                              : <span className="inline-flex items-center gap-1 rounded-full bg-[#d4af37]/10 px-2 py-0.5 text-xs text-[#d4af37]"><Clock className="h-3 w-3" /> {ahead ? 'Ahead' : 'Catching up'}</span>}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </>
@@ -1274,6 +1449,23 @@ export function AdminReports() {
     a.click();
   };
 
+  const exportFinancialCSV = () => {
+    const conv = 0.05;
+    const header = ['Month', 'Total Users', 'Paid Users (5% conv)', 'MRR', 'ARR', 'Avg Ticket', 'LTV (est, 20% churn)', 'LTV:CAC'];
+    const lines = PLAN_FORECAST.map(r => {
+      const paid = Math.round(r.users * conv);
+      const avg = paid ? r.mrr / paid : 0;
+      const ltv = avg / 0.2;
+      return [r.m, r.users, paid, r.mrr.toFixed(0), (r.mrr * 12).toFixed(0), avg.toFixed(2), ltv.toFixed(0), (ltv / 150).toFixed(2)];
+    });
+    const csv = [header, ...lines].map(l => l.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
+    a.download = `financial_model_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    toast({ title: 'Exported', description: 'Financial model saved as CSV.' });
+  };
+
   const rows = [
     { label: 'Total registered users', value: users.length, icon: Users },
     { label: 'Verified users', value: users.filter(u => u.verified).length, icon: CheckCircle },
@@ -1294,7 +1486,10 @@ export function AdminReports() {
 
   return (
     <AdminLayout title="Reports & Logs">
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex flex-wrap justify-end gap-2">
+        <button onClick={exportFinancialCSV} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/60">
+          <Download className="h-4 w-4" /> Generate Financial Model CSV
+        </button>
         <button onClick={exportReport} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/60">
           <Download className="h-4 w-4" /> Export Report
         </button>
