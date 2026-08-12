@@ -11,6 +11,7 @@
 - [Admin Plugins](/admin/plugins): TradingBible application page.
 - [Admin Reports](/admin/reports): TradingBible application page.
 - [Admin Settings](/admin/settings): TradingBible application page.
+- [Admin Tv Ads](/admin/tv): TradingBible application page.
 - [Admin Users](/admin/users): TradingBible application page.
 - [Affiliate](/app/affiliate): TradingBible application page.
 - [Alerts](/app/alerts): TradingBible application page.
@@ -56,6 +57,7 @@
 - [Signup](/signup): TradingBible application page.
 - [Terminal](/app/terminal): TradingBible application page.
 - [Terms](/terms): TradingBible application page.
+- [Tv](/tv): TradingBible application page.
 - [User Api Keys](/app/api-keys): TradingBible application page.
 - [Wallet](/app/wallet): TradingBible application page.
 - [Watchlists](/app/watchlists): TradingBible application page.

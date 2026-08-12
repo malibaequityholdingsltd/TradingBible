@@ -215,4 +215,73 @@ router.delete('/forum-replies/:id', supabaseAuth, async (req, res, next) => {
 	} catch (err) { next(err); }
 });
 
+// ── Generic admin_integrations CRUD (courses, calendar events, etc.) ──
+// Content lives in `admin_integrations` under prefixed keys:
+//   course:*   — academy course catalog
+//   cal_event:* — curated economic calendar events
+// The `config` jsonb holds the payload; `enabled` is the publish toggle.
+
+function slugify(raw) {
+	return String(raw || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'item';
+}
+
+router.get('/content/:prefix', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const prefix = String(req.params.prefix || '').replace(/[^a-z_-]/gi, '').slice(0, 20);
+		if (!prefix) return res.status(400).json({ error: 'invalid prefix' });
+		const rows = await supabaseRest('/rest/v1/admin_integrations', {
+			query: { select: '*', 'key': `like.${prefix}:%`, order: 'created.desc', limit: 500 },
+		});
+		res.json(rows || []);
+	} catch (err) { next(err); }
+});
+
+router.post('/content/:prefix', supabaseAuth, async (req, res, next) => {
+	try {
+		const admin = await assertAdmin(req);
+		const prefix = String(req.params.prefix || '').replace(/[^a-z_-]/gi, '').slice(0, 20);
+		if (!prefix) return res.status(400).json({ error: 'invalid prefix' });
+		const body = req.body || {};
+		const slug = slugify(body.slug || body.title);
+		const row = await supabaseRest('/rest/v1/admin_integrations', {
+			method: 'POST',
+			body: {
+				key: `${prefix}:${slug}`,
+				provider: String(body.provider || 'admin').slice(0, 20),
+				config: body.config && typeof body.config === 'object' ? body.config : {},
+				enabled: body.enabled !== false,
+			},
+			prefer: 'return=representation',
+			query: { select: '*' },
+		});
+		res.status(201).json(row?.[0] || { id: admin.id });
+	} catch (err) { next(err); }
+});
+
+router.patch('/content/:prefix/:id', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const rows = await supabaseRest(`/rest/v1/admin_integrations?id=eq.${encodeURIComponent(req.params.id)}`, { query: { select: '*', limit: 1 } });
+		const existing = rows?.[0];
+		if (!existing) return res.status(404).json({ error: 'item not found' });
+		const patch = {};
+		const body = req.body || {};
+		if (body.config !== undefined && body.config && typeof body.config === 'object') patch.config = { ...(existing.config || {}), ...body.config };
+		if (body.enabled !== undefined) patch.enabled = body.enabled !== false;
+		const updated = await supabaseRest(`/rest/v1/admin_integrations?id=eq.${encodeURIComponent(req.params.id)}`, {
+			method: 'PATCH', body: patch, prefer: 'return=representation', query: { select: '*' },
+		});
+		res.json(updated?.[0] || { id: req.params.id, ...patch });
+	} catch (err) { next(err); }
+});
+
+router.delete('/content/:prefix/:id', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		await supabaseRest(`/rest/v1/admin_integrations?id=eq.${encodeURIComponent(req.params.id)}`, { method: 'DELETE' });
+		res.status(204).end();
+	} catch (err) { next(err); }
+});
+
 export default router;
