@@ -47,7 +47,7 @@ export function useTerminal() {
       if (!uid) { setLoaded(true); return; }
       try {
         const list = await pb.collection('terminal_layouts').getFullList({
-          filter: pb.filter('owner = {:o}', { o: uid }),
+          filter: `owner = "${uid}"`,
           sort: 'created',
           requestKey: 'terminal-load',
         });

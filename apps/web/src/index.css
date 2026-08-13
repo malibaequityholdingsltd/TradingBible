@@ -319,23 +319,15 @@ body {
 .tv-progress { animation-name: tv-progress; animation-timing-function: linear; animation-fill-mode: forwards; }
 @media (prefers-reduced-motion: reduce) { .animate-marquee, .animate-floaty, .tv-pop { animation: none; } }
 
-/* TradingBible TV widget — stays dark-screened even in light mode */
-html.light .tv-widget-root .tv-widget-panel,
-html.light .tv-widget-root .tv-widget-header,
-html.light .tv-widget-root .tv-widget-footer {
-  background-color: #0b0b10 !important;
-  border-color: rgba(212,175,55,0.28) !important;
-}
-html.light .tv-widget-root .text-\[\#f0ecdd\],
-html.light .tv-widget-root .text-\[\#e9e7df\],
-html.light .tv-widget-root .text-white { color: #f0ecdd !important; }
-html.light .tv-widget-root .text-\[\#c9c4b4\],
-html.light .tv-widget-root .text-\[\#8a8577\],
-html.light .tv-widget-root .text-\[\#6a665a\] { color: #9a9488 !important; }
-html.light .tv-widget-root .text-\[\#d4af37\] { color: #d4af37 !important; }
-html.light .tv-widget-root .bg-black\/50 { background-color: rgba(0, 0, 0, 0.5) !important; }
-html.light .tv-widget-root .from-\[\#1b1b22\],
-html.light .tv-widget-root .to-\[\#0a0a0f\] { --tw-gradient-from: #1b1b22 !important; --tw-gradient-to: #0a0a0f !important; }
+/* TradingBible TV — chrome (panel, bars, launcher) adapts to the active
+   theme; only the media stage keeps a dark "screen" look for readability. */
+html.light .tv-stage-text,
+html.light .tv-stage-text .text-white,
+html.light .tv-stage-text .text-\[\#f0ecdd\],
+html.light .tv-stage-text .text-\[\#e9e7df\],
+html.light .tv-stage-text .text-\[\#f0d675\] { color: #ffffff !important; }
+html.light .tv-stage-text .text-\[\#c9c4b4\] { color: #e8e6de !important; }
+html.light .tv-live-chip { background-color: rgba(0, 0, 0, 0.5) !important; }
 
 /* ─── DARK THEME READABILITY ──────────────────────────────────────── */
 html:not(.light) .text-\[\#e9e7df\],

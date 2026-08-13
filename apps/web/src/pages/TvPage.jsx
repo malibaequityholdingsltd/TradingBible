@@ -123,7 +123,7 @@ export default function TvPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#050507]">
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0f]">
         <div className="flex flex-col items-center gap-5">
           <div className="relative">
             <div className="absolute -inset-6 animate-ping rounded-full border border-[#d4af37]/20" />
@@ -136,7 +136,7 @@ export default function TvPage() {
   }
 
   return (
-    <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#050507] text-[#f0ecdd]" onClick={wakeUi}>
+    <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#0a0a0f] text-[#f0ecdd]" onClick={wakeUi}>
       {/* ── Full-bleed stage ─────────────────────────────────────── */}
       {error ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
@@ -202,7 +202,7 @@ export default function TvPage() {
 
       {/* ── Content ──────────────────────────────────────────────── */}
       {ad && (
-        <main className="relative z-10 flex flex-1 flex-col justify-end px-6 pb-10 sm:px-12">
+        <main className="tv-stage-text relative z-10 flex flex-1 flex-col justify-end px-6 pb-10 sm:px-12">
           <div className="max-w-2xl">
             <div className="flex items-center gap-3">
               {ad.logoUrl && (
