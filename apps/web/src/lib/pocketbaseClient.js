@@ -55,6 +55,11 @@ function isMissingColumnError(error) {
   return message.includes('column') && message.includes('does not exist');
 }
 
+function isSchemaCacheColumnError(error) {
+  const message = String(error?.message || '').toLowerCase();
+  return message.includes('column') && (message.includes('schema cache') || message.includes('could not find'));
+}
+
 function isMissingRelationError(error) {
   const message = String(error?.message || '').toLowerCase();
   return message.includes('relation') && message.includes('does not exist');
@@ -268,8 +273,15 @@ function createSupabaseCompatClient() {
         }
 
         const payload = { ...data };
-        if (authStore.record?.id && payload.owner === undefined) payload.owner = authStore.record.id;
+        const shouldScopeOwner = table !== 'admin_platform_settings';
+        if (shouldScopeOwner && authStore.record?.id && payload.owner === undefined) payload.owner = authStore.record.id;
         const { data: created, error } = await supabase.from(table).insert(payload).select().single();
+        if (error && isSchemaCacheColumnError(error) && shouldScopeOwner) {
+          delete payload.owner;
+          const retry = await supabase.from(table).insert(payload).select().single();
+          if (retry.error) throw retry.error;
+          return retry.data;
+        }
         if (error) throw error;
         return created;
       },

@@ -24,7 +24,7 @@ html.light body {
   height: 100vh;
   height: 100svh;
   z-index: -10;
-  background-image: url('/backgrounds/dark-mobile.png');
+  background-image: url('/backgrounds/dark-mobile.jpg');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -47,7 +47,7 @@ html.light body {
 
 /* Light theme — device-specific, static, centered (soft warm ivory, muted so it never glares) */
 html.light #app-bg {
-  background-image: url('/backgrounds/light-mobile.png');
+    background-image: url('/backgrounds/light-mobile.jpg');
   background-color: #f2efe7;
   background-size: cover;
   background-position: center center;
@@ -56,7 +56,7 @@ html.light #app-bg {
 }
 @media (min-width: 768px) {
   html.light #app-bg {
-    background-image: url('/backgrounds/light-desktop.png');
+    background-image: url('/backgrounds/light-desktop.jpg');
     background-position: center center;
     background-size: cover;
     background-repeat: no-repeat;
