@@ -81,6 +81,24 @@ function useUsers() {
     setLoading(true);
     try {
       let list = [];
+
+      // Admin endpoint merges Supabase auth users + `users`-table rows
+      // (service role), so trial accounts appear even without a users row.
+      try {
+        const token = pb.authStore.token;
+        if (token) {
+          const res = await fetch(`${API_SERVER_URL}/admin/users`, { headers: { Authorization: `Bearer ${token}` } });
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              setSource('api-admin');
+              setUsers(data.map((u) => normalizeAdminUser(u, 'api-admin')));
+              return;
+            }
+          }
+        }
+      } catch { /* fall through */ }
+
       try {
         const usersRows = await pb.collection('users').getFullList({ sort: '-created', requestKey: 'admin-users' });
         list = usersRows.map((u) => normalizeAdminUser(u, 'users'));
@@ -2099,7 +2117,7 @@ export function AdminTvAds() {
         toast({ title: 'Broadcast created' });
       }
       setEditing(null);
-      setForm({ title: '', headline: '', imageUrl: '', logoUrl: '', linkUrl: '', cta: 'Learn more', accent: '#d4af37', durationSeconds: 12, snippet: '', enabled: true });
+      setForm({ title: '', headline: '', imageUrl: '', videoUrl: '', logoUrl: '', linkUrl: '', cta: 'Learn more', accent: '#d4af37', durationSeconds: 12, snippet: '', enabled: true });
       await load();
     } catch (err) {
       toast({ title: 'Save failed', description: String(err.message || err) });
@@ -2180,6 +2198,7 @@ export function AdminTvAds() {
           <div><label className={label}>Headline</label><input className={input} value={form.headline} onChange={setF('headline')} placeholder="Short punchy line" /></div>
           <div><label className={label}>CTA button text</label><input className={input} value={form.cta} onChange={setF('cta')} /></div>
           <div><label className={label}>Background image URL</label><input className={input} value={form.imageUrl} onChange={setF('imageUrl')} placeholder="https://…" /></div>
+          <div><label className={label}>Video URL (optional — plays in place of image)</label><input className={input} value={form.videoUrl} onChange={setF('videoUrl')} placeholder="https://…/clip.mp4 (autoplay, looped)" /></div>
           <div><label className={label}>Logo URL</label><input className={input} value={form.logoUrl} onChange={setF('logoUrl')} placeholder="https://…" /></div>
           <div><label className={label}>Link URL (opens on click)</label><input className={input} value={form.linkUrl} onChange={setF('linkUrl')} placeholder="https://…" /></div>
           <div><label className={label}>Accent color</label><input type="color" className="h-12 w-full cursor-pointer rounded-xl border border-[#d4af37]/15 bg-[#0f0f14]" value={form.accent} onChange={setF('accent')} /></div>
@@ -2194,7 +2213,7 @@ export function AdminTvAds() {
             <button type="submit" disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90 disabled:opacity-50">
               <Save className="h-4 w-4" /> {editing ? 'Update broadcast' : 'Publish broadcast'}
             </button>
-            {editing && <button type="button" onClick={() => { setEditing(null); setForm({ title: '', headline: '', imageUrl: '', logoUrl: '', linkUrl: '', cta: 'Learn more', accent: '#d4af37', durationSeconds: 12, snippet: '', enabled: true }); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
+            {editing && <button type="button" onClick={() => { setEditing(null); setForm({ title: '', headline: '', imageUrl: '', videoUrl: '', logoUrl: '', linkUrl: '', cta: 'Learn more', accent: '#d4af37', durationSeconds: 12, snippet: '', enabled: true }); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
           </div>
         </form>
       </div>

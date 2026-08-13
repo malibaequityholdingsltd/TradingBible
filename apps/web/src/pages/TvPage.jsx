@@ -20,6 +20,7 @@ export default function TvPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const timerRef = useRef(null);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -58,6 +59,14 @@ export default function TvPage() {
     };
     track(ad.id, 'view');
   }, [index, ad, muted]);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    if (paused) el.pause();
+    else { el.play().catch(() => {}); }
+    el.muted = muted;
+  }, [paused, muted, ad]);
 
   const openAd = () => {
     if (!ad?.linkUrl) return;
@@ -125,12 +134,22 @@ export default function TvPage() {
           </div>
         ) : (
           <div key={ad.id} className="tv-ad-card relative w-full max-w-5xl overflow-hidden rounded-3xl border border-[#d4af37]/15 bg-gradient-to-br from-[#101014] via-[#0c0c11] to-[#0a0a0f] shadow-[0_0_80px_rgba(212,175,55,0.06)]">
-            {ad.imageUrl && (
+            {ad.videoUrl ? (
+              <div className="absolute inset-0">
+                <video
+                  ref={videoRef}
+                  src={ad.videoUrl}
+                  className="h-full w-full object-cover opacity-50"
+                  autoPlay muted={muted} loop playsInline
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/45 to-[#0a0a0f]/70" />
+              </div>
+            ) : ad.imageUrl ? (
               <div className="absolute inset-0">
                 <img src={ad.imageUrl} alt="" className="h-full w-full object-cover opacity-25" onError={e => { e.currentTarget.style.display = 'none'; }} />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-[#0a0a0f]/60" />
               </div>
-            )}
+            ) : null}
             <div className="relative flex flex-col items-center gap-6 px-8 py-16 text-center sm:px-14">
               {ad.logoUrl && (
                 <img src={ad.logoUrl} alt="" className="h-16 w-16 rounded-2xl object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
