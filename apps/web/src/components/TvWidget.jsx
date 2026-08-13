@@ -161,12 +161,22 @@ export default function TvWidget() {
 
   const seconds = Math.max(4, Math.min(60, Number(settings.rotationSeconds) || 12));
 
+  // Panel placement: fit the panel inside the viewport regardless of where
+  // the launcher bubble is snapped (important on phones / narrow screens).
+  const vw = typeof window !== 'undefined' ? window.innerWidth : 1024;
+  const vh = typeof window !== 'undefined' ? window.innerHeight : 768;
+  const margin = 8;
+  const panelW = Math.min(PANEL_W, vw - margin * 2);
+  const panelH = Math.min(PANEL_H, vh - margin * 2);
+  const px = Math.max(margin, Math.min(pos.x, vw - panelW - margin));
+  const py = Math.max(margin, Math.min(pos.y, vh - panelH - margin));
+
   return (
     <div className="tv-widget-root">
       {open && (
         <div
           className="tv-pop tv-widget-panel fixed z-[70] flex max-h-[calc(100dvh-1rem)] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/30 bg-[#0b0b10] shadow-[0_24px_80px_rgba(0,0,0,0.7),0_0_40px_rgba(212,175,55,0.12)]"
-          style={{ left: pos.x, top: pos.y, width: PANEL_W, height: PANEL_H, maxWidth: 'calc(100vw - 1rem)' }}
+          style={{ left: px, top: py, width: panelW, height: panelH, maxWidth: 'calc(100vw - 1rem)' }}
         >
           <div className="tv-widget-header flex items-center gap-2 border-b border-[#d4af37]/12 bg-[#0a0a0f] px-3 py-2">
             <img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
