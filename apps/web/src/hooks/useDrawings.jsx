@@ -16,7 +16,7 @@ export function useDrawings(symbol) {
     if (!uid) return;
     try {
       const list = await pb.collection('chart_drawings').getFullList({
-        filter: pb.filter('symbol = {:s} && isTemplate = true', { s: symbol }),
+        filter: `symbol = "${symbol}" && isTemplate = true`,
         sort: '-created',
         requestKey: `tpl-${symbol}`,
       });
@@ -32,7 +32,7 @@ export function useDrawings(symbol) {
       if (!uid) { setDrawings([]); setRecordId(null); setLoaded(true); return; }
       try {
         const rec = await pb.collection('chart_drawings').getFirstListItem(
-          pb.filter('owner = {:o} && symbol = {:s} && isTemplate = false', { o: uid, s: symbol }),
+          `owner = "${uid}" && symbol = "${symbol}" && isTemplate = false`,
           { requestKey: `live-${symbol}` },
         );
         if (!active) return;

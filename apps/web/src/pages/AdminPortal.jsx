@@ -746,6 +746,7 @@ export function AdminUsers() {
 export function AdminAnalytics() {
   const { users, loading } = useUsers();
   const { trades } = useTrades();
+  const { toast } = useToast();
 
   const planDist = useMemo(() => {
     const counts = { trial: 0, pro: 0, elite: 0, professional: 0 };
@@ -1448,6 +1449,7 @@ export function AdminContent() {
 export function AdminReports() {
   const { users, loading } = useUsers();
   const { trades } = useTrades();
+  const { toast } = useToast();
 
   const exportReport = () => {
     const lines = [

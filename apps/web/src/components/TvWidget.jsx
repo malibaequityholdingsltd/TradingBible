@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Maximize } from 'lucide-react';
+import { MonitorPlay, X, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 
@@ -175,7 +175,7 @@ export default function TvWidget() {
     <div className="tv-widget-root">
       {open && (
         <div
-          className="tv-pop tv-widget-panel fixed z-[70] flex max-h-[calc(100dvh-1rem)] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/30 bg-[#0b0b10] shadow-[0_24px_80px_rgba(0,0,0,0.7),0_0_40px_rgba(212,175,55,0.12)]"
+          className="tv-pop tv-widget-panel fixed z-[70] flex max-h-[calc(100dvh-1rem)] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/30 bg-[#0c0c11] shadow-[0_24px_80px_rgba(0,0,0,0.7),0_0_40px_rgba(212,175,55,0.12)]"
           style={{ left: px, top: py, width: panelW, height: panelH, maxWidth: 'calc(100vw - 1rem)' }}
         >
           <div className="tv-widget-header flex items-center gap-2 border-b border-[#d4af37]/12 bg-[#0a0a0f] px-3 py-2">
@@ -185,9 +185,6 @@ export default function TvWidget() {
               <span className="h-1.5 w-1.5 rounded-full bg-[#e50914] shadow-[0_0_6px_rgba(229,9,20,0.9)] animate-pulse" />
               On Air
             </span>
-            <a href="/tv" target="_blank" rel="noopener noreferrer" title="Open fullscreen TV" className="ml-1 grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#d4af37] transition-colors">
-              <Maximize className="h-3.5 w-3.5" />
-            </a>
             <button onClick={() => setOpen(false)} aria-label="Close TV" className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
               <X className="h-4 w-4" />
             </button>
@@ -205,17 +202,17 @@ export default function TvWidget() {
                   <video
                     ref={videoRef}
                     src={ad.videoUrl}
-                    className="h-full w-full object-cover opacity-60"
+                    className="h-full w-full object-cover opacity-90"
                     autoPlay muted={muted} loop playsInline
                   />
                 ) : ad.imageUrl ? (
-                  <img src={ad.imageUrl} alt="" className="h-full w-full object-cover opacity-30" onError={e => { e.currentTarget.style.display = 'none'; }} />
+                  <img src={ad.imageUrl} alt="" className="h-full w-full object-cover opacity-70" onError={e => { e.currentTarget.style.display = 'none'; }} />
                 ) : null}
                 <div
                   className="absolute inset-0"
-                  style={{ background: 'linear-gradient(to top, rgba(10,10,15,0.95) 0%, rgba(10,10,15,0.5) 50%, rgba(10,10,15,0.75) 100%)' }}
+                  style={{ background: 'linear-gradient(to top, rgba(10,10,15,0.92) 0%, rgba(10,10,15,0.35) 55%, rgba(10,10,15,0.6) 100%)' }}
                 />
-                <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-2">
+                <div className="tv-stage-text absolute bottom-3 left-3 right-3 flex flex-col gap-2">
                   {ad.logoUrl && (
                     <img src={ad.logoUrl} alt="" className="h-9 w-9 rounded-lg bg-white/95 object-contain p-1 ring-1 ring-[#d4af37]/40" onError={e => { e.currentTarget.style.display = 'none'; }} />
                   )}
@@ -265,7 +262,7 @@ export default function TvWidget() {
           onTouchStart={onPointerDown}
           aria-label="Open TradingBible TV (drag to move)"
           title={ads.length > 0 ? `${ads.length} live broadcast${ads.length === 1 ? '' : 's'}` : 'TradingBible TV'}
-          className={`fixed z-[70] grid place-items-center rounded-full bg-gradient-to-br from-[#1b1b22] to-[#0a0a0f] text-[#d4af37] shadow-2xl ring-1 ring-[#d4af37]/40 ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105'}`}
+          className={`fixed z-[70] grid place-items-center rounded-full bg-gradient-to-br from-[#0c0c11] to-[#0a0a0f] text-[#d4af37] shadow-2xl ring-1 ring-[#d4af37]/40 ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105'}`}
           style={{ left: pos.x, top: pos.y, height: BTN, width: BTN, touchAction: 'none' }}
         >
           <img src={TRADINGBIBLE_LOGO} alt="" className="h-8 w-8 rounded-full object-contain opacity-90" onError={e => { e.currentTarget.style.display = 'none'; }} />

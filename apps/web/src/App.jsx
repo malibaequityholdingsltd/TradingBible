@@ -14,7 +14,6 @@ import PwaStatus from './components/PwaStatus';
 import ErrorBoundary from './components/ErrorBoundary';
 import LandingPage from './pages/LandingPage';
 import { LoginPage, SignupPage, ResetPage, OnboardingPage } from './pages/AuthFlow';
-import { API_SERVER_URL } from '@/lib/apiServerClient';
 
 // Lazy-load heavy authenticated + secondary pages so the initial bundle stays
 // small and each surface is fetched on demand.
