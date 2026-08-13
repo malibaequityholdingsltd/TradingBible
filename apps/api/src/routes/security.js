@@ -5,6 +5,7 @@ import logger from '../utils/logger.js';
 import { supabase, getSupabaseUser } from '../utils/supabaseClient.js';
 import { generateSecret, verifyTOTP, otpauthUri } from '../utils/totp.js';
 import { decodeCbor, b64url, b64urlDecode } from '../utils/cbor.js';
+import { brandShell, escapeHtml, infoBox, buttonLink } from '../utils/email-brand.js';
 
 const router = Router();
 const CHALLENGE_TTL_MS = 5 * 60 * 1000;
@@ -329,13 +330,45 @@ function describeDevice(ua = '') {
 	return { os, browser, label: `${browser} · ${os}` };
 }
 
+function cleanIp(ip) {
+	return String(ip || 'Unknown').replace(/^::ffff:/, '');
+}
+
+function signInEmailHtml({ device, ip, when }) {
+	const detailRow = (label, value, mono = false) => `
+  <tr>
+    <td style="background:#0f0f14;border:1px solid rgba(212,175,55,0.12);border-radius:12px 0 0 12px;padding:13px 16px;color:#8a8577;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;width:130px">${label}</td>
+    <td style="background:#0f0f14;border:1px solid rgba(212,175,55,0.12);border-left:none;border-radius:0 12px 12px 0;padding:13px 16px;color:#f0ecdd;font-size:14px;font-weight:600;${mono ? "font-family:'JetBrains Mono',Consolas,monospace;" : ''}">${escapeHtml(value)}</td>
+  </tr>`;
+	const body = `
+  <p style="color:#c9c4b4;font-size:14px;line-height:1.65;margin:0 0 22px">If this was you, no action is needed. Here are the details of the sign-in:</p>
+  <table style="width:100%;border-collapse:separate;border-spacing:0 8px">
+    ${detailRow('Device', device)}
+    ${detailRow('IP address', ip, true)}
+    ${detailRow('Time', when)}
+  </table>
+  ${infoBox(`
+    <p style="color:#e9e7df;font-size:13.5px;line-height:1.6;margin:0">If this was <b style="color:#f0ecdd">not</b> you, someone may have your password. <a href="https://tradingbible.app/reset" style="color:#d4af37;font-weight:700;text-decoration:none;border-bottom:1px solid rgba(212,175,55,0.5)">Reset your password</a> immediately and contact <a href="mailto:support@tradingbible.app" style="color:#d4af37;font-weight:700;text-decoration:none;border-bottom:1px solid rgba(212,175,55,0.5)">support@tradingbible.app</a>.</p>
+  `)}
+  ${buttonLink('https://tradingbible.app/reset', 'Reset password')}
+  <p style="color:#8a8577;font-size:12px;line-height:1.6;margin:22px 0 0">You're receiving this email because a sign-in was detected on your TradingBible account. If it wasn't you, we recommend enabling two-factor authentication from your security settings.</p>`;
+	return brandShell({
+		title: 'Someone signed in to your TradingBible account',
+		eyebrow: 'New sign-in detected',
+		headerTag: 'Security alert',
+		body,
+	});
+}
+
 // Fired by the app right after a successful login.
 router.post('/notify-login', async (req, res) => {
 	const user = await getAuthedUser(req);
 	if (!user) return res.status(401).json({ error: 'unauthorized' });
 	try {
 		const device = describeDevice(req.headers['user-agent']);
-		const message = `New sign-in on ${device.label}${req.ip ? ` from ${req.ip}` : ''} at ${new Date().toISOString()}`;
+		const ip = cleanIp(req.ip);
+		const when = new Date().toLocaleString('en-US', { timeZone: 'UTC' }) + ' UTC';
+		const message = `New sign-in on ${device.label} from ${ip} at ${new Date().toISOString()}`;
 		const settings = await getSettings(user.id);
 
 		// In-app notification row (best-effort; requires the notifications table).
@@ -345,19 +378,7 @@ router.post('/notify-login', async (req, res) => {
 
 		// Email the user so they know it was them (SMTP must be configured).
 		if (smtpTransporter && settings?.loginNotifications !== false) {
-			const html = `
-			<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#1f2937">
-				<div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:24px">
-					<div style="color:#c99a25;font-size:20px;font-weight:700;margin-bottom:16px">TradingBible — New sign-in</div>
-					<p style="font-size:14px;line-height:1.6">Someone signed in to your TradingBible account.</p>
-					<table style="font-size:13px;background:#f8fafc;border-radius:10px;padding:12px;width:100%">
-						<tr><td style="padding:6px;color:#64748b">Device</td><td style="padding:6px;font-weight:600">${device.label}</td></tr>
-						<tr><td style="padding:6px;color:#64748b">IP address</td><td style="padding:6px;font-weight:600">${req.ip || '—'}</td></tr>
-						<tr><td style="padding:6px;color:#64748b">Time</td><td style="padding:6px;font-weight:600">${new Date().toLocaleString('en-US', { timeZone: 'UTC' })} UTC</td></tr>
-					</table>
-					<p style="font-size:13px;color:#64748b;line-height:1.6">If this was you, no action is needed. If it wasn't, reset your password and contact support immediately.</p>
-				</div>
-			</div>`;
+			const html = signInEmailHtml({ device: device.label, ip, when });
 			await smtpTransporter.sendMail({
 				from: `"${process.env.SMTP_FROM_NAME || 'TradingBible'}" <${process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER}>`,
 				to: user.email,
