@@ -1,5 +1,6 @@
 import { createTransport } from 'nodemailer';
 import { Webhook, WebhookVerificationError } from 'standardwebhooks';
+import { brandShell, tokenBlock, buttonLink } from '../utils/email-brand.js';
 
 const smtpHost = process.env.SMTP_HOST;
 const smtpPort = Number(process.env.SMTP_PORT || 587);
@@ -19,41 +20,6 @@ const transporter = smtpHost && smtpPort && smtpUser && smtpPass
   : null;
 
 const webhook = hookSecret ? new Webhook(hookSecret.replace(/^v1,whsec_/, '')) : null;
-
-function escapeHtml(value) {
-  return String(value || '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
-function brandShell(title, body) {
-  return `
-    <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;color:#1f2937;background:#f8fafc;padding:18px">
-      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:18px;overflow:hidden;box-shadow:0 18px 50px rgba(15,23,42,0.12)">
-        <div style="background:linear-gradient(120deg,#0a0a0f,#14161c);padding:22px 24px">
-          <span style="color:#f4e6a8;font-size:20px;font-weight:700">Trading<span style="color:#d4af37">Bible</span></span>
-        </div>
-        <div style="padding:26px 24px">
-          <h1 style="color:#c99a25;font-size:20px;margin:0 0 14px">${escapeHtml(title)}</h1>
-          ${body}
-          <p style="color:#64748b;font-size:12px;margin-top:26px">TradingBible LLC · Trade like the 1%. Journal like a fund.</p>
-          <p style="color:#94a3b8;font-size:11px;margin-top:4px">TradingBible LLC, Delaware limited liability company (formed August 2026) · NAICS 511210 · c/o Delaware Registered Agent, Inc.</p>
-        </div>
-      </div>
-    </div>`;
-}
-
-function tokenBlock(token) {
-  return `
-    <div style="font-family:'JetBrains Mono',monospace;font-size:34px;font-weight:700;letter-spacing:8px;color:#0a0a0f;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:18px;text-align:center;margin:20px 0">${escapeHtml(token)}</div>`;
-}
-
-function buttonLink(url, label) {
-  return `<a href="${escapeHtml(url)}" style="display:inline-block;background:linear-gradient(120deg,#f4e6a8,#c99a25);color:#0a0a0f;text-decoration:none;padding:12px 20px;border-radius:12px;font-weight:700">${escapeHtml(label)}</a>`;
-}
 
 function getMailCopy(emailData = {}) {
   const action = String(emailData.email_action_type || '').toLowerCase();
@@ -155,7 +121,7 @@ export async function authSendEmailHandler(req, res, next) {
       to,
       subject: mail.subject,
       text: `TradingBible ${mail.subject}\n\n${String(emailData?.token || '')}\n${String(emailData?.confirmation_url || emailData?.confirmationURL || '')}`.trim(),
-      html: brandShell(mail.title, mail.body),
+      html: brandShell({ title: mail.title, body: mail.body }),
     });
 
     return res.status(200).json({});
