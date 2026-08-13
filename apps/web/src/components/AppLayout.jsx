@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Lock, Code2, Palette, CreditCard, HelpCircle, CandlestickChart, Grid2x2, Gauge, Star, Bell, Radar, CalendarClock, Landmark, ListOrdered, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, Tv } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Lock, Code2, Palette, CreditCard, HelpCircle, CandlestickChart, Grid2x2, Gauge, Star, Bell, Radar, CalendarClock, Landmark, ListOrdered, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { avatarUrl } from '@/lib/avatar';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -44,7 +44,6 @@ const NAV_GROUPS = [
       { to: '/app/alerts', labelKey: 'nav.alerts', icon: Bell },
       { to: '/app/economic-calendar', labelKey: 'nav.economic', icon: CalendarClock },
       { to: '/app/journal', labelKey: 'nav.journal', icon: BookOpen },
-      { to: '/tv', labelKey: 'nav.tv', icon: Tv },
       { to: '/app/reports', labelKey: 'nav.reports', icon: FileText },
       { to: '/app/coach', labelKey: 'nav.coach', icon: Bot, requiresSubscriber: true },
       { to: '/app/tools', labelKey: 'nav.tools', icon: Calculator, requiresSubscriber: true },
@@ -58,15 +57,15 @@ const NAV_GROUPS = [
     items: [
       { to: '/app/community', labelKey: 'nav.community', icon: Users, requiresSubscriber: true },
       { to: '/app/academy', labelKey: 'nav.academy', icon: GraduationCap, requiresSubscriber: true },
-      { to: '/app/api-docs', labelKey: 'nav.apidocs', icon: Code2, requiresSubscriber: true },
-      { to: '/app/integrations', labelKey: 'nav.integrations', icon: Plug, requiresSubscriber: true },
+      { to: '/app/api-docs', labelKey: 'nav.apidocs', icon: Code2, requiresSubscriber: true, hidden: true },
+      { to: '/app/integrations', labelKey: 'nav.integrations', icon: Plug, requiresSubscriber: true, hidden: true },
     ],
   },
   {
     labelKey: 'nav.account',
     items: [
       { to: '/app/profile', labelKey: 'nav.profile', icon: User },
-      { to: '/app/api-keys', labelKey: 'nav.apikeys', icon: KeyRound },
+      { to: '/app/api-keys', labelKey: 'nav.apikeys', icon: KeyRound, hidden: true },
       { to: '/app/billing', labelKey: 'nav.billing', icon: CreditCard },
       { to: '/app/affiliate', labelKey: 'nav.affiliate', icon: Share2 },
       { to: '/app/security', labelKey: 'nav.security', icon: Lock },
@@ -129,6 +128,7 @@ const pluralS = (n) => (n === 1 ? '' : 's');
           <div key={group.labelKey} className="space-y-1">
             <div className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#5f5b50]">{t(group.labelKey)}</div>
             {group.items
+              .filter((it) => !it.hidden)
               .filter((it) => !it.adminOnly || isAdmin)
               .filter((it) => !it.requiresSubscriber || isSubscriber)
               .map(({ to, labelKey, icon: Icon, end }) => (

@@ -14,7 +14,7 @@ import PwaStatus from './components/PwaStatus';
 import ErrorBoundary from './components/ErrorBoundary';
 import LandingPage from './pages/LandingPage';
 import { LoginPage, SignupPage, ResetPage, OnboardingPage } from './pages/AuthFlow';
-import TvPage from './pages/TvPage';
+import { API_SERVER_URL } from '@/lib/apiServerClient';
 
 // Lazy-load heavy authenticated + secondary pages so the initial bundle stays
 // small and each surface is fetched on demand.
@@ -42,6 +42,7 @@ const AlertsPage = lazy(() => import('./pages/AlertsPage'));
 const SignalsPage = lazy(() => import('./pages/SignalsPage'));
 const EconomicCalendarPage = lazy(() => import('./pages/EconomicCalendarPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
+const TvPage = lazy(() => import('./pages/TvPage'));
 const BrokersPage = lazy(() => import('./pages/ExtraPages').then((m) => ({ default: m.BrokersPage })));
 const PropFirmsPage = lazy(() => import('./pages/PropFirmsPage'));
 const AffiliatePage = lazy(() => import('./pages/AffiliatePage'));

@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, ExternalLink } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Maximize } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 
 const POS_KEY = 'tb:tv-btn-pos';
-const BTN = 56; // button size in px
+const BTN = 56;
 const MARGIN = 12;
+const PANEL_W = 344;
+const PANEL_H = 396;
 const DEFAULT_SETTINGS = {
   rotationSeconds: 12,
   headerText: 'TradingBible TV',
@@ -158,91 +159,96 @@ export default function TvWidget() {
     };
   }, [pos.x, pos.y]);
 
+  const seconds = Math.max(4, Math.min(60, Number(settings.rotationSeconds) || 12));
+
   return (
-    <>
+    <div className="tv-widget-root">
       {open && (
         <div
-          className="fixed z-[70] flex h-[22rem] max-h-[calc(100dvh-2rem)] w-[min(20rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/25 bg-[#0c0c11] shadow-2xl"
-          style={{ bottom: '1rem', right: '0.75rem' }}
+          className="tv-pop tv-widget-panel fixed z-[70] flex max-h-[calc(100dvh-1rem)] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/30 bg-[#0b0b10] shadow-[0_24px_80px_rgba(0,0,0,0.7),0_0_40px_rgba(212,175,55,0.12)]"
+          style={{ left: pos.x, top: pos.y, width: PANEL_W, height: PANEL_H, maxWidth: 'calc(100vw - 1rem)' }}
         >
-          <div className="flex items-center justify-between border-b border-[#d4af37]/12 bg-[#0a0a0f] px-4 py-3">
-            <div className="flex items-center gap-2 text-[#f0ecdd]">
-              <MonitorPlay className="h-4 w-4 text-[#d4af37]" />
-              <span className="text-sm font-semibold">{settings.headerText || 'TradingBible TV'}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Link to="/tv" className="min-h-[44px] min-w-[44px] px-2 text-xs text-[#8a8577] hover:text-[#e9e7df]" onClick={() => setOpen(false)}>Fullscreen</Link>
-              <button onClick={() => setOpen(false)} aria-label="Close TV" className="grid min-h-[44px] min-w-[44px] place-items-center text-[#8a8577] hover:text-[#e9e7df]"><X className="h-5 w-5" /></button>
-            </div>
+          <div className="tv-widget-header flex items-center gap-2 border-b border-[#d4af37]/12 bg-[#0a0a0f] px-3 py-2">
+            <img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
+            <span className="gold-text text-sm font-bold tracking-wide">{settings.headerText || 'TradingBible TV'}</span>
+            <span className="ml-auto flex items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ff5a62]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#e50914] shadow-[0_0_6px_rgba(229,9,20,0.9)] animate-pulse" />
+              On Air
+            </span>
+            <a href="/tv" target="_blank" rel="noopener noreferrer" title="Open fullscreen TV" className="ml-1 grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#d4af37] transition-colors">
+              <Maximize className="h-3.5 w-3.5" />
+            </a>
+            <button onClick={() => setOpen(false)} aria-label="Close TV" className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
+              <X className="h-4 w-4" />
+            </button>
           </div>
 
-          <div className="flex-1 overflow-hidden p-3">
+          <div className="relative flex-1 overflow-hidden">
             {!ad ? (
-              <div className="grid h-full place-items-center text-center">
-                <div>
-                  <MonitorPlay className="mx-auto mb-3 h-10 w-10 text-[#6a665a]" />
-                  <p className="text-sm text-[#8a8577]">No broadcasts are live right now.</p>
-                  <a href={`mailto:${settings.advertiserEmail}`} className="mt-2 inline-block text-xs text-[#d4af37] hover:underline">
-                    {settings.footerText} — contact {settings.advertiserEmail}
-                  </a>
-                </div>
+              <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
+                <MonitorPlay className="h-9 w-9 text-[#6a665a]" />
+                <p className="text-sm text-[#8a8577]">No broadcasts are live right now.</p>
               </div>
             ) : (
-              <div key={ad.id} className="tv-ad-card relative flex h-full flex-col items-center justify-center overflow-hidden rounded-xl border border-[#d4af37]/15 bg-gradient-to-br from-[#101014] via-[#0c0c11] to-[#0a0a0f] p-5 text-center">
+              <div key={ad.id} className="absolute inset-0">
                 {ad.videoUrl ? (
-                  <div className="absolute inset-0">
-                    <video
-                      ref={videoRef}
-                      src={ad.videoUrl}
-                      className="h-full w-full object-cover opacity-45"
-                      autoPlay muted={muted} loop playsInline
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/45 to-[#0a0a0f]/75" />
-                  </div>
+                  <video
+                    ref={videoRef}
+                    src={ad.videoUrl}
+                    className="h-full w-full object-cover opacity-60"
+                    autoPlay muted={muted} loop playsInline
+                  />
                 ) : ad.imageUrl ? (
-                  <div className="absolute inset-0">
-                    <img src={ad.imageUrl} alt="" className="h-full w-full object-cover opacity-20" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-[#0a0a0f]/60" />
-                  </div>
+                  <img src={ad.imageUrl} alt="" className="h-full w-full object-cover opacity-30" onError={e => { e.currentTarget.style.display = 'none'; }} />
                 ) : null}
-                <div className="relative flex flex-col items-center gap-3">
+                <div
+                  className="absolute inset-0"
+                  style={{ background: 'linear-gradient(to top, rgba(10,10,15,0.95) 0%, rgba(10,10,15,0.5) 50%, rgba(10,10,15,0.75) 100%)' }}
+                />
+                <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-2">
                   {ad.logoUrl && (
-                    <img src={ad.logoUrl} alt="" className="h-12 w-12 rounded-xl object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
+                    <img src={ad.logoUrl} alt="" className="h-9 w-9 rounded-lg bg-white/95 object-contain p-1 ring-1 ring-[#d4af37]/40" onError={e => { e.currentTarget.style.display = 'none'; }} />
                   )}
-                  <h2 className="max-w-full text-xl font-bold leading-tight" style={{ color: ad.accent || '#d4af37' }}>
+                  <h2 className="text-lg font-bold leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" style={{ color: ad.accent || '#f0ecdd' }}>
                     {ad.title}
                   </h2>
-                  {ad.headline && <p className="max-w-full text-sm leading-relaxed text-[#c9c4b4]">{ad.headline}</p>}
+                  {ad.headline && <p className="line-clamp-2 text-xs leading-snug text-[#e9e7df] drop-shadow-[0_1px_6px_rgba(0,0,0,0.9)]">{ad.headline}</p>}
                   {ad.linkUrl && (
-                    <button onClick={openAd} className="mt-1 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90"
-                      style={{ background: ad.accent || '#d4af37' }}>
-                      {ad.cta || 'Learn more'} <ExternalLink className="h-4 w-4" />
+                    <button
+                      onClick={openAd}
+                      className="mt-1 w-fit rounded-lg px-3.5 py-1.5 text-xs font-bold text-[#0a0a0f] shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition-transform hover:scale-[1.03]"
+                      style={{ background: ad.accent || '#d4af37' }}
+                    >
+                      {ad.cta || 'Learn more'} →
                     </button>
                   )}
-                  <div className="text-[10px] uppercase tracking-[0.25em] text-[#6a665a]">
-                    {settings.headerText} · {index + 1} / {ads.length}
-                  </div>
                 </div>
+                <div
+                  key={`${ad.id}-${index}`}
+                  className="tv-progress absolute bottom-0 left-0 h-[3px] rounded-r-full bg-gradient-to-r from-[#d4af37] to-[#f0d675]"
+                  style={{ animationDuration: `${seconds}s`, animationPlayState: paused ? 'paused' : 'running' }}
+                />
               </div>
             )}
           </div>
 
-          <div className="flex items-center justify-between border-t border-[#d4af37]/12 bg-[#0a0a0f] px-3 py-2">
-            <button onClick={() => setPaused((p) => !p)} className="grid h-9 min-h-[44px] min-w-[44px] place-items-center rounded-lg text-[#8a8577] hover:text-[#f0ecdd] transition-colors" aria-label={paused ? 'Play' : 'Pause'}>
+          <div className="tv-widget-footer flex items-center justify-between border-t border-[#d4af37]/12 bg-[#0a0a0f] px-3 py-2">
+            <button onClick={() => setPaused((p) => !p)} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors" aria-label={paused ? 'Play' : 'Pause'}>
               {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
             </button>
             <div className="flex items-center gap-1.5">
               {ads.map((a, i) => (
                 <button key={a.id} onClick={() => setIndex(i)} aria-label={`Broadcast ${i + 1}`}
-                  className={`h-1.5 rounded-full transition-all ${i === index % ads.length ? 'w-6 bg-[#d4af37]' : 'w-1.5 bg-white/15 hover:bg-white/30'}`} />
+                  className={`h-1.5 rounded-full transition-all ${i === index % ads.length ? 'w-5 bg-[#d4af37]' : 'w-1.5 bg-white/15 hover:bg-white/30'}`} />
               ))}
             </div>
-            <button onClick={() => setMuted((m) => !m)} className="grid h-9 min-h-[44px] min-w-[44px] place-items-center rounded-lg text-[#8a8577] hover:text-[#f0ecdd] transition-colors" aria-label={muted ? 'Unmute' : 'Mute'}>
+            <button onClick={() => setMuted((m) => !m)} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors" aria-label={muted ? 'Unmute' : 'Mute'}>
               {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
             </button>
           </div>
         </div>
       )}
+
       {!open && (
         <button
           onMouseDown={onPointerDown}
@@ -258,6 +264,6 @@ export default function TvWidget() {
           )}
         </button>
       )}
-    </>
+    </div>
   );
 }
