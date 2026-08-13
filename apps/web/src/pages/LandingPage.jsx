@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Bot, Shield, Plug, BookOpen, ArrowRight, Check, BarChart3, Zap } from 'lucide-react';
+import { Bot, Shield, Plug, BookOpen, ArrowRight, Check, BarChart3, Zap, Menu, X } from 'lucide-react';
 import { PLANS } from '@/lib/mockData';
 import Footer from '@/components/Footer';
 import { TESTIMONIALS, TRADINGBIBLE_LOGO } from '@/lib/branding';
@@ -19,34 +19,63 @@ const HERO_STATS = [
 ];
 
 function Nav({ homeTo, isAuthed }) {
+  const [scrolled, setScrolled] = React.useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const navLink = 'relative rounded-full px-4 py-2 text-sm font-medium text-[#8a8577] transition-colors hover:text-[#f0ecdd] after:absolute after:inset-x-4 after:-bottom-0.5 after:h-px after:origin-left after:scale-x-0 after:bg-gradient-to-r after:from-[#f4e6a8] after:to-[#d4af37] after:transition-transform after:duration-300 hover:after:scale-x-100';
+
   return (
-    <header className="fixed inset-x-0 top-[var(--header-h)] z-40 border-b border-[#d4af37]/10 bg-[#07070a]/70 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-[96rem] items-center justify-between gap-4 px-6 py-4">
+    <header className={`fixed inset-x-0 top-[var(--header-h)] z-40 border-b transition-all duration-300 ${scrolled ? 'border-[#d4af37]/15 bg-[#07070a]/92 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl' : 'border-[#d4af37]/10 bg-[#07070a]/70 backdrop-blur-xl'}`}>
+      <div className="mx-auto flex w-full max-w-[96rem] items-center justify-between gap-4 px-4 py-3 sm:px-6 sm:py-4">
         <Link to={homeTo} className="flex shrink-0 items-center gap-2.5">
           <img src={LOGO} alt="TradingBible logo" className="h-9 w-9 shrink-0 rounded-xl object-contain gold-glow sm:h-10 sm:w-10" />
           <span className="text-xl font-extrabold tracking-tight text-[#e9e7df] sm:text-2xl">Trading<span className="gold-text">Bible</span></span>
         </Link>
-        <nav className="hidden items-center gap-8 text-sm text-[#8a8577] md:flex">
-          <a href="#features" className="hover:text-[#e9e7df]">Features</a>
-          <a href="#ai" className="hover:text-[#e9e7df]">AI Coach</a>
-          <Link to="/about" className="hover:text-[#e9e7df]">About</Link>
-          <Link to="/pricing" className="hover:text-[#e9e7df]">Pricing</Link>
+
+        <nav className="hidden items-center gap-1 rounded-full border border-white/5 bg-white/[0.03] p-1.5 md:flex">
+          <a href="#features" className={navLink}>Features</a>
+          <a href="#ai" className={navLink}>AI Coach</a>
+          <Link to="/about" className={navLink}>About</Link>
+          <Link to="/pricing" className={navLink}>Pricing</Link>
         </nav>
-        <div className="flex items-center gap-3">
+
+        <div className="flex items-center gap-2 sm:gap-3">
           {isAuthed ? (
-            <Link to={homeTo} className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">
+            <Link to={homeTo} className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] shadow-[0_4px_20px_rgba(212,175,55,0.3)] transition hover:opacity-90 hover:shadow-[0_4px_28px_rgba(212,175,55,0.45)]">
               <span>Open Dashboard</span>
             </Link>
           ) : (
             <>
-              <Link to="/login" className="hidden text-sm text-[#c9c4b4] hover:text-[#e9e7df] sm:block">Log in</Link>
-              <Link to="/signup" className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">
+              <Link to="/login" className="hidden rounded-full px-4 py-2 text-sm font-medium text-[#c9c4b4] transition-colors hover:bg-white/5 hover:text-[#e9e7df] sm:block">Log in</Link>
+              <Link to="/signup" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] shadow-[0_4px_20px_rgba(212,175,55,0.3)] transition hover:opacity-90 hover:shadow-[0_4px_28px_rgba(212,175,55,0.45)]">
                 <span>Start Free Trial</span>
               </Link>
+              <button onClick={() => setMenuOpen((o) => !o)} className="grid h-10 w-10 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60 md:hidden" aria-label="Menu" aria-expanded={menuOpen}>
+                {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
             </>
           )}
         </div>
       </div>
+
+      {menuOpen && !isAuthed && (
+        <div className="border-t border-[#d4af37]/10 bg-[#07070a]/95 px-4 py-3 backdrop-blur-xl md:hidden">
+          <nav className="flex flex-col gap-1">
+            <a href="#features" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]">Features</a>
+            <a href="#ai" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]">AI Coach</a>
+            <Link to="/about" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]">About</Link>
+            <Link to="/pricing" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]">Pricing</Link>
+            <Link to="/login" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#c9c4b4] transition-colors hover:bg-white/5 hover:text-[#e9e7df]">Log in</Link>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

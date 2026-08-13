@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, Wallet, Target, Activity, ShieldAlert, Trophy
 import AppLayout from '@/components/AppLayout';
 import { fmtMoney } from '@/lib/mockData';
 import { useTrades, computeStats } from '@/hooks/useTrades';
+import { useAuth } from '@/hooks/useAuth';
 import DashboardWidgets from '@/components/DashboardWidgets';
 import AccountBalances from '@/components/AccountBalances';
 
@@ -33,6 +34,8 @@ const TT = ({ active, payload, label, prefix = '' }) => active && payload?.lengt
 export default function DashboardPage() {
   const { trades, loading } = useTrades();
   const stats = computeStats(trades);
+  const { user } = useAuth();
+  const isSubscriber = ['pro', 'elite', 'professional'].includes((user?.plan || '').toLowerCase());
 
   if (loading) {
     return <AppLayout title="Dashboard"><div className="glass flex items-center justify-center gap-2 rounded-2xl py-20 text-sm text-[#8a8577]"><RefreshCw className="h-4 w-4 animate-spin" /> Loading your performance…</div></AppLayout>;
@@ -106,16 +109,18 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <Link to="/app/wallet" className="mt-5 flex items-center justify-between gap-4 glass glass-hover rounded-2xl p-5">
-        <div className="flex items-center gap-4">
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Landmark className="h-6 w-6" /></div>
-          <div>
-            <h3 className="font-semibold text-[#f0ecdd]">Wallet</h3>
-            <p className="text-sm text-[#8a8577]">Manage balances, issue debit &amp; credit cards, buy, sell, send and receive crypto.</p>
+      {isSubscriber && (
+        <Link to="/app/wallet" className="mt-5 flex items-center justify-between gap-4 glass glass-hover rounded-2xl p-5">
+          <div className="flex items-center gap-4">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Landmark className="h-6 w-6" /></div>
+            <div>
+              <h3 className="font-semibold text-[#f0ecdd]">Wallet</h3>
+              <p className="text-sm text-[#8a8577]">Manage balances, issue debit &amp; credit cards, buy, sell, send and receive crypto.</p>
+            </div>
           </div>
-        </div>
-        <ArrowRight className="h-5 w-5 shrink-0 text-[#d4af37]" />
-      </Link>
+          <ArrowRight className="h-5 w-5 shrink-0 text-[#d4af37]" />
+        </Link>
+      )}
 
       <DashboardWidgets />
     </AppLayout>

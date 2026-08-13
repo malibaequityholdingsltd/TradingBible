@@ -2164,11 +2164,8 @@ export function AdminTvAds() {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-[#f0ecdd]">TV Broadcasts</h2>
-          <p className="mt-1 text-xs text-[#8a8577]">Fullscreen ad rotation shown at <span className="text-[#d4af37]">tradingbible.app/tv</span>.</p>
+          <p className="mt-1 text-xs text-[#8a8577]">Rotating ad feed shown in the floating TradingBible TV widget (bottom-left bubble).</p>
         </div>
-        <a href="/tv" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/60 transition-colors">
-          <MonitorPlay className="h-4 w-4" /> View TV
-        </a>
       </div>
 
       {/* TV settings */}
