@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.1.3 (next) — Terminal-wide redesign + drawings fix
+
+- **Page redesign across the terminal**: new premium `PageHeader` hero (icon chip,
+  kicker, description, actions) replacing the plain intro paragraphs on
+  Reports, Broker Connections, Prop Firm Center, Community, Billing and
+  Affiliate; polished stat tiles, status pills, hover states and empty states
+  on those pages.
+- **Reports**: upgraded stat tiles (daily/weekly/monthly P&L, trader score),
+  fixed truncated Export PDF / Print button labels, improved print/PDF layout.
+- **Billing**: Paddle developer credentials warning now visible to admins only
+  (was leaking `PADDLE_*` env guidance to all users).
+- **Charts**: drawing tools (trendlines, levels, annotations) now enabled in
+  Split and 4-Grid layouts, not just Single; added migration
+  `20260814000000_chart_drawings_extend.sql` (`is_template`/`shared`/`name`
+  columns) so per-symbol drawings and templates actually persist.
+
 ## v1.1.2 (next) — Real wallet tracking
 
 Replaced the simulated wallet (demo deposit/withdraw/cards/buy/sell) with **real

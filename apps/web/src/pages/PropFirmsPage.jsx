@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Pencil, Plus, RefreshCw, ShieldCheck, Trash2, X } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import PageHeader from '@/components/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import pb from '@/lib/pocketbaseClient';
@@ -191,7 +192,11 @@ export default function PropFirmsPage() {
 
   return (
     <AppLayout title="Prop Firm Center">
-      <p className="mb-5 max-w-2xl text-sm text-[#8a8577]">Track every funded account you trade: daily-loss buffers, drawdown, profit targets and rule compliance - all in one place.</p>
+      <PageHeader
+        icon={ShieldCheck}
+        kicker="Rule compliance"
+        description="Track every funded account you trade: daily-loss buffers, drawdown, profit targets and rule compliance — all in one place."
+      />
 
       {dangerAccounts.length > 0 && (
         <div className="mb-5 flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/[0.08] p-4">
@@ -203,8 +208,15 @@ export default function PropFirmsPage() {
         </div>
       )}
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><ShieldCheck className="h-4 w-4 text-[#d4af37]" /> Funded accounts ({accounts.length})</div>
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">Funded accounts</div><div className="mt-1 font-mono text-2xl font-semibold text-[#f0ecdd]">{accounts.length}</div></div>
+        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">Capital managed</div><div className="mt-1 font-mono text-2xl font-semibold gold-text">{money(accounts.reduce((s, a) => s + Number(a.accountSize || 0), 0))}</div></div>
+        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">At risk</div><div className={`mt-1 font-mono text-2xl font-semibold ${dangerAccounts.length ? 'text-red-400' : 'text-emerald-400'}`}>{dangerAccounts.length}</div></div>
+        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">Compliance</div><div className="mt-1 font-mono text-2xl font-semibold text-emerald-400">{accounts.length ? `${Math.round(((accounts.length - dangerAccounts.length) / accounts.length) * 100)}%` : '—'}</div></div>
+      </div>
+
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><ShieldCheck className="h-4 w-4 text-[#d4af37]" /> Funded accounts</div>
         {!adding && !editing && <button onClick={() => setAdding(true)} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90"><Plus className="h-4 w-4" /> Add account</button>}
       </div>
 
@@ -228,7 +240,7 @@ export default function PropFirmsPage() {
           {accounts.map((a) => {
             const st = computeStatus(a);
             return (
-              <div key={a.id} className="rounded-2xl glass p-5">
+              <div key={a.id} className="glass glass-hover rounded-2xl p-5">
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">

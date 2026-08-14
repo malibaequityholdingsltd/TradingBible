@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plug, Check, RefreshCw, Users, DollarSign, CreditCard, Activity, Crown, ArrowRight, Bot, ExternalLink, Building2 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import PageHeader from '@/components/PageHeader';
 import { BROKERS, PROP_FIRMS, PLANS, fmtMoney } from '@/lib/mockData';
 import pb from '@/lib/pocketbaseClient';
 import { connectBroker, disconnectBroker, resyncBrokerAccount } from '@/lib/brokerSync';
@@ -24,8 +25,8 @@ function ConnectedList({ items }) {
   return (
     <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((c) => (
-        <div key={c.id} className="glass rounded-2xl p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-1"><span className="min-w-0 truncate font-semibold text-[#f0ecdd]">{c.broker}</span><span className={`flex shrink-0 items-center gap-1 text-xs ${c.status === 'synced' ? 'text-emerald-400' : 'text-[#d4af37]'}`}>{c.status === 'syncing' && <RefreshCw className="h-3 w-3 animate-spin" />}{c.status === 'synced' ? 'Synced' : 'Syncing'}</span></div>
+        <div key={c.id} className="glass glass-hover rounded-2xl p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-1"><span className="min-w-0 truncate font-semibold text-[#f0ecdd]">{c.broker}</span><span className={`flex shrink-0 items-center gap-1.5 text-xs ${c.status === 'synced' ? 'text-emerald-400' : 'text-[#d4af37]'}`}><span className={`h-1.5 w-1.5 rounded-full ${c.status === 'synced' ? 'bg-emerald-400' : 'bg-[#d4af37] animate-pulse'}`} />{c.status === 'synced' ? 'Synced' : 'Syncing'}</span></div>
           <div className="mt-1 truncate font-mono text-xs text-[#8a8577]">{c.accountRef}</div>
           <div className="mt-2 truncate font-mono text-xl font-semibold text-[#f0ecdd]">{fmtMoney(c.balance || 0)}</div>
           <div className="mt-1 text-[11px] text-[#8a8577]">Last sync: {timeAgo(c.lastSync)}</div>
@@ -141,10 +142,11 @@ export function BrokersPage() {
 
   return (
     <AppLayout title="Broker Connections">
-      <div className="mb-6 flex items-start gap-3 rounded-2xl border border-[#d4af37]/15 bg-[#d4af37]/[0.06] p-4">
-        <Bot className="mt-0.5 h-5 w-5 shrink-0 text-[#d4af37]" />
-        <p className="text-sm text-[#c9c4b4]">Connect a <span className="text-[#f0ecdd]">live broker</span> or <span className="text-[#f0ecdd]">prop-firm account</span> and the AI engine syncs your full historical and live trade history plus your real account balance — no manual entry. <span className="text-[#f0ecdd]">Demo accounts are not supported</span>; only live and funded accounts are allowed.</p>
-      </div>
+      <PageHeader
+        icon={Plug}
+        kicker="Account syncing"
+        description={<>Connect a <span className="text-[#f0ecdd]">live broker</span> or <span className="text-[#f0ecdd]">prop-firm account</span> and the AI engine syncs your full historical and live trade history plus your real account balance — no manual entry. <span className="text-[#f0ecdd]">Demo accounts are not supported</span>; only live and funded accounts are allowed.</>}
+      />
 
       <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-[#8a8577]">Live trading accounts</h3>
       <ConnectedList items={liveAccts} />
