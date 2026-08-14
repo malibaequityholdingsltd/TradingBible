@@ -343,7 +343,7 @@ export default function LiveChatWidget() {
           onTouchStart={onPointerDown}
           aria-label="Open AI assistant (drag to move)"
           title="TradingBible AI assistant"
-          className={`fixed z-[70] grid place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#c99a25] shadow-[0_8px_28px_rgba(212,175,55,0.35),0_0_0_1px_rgba(212,175,55,0.4)] ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]'}`}
+          className={`tv-chat-btn fixed z-[70] grid place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#c99a25] shadow-[0_8px_28px_rgba(212,175,55,0.35),0_0_0_1px_rgba(212,175,55,0.4)] ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]'}`}
           style={{ left: pos.x, top: pos.y, height: BTN, width: BTN, touchAction: 'none' }}
         >
           <img src={TRADINGBIBLE_LOGO} alt="" className="h-9 w-9 rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />

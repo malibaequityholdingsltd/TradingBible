@@ -246,7 +246,7 @@ export default function TvWidget() {
             <div className="flex items-center gap-1.5">
               {ads.map((a, i) => (
                 <button key={a.id} onClick={() => setIndex(i)} aria-label={`Broadcast ${i + 1}`}
-                  className={`h-1.5 rounded-full transition-all ${i === index % ads.length ? 'w-5 bg-[#d4af37]' : 'w-1.5 bg-white/15 hover:bg-white/30'}`} />
+                  className={`${i === index % ads.length ? 'tv-tv-dot-active w-5 bg-[#d4af37]' : 'tv-tv-dot w-1.5 bg-white/15 hover:bg-white/30'} h-1.5 rounded-full transition-all`} />
               ))}
             </div>
             <button onClick={() => setMuted((m) => !m)} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors" aria-label={muted ? 'Unmute' : 'Mute'}>
@@ -262,7 +262,7 @@ export default function TvWidget() {
           onTouchStart={onPointerDown}
           aria-label="Open TradingBible TV (drag to move)"
           title={ads.length > 0 ? `${ads.length} live broadcast${ads.length === 1 ? '' : 's'}` : 'TradingBible TV'}
-          className={`fixed z-[70] grid place-items-center rounded-full bg-gradient-to-br from-[#0c0c11] to-[#0a0a0f] text-[#d4af37] shadow-2xl ring-1 ring-[#d4af37]/40 ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105'}`}
+          className={`tv-tv-btn fixed z-[70] grid place-items-center rounded-full bg-gradient-to-br from-[#0c0c11] to-[#0a0a0f] text-[#d4af37] shadow-2xl ring-1 ring-[#d4af37]/40 ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105'}`}
           style={{ left: pos.x, top: pos.y, height: BTN, width: BTN, touchAction: 'none' }}
         >
           <img src={TRADINGBIBLE_LOGO} alt="" className="h-8 w-8 rounded-full object-contain opacity-90" onError={e => { e.currentTarget.style.display = 'none'; }} />
