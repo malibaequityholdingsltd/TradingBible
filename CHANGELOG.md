@@ -3,6 +3,7 @@
 ## v1.1.1 — Reliability + GitHub docs (2026-08-14)
 
 ### Fixes
+- **Wallet** works end-to-end: added missing `reserved`/`holdings` (`crypto_accounts`), card fields (`bank_cards`) and `asset`/`fiatValue`/`counterparty` (`bank_transactions`) via migration `20260814001000_wallet_columns.sql` — deposit/withdraw/buy/sell/send/cards previously failed with "column does not exist"
 - **Series endpoints** (`/intraday`, `/daily`, `/weekly`, `/monthly`) no longer return empty candles: crypto now proxies live Binance klines (`BTCUSDT` symbols canonicalized), non-crypto falls back to Alpha Vantage → synthetic so charts always render
 - **Quotes** accept Binance-style symbols (`BTCUSDT → BTCUSD`, `PAXGUSDT → XAUUSD`) and resolve to live data
 - **Community forum** works end-to-end: added missing `category`/`authorName`/`authorAvatar`/`replyCount` columns (migration `20260814000000_forum_content_columns.sql`), seeded starter threads, idempotent seed scripts (`scripts/seed-forum.js`, `scripts/seed-demo-ads.js`)
