@@ -9,6 +9,7 @@ import heatmap from './heatmap.js';
 import economicCalendar from './economic-calendar.js';
 import authSendEmail from './auth-send-email.js';
 import { intraday, daily, weekly, monthly } from './market-series.js';
+import walletRouter from './wallet.js';
 import paddleRouter from './paddle.js';
 import affiliateRouter from './affiliate.js';
 import securityRouter from './security.js';
@@ -31,6 +32,7 @@ export default () => {
     router.get('/daily', daily);
     router.get('/weekly', weekly);
     router.get('/monthly', monthly);
+    router.use('/wallet', walletRouter);
     router.use('/paddle', paddleRouter);
     router.use('/affiliate', affiliateRouter);
     router.use('/security', securityRouter);

@@ -50,6 +50,27 @@ Economic events calendar.
 
 **Supabase Send-Email webhook endpoint** — receives signed events (`webhook-id`, `webhook-timestamp`, `webhook-signature`) and emails brand-styled confirmation/magic-link/recovery/invite mail via SMTP. Verifies with `SEND_EMAIL_HOOK_SECRET`; returns `401` on bad signature. **Not for public use.**
 
+## Wallet (self-custody tracking)
+
+TradingBible never holds funds — these endpoints manage the user's registered
+public addresses and read live balances from the blockchain (keyless).
+
+### `GET /wallet`
+Requires `Authorization: Bearer <session token>`. Returns tracked wallets with
+live balances and USD values:
+
+```json
+{ "wallets": [{ "id": "...", "network": "bitcoin", "address": "bc1...", "currency": "BTC", "ok": true, "amount": 0.5, "usdValue": 31000 }], "totalUsd": 31000 }
+```
+
+Supported networks: `bitcoin`, `ethereum`, `usdc-ethereum`, `usdt-ethereum`, `usdc-base`, `usdc-polygon`, `solana`.
+
+### `POST /wallet`
+Body: `{ "network": "bitcoin", "address": "bc1...", "label": "Savings" }`. Validates network + address format. Max 20 trackers per user.
+
+### `DELETE /wallet/:id`
+Removes a tracked address (owner-scoped).
+
 ## Billing (Paddle)
 
 ### `POST /paddle/webhook`

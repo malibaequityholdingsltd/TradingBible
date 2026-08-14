@@ -25,6 +25,7 @@ All tables sit in the `public` schema. RLS is enabled; the browser only ever see
 |---|---|
 | `broker_accounts` `prop_firm_accounts` `crypto_accounts` | Connected accounts (sync with live P&L) |
 | `trades` | Trade journaling records |
+| `wallet_trackers` | Self-custody wallet tracking — registered public addresses (`owner`, `network`, `address`, `label`); balances are read live from the blockchain, TradingBible never holds funds |
 | `watchlists` | User symbol lists |
 | `chart_drawings` `terminal_layouts` | Persisted UI state |
 | `trading_signals` | Generated indicator signals |
