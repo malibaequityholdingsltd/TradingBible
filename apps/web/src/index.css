@@ -677,13 +677,26 @@ html.light .text-\[\#f5f2e8\],
 html.light .text-\[\#0f0f14\] { color: #2d3440; }
 
 html.light .bg-\[\#0f0f14\] { background-color: #fffef9; }
+html.light .bg-\[\#0f0f14\]\/60,
 html.light .bg-\[\#0f0f14\]\/70,
-html.light .bg-\[\#0f0f14\]\/80 { background-color: rgba(255, 254, 249, 0.85); }
+html.light .bg-\[\#0f0f14\]\/80,
+html.light .bg-\[\#0f0f14\]\/90,
+html.light .bg-\[\#0f0f14\]\/95 { background-color: rgba(255, 254, 249, 0.9); }
 html.light .bg-\[\#0d0d12\],
+html.light .bg-\[\#0d0d12\]\/95,
 html.light .bg-\[\#0c0c11\],
+html.light .bg-\[\#0c0c11\]\/85,
 html.light .bg-\[\#111113\] { background-color: #fffef9; }
-html.light .bg-\[\#0a0a0f\] { background-color: #fbf7ee; }
+html.light .bg-\[\#0a0a0f\],
+html.light .bg-\[\#0a0a0f\]\/60,
+html.light .bg-\[\#0a0a0f\]\/70,
+html.light .bg-\[\#0a0a0f\]\/95 { background-color: #fbf7ee; }
 html.light .bg-\[\#07070a\] { background-color: #f2efe7; }
+html.light .bg-\[\#07070a\]\/70,
+html.light .bg-\[\#07070a\]\/80,
+html.light .bg-\[\#07070a\]\/92,
+html.light .bg-\[\#07070a\]\/95 { background-color: #f2efe7; }
+html.light .bg-\[\#8a8577\]\/10 { background-color: rgba(60, 55, 40, 0.08); }
 html.light .via-\[\#0f0f14\]\/60 { --tw-gradient-via: rgba(255, 254, 249, 0.6); }
 html.light .via-\[\#0a0a0f\]\/60 { --tw-gradient-via: rgba(255, 254, 249, 0.6); }
 html.light .via-\[\#07070a\]\/25 { --tw-gradient-via: rgba(255, 254, 249, 0.25); }
