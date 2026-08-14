@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.1.2 (next) — Real wallet tracking
+
+Replaced the simulated wallet (demo deposit/withdraw/cards/buy/sell) with **real
+wallet balance tracking**. TradingBible does **not** custody funds: users add
+their own public addresses and the app reads live balances straight from the
+blockchain (keyless, no API keys required):
+
+- **Bitcoin** — mempool.space (fallback: Blockstream)
+- **Ethereum (ETH)** — public RPCs
+- **USDC** on Ethereum / Base / Polygon, **USDT** on Ethereum — `eth_call` token balances
+- **Solana (SOL)** — public RPC
+- USD values from Binance (fallback: CoinGecko), 30s price cache / 10s balance cache
+- New table `wallet_trackers` (owner-scoped RLS), API `GET/POST /api/wallet`, `DELETE /api/wallet/:id`
+- Wallet page rewritten: add/remove tracked addresses, live balances + USD totals,
+  explorer links. All deposit/withdraw/buy/sell/send/card flows removed.
+
 ## v1.1.1 — Reliability + GitHub docs (2026-08-14)
 
 ### Fixes
