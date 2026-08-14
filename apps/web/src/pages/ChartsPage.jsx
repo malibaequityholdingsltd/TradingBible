@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Square, Columns2, Grid2x2 } from 'lucide-react';
+import { Square, Columns2, Grid2x2, CandlestickChart } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import PageHeader from '@/components/PageHeader';
 import LiveChart from '@/components/LiveChart';
 import AddToWatchlist from '@/components/AddToWatchlist';
 
@@ -25,20 +26,24 @@ export default function ChartsPage() {
 
   return (
     <AppLayout title="Advanced Charts">
-      <div className="mb-4 flex items-center justify-between">
-        <p className="hidden text-sm text-[#8a8577] sm:block">TradingView-grade live charts — draw trendlines, levels and annotations that save to your account per symbol.</p>
-        <div className="flex items-center gap-2">
-          {layout === 'single' && <AddToWatchlist symbol={qsSymbol} />}
-          <div className="flex overflow-hidden rounded-lg border border-[#d4af37]/15">
-            {LAYOUTS.map((l) => (
-              <button key={l.id} onClick={() => setLayout(l.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs transition ${layout === l.id ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
-                <l.icon className="h-3.5 w-3.5" /><span className="hidden sm:inline">{l.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        icon={CandlestickChart}
+        kicker="Live charting"
+        description="TradingView-grade live charts — draw trendlines, levels and annotations that save to your account per symbol."
+        actions={
+          <>
+            {layout === 'single' && <AddToWatchlist symbol={qsSymbol} />}
+            <div className="flex overflow-hidden rounded-lg border border-[#d4af37]/15">
+              {LAYOUTS.map((l) => (
+                <button key={l.id} onClick={() => setLayout(l.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs transition ${layout === l.id ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
+                  <l.icon className="h-3.5 w-3.5" /><span className="hidden sm:inline">{l.label}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        }
+      />
 
       {layout === 'single' && (
         <LiveChart key={qsSymbol} initialSymbol={qsSymbol} initialTimeframe="1h"
@@ -47,9 +52,9 @@ export default function ChartsPage() {
 
       {layout === 'split' && (
         <div className="grid gap-4 xl:grid-cols-2">
-          <LiveChart initialSymbol="BTCUSD" initialTimeframe="1h" compact drawingsEnabled={false}
+          <LiveChart initialSymbol="BTCUSD" initialTimeframe="1h" compact
             initialIndicators={[{ id: 'ema-1', type: 'ema', params: { period: 21 }, color: '#60a5fa' }]} />
-          <LiveChart initialSymbol="ETHUSD" initialTimeframe="1h" compact drawingsEnabled={false}
+          <LiveChart initialSymbol="ETHUSD" initialTimeframe="1h" compact
             initialIndicators={[{ id: 'bb-1', type: 'bollinger', params: { period: 20, mult: 2 }, color: '#34d399' }]} />
         </div>
       )}
@@ -57,7 +62,7 @@ export default function ChartsPage() {
       {layout === 'grid' && (
         <div className="grid gap-4 xl:grid-cols-2">
           {GRID_DEFAULTS.map((g, i) => (
-            <LiveChart key={i} initialSymbol={g.symbol} initialTimeframe={g.tf} initialType={g.type} compact drawingsEnabled={false} />
+            <LiveChart key={i} initialSymbol={g.symbol} initialTimeframe={g.tf} initialType={g.type} compact />
           ))}
         </div>
       )}

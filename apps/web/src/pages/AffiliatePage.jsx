@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { BadgeDollarSign, Copy, Check, Link2, RefreshCw, Share2, Users, MousePointerClick, Banknote } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import PageHeader from '@/components/PageHeader';
 import { useToast } from '@/hooks/use-toast';
 import { affiliateStats, registerAffiliate, claimAffiliatePayout } from '@/lib/affiliate';
 
@@ -72,9 +73,11 @@ export default function AffiliatePage() {
 
   return (
     <AppLayout title="Affiliate Program">
-      <p className="mb-5 max-w-2xl text-sm text-[#8a8577]">
-        Earn <span className="font-semibold text-[#d4af37]">{(data?.rate || 15) * 100}% commission</span> for every signup you refer. Share your link, track clicks and signups, and request payouts from this dashboard.
-      </p>
+      <PageHeader
+        icon={Share2}
+        kicker="Referral rewards"
+        description={<>Earn <span className="font-semibold text-[#d4af37]">{(data?.rate || 15) * 100}% commission</span> for every signup you refer. Share your link, track clicks and signups, and request payouts from this dashboard.</>}
+      />
 
       {loading ? (
         <div className="grid place-items-center py-16 text-sm text-[#8a8577]">Loading your affiliate dashboard...</div>
@@ -86,16 +89,16 @@ export default function AffiliatePage() {
         </div>
       ) : (
         <>
-          <div className="mb-6 rounded-2xl glass p-5">
+          <div className="mb-6 overflow-hidden rounded-2xl border border-[#d4af37]/15 bg-gradient-to-r from-[#d4af37]/[0.08] via-transparent to-transparent p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><Link2 className="h-4 w-4 text-[#d4af37]" /> Your referral link</div>
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="font-mono text-sm text-[#f0ecdd]">{link}</span>
-                  <span className="rounded-full bg-white/5 px-2 py-0.5 text-[11px] font-bold text-[#d4af37]">REF:{refCode.toUpperCase()}</span>
+                <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
+                  <span className="truncate font-mono text-sm text-[#f0ecdd]">{link}</span>
+                  <span className="rounded-full border border-[#d4af37]/25 bg-[#d4af37]/10 px-2 py-0.5 text-[11px] font-bold tracking-wide text-[#d4af37]">REF:{refCode.toUpperCase()}</span>
                 </div>
               </div>
-              <button onClick={copy} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">
+              <button onClick={copy} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} {copied ? 'Copied!' : 'Copy link'}
               </button>
             </div>

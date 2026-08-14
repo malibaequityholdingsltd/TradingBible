@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { MessageSquare, Trophy, Plus, Send, X } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import PageHeader from '@/components/PageHeader';
 import pb from '@/lib/pocketbaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -116,10 +117,12 @@ function Forum() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm text-[#8a8577]">Discuss strategy, psychology and markets with the community.</p>
-        <button onClick={() => setCreating(!creating)} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f]"><Plus className="h-4 w-4" /> New thread</button>
-      </div>
+      <PageHeader
+        icon={MessageSquare}
+        kicker="Community"
+        description="Discuss strategy, psychology and markets with the community."
+        actions={<button onClick={() => setCreating(!creating)} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f]"><Plus className="h-4 w-4" /> New thread</button>}
+      />
 
       {creating && (
         <form onSubmit={create} className="mb-5 glass rounded-2xl p-5">
@@ -146,7 +149,7 @@ function Forum() {
                 <div className="mt-1 truncate font-medium text-[#f0ecdd]">{t.title}</div>
                 <div className="truncate text-xs text-[#8a8577]">{t.authorName || 'trader'} · {timeAgo(t.created)}</div>
               </div>
-              <div className="flex shrink-0 items-center gap-1 text-xs text-[#8a8577]"><MessageSquare className="h-3.5 w-3.5" />{t.replyCount || 0}</div>
+              <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#d4af37]/15 bg-[#d4af37]/[0.06] px-2.5 py-1 text-xs text-[#c9c4b4]"><MessageSquare className="h-3.5 w-3.5 text-[#d4af37]" />{t.replyCount || 0}</div>
             </button>
           ))}
         </div>
@@ -205,7 +208,7 @@ function Leaderboard() {
           <tbody>
             {rows.map((t, i) => (
               <tr key={t.name} className="border-t border-white/5">
-                <td className="p-3"><span className={`grid h-7 w-7 place-items-center rounded-full text-xs font-bold ${i === 0 ? 'bg-[#d4af37] text-[#0a0a0f]' : i < 3 ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577]'}`}>{i + 1}</span></td>
+                <td className="p-3"><span className={`grid h-7 w-7 place-items-center rounded-full text-xs font-bold ${i === 0 ? 'bg-gradient-to-br from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : i === 1 ? 'bg-white/10 text-[#c9c4b4]' : i === 2 ? 'bg-[#a67c1e]/30 text-[#d4af37]' : 'text-[#8a8577]'}`}>{i + 1}</span></td>
                 <td className="p-3 font-medium text-[#f0ecdd]">@{t.name}</td>
                 <td className="p-3 text-right font-mono text-[#c9c4b4]">{t.threads}</td>
                 <td className="p-3 text-right font-mono text-[#c9c4b4]">{t.replies}</td>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Crown, Check, CreditCard, RefreshCw, XCircle, RotateCcw, ArrowUpRight, ShieldCheck, Receipt, AlertTriangle } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import PageHeader from '@/components/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { PLANS } from '@/lib/mockData';
@@ -102,22 +103,26 @@ export default function BillingPage() {
 
   const status = sub?.status || (currentPlan === 'trial' ? 'trialing' : null);
   const hasSub = Boolean(sub?.id);
+  const isAdmin = user?.role === 'admin';
   const cancelScheduled = sub?.scheduled_change?.action === 'cancel' || user?.cancelScheduled;
   const periodEnd = sub?.current_billing_period?.ends_at || user?.currentPeriodEnd;
 
   return (
     <AppLayout title="Billing & Subscription">
-      {paddleEnv && (
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <span className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${paddleEnv === 'live' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#d4af37]/15 text-[#d4af37]'}`}>
+      <PageHeader
+        icon={Crown}
+        kicker="Subscription"
+        description="Manage your trial and paid subscription in one place. Changes apply instantly to your account access."
+        actions={paddleEnv && (
+          <span className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${paddleEnv === 'live' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#d4af37]/15 text-[#d4af37]'}`}>
             <span className={`h-1.5 w-1.5 rounded-full ${paddleEnv === 'live' ? 'bg-emerald-400' : 'bg-[#d4af37]'}`} />
             Paddle {paddleEnv === 'live' ? 'Live' : 'Sandbox'} environment
+            {paddleEnv !== 'live' && <span className="hidden font-normal text-[#8a8577] sm:inline">· test mode</span>}
           </span>
-          {paddleEnv !== 'live' && <span className="text-xs text-[#8a8577]">Test mode — payments are simulated, no real charges occur.</span>}
-        </div>
-      )}
+        )}
+      />
 
-      {!configured && (
+      {isAdmin && !configured && (
         <div className="mb-6 flex items-start gap-3 rounded-2xl border border-[#d4af37]/25 bg-[#d4af37]/[0.06] p-4">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#d4af37]" />
           <div className="text-sm text-[#c9c4b4]">
@@ -126,10 +131,6 @@ export default function BillingPage() {
           </div>
         </div>
       )}
-
-      <p className="mb-4 text-sm text-[#8a8577]">
-        Manage your trial and paid subscription in one place. Changes apply instantly to your account access.
-      </p>
 
       {/* Current subscription */}
       <div className="mb-6 glass rounded-2xl p-6">
