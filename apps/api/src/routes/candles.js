@@ -85,7 +85,7 @@ export default async (req, res) => {
 		return res.status(422).json({ error: `interval must be one of ${VALID_INTERVALS.join(', ')}` });
 	}
 
-	const binanceSymbol = CRYPTO_MAP[symbol];
+	const binanceSymbol = binanceSymbolFor(symbol);
 	if (binanceSymbol) {
 		const upstream = await fetch(
 			`https://api.binance.com/api/v3/klines?symbol=${binanceSymbol}&interval=${interval}&limit=${limit}`,

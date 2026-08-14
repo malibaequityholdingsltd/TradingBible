@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.1.1 — Reliability + GitHub docs (2026-08-14)
+
+### Fixes
+- **Series endpoints** (`/intraday`, `/daily`, `/weekly`, `/monthly`) no longer return empty candles: crypto now proxies live Binance klines (`BTCUSDT` symbols canonicalized), non-crypto falls back to Alpha Vantage → synthetic so charts always render
+- **Quotes** accept Binance-style symbols (`BTCUSDT → BTCUSD`, `PAXGUSDT → XAUUSD`) and resolve to live data
+- **Community forum** works end-to-end: added missing `category`/`authorName`/`authorAvatar`/`replyCount` columns (migration `20260814000000_forum_content_columns.sql`), seeded starter threads, idempotent seed scripts (`scripts/seed-forum.js`, `scripts/seed-demo-ads.js`)
+- **Academy waitlist** join no longer fails (form wrote a nonexistent `interest` column)
+- **Learn & Connect** (Community/Academy) now visible to all logged-in users, not just subscribers
+- **TV ads feed** seeded with a placeholder broadcast so TradingBible TV renders content
+- **Branded auth emails** go live via the Supabase Send Email hook → `POST /api/auth/send-email` (signature-verified, Hostinger SMTP)
+- Git remote moved to `github.com/malibaequityholdingsltd/TradingBible`
+
+### Docs
+- New GitHub documentation set: `docs/architecture.md`, `docs/api.md`, `docs/environment.md`, `docs/database.md`, `docs/deployment.md`; README rewritten
+
 ## v1.1.0 — AI assistant on DeepSeek V4 Flash + redesigned chat widget
 
 ### Features
