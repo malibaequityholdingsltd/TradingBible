@@ -425,8 +425,18 @@ html.light .text-\[\#8a8577\],
 html.light .text-\[\#b3ae9e\],
 html.light .text-\[\#9a9587\],
 html.light .text-\[\#5f5b50\],
-html.light .text-\[\#6a665a\] {
+html.light .text-\[\#6a665a\],
+html.light .text-\[\#5a564a\] {
   color: #565d68 !important;
+}
+
+/* AI chat widget — translucent surfaces keep their translucency in light mode */
+html.light .bg-\[\#0c0c11\]\/85 { background-color: rgba(251, 249, 243, 0.88) !important; }
+html.light .bg-\[\#0a0a0f\]\/70 { background-color: rgba(251, 249, 243, 0.75) !important; }
+html.light .bg-\[\#0a0a0f\]\/60 { background-color: rgba(251, 249, 243, 0.7) !important; }
+html.light .bg-\[\#0f0f14\]\/90 { background-color: rgba(251, 249, 243, 0.92) !important; }
+html.light .tv-chat-panel {
+  box-shadow: 0 24px 80px -40px rgba(60, 55, 40, 0.5), 0 0 40px rgba(166, 124, 30, 0.18) !important;
 }
 
 /* Gold accents — darken for contrast on light surfaces */
