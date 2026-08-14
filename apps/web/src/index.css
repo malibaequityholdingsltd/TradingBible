@@ -439,6 +439,21 @@ html.light .tv-chat-panel {
   box-shadow: 0 24px 80px -40px rgba(60, 55, 40, 0.5), 0 0 40px rgba(166, 124, 30, 0.18) !important;
 }
 
+/* Floating launchers + TV widget — light-mode surfaces the Tailwind remaps
+   cannot reach (gradient stops, translucent hover states). */
+html.light .tv-tv-btn {
+  background: linear-gradient(135deg, #fbf9f3 0%, #efe8d8 100%) !important;
+  box-shadow: 0 8px 24px -12px rgba(60, 55, 40, 0.4), 0 0 0 1px rgba(166, 124, 30, 0.35) !important;
+}
+html.light .tv-chat-btn {
+  box-shadow: 0 8px 24px -12px rgba(166, 124, 30, 0.45), 0 0 0 1px rgba(166, 124, 30, 0.4) !important;
+}
+html.light .tv-tv-dot { background-color: rgba(45, 52, 64, 0.18) !important; }
+html.light .tv-tv-dot-active { background-color: #a67c1e !important; }
+html.light .hover\:bg-white\/5:hover {
+  background-color: rgba(45, 52, 64, 0.06) !important;
+}
+
 /* Gold accents — darken for contrast on light surfaces */
 html.light .text-\[\#d4af37\] {
   color: #a67c1e !important;
