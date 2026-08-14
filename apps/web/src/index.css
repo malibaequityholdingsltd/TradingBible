@@ -697,9 +697,21 @@ html.light .bg-\[\#07070a\]\/80,
 html.light .bg-\[\#07070a\]\/92,
 html.light .bg-\[\#07070a\]\/95 { background-color: #f2efe7; }
 html.light .bg-\[\#8a8577\]\/10 { background-color: rgba(60, 55, 40, 0.08); }
-html.light .via-\[\#0f0f14\]\/60 { --tw-gradient-via: rgba(255, 254, 249, 0.6); }
-html.light .via-\[\#0a0a0f\]\/60 { --tw-gradient-via: rgba(255, 254, 249, 0.6); }
-html.light .via-\[\#07070a\]\/25 { --tw-gradient-via: rgba(255, 254, 249, 0.25); }
+
+/* Tinted gradient surfaces (theme-aware; Tailwind `via-[#...]` inlines the stop
+   into --tw-gradient-stops so it can't be remapped for light mode) */
+.tint-hero {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.10), rgba(15, 15, 20, 0.55) 62%, transparent);
+}
+.tint-soft {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.12), rgba(10, 10, 15, 0.55) 70%, transparent);
+}
+html.light .tint-hero {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.16), rgba(255, 254, 249, 0.35) 62%, transparent);
+}
+html.light .tint-soft {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.16), rgba(255, 254, 249, 0.4) 70%, transparent);
+}
 
 /* white overlay chips/rows → warm neutral on ivory */
 html.light .bg-white\/\[0\.02\],
