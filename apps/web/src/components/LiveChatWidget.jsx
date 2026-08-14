@@ -170,16 +170,19 @@ export default function LiveChatWidget() {
             </div>
             <div className="leading-tight">
               <div className="gold-text text-[13px] font-bold tracking-wide">TradingBible AI</div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.14em] text-[#8a8577]">
-                <span className="text-emerald-400">●</span> live · deepseek v4 flash free
+              <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/20 bg-[#d4af37]/[0.06] px-2 py-[3px] font-mono text-[8.5px] uppercase tracking-[0.12em]">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
+                <span className="text-emerald-400">Live</span>
+                <span className="text-[#5a564a]">·</span>
+                <span className="text-[#d4af37]">DeepSeek V4 Flash Free</span>
               </div>
             </div>
             {messages.length > 0 && (
-              <button onClick={clearMessages} aria-label="Clear conversation" className="ml-auto grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
+              <button onClick={clearMessages} aria-label="Clear conversation" className="ml-auto grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/12 text-[#8a8577] hover:border-[#d4af37]/35 hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
                 <Eraser className="h-3.5 w-3.5" />
               </button>
             )}
-            <button onClick={() => setOpen(false)} aria-label="Close chat" className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
+            <button onClick={() => setOpen(false)} aria-label="Close chat" className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/12 text-[#8a8577] hover:border-[#d4af37]/35 hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
               <X className="h-4 w-4" />
             </button>
           </div>
