@@ -271,7 +271,7 @@ function useIntegratedAi() {
 				const last = updated[updated.length - 1];
 				updated[updated.length - 1] = {
 					...last,
-					content: (last.content || '') + stripMarkdown(parsed.data.content),
+					content: (last.content || '') + parsed.data.content,
 				};
 
 				return updated;
@@ -404,6 +404,18 @@ function useIntegratedAi() {
 		} finally {
 			abortControllerRef.current = null;
 			setIsStreaming(false);
+			// Markdown is stripped once on the finished message. Stripping per
+			// streaming delta ate whitespace-only chunks (spaces/newlines) and
+			// left raw markers like "**" behind.
+			setMessages((prev) => {
+				const updated = [...prev];
+				const last = updated[updated.length - 1];
+				if (last?.role === 'assistant' && last.content) {
+					updated[updated.length - 1] = { ...last, content: stripMarkdown(last.content) };
+				}
+
+				return updated;
+			});
 		}
 	}, [handleSSEEvent]);
 
