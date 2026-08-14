@@ -190,8 +190,8 @@ function RoutesWithBoundary() {
                     <Route path="/app/reports" element={<Protected><ReportsPage /></Protected>} />
                     <Route path="/app/coach" element={<SubscriberProtected><CoachPage /></SubscriberProtected>} />
                     <Route path="/app/tools" element={<SubscriberProtected><RiskToolsPage /></SubscriberProtected>} />
-                    <Route path="/app/community" element={<SubscriberProtected><CommunityPage /></SubscriberProtected>} />
-                    <Route path="/app/academy" element={<SubscriberProtected><AcademyPage /></SubscriberProtected>} />
+                    <Route path="/app/community" element={<Protected><CommunityPage /></Protected>} />
+                    <Route path="/app/academy" element={<Protected><AcademyPage /></Protected>} />
                     <Route path="/app/security" element={<Protected><SecurityPage /></Protected>} />
                     <Route path="/app/api-docs" element={<SubscriberProtected><ApiDocsPage /></SubscriberProtected>} />
                     <Route path="/app/integrations" element={<SubscriberProtected><IntegrationsPage /></SubscriberProtected>} />

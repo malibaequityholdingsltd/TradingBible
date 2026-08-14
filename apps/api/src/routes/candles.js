@@ -9,6 +9,13 @@ const CRYPTO_MAP = {
 	XAUUSD: 'PAXGUSDT',
 };
 
+// Resolve a trading symbol to a Binance kline symbol (null when not crypto).
+export function binanceSymbolFor(symbol) {
+	if (CRYPTO_MAP[symbol]) return CRYPTO_MAP[symbol];
+	if (/^[A-Z0-9]{2,10}USDT$/.test(symbol)) return symbol;
+	return null;
+}
+
 import { avCandles, isRateLimited } from '../utils/alphaVantage.js';
 
 const VALID_INTERVALS = ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w', '1M'];
@@ -41,8 +48,7 @@ const BASE_PRICE = {
 	GBPUSD: 1.271, USDJPY: 156.8, AUDUSD: 0.662, USDCAD: 1.368, USDCHF: 0.902,
 	NZDUSD: 0.612, XAUUSD: 2340, XAGUSD: 30.4, WTIUSD: 78.5, NATGAS: 2.9, COPPER: 4.5,
 };
-
-function synthCandles(symbol, interval, limit) {
+export function synthCandles(symbol, interval, limit) {
 	const step = INTERVAL_MS[interval];
 	const now = Date.now();
 	const rand = mulberry32(seedFromSymbol(symbol + interval));

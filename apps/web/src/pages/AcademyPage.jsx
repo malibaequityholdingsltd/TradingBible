@@ -81,7 +81,7 @@ function Waitlist() {
     if (!form.email) return;
     setBusy(true);
     try {
-      await pb.collection('academy_waitlist').create(form);
+      await pb.collection('academy_waitlist').create({ name: form.name, email: form.email });
       setDone(true);
       toast({ title: 'You’re on the list', description: 'We’ll email you the moment TradingBible Academy launches.' });
     } catch {

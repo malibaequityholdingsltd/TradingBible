@@ -55,8 +55,8 @@ const NAV_GROUPS = [
   {
     labelKey: 'nav.learn',
     items: [
-      { to: '/app/community', labelKey: 'nav.community', icon: Users, requiresSubscriber: true },
-      { to: '/app/academy', labelKey: 'nav.academy', icon: GraduationCap, requiresSubscriber: true },
+      { to: '/app/community', labelKey: 'nav.community', icon: Users },
+      { to: '/app/academy', labelKey: 'nav.academy', icon: GraduationCap },
       { to: '/app/api-docs', labelKey: 'nav.apidocs', icon: Code2, requiresSubscriber: true, hidden: true },
       { to: '/app/integrations', labelKey: 'nav.integrations', icon: Plug, requiresSubscriber: true, hidden: true },
     ],
