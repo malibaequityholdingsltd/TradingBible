@@ -211,7 +211,7 @@ export default function LiveChatWidget() {
                   </div>
                 )}
                 {isFirstRun && isAuthed && (
-                  <div className="rounded-2xl border border-[#d4af37]/12 bg-gradient-to-br from-[#d4af37]/[0.1] via-[#0a0a0f]/60 to-transparent p-3.5">
+                  <div className="tint-soft rounded-2xl border border-[#d4af37]/12 p-3.5">
                     <div className="flex items-center gap-2.5">
                       <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] text-[#0a0a0f] shadow-[0_0_18px_rgba(212,175,55,0.4)]">
                         <Sparkles className="h-4 w-4" />
