@@ -4,6 +4,7 @@ import { PassThrough, Readable } from 'node:stream';
 import { NodeEnv } from '../constants/common.js';
 import logger from '../utils/logger.js';
 import { supabaseRest } from '../utils/supabaseClient.js';
+import { streamOpencode } from './opencode-ai.js';
 
 const MessageRole = Object.freeze({
 	User: 'user',
@@ -255,20 +256,40 @@ function signImageReference(reference) {
  * @returns {Promise<import('node:stream').Readable>}
  */
 export async function stream({ userId, systemPrompt, userMessage }) {
-	const apiUrl = process.env.INTEGRATED_AI_API_URL;
+const apiUrl = process.env.INTEGRATED_AI_API_URL;
 	const apiKey = process.env.INTEGRATED_AI_API_KEY;
 	const websiteId = process.env.WEBSITE_ID;
+	const opencodeUrl = process.env.OPENCODE_SERVER_URL;
+	const deepSeekKey = process.env.DEEPSEEK_API_KEY;
 	const openAiBaseUrl = process.env.OPENAI_BASE_URL;
 	const openAiKey = process.env.OPENAI_API_KEY;
 
-	if ((!apiUrl || !apiKey || !websiteId) && (!openAiBaseUrl || !openAiKey)) {
-		throw new Error('The AI assistant is not configured yet (missing INTEGRATED_AI_API_URL / INTEGRATED_AI_API_KEY / WEBSITE_ID or OPENAI_BASE_URL / OPENAI_API_KEY). Please contact support.');
+	if ((!apiUrl || !apiKey || !websiteId) && !opencodeUrl && !deepSeekKey && (!openAiBaseUrl || !openAiKey)) {
+		throw new Error('The AI assistant is not configured yet (missing INTEGRATED_AI_API_URL / INTEGRATED_AI_API_KEY / WEBSITE_ID or OPENCODE_SERVER_URL or DEEPSEEK_API_KEY or OPENAI_BASE_URL / OPENAI_API_KEY). Please contact support.');
 	}
 
 	const history = await getHistory({ userId });
 
-	// OpenAI-compatible fallback (DeepSeek / OpenAI / Groq / any /v1/chat/completions provider).
+	// Provider resolution priority:
+	//   1. Integrated AI proxy (INTEGRATED_AI_*) — full agent/tool pipeline.
+	//   2. Local opencode gateway (OPENCODE_SERVER_URL) — free chat-only model
+	//      (e.g. opencode/deepseek-v4-flash-free), requires `opencode serve`.
+	//   3. DeepSeek (DEEPSEEK_*) — OpenAI-compatible /chat/completions, V4 Flash by default.
+	//   4. Any other OpenAI-compatible endpoint (OPENAI_*) — OpenAI / Groq / OpenRouter / etc.
 	if (!apiUrl || !apiKey || !websiteId) {
+		if (opencodeUrl) {
+			return streamOpencode({ userId, systemPrompt, userMessage });
+		}
+		if (deepSeekKey) {
+			return streamOpenAiCompatible({
+				systemPrompt,
+				userMessage,
+				baseUrl: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com',
+				apiKey: deepSeekKey,
+				model: process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash',
+				maxTokens: process.env.DEEPSEEK_MAX_TOKENS,
+			});
+		}
 		return streamOpenAiCompatible({ systemPrompt, userMessage });
 	}
 
@@ -381,35 +402,38 @@ async function parseSSEEvents({ stream }) {
 
 /**
  * Streams a chat completion from any OpenAI-compatible endpoint
- * (DeepSeek, OpenAI, Groq, etc.) and re-emits it as TradingBible SSE events
+ * (DeepSeek, OpenAI, Groq, OpenRouter, etc.) and re-emits it as TradingBible SSE events
  * so the client hook does not need to change.
  *
- * @param {{ systemPrompt: string, userMessage: ContentBlock[] }} params
+ * @param {{ systemPrompt: string, userMessage: ContentBlock[], baseUrl?: string, apiKey?: string, model?: string, maxTokens?: string }} params
  * @returns {Promise<import('node:stream').Readable>}
  */
-async function streamOpenAiCompatible({ systemPrompt, userMessage }) {
+async function streamOpenAiCompatible({ systemPrompt, userMessage, baseUrl, apiKey, model, maxTokens }) {
 	const text = userMessage
 		.filter((b) => b.type === ContentBlockType.Text)
 		.map((b) => b.text)
 		.join('\n')
 		.trim();
 
-	const endpoint = String(process.env.OPENAI_BASE_URL || '').replace(/\/+$/, '');
-	const model = process.env.OPENAI_MODEL || 'deepseek-chat';
+	const endpoint = String(baseUrl || process.env.OPENAI_BASE_URL || '').replace(/\/+$/, '');
+	const resolvedModel = model || process.env.OPENAI_MODEL || 'deepseek-v4-flash';
+	const resolvedKey = apiKey || process.env.OPENAI_API_KEY;
 
 	const response = await fetch(`${endpoint}/chat/completions`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+			'Authorization': `Bearer ${resolvedKey}`,
 		},
 		body: JSON.stringify({
-			model,
+			model: resolvedModel,
 			stream: true,
+			stream_options: { include_usage: true },
 			messages: [
 				{ role: 'system', content: systemPrompt },
 				{ role: 'user', content: text || 'Hello' },
 			],
+			...(maxTokens && { max_tokens: Number(maxTokens) }),
 		}),
 	});
 
@@ -446,10 +470,10 @@ async function streamOpenAiCompatible({ systemPrompt, userMessage }) {
 					const delta = event?.choices?.[0]?.delta?.content;
 					const reason = event?.choices?.[0]?.delta?.reasoning_content;
 					if (reason) {
-						passThrough.push(`data: ${JSON.stringify({ type: SSEEventType.Reasoning, data: { content: reason }, metadata: { agentName: model } })}\n\n`);
+						passThrough.push(`data: ${JSON.stringify({ type: SSEEventType.Reasoning, data: { content: reason }, metadata: { agentName: resolvedModel } })}\n\n`);
 					}
 					if (delta) {
-						passThrough.push(`data: ${JSON.stringify({ type: SSEEventType.Content, data: { content: delta }, metadata: { agentName: model } })}\n\n`);
+						passThrough.push(`data: ${JSON.stringify({ type: SSEEventType.Content, data: { content: delta }, metadata: { agentName: resolvedModel } })}\n\n`);
 					}
 				}
 			}
