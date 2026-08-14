@@ -1,24 +1,50 @@
-// Alpha Vantage series endpoints: /intraday, /daily, /weekly, /monthly.
-// Each returns real OHLCV candles (cached) with a graceful fallback flag when
-// the free key (25 req/day) is throttled or the symbol is unsupported.
+// Series endpoints: /intraday, /daily, /weekly, /monthly.
+// Crypto symbols proxy Binance klines (real data); everything else tries
+// Alpha Vantage (cached) and falls back to synthetic candles so the chart
+// never renders empty, even when the free key is throttled.
 import { avCandles, isRateLimited } from '../utils/alphaVantage.js';
+import { binanceSymbolFor, synthCandles } from './candles.js';
 
 function makeHandler(defaultInterval) {
 	return async (req, res) => {
-		const symbol = String(req.query.symbol || 'AAPL').toUpperCase();
+		const symbol = String(req.query.symbol || 'BTCUSD').toUpperCase();
 		const interval = String(req.query.interval || defaultInterval);
 		let limit = parseInt(req.query.limit, 10) || 150;
 		limit = Math.min(Math.max(limit, 20), 500);
 
-		if (isRateLimited()) {
-			return res.json({ symbol, interval, source: 'alphavantage', delayed: true, candles: [] });
+		const bSymbol = binanceSymbolFor(symbol);
+		if (bSymbol) {
+			try {
+				const upstream = await fetch(
+					`https://api.binance.com/api/v3/klines?symbol=${bSymbol}&interval=${interval}&limit=${limit}`,
+				);
+				if (upstream.ok) {
+					const rows = await upstream.json();
+					const candles = rows.map((r) => ({
+						time: r[0],
+						open: +r[1], high: +r[2], low: +r[3], close: +r[4], volume: +r[5],
+					}));
+					if (candles.length) {
+						return res.json({ symbol, interval, source: 'binance', delayed: false, candles });
+					}
+				}
+			} catch {
+				// fall through to Alpha Vantage / synthetic
+			}
 		}
 
-		const candles = await avCandles(symbol, interval, limit);
-		if (!candles || !candles.length) {
-			return res.json({ symbol, interval, source: 'alphavantage', delayed: true, candles: [] });
+		if (!isRateLimited()) {
+			try {
+				const candles = await avCandles(symbol, interval, limit);
+				if (candles && candles.length) {
+					return res.json({ symbol, interval, source: 'alphavantage', delayed: false, candles });
+				}
+			} catch {
+				// fall through to synthetic
+			}
 		}
-		return res.json({ symbol, interval, source: 'alphavantage', delayed: false, candles });
+
+		return res.json({ symbol, interval, source: 'synthetic', delayed: true, candles: synthCandles(symbol, interval, limit) });
 	};
 }
 

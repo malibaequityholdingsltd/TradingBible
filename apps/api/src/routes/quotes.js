@@ -95,7 +95,11 @@ async function finnhubQuote(symbol) {
 
 export default async (req, res) => {
 	const raw = String(req.query.symbols || '').toUpperCase();
-	const symbols = raw.split(',').map((s) => s.trim()).filter(Boolean).slice(0, 60);
+	// Canonicalize Binance-style names (BTCUSDT → BTCUSD, PAXGUSDT → XAUUSD).
+	const rev = new Map(Object.entries(CRYPTO_MAP).map(([k, v]) => [v, k]));
+	const symbols = raw
+		.split(',').map((s) => s.trim()).filter(Boolean).slice(0, 60)
+		.map((s) => rev.get(s) ?? s);
 	if (!symbols.length) return res.json({ quotes: [] });
 
 	// Live crypto batch
