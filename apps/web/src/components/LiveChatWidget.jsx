@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { X, Send, Sparkles, BarChart3, Cable, Wallet, Target, Info, Wrench, MessageSquare, Eraser, ExternalLink } from 'lucide-react';
+import { X, Send, Sparkles, BarChart3, Cable, Wallet, Target, Info, Wrench, MessageSquare, MessageCircle, Eraser, ExternalLink } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useIntegratedAi } from '@/hooks/use-integrated-ai';
@@ -349,7 +349,7 @@ export default function LiveChatWidget() {
           className={`tv-chat-btn fixed z-[70] grid place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#c99a25] shadow-[0_8px_28px_rgba(212,175,55,0.35),0_0_0_1px_rgba(212,175,55,0.4)] ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]'}`}
           style={{ left: pos.x, top: pos.y, height: BTN, width: BTN, touchAction: 'none' }}
         >
-          <img src={TRADINGBIBLE_LOGO} alt="" className="h-9 w-9 rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
+          <MessageCircle className="h-6 w-6 text-[#0a0a0f]" strokeWidth={2.2} />
           <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#0c0c11] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
         </button>
       )}
