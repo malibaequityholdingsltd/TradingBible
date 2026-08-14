@@ -16,7 +16,7 @@ export function useDrawings(symbol) {
     if (!uid) return;
     try {
       const list = await pb.collection('chart_drawings').getFullList({
-        filter: `symbol = "${symbol}" && isTemplate = true`,
+        filter: `symbol = "${symbol}" && is_template = true`,
         sort: '-created',
         requestKey: `tpl-${symbol}`,
       });
@@ -32,7 +32,7 @@ export function useDrawings(symbol) {
       if (!uid) { setDrawings([]); setRecordId(null); setLoaded(true); return; }
       try {
         const rec = await pb.collection('chart_drawings').getFirstListItem(
-          `owner = "${uid}" && symbol = "${symbol}" && isTemplate = false`,
+          `owner = "${uid}" && symbol = "${symbol}" && is_template = false`,
           { requestKey: `live-${symbol}` },
         );
         if (!active) return;
@@ -59,7 +59,7 @@ export function useDrawings(symbol) {
           await pb.collection('chart_drawings').update(recordId, { data: next }, { requestKey: `save-${symbol}` });
         } else {
           const rec = await pb.collection('chart_drawings').create({
-            owner: uid, symbol, isTemplate: false, shared: false, data: next, name: 'live',
+            owner: uid, symbol, is_template: false, shared: false, data: next, name: 'live',
           }, { requestKey: `save-${symbol}` });
           setRecordId(rec.id);
         }
@@ -78,7 +78,7 @@ export function useDrawings(symbol) {
   const saveTemplate = useCallback(async (name, shared) => {
     if (!uid) return;
     await pb.collection('chart_drawings').create({
-      owner: uid, symbol, isTemplate: true, shared: !!shared, name: name || 'Template', data: drawings,
+      owner: uid, symbol, is_template: true, shared: !!shared, name: name || 'Template', data: drawings,
     });
     loadTemplates();
   }, [uid, symbol, drawings, loadTemplates]);
