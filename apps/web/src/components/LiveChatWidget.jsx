@@ -238,7 +238,7 @@ export default function LiveChatWidget() {
                             <img src={TRADINGBIBLE_LOGO} alt="" className="h-[15px] w-[15px] rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
                           </div>
                         )}
-                        <div className={`rounded-2xl px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap ${m.from === 'you'
+                        <div className={`min-w-0 break-words rounded-2xl px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap ${m.from === 'you'
                           ? 'rounded-br-md bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_3px_14px_rgba(212,175,55,0.3)]'
                           : 'glass rounded-bl-md border border-[#d4af37]/10 text-[#e9e7df]'}`}>
                           {m.images && m.images.length > 0 && m.images.map((img, i) => (img ? <img key={i} src={img} alt="Generated" className="mb-2 max-h-36 rounded-lg" /> : null))}
