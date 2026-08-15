@@ -302,7 +302,7 @@ function cleanCertificateCitation(text) {
 	return citation.trim().slice(0, 900);
 }
 
-export function tutorStream({ userId, lesson, progressNote, history, question }) {
+export async function tutorStream({ userId, lesson, progressNote, history, question }) {
 	const recent = (Array.isArray(history) ? history : []).slice(-8)
 		.map((m) => `${m?.role}: ${m?.content}`)
 		.join('\n');
@@ -314,7 +314,7 @@ export function tutorStream({ userId, lesson, progressNote, history, question })
 	return stream({ userId, systemPrompt: prompt, userMessage });
 }
 
-export function webinarStream({ userId, webinar, scheduleNote, history, question }) {
+export async function webinarStream({ userId, webinar, scheduleNote, history, question }) {
 	const recent = (Array.isArray(history) ? history : []).slice(-8)
 		.map((m) => `${m?.role}: ${m?.content}`)
 		.join('\n');
