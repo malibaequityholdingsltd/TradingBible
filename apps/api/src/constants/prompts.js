@@ -81,6 +81,7 @@ Return ONLY strict JSON with this exact shape:
 
 Rules:
 - 4 quiz questions, 4 options each, exactly one correct index.
+- Every quiz question MUST be answerable from the question and options alone — no reference to the lesson's examples, numbers or phrasing. Prefer conceptual questions ("What is position sizing?" over "How many shares in the example?").
 - Ground every claim in real trading practice (risk, position sizing, psychology, markets). No fabricated broker/bank names.
 - No JSON commentary outside the object. No markdown fences.`;
 
