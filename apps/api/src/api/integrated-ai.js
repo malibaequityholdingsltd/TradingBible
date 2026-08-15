@@ -4,7 +4,7 @@ import { PassThrough, Readable } from 'node:stream';
 import { NodeEnv } from '../constants/common.js';
 import logger from '../utils/logger.js';
 import { supabaseRest } from '../utils/supabaseClient.js';
-import { streamOpencode } from './opencode-ai.js';
+import { streamOpencode, completeOpencode } from './opencode-ai.js';
 
 const MessageRole = Object.freeze({
 	User: 'user',
