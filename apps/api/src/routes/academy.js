@@ -8,6 +8,7 @@ import {
 	generateCurriculum,
 	generateLessonContent,
 	gradeQuiz,
+	stripStreamNarration,
 	tutorStream,
 	webinarStream,
 } from '../api/academy.js';
@@ -286,7 +287,7 @@ router.post('/tutor/stream', academyAiRateLimit, async (req, res) => {
 		res.setHeader('Cache-Control', 'no-cache');
 		res.setHeader('Connection', 'keep-alive');
 		res.setHeader('X-Accel-Buffering', 'no');
-		sse.pipe(res, { end: false });
+		sse.pipe(stripStreamNarration()).pipe(res, { end: false });
 		res.on('close', () => sse.destroy());
 	} catch (err) {
 		logger.error('academy tutor failed', String(err?.message || err));
@@ -310,7 +311,7 @@ router.post('/webinar/stream', academyAiRateLimit, async (req, res) => {
 		res.setHeader('Cache-Control', 'no-cache');
 		res.setHeader('Connection', 'keep-alive');
 		res.setHeader('X-Accel-Buffering', 'no');
-		sse.pipe(res, { end: false });
+		sse.pipe(stripStreamNarration()).pipe(res, { end: false });
 		res.on('close', () => sse.destroy());
 	} catch (err) {
 		logger.error('academy webinar failed', String(err?.message || err));
