@@ -54,7 +54,9 @@ Design a complete, personalized learning path for this student. Return ONLY stri
 }
 
 Rules:
-- 4 courses per path, 4-6 lessons per course.
+- 4 courses per path, 4-6 lessons per course. Course 1 must assume ZERO prior knowledge — no jargon, no skipped steps.
+- The path MUST teach beginning to end in strict order. Course 1 = mindset + absolute fundamentals (what trading is, broker mechanics, risk first). Course 2 = core skill (charting, entries, exits). Course 3 = application (strategies, sessions, practice routine). Course 4 = independence (advanced risk, psychology, capstone: the student's own complete trading plan).
+- Every lesson builds on the previous one; later lessons may reference earlier lessons. Nothing in course N+1 may assume knowledge only taught in course N+2.
 - Sequence matters: foundations first, then skill, then application.
 - No JSON commentary outside the object. No markdown fences.`;
 
@@ -80,6 +82,7 @@ Return ONLY strict JSON with this exact shape:
 }
 
 Rules:
+- Open the lesson with a one-line bridge: what the student learned in the previous lesson and how this one extends it (unless it's the first lesson — then open by assuming zero knowledge).
 - 4 quiz questions, 4 options each, exactly one correct index.
 - Every quiz question MUST be answerable from the question and options alone — no reference to the lesson's examples, numbers or phrasing. Prefer conceptual questions ("What is position sizing?" over "How many shares in the example?").
 - Ground every claim in real trading practice (risk, position sizing, psychology, markets). No fabricated broker/bank names.
