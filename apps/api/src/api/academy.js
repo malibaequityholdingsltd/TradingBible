@@ -282,11 +282,24 @@ export async function generateCertificate({ pathName, stats }) {
 			systemPrompt: AcademyCertificatePrompt(pathName, stats),
 			userMessage: [textBlock('Write my certificate citation.')],
 		});
-		return String(text || '').trim();
+		return cleanCertificateCitation(String(text || ''));
 	} catch (err) {
 		logger.error('academy certificate failed', String(err?.message || err));
 		return '';
 	}
+}
+
+// The assistant sometimes wraps the citation in meta-commentary
+// ("The user wants a certificate citation..."). Drop the chatter, keep
+// the actual citation paragraph.
+function cleanCertificateCitation(text) {
+	const paras = String(text)
+		.split(/\n{2,}/)
+		.map((p) => p.trim())
+		.filter(Boolean);
+	const meta = /^(the user|as the|i should|this is|you are|per the|the system|ok(ay)?[,!.]|sure|here['’]s|let me)/i;
+	const citation = paras.filter((p) => !meta.test(p)).join('\n\n') || text;
+	return citation.trim().slice(0, 900);
 }
 
 export function tutorStream({ userId, lesson, progressNote, history, question }) {
