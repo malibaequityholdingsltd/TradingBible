@@ -4,6 +4,7 @@
 // students. Generated content is cached per user so the AI only runs once
 // per piece of content.
 
+import { Transform } from 'node:stream';
 import logger from '../utils/logger.js';
 import { supabaseRest } from '../utils/supabaseClient.js';
 import { generateText, stream } from './integrated-ai.js';
@@ -327,4 +328,65 @@ export async function webinarStream({ userId, webinar, scheduleNote, history, qu
 		systemPrompt: AcademyWebinarHostPrompt(webinar, scheduleNote),
 		userMessage,
 	});
+}
+
+// The model often opens a live answer with a one-paragraph narration of its
+// plan ("The student is asking... I should answer directly..."). Hold the
+// first paragraph of content; if it matches the narration pattern, drop it
+// and emit only the real answer. Streaming stays intact — only the first
+// paragraph is buffered.
+const NARRATION_RE = /(student is asking|attendee is asking|the user is asking|another student|i should|i(?:'ll| am going to) (?:answer|explain|keep|write)|this is (?:a|an) (?:teaching|live))/i;
+
+export function stripStreamNarration(passThrough) {
+	let buffer = '';
+	let held = '';
+	let decided = false;
+	const out = new Transform({
+		transform(chunk, _enc, cb) {
+			buffer += chunk.toString();
+			let idx;
+			while ((idx = buffer.indexOf('\n\n')) !== -1) {
+				const event = buffer.slice(0, idx);
+				buffer = buffer.slice(idx + 2);
+				if (!event.trim()) continue;
+				const line = event.split('\n').find((l) => l.startsWith('data: '));
+				if (!line) { out.push(`${event}\n\n`); continue; }
+				let parsed;
+				try { parsed = JSON.parse(line.slice(6)); } catch { out.push(`${event}\n\n`); continue; }
+				if (parsed.type === 'content' && parsed.data?.content) {
+					const delta = parsed.data.content;
+					if (!decided) {
+						held += delta;
+						const brk = held.indexOf('\n\n');
+						if (brk !== -1) {
+							const first = held.slice(0, brk);
+							const rest = held.slice(brk + 2);
+							decided = true;
+							held = '';
+							if (!NARRATION_RE.test(first)) {
+								if (first.trim()) out.push(`data: ${JSON.stringify({ type: 'content', data: { content: first } })}\n\n`);
+							}
+							if (rest.trim()) out.push(`data: ${JSON.stringify({ type: 'content', data: { content: rest } })}\n\n`);
+						}
+						continue;
+					}
+					out.push(`data: ${JSON.stringify({ type: 'content', data: { content: delta } })}\n\n`);
+					continue;
+				}
+				// Non-content events (reasoning, errors, usage) pass through as-is.
+				out.push(`${event}\n\n`);
+			}
+			cb();
+		},
+		flush(cb) {
+			if (!decided && held.trim()) {
+				// Stream ended before a paragraph boundary — drop a narration lead if present.
+				const body = held.includes('\n\n') ? held.split('\n\n').slice(1).join('\n\n') : held;
+				if (!NARRATION_RE.test(held) && body === held) out.push(`data: ${JSON.stringify({ type: 'content', data: { content: held } })}\n\n`);
+				else if (body.trim()) out.push(`data: ${JSON.stringify({ type: 'content', data: { content: body } })}\n\n`);
+			}
+			cb();
+		},
+	});
+	return out;
 }
