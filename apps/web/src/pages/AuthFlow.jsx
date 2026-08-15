@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { Mail, ArrowRight, Check, User, Building2, KeyRound, BookOpen, ShieldCheck } from 'lucide-react';
+import { Mail, ArrowRight, Check, User, Building2, KeyRound, BookOpen, ShieldCheck, LineChart, Bot, Sparkles } from 'lucide-react';
 import { MARKETS, EXPERIENCE, GOALS } from '@/lib/mockData';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -117,11 +117,19 @@ function describeAuthError(err, fallback = 'Please try again.') {
   return message || fallback;
 }
 
-const AUTH_POINTS = [
-  'No card required to start',
-  '8 broker integrations',
-  'AI trade reviews on every trade',
-  'Bank-grade security',
+// ─── Layout ──────────────────────────────────────────────────────────
+
+const HERO_LINES = [
+  'Your edge is built one reviewed trade at a time.',
+  'The coach that never sleeps — compounding your discipline.',
+  'From first trade to funded: every step measured.',
+];
+
+const HERO_FEATURES = [
+  { icon: LineChart, title: 'AI trade reviews', text: 'Every trade analyzed after the close.' },
+  { icon: Bot, title: '24/7 AI coach', text: 'Ask anything, in your own words.' },
+  { icon: ShieldCheck, title: 'Bank-grade security', text: 'Encrypted, backed up, always yours.' },
+  { icon: Sparkles, title: 'Live Academy', text: 'AI-taught paths and weekly webinars.' },
 ];
 
 function Shell({ children }) {
@@ -129,6 +137,7 @@ function Shell({ children }) {
     <div className="auth-shell relative min-h-screen overflow-hidden px-3 pb-8 pt-[calc(4.75rem+var(--safe-top))] sm:px-6 sm:pb-12 sm:pt-[calc(6.5rem+var(--safe-top))]">
       <div className="absolute inset-0 grain opacity-30" />
       <div className="pointer-events-none absolute -top-32 left-1/2 h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-[#d4af37]/10 blur-[140px]" />
+      <div className="pointer-events-none absolute -bottom-40 -right-24 h-[34rem] w-[34rem] rounded-full bg-[#d4af37]/[0.06] blur-[150px]" />
       <div className="relative mx-auto w-full max-w-6xl">
         <div className="flex items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-2.5">
@@ -138,33 +147,56 @@ function Shell({ children }) {
           <div className="hidden sm:block"><GuideButton /></div>
         </div>
         <div className="mt-8 grid items-center gap-10 lg:mt-12 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
-          <div className="hidden lg:block">
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-4 py-1.5 text-xs font-medium tracking-wide text-[#d4af37]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#d4af37]" />
-              AI-POWERED TRADING TERMINAL
-            </p>
-            <h1 className="text-5xl font-extrabold leading-[0.98] tracking-tight">
-              Trade like the <span className="gold-text">1%.</span><br />
-              Journal like a <span className="gold-text">fund.</span>
-            </h1>
-            <p className="mt-6 max-w-md text-base leading-relaxed text-[#b8b3a3]">
-              An AI-powered trading journal built on a Bloomberg-grade terminal. Track every edge, kill every mistake, and let the coach compound your discipline.
-            </p>
-            <ul className="mt-8 space-y-3">
-              {AUTH_POINTS.map((point) => (
-                <li key={point} className="flex items-center gap-2.5 text-sm text-[#c9c4b4]">
-                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#d4af37]/12 text-[#d4af37]"><Check className="h-3 w-3" /></span>
-                  {point}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="relative z-10">{children}</div>
+          <div className="hidden lg:block"><HeroPanel /></div>
+          <div className="relative z-10 mx-auto w-full max-w-xl lg:max-w-none">{children}</div>
         </div>
       </div>
     </div>
   );
 }
+
+function HeroPanel() {
+  return (
+    <div>
+      <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-4 py-1.5 text-xs font-medium tracking-wide text-[#d4af37]">
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#d4af37]" />
+        AI-POWERED TRADING TERMINAL
+      </p>
+      <h1 className="text-5xl font-extrabold leading-[0.98] tracking-tight">
+        Trade like the <span className="gold-text">1%.</span><br />
+        Journal like a <span className="gold-text">fund.</span>
+      </h1>
+      <div className="relative mt-6 h-10 max-w-md" aria-hidden="true">
+        {HERO_LINES.map((line) => (
+          <p key={line} className="auth-rotate-line text-base leading-5 text-[#b8b3a3]">{line}</p>
+        ))}
+      </div>
+      <div className="mt-10 grid max-w-md grid-cols-2 gap-3">
+        {HERO_FEATURES.map(({ icon: Icon, title, text }) => (
+          <div key={title} className="shell-panel-soft rounded-2xl p-4 transition hover:border-[#d4af37]/25">
+            <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#d4af37]/12 text-[#d4af37]"><Icon className="h-4 w-4" /></div>
+            <div className="mt-2.5 text-sm font-semibold text-[#e9e7df]">{title}</div>
+            <div className="mt-1 text-xs leading-4 text-[#8a8577]">{text}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GuideButton() {
+  return (
+    <Link
+      to="/guides"
+      className="inline-flex min-h-[42px] items-center gap-2 rounded-full border border-[#d4af37]/25 bg-[#d4af37]/10 px-4 py-2 text-sm font-medium text-[#d4af37] transition hover:border-[#d4af37]/50 hover:bg-[#d4af37]/15"
+    >
+      <BookOpen className="h-4 w-4" />
+      Guide
+    </Link>
+  );
+}
+
+// ─── Form primitives ─────────────────────────────────────────────────
 
 const Field = ({ icon: Icon, ...p }) => (
   <div className="auth-field flex min-h-[44px] items-center gap-2.5 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3.5 py-2.5 focus-within:border-[#d4af37]/50 sm:min-h-[48px] sm:gap-3 sm:px-4 sm:py-3">
@@ -173,31 +205,116 @@ const Field = ({ icon: Icon, ...p }) => (
   </div>
 );
 
+function OtpInput({ value, onChange, disabled, onComplete }) {
+  const digits = normalizeOtpCode(value);
+  const refs = useRef([]);
+  const focusBox = (i) => refs.current[Math.max(0, Math.min(5, i))]?.focus();
+
+  const setAt = (i, d) => {
+    const next = `${digits.slice(0, i)}${d}${digits.slice(i + 1)}`.slice(0, 6);
+    onChange(next);
+    if (d) focusBox(i + 1);
+  };
+
+  useEffect(() => {
+    if (digits.length === 6 && onComplete && !disabled) onComplete();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [digits]);
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const text = String(e.clipboardData?.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+    if (text) {
+      onChange(text);
+      focusBox(text.length - 1);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center gap-2 sm:gap-2.5">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <input
+          key={i}
+          ref={(el) => { refs.current[i] = el; }}
+          value={digits[i] || ''}
+          inputMode="numeric"
+          autoComplete={i === 0 ? 'one-time-code' : 'off'}
+          maxLength={1}
+          disabled={disabled}
+          aria-label={`Digit ${i + 1} of 6`}
+          onPaste={handlePaste}
+          onChange={(e) => setAt(i, e.target.value.replace(/\D/g, '').slice(-1))}
+          onKeyDown={(e) => {
+            if (e.key === 'Backspace' && !digits[i]) { e.preventDefault(); focusBox(i - 1); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); focusBox(i - 1); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); focusBox(i + 1); }
+          }}
+          className="auth-otp-box"
+        />
+      ))}
+    </div>
+  );
+}
+
+function AuthTabs({ mode }) {
+  const base = 'grid h-10 min-h-[40px] place-items-center rounded-full text-sm font-semibold transition';
+  const active = 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_8px_24px_-8px_rgba(212,175,55,0.6)]';
+  const idle = 'text-[#8a8577] hover:text-[#e9e7df]';
+  return (
+    <div className="grid grid-cols-2 gap-1 rounded-full border border-[#d4af37]/15 bg-white/[0.03] p-1">
+      <Link to="/login" className={`${base} ${mode === 'login' ? active : idle}`}>Log in</Link>
+      <Link to="/signup" className={`${base} ${mode === 'signup' ? active : idle}`}>Create account</Link>
+    </div>
+  );
+}
+
+function AuthFormFrame({ mode, title, subtitle, step, children, footer }) {
+  return (
+    <section className="auth-card glass relative overflow-hidden rounded-[1.5rem] p-4 shadow-[0_30px_80px_rgba(0,0,0,0.24)] ring-1 ring-white/8 sm:rounded-[2rem] sm:p-6 lg:p-8">
+      <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
+      <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#d4af37]/10 blur-3xl" />
+      <div className="relative space-y-5 sm:space-y-6">
+        <AuthTabs mode={mode} />
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1.5">
+            <h1 className="text-2xl font-bold tracking-tight text-white sm:text-[2rem]">{title}</h1>
+            <p className="max-w-xl text-xs leading-5 text-[#b5b0a2] sm:text-sm">{subtitle}</p>
+          </div>
+          {step ? (
+            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#d4af37]/25 bg-[#d4af37]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#d4af37]">
+              <Check className="h-3 w-3" />
+              {step}
+            </span>
+          ) : null}
+        </div>
+        <div>{children}</div>
+        {footer ? <div>{footer}</div> : null}
+      </div>
+    </section>
+  );
+}
+
 const ProviderButtons = ({ busy, onGoogle, onApple }) => (
-  <div className="mt-3 flex items-center justify-center gap-2.5 sm:mt-4 sm:gap-3">
+  <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
     <button
       type="button"
       onClick={onGoogle}
       disabled={busy}
-      aria-label="Google sign-in"
-      title="Google sign-in"
-      className="group relative grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-white/[0.96] text-[#121212] shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:border-[#d4af37]/40 hover:shadow-[0_14px_36px_rgba(212,175,55,0.15)] disabled:cursor-not-allowed disabled:opacity-60 sm:h-11 sm:w-11"
+      aria-label="Continue with Google"
+      className="flex min-h-[48px] items-center justify-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.96] px-3 text-sm font-semibold text-[#121212] shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:border-[#d4af37]/40 hover:shadow-[0_14px_36px_rgba(212,175,55,0.15)] disabled:cursor-not-allowed disabled:opacity-60"
     >
-      <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-[#4285F4] shadow-sm ring-1 ring-black/5">
-        <GoogleLogo />
-      </span>
+      <GoogleLogo />
+      <span className="hidden xs:inline sm:inline">Google</span>
     </button>
     <button
       type="button"
       onClick={onApple}
       disabled={busy}
-      aria-label="Apple sign-in"
-      title="Apple sign-in"
-      className="group relative grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-[#111113] text-[#f5f5f7] shadow-[0_10px_30px_rgba(0,0,0,0.22)] transition hover:-translate-y-0.5 hover:border-[#d4af37]/40 hover:shadow-[0_14px_36px_rgba(0,0,0,0.28)] disabled:cursor-not-allowed disabled:opacity-60 sm:h-11 sm:w-11"
+      aria-label="Continue with Apple"
+      className="flex min-h-[48px] items-center justify-center gap-2.5 rounded-xl border border-white/10 bg-[#111113] px-3 text-sm font-semibold text-[#f5f5f7] shadow-[0_10px_30px_rgba(0,0,0,0.22)] transition hover:-translate-y-0.5 hover:border-[#d4af37]/40 hover:shadow-[0_14px_36px_rgba(0,0,0,0.28)] disabled:cursor-not-allowed disabled:opacity-60"
     >
-      <span className="grid h-7 w-7 place-items-center rounded-full bg-white/10 text-white shadow-sm ring-1 ring-white/10">
-        <AppleLogo />
-      </span>
+      <AppleLogo />
+      <span className="hidden xs:inline sm:inline">Apple</span>
     </button>
   </div>
 );
@@ -227,59 +344,7 @@ function AppleLogo() {
   );
 }
 
-const AuthChip = ({ value, label }) => (
-  <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center">
-    <div className="text-lg font-bold text-white">{value}</div>
-    <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-[#8a8577]">{label}</div>
-  </div>
-);
-
-function GuideButton() {
-  return (
-    <Link
-      to="/guides"
-      className="inline-flex min-h-[42px] items-center gap-2 rounded-full border border-[#d4af37]/25 bg-[#d4af37]/10 px-4 py-2 text-sm font-medium text-[#d4af37] transition hover:border-[#d4af37]/50 hover:bg-[#d4af37]/15"
-    >
-      <BookOpen className="h-4 w-4" />
-      Guide
-    </Link>
-  );
-}
-
-function AuthFormFrame({ eyebrow, title, subtitle, stats, children, footer }) {
-  return (
-    <div className="mx-auto w-full max-w-xl sm:max-w-2xl">
-      <section className="auth-card glass relative overflow-hidden rounded-[1.5rem] p-4 shadow-[0_30px_80px_rgba(0,0,0,0.24)] ring-1 ring-white/8 sm:rounded-[2rem] sm:p-6 lg:p-8">
-        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
-        <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#d4af37]/10 blur-3xl" />
-        <div className="absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-white/5 blur-3xl" />
-        <div className="relative space-y-4 sm:space-y-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="space-y-2 sm:space-y-3">
-              {eyebrow ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/20 bg-[#d4af37]/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.22em] text-[#d4af37]">
-                  <Check className="h-3.5 w-3.5" />
-                  {eyebrow}
-                </span>
-              ) : null}
-              <div className="space-y-2">
-                <h1 className="text-2xl font-bold tracking-tight text-white sm:text-[2.35rem]">{title}</h1>
-                <p className="max-w-xl text-xs leading-5 text-[#b5b0a2] sm:text-[15px]">{subtitle}</p>
-              </div>
-            </div>
-          </div>
-          {stats?.length ? (
-            <div className="grid gap-2 sm:grid-cols-3">
-              {stats.map((stat) => <AuthChip key={stat.value} value={stat.value} label={stat.label} />)}
-            </div>
-          ) : null}
-          <div>{children}</div>
-          {footer ? <div>{footer}</div> : null}
-        </div>
-      </section>
-    </div>
-  );
-}
+// ─── Pages ───────────────────────────────────────────────────────────
 
 export function LoginPage() {
   const nav = useNavigate();
@@ -331,7 +396,7 @@ export function LoginPage() {
   }, [cooldownUntil]);
 
   const sendCode = async (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
     if (!email.trim()) {
       toast({ variant: 'destructive', title: 'Enter your email address', description: 'We need your email to send a code.' });
       return;
@@ -362,7 +427,8 @@ export function LoginPage() {
   };
 
   const verifyCode = async (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
+    if (busy) return;
     const token = normalizeOtpCode(code);
     if (!email.trim() || token.length !== 6) {
       toast({ variant: 'destructive', title: 'Enter your 6-digit code', description: 'Check the email code and try again.' });
@@ -395,7 +461,8 @@ export function LoginPage() {
   };
 
   const verifyTotpStep = async (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
+    if (busy) return;
     const token = normalizeOtpCode(totpCode);
     if (token.length !== 6) {
       toast({ variant: 'destructive', title: 'Enter your 6-digit code', description: 'Check your authenticator app and try again.' });
@@ -453,34 +520,51 @@ export function LoginPage() {
   return (
     <Shell>
       <AuthFormFrame
-        eyebrow=""
-        title="Log in"
-        subtitle="Use Google, Apple, or your email code or sign-in link."
-        stats={[]}
+        mode="login"
+        title={needTotp ? 'Two-step verification' : (sent ? 'Check your inbox' : 'Welcome back')}
+        subtitle={needTotp
+          ? 'Your account is protected with an authenticator app. Enter the current 6-digit code to continue.'
+          : (sent
+            ? `We emailed a 6-digit code to ${email || 'your inbox'}. Enter it below to sign in.`
+            : 'Use Google, Apple, or your email code to get back to your terminal.')}
+        step={needTotp ? 'Step 2 of 2' : (sent ? 'Step 2 of 2' : 'Step 1 of 2')}
+        footer={
+          <p className="mt-5 text-center text-sm text-[#8a8577]">
+            New to TradingBible? <Link to="/signup" className="font-medium text-[#d4af37] hover:underline">Create an account</Link>
+          </p>
+        }
       >
         <div className="rounded-[1.25rem] border border-[#d4af37]/14 bg-gradient-to-b from-white/[0.06] to-transparent p-3 sm:rounded-[1.5rem] sm:p-4">
           <ProviderButtons busy={oauthBusy} onGoogle={() => startOAuth('google')} onApple={() => startOAuth('apple')} />
         </div>
-        <form className="mt-4 space-y-2.5 sm:mt-5 sm:space-y-3" onSubmit={needTotp ? verifyTotpStep : (sent ? verifyCode : sendCode)}>
+        <form className="mt-4 space-y-3 sm:mt-5 sm:space-y-3.5" onSubmit={needTotp ? verifyTotpStep : (sent ? verifyCode : sendCode)}>
           {!needTotp && <Field icon={Mail} type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />}
-          {needTotp && (
-            <div className="rounded-xl bg-[#d4af37]/[0.07] p-3 text-sm text-[#e9e7df]">
-              <span className="font-semibold text-[#d4af37]">Step 2 — Authenticator app:</span> open Google Authenticator / Face ID app and enter the current 6-digit code.
+          {!needTotp && sent && (
+            <div className="space-y-2.5">
+              <OtpInput
+                value={code}
+                disabled={busy}
+                onChange={setCode}
+                onComplete={() => verifyCode()}
+              />
+              <p className="text-center text-[11px] text-[#8a8577]">Didn’t get it? Check spam or resend below.</p>
             </div>
           )}
-          {!needTotp && sent && (
-           <Field icon={KeyRound} type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="Enter your email code (6 digits)" value={code} onChange={(e) => setCode(normalizeOtpCode(e.target.value))} required />
-          )}
           {needTotp && (
-           <Field icon={KeyRound} type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="Enter authenticator code (6 digits)" value={totpCode} onChange={(e) => setTotpCode(normalizeOtpCode(e.target.value))} required autoFocus />
+            <OtpInput
+              value={totpCode}
+              disabled={busy}
+              onChange={setTotpCode}
+              onComplete={() => verifyTotpStep()}
+            />
           )}
-          <button disabled={busy || (!needTotp && !sent && cooldownSeconds > 0)} className={`${goldBtn} btn-spotlight`}>{busy ? 'Please wait…' : (needTotp ? 'Verify authenticator code' : (sent ? 'Verify code' : 'Send one-time code'))} <ArrowRight className="h-4 w-4" /></button>
+          <button disabled={busy || (!needTotp && !sent && cooldownSeconds > 0)} className={`${goldBtn} btn-spotlight`}>{busy ? 'Please wait…' : (needTotp ? 'Verify authenticator code' : (sent ? 'Verify & sign in' : 'Send one-time code'))} <ArrowRight className="h-4 w-4" /></button>
         </form>
-        {needTotp && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy} onClick={() => { setNeedTotp(false); setTotpCode(''); setPendingAuth(null); }} className="auth-muted text-[#8a8577] hover:text-[#d4af37]">Back to email code</button></div>}
-        {!needTotp && sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={sendCode} className="auth-muted text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? `Resend in ${cooldownSeconds}s` : 'Resend code'}</button></div>}
+        {needTotp && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy} onClick={() => { setNeedTotp(false); setTotpCode(''); setPendingAuth(null); }} className="text-[#8a8577] hover:text-[#d4af37]">Back to email code</button></div>}
+        {!needTotp && sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={sendCode} className="text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? `Resend in ${cooldownSeconds}s` : 'Resend code'}</button></div>}
         {!needTotp && cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">To protect your account, new code requests are limited. Try again in {formatCooldownDuration(cooldownSeconds)}.</p>}
         {!needTotp && (
-          <div className="mt-2 flex items-center gap-3">
+          <div className="mt-3 flex items-center gap-3">
             <div className="h-px flex-1 bg-white/10" />
             <span className="text-[11px] uppercase tracking-widest text-[#8a8577]">or</span>
             <div className="h-px flex-1 bg-white/10" />
@@ -491,12 +575,11 @@ export function LoginPage() {
             type="button"
             disabled={passkeyBusy}
             onClick={signInWithPasskey}
-            className="mt-1.5 w-full min-h-[44px] rounded-xl border border-white/10 bg-white/[0.04] py-2.5 text-sm font-medium text-[#e9e7df] transition hover:border-[#d4af37]/40 hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-1.5 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] py-2.5 text-sm font-medium text-[#e9e7df] transition hover:border-[#d4af37]/40 hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <span className="inline-flex items-center justify-center gap-2">{passkeyBusy ? 'Verifying…' : <>Face ID / passkey sign-in <ShieldCheck className="h-4 w-4" /></>}</span>
+            {passkeyBusy ? 'Verifying…' : <><ShieldCheck className="h-4 w-4" /> Face ID / passkey sign-in</>}
           </button>
         )}
-        <p className="auth-muted mt-6 text-center text-sm text-[#8a8577]">New to TradingBible? <Link to="/signup" className="text-[#d4af37] hover:underline">Create an account</Link></p>
       </AuthFormFrame>
     </Shell>
   );
@@ -550,7 +633,8 @@ export function SignupPage() {
   }, []);
 
   const submit = async (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
+    if (busy) return;
     if (!sent && cooldownSeconds > 0) {
       toast({ title: 'Please wait', description: `You can request another code in ${formatCooldownDuration(cooldownSeconds)}.` });
       return;
@@ -641,49 +725,60 @@ export function SignupPage() {
   return (
     <Shell>
       <AuthFormFrame
-        eyebrow="Join TradingBible"
-        title="Create your account"
-        subtitle="Start with Google or Apple for a faster setup, then finish with your email code or link."
-        stats={[
-          { value: '7-day', label: 'Premium trial' },
-          { value: '2 paths', label: 'Individual / company' },
-          { value: '6 digits', label: 'Secure code' },
-        ]}
+        mode="signup"
+        title={sent ? 'Almost there' : 'Create your account'}
+        subtitle={sent
+          ? `We emailed a 6-digit code to ${email || 'your inbox'}. Enter it to activate your account.`
+          : 'Start with Google or Apple for a faster setup — or use your email code.'}
+        step={sent ? 'Step 2 of 2' : 'Step 1 of 2'}
+        footer={
+          <p className="mt-5 text-center text-sm text-[#8a8577]">
+            Already have an account? <Link to="/login" className="font-medium text-[#d4af37] hover:underline">Log in</Link>
+          </p>
+        }
       >
         <div className="rounded-[1.25rem] border border-[#d4af37]/14 bg-gradient-to-b from-white/[0.06] to-transparent p-3 sm:rounded-[1.5rem] sm:p-4">
           <ProviderButtons busy={oauthBusy} onGoogle={() => startOAuth('google')} onApple={() => startOAuth('apple')} />
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl border border-[#d4af37]/15 p-1 sm:mt-4">
-          {[
-            { id: 'individual', label: 'Individual', icon: User },
-            { id: 'company', label: 'Company / School', icon: Building2 },
-          ].map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setAccountType(id)}
-              className={`flex min-h-[40px] items-center justify-center gap-2 rounded-lg px-2.5 text-sm transition sm:min-h-[42px] sm:px-3 ${accountType === id ? 'bg-[#d4af37]/14 text-[#f0ecdd]' : 'text-[#8a8577] hover:bg-white/5'}`}
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </button>
-          ))}
-        </div>
         <form className="mt-4 space-y-2.5 sm:mt-5 sm:space-y-3" onSubmit={submit}>
-          <Field icon={User} type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" />
-          {accountType === 'company' && (
-            <Field icon={Building2} type="text" placeholder="Company or School name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
+          {!sent && (
+            <>
+              <div className="grid grid-cols-2 gap-2 rounded-xl border border-[#d4af37]/15 p-1">
+                {[
+                  { id: 'individual', label: 'Individual', icon: User },
+                  { id: 'company', label: 'Company / School', icon: Building2 },
+                ].map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setAccountType(id)}
+                    className={`flex min-h-[40px] items-center justify-center gap-2 rounded-lg px-2.5 text-sm transition sm:min-h-[42px] sm:px-3 ${accountType === id ? 'bg-[#d4af37]/14 text-[#f0ecdd]' : 'text-[#8a8577] hover:bg-white/5'}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <Field icon={User} type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" />
+              {accountType === 'company' && (
+                <Field icon={Building2} type="text" placeholder="Company or School name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
+              )}
+              <Field icon={Mail} type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+              <p className="text-center text-xs text-[#8a8577]">We’ll send both a 6-digit code and a sign-in link to your inbox.</p>
+            </>
           )}
-          <Field icon={Mail} type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-          <p className="text-center text-xs text-[#8a8577]">We’ll send both a 6-digit code and a sign-in link to your inbox.</p>
           {sent && (
-            <Field icon={KeyRound} type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="Enter your email code (6 digits)" value={code} onChange={(e) => setCode(normalizeOtpCode(e.target.value))} required />
+            <OtpInput
+              value={code}
+              disabled={busy}
+              onChange={setCode}
+              onComplete={() => submit()}
+            />
           )}
-          <button disabled={busy || (!sent && cooldownSeconds > 0)} className={goldBtn}>{busy ? 'Please wait…' : (sent ? 'Verify code & continue' : 'Send one-time code')} <ArrowRight className="h-4 w-4" /></button>
+          <button disabled={busy || (!sent && cooldownSeconds > 0)} className={`${goldBtn} btn-spotlight`}>{busy ? 'Please wait…' : (sent ? 'Verify & continue' : 'Send one-time code')} <ArrowRight className="h-4 w-4" /></button>
         </form>
-        {sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={resend} className="auth-muted text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? `Resend in ${cooldownSeconds}s` : 'Resend code'}</button></div>}
+        {sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={resend} className="text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? `Resend in ${cooldownSeconds}s` : 'Resend code'}</button></div>}
         {cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">To protect your account, new code requests are limited. Try again in {formatCooldownDuration(cooldownSeconds)}.</p>}
-        <p className="auth-muted mt-6 text-center text-sm text-[#8a8577]">Already have an account? <Link to="/login" className="text-[#d4af37] hover:underline">Log in</Link></p>
       </AuthFormFrame>
     </Shell>
   );
