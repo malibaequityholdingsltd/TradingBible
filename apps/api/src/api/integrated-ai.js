@@ -334,6 +334,114 @@ const apiUrl = process.env.INTEGRATED_AI_API_URL;
 }
 
 /**
+ * Non-streaming text completion with the same provider resolution as stream().
+ * Used by the Academy for AI-generated content (curriculum, lessons, quizzes,
+ * grading, certificates).
+ *
+ * @param {{ systemPrompt: string, userMessage: ContentBlock[] }} params
+ * @returns {Promise<string>}
+ */
+export async function generateText({ systemPrompt, userMessage }) {
+	const apiUrl = process.env.INTEGRATED_AI_API_URL;
+	const apiKey = process.env.INTEGRATED_AI_API_KEY;
+	const websiteId = process.env.WEBSITE_ID;
+	const opencodeUrl = process.env.OPENCODE_SERVER_URL;
+	const deepSeekKey = process.env.DEEPSEEK_API_KEY;
+	const openAiBaseUrl = process.env.OPENAI_BASE_URL;
+	const openAiKey = process.env.OPENAI_API_KEY;
+
+	if ((!apiUrl || !apiKey || !websiteId) && !opencodeUrl && !deepSeekKey && (!openAiBaseUrl || !openAiKey)) {
+		throw new Error('The AI assistant is not configured yet. Please contact support.');
+	}
+
+	const text = userMessage
+		.filter((b) => b.type === ContentBlockType.Text)
+		.map((b) => b.text)
+		.join('\n')
+		.trim();
+
+	if (!apiUrl || !apiKey || !websiteId) {
+		if (opencodeUrl) {
+			return completeOpencode({ userId: 'academy-content', systemPrompt, userMessage });
+		}
+		if (deepSeekKey) {
+			return completeOpenAiCompatibleText({
+				systemPrompt,
+				userMessage,
+				baseUrl: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com',
+				apiKey: deepSeekKey,
+				model: process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash',
+			});
+		}
+		return completeOpenAiCompatibleText({ systemPrompt, userMessage });
+	}
+
+	const response = await fetch(`${apiUrl}/generate`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${apiKey}`,
+			...(process.env.PROXY_ENTRANCE_ID && { 'X-Proxy-Entrance-Id': process.env.PROXY_ENTRANCE_ID }),
+		},
+		body: JSON.stringify({
+			website_id: websiteId,
+			history: [{ role: MessageRole.User, content: text }],
+			system_prompt: systemPrompt,
+			stream: false,
+			environment: process.env.NODE_ENV === NodeEnv.Production ? 'prod' : 'dev',
+		}),
+	});
+	if (!response.ok) {
+		const errorBody = await response.text().catch(() => 'Unknown error');
+		throw new Error(`AI proxy request failed with status ${response.status}: ${errorBody}`);
+	}
+	const data = await response.json();
+	const content = data?.content ?? data?.data?.content ?? data?.output ?? data?.response;
+	if (typeof content !== 'string' || !content.trim()) {
+		throw new Error('The AI provider returned an unexpected response. Please try again.');
+	}
+	return content;
+}
+
+async function completeOpenAiCompatibleText({ systemPrompt, userMessage, baseUrl, apiKey, model }) {
+	const text = userMessage
+		.filter((b) => b.type === ContentBlockType.Text)
+		.map((b) => b.text)
+		.join('\n')
+		.trim();
+
+	const endpoint = String(baseUrl || process.env.OPENAI_BASE_URL || '').replace(/\/+$/, '');
+	const resolvedModel = model || process.env.OPENAI_MODEL || 'deepseek-v4-flash';
+	const resolvedKey = apiKey || process.env.OPENAI_API_KEY;
+
+	const response = await fetch(`${endpoint}/chat/completions`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${resolvedKey}`,
+		},
+		body: JSON.stringify({
+			model: resolvedModel,
+			stream: false,
+			messages: [
+				{ role: 'system', content: systemPrompt },
+				{ role: 'user', content: text || 'Hello' },
+			],
+		}),
+	});
+	if (!response.ok) {
+		const errorBody = await response.text().catch(() => 'Unknown error');
+		throw new Error(`AI provider request failed with status ${response.status}: ${errorBody}`);
+	}
+	const data = await response.json();
+	const content = data?.choices?.[0]?.message?.content;
+	if (typeof content !== 'string' || !content.trim()) {
+		throw new Error('The AI provider returned an empty response. Please try again.');
+	}
+	return content;
+}
+
+/**
  * Consumes an SSE stream branch, parses history-relevant events,
  * and saves the assistant message to Supabase.
  *

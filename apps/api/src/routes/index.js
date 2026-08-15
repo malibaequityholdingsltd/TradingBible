@@ -15,6 +15,7 @@ import affiliateRouter from './affiliate.js';
 import securityRouter from './security.js';
 import adsRouter from './ads.js';
 import adminRouter from './admin.js';
+import academyRouter from './academy.js';
 
 const router = Router();
 
@@ -38,6 +39,7 @@ export default () => {
     router.use('/security', securityRouter);
     router.use('/ads', adsRouter);
     router.use('/admin', adminRouter);
+    router.use('/academy', academyRouter);
 
     return router;
 };

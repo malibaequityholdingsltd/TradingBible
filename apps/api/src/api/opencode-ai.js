@@ -145,3 +145,53 @@ export async function streamOpencode({ userId, systemPrompt, userMessage }) {
 
 	return passThrough;
 }
+
+/**
+ * Synchronous (non-streaming) completion from the local opencode gateway.
+ * Used by the Academy for AI-generated curriculum, lessons, quizzes,
+ * grading and certificates.
+ *
+ * @param {{ userId: string, systemPrompt: string, userMessage: { type: 'text', text: string }[] }} params
+ * @returns {Promise<string>}
+ */
+export async function completeOpencode({ userId, systemPrompt, userMessage }) {
+	const providerID = process.env.OPENCODE_PROVIDER || 'opencode';
+	const modelID = process.env.OPENCODE_MODEL || 'deepseek-v4-flash-free';
+
+	const text = userMessage
+		.filter((b) => b.type === 'text')
+		.map((b) => b.text)
+		.join('\n')
+		.trim();
+
+	const sessionID = await ensureSession(userId);
+	const res = await request(`/session/${sessionID}/prompt`, {
+		method: 'POST',
+		body: {
+			model: { id: `${providerID}/${modelID}`, providerID, modelID },
+			agent: 'general',
+			system: systemPrompt,
+			parts: [{ type: 'text', text: text || 'Hello' }],
+		},
+	});
+
+	if (!res.ok) {
+		const errorBody = await res.text().catch(() => '');
+		throw new Error(`opencode request failed (${res.status}): ${errorBody.slice(0, 300)}`);
+	}
+
+	const data = await res.json();
+	const messages = Array.isArray(data?.messages) ? data.messages : [];
+	let out = '';
+	for (const msg of messages) {
+		if (msg?.role !== 'assistant') continue;
+		for (const part of msg?.parts || []) {
+			if (part?.type === 'text' && part.text) out += part.text;
+		}
+	}
+	if (!out && typeof data?.content === 'string') out = data.content;
+	if (!out) {
+		logger.warn('opencode complete: empty assistant response', JSON.stringify(data).slice(0, 300));
+	}
+	return out;
+}

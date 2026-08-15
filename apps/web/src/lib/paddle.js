@@ -100,9 +100,40 @@ export async function resumeSubscription() {
 }
 
 export async function switchPlan(plan) {
-  const res = await apiServerClient.fetch('/paddle/subscription/update', {
-    method: 'POST', headers: authHeaders(), body: JSON.stringify({ plan }),
-  });
-  if (!res.ok) throw new Error('Plan change failed');
-  return (await res.json()).subscription;
+	const res = await apiServerClient.fetch('/paddle/subscription/update', {
+		method: 'POST', headers: authHeaders(), body: JSON.stringify({ plan }),
+	});
+	if (!res.ok) throw new Error('Plan change failed');
+	return (await res.json()).subscription;
+}
+
+// One-time $150 Academy checkout (lifetime access, not a subscription).
+// Access is granted by the Paddle webhook (transaction.completed with
+// intent 'academy').
+export async function openAcademyCheckout(onEvent) {
+	const config = await getPaddleConfig();
+	const priceId = config.prices?.academy;
+	if (!priceId) {
+		throw new Error('Academy checkout is not configured yet — the PADDLE_PRICE_ACADEMY price id is missing in apps/api/.env.');
+	}
+
+	const Paddle = await initPaddle(onEvent);
+
+	let customerId;
+	try {
+		const res = await apiServerClient.fetch('/paddle/customer', { method: 'POST', headers: authHeaders() });
+		if (res.ok) customerId = (await res.json()).customerId;
+	} catch { /* fall back to email-based checkout */ }
+
+	const user = pb.authStore.record;
+	Paddle.Checkout.open({
+		items: [{ priceId, quantity: 1 }],
+		...(customerId ? { customer: { id: customerId } } : user?.email ? { customer: { email: user.email } } : {}),
+		customData: { user_id: user?.id, intent: 'academy' },
+		settings: {
+			displayMode: 'overlay',
+			theme: 'dark',
+			successUrl: `${window.location.origin}/app/academy`,
+		},
+	});
 }
