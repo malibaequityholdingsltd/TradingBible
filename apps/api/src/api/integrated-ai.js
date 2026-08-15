@@ -362,7 +362,10 @@ export async function generateText({ systemPrompt, userMessage }) {
 
 	if (!apiUrl || !apiKey || !websiteId) {
 		if (opencodeUrl) {
-			return completeOpencode({ userId: 'academy-content', systemPrompt, userMessage });
+			// Fresh session per generation: content generation must be stateless,
+			// so accumulated conversation history can never bleed into a new
+			// curriculum or lesson.
+			return completeOpencode({ userId: `academy-content-${randomUUID()}`, systemPrompt, userMessage });
 		}
 		if (deepSeekKey) {
 			return completeOpenAiCompatibleText({
