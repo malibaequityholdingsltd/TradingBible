@@ -37,6 +37,8 @@ const PRICE_MAP = {
 	pro: process.env.PADDLE_PRICE_PRO,
 	elite: process.env.PADDLE_PRICE_ELITE,
 	professional: process.env.PADDLE_PRICE_PROFESSIONAL,
+	// One-time lifetime price for the AI Academy (configured in apps/api/.env).
+	academy: process.env.PADDLE_PRICE_ACADEMY,
 };
 const PLAN_BY_PRICE = () => {
 	const out = {};
@@ -234,6 +236,15 @@ async function recordEvent(userId, fields) {
 	}
 }
 
+async function supabaseRestCreateAcademyPurchase(owner, row) {
+	const { supabaseRest } = await import('../utils/supabaseClient.js');
+	await supabaseRest('/rest/v1/academy_purchases', {
+		method: 'POST',
+		body: { owner, ...row, createdAt: new Date().toISOString() },
+		prefer: 'return=representation',
+	});
+}
+
 router.post('/webhook', async (req, res) => {
 	if (!verifySignature(req)) {
 		logger.warn('Paddle webhook signature verification failed');
@@ -279,25 +290,48 @@ router.post('/webhook', async (req, res) => {
 					occurredAt: event.occurred_at || new Date().toISOString(),
 				});
 			}
-		} else if (type?.startsWith('transaction.')) {
-			const user = await findUser(data.custom_data, data.customer_id);
-			if (user) {
-				const total = data.details?.totals?.grand_total;
-				await recordEvent(user.id, {
-					eventType: type,
-					subscriptionId: data.subscription_id || '',
-					transactionId: data.id || '',
-					status: data.status || '',
-					amount: total ? Number(total) / 100 : 0,
-					currency: data.currency_code || '',
-					invoiceUrl: data.invoice_id ? `${paddleApiBase(getPaddleEnv())}/transactions/${data.id}/invoice` : '',
-					occurredAt: event.occurred_at || new Date().toISOString(),
-				});
-				if (type === 'transaction.payment_failed') {
-					await updateUser(user.id, { subscriptionStatus: 'past_due' });
+			} else if (type?.startsWith('transaction.')) {
+				const user = await findUser(data.custom_data, data.customer_id);
+				if (user) {
+					const total = data.details?.totals?.grand_total;
+					await recordEvent(user.id, {
+						eventType: type,
+						subscriptionId: data.subscription_id || '',
+						transactionId: data.id || '',
+						status: data.status || '',
+						amount: total ? Number(total) / 100 : 0,
+						currency: data.currency_code || '',
+						invoiceUrl: data.invoice_id ? `${paddleApiBase(getPaddleEnv())}/transactions/${data.id}/invoice` : '',
+						occurredAt: event.occurred_at || new Date().toISOString(),
+					});
+					if (type === 'transaction.payment_failed') {
+						await updateUser(user.id, { subscriptionStatus: 'past_due' });
+					}
+
+					// Academy: one-time lifetime purchase (custom_data.intent='academy'
+					// or the checkout used the configured academy price id).
+					const priceId = data.items?.[0]?.price?.id || data.items?.[0]?.price_id;
+					const isAcademy = data.custom_data?.intent === 'academy' || (PRICE_MAP.academy && priceId === PRICE_MAP.academy);
+					if (isAcademy && type === 'transaction.completed' && data.status === 'completed') {
+						await updateUser(user.id, {
+							academyAccess: true,
+							academyPurchasedAt: event.occurred_at || new Date().toISOString(),
+						});
+						try {
+							const { supabase } = await import('../utils/supabaseClient.js');
+							await supabaseRestCreateAcademyPurchase(user.id, {
+								transactionId: data.id || '',
+								amount: total ? Number(total) / 100 : 0,
+								currency: data.currency_code || '',
+								status: data.status || '',
+							});
+						} catch (err) {
+							logger.error('academy purchase record failed', String(err));
+						}
+						logger.info(`Academy access granted to ${user.id}`);
+					}
 				}
 			}
-		}
 	} catch (err) {
 		logger.error('Paddle webhook handling error', String(err));
 	}
