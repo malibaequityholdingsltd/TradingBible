@@ -275,7 +275,7 @@ router.post('/tutor/stream', academyAiRateLimit, async (req, res) => {
 	try {
 		const row = await academyDb.getLesson(req.userId, pathKey, courseKey, lessonKey);
 		if (!row) return res.status(404).json({ error: { message: 'Open the lesson first.' } });
-		const sse = tutorStream({
+		const sse = await tutorStream({
 			userId: req.userId,
 			lesson: row.content,
 			progressNote: 'The student is working through this lesson right now.',
@@ -299,7 +299,7 @@ router.post('/webinar/stream', academyAiRateLimit, async (req, res) => {
 	const { webinar, scheduleNote, history, question } = req.body ?? {};
 	if (!webinar?.title) return res.status(422).json({ error: { message: 'Webinar details are required.' } });
 	try {
-		const sse = webinarStream({
+		const sse = await webinarStream({
 			userId: req.userId,
 			webinar,
 			scheduleNote: scheduleNote || '',
