@@ -148,6 +148,10 @@ export async function streamOpencode({ userId, systemPrompt, userMessage }) {
 
 /**
  * Synchronous (non-streaming) completion from the local opencode gateway.
+ * The gateway has no sync endpoint, so we enqueue an async prompt and
+ * collect the deltas from the shared /event SSE stream until the session
+ * goes idle — mirroring streamOpencode, but returning one string.
+ *
  * Used by the Academy for AI-generated curriculum, lessons, quizzes,
  * grading and certificates.
  *
@@ -165,7 +169,7 @@ export async function completeOpencode({ userId, systemPrompt, userMessage }) {
 		.trim();
 
 	const sessionID = await ensureSession(userId);
-	const res = await request(`/session/${sessionID}/prompt`, {
+	const res = await request(`/session/${sessionID}/prompt_async`, {
 		method: 'POST',
 		body: {
 			model: { id: `${providerID}/${modelID}`, providerID, modelID },
@@ -180,18 +184,57 @@ export async function completeOpencode({ userId, systemPrompt, userMessage }) {
 		throw new Error(`opencode request failed (${res.status}): ${errorBody.slice(0, 300)}`);
 	}
 
-	const data = await res.json();
-	const messages = Array.isArray(data?.messages) ? data.messages : [];
+	const timeoutMs = Number(process.env.OPENCODE_TIMEOUT_MS || 180000);
 	let out = '';
-	for (const msg of messages) {
-		if (msg?.role !== 'assistant') continue;
-		for (const part of msg?.parts || []) {
-			if (part?.type === 'text' && part.text) out += part.text;
-		}
-	}
-	if (!out && typeof data?.content === 'string') out = data.content;
-	if (!out) {
-		logger.warn('opencode complete: empty assistant response', JSON.stringify(data).slice(0, 300));
+	await new Promise((resolve, reject) => {
+		const timeout = setTimeout(() => {
+			reject(new Error('The AI took too long to respond. Please try again.'));
+		}, timeoutMs);
+		(async () => {
+			try {
+				const evRes = await request('/event');
+				if (!evRes.ok || !evRes.body) {
+					throw new Error(`opencode event stream failed (${evRes.status})`);
+				}
+				const decoder = new TextDecoderStream();
+				let buffer = '';
+				for await (const chunk of evRes.body.pipeThrough(decoder)) {
+					buffer += chunk;
+					const lines = buffer.split('\n');
+					buffer = lines.pop() || '';
+					for (const line of lines) {
+						const trimmed = line.trim();
+						if (!trimmed.startsWith('data:')) continue;
+						const payload = trimmed.slice(5).trim();
+						if (!payload) continue;
+						let event;
+						try {
+							event = JSON.parse(payload);
+						} catch {
+							continue;
+						}
+						const props = event.properties || {};
+						if (String(props.sessionID) !== sessionID) continue;
+						if (event.type === 'message.part.delta' && props.field === 'text' && props.delta) {
+							out += props.delta;
+						} else if (event.type === 'session.idle') {
+							clearTimeout(timeout);
+							resolve();
+							return;
+						}
+					}
+				}
+				clearTimeout(timeout);
+				resolve();
+			} catch (err) {
+				clearTimeout(timeout);
+				reject(err);
+			}
+		})();
+	});
+
+	if (!out.trim()) {
+		logger.warn('opencode complete: empty assistant response');
 	}
 	return out;
 }
