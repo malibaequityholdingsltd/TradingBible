@@ -295,12 +295,15 @@ export async function generateCertificate({ pathName, stats }) {
 // the actual citation paragraph.
 function cleanCertificateCitation(text) {
 	const paras = String(text)
-		.split(/\n{2,}/)
+		.split(/\n+/)
 		.map((p) => p.trim())
 		.filter(Boolean);
-	const meta = /^(the user|as the|i should|this is|you are|per the|the system|ok(ay)?[,!.]|sure|here['’]s|let me)/i;
+	const meta = /^(the user|as the|i should|i(?:'ll| need to| 'll)|this is|you are|per the|the system|ok(ay)?[,!.]|sure[,!.]|let me)/i;
 	const citation = paras.filter((p) => !meta.test(p)).join('\n\n') || text;
-	return citation.trim().slice(0, 900);
+	return citation
+		.replace(/^(here(?:'s| is)|below is|the (?:citation|text|paragraph|one)(?: is)?)[:\s]*/i, '')
+		.trim()
+		.slice(0, 900);
 }
 
 export async function tutorStream({ userId, lesson, progressNote, history, question }) {
