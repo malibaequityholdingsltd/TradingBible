@@ -215,7 +215,7 @@ export async function generateLessonContent({ curriculum, course, lesson }) {
 		},
 		label: 'lesson',
 	});
-	return {
+	const result = {
 		title: content.title || lesson.title,
 		summary: content.summary || '',
 		keyPoints: Array.isArray(content.keyPoints) ? content.keyPoints.slice(0, 6) : [],
@@ -229,6 +229,29 @@ export async function generateLessonContent({ curriculum, course, lesson }) {
 			  }))
 			: [],
 	};
+	// Verification pass: the generator occasionally mislabels the correct
+	// option index. Have the AI audit the quiz and replace the answer keys
+	// so grading stays consistent. Falls back to the generated keys.
+	if (result.quiz.length) {
+		try {
+			const quizJson = result.quiz.map((q) => ({ question: q.question, options: q.options })).map((q) => `Q: ${q.question}\nOptions: ${q.options.map((o, i) => `${i}. ${o}`).join(' | ')}`).join('\n\n');
+			const verified = await aiJson({
+				systemPrompt: `You are a quiz auditor. For each question below, determine the single objectively correct option index (0-3) based on general trading knowledge. Return ONLY strict JSON: { "answers": [0, 2, ...] } with one index per question, in order. No commentary.`,
+				userMessage: [textBlock(quizJson)],
+				fallback: null,
+				label: 'quiz-verify',
+			});
+			if (Array.isArray(verified?.answers) && verified.answers.length === result.quiz.length) {
+				result.quiz.forEach((q, i) => {
+					const idx = Number(verified.answers[i]);
+					if (Number.isInteger(idx) && idx >= 0 && idx < 4) q.answerIndex = idx;
+				});
+			}
+		} catch (err) {
+			logger.warn('academy quiz verification skipped', String(err?.message || err));
+		}
+	}
+	return result;
 }
 
 export async function gradeQuiz({ lesson, answers }) {
