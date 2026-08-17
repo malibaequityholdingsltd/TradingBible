@@ -11,6 +11,7 @@ import TvWidget from '@/components/TvWidget';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { homeRouteForUser } from '@/lib/homeRoute';
+import { usePlatformSettings, featureForRoute } from '@/lib/platformSettings';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,25 +75,30 @@ const NAV_GROUPS = [
   },
 ];
 
-function Brand({ homeTo }) {
+function Brand({ homeTo, platformName }) {
+  const words = String(platformName || 'TradingBible').trim().split(/\s+/);
+  const first = words.slice(0, -1).join(' ');
+  const last = words[words.length - 1] || '';
   return (
     <Link to={homeTo} className="flex items-center gap-2.5">
-      <img src={TRADINGBIBLE_LOGO} alt="TradingBible logo" className="h-9 w-9 rounded-lg object-contain" />
+      <img src={TRADINGBIBLE_LOGO} alt={`${platformName} logo`} className="h-9 w-9 rounded-lg object-contain" />
       <div className="leading-tight">
-        <div className="font-semibold tracking-tight text-[#f0ecdd]">Trading<span className="gold-text">Bible</span></div>
+        <div className="font-semibold tracking-tight text-[#f0ecdd]">{first ? `${first} ` : ''}<span className="gold-text">{last}</span></div>
         <div className="text-[10px] uppercase tracking-[0.2em] text-[#8a8577]">Terminal</div>
       </div>
     </Link>
   );
 }
 
-export default function AppLayout({ children, title, trialDays = 7 }) {
+export default function AppLayout({ children, title, trialDays: trialDaysProp = 7 }) {
   const [open, setOpen] = useState(false);
   const [tutorial, setTutorial] = useState(false);
   const nav = useNavigate();
   const { user, logout, updateProfile } = useAuth();
   const { unseen } = useNotifications();
   const { t } = useI18n();
+  const { settings, features } = usePlatformSettings();
+  const trialDays = Number(settings.trialDays) || Number(trialDaysProp) || 7;
   const initial = (user?.username || user?.email || 'A').charAt(0).toUpperCase();
   const signOut = () => { logout(); nav('/'); };
 
@@ -122,7 +128,7 @@ const pluralS = (n) => (n === 1 ? '' : 's');
 
   const SideContent = (
     <div className="flex h-full flex-col">
-      <div className="px-5 py-6"><Brand homeTo={homeTo} /></div>
+      <div className="px-5 py-6"><Brand homeTo={homeTo} platformName={settings.platformName} /></div>
       <nav className="flex-1 space-y-4 overflow-y-auto px-3 pb-4">
         {(isCompany ? [{ labelKey: 'nav.company', items: COMPANY_ITEMS }, ...NAV_GROUPS] : NAV_GROUPS).map((group) => (
           <div key={group.labelKey} className="space-y-1">
@@ -131,6 +137,10 @@ const pluralS = (n) => (n === 1 ? '' : 's');
               .filter((it) => !it.hidden)
               .filter((it) => !it.adminOnly || isAdmin)
               .filter((it) => !it.requiresSubscriber || isSubscriber)
+              .filter((it) => {
+                const feature = featureForRoute(it.to);
+                return !feature || features[feature] !== false || isAdmin;
+              })
               .map(({ to, labelKey, icon: Icon, end }) => (
               <NavLink key={to} to={to} end={end} onClick={() => setOpen(false)}
                 className={({ isActive }) => `nav-button nav-shell-link flex min-h-[44px] items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition-all ${isActive ? 'nav-shell-link--active text-[#f0ecdd] gold-glow' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
@@ -210,7 +220,7 @@ const pluralS = (n) => (n === 1 ? '' : 's');
         </main>
       </div>
       {tutorial && <OnboardingTutorial onClose={() => setTutorial(false)} onComplete={completeTutorial} />}
-      <LiveChatWidget />
+      {features.aiCoach !== false && <LiveChatWidget />}
       <TvWidget />
     </div>
   );

@@ -1,11 +1,14 @@
 import React, { Suspense, lazy } from 'react';
 import { Route, Routes, BrowserRouter as Router, Navigate, useLocation } from 'react-router-dom';
+import { Lock } from 'lucide-react';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/hooks/useTheme';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { I18nProvider } from '@/lib/i18n';
 import { homeRouteForUser } from '@/lib/homeRoute';
+import { usePlatformSettings } from '@/lib/platformSettings';
+import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { NotificationsProvider } from '@/hooks/useNotifications';
 import ScrollToTop from './components/ScrollToTop';
 import GlobalTicker from './components/GlobalTicker';
@@ -128,6 +131,54 @@ function CompanyProtected({ children }) {
     return children;
 }
 
+// Platform admins can switch features off from the Admin Portal. FeatureGate
+// blocks the page and shows a friendly notice when one is disabled.
+function FeatureGate({ feature, children }) {
+    const { features, loaded } = usePlatformSettings();
+    const { user } = useAuth();
+    const enabled = !loaded || features[feature] !== false || user?.role === 'admin';
+    if (enabled) return children;
+    return (
+        <div className="grid min-h-[60vh] place-items-center px-6">
+            <div className="glass w-full max-w-md rounded-2xl p-8 text-center">
+                <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37]">
+                    <Lock className="h-5 w-5" />
+                </div>
+                <h2 className="mb-2 text-lg font-semibold text-[#f0ecdd]">This feature is currently unavailable</h2>
+                <p className="text-sm leading-relaxed text-[#8a8577]">
+                    The platform admin has temporarily disabled it. Please check back soon or contact support if you believe this is an error.
+                </p>
+            </div>
+        </div>
+    );
+}
+
+// Global maintenance mode: non-admins see a clean holding screen instead of
+// the whole app when the platform admin toggles maintenance on.
+function MaintenanceGate({ children }) {
+    const { settings, loaded } = usePlatformSettings();
+    const { user } = useAuth();
+    if (loaded && settings.maintenance && user?.role !== 'admin') {
+        return (
+            <div className="grid min-h-screen place-items-center px-6">
+                <div className="glass w-full max-w-md rounded-2xl p-8 text-center">
+                    <img src={TRADINGBIBLE_LOGO} alt={`${settings.platformName} logo`} className="mx-auto mb-5 h-14 w-14 rounded-xl object-contain gold-glow" />
+                    <h1 className="mb-2 text-xl font-bold text-[#f0ecdd]">We&apos;ll be right back</h1>
+                    <p className="text-sm leading-relaxed text-[#8a8577]">
+                        {settings.platformName} is undergoing scheduled maintenance. Please check back shortly.
+                    </p>
+                    {settings.supportEmail && (
+                        <a href={`mailto:${settings.supportEmail}`} className="mt-5 inline-block text-sm font-semibold text-[#d4af37] hover:underline">
+                            {settings.supportEmail}
+                        </a>
+                    )}
+                </div>
+            </div>
+        );
+    }
+    return children;
+}
+
 function AppChrome() {
     const { pathname } = useLocation();
     const hideTicker = ['/login', '/signup', '/reset', '/onboarding'].includes(pathname);
@@ -180,18 +231,18 @@ function RoutesWithBoundary() {
                     <Route path="/app/analytics" element={<Protected><AnalyticsPage /></Protected>} />
                     <Route path="/app/watchlists" element={<Protected><WatchlistsPage /></Protected>} />
                     <Route path="/app/terminal" element={<Protected><TerminalPage /></Protected>} />
-                    <Route path="/app/alerts" element={<Protected><AlertsPage /></Protected>} />
-                    <Route path="/app/signals" element={<Protected><SignalsPage /></Protected>} />
-                    <Route path="/app/economic-calendar" element={<Protected><EconomicCalendarPage /></Protected>} />
-                    <Route path="/app/charts" element={<Protected><ChartsPage /></Protected>} />
-                    <Route path="/app/heatmaps" element={<Protected><HeatmapsPage /></Protected>} />
-                    <Route path="/app/indicators" element={<Protected><IndicatorsPage /></Protected>} />
+                    <Route path="/app/alerts" element={<Protected><FeatureGate feature="signals"><AlertsPage /></FeatureGate></Protected>} />
+                    <Route path="/app/signals" element={<Protected><FeatureGate feature="signals"><SignalsPage /></FeatureGate></Protected>} />
+                    <Route path="/app/economic-calendar" element={<Protected><FeatureGate feature="economicCalendar"><EconomicCalendarPage /></FeatureGate></Protected>} />
+                    <Route path="/app/charts" element={<Protected><FeatureGate feature="chartBuilder"><ChartsPage /></FeatureGate></Protected>} />
+                    <Route path="/app/heatmaps" element={<Protected><FeatureGate feature="chartBuilder"><HeatmapsPage /></FeatureGate></Protected>} />
+                    <Route path="/app/indicators" element={<Protected><FeatureGate feature="chartBuilder"><IndicatorsPage /></FeatureGate></Protected>} />
                     <Route path="/app/journal" element={<Protected><JournalPage /></Protected>} />
                     <Route path="/app/reports" element={<Protected><ReportsPage /></Protected>} />
-                    <Route path="/app/coach" element={<SubscriberProtected><CoachPage /></SubscriberProtected>} />
-                    <Route path="/app/tools" element={<SubscriberProtected><RiskToolsPage /></SubscriberProtected>} />
-                    <Route path="/app/community" element={<Protected><CommunityPage /></Protected>} />
-                    <Route path="/app/academy" element={<Protected><AcademyPage /></Protected>} />
+                    <Route path="/app/coach" element={<SubscriberProtected><FeatureGate feature="aiCoach"><CoachPage /></FeatureGate></SubscriberProtected>} />
+                    <Route path="/app/tools" element={<SubscriberProtected><FeatureGate feature="riskTools"><RiskToolsPage /></FeatureGate></SubscriberProtected>} />
+                    <Route path="/app/community" element={<Protected><FeatureGate feature="community"><CommunityPage /></FeatureGate></Protected>} />
+                    <Route path="/app/academy" element={<Protected><FeatureGate feature="academy"><AcademyPage /></FeatureGate></Protected>} />
                     <Route path="/app/security" element={<Protected><SecurityPage /></Protected>} />
                     <Route path="/app/api-docs" element={<SubscriberProtected><ApiDocsPage /></SubscriberProtected>} />
                     <Route path="/app/integrations" element={<SubscriberProtected><IntegrationsPage /></SubscriberProtected>} />
@@ -200,7 +251,7 @@ function RoutesWithBoundary() {
                     <Route path="/app/prop-firms" element={<Protected><PropFirmsPage /></Protected>} />
                     <Route path="/app/affiliate" element={<Protected><AffiliatePage /></Protected>} />
                     <Route path="/app/billing" element={<Protected><BillingPage /></Protected>} />
-                    <Route path="/app/wallet" element={<SubscriberProtected><WalletPage /></SubscriberProtected>} />
+                    <Route path="/app/wallet" element={<SubscriberProtected><FeatureGate feature="wallet"><WalletPage /></FeatureGate></SubscriberProtected>} />
                     <Route path="/app/crypto-bank" element={<Navigate to="/app/wallet" replace />} />
                     <Route path="/app/profile" element={<Protected><ProfilePage /></Protected>} />
                     <Route path="/app/api-keys" element={<Protected><UserApiKeysPage /></Protected>} />
@@ -235,9 +286,11 @@ function App() {
           <NotificationsProvider>
             <div id="app-bg" aria-hidden="true" />
             <Router>
-                <RootRedirect />
-                <AppChrome />
-                <RoutesWithBoundary />
+                <MaintenanceGate>
+                    <RootRedirect />
+                    <AppChrome />
+                    <RoutesWithBoundary />
+                </MaintenanceGate>
                 <PwaStatus />
                 <ThemeSwitcher />
                 <Toaster />

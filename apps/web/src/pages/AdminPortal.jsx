@@ -14,6 +14,7 @@ import {
 } from 'recharts';
 import AdminLayout from '@/components/AdminLayout';
 import pb from '@/lib/pocketbaseClient';
+import { notifyPlatformSettingsChanged } from '@/lib/platformSettings';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useToast } from '@/hooks/use-toast';
 
@@ -2335,6 +2336,7 @@ export function AdminSettings() {
           setSettingsId(created.id);
         }
         setSaveState('saved');
+        notifyPlatformSettingsChanged();
       } catch (err) {
         setSaveState('error');
         toast({ variant: 'destructive', title: 'Autosave failed', description: err?.message || 'Please try again.' });
