@@ -371,6 +371,13 @@ alter table public.branding_settings enable row level security;
 drop policy if exists branding_settings_read on public.branding_settings;
 create policy branding_settings_read on public.branding_settings for select using (true);
 
+-- Public read for admin_platform_settings: the SPA fetches branding/toggles
+-- for logged-out visitors too. Data is public config, never secrets.
+alter table public.admin_platform_settings enable row level security;
+drop policy if exists admin_platform_settings_public_read on public.admin_platform_settings;
+create policy admin_platform_settings_public_read on public.admin_platform_settings
+  for select using (true);
+
 create table if not exists public.admin_integrations (
   id uuid primary key default gen_random_uuid(),
   key text unique,

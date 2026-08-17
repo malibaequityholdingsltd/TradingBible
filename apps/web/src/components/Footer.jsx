@@ -4,6 +4,7 @@ import { Twitter, Facebook, Linkedin, Instagram, Youtube, LineChart } from 'luci
 import { MALIBA_LOGO, TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { useAuth } from '@/hooks/useAuth';
 import { homeRouteForUser } from '@/lib/homeRoute';
+import { usePlatformSettings } from '@/lib/platformSettings';
 
 const LOGO = TRADINGBIBLE_LOGO;
 
@@ -103,6 +104,12 @@ const SOCIALS = [
 export default function Footer() {
   const { user, isAuthed } = useAuth();
   const homeTo = homeRouteForUser(isAuthed ? user : null);
+  const { settings } = usePlatformSettings();
+  const brand = String(settings.platformName || 'TradingBible').trim();
+  const words = brand.split(/\s+/);
+  const first = words.slice(0, -1).join(' ');
+  const last = words[words.length - 1] || '';
+  const trialDays = Number(settings.trialDays) || 7;
 
   return (
     <footer className="border-t border-[#d4af37]/12 bg-[#0a0a0f]">
@@ -111,8 +118,8 @@ export default function Footer() {
         <div className="flex flex-col gap-8 border-b border-[#d4af37]/10 pb-10 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-sm">
             <Link to={homeTo} className="mb-4 flex items-center gap-2.5">
-              <img src={LOGO} alt="TradingBible logo" className="h-9 w-9 rounded-lg object-contain" />
-              <span className="font-semibold tracking-tight text-[#f0ecdd]">Trading<span className="gold-text">Bible</span></span>
+              <img src={LOGO} alt={`${brand} logo`} className="h-9 w-9 rounded-lg object-contain" />
+              <span className="font-semibold tracking-tight text-[#f0ecdd]">{first ? `${first} ` : ''}<span className="gold-text">{last}</span></span>
             </Link>
             <p className="text-sm leading-relaxed text-[#8a8577]">
               The AI-powered trading journal built on a Bloomberg-grade terminal. TradingBible unifies broker sync, institutional-style analytics, and a personal AI coach so serious traders can track every edge and eliminate every avoidable mistake.
@@ -143,7 +150,7 @@ export default function Footer() {
 
           <div className="glass shrink-0 rounded-2xl p-5 lg:w-80">
             <div className="mb-1 flex items-center gap-2 text-[#d4af37]"><LineChart className="h-4 w-4" /><span className="text-sm font-semibold">Start your edge, free</span></div>
-            <p className="mb-4 text-xs text-[#8a8577]">7-day premium trial. No card required. Cancel anytime.</p>
+            <p className="mb-4 text-xs text-[#8a8577]">{trialDays}-day premium trial. No card required. Cancel anytime.</p>
             <Link to="/signup" className="block rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-center text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">Create free account</Link>
           </div>
         </div>
@@ -180,6 +187,9 @@ export default function Footer() {
             <Link to="/refund" className="hover:text-[#e9e7df]">Refunds</Link>
             <Link to="/faq" className="hover:text-[#e9e7df]">FAQ</Link>
             <Link to="/pricing" className="hover:text-[#e9e7df]">Pricing</Link>
+            {settings.supportEmail && (
+              <a href={`mailto:${settings.supportEmail}`} className="hover:text-[#e9e7df]">{settings.supportEmail}</a>
+            )}
           </div>
           <div>© {new Date().getFullYear()} TradingBible LLC · All rights reserved.</div>
         </div>

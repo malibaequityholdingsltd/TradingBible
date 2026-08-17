@@ -5,6 +5,7 @@ import { MARKETS, EXPERIENCE, GOALS } from '@/lib/mockData';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
+import { usePlatformSettings } from '@/lib/platformSettings';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { readRefFromUrl, trackAffiliateSignup } from '@/lib/affiliate';
 import { verifyTotpLogin, passkeyLogin, notifyLogin, accountReactivate } from '@/lib/security';
@@ -133,6 +134,11 @@ const HERO_FEATURES = [
 ];
 
 function Shell({ children }) {
+  const { settings } = usePlatformSettings();
+  const brand = String(settings.platformName || 'TradingBible').trim();
+  const words = brand.split(/\s+/);
+  const first = words.slice(0, -1).join(' ');
+  const last = words[words.length - 1] || '';
   return (
     <div className="auth-shell relative min-h-screen overflow-hidden px-3 pb-8 pt-[calc(4.75rem+var(--safe-top))] sm:px-6 sm:pb-12 sm:pt-[calc(6.5rem+var(--safe-top))]">
       <div className="absolute inset-0 grain opacity-30" />
@@ -141,8 +147,8 @@ function Shell({ children }) {
       <div className="relative mx-auto w-full max-w-6xl">
         <div className="flex items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-2.5">
-            <img src={LOGO} alt="TradingBible logo" className="h-10 w-10 rounded-lg object-contain gold-glow sm:h-11 sm:w-11" />
-            <span className="text-base font-semibold sm:text-lg">Trading<span className="gold-text">Bible</span></span>
+            <img src={LOGO} alt={`${brand} logo`} className="h-10 w-10 rounded-lg object-contain gold-glow sm:h-11 sm:w-11" />
+            <span className="text-base font-semibold sm:text-lg">{first ? `${first} ` : ''}<span className="gold-text">{last}</span></span>
           </Link>
           <div className="hidden sm:block"><GuideButton /></div>
         </div>
@@ -588,6 +594,7 @@ export function LoginPage() {
 export function SignupPage() {
   const nav = useNavigate();
   const { requestOTP, loginWithCode, loginWithProvider, user, isAuthed, isAuthReady } = useAuth();
+  const { settings } = usePlatformSettings();
   const { toast } = useToast();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -721,6 +728,24 @@ export function SignupPage() {
       toast({ variant: 'destructive', title: 'Could not resend code', description: describeAuthError(err, 'Please try again.') });
     } finally { setBusy(false); }
   };
+
+  if (settings.signupsOpen === false) {
+    const brand = String(settings.platformName || 'TradingBible').trim();
+    return (
+      <Shell>
+        <div className="mx-auto w-full max-w-md">
+          <div className="auth-card glass rounded-2xl p-6 text-center sm:p-7">
+            <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37]"><KeyRound className="h-5 w-5" /></div>
+            <h1 className="text-xl font-bold">Signups are paused</h1>
+            <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">
+              {brand} is not accepting new accounts right now. If you already have an account, you can still log in.
+            </p>
+            <Link to="/login" className={`${goldBtn} mt-6 justify-center`}>Log in to your account <ArrowRight className="h-4 w-4" /></Link>
+          </div>
+        </div>
+      </Shell>
+    );
+  }
 
   return (
     <Shell>

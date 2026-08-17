@@ -8,6 +8,7 @@ import { TESTIMONIALS, TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { homeRouteForUser } from '@/lib/homeRoute';
+import { usePlatformSettings } from '@/lib/platformSettings';
 
 const LOGO = TRADINGBIBLE_LOGO;
 
@@ -18,9 +19,13 @@ const HERO_STATS = [
   { value: '0', label: 'Card required to start' },
 ];
 
-function Nav({ homeTo, isAuthed }) {
+function Nav({ homeTo, isAuthed, platformName }) {
   const [scrolled, setScrolled] = React.useState(false);
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const brand = String(platformName || 'TradingBible').trim();
+  const words = brand.split(/\s+/);
+  const first = words.slice(0, -1).join(' ');
+  const last = words[words.length - 1] || '';
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -35,8 +40,8 @@ function Nav({ homeTo, isAuthed }) {
     <header className={`fixed inset-x-0 top-[var(--header-h)] z-40 border-b transition-all duration-300 ${scrolled ? 'border-[#d4af37]/15 bg-[#07070a]/92 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl' : 'border-[#d4af37]/10 bg-[#07070a]/70 backdrop-blur-xl'}`}>
       <div className="mx-auto flex w-full max-w-[96rem] items-center justify-between gap-4 px-4 py-3 sm:px-6 sm:py-4">
         <Link to={homeTo} className="flex shrink-0 items-center gap-2.5">
-          <img src={LOGO} alt="TradingBible logo" className="h-9 w-9 shrink-0 rounded-xl object-contain gold-glow sm:h-10 sm:w-10" />
-          <span className="text-xl font-extrabold tracking-tight text-[#e9e7df] sm:text-2xl">Trading<span className="gold-text">Bible</span></span>
+          <img src={LOGO} alt={`${brand} logo`} className="h-9 w-9 shrink-0 rounded-xl object-contain gold-glow sm:h-10 sm:w-10" />
+          <span className="text-xl font-extrabold tracking-tight text-[#e9e7df] sm:text-2xl">{first ? `${first} ` : ''}<span className="gold-text">{last}</span></span>
         </Link>
 
         <nav className="hidden items-center gap-1 rounded-full border border-white/5 bg-white/[0.03] p-1.5 md:flex">
@@ -94,10 +99,13 @@ export default function LandingPage() {
   const homeTo = homeRouteForUser(isAuthed ? user : null);
   const { theme } = useTheme();
   const isLight = theme === 'light';
+  const { settings } = usePlatformSettings();
+  const signupsOpen = settings.signupsOpen !== false;
+  const trialDays = Number(settings.trialDays) || 7;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-transparent text-[#e9e7df]">
-      <Nav homeTo={homeTo} isAuthed={isAuthed} />
+      <Nav homeTo={homeTo} isAuthed={isAuthed} platformName={settings.platformName} />
       {/* Hero */}
       <section className="relative flex flex-col justify-center overflow-hidden pb-16 pt-[calc(11rem+var(--safe-top))] sm:pt-[calc(13rem+var(--safe-top))] lg:min-h-[92dvh]">
         <div className="absolute inset-0 grain opacity-30" />
@@ -119,11 +127,15 @@ export default function LandingPage() {
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.16 }} className="mt-7 max-w-2xl text-base leading-relaxed text-[#b8b3a3] sm:text-lg">
-            An AI-powered trading journal built on a Bloomberg-grade terminal. Track every edge, kill every mistake, and let the coach compound your discipline.
+            {settings.tagline || 'An AI-powered trading journal built on a Bloomberg-grade terminal. Track every edge, kill every mistake, and let the coach compound your discipline.'}
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.24 }} className="mt-10 flex flex-col gap-3.5 sm:flex-row sm:items-center sm:gap-4">
-            <Link to="/signup" className="btn-neon inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f7ecb6] via-[#e2bd4f] to-[#c99a25] px-8 py-4 text-base font-bold text-[#0a0a0f] transition hover:opacity-90">Start 7-day Premium Trial <ArrowRight className="h-4 w-4" /></Link>
+            {signupsOpen ? (
+              <Link to="/signup" className="btn-neon inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f7ecb6] via-[#e2bd4f] to-[#c99a25] px-8 py-4 text-base font-bold text-[#0a0a0f] transition hover:opacity-90">Start {trialDays}-day Premium Trial <ArrowRight className="h-4 w-4" /></Link>
+            ) : (
+              <span className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#d4af37]/35 bg-white/[0.03] px-8 py-4 text-base font-semibold text-[#8a8577]">Signups are paused</span>
+            )}
             <Link to="/pricing" className="btn-glass inline-flex items-center justify-center rounded-xl border border-[#d4af37]/35 bg-white/[0.02] px-8 py-4 text-base font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60 hover:text-[#e9e7df]">View Pricing</Link>
           </motion.div>
 
