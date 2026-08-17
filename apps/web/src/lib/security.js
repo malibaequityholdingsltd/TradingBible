@@ -11,7 +11,9 @@ async function api(path, options = {}) {
 		headers: { ...headers(), ...(options.headers || {}) },
 	});
 	const body = await res.json().catch(() => ({}));
-	if (!res.ok) throw new Error(body?.error || `Request failed (${res.status})`);
+	if (!res.ok) {
+		throw new Error(body?.detail ? `${body?.error || `Request failed (${res.status})`} — ${body.detail}` : (body?.error || `Request failed (${res.status})`));
+	}
 	return body;
 }
 
