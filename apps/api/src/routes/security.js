@@ -159,14 +159,26 @@ router.get('/webauthn/register-options', async (req, res) => {
 function coseToJwk(cose) {
 	try {
 		const map = typeof cose === 'object' && !Buffer.isBuffer(cose) ? cose : decodeCbor(Buffer.isBuffer(cose) ? cose : Buffer.from(cose));
-		const crv = Number(map['1']);
-		if (crv !== 1) throw new Error('unsupported curve');
+		const kty = Number(map['1']);
+		const crv = Number(map['-1']);
+		if (kty !== 2 || crv !== 1) throw new Error('unsupported key');
 		const xBuf = Buffer.isBuffer(map['-2']) ? map['-2'] : Buffer.from(String(map['-2']), 'base64');
 		const yBuf = Buffer.isBuffer(map['-3']) ? map['-3'] : Buffer.from(String(map['-3']), 'base64');
 		return { kty: 'EC', crv: 'P-256', x: xBuf.toString('base64url'), y: yBuf.toString('base64url') };
 	} catch {
 		return null;
 	}
+}
+
+// Browsers disagree on the exact base64 flavour of clientDataJSON.challenge:
+// Chrome emits unpadded base64url, Safari/iOS emit standard base64 with
+// padding. Normalize both sides to unpadded base64url before comparing.
+function challengeMatches(clientChallenge, storedChallenge) {
+	const normalized = String(clientChallenge || '')
+		.replace(/\+/g, '-')
+		.replace(/\//g, '_')
+		.replace(/=+$/, '');
+	return Boolean(storedChallenge) && normalized === String(storedChallenge).replace(/=+$/, '');
 }
 
 router.post('/webauthn/register', async (req, res) => {
@@ -180,7 +192,7 @@ router.post('/webauthn/register', async (req, res) => {
 
 		const clientData = JSON.parse(b64urlDecode(response?.clientDataJSON).toString('utf8'));
 		if (clientData.type !== 'webauthn.create') return res.status(422).json({ error: 'bad type' });
-		if (clientData.challenge !== challengeEntry.value) return res.status(422).json({ error: 'challenge mismatch' });
+		if (!challengeMatches(clientData.challenge, challengeEntry.value)) return res.status(422).json({ error: 'challenge mismatch' });
 		if (clientData.origin !== origin(req)) return res.status(422).json({ error: 'origin mismatch' });
 
 		const attestation = decodeCbor(b64urlDecode(response?.attestationObject));
@@ -246,7 +258,7 @@ router.post('/webauthn/verify-login', async (req, res) => {
 
 		const clientData = JSON.parse(b64urlDecode(response?.clientDataJSON).toString('utf8'));
 		if (clientData.type !== 'webauthn.get') return res.status(422).json({ error: 'bad type' });
-		if (clientData.challenge !== challengeEntry.value) return res.status(422).json({ error: 'challenge mismatch' });
+		if (!challengeMatches(clientData.challenge, challengeEntry.value)) return res.status(422).json({ error: 'challenge mismatch' });
 		if (clientData.origin !== origin(req)) return res.status(422).json({ error: 'origin mismatch' });
 
 		const passkeys = readPasskeys(settings);
