@@ -199,6 +199,26 @@ export default function TerminalPage() {
                   <button onClick={() => { if (window.confirm(`Delete group "${g.name}"? Symbols move to ungrouped.`)) t.deleteGroup(g.id); }} className="ml-auto text-[#5f5b50] hover:text-red-400"><X className="h-3.5 w-3.5" /></button>
                 </div>
                 {!g.collapsed && (items.length ? renderRows(items) : <p className="px-4 py-3 text-[11px] text-[#5f5b50]">No symbols in this group.</p>)}
+                {g.collapsed && items.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 px-4 py-2.5">
+                    {items.map((item) => {
+                      const q = quotes[item.symbol];
+                      const up = (q?.changePercent ?? 0) >= 0;
+                      return (
+                        <button key={item.symbol} onClick={() => openChart(item.symbol)} title={nameOf(item.symbol)}
+                          className="flex items-center gap-1.5 rounded-full border border-white/5 bg-black/15 py-1 pl-2.5 pr-2 text-xs transition hover:border-[#d4af37]/40 hover:bg-white/5">
+                          <span className="font-mono font-semibold text-[#e9e7df]">{item.symbol}</span>
+                          {q && t.display.showPrice && (
+                            <span className={`font-mono text-[11px] ${up ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(q.price)}</span>
+                          )}
+                          {q && t.display.showChangePercent && (
+                            <span className={`font-mono text-[10px] ${up ? 'text-emerald-400/80' : 'text-red-400/80'}`}>{up ? '+' : ''}{(q.changePercent ?? 0).toFixed(2)}%</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })}
