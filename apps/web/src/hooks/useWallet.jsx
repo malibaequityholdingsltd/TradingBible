@@ -21,6 +21,7 @@ function headers() {
 export function useWallet() {
 	const [wallets, setWallets] = useState([]);
 	const [totalUsd, setTotalUsd] = useState(0);
+	const [ledger, setLedger] = useState({ balances: {}, transactions: [] });
 	const [loading, setLoading] = useState(true);
 	const [syncing, setSyncing] = useState(false);
 
@@ -34,7 +35,15 @@ export function useWallet() {
 			setTotalUsd(data.totalUsd || 0);
 		} catch {
 			// keep last known state on refresh failures
-		} finally {
+		}
+		try {
+			const [b, t] = await Promise.all([
+				apiServerClient.fetch('/wallet/ledger/balance', { headers: headers() }).then(r => r.json()).catch(() => ({ balances: {} })),
+				apiServerClient.fetch('/wallet/ledger/transactions', { headers: headers() }).then(r => r.json()).catch(() => ({ transactions: [] })),
+			]);
+			setLedger({ balances: b.balances || {}, transactions: t.transactions || [] });
+		} catch { /* ignore */ }
+		finally {
 			setLoading(false);
 			setSyncing(false);
 		}
@@ -63,5 +72,28 @@ export function useWallet() {
 		await load();
 	};
 
-	return { wallets, totalUsd, loading, syncing, reload: load, addWallet, removeWallet };
+	const deposit = async (amount) => {
+		const res = await apiServerClient.fetch('/wallet/deposit', { method: 'POST', headers: headers(), body: JSON.stringify({ amount }) });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw new Error(data.error || 'deposit failed');
+		if (data.url) window.location.href = data.url;
+		return data;
+	};
+	const withdraw = async (amount, address) => {
+		const res = await apiServerClient.fetch('/wallet/withdraw', { method: 'POST', headers: headers(), body: JSON.stringify({ amount, address }) });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw new Error(data.error || 'withdraw failed');
+		await load();
+		return data;
+	};
+	const payWithWallet = async (planOrIntent) => {
+		const body = planOrIntent === 'academy' ? { intent: 'academy' } : { plan: planOrIntent };
+		const res = await apiServerClient.fetch('/wallet/pay', { method: 'POST', headers: headers(), body: JSON.stringify(body) });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw new Error(data.error || 'pay failed');
+		await load();
+		return data;
+	};
+
+	return { wallets, totalUsd, ledger, loading, syncing, reload: load, addWallet, removeWallet, deposit, withdraw, payWithWallet };
 }

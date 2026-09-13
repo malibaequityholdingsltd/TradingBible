@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Wallet, Plus, Trash2, RefreshCw, ShieldCheck, KeyRound, ExternalLink, AlertTriangle } from 'lucide-react';
+import { Wallet, Plus, Trash2, RefreshCw, ShieldCheck, KeyRound, ExternalLink, AlertTriangle, CreditCard, ArrowUpRight, ArrowDownRight, Clock } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { fmtMoney } from '@/lib/mockData';
 import { useWallet, NETWORK_LIST } from '@/hooks/useWallet';
@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const input = 'w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none focus:border-[#d4af37]/50 min-h-[44px]';
 const btnGold = 'flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60';
+const btnGhost = 'flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2.5 text-sm font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60 disabled:opacity-60';
 
 const EXPLORER = {
 	bitcoin: (a) => `https://mempool.space/address/${a}`,
@@ -25,11 +26,18 @@ function shortAddr(a) {
 
 export default function WalletPage() {
 	const bank = useWallet();
-	const { wallets, totalUsd, loading, syncing, reload, addWallet, removeWallet } = bank;
+	const { wallets, totalUsd, ledger, loading, syncing, reload, addWallet, removeWallet, deposit, withdraw } = bank;
 	const { toast } = useToast();
 	const [adding, setAdding] = useState(false);
 	const [form, setForm] = useState({ network: 'bitcoin', address: '', label: '' });
 	const [busy, setBusy] = useState(false);
+	const [depAmount, setDepAmount] = useState('50');
+	const [withAmount, setWithAmount] = useState('');
+	const [withAddr, setWithAddr] = useState('');
+	const [showDep, setShowDep] = useState(false);
+	const [showWith, setShowWith] = useState(false);
+
+	const walletBalance = ledger?.balances?.USD || 0;
 
 	const submit = async (e) => {
 		e.preventDefault();
@@ -56,12 +64,30 @@ export default function WalletPage() {
 		}
 	};
 
+	const doDeposit = async () => {
+		const n = Number(depAmount);
+		if (!n || n < 1) { toast({ variant: 'destructive', title: 'Enter amount' }); return; }
+		setBusy(true);
+		try { await deposit(n); } catch (e) { toast({ variant: 'destructive', title: 'Deposit failed', description: e.message }); } finally { setBusy(false); }
+	};
+
+	const doWithdraw = async () => {
+		const n = Number(withAmount);
+		if (!n || !withAddr.trim()) { toast({ variant: 'destructive', title: 'Enter amount and address' }); return; }
+		setBusy(true);
+		try {
+			await withdraw(n, withAddr.trim());
+			toast({ title: 'Withdrawal pending', description: `$${n} to ${shortAddr(withAddr)}` });
+			setWithAmount(''); setWithAddr(''); setShowWith(false);
+		} catch (e) { toast({ variant: 'destructive', title: 'Withdraw failed', description: e.message }); } finally { setBusy(false); }
+	};
+
 	return (
 		<AppLayout title="Wallet">
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div>
 					<h2 className="text-xl font-bold text-[#f0ecdd] sm:text-2xl">My <span className="gold-text">Wallets</span></h2>
-					<p className="mt-1 text-sm text-[#8a8577]">Track your real balances. TradingBible never holds your funds.</p>
+					<p className="mt-1 text-sm text-[#8a8577]">Internal ledger + external tracker. Fund via Stripe, pay for plans with balance.</p>
 				</div>
 				<div className="flex gap-2">
 					<button className={`${btnGold} !min-h-[40px] !px-3 !py-2 !text-xs`} onClick={() => { setAdding(!adding); }}><Plus className="h-4 w-4" /> Add wallet</button>
@@ -69,11 +95,34 @@ export default function WalletPage() {
 				</div>
 			</div>
 
-			{/* Total tracked value */}
-			<div className="mt-5 glass gold-glow rounded-2xl p-5 sm:p-7">
-				<div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><Wallet className="h-4 w-4 text-[#d4af37]" /> Total tracked value</div>
-				<div className="mt-2 font-mono text-3xl font-bold text-[#f0ecdd] sm:text-4xl">{fmtMoney(totalUsd)}</div>
-				<div className="mt-3 flex items-center gap-2 text-xs text-[#8a8577]"><ShieldCheck className="h-4 w-4 text-emerald-400" /> Self-custody — balances are read straight from the blockchain. TradingBible does not custody, withdraw or issue cards.</div>
+			{/* Internal ledger + tracked total */}
+			<div className="mt-5 grid gap-4 sm:grid-cols-2">
+				<div className="glass gold-glow rounded-2xl p-5 sm:p-7">
+					<div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><CreditCard className="h-4 w-4 text-[#d4af37]" /> Wallet balance (internal)</div>
+					<div className="mt-2 font-mono text-3xl font-bold text-[#f0ecdd] sm:text-4xl">{fmtMoney(walletBalance)}</div>
+					<div className="mt-3 flex gap-2">
+						<button onClick={() => setShowDep(!showDep)} className={`${btnGold} !px-3 !py-2 !text-xs`}><ArrowDownRight className="h-4 w-4" /> Deposit</button>
+						<button onClick={() => setShowWith(!showWith)} className={`${btnGhost} !px-3 !py-2 !text-xs`}><ArrowUpRight className="h-4 w-4" /> Withdraw</button>
+					</div>
+					{showDep && (
+						<div className="mt-4 flex gap-2">
+							<input className={input} type="number" min="1" value={depAmount} onChange={e => setDepAmount(e.target.value)} placeholder="Amount USD" />
+							<button disabled={busy} onClick={doDeposit} className={btnGold}>Fund via Stripe</button>
+						</div>
+					)}
+					{showWith && (
+						<div className="mt-4 space-y-2">
+							<input className={input} type="number" min="1" value={withAmount} onChange={e => setWithAmount(e.target.value)} placeholder="Amount USD" />
+							<input className={input} value={withAddr} onChange={e => setWithAddr(e.target.value)} placeholder="Destination address / account" />
+							<button disabled={busy} onClick={doWithdraw} className={btnGold}>Withdraw</button>
+						</div>
+					)}
+				</div>
+				<div className="glass rounded-2xl p-5 sm:p-7">
+					<div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><Wallet className="h-4 w-4 text-[#d4af37]" /> Tracked external value</div>
+					<div className="mt-2 font-mono text-3xl font-bold text-[#f0ecdd] sm:text-4xl">{fmtMoney(totalUsd)}</div>
+					<div className="mt-3 flex items-center gap-2 text-xs text-[#8a8577]"><ShieldCheck className="h-4 w-4 text-emerald-400" /> Read-only blockchain balances. Self-custody.</div>
+				</div>
 			</div>
 
 			{/* Add form */}
@@ -139,7 +188,29 @@ export default function WalletPage() {
 				)}
 			</div>
 
-			<div className="mt-6 flex items-center gap-2 text-xs text-[#8a8577]"><ShieldCheck className="h-4 w-4 text-emerald-400" /> Operated by TradingBible LLC. Balances shown are read-only public data; funds always remain in your own wallets.</div>
+			{/* Ledger history */}
+			<div className="mt-8">
+				<h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[#8a8577]"><Clock className="h-4 w-4" /> Ledger history</h3>
+				<div className="glass rounded-2xl">
+					{(ledger?.transactions || []).length === 0 ? (
+						<div className="px-4 py-10 text-center text-sm text-[#8a8577]">No ledger activity yet. Deposits, withdrawals and wallet-pay will appear here.</div>
+					) : (
+						<div className="divide-y divide-white/5">
+							{ledger.transactions.map(t => (
+								<div key={t.id} className="flex items-center justify-between px-4 py-3 text-sm">
+									<div>
+										<div className="font-medium text-[#f0ecdd]">{t.type} <span className="text-[#8a8577]">{t.currency}</span></div>
+										<div className="text-xs text-[#6a665a]">{new Date(t.created).toLocaleString()} · {t.status} {t.reference ? `· ${shortAddr(t.reference)}` : ''}</div>
+									</div>
+									<div className={`font-mono font-bold ${Number(t.amount) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{Number(t.amount) > 0 ? '+' : ''}{fmtMoney(Number(t.amount))}</div>
+								</div>
+							))}
+						</div>
+					)}
+				</div>
+			</div>
+
+			<div className="mt-6 flex items-center gap-2 text-xs text-[#8a8577]"><ShieldCheck className="h-4 w-4 text-emerald-400" /> Operated by TradingBible LLC. Internal ledger + external tracker. Deposits via Stripe.</div>
 		</AppLayout>
 	);
 }

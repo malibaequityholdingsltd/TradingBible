@@ -2,12 +2,13 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
 	PlayCircle, Clock, CheckCircle2, Lock, GraduationCap, Video, Route, Award, Sparkles,
 	Rocket, BookOpen, Bot, ArrowLeft, RotateCcw, ChevronRight, Trophy, Calendar, Radio, Loader2,
-	MessageSquare, Send, BadgeCheck, CircleDollarSign,
+	MessageSquare, Send, BadgeCheck, CircleDollarSign, Wallet,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useToast } from '@/hooks/use-toast';
 import { openAcademyCheckout as openPaddleAcademy, getPaddleConfig } from '@/lib/paddle';
 import { openAcademyCheckout as openStripeAcademy, getStripeConfig } from '@/lib/stripe';
+import { useWallet } from '@/hooks/useWallet';
 import {
 	getAcademyAccess, enrollInPath, getCurriculum, getLesson, gradeQuiz,
 	completeLesson, getAcademyProgress, claimCertificate, rsvpWebinar, unrsvpWebinar,
@@ -247,6 +248,8 @@ function Paywall({ onPurchased }) {
 	const [busy, setBusy] = useState(false);
 	const [configured, setConfigured] = useState(true);
 	const [checked, setChecked] = useState(false);
+	const { ledger, payWithWallet } = useWallet();
+	const walletBalance = ledger?.balances?.USD || 0;
 
 	useEffect(() => {
 		Promise.allSettled([getStripeConfig(), getPaddleConfig()]).then(([s, p]) => {
@@ -259,7 +262,6 @@ function Paywall({ onPurchased }) {
 	const buy = async () => {
 		setBusy(true);
 		try {
-			// Prefer Stripe Academy if configured, fallback to Paddle overlay
 			try {
 				const scfg = await getStripeConfig();
 				if (scfg?.prices?.academy) {
@@ -274,6 +276,17 @@ function Paywall({ onPurchased }) {
 			});
 		} catch (err) {
 			toast({ variant: 'destructive', title: 'Checkout unavailable', description: err.message });
+		} finally { setBusy(false); }
+	};
+
+	const buyWithWallet = async () => {
+		setBusy(true);
+		try {
+			await payWithWallet('academy');
+			toast({ title: 'Academy unlocked', description: 'Paid with wallet balance.' });
+			onPurchased();
+		} catch (err) {
+			toast({ variant: 'destructive', title: 'Wallet pay failed', description: err.message });
 		} finally { setBusy(false); }
 	};
 
@@ -306,13 +319,19 @@ function Paywall({ onPurchased }) {
 					<span className="mb-1.5 text-sm text-[#8a8577]">one-time · lifetime access</span>
 				</div>
 
-				<button
-					onClick={buy}
-					disabled={busy || (checked && !configured)}
-					className="mt-6 flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-8 text-base font-bold text-[#0a0a0f] shadow-[0_0_30px_rgba(212,175,55,0.35)] transition hover:opacity-90 disabled:opacity-60"
-				>
-					{busy ? <><Loader2 className="h-5 w-5 animate-spin" /> Opening checkout…</> : <><CircleDollarSign className="h-5 w-5" /> Get lifetime access — $150</>}
-				</button>
+				<div className="mt-6 flex flex-col items-center gap-3">
+					<button
+						onClick={buy}
+						disabled={busy || (checked && !configured)}
+						className="flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-8 text-base font-bold text-[#0a0a0f] shadow-[0_0_30px_rgba(212,175,55,0.35)] transition hover:opacity-90 disabled:opacity-60"
+					>
+						{busy ? <><Loader2 className="h-5 w-5 animate-spin" /> Opening checkout…</> : <><CircleDollarSign className="h-5 w-5" /> Get lifetime access — $150</>}
+					</button>
+					<button onClick={buyWithWallet} disabled={busy || walletBalance < 150} className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#d4af37]/20 px-6 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 disabled:opacity-40">
+						<Wallet className="h-4 w-4" /> Pay with wallet ({walletBalance >= 150 ? 'available' : `need $${(150 - walletBalance).toFixed(2)} more`})
+					</button>
+					<div className="text-xs text-[#8a8577]">Wallet: ${walletBalance.toFixed(2)} · <a href="/app/wallet" className="text-[#d4af37] hover:underline">Fund wallet</a></div>
+				</div>
 				{checked && !configured && (
 					<p className="mt-3 max-w-md text-xs text-[#8a8577]">Checkout will activate once <span className="font-mono text-[#d4af37]">STRIPE_PRICE_ACADEMY</span> or <span className="font-mono text-[#d4af37]">PADDLE_PRICE_ACADEMY</span> is set in <span className="font-mono">apps/api/.env</span> (the $150 one-time price id).</p>
 				)}
