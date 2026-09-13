@@ -6,12 +6,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { PLANS } from '@/lib/mockData';
 import pb from '@/lib/pocketbaseClient';
-import { openCheckout, getSubscription, cancelSubscription, resumeSubscription, switchPlan, getPaddleConfig } from '@/lib/paddle';
+import { openCheckout as openPaddleCheckout, getSubscription as getPaddleSubscription, cancelSubscription as cancelPaddle, resumeSubscription as resumePaddle, switchPlan as switchPaddle, getPaddleConfig } from '@/lib/paddle';
+import { openCheckout as openStripeCheckout, getSubscription as getStripeSubscription, cancelSubscription as cancelStripe, resumeSubscription as resumeStripe, switchPlan as switchStripe, getStripeConfig } from '@/lib/stripe';
 
 const PAID = PLANS.filter((p) => p.id !== 'trial');
 
 function fmtDate(iso) {
   if (!iso) return '—';
+  if (typeof iso === 'number') iso = new Date(iso * 1000).toISOString();
   return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 const money = (n, c = 'USD') => (n || n === 0) ? new Intl.NumberFormat('en-US', { style: 'currency', currency: c || 'USD' }).format(n) : '—';
@@ -32,18 +34,26 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
   const [configured, setConfigured] = useState(true);
+  const [provider, setProvider] = useState('stripe');
   const [paddleEnv, setPaddleEnv] = useState(null);
+  const [stripeEnv, setStripeEnv] = useState(null);
 
   const currentPlan = user?.plan || 'trial';
 
   const load = useCallback(async () => {
     setLoading(true);
+    let stripeCfg = null; let paddleCfg = null;
+    try { stripeCfg = await getStripeConfig(); } catch { /* ignore */ }
+    try { paddleCfg = await getPaddleConfig(); } catch { /* ignore */ }
+    const stripeReady = Boolean(stripeCfg?.configured);
+    const paddleReady = Boolean(paddleCfg?.configured);
+    if (stripeReady) { setProvider('stripe'); setConfigured(true); setStripeEnv(stripeCfg.environment); setPaddleEnv(null); }
+    else if (paddleReady) { setProvider('paddle'); setConfigured(true); setPaddleEnv(paddleCfg.environment); setStripeEnv(null); }
+    else { setProvider('stripe'); setConfigured(false); setStripeEnv(stripeCfg?.environment||null); setPaddleEnv(paddleCfg?.environment||null); }
     try {
-      const cfg = await getPaddleConfig();
-      setConfigured(cfg.configured);
-      setPaddleEnv(cfg.environment || null);
-    } catch { setConfigured(false); }
-    try { setSub(await getSubscription()); } catch { setSub(null); }
+      const fn = stripeReady ? getStripeSubscription : paddleReady ? getPaddleSubscription : getStripeSubscription;
+      setSub(await fn());
+    } catch { setSub(null); }
     try {
       const items = await pb.collection('billing_events').getList(1, 20, { sort: '-created' });
       setEvents(items.items);
@@ -56,12 +66,16 @@ export default function BillingPage() {
   const handleCheckout = async (plan) => {
     setBusy(plan);
     try {
-      await openCheckout(plan, (e) => {
-        if (e?.name === 'checkout.completed') {
-          toast({ title: 'Payment successful', description: 'Your subscription is being activated.' });
-          setTimeout(load, 2500);
-        }
-      });
+      if (provider === 'stripe') {
+        await openStripeCheckout(plan);
+      } else {
+        await openPaddleCheckout(plan, (e) => {
+          if (e?.name === 'checkout.completed') {
+            toast({ title: 'Payment successful', description: 'Your subscription is being activated.' });
+            setTimeout(load, 2500);
+          }
+        });
+      }
     } catch (err) {
       toast({ variant: 'destructive', title: 'Checkout unavailable', description: err?.message || 'Please try again.' });
     } finally { setBusy(null); }
@@ -70,7 +84,7 @@ export default function BillingPage() {
   const handleSwitch = async (plan) => {
     setBusy(plan);
     try {
-      await switchPlan(plan);
+      if (provider === 'stripe') await switchStripe(plan); else await switchPaddle(plan);
       await updateProfile({ plan });
       toast({ title: 'Plan updated', description: `You are now on the ${plan} plan. Charges are prorated.` });
       await load();
@@ -82,7 +96,7 @@ export default function BillingPage() {
   const handleCancel = async () => {
     setBusy('cancel');
     try {
-      await cancelSubscription(false);
+      if (provider === 'stripe') await cancelStripe(false); else await cancelPaddle(false);
       toast({ title: 'Cancellation scheduled', description: 'Your plan stays active until the end of the billing period.' });
       await load();
     } catch (err) {
@@ -93,7 +107,7 @@ export default function BillingPage() {
   const handleResume = async () => {
     setBusy('resume');
     try {
-      await resumeSubscription();
+      if (provider === 'stripe') await resumeStripe(); else await resumePaddle();
       toast({ title: 'Subscription resumed', description: 'Auto-renewal is back on.' });
       await load();
     } catch (err) {
@@ -104,8 +118,8 @@ export default function BillingPage() {
   const status = sub?.status || (currentPlan === 'trial' ? 'trialing' : null);
   const hasSub = Boolean(sub?.id);
   const isAdmin = user?.role === 'admin';
-  const cancelScheduled = sub?.scheduled_change?.action === 'cancel' || user?.cancelScheduled;
-  const periodEnd = sub?.current_billing_period?.ends_at || user?.currentPeriodEnd;
+  const cancelScheduled = sub?.scheduled_change?.action === 'cancel' || sub?.cancel_at_period_end || user?.cancelScheduled;
+  const periodEnd = sub?.current_billing_period?.ends_at || (sub?.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null) || user?.currentPeriodEnd;
 
   return (
     <AppLayout title="Billing & Subscription">
@@ -113,12 +127,20 @@ export default function BillingPage() {
         icon={Crown}
         kicker="Subscription"
         description="Manage your trial and paid subscription in one place. Changes apply instantly to your account access."
-        actions={paddleEnv && (
-          <span className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${paddleEnv === 'live' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#d4af37]/15 text-[#d4af37]'}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${paddleEnv === 'live' ? 'bg-emerald-400' : 'bg-[#d4af37]'}`} />
-            Paddle {paddleEnv === 'live' ? 'Live' : 'Sandbox'} environment
-            {paddleEnv !== 'live' && <span className="hidden font-normal text-[#8a8577] sm:inline">· test mode</span>}
-          </span>
+        actions={(paddleEnv || stripeEnv) && (
+          provider === 'stripe' ? (
+            <span className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${stripeEnv === 'live' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#d4af37]/15 text-[#d4af37]'}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${stripeEnv === 'live' ? 'bg-emerald-400' : 'bg-[#d4af37]'}`} />
+              Stripe {stripeEnv === 'live' ? 'Live' : 'Test'} environment
+              {stripeEnv !== 'live' && <span className="hidden font-normal text-[#8a8577] sm:inline">· test mode</span>}
+            </span>
+          ) : (
+            <span className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${paddleEnv === 'live' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#d4af37]/15 text-[#d4af37]'}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${paddleEnv === 'live' ? 'bg-emerald-400' : 'bg-[#d4af37]'}`} />
+              Paddle {paddleEnv === 'live' ? 'Live' : 'Sandbox'} environment
+              {paddleEnv !== 'live' && <span className="hidden font-normal text-[#8a8577] sm:inline">· test mode</span>}
+            </span>
+          )
         )}
       />
 
@@ -126,8 +148,12 @@ export default function BillingPage() {
         <div className="mb-6 flex items-start gap-3 rounded-2xl border border-[#d4af37]/25 bg-[#d4af37]/[0.06] p-4">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#d4af37]" />
           <div className="text-sm text-[#c9c4b4]">
-            <p className="font-medium text-[#f0ecdd]">Paddle {paddleEnv === 'live' ? 'live' : 'sandbox'} credentials are not fully configured yet.</p>
-            <p className="mt-1">Add your <span className="font-mono text-[#d4af37]">PADDLE_{paddleEnv === 'live' ? 'LIVE' : 'SANDBOX'}_API_KEY</span>, <span className="font-mono text-[#d4af37]">PADDLE_{paddleEnv === 'live' ? 'LIVE' : 'SANDBOX'}_CLIENT_TOKEN</span>, <span className="font-mono text-[#d4af37]">PADDLE_{paddleEnv === 'live' ? 'LIVE' : 'SANDBOX'}_WEBHOOK_SECRET</span> and price IDs to <span className="font-mono">apps/api/.env</span> to enable checkout. Set <span className="font-mono text-[#d4af37]">PADDLE_ENV_OVERRIDE</span> to switch between sandbox and live manually, or leave it unset to follow <span className="font-mono text-[#d4af37]">NODE_ENV</span>. Everything below is wired and production-ready — it activates automatically once those values are set.</p>
+            <p className="font-medium text-[#f0ecdd]">{provider === 'stripe' ? 'Stripe' : 'Paddle'} {provider === 'stripe' ? (stripeEnv === 'live' ? 'live' : 'test') : (paddleEnv === 'live' ? 'live' : 'sandbox')} credentials are not fully configured yet.</p>
+            {provider === 'stripe' ? (
+              <p className="mt-1">Add <span className="font-mono text-[#d4af37]">STRIPE_SECRET_KEY</span> (sk_test_... or sk_live_...), <span className="font-mono text-[#d4af37]">STRIPE_PUBLISHABLE_KEY</span> (pk_...), <span className="font-mono text-[#d4af37]">STRIPE_WEBHOOK_SECRET</span> (whsec_...) and <span className="font-mono text-[#d4af37]">STRIPE_PRICE_PRO / ELITE / PROFESSIONAL</span> to <span className="font-mono">apps/api/.env</span>. Create them free at <span className="font-mono">dashboard.stripe.com</span> → Developers → API keys & Webhooks → Prices. Paddle remains as fallback if Stripe is empty.</p>
+            ) : (
+              <p className="mt-1">Add your <span className="font-mono text-[#d4af37]">PADDLE_{paddleEnv === 'live' ? 'LIVE' : 'SANDBOX'}_API_KEY</span>, <span className="font-mono text-[#d4af37]">PADDLE_{paddleEnv === 'live' ? 'LIVE' : 'SANDBOX'}_CLIENT_TOKEN</span>, <span className="font-mono text-[#d4af37]">PADDLE_{paddleEnv === 'live' ? 'LIVE' : 'SANDBOX'}_WEBHOOK_SECRET</span> and price IDs to <span className="font-mono">apps/api/.env</span> to enable checkout. Set <span className="font-mono text-[#d4af37]">PADDLE_ENV_OVERRIDE</span> to switch between sandbox and live manually, or leave it unset to follow <span className="font-mono text-[#d4af37]">NODE_ENV</span>. Everything below is wired and production-ready — it activates automatically once those values are set.</p>
+            )}
           </div>
         </div>
       )}
@@ -145,7 +171,7 @@ export default function BillingPage() {
             </div>
           </div>
           <div className="text-right text-sm text-[#8a8577]">
-            <div className="flex items-center justify-end gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-400" /> Secured by Paddle</div>
+            <div className="flex items-center justify-end gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-400" /> Secured by {provider === 'stripe' ? 'Stripe' : 'Paddle'}</div>
             {periodEnd && <div className="mt-2">{cancelScheduled ? 'Access until' : 'Renews'} <span className="text-[#f0ecdd]">{fmtDate(periodEnd)}</span></div>}
           </div>
         </div>
