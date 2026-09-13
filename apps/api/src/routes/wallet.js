@@ -124,7 +124,12 @@ router.get('/ledger/balance', async (req, res) => {
 		if (!balances.USD) balances.USD = 0;
 		return res.json({ balances });
 	} catch (err) {
-		logger.error('wallet balance failed', String(err));
+		const msg = String(err);
+		if (msg.includes('404') || msg.includes('does not exist') || msg.includes('42P01')) {
+			logger.warn('wallet_balances table missing - returning empty');
+			return res.json({ balances: { USD: 0 } });
+		}
+		logger.error('wallet balance failed', msg);
 		return res.status(500).json({ error: 'failed' });
 	}
 });
@@ -138,7 +143,12 @@ router.get('/ledger/transactions', async (req, res) => {
 		});
 		return res.json({ transactions: rows || [] });
 	} catch (err) {
-		logger.error('wallet tx list failed', String(err));
+		const msg = String(err);
+		if (msg.includes('404') || msg.includes('does not exist') || msg.includes('42P01')) {
+			logger.warn('wallet_transactions table missing - returning empty');
+			return res.json({ transactions: [] });
+		}
+		logger.error('wallet tx list failed', msg);
 		return res.status(500).json({ error: 'failed' });
 	}
 });
