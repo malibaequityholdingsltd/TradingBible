@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Crown, Check, CreditCard, RefreshCw, XCircle, RotateCcw, ArrowUpRight, ShieldCheck, Receipt, AlertTriangle } from 'lucide-react';
+import { Crown, Check, CreditCard, RefreshCw, XCircle, RotateCcw, ArrowUpRight, ShieldCheck, Receipt, AlertTriangle, Wallet } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import PageHeader from '@/components/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,6 +8,7 @@ import { PLANS } from '@/lib/mockData';
 import pb from '@/lib/pocketbaseClient';
 import { openCheckout as openPaddleCheckout, getSubscription as getPaddleSubscription, cancelSubscription as cancelPaddle, resumeSubscription as resumePaddle, switchPlan as switchPaddle, getPaddleConfig } from '@/lib/paddle';
 import { openCheckout as openStripeCheckout, getSubscription as getStripeSubscription, cancelSubscription as cancelStripe, resumeSubscription as resumeStripe, switchPlan as switchStripe, getStripeConfig } from '@/lib/stripe';
+import { useWallet } from '@/hooks/useWallet';
 
 const PAID = PLANS.filter((p) => p.id !== 'trial');
 
@@ -37,6 +38,8 @@ export default function BillingPage() {
   const [provider, setProvider] = useState('stripe');
   const [paddleEnv, setPaddleEnv] = useState(null);
   const [stripeEnv, setStripeEnv] = useState(null);
+  const { ledger, payWithWallet } = useWallet();
+  const walletBalance = ledger?.balances?.USD || 0;
 
   const currentPlan = user?.plan || 'trial';
 
@@ -115,6 +118,18 @@ export default function BillingPage() {
     } finally { setBusy(null); }
   };
 
+  const handleWalletPay = async (plan) => {
+    setBusy(`wallet-${plan}`);
+    try {
+      await payWithWallet(plan);
+      toast({ title: 'Paid with wallet', description: `You are now on ${plan}.` });
+      await load();
+      await updateProfile({ plan });
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Wallet pay failed', description: err?.message || 'Insufficient balance' });
+    } finally { setBusy(null); }
+  };
+
   const status = sub?.status || (currentPlan === 'trial' ? 'trialing' : null);
   const hasSub = Boolean(sub?.id);
   const isAdmin = user?.role === 'admin';
@@ -157,6 +172,12 @@ export default function BillingPage() {
           </div>
         </div>
       )}
+
+      {/* Wallet balance */}
+      <div className="mb-4 glass rounded-2xl p-4 flex items-center justify-between">
+        <div className="text-sm text-[#8a8577]">Wallet balance: <span className="font-mono font-bold text-[#f0ecdd]">{money(walletBalance)}</span> <span className="text-xs">· <a href="/app/wallet" className="text-[#d4af37] hover:underline">Fund wallet</a></span></div>
+        <div className="text-xs text-[#6a665a]">Pay with wallet for instant activation</div>
+      </div>
 
       {/* Current subscription */}
       <div className="mb-6 glass rounded-2xl p-6">
@@ -202,13 +223,16 @@ export default function BillingPage() {
                 <div className="mt-2 flex items-end gap-1"><span className="text-3xl font-bold gold-text">${p.price}</span><span className="mb-1 text-sm text-[#8a8577]">/{p.period}</span></div>
                 <ul className="mt-3 space-y-1.5 text-sm text-[#b3ae9e]">{p.features.slice(0, 5).map((f) => <li key={f} className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-[#d4af37]" />{f}</li>)}</ul>
               </div>
-              <div className="mt-4 shrink-0 sm:mt-0 sm:w-44">
+              <div className="mt-4 shrink-0 sm:mt-0 sm:w-44 space-y-2">
                 {isCurrent ? (
                   <div className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-lg border border-emerald-500/30 py-2.5 text-sm font-semibold text-emerald-400"><Check className="h-4 w-4" /> Current plan</div>
                 ) : canSwitch ? (
                   <button disabled={busy} onClick={() => handleSwitch(p.id)} className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/25 py-2.5 text-sm font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60 disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowUpRight className="h-4 w-4" />} Switch to {p.name}</button>
                 ) : (
-                  <button disabled={busy} onClick={() => handleCheckout(p.id)} className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />} Subscribe</button>
+                  <>
+                    <button disabled={busy} onClick={() => handleCheckout(p.id)} className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />} Subscribe</button>
+                    <button disabled={busy || walletBalance < p.price} onClick={() => handleWalletPay(p.id)} className="flex min-h-[36px] w-full items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/20 py-2 text-xs font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 disabled:opacity-40">{busy === `wallet-${p.id}` ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Wallet className="h-3 w-3" />} Pay with wallet</button>
+                  </>
                 )}
               </div>
             </div>
