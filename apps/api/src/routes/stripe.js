@@ -30,6 +30,7 @@ const PRICE_MAP = {
   pro: process.env.STRIPE_PRICE_PRO || process.env.PADDLE_PRICE_PRO || '',
   elite: process.env.STRIPE_PRICE_ELITE || process.env.PADDLE_PRICE_ELITE || '',
   professional: process.env.STRIPE_PRICE_PROFESSIONAL || process.env.PADDLE_PRICE_PROFESSIONAL || '',
+  academy: process.env.STRIPE_PRICE_ACADEMY || process.env.PADDLE_PRICE_ACADEMY || '',
 };
 
 const PLAN_BY_PRICE = () => {
@@ -60,7 +61,19 @@ async function getAuthedUser(req) {
 }
 
 async function updateUser(userId, data) {
-  return supabase.updateUser(userId, data);
+  try {
+    return await supabase.updateUser(userId, data);
+  } catch (err) {
+    // Fallback if stripeCustomerId column not yet migrated (42703) - retry without that column
+    if (String(err).includes('stripeCustomerId') || String(err).includes('42703') || String(err).includes('does not exist')) {
+      const { stripeCustomerId, ...rest } = data;
+      if (Object.keys(rest).length) {
+        logger.warn('stripeCustomerId column missing, retrying update without it');
+        return supabase.updateUser(userId, rest);
+      }
+    }
+    throw err;
+  }
 }
 
 async function findUser(metadata, customerId) {
@@ -69,17 +82,18 @@ async function findUser(metadata, customerId) {
     try { return await supabase.getUserById(uid); } catch { /* fall through */ }
   }
   if (customerId) {
-    // try stripeCustomerId first, then legacy paddleCustomerId
     try {
       const row = await supabase.getUserByCustomerId(customerId);
       if (row) return row;
     } catch { /* not found */ }
-    // fallback: search stripeCustomerId column directly
     try {
       const { supabaseRest } = await import('../utils/supabaseClient.js');
       const rows = await supabaseRest(`/rest/v1/users?stripeCustomerId=eq.${encodeURIComponent(customerId)}`, { query: { select: '*', limit: 1 } });
       if (rows?.[0]) return rows[0];
-    } catch { /* not found */ }
+    } catch (err) {
+      // column missing -> ignore, rely on paddleCustomerId fallback already tried
+      if (!String(err).includes('42703') && !String(err).includes('does not exist')) logger.warn('findUser stripeCustomerId lookup failed', String(err));
+    }
   }
   return null;
 }
@@ -133,8 +147,9 @@ router.post('/checkout-session', async (req, res) => {
   const stripe = getStripe();
   if (!stripe) return res.status(503).json({ error: 'Stripe is not configured. Set STRIPE_SECRET_KEY in apps/api/.env' });
 
-  const { plan } = req.body ?? {};
-  const priceId = PRICE_MAP[plan];
+  const { plan, intent } = req.body ?? {};
+  const isAcademy = intent === 'academy' || plan === 'academy';
+  const priceId = isAcademy ? PRICE_MAP.academy : PRICE_MAP[plan];
   if (!priceId) return res.status(422).json({ error: 'unknown or unconfigured plan' });
 
   // ensure customer
@@ -148,6 +163,19 @@ router.post('/checkout-session', async (req, res) => {
   }
 
   const origin = req.headers.origin || process.env.CORS_ORIGIN || 'https://tradingbible.app';
+  if (isAcademy) {
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      customer: customerId || undefined,
+      customer_email: customerId ? undefined : user.email,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${origin}/app/academy?checkout=success`,
+      cancel_url: `${origin}/app/academy?checkout=cancel`,
+      client_reference_id: user.id,
+      metadata: { user_id: user.id, intent: 'academy' },
+    });
+    return res.json({ url: session.url, id: session.id });
+  }
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     customer: customerId || undefined,
@@ -286,10 +314,19 @@ router.post('/webhook', async (req, res) => {
       }
     } else if (type.startsWith('checkout.session.completed')) {
       const customerId = typeof data.customer === 'string' ? data.customer : data.customer?.id;
-      const subscriptionId = typeof data.subscription === 'string' ? data.subscription : data.subscription?.id;
-      const user = await findUser(data.metadata, customerId);
-      if (user && subscriptionId) {
-        await updateUser(user.id, { subscriptionId, stripeCustomerId: customerId });
+      const intent = data.metadata?.intent;
+      if (intent === 'academy') {
+        const user = await findUser(data.metadata, customerId);
+        if (user) {
+          await updateUser(user.id, { academyAccess: true, academyPurchasedAt: new Date(event.created * 1000).toISOString(), stripeCustomerId: customerId });
+          await recordEvent(user.id, { eventType: type, planName: 'academy', status: data.payment_status || 'paid', occurredAt: new Date(event.created * 1000).toISOString() });
+        }
+      } else {
+        const subscriptionId = typeof data.subscription === 'string' ? data.subscription : data.subscription?.id;
+        const user = await findUser(data.metadata, customerId);
+        if (user && subscriptionId) {
+          await updateUser(user.id, { subscriptionId, stripeCustomerId: customerId });
+        }
       }
     } else if (type.startsWith('invoice.')) {
       const customerId = typeof data.customer === 'string' ? data.customer : data.customer?.id;
