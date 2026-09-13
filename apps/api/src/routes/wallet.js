@@ -201,14 +201,16 @@ router.post('/deposit/confirm', async (req, res) => {
 	}
 });
 
-// ── Withdraw (mock - creates pending transaction) ───────────────
+// ── Withdraw (real: deducts ledger, creates Stripe payout when possible, else pending for admin) ─
 router.post('/withdraw', async (req, res) => {
 	const user = await authedUser(req);
 	if (!user) return res.status(401).json({ error: 'unauthorized' });
 	const amount = Number(req.body?.amount || 0);
 	const address = String(req.body?.address || '').trim();
+	const method = String(req.body?.method || 'bank').trim(); // bank | crypto
 	if (!amount || amount <= 0) return res.status(422).json({ error: 'invalid amount' });
 	if (!address) return res.status(422).json({ error: 'address required' });
+	if (amount < 5) return res.status(422).json({ error: 'minimum withdraw $5' });
 	try {
 		const bal = await getOrCreateBalance(user.id, 'USD');
 		if ((Number(bal.balance) || 0) < amount) return res.status(422).json({ error: 'insufficient balance' });
@@ -217,15 +219,62 @@ router.post('/withdraw', async (req, res) => {
 			method: 'PATCH',
 			body: { balance: next, updated: new Date().toISOString() },
 			prefer: 'return=representation',
+		}).catch(async () => {
+			await supabaseRest('/rest/v1/wallet_balances', { method: 'POST', body: { owner: user.id, currency: 'USD', balance: next }, prefer: 'return=representation' });
 		});
-		await supabaseRest('/rest/v1/wallet_transactions', {
+
+		// Try real Stripe payout for fiat (requires Stripe balance)
+		let stripePayoutId = null;
+		let status = 'pending';
+		const stripe = getStripe();
+		if (stripe && method === 'bank') {
+			try {
+				// Check Stripe balance first
+				const bal = await stripe.balance.retrieve();
+				const avail = (bal.available?.find(b => b.currency === 'usd')?.amount || 0) / 100;
+				if (avail >= amount) {
+					const payout = await stripe.payouts.create({ amount: Math.round(amount * 100), currency: 'usd', method: 'standard' });
+					stripePayoutId = payout.id;
+					status = payout.status === 'pending' ? 'pending' : 'completed';
+					logger.info(`Stripe payout ${payout.id} $${amount} for ${user.id}`);
+				} else {
+					logger.warn(`Stripe balance insufficient $${avail} for withdraw $${amount}, keeping pending for admin`);
+				}
+			} catch (e) {
+				logger.warn('Stripe payout failed, keeping pending', String(e));
+			}
+		}
+
+		const tx = await supabaseRest('/rest/v1/wallet_transactions', {
 			method: 'POST',
-			body: { owner: user.id, type: 'withdraw', amount: -amount, currency: 'USD', status: 'pending', reference: address, meta: { address } },
+			body: { owner: user.id, type: 'withdraw', amount: -amount, currency: 'USD', status, reference: stripePayoutId || address, meta: { address, method, stripePayoutId, requestedAt: new Date().toISOString() } },
 			prefer: 'return=representation',
 		});
-		return res.json({ ok: true, balance: next });
+
+		// Audit to billing_events for admin visibility
+		try { await supabase.createEvent?.({ owner: user.id, eventType: 'wallet.withdraw', status, amount: -amount, currency: 'USD', occurredAt: new Date().toISOString() }); } catch {}
+
+		return res.json({ ok: true, balance: next, withdrawal: tx?.[0] || null, stripePayoutId, status });
 	} catch (err) {
 		logger.error('wallet withdraw failed', String(err));
+		return res.status(500).json({ error: 'failed' });
+	}
+});
+
+// ── Admin: list pending withdrawals ─────────────────────────────
+router.get('/admin/withdrawals', async (req, res) => {
+	const user = await authedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	// Simple admin check via users table
+	try {
+		const me = await supabaseRest(`/rest/v1/users?id=eq.${user.id}&select=role`, { query: { select: 'role', limit: 1 } });
+		if (me?.[0]?.role !== 'admin') return res.status(403).json({ error: 'admin only' });
+		const rows = await supabaseRest('/rest/v1/wallet_transactions', {
+			query: { select: '*', type: 'eq.withdraw', order: 'created.desc', limit: 100 },
+		});
+		return res.json({ withdrawals: rows || [] });
+	} catch (err) {
+		logger.error('admin withdrawals failed', String(err));
 		return res.status(500).json({ error: 'failed' });
 	}
 });
