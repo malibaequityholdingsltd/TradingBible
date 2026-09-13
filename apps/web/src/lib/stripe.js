@@ -44,6 +44,24 @@ export async function openCheckout(plan) {
   else throw new Error('No checkout URL returned');
 }
 
+export async function openAcademyCheckout() {
+  const config = await getStripeConfig();
+  const priceId = config.prices?.academy;
+  if (!priceId) throw new Error('Academy checkout is not configured yet — missing STRIPE_PRICE_ACADEMY in apps/api/.env');
+  const res = await apiServerClient.fetch('/stripe/checkout-session', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ intent: 'academy' }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Could not create Academy checkout session');
+  }
+  const { url } = await res.json();
+  if (url) window.location.href = url;
+  else throw new Error('No checkout URL returned');
+}
+
 export async function getSubscription() {
   const res = await apiServerClient.fetch('/stripe/subscription', { headers: authHeaders() });
   if (!res.ok) throw new Error('Could not load subscription');
