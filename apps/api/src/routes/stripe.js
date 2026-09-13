@@ -321,6 +321,21 @@ router.post('/webhook', async (req, res) => {
           await updateUser(user.id, { academyAccess: true, academyPurchasedAt: new Date(event.created * 1000).toISOString(), stripeCustomerId: customerId });
           await recordEvent(user.id, { eventType: type, planName: 'academy', status: data.payment_status || 'paid', occurredAt: new Date(event.created * 1000).toISOString() });
         }
+      } else if (intent === 'wallet_deposit') {
+        const user = await findUser(data.metadata, customerId);
+        const amount = Number(data.metadata?.amount || 0) / 100;
+        if (user && amount > 0) {
+          try {
+            const { supabaseRest } = await import('../utils/supabaseClient.js');
+            const rows = await supabaseRest(`/rest/v1/wallet_balances?owner=eq.${user.id}&currency=eq.USD`, { query: { select: '*' } });
+            const bal = rows?.[0];
+            const next = (Number(bal?.balance) || 0) + amount;
+            if (bal) await supabaseRest(`/rest/v1/wallet_balances?owner=eq.${user.id}&currency=eq.USD`, { method: 'PATCH', body: { balance: next }, prefer: 'return=representation' });
+            else await supabaseRest('/rest/v1/wallet_balances', { method: 'POST', body: { owner: user.id, currency: 'USD', balance: next }, prefer: 'return=representation' });
+            await supabaseRest('/rest/v1/wallet_transactions', { method: 'POST', body: { owner: user.id, type: 'deposit', amount, currency: 'USD', status: 'completed', reference: data.id, meta: { source: 'stripe', session: data.id } }, prefer: 'return=representation' });
+            logger.info(`wallet deposit credited ${amount} to ${user.id}`);
+          } catch (e) { logger.error('wallet deposit webhook failed', String(e)); }
+        }
       } else {
         const subscriptionId = typeof data.subscription === 'string' ? data.subscription : data.subscription?.id;
         const user = await findUser(data.metadata, customerId);
