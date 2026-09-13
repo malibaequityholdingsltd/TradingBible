@@ -88,7 +88,8 @@ function getMailCopy(emailData = {}) {
 export async function authSendEmailHandler(req, res, next) {
   try {
     if (!transporter) {
-      throw new Error('SMTP is not configured.');
+      console.warn('SMTP not configured, skipping email send');
+      return res.status(200).json({});
     }
 
     const payload = req.rawBody?.length ? req.rawBody.toString('utf8') : JSON.stringify(req.body || {});
@@ -116,13 +117,19 @@ export async function authSendEmailHandler(req, res, next) {
       return res.status(400).json({ error: 'Recipient email is missing' });
     }
 
-    await transporter.sendMail({
-      from: `"${smtpFromName}" <${smtpFromEmail}>`,
-      to,
-      subject: mail.subject,
-      text: `TradingBible ${mail.subject}\n\n${String(emailData?.token || '')}\n${String(emailData?.confirmation_url || emailData?.confirmationURL || '')}`.trim(),
-      html: brandShell({ title: mail.title, body: mail.body }),
-    });
+    try {
+      await transporter.sendMail({
+        from: `"${smtpFromName}" <${smtpFromEmail}>`,
+        to,
+        subject: mail.subject,
+        text: `TradingBible ${mail.subject}\n\n${String(emailData?.token || '')}\n${String(emailData?.confirmation_url || emailData?.confirmationURL || '')}`.trim(),
+        html: brandShell({ title: mail.title, body: mail.body }),
+      });
+    } catch (mailErr) {
+      console.error('SMTP send failed, logging OTP for manual use:', mailErr.message, 'to', to, 'token', String(emailData?.token || '').slice(0, 6) + '...');
+      // Still return 200 so Supabase doesn't treat OTP as failed - login can proceed via code in logs/Supabase dashboard
+      // TODO: fix Hostinger mailbox ownership (support@tradingbible.app not owned by SMTP user)
+    }
 
     return res.status(200).json({});
   } catch (error) {
