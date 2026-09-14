@@ -117,11 +117,11 @@ const CATEGORIES = [
   {
     id: 'payment', label: 'Payment', icon: CreditCard,
     items: [
-      { name: 'Paddle API', provider: 'Paddle', status: 'implemented',
-        purpose: 'Subscription billing, checkout, invoices and webhooks (merchant of record).',
-        usedIn: '/app/billing, Express /paddle routes, subscription fields on users.',
-        env: 'PADDLE_API_KEY, PADDLE_WEBHOOK_SECRET, VITE_PADDLE_CLIENT_TOKEN', envLoc: 'apps/api/.env + apps/web/.env',
-        setup: 'From the Paddle dashboard copy the API key and webhook secret to apps/api/.env, and the client-side token to apps/web/.env.' },
+      { name: 'Stripe API', provider: 'Stripe', status: 'implemented',
+        purpose: 'Subscription billing, checkout, invoices and webhooks (3-day card-required trial).',
+        usedIn: '/app/billing, /app/academy, Express /stripe routes, subscription fields on users.',
+        env: 'STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_*', envLoc: 'apps/api/.env',
+        setup: 'From the Stripe dashboard copy the secret + publishable keys, webhook secret and price IDs to apps/api/.env.' },
       { name: 'Circle x402 Gateway', provider: 'Circle', status: 'optional',
         purpose: 'Usage-based micropayment gate for API routes (for example, AI stream endpoints).',
         usedIn: 'Express middleware on /integrated-ai (toggle via env flags).',

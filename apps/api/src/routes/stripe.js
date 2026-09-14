@@ -27,11 +27,19 @@ function getWebhookSecret() {
 }
 
 const PRICE_MAP = {
-  pro: process.env.STRIPE_PRICE_PRO || process.env.PADDLE_PRICE_PRO || '',
-  elite: process.env.STRIPE_PRICE_ELITE || process.env.PADDLE_PRICE_ELITE || '',
-  professional: process.env.STRIPE_PRICE_PROFESSIONAL || process.env.PADDLE_PRICE_PROFESSIONAL || '',
-  academy: process.env.STRIPE_PRICE_ACADEMY || process.env.PADDLE_PRICE_ACADEMY || '',
+  pro: process.env.STRIPE_PRICE_PRO || '',
+  elite: process.env.STRIPE_PRICE_ELITE || '',
+  professional: process.env.STRIPE_PRICE_PROFESSIONAL || '',
+  academy: process.env.STRIPE_PRICE_ACADEMY || '',
 };
+
+// Stripe SDK errors are user-safe (declined card, unknown price, canceled
+// subscription) — surface them as JSON instead of a generic 500.
+function sendStripeError(res, err) {
+  const status = err?.statusCode >= 400 && err?.statusCode < 500 ? err.statusCode : 502;
+  logger.warn('Stripe request failed', String(err?.message || err));
+  return res.status(status).json({ error: err?.message || 'Payment provider request failed' });
+}
 
 const PLAN_BY_PRICE = () => {
   const out = {};
@@ -131,13 +139,15 @@ router.post('/customer', async (req, res) => {
   }
 
   // create new stripe customer
-  const customer = await stripe.customers.create({
-    email: user.email,
-    name: user.name || user.username || undefined,
-    metadata: { user_id: user.id },
-  });
-  await updateUser(user.id, { stripeCustomerId: customer.id });
-  res.json({ customerId: customer.id });
+  try {
+    const customer = await stripe.customers.create({
+      email: user.email,
+      name: user.name || user.username || undefined,
+      metadata: { user_id: user.id },
+    });
+    await updateUser(user.id, { stripeCustomerId: customer.id });
+    res.json({ customerId: customer.id });
+  } catch (err) { return sendStripeError(res, err); }
 });
 
 // ── Create Checkout Session ─────────────────────────────────────
@@ -163,38 +173,40 @@ router.post('/checkout-session', async (req, res) => {
   }
 
   const origin = req.headers.origin || process.env.CORS_ORIGIN || 'https://tradingbible.app';
-  if (isAcademy) {
+  try {
+    if (isAcademy) {
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        customer: customerId || undefined,
+        customer_email: customerId ? undefined : user.email,
+        line_items: [{ price: priceId, quantity: 1 }],
+        success_url: `${origin}/app/academy?checkout=success`,
+        cancel_url: `${origin}/app/academy?checkout=cancel`,
+        client_reference_id: user.id,
+        metadata: { user_id: user.id, intent: 'academy' },
+      });
+      return res.json({ url: session.url, id: session.id });
+    }
+    // 3-day trial with card required: first-time subscribers get a Stripe trial
+    // (card collected + verified now, charged after 3 days). Existing subscribers
+    // checking out again are charged immediately.
+    const isFirstSubscription = !user.subscriptionId;
     const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
+      mode: 'subscription',
       customer: customerId || undefined,
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/app/academy?checkout=success`,
-      cancel_url: `${origin}/app/academy?checkout=cancel`,
+      success_url: `${origin}/app/billing?checkout=success`,
+      cancel_url: `${origin}/app/billing?checkout=cancel`,
       client_reference_id: user.id,
-      metadata: { user_id: user.id, intent: 'academy' },
-    });
-    return res.json({ url: session.url, id: session.id });
-  }
-  // 3-day trial with card required: first-time subscribers get a Stripe trial
-  // (card collected + verified now, charged after 3 days). Existing subscribers
-  // checking out again are charged immediately.
-  const isFirstSubscription = !user.subscriptionId;
-  const session = await stripe.checkout.sessions.create({
-    mode: 'subscription',
-    customer: customerId || undefined,
-    customer_email: customerId ? undefined : user.email,
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${origin}/app/billing?checkout=success`,
-    cancel_url: `${origin}/app/billing?checkout=cancel`,
-    client_reference_id: user.id,
-    metadata: { user_id: user.id, plan },
-    subscription_data: {
       metadata: { user_id: user.id, plan },
-      ...(isFirstSubscription ? { trial_period_days: 3 } : {}),
-    },
-  });
-  res.json({ url: session.url, id: session.id });
+      subscription_data: {
+        metadata: { user_id: user.id, plan },
+        ...(isFirstSubscription ? { trial_period_days: 3 } : {}),
+      },
+    });
+    res.json({ url: session.url, id: session.id });
+  } catch (err) { return sendStripeError(res, err); }
 });
 
 // ── Get subscription ────────────────────────────────────────────
@@ -220,15 +232,17 @@ router.post('/subscription/cancel', async (req, res) => {
   const stripe = getStripe();
   if (!stripe) return res.status(503).json({ error: 'Stripe not configured' });
   const immediate = req.body?.immediately === true;
-  let sub;
-  if (immediate) {
-    sub = await stripe.subscriptions.cancel(user.subscriptionId);
-    await updateUser(user.id, { subscriptionStatus: 'canceled', cancelScheduled: false });
-  } else {
-    sub = await stripe.subscriptions.update(user.subscriptionId, { cancel_at_period_end: true });
-    await updateUser(user.id, { cancelScheduled: true });
-  }
-  res.json({ subscription: sub });
+  try {
+    let sub;
+    if (immediate) {
+      sub = await stripe.subscriptions.cancel(user.subscriptionId);
+      await updateUser(user.id, { subscriptionStatus: 'canceled', cancelScheduled: false });
+    } else {
+      sub = await stripe.subscriptions.update(user.subscriptionId, { cancel_at_period_end: true });
+      await updateUser(user.id, { cancelScheduled: true });
+    }
+    res.json({ subscription: sub });
+  } catch (err) { return sendStripeError(res, err); }
 });
 
 // ── Resume ──────────────────────────────────────────────────────
@@ -238,9 +252,11 @@ router.post('/subscription/resume', async (req, res) => {
   if (!user.subscriptionId) return res.status(422).json({ error: 'no active subscription' });
   const stripe = getStripe();
   if (!stripe) return res.status(503).json({ error: 'Stripe not configured' });
-  const sub = await stripe.subscriptions.update(user.subscriptionId, { cancel_at_period_end: false });
-  await updateUser(user.id, { cancelScheduled: false });
-  res.json({ subscription: sub });
+  try {
+    const sub = await stripe.subscriptions.update(user.subscriptionId, { cancel_at_period_end: false });
+    await updateUser(user.id, { cancelScheduled: false });
+    res.json({ subscription: sub });
+  } catch (err) { return sendStripeError(res, err); }
 });
 
 // ── Switch plan ─────────────────────────────────────────────────
@@ -253,14 +269,16 @@ router.post('/subscription/update', async (req, res) => {
   if (!priceId) return res.status(422).json({ error: 'unknown or unconfigured plan' });
   const stripe = getStripe();
   if (!stripe) return res.status(503).json({ error: 'Stripe not configured' });
-  const sub = await stripe.subscriptions.retrieve(user.subscriptionId);
-  const itemId = sub.items.data[0]?.id;
-  if (!itemId) return res.status(422).json({ error: 'no subscription item' });
-  const updated = await stripe.subscriptions.update(user.subscriptionId, {
-    items: [{ id: itemId, price: priceId }],
-    proration_behavior: 'create_prorations',
-  });
-  res.json({ subscription: updated });
+  try {
+    const sub = await stripe.subscriptions.retrieve(user.subscriptionId);
+    const itemId = sub.items.data[0]?.id;
+    if (!itemId) return res.status(422).json({ error: 'no subscription item' });
+    const updated = await stripe.subscriptions.update(user.subscriptionId, {
+      items: [{ id: itemId, price: priceId }],
+      proration_behavior: 'create_prorations',
+    });
+    res.json({ subscription: updated });
+  } catch (err) { return sendStripeError(res, err); }
 });
 
 // ── Webhook ─────────────────────────────────────────────────────
