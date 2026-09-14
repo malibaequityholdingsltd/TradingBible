@@ -35,19 +35,19 @@ function SignalCard({ symbol, timeframe, onResult, onSave }) {
     <div className="glass glass-hover rounded-2xl p-4" style={{ boxShadow: `inset 0 0 0 1px ${meta.color}22` }}>
       <div className="flex items-start justify-between">
         <div><div className="font-mono text-sm font-semibold text-[#f0ecdd]">{symbol}</div><div className="text-[10px] text-[#8a8577]">{nameOf(symbol)} · {timeframe}</div></div>
-        <span className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ color: meta.color, background: meta.bg }}><DirIcon type={sig.signalType} className="h-3.5 w-3.5" />{meta.label}</span>
+        <span className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ color: meta.color, background: meta.bg }}><DirIcon type={sig.signalType} className="h-3.5 w-3.5" />{t('sig.st_' + sig.signalType)}</span>
       </div>
       <div className="mt-3 flex items-center gap-3 text-[11px]">
-        <span className="text-[#8a8577]">{t('sig.strength')} <span className="font-semibold text-[#e9e7df]">{sig.strength}</span></span>
-        <span className="text-[#8a8577]">{t('sig.confidence')} <span className="font-semibold text-[#e9e7df]">{sig.confidence}</span></span>
+        <span className="text-[#8a8577]">{t('sig.strength')} <span className="font-semibold text-[#e9e7df]">{t('sig.' + sig.strength, null, sig.strength)}</span></span>
+        <span className="text-[#8a8577]">{t('sig.confidence')} <span className="font-semibold text-[#e9e7df]">{t('sig.' + sig.confidence, null, sig.confidence)}</span></span>
       </div>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/8">
         <div className="h-full rounded-full" style={{ width: `${Math.min(100, Math.abs(sig.score) * 50)}%`, background: meta.color }} />
       </div>
-      <p className="mt-3 text-xs text-[#c9c4b4]">{sig.reason}</p>
+      <p className="mt-3 text-xs text-[#c9c4b4]">{(sig.reasonKeys || []).map((k) => t('sig.r_' + k.key, null, k.label)).join(' · ') || t('sig.mixed')}</p>
       <div className="mt-2 flex flex-wrap gap-1">
         {sig.reasons.filter((r) => r.dir !== 'neutral').slice(0, 4).map((r, i) => (
-          <span key={i} className={`rounded-full px-2 py-0.5 text-[9px] ${r.dir === 'bull' ? 'bg-emerald-400/10 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}>{r.label}</span>
+          <span key={i} className={`rounded-full px-2 py-0.5 text-[9px] ${r.dir === 'bull' ? 'bg-emerald-400/10 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}>{r.key ? t('sig.r_' + r.key, null, r.label) : r.label}</span>
         ))}
       </div>
       <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-3">
@@ -123,8 +123,8 @@ export default function SignalsPage() {
         </div>
         {tab === 'live' && (
           <>
-            <select value={timeframe} onChange={(e) => setTimeframe(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none">{TIMEFRAMES.map((tf) => <option key={tf} value={tf}>TF: {tf}</option>)}</select>
-            <select value={fType} onChange={(e) => setFType(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none"><option value="all">{t('sig.allTypes')}</option>{Object.entries(SIGNAL_META).map(([k, m]) => <option key={k} value={k}>{m.label}</option>)}</select>
+            <select value={timeframe} onChange={(e) => setTimeframe(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none">{TIMEFRAMES.map((tf) => <option key={tf} value={tf}>{t('sig.tf', { tf })}</option>)}</select>
+            <select value={fType} onChange={(e) => setFType(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none"><option value="all">{t('sig.allTypes')}</option>{Object.entries(SIGNAL_META).map(([k]) => <option key={k} value={k}>{t('sig.st_' + k)}</option>)}</select>
             <select value={fStrength} onChange={(e) => setFStrength(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none"><option value="all">{t('sig.anyStrength')}</option><option value="weak">{t('sig.weak')}</option><option value="moderate">{t('sig.moderate')}</option><option value="strong">{t('sig.strong')}</option></select>
             <select value={fConf} onChange={(e) => setFConf(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none"><option value="all">{t('sig.anyConf')}</option><option value="low">{t('sig.low')}</option><option value="medium">{t('sig.medium')}</option><option value="high">{t('sig.high')}</option></select>
           </>
@@ -147,8 +147,8 @@ export default function SignalsPage() {
                 return (
                   <tr key={s.id} className="border-t border-white/5">
                     <td className="p-3"><div className="font-mono font-semibold text-[#f0ecdd]">{s.symbol}</div><div className="text-[10px] text-[#8a8577]">{s.timeframe}</div></td>
-                    <td className="p-3"><span className="rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ color: meta.color, background: meta.bg }}>{meta.label}</span></td>
-                    <td className="p-3 text-[#c9c4b4]">{s.strength}</td>
+                    <td className="p-3"><span className="rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ color: meta.color, background: meta.bg }}>{t('sig.st_' + (s.signalType || 'hold'))}</span></td>
+                    <td className="p-3 text-[#c9c4b4]">{t('sig.' + (s.strength || 'weak'), null, s.strength)}</td>
                     <td className="p-3 font-mono text-[#c9c4b4]">{s.price}</td>
                     <td className="p-3 text-[10px] text-[#8a8577]">{new Date(s.created).toLocaleDateString()}</td>
                     <td className="p-3">
@@ -156,10 +156,10 @@ export default function SignalsPage() {
                         <div className="flex gap-1">
                           <button onClick={() => setOutcome(s.id, 'win')} className="grid h-7 w-7 place-items-center rounded-lg border border-emerald-400/20 text-emerald-400 hover:bg-emerald-400/10"><Check className="h-3.5 w-3.5" /></button>
                           <button onClick={() => setOutcome(s.id, 'loss')} className="grid h-7 w-7 place-items-center rounded-lg border border-red-400/20 text-red-400 hover:bg-red-400/10"><X className="h-3.5 w-3.5" /></button>
-                          <button onClick={() => removeSaved(s.id)} className="text-[10px] text-[#5f5b50] hover:text-red-400">del</button>
+                          <button onClick={() => removeSaved(s.id)} className="text-[10px] text-[#5f5b50] hover:text-red-400">{t('sig.del')}</button>
                         </div>
                       ) : (
-                        <span className={`rounded-full px-2 py-0.5 text-[11px] ${s.outcome === 'win' ? 'bg-emerald-400/10 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}>{s.outcome}</span>
+                        <span className={`rounded-full px-2 py-0.5 text-[11px] ${s.outcome === 'win' ? 'bg-emerald-400/10 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}>{s.outcome === 'win' ? t('sig.win') : s.outcome === 'loss' ? t('sig.loss') : s.outcome}</span>
                       )}
                     </td>
                   </tr>

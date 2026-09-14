@@ -95,7 +95,7 @@ export default function AboutPage() {
         <div className="relative">
           <img src={LOGO} alt="TradingBible" className="mx-auto mb-6 h-16 w-16 rounded-2xl object-contain gold-glow" />
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/30 px-3 py-1 text-xs uppercase tracking-[0.18em] text-[#d4af37]"><Globe className="h-3.5 w-3.5" /> {t('abt.heroKick')}</span>
-          <h1 className="mx-auto mt-5 max-w-3xl text-4xl font-bold sm:text-5xl">About <span className="gold-text">TradingBible</span></h1>
+          <h1 className="mx-auto mt-5 max-w-3xl text-4xl font-bold sm:text-5xl">{t('abt.aboutTitle')} <span className="gold-text">TradingBible</span></h1>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-[#8a8577] sm:text-lg">
             {t('abt.heroSub')}
           </p>

@@ -20,75 +20,75 @@ function TikTokIcon(props) {
 
 const COLUMNS = [
   {
-    heading: 'Product & Features',
+    headingKey: 'fot.h_product',
     links: [
-      { label: 'Trading Journal', to: '/app/journal' },
-      { label: 'AI Coach', to: '/app/coach' },
-      { label: 'Dashboard', to: '/app' },
-      { label: 'Broker Integrations', to: '/app/brokers' },
-      { label: 'Market Data', to: '/' },
-      { label: 'Performance Analytics', to: '/app' },
+      { labelKey: 'fot.l_trading_journal', to: '/app/journal' },
+      { labelKey: 'fot.l_ai_coach', to: '/app/coach' },
+      { labelKey: 'fot.l_dashboard', to: '/app' },
+      { labelKey: 'fot.l_broker_integrations', to: '/app/brokers' },
+      { labelKey: 'fot.l_market_data', to: '/' },
+      { labelKey: 'fot.l_performance_analytics', to: '/app' },
     ],
   },
   {
-    heading: 'Tools & Subscriptions',
+    headingKey: 'fot.h_tools',
     links: [
-      { label: 'Features Overview', to: '/' },
-      { label: 'Pricing', to: '/pricing' },
-      { label: 'Plans Comparison', to: '/pricing' },
-      { label: 'API Access', to: '/pricing' },
-      { label: 'Premium Features', to: '/pricing' },
+      { labelKey: 'fot.l_features_overview', to: '/' },
+      { labelKey: 'fot.l_pricing', to: '/pricing' },
+      { labelKey: 'fot.l_plans_comparison', to: '/pricing' },
+      { labelKey: 'fot.l_api_access', to: '/pricing' },
+      { labelKey: 'fot.l_premium_features', to: '/pricing' },
     ],
   },
   {
-    heading: 'Trading',
+    headingKey: 'fot.h_trading',
     links: [
-      { label: 'Trading Overview', to: '/' },
-      { label: 'Broker Connections', to: '/app/brokers' },
-      { label: 'Strategy Analysis', to: '/app' },
-      { label: 'Risk Management', to: '/app/coach' },
-      { label: 'Trade History', to: '/app/journal' },
+      { labelKey: 'fot.l_trading_overview', to: '/' },
+      { labelKey: 'fot.l_broker_connections', to: '/app/brokers' },
+      { labelKey: 'fot.l_strategy_analysis', to: '/app' },
+      { labelKey: 'fot.l_risk_management', to: '/app/coach' },
+      { labelKey: 'fot.l_trade_history', to: '/app/journal' },
     ],
   },
   {
-    heading: 'Community',
+    headingKey: 'fot.h_community',
     links: [
-      { label: 'Social Network', to: '/app/community' },
-      { label: 'Refer a Friend', to: '/pricing' },
-      { label: 'Trading Community', to: '/app/community' },
-      { label: 'Discussion Forums', to: '/app/community' },
-      { label: 'Moderators', to: '/about' },
+      { labelKey: 'fot.l_social_network', to: '/app/community' },
+      { labelKey: 'fot.l_refer_a_friend', to: '/pricing' },
+      { labelKey: 'fot.l_trading_community', to: '/app/community' },
+      { labelKey: 'fot.l_discussion_forums', to: '/app/community' },
+      { labelKey: 'fot.l_moderators', to: '/about' },
     ],
   },
   {
-    heading: 'Education',
+    headingKey: 'fot.h_education',
     links: [
-      { label: 'Trading Guides', to: '/guides' },
-      { label: 'Video Tutorials', to: '/academy' },
-      { label: 'Academy Courses', to: '/app/academy' },
-      { label: 'Webinars', to: '/webinars' },
-      { label: 'Learning Resources', to: '/academy' },
+      { labelKey: 'fot.l_trading_guides', to: '/guides' },
+      { labelKey: 'fot.l_video_tutorials', to: '/academy' },
+      { labelKey: 'fot.l_academy_courses', to: '/app/academy' },
+      { labelKey: 'fot.l_webinars', to: '/webinars' },
+      { labelKey: 'fot.l_learning_resources', to: '/academy' },
     ],
   },
   {
-    heading: 'Company',
+    headingKey: 'fot.h_company',
     links: [
-      { label: 'About TradingBible', to: '/about' },
-      { label: 'Our Mission', to: '/about' },
-      { label: 'Blog', to: '/blog' },
-      { label: 'Help Center', to: '/faq' },
-      { label: 'Careers', to: '/careers' },
-      { label: 'Contact', to: '/contact' },
+      { labelKey: 'fot.l_about_tradingbible', to: '/about' },
+      { labelKey: 'fot.l_our_mission', to: '/about' },
+      { labelKey: 'fot.l_blog', to: '/blog' },
+      { labelKey: 'fot.l_help_center', to: '/faq' },
+      { labelKey: 'fot.l_careers', to: '/careers' },
+      { labelKey: 'fot.l_contact', to: '/contact' },
     ],
   },
   {
-    heading: 'Legal',
+    headingKey: 'fot.h_legal',
     links: [
-      { label: 'Terms of Service', to: '/terms' },
-      { label: 'Privacy Policy', to: '/policy' },
-      { label: 'Refund Policy', to: '/refund' },
-      { label: 'Cookie Policy', to: '/policy' },
-      { label: 'Security', to: '/policy' },
+      { labelKey: 'fot.l_terms_of_service', to: '/terms' },
+      { labelKey: 'fot.l_privacy_policy', to: '/policy' },
+      { labelKey: 'fot.l_refund_policy', to: '/refund' },
+      { labelKey: 'fot.l_cookie_policy', to: '/policy' },
+      { labelKey: 'fot.l_security', to: '/policy' },
     ],
   },
 ];
@@ -124,14 +124,14 @@ export default function Footer() {
               <span className="font-semibold tracking-tight text-[#f0ecdd]">{first ? `${first} ` : ''}<span className="gold-text">{last}</span></span>
             </Link>
             <p className="text-sm leading-relaxed text-[#8a8577]">
-              The AI-powered trading journal built on a Bloomberg-grade terminal. TradingBible unifies broker sync, institutional-style analytics, and a personal AI coach so serious traders can track every edge and eliminate every avoidable mistake.
+              {t('fot.blurb')}
             </p>
             <div className="mt-4 flex items-start gap-3">
               <img src={MALIBA_LOGO} alt="TradingBible LLC" className="h-12 w-12 shrink-0 rounded-lg object-contain" />
               <p className="text-xs leading-relaxed text-[#6a665a]">
                 TradingBible is owned and operated by <span className="text-[#c9c4b4]">TradingBible LLC</span>.
                 <br />Registered in Delaware, USA. c/o Delaware Registered Agent, Inc.
-                <br />Our mission: give every trader the institutional-grade tools, data, and discipline once reserved for professional funds.
+                <br />{t('fot.mission')}
               </p>
             </div>
             <div className="mt-5 flex items-center gap-3">
@@ -160,12 +160,12 @@ export default function Footer() {
         {/* Link columns */}
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 py-12 sm:grid-cols-3 lg:grid-cols-7 lg:gap-x-5">
           {COLUMNS.map((col) => (
-            <div key={col.heading}>
-              <h4 className="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#d4af37]">{col.heading}</h4>
+            <div key={col.headingKey}>
+              <h4 className="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#d4af37]">{t(col.headingKey)}</h4>
               <ul className="space-y-2.5">
                 {col.links.map((l) => (
-                  <li key={l.label}>
-                    <Link to={l.to} className="text-sm text-[#8a8577] transition hover:text-[#e9e7df]">{l.label}</Link>
+                  <li key={l.labelKey}>
+                    <Link to={l.to} className="text-sm text-[#8a8577] transition hover:text-[#e9e7df]">{t(l.labelKey)}</Link>
                   </li>
                 ))}
               </ul>
@@ -184,16 +184,16 @@ export default function Footer() {
         <div className="flex flex-col items-center justify-between gap-4 border-t border-[#d4af37]/10 pt-8 text-sm text-[#8a8577] sm:flex-row">
           <div className="flex items-center gap-2"><img src={MALIBA_LOGO} alt="" className="h-5 w-5 rounded object-contain" /> TradingBible LLC</div>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-            <Link to="/terms" className="hover:text-[#e9e7df]">Terms</Link>
-            <Link to="/policy" className="hover:text-[#e9e7df]">Privacy</Link>
-            <Link to="/refund" className="hover:text-[#e9e7df]">Refunds</Link>
-            <Link to="/faq" className="hover:text-[#e9e7df]">FAQ</Link>
-            <Link to="/pricing" className="hover:text-[#e9e7df]">Pricing</Link>
+            <Link to="/terms" className="hover:text-[#e9e7df]">{t('fot.terms')}</Link>
+            <Link to="/policy" className="hover:text-[#e9e7df]">{t('fot.privacy')}</Link>
+            <Link to="/refund" className="hover:text-[#e9e7df]">{t('fot.refunds')}</Link>
+            <Link to="/faq" className="hover:text-[#e9e7df]">{t('fot.faq')}</Link>
+            <Link to="/pricing" className="hover:text-[#e9e7df]">{t('fot.pricing')}</Link>
             {settings.supportEmail && (
               <a href={`mailto:${settings.supportEmail}`} className="hover:text-[#e9e7df]">{settings.supportEmail}</a>
             )}
           </div>
-          <div>© {new Date().getFullYear()} TradingBible LLC · All rights reserved.</div>
+          <div>© {new Date().getFullYear()} TradingBible LLC · {t('fot.rights')}</div>
         </div>
       </div>
     </footer>

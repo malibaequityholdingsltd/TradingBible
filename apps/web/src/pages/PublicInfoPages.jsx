@@ -6,8 +6,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
 import { homeRouteForUser } from '@/lib/homeRoute';
 
-function PublicShell({ title, description, points }) {
+function PublicShell({ titleKey, descKey, pointKeys }) {
   const { user, isAuthed } = useAuth();
+  const { t } = useI18n();
   const homeTo = homeRouteForUser(isAuthed ? user : null);
 
   return (
@@ -18,11 +19,11 @@ function PublicShell({ title, description, points }) {
           <span className="font-semibold">Trading<span className="gold-text">Bible</span></span>
         </Link>
         <div className="glass rounded-2xl p-6 sm:p-8">
-          <h1 className="text-3xl font-bold text-[#f0ecdd] sm:text-4xl">{title}</h1>
-          <p className="mt-2 max-w-3xl text-[#8a8577]">{description}</p>
+          <h1 className="text-3xl font-bold text-[#f0ecdd] sm:text-4xl">{t(titleKey)}</h1>
+          <p className="mt-2 max-w-3xl text-[#8a8577]">{t(descKey)}</p>
           <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-            {points.map((point) => (
-              <li key={point} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 text-sm text-[#c9c4b4]">{point}</li>
+            {pointKeys.map((k) => (
+              <li key={k} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 text-sm text-[#c9c4b4]">{t(k)}</li>
             ))}
           </ul>
         </div>
@@ -85,40 +86,40 @@ export const GuidesPage = () => {
 
 export const WebinarsPage = () => (
   <PublicShell
-    title="Webinars"
-    description="Live and recorded sessions with traders and educators in the TradingBible network."
-    points={['Live market breakdowns', 'Q&A sessions', 'Prop-firm challenge prep', 'Performance coaching']}
+    titleKey="pub.webTitle"
+    descKey="pub.webDesc"
+    pointKeys={['pub.webP1', 'pub.webP2', 'pub.webP3', 'pub.webP4']}
   />
 );
 
 export const AcademyInfoPage = () => (
   <PublicShell
-    title="Academy"
-    description="Curriculum for individual traders, teams, schools, and teachers connected to TradingBible."
-    points={['Beginner to advanced modules', 'Teacher assignment tools', 'Progress tracking', 'Certification-ready programs']}
+    titleKey="pub.acaTitle"
+    descKey="pub.acaDesc"
+    pointKeys={['pub.acaP1', 'pub.acaP2', 'pub.acaP3', 'pub.acaP4']}
   />
 );
 
 export const BlogPage = () => (
   <PublicShell
-    title="TradingBible Blog"
-    description="Market insights, product updates, and practical trading improvement articles."
-    points={['Weekly market recap', 'Platform update notes', 'Case studies', 'Research and strategy essays']}
+    titleKey="pub.blogTitle"
+    descKey="pub.blogDesc"
+    pointKeys={['pub.blogP1', 'pub.blogP2', 'pub.blogP3', 'pub.blogP4']}
   />
 );
 
 export const CareersPage = () => (
   <PublicShell
-    title="Careers"
-    description="Join TradingBible to build the operating system for modern traders and trading education."
-    points={['Remote-first team', 'Engineering and product roles', 'Trading education operations', 'Partnerships and growth']}
+    titleKey="pub.carTitle"
+    descKey="pub.carDesc"
+    pointKeys={['pub.carP1', 'pub.carP2', 'pub.carP3', 'pub.carP4']}
   />
 );
 
 export const ContactPage = () => (
   <PublicShell
-    title="Contact"
-    description="Get support, partnership help, school onboarding, or enterprise assistance."
-    points={['Support: support@tradingbible.app', 'School onboarding assistance', 'Enterprise API support', 'Billing and account help']}
+    titleKey="pub.conTitle"
+    descKey="pub.conDesc"
+    pointKeys={['pub.conP1', 'pub.conP2', 'pub.conP3', 'pub.conP4']}
   />
 );

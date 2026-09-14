@@ -81,9 +81,9 @@ function getWebinarState(w) {
 	return { live: false, start, end }; // wrapped to next occurrence
 }
 
-function fmtCountdown(target) {
+function fmtCountdown(target, t) {
 	const diff = target.getTime() - Date.now();
-	if (diff <= 0) return 'live now';
+	if (diff <= 0) return t ? t('aca.cdLive') : 'live now';
 	const d = Math.floor(diff / 86400000);
 	const h = Math.floor((diff % 86400000) / 3600000);
 	const m = Math.floor((diff % 3600000) / 60000);
@@ -130,6 +130,7 @@ function Markdown({ text }) {
 
 // ── Generic SSE chat (AI Tutor + Webinar AI host) ────────────────────
 function AIChat({ endpoint, buildBody, placeholder, accent = '#d4af37' }) {
+	const { t } = useI18n();
 	const [messages, setMessages] = useState([]);
 	const [input, setInput] = useState('');
 	const [streaming, setStreaming] = useState(false);
@@ -197,7 +198,7 @@ function AIChat({ endpoint, buildBody, placeholder, accent = '#d4af37' }) {
 				if (last?.role === 'assistant' && !last.content) next.pop();
 				return next;
 			});
-			toast({ variant: 'destructive', title: 'Error', description: err.message });
+			toast({ variant: 'destructive', title: t('c.error'), description: err.message });
 		} finally {
 			abortRef.current = null;
 			setStreaming(false);
@@ -213,7 +214,7 @@ function AIChat({ endpoint, buildBody, placeholder, accent = '#d4af37' }) {
 			</div>
 			<div ref={scrollRef} className="no-scrollbar flex-1 space-y-3 overflow-y-auto px-4 py-4">
 				{messages.length === 0 && (
-					<p className="text-xs leading-relaxed text-[#6a665a]">Ask anything about this lesson. The AI tutor knows the material you are reading and will guide you to the answer.</p>
+					<p className="text-xs leading-relaxed text-[#6a665a]">{t('aca.askAnything')}</p>
 				)}
 				{messages.map((m, i) => (
 					<div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -229,7 +230,7 @@ function AIChat({ endpoint, buildBody, placeholder, accent = '#d4af37' }) {
 					onChange={(e) => setInput(e.target.value)}
 					onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && send(input)}
 					disabled={streaming}
-					placeholder={streaming ? 'AI is typing…' : 'Ask the AI tutor…'}
+					placeholder={streaming ? t('aca.typing') : t('aca.askTutorPh')}
 					className="min-h-[42px] flex-1 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3.5 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none focus:border-[#d4af37]/50 disabled:opacity-60"
 				/>
 				<button
@@ -319,10 +320,7 @@ function Paywall({ onPurchased }) {
 					</button>
 					<div className="text-xs text-[#8a8577]">${walletBalance.toFixed(2)} · <a href="/app/wallet" className="text-[#d4af37] hover:underline">{t('bill.fundWallet')}</a></div>
 				</div>
-				{checked && !configured && (
-					<p className="mt-3 max-w-md text-xs text-[#8a8577]">STRIPE_PRICE_ACADEMY — apps/api/.env ($150)</p>
-				)}
-				<p className="mt-3 text-xs text-[#6a665a]">{t('aca.guarantee')}</p>
+			<p className="mt-3 text-xs text-[#6a665a]">{t('aca.guarantee')}</p>
 			</div>
 
 			<div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -339,6 +337,7 @@ function Paywall({ onPurchased }) {
 
 // ── Lesson view (content + quiz + tutor) ─────────────────────────────
 function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onLessonDone }) {
+	const { t } = useI18n();
 	const [state, setState] = useState({ status: 'loading', content: null, error: '' });
 	const [answers, setAnswers] = useState([]);
 	const [grade, setGrade] = useState(null);
@@ -346,7 +345,7 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 	const [done, setDone] = useState(progress?.completed);
 	const { toast } = useToast();
 
-	useEffect(() => { document.title = `${lesson.title} · Academy`; }, [lesson.title]);
+	useEffect(() => { document.title = `${lesson.title} · ${t('aca.page')}`; }, [lesson.title, t]);
 
 	const load = useCallback(() => {
 		setState({ status: 'loading', content: null, error: '' });
@@ -363,7 +362,7 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 
 	const submitQuiz = async () => {
 		if (answers.some((a) => a === null)) {
-			toast({ title: 'Answer every question', description: 'Select an option for each question before grading.' });
+			toast({ title: t('aca.answerAll'), description: t('aca.answerAllSub') });
 			return;
 		}
 		setGrading(true);
@@ -371,7 +370,7 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 			const res = await gradeQuiz(pathKey, course.courseKey, lesson.lessonKey, answers);
 			setGrade(res);
 		} catch (err) {
-			toast({ variant: 'destructive', title: 'Could not grade', description: err.message });
+			toast({ variant: 'destructive', title: t('aca.gradeFail'), description: err.message });
 		} finally { setGrading(false); }
 	};
 
@@ -380,9 +379,9 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 			await completeLesson(pathKey, course.courseKey, lesson.lessonKey);
 			setDone(true);
 			onLessonDone();
-			toast({ title: 'Lesson complete', description: 'Progress saved.' });
+			toast({ title: t('aca.lessonDone'), description: t('aca.lessonDoneSub') });
 		} catch (err) {
-			toast({ variant: 'destructive', title: 'Could not save', description: err.message });
+			toast({ variant: 'destructive', title: t('aca.saveFail'), description: err.message });
 		}
 	};
 
@@ -390,8 +389,8 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 		return (
 			<div className="glass flex flex-col items-center rounded-2xl p-10 text-center">
 				<Loader2 className="h-8 w-8 animate-spin text-[#d4af37]" />
-				<p className="mt-4 text-sm text-[#c9c4b4]">Your AI instructor is writing this lesson…</p>
-				<p className="mt-1 text-xs text-[#6a665a]">First-time lessons are generated just for you. This can take 20–60 seconds.</p>
+				<p className="mt-4 text-sm text-[#c9c4b4]">{t('aca.writing')}</p>
+				<p className="mt-1 text-xs text-[#6a665a]">{t('aca.writingSub')}</p>
 			</div>
 		);
 	}
@@ -400,7 +399,7 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 		return (
 			<div className="glass flex flex-col items-center rounded-2xl p-10 text-center">
 				<p className="text-sm text-[#e9e7df]">{state.error}</p>
-				<button onClick={load} className="mt-4 flex items-center gap-2 rounded-xl border border-[#d4af37]/20 px-4 py-2 text-sm text-[#d4af37] hover:bg-[#d4af37]/10"><RotateCcw className="h-4 w-4" /> Try again</button>
+				<button onClick={load} className="mt-4 flex items-center gap-2 rounded-xl border border-[#d4af37]/20 px-4 py-2 text-sm text-[#d4af37] hover:bg-[#d4af37]/10"><RotateCcw className="h-4 w-4" /> {t('aca.tryAgain')}</button>
 			</div>
 		);
 	}
@@ -409,13 +408,13 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 
 	return (
 		<div className="space-y-4">
-			<button onClick={onBack} className="flex items-center gap-1.5 text-sm text-[#8a8577] transition hover:text-[#d4af37]"><ArrowLeft className="h-4 w-4" /> Back to {curriculum.pathName}</button>
+			<button onClick={onBack} className="flex items-center gap-1.5 text-sm text-[#8a8577] transition hover:text-[#d4af37]"><ArrowLeft className="h-4 w-4" /> {t('aca.backTo', { path: curriculum.pathName })}</button>
 
 			<div className="tint-hero rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
 				<div className="flex flex-wrap items-center gap-2 text-xs">
 					<span className="rounded-full bg-[#d4af37]/12 px-2.5 py-0.5 text-[#d4af37]">{course.title}</span>
-					<span className="flex items-center gap-1 text-[#8a8577]"><Clock className="h-3 w-3" /> {lesson.minutes} min</span>
-					{done && <span className="ml-auto flex items-center gap-1 rounded-full bg-emerald-400/10 px-2.5 py-0.5 text-emerald-400"><CheckCircle2 className="h-3 w-3" /> Completed</span>}
+					<span className="flex items-center gap-1 text-[#8a8577]"><Clock className="h-3 w-3" /> {t('aca.minutes', { n: lesson.minutes })}</span>
+					{done && <span className="ml-auto flex items-center gap-1 rounded-full bg-emerald-400/10 px-2.5 py-0.5 text-emerald-400"><CheckCircle2 className="h-3 w-3" /> {t('aca.completed')}</span>}
 				</div>
 				<h2 className="mt-3 text-2xl font-bold text-[#f0ecdd]">{content.title}</h2>
 				<p className="mt-2 text-sm text-[#c9c4b4]">{content.summary}</p>
@@ -434,13 +433,13 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 
 			{content.quiz?.length > 0 && (
 				<div className="glass rounded-2xl p-5 sm:p-6">
-					<h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><Award className="h-5 w-5 text-[#d4af37]" /> Lesson quiz — graded by AI</h3>
+					<h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><Award className="h-5 w-5 text-[#d4af37]" /> {t('aca.quizTitle')}</h3>
 					{grade ? (
 						<div className="mt-4">
 							<div className={`flex items-center gap-3 rounded-xl p-4 ${grade.score >= Math.ceil(grade.total / 2) ? 'bg-emerald-400/10' : 'bg-[#d4af37]/10'}`}>
 								{grade.score >= Math.ceil(grade.total / 2) ? <BadgeCheck className="h-6 w-6 text-emerald-400" /> : <Sparkles className="h-6 w-6 text-[#d4af37]" />}
 								<div>
-									<p className="font-semibold text-[#f0ecdd]">{grade.score} / {grade.total} correct</p>
+									<p className="font-semibold text-[#f0ecdd]">{t('aca.scoreN', { s: grade.score, n: grade.total })}</p>
 									{grade.feedback && <p className="mt-1 text-sm leading-relaxed text-[#c9c4b4]">{grade.feedback}</p>}
 								</div>
 							</div>
@@ -450,12 +449,12 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 									return (
 										<div key={qi} className={`rounded-xl border p-4 ${correct ? 'border-emerald-400/25' : answers[qi] === null ? 'border-[#d4af37]/10' : 'border-[#d4af37]/40'}`}>
 											<p className="text-sm font-medium text-[#f0ecdd]">{qi + 1}. {q.question}</p>
-											<p className="mt-1 text-xs text-[#8a8577]">{correct ? 'Correct' : answers[qi] === null ? 'Skipped' : 'Incorrect'} — {q.explanation}</p>
+											<p className="mt-1 text-xs text-[#8a8577]">{correct ? t('aca.correct') : answers[qi] === null ? t('aca.skipped') : t('aca.incorrect')} — {q.explanation}</p>
 										</div>
 									);
 								})}
 							</div>
-							<button onClick={() => { setGrade(null); setAnswers(Array(content.quiz.length).fill(null)); }} className="mt-4 flex items-center gap-2 rounded-xl border border-[#d4af37]/20 px-4 py-2 text-sm text-[#d4af37] hover:bg-[#d4af37]/10"><RotateCcw className="h-4 w-4" /> Retake</button>
+							<button onClick={() => { setGrade(null); setAnswers(Array(content.quiz.length).fill(null)); }} className="mt-4 flex items-center gap-2 rounded-xl border border-[#d4af37]/20 px-4 py-2 text-sm text-[#d4af37] hover:bg-[#d4af37]/10"><RotateCcw className="h-4 w-4" /> {t('aca.retake')}</button>
 						</div>
 					) : (
 						<div className="mt-4 space-y-4">
@@ -474,7 +473,7 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 								</div>
 							))}
 							<button onClick={submitQuiz} disabled={grading} className="flex min-h-[46px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60">
-								{grading ? <><Loader2 className="h-4 w-4 animate-spin" /> AI is grading…</> : <>Submit for AI grading</>}
+								{grading ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('aca.grading')}</> : <>{t('aca.submitGrading')}</>}
 							</button>
 						</div>
 					)}
@@ -484,16 +483,16 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 			{!done && (
 				<div className="flex justify-end">
 					<button onClick={markDone} className="flex min-h-[46px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">
-						<CheckCircle2 className="h-4 w-4" /> Mark lesson complete
+						<CheckCircle2 className="h-4 w-4" /> {t('aca.markDone')}
 					</button>
 				</div>
 			)}
 
 			<div>
-				<h3 className="mb-3 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Bot className="h-5 w-5 text-[#d4af37]" /> Your AI tutor</h3>
+				<h3 className="mb-3 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Bot className="h-5 w-5 text-[#d4af37]" /> {t('aca.tutorTitle')}</h3>
 				<AIChat
 					endpoint="/academy/tutor/stream"
-					placeholder="AI Tutor"
+					placeholder={t('aca.tutorPh')}
 					buildBody={({ history, question }) => ({ pathKey, courseKey: course.courseKey, lessonKey: lesson.lessonKey, history, question })}
 				/>
 			</div>
@@ -503,6 +502,7 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 
 // ── Curriculum (enrolled path) ───────────────────────────────────────
 function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeave, certificate }) {
+	const { t } = useI18n();
 	const [courseIndex, setCourseIndex] = useState(0);
 	const totalLessons = curriculum.courses.reduce((a, c) => a + c.lessons.length, 0);
 	const completed = curriculum.courses.reduce((a, c) => a + c.lessons.filter((l) => progressMap[`${c.courseKey}:${l.lessonKey}`]?.completed).length, 0);
@@ -516,11 +516,11 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 						<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#d4af37]"><Route className="h-4 w-4" /> {curriculum.pathName}</div>
 						<p className="mt-1 max-w-xl text-sm text-[#c9c4b4]">{curriculum.focus}</p>
 					</div>
-					<button onClick={onLeave} className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/20 px-3.5 py-2 text-xs text-[#8a8577] hover:text-[#d4af37]"><ArrowLeft className="h-3.5 w-3.5" /> All paths</button>
+					<button onClick={onLeave} className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/20 px-3.5 py-2 text-xs text-[#8a8577] hover:text-[#d4af37]"><ArrowLeft className="h-3.5 w-3.5" /> {t('aca.allPaths')}</button>
 				</div>
 				<div className="mt-4">
 					<div className="flex items-center justify-between text-xs text-[#8a8577]">
-						<span>{completed} / {totalLessons} lessons</span>
+						<span>{t('aca.lessonsN', { d: completed, n: totalLessons })}</span>
 						<span>{pct}%</span>
 					</div>
 					<div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#d4af37]/10">
@@ -534,8 +534,8 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 					<div className="flex flex-wrap items-center gap-3">
 						<Trophy className="h-8 w-8 text-[#d4af37]" />
 						<div className="min-w-0 flex-1">
-							<h3 className="font-bold text-[#f0ecdd]">Certified — {curriculum.pathName}</h3>
-							<p className="mt-1 text-xs text-[#8a8577]">Code: <span className="font-mono text-[#d4af37]">{certificate.code}</span></p>
+							<h3 className="font-bold text-[#f0ecdd]">{t('aca.certifiedPf', { path: curriculum.pathName })}</h3>
+							<p className="mt-1 text-xs text-[#8a8577]">{t('aca.codePf')} <span className="font-mono text-[#d4af37]">{certificate.code}</span></p>
 							{certificate.certificateText && <p className="mt-2 text-sm italic leading-relaxed text-[#c9c4b4]">“{certificate.certificateText}”</p>}
 						</div>
 						<BadgeCheck className="h-10 w-10 shrink-0 text-[#d4af37]" />
@@ -560,7 +560,7 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 						<>
 							<div className="flex flex-wrap items-center justify-between gap-2">
 								<h3 className="font-semibold text-[#f0ecdd]">{course.title}</h3>
-								<span className="text-xs text-[#8a8577]">{done}/{course.lessons.length} · {course.minutes} min</span>
+								<span className="text-xs text-[#8a8577]">{t('aca.doneMin', { d: done, n: course.lessons.length, m: course.minutes })}</span>
 							</div>
 							<p className="mt-1 text-sm text-[#8a8577]">{course.description}</p>
 							<div className="mt-4 space-y-2.5">
@@ -576,8 +576,8 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 											<span className="min-w-0 flex-1">
 												<span className="block truncate text-sm font-medium text-[#f0ecdd]">{li + 1}. {l.title}</span>
 												<span className="mt-0.5 flex items-center gap-2 text-xs text-[#8a8577]">
-													<span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {l.minutes} min</span>
-													{prog?.quizScore !== null && prog?.quizScore !== undefined && <span>· Quiz {prog.quizScore}/{prog.quizTotal}</span>}
+													<span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {t('aca.minutes', { n: l.minutes })}</span>
+													{prog?.quizScore !== null && prog?.quizScore !== undefined && <span>· {t('aca.quizN', { s: prog.quizScore, n: prog.quizTotal })}</span>}
 												</span>
 											</span>
 											<ChevronRight className="h-4 w-4 shrink-0 text-[#6a665a] transition group-hover:text-[#d4af37]" />
@@ -595,6 +595,7 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 
 // ── Main page ────────────────────────────────────────────────────────
 export default function AcademyPage() {
+	const { t } = useI18n();
 	const { toast } = useToast();
 	const [access, setAccess] = useState(null); // null = loading
 	const [data, setData] = useState(null);
@@ -622,7 +623,7 @@ export default function AcademyPage() {
 			setData(res);
 			setRsvps(res.rsvps || []);
 		} catch (err) {
-			toast({ variant: 'destructive', title: 'Could not load Academy', description: err.message });
+			toast({ variant: 'destructive', title: t('aca.loadFail'), description: err.message });
 		}
 	}, [toast]);
 
@@ -642,7 +643,7 @@ export default function AcademyPage() {
 			await enrollInPath(path.key);
 			await pollCurriculum(path);
 		} catch (err) {
-			toast({ variant: 'destructive', title: 'Could not enroll', description: err.message });
+			toast({ variant: 'destructive', title: t('aca.enrollFail'), description: err.message });
 			setGenerating(null);
 		}
 	};
@@ -651,7 +652,7 @@ export default function AcademyPage() {
 		try {
 			const res = await getCurriculum(path.key, path.level);
 			if (res.status === 'generating') {
-				if (attempt > 40) { setGenerating(null); toast({ title: 'Still writing…', description: 'The AI is taking a while. You can refresh in a minute.' }); return; }
+				if (attempt > 40) { setGenerating(null); toast({ title: t('aca.stillWriting'), description: t('aca.stillWritingSub') }); return; }
 				setTimeout(() => pollCurriculum(path, attempt + 1), 3000);
 				return;
 			}
@@ -659,7 +660,7 @@ export default function AcademyPage() {
 			await refreshProgress();
 		} catch (err) {
 			setGenerating(null);
-			toast({ variant: 'destructive', title: 'Could not build your curriculum', description: err.message });
+			toast({ variant: 'destructive', title: t('aca.curriculumFail'), description: err.message });
 		}
 	};
 
@@ -682,7 +683,7 @@ export default function AcademyPage() {
 				setRsvps((prev) => [...prev, id]);
 			}
 		} catch (err) {
-			toast({ variant: 'destructive', title: 'RSVP failed', description: err.message });
+			toast({ variant: 'destructive', title: t('aca.rsvpFail'), description: err.message });
 		}
 	};
 
@@ -690,27 +691,27 @@ export default function AcademyPage() {
 		try {
 			await claimCertificate(pathKey);
 			await refreshProgress();
-			toast({ title: 'Certificate issued', description: 'Your shareable certificate is ready.' });
+			toast({ title: t('aca.certIssued'), description: t('aca.certIssuedSub') });
 		} catch (err) {
-			toast({ variant: 'destructive', title: 'Certificate unavailable', description: err.message });
+			toast({ variant: 'destructive', title: t('aca.certFail'), description: err.message });
 		}
 	};
 
 	// ── Not purchased → paywall ──
 	if (access === false) {
 		return (
-			<AppLayout title="Academy">
-				<Paywall onPurchased={() => { toast({ title: 'Welcome to the Academy', description: 'Your lifetime access is active. The AI is building your path.' }); refreshAccess(); }} />
+			<AppLayout title={t('aca.page')}>
+				<Paywall onPurchased={() => { toast({ title: t('aca.welcome'), description: t('aca.welcomeSub') }); refreshAccess(); }} />
 			</AppLayout>
 		);
 	}
 
 	if (access === null || !data) {
 		return (
-			<AppLayout title="Academy">
+			<AppLayout title={t('aca.page')}>
 				<div className="glass flex flex-col items-center rounded-2xl p-10 text-center">
 					<Loader2 className="h-8 w-8 animate-spin text-[#d4af37]" />
-					<p className="mt-4 text-sm text-[#c9c4b4]">Loading your Academy…</p>
+					<p className="mt-4 text-sm text-[#c9c4b4]">{t('aca.loading')}</p>
 				</div>
 			</AppLayout>
 		);
@@ -722,7 +723,7 @@ export default function AcademyPage() {
 	// ── Lesson view ──
 	if (view === 'lesson' && activePath && activeCourse && activeLesson) {
 		return (
-			<AppLayout title="Academy">
+			<AppLayout title={t('aca.page')}>
 				<LessonView
 					pathKey={activePath.key}
 					curriculum={curriculumFor(activePath.key) || { pathName: activePath.name, courses: [] }}
@@ -741,15 +742,15 @@ export default function AcademyPage() {
 		const curriculum = curriculumFor(activePath.key);
 		const certificate = enrollmentFor(activePath.key);
 		return (
-			<AppLayout title="Academy">
+			<AppLayout title={t('aca.page')}>
 				{!curriculum || generating ? (
 					<div className="glass flex flex-col items-center rounded-2xl p-10 text-center">
 						<div className="relative">
 							<Route className="h-10 w-10 animate-pulse text-[#d4af37]" />
 							<Loader2 className="absolute -bottom-1 -right-1 h-4 w-4 animate-spin text-[#d4af37]" />
 						</div>
-						<p className="mt-4 font-semibold text-[#f0ecdd]">The AI is designing your {activePath.name} curriculum…</p>
-						<p className="mt-1 max-w-md text-xs leading-relaxed text-[#6a665a]">It personalizes the path for your level, writes every course and lesson, and caches it for you. This can take up to a minute.</p>
+						<p className="mt-4 font-semibold text-[#f0ecdd]">{t('aca.designing', { path: activePath.name })}</p>
+						<p className="mt-1 max-w-md text-xs leading-relaxed text-[#6a665a]">{t('aca.designingSub')}</p>
 					</div>
 				) : (
 					<CurriculumView
@@ -767,17 +768,17 @@ export default function AcademyPage() {
 
 	// ── Dashboard ──
 	return (
-		<AppLayout title="Academy">
+		<AppLayout title={t('aca.page')}>
 			{/* Tabs */}
 			<div className="mb-5 flex flex-wrap gap-2">
 				{[
-					{ id: 'learn', icon: GraduationCap, label: 'Learn' },
-					{ id: 'webinars', icon: Video, label: 'Live Webinars' },
-					{ id: 'certificates', icon: Award, label: 'Certificates' },
-				].map((t) => (
-					<button key={t.id} onClick={() => setTab(t.id)}
-						className={`flex min-h-[42px] items-center gap-2 rounded-xl px-4 text-sm font-semibold transition ${tab === t.id ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
-						<t.icon className="h-4 w-4" /> {t.label}
+					{ id: 'learn', icon: GraduationCap, label: t('aca.tabLearn') },
+					{ id: 'webinars', icon: Video, label: t('aca.tabWeb') },
+					{ id: 'certificates', icon: Award, label: t('aca.tabCert') },
+				].map((tb) => (
+					<button key={tb.id} onClick={() => setTab(tb.id)}
+						className={`flex min-h-[42px] items-center gap-2 rounded-xl px-4 text-sm font-semibold transition ${tab === tb.id ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
+						<tb.icon className="h-4 w-4" /> {tb.label}
 					</button>
 				))}
 			</div>
@@ -787,13 +788,13 @@ export default function AcademyPage() {
 					<div className="tint-hero mb-6 rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
 						<div className="flex flex-wrap items-center justify-between gap-4">
 							<div>
-								<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#d4af37]"><Sparkles className="h-4 w-4" /> AI-driven curriculum</div>
-								<h2 className="mt-1.5 text-xl font-bold text-[#f0ecdd] sm:text-2xl">Pick a path — the AI builds it around you</h2>
-								<p className="mt-1 max-w-xl text-sm text-[#8a8577]">Each path becomes a personalized curriculum: courses, lessons, quizzes and certificates generated for your level.</p>
+								<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#d4af37]"><Sparkles className="h-4 w-4" /> {t('aca.aiDriven')}</div>
+								<h2 className="mt-1.5 text-xl font-bold text-[#f0ecdd] sm:text-2xl">{t('aca.pickPath')}</h2>
+								<p className="mt-1 max-w-xl text-sm text-[#8a8577]">{t('aca.pickPathSub')}</p>
 							</div>
 							{enrolled.length > 0 && (
 								<div className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14]/40 px-4 py-3 text-right">
-									<p className="text-xs text-[#8a8577]">Overall progress</p>
+									<p className="text-xs text-[#8a8577]">{t('aca.overall')}</p>
 									<p className="mt-0.5 font-bold text-[#d4af37]">{(() => {
 										let done = 0, total = 0;
 										enrolled.forEach((e) => {
@@ -821,30 +822,30 @@ export default function AcademyPage() {
 								<div key={p.key} className="glass glass-hover relative flex h-full flex-col rounded-2xl p-5">
 									<div className="flex items-center gap-2">
 										<Route className="h-4 w-4" style={{ color: p.color }} />
-										<span className="text-xs font-semibold uppercase tracking-wide" style={{ color: p.color }}>{p.level} Path</span>
+										<span className="text-xs font-semibold uppercase tracking-wide" style={{ color: p.color }}>{t(`aca.path_${p.key}_level`, null, p.level)} {t('aca.pathWord')}</span>
 									</div>
-									<h3 className="mt-2 font-semibold text-[#f0ecdd]">{p.name}</h3>
-									<p className="mt-1 flex-1 text-sm leading-relaxed text-[#8a8577]">{p.desc}</p>
+									<h3 className="mt-2 font-semibold text-[#f0ecdd]">{t(`aca.path_${p.key}_name`, null, p.name)}</h3>
+									<p className="mt-1 flex-1 text-sm leading-relaxed text-[#8a8577]">{t(`aca.path_${p.key}_desc`, null, p.desc)}</p>
 									{isEnrolled && lessons > 0 && (
 										<div className="mt-3">
-											<div className="flex justify-between text-[11px] text-[#8a8577]"><span>{done}/{lessons} lessons</span><span>{pct}%</span></div>
+											<div className="flex justify-between text-[11px] text-[#8a8577]"><span>{t('aca.lessonsPct', { d: done, n: lessons, p: pct })}</span><span>{pct}%</span></div>
 											<div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#d4af37]/10"><div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25]" style={{ width: `${pct}%` }} /></div>
 										</div>
 									)}
 									<div className="mt-4 flex items-center gap-2">
 										{isEnrolled ? (
 											<button onClick={() => { setActivePath(p); setView('curriculum'); }} className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">
-												{cert?.certificateCode ? <><BadgeCheck className="h-4 w-4" /> Certified</> : pct === 100 ? <><Award className="h-4 w-4" /> Claim certificate</> : <><PlayCircle className="h-4 w-4" /> Continue</>}
+												{cert?.certificateCode ? <><BadgeCheck className="h-4 w-4" /> {t('aca.certifiedBadge')}</> : pct === 100 ? <><Award className="h-4 w-4" /> {t('aca.claimCert')}</> : <><PlayCircle className="h-4 w-4" /> {t('aca.continue')}</>}
 											</button>
 										) : (
 											<button onClick={() => enroll(p)} disabled={generating === p.key}
 												className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-[#d4af37]/30 px-4 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 disabled:opacity-50">
-												{generating === p.key ? <><Loader2 className="h-4 w-4 animate-spin" /> Enrolling…</> : <><Rocket className="h-4 w-4" /> Enroll</>}
+												{generating === p.key ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('aca.enrolling')}</> : <><Rocket className="h-4 w-4" /> {t('aca.enroll')}</>}
 											</button>
 										)}
 									</div>
 									{isEnrolled && !cert?.certificateCode && pct === 100 && (
-										<button onClick={() => doClaimCertificate(p.key)} className="mt-2 min-h-[44px] w-full rounded-xl border border-[#d4af37]/25 px-4 text-sm font-semibold text-[#f4e6a8] transition hover:bg-[#d4af37]/10">Claim AI certificate</button>
+										<button onClick={() => doClaimCertificate(p.key)} className="mt-2 min-h-[44px] w-full rounded-xl border border-[#d4af37]/25 px-4 text-sm font-semibold text-[#f4e6a8] transition hover:bg-[#d4af37]/10">{t('aca.claimAiCert')}</button>
 									)}
 								</div>
 							);
@@ -856,9 +857,9 @@ export default function AcademyPage() {
 			{tab === 'webinars' && (
 				<div className="space-y-5">
 					<div className="tint-hero rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
-						<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#d4af37]"><Radio className="h-4 w-4" /> Live &amp; interactive</div>
-						<h2 className="mt-1.5 text-xl font-bold text-[#f0ecdd] sm:text-2xl">Live webinars hosted by AI</h2>
-						<p className="mt-1 max-w-xl text-sm text-[#8a8577]">Weekly sessions on market opens, journal reviews, risk and strategy. When a session is live, the AI host is in the room answering questions in real time.</p>
+						<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#d4af37]"><Radio className="h-4 w-4" /> {t('aca.liveInteractive')}</div>
+						<h2 className="mt-1.5 text-xl font-bold text-[#f0ecdd] sm:text-2xl">{t('aca.webTitle')}</h2>
+						<p className="mt-1 max-w-xl text-sm text-[#8a8577]">{t('aca.webSub')}</p>
 					</div>
 					<div className="grid gap-4 md:grid-cols-2">
 						{liveWebinars.map((w) => {
@@ -868,19 +869,19 @@ export default function AcademyPage() {
 								<div key={w.id} className={`glass h-full rounded-2xl p-5 ${live ? 'border border-[#34d399]/30' : ''}`}>
 									<div className="flex items-center gap-2">
 										{live
-											? <span className="flex items-center gap-1.5 rounded-full bg-emerald-400/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-400"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> Live now</span>
-											: <span className="rounded-full bg-[#d4af37]/12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#d4af37]">{WEEKDAYS[w.day]} · {w.hour % 12 || 12}:00 {w.hour >= 12 ? 'PM' : 'AM'} EST</span>}
+											? <span className="flex items-center gap-1.5 rounded-full bg-emerald-400/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-400"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> {t('aca.liveNow')}</span>
+											: <span className="rounded-full bg-[#d4af37]/12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#d4af37]">{t(`aca.wd${w.day}`)} · {w.hour % 12 || 12}:00 {w.hour >= 12 ? 'PM' : 'AM'} EST</span>}
 									</div>
-									<h3 className="mt-2.5 font-semibold text-[#f0ecdd]">{w.title}</h3>
+									<h3 className="mt-2.5 font-semibold text-[#f0ecdd]">{t(`aca.web_${w.id}_title`, null, w.title)}</h3>
 									<p className="mt-1 text-xs text-[#8a8577]">{w.host}</p>
-									<p className="mt-2 text-sm leading-relaxed text-[#c9c4b4]">{w.description}</p>
+									<p className="mt-2 text-sm leading-relaxed text-[#c9c4b4]">{t(`aca.web_${w.id}_desc`, null, w.description)}</p>
 									<div className="mt-3 flex items-center gap-2 text-xs text-[#8a8577]">
-										{live ? <span className="flex items-center gap-1 text-emerald-400"><Radio className="h-3.5 w-3.5" /> Session in progress — join the room below</span>
-											: <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Starts in {fmtCountdown(start)}</span>}
+										{live ? <span className="flex items-center gap-1 text-emerald-400"><Radio className="h-3.5 w-3.5" /> {t('aca.inProgress')}</span>
+											: <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {t('aca.startsIn', { cd: fmtCountdown(start, t) })}</span>}
 									</div>
 									<button onClick={() => toggleRsvp(w.id)}
 										className={`mt-4 min-h-[42px] w-full rounded-xl border px-4 text-sm font-semibold transition ${rsvped ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-400' : 'border-[#d4af37]/25 text-[#d4af37] hover:bg-[#d4af37]/10'}`}>
-										{rsvped ? <><CheckCircle2 className="mr-1.5 inline h-4 w-4" /> You're on the list</> : 'RSVP'}
+										{rsvped ? <><CheckCircle2 className="mr-1.5 inline h-4 w-4" /> {t('aca.onList')}</> : t('aca.rsvp')}
 									</button>
 								</div>
 							);
@@ -889,10 +890,10 @@ export default function AcademyPage() {
 
 					{liveWebinars.find((w) => w.state.live) ? (
 						<div>
-							<h3 className="mb-3 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Radio className="h-5 w-5 text-emerald-400" /> Live room</h3>
+							<h3 className="mb-3 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Radio className="h-5 w-5 text-emerald-400" /> {t('aca.liveRoom')}</h3>
 							<AIChat
 								endpoint="/academy/webinar/stream"
-								placeholder="AI Host · Live room"
+								placeholder={t('aca.hostPh')}
 								accent="#34d399"
 								buildBody={({ history, question }) => ({
 									webinar: liveWebinars.find((w) => w.state.live),
@@ -905,7 +906,7 @@ export default function AcademyPage() {
 					) : (
 						<div className="glass flex items-center gap-3 rounded-2xl p-5">
 							<Calendar className="h-6 w-6 text-[#d4af37]" />
-							<p className="text-sm text-[#c9c4b4]">The next live session starts in <span className="font-semibold text-[#f0ecdd]">{fmtCountdown(liveWebinars.reduce((a, w) => (w.state.start.getTime() < a.state.start.getTime() ? w : a)).state.start)}</span>. RSVP above and we'll see you in the room — the AI host takes questions live.</p>
+							<p className="text-sm text-[#c9c4b4]">{t('aca.nextSession', { cd: fmtCountdown(liveWebinars.reduce((a, w) => (w.state.start.getTime() < a.state.start.getTime() ? w : a)).state.start, t) })}</p>
 						</div>
 					)}
 				</div>
@@ -914,13 +915,13 @@ export default function AcademyPage() {
 			{tab === 'certificates' && (
 				<div className="space-y-4">
 					<div className="tint-hero rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
-						<h2 className="text-xl font-bold text-[#f0ecdd] sm:text-2xl"><Award className="mr-2 inline h-6 w-6 text-[#d4af37]" />Your certificates</h2>
-						<p className="mt-1 max-w-xl text-sm text-[#8a8577]">Finish every lesson in a path and the AI writes you a personalized citation with a verifiable certificate code.</p>
+						<h2 className="text-xl font-bold text-[#f0ecdd] sm:text-2xl"><Award className="mr-2 inline h-6 w-6 text-[#d4af37]" />{t('aca.yourCerts')}</h2>
+						<p className="mt-1 max-w-xl text-sm text-[#8a8577]">{t('aca.yourCertsSub')}</p>
 					</div>
 					{enrolled.length === 0 ? (
 						<div className="glass flex flex-col items-center rounded-2xl p-10 text-center">
 							<Award className="h-10 w-10 text-[#6a665a]" />
-							<p className="mt-3 text-sm text-[#c9c4b4]">Enroll in a learning path to start earning certificates.</p>
+							<p className="mt-3 text-sm text-[#c9c4b4]">{t('aca.enrollSub')}</p>
 						</div>
 					) : enrolled.map((e) => {
 						const p = PATHS.find((x) => x.key === e.pathKey);
@@ -934,14 +935,14 @@ export default function AcademyPage() {
 									<div className="grid h-11 w-11 place-items-center rounded-full bg-[#d4af37]/12 text-[#d4af37]">{e.certificateCode ? <Trophy className="h-5 w-5" /> : <Lock className="h-5 w-5" />}</div>
 									<div>
 										<p className="font-semibold text-[#f0ecdd]">{p?.name || e.pathKey}</p>
-										<p className="text-xs text-[#8a8577]">{e.certificateCode ? <span>Code <span className="font-mono text-[#d4af37]">{e.certificateCode}</span> · {new Date(e.certificateGeneratedAt).toLocaleDateString()}</span> : `${done}/${lessons} lessons · ${pct}%`}</p>
+										<p className="text-xs text-[#8a8577]">{e.certificateCode ? <span>{t('aca.codePf')} <span className="font-mono text-[#d4af37]">{e.certificateCode}</span> · {new Date(e.certificateGeneratedAt).toLocaleDateString()}</span> : t('aca.lessonsN', { d: done, n: lessons })}</p>
 									</div>
 								</div>
 								{e.certificateCode
 									? <span className="flex items-center gap-1.5 rounded-full bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-400"><BadgeCheck className="h-4 w-4" /> Certified</span>
 									: <button onClick={() => doClaimCertificate(e.pathKey)} disabled={pct < 100}
 										className="min-h-[42px] rounded-xl border border-[#d4af37]/25 px-4 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-40">
-										{pct < 100 ? `Complete ${100 - pct}% more` : 'Claim certificate'}
+										{pct < 100 ? t('aca.completeMore', { p: 100 - pct }) : t('aca.claimCert')}
 									</button>}
 							</div>
 						);
@@ -953,11 +954,11 @@ export default function AcademyPage() {
 				<div className="flex items-center gap-4">
 					<Bot className="h-10 w-10 shrink-0 text-[#d4af37]" />
 					<div>
-						<h3 className="font-semibold text-[#f0ecdd]">Your AI runs the whole academy</h3>
-						<p className="text-sm text-[#8a8577]">It designs your path, writes every lesson, grades every quiz, hosts every webinar and tutors you one-on-one.</p>
+						<h3 className="font-semibold text-[#f0ecdd]">{t('aca.aiRuns')}</h3>
+						<p className="text-sm text-[#8a8577]">{t('aca.aiRunsSub')}</p>
 					</div>
 				</div>
-				<button onClick={() => setTab('learn')} className="mt-4 flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-3 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 sm:mt-0"><MessageSquare className="h-4 w-4" /> Start learning</button>
+				<button onClick={() => setTab('learn')} className="mt-4 flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-3 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 sm:mt-0"><MessageSquare className="h-4 w-4" /> {t('aca.startLearning')}</button>
 			</div>
 		</AppLayout>
 	);

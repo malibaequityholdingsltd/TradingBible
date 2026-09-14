@@ -21,6 +21,23 @@ function cleanUrl(raw) {
 
 function sanitizeConfig(raw) {
 	const c = raw && typeof raw === 'object' ? raw : {};
+	// Per-language overrides: { hi: { title, headline, cta, snippet }, ... }.
+	// Lets house/brand ads render translated copy while keeping one ad row.
+	const LANGS = ['en', 'fr', 'es', 'pt', 'de', 'ar', 'zh', 'hi'];
+	const i18n = {};
+	if (c.i18n && typeof c.i18n === 'object') {
+		for (const lng of LANGS) {
+			const ov = c.i18n[lng];
+			if (ov && typeof ov === 'object') {
+				i18n[lng] = {
+					...(ov.title ? { title: String(ov.title).trim().slice(0, 120) } : {}),
+					...(ov.headline ? { headline: String(ov.headline).trim().slice(0, 300) } : {}),
+					...(ov.cta ? { cta: String(ov.cta).trim().slice(0, 40) } : {}),
+					...(ov.snippet ? { snippet: String(ov.snippet).slice(0, 12000) } : {}),
+				};
+			}
+		}
+	}
 	return {
 		title: String(c.title || '').trim().slice(0, 120),
 		headline: String(c.headline || '').trim().slice(0, 300),
@@ -35,6 +52,7 @@ function sanitizeConfig(raw) {
 		views: Number(c.views) || 0,
 		clicks: Number(c.clicks) || 0,
 		notes: String(c.notes || '').slice(0, 500),
+		i18n,
 	};
 }
 
@@ -54,6 +72,7 @@ function publicAd(row) {
 		accent: c.accent || '#d4af37',
 		durationSeconds: Math.max(4, Math.min(60, Number(c.durationSeconds) || 12)),
 		snippet: c.snippet || '',
+		i18n: c.i18n && typeof c.i18n === 'object' ? c.i18n : {},
 	};
 }
 

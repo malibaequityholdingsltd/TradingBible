@@ -273,8 +273,8 @@ export default function LiveChart({
           </div>
           <button onClick={() => setPickerOpen(true)} className="rounded-lg border border-[#d4af37]/15 px-2.5 py-1 text-[11px] text-[#c9c4b4] hover:text-[#e9e7df]">Indicators ({indicators.length})</button>
           <div className="ml-auto flex items-center gap-1.5">
-            <button onClick={exportPng} title="Export PNG" className="rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]"><Download className="h-3.5 w-3.5" /></button>
-            <button onClick={() => setFullscreen((f) => !f)} title="Fullscreen" className="rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]">{fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}</button>
+            <button onClick={exportPng} title={t('lc.exportPng')} className="rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]"><Download className="h-3.5 w-3.5" /></button>
+            <button onClick={() => setFullscreen((f) => !f)} title={t('lc.fullscreen')} className="rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]">{fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}</button>
           </div>
         </div>
 
@@ -288,9 +288,9 @@ export default function LiveChart({
               </button>
             ))}
             <div className="mx-1 h-4 w-px bg-[#d4af37]/15" />
-            <button onClick={removeSelected} disabled={!selected} title="Delete selected"
+            <button onClick={removeSelected} disabled={!selected} title={t('lc.delSel')}
               className={`rounded-lg border border-[#d4af37]/15 p-1.5 ${selected ? 'text-red-400 hover:bg-red-400/10' : 'text-[#5f5b50]'}`}><Trash2 className="h-3.5 w-3.5" /></button>
-            <button onClick={() => dz.update([])} title="Clear all" className="rounded-lg border border-[#d4af37]/15 px-2 py-1 text-[11px] text-[#8a8577] hover:text-[#e9e7df]">Clear</button>
+            <button onClick={() => dz.update([])} title={t('lc.clearAll')} className="rounded-lg border border-[#d4af37]/15 px-2 py-1 text-[11px] text-[#8a8577] hover:text-[#e9e7df]">{t('lc.clear')}</button>
             <div className="relative">
               <button onClick={() => setTplOpen((o) => !o)} className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 px-2 py-1 text-[11px] text-[#c9c4b4] hover:text-[#e9e7df]"><BookMarked className="h-3.5 w-3.5" /> Templates</button>
               {tplOpen && (
@@ -300,7 +300,7 @@ export default function LiveChart({
                     <button onClick={() => { const n = window.prompt('Template name:'); if (n) dz.saveTemplate(n, window.confirm('Share this template with other users?')); setTplOpen(false); }}
                       className="mb-1 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-[#d4af37] hover:bg-white/5"><Save className="h-3.5 w-3.5" /> Save current as template</button>
                     <div className="max-h-48 overflow-y-auto no-scrollbar">
-                      {dz.templates.length === 0 && <p className="px-2 py-2 text-[11px] text-[#5f5b50]">No templates yet.</p>}
+                      {dz.templates.length === 0 && <p className="px-2 py-2 text-[11px] text-[#5f5b50]">{t('lc.noTpl')}</p>}
                       {dz.templates.map((t) => (
                         <div key={t.id} className="flex items-center justify-between rounded-md px-2 py-1.5 text-xs hover:bg-white/5">
                           <button onClick={() => { dz.applyTemplate(t); setTplOpen(false); }} className="flex-1 text-left text-[#c9c4b4]">

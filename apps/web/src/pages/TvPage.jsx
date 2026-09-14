@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
-import { useI18n } from '@/lib/i18n';
+import { useI18n, localizeAd } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 
 const DEFAULT_SETTINGS = {
@@ -15,7 +15,7 @@ const DEFAULT_SETTINGS = {
 const HIDE_UI_MS = 3500;
 
 export default function TvPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [ads, setAds] = useState([]);
   const [index, setIndex] = useState(0);
@@ -41,7 +41,7 @@ export default function TvPage() {
         setSettings({ ...DEFAULT_SETTINGS, ...(data.settings || {}) });
         setAds(Array.isArray(data.ads) ? data.ads : []);
       } catch {
-        if (!cancelled) setError('TradingBible TV is temporarily unavailable.');
+        if (!cancelled) setError(t('tv.unavailable'));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -50,6 +50,7 @@ export default function TvPage() {
   }, []);
 
   const ad = ads.length > 0 ? ads[index % ads.length] : null;
+  const lad = ad ? localizeAd(ad, lang) : null;
 
   useEffect(() => {
     if (paused || ads.length === 0) return;
@@ -185,18 +186,18 @@ export default function TvPage() {
             <span className="gold-text text-lg font-bold tracking-wide">{settings.headerText || 'TradingBible TV'}</span>
             <span className="flex items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ff5a62]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#e50914] shadow-[0_0_6px_rgba(229,9,20,0.9)] animate-pulse" />
-              On Air
+              {t('tv.onAir')}
             </span>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setMuted((m) => !m)} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label={muted ? 'Unmute' : 'Mute'}>
+          <button onClick={() => setMuted((m) => !m)} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label={muted ? t('tv.unmute') : t('tv.mute')}>
             {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </button>
-          <button onClick={() => setPaused((p) => !p)} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label={paused ? 'Play' : 'Pause'}>
+          <button onClick={() => setPaused((p) => !p)} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label={paused ? t('tv.play') : t('tv.pause')}>
             {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
           </button>
-          <button onClick={toggleFullscreen} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="Fullscreen">
+          <button onClick={toggleFullscreen} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label={t('tv.fullscreen')}>
             {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
           </button>
         </div>
@@ -210,27 +211,27 @@ export default function TvPage() {
               {ad.logoUrl && (
                 <img src={ad.logoUrl} alt="" className="h-14 w-14 rounded-2xl bg-white/95 object-contain p-1.5 ring-1 ring-[#d4af37]/40" onError={e => { e.currentTarget.style.display = 'none'; }} />
               )}
-              <span className="text-xs font-bold uppercase tracking-[0.3em] text-[#f0d675]">{ad.brand || 'Featured broadcast'}</span>
+              <span className="text-xs font-bold uppercase tracking-[0.3em] text-[#f0d675]">{ad.brand || t('tv.featured')}</span>
             </div>
             <h1 className="mt-4 text-3xl font-bold leading-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)] sm:text-5xl" style={{ color: ad.accent || '#f0ecdd' }}>
-              {ad.title}
+              {lad.title}
             </h1>
-            {ad.headline && (
-              <p className="mt-3 max-w-xl text-base leading-relaxed text-[#e9e7df] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] sm:text-lg">{ad.headline}</p>
+            {lad.headline && (
+              <p className="mt-3 max-w-xl text-base leading-relaxed text-[#e9e7df] drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] sm:text-lg">{lad.headline}</p>
             )}
-            {ad.snippet && (
+            {lad.snippet && (
               <>
                 <button onClick={() => setDetailsOpen((o) => !o)} className="mt-2 text-xs font-semibold uppercase tracking-wider text-[#d4af37] hover:underline">
-                  {detailsOpen ? 'Hide details ▲' : 'Show details ▼'}
+                  {detailsOpen ? t('tv.hideDetails') : t('tv.showDetails')}
                 </button>
                 {detailsOpen && (
-                  <p className="mt-2 max-w-xl whitespace-pre-line rounded-xl bg-black/50 p-4 text-sm leading-relaxed text-[#c9c4b4] backdrop-blur-sm">{ad.snippet}</p>
+                  <p className="mt-2 max-w-xl whitespace-pre-line rounded-xl bg-black/50 p-4 text-sm leading-relaxed text-[#c9c4b4] backdrop-blur-sm">{lad.snippet}</p>
                 )}
               </>
             )}
             {ad.linkUrl && (
               <button onClick={openAd} className="mt-6 inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-[#0a0a0f] shadow-[0_8px_32px_rgba(0,0,0,0.45)] transition-transform hover:scale-[1.03]" style={{ background: ad.accent || '#d4af37' }}>
-                {ad.cta || 'Learn more'} <ExternalLink className="h-4 w-4" />
+                {lad.cta || t('tv.learnMore')} <ExternalLink className="h-4 w-4" />
               </button>
             )}
           </div>
@@ -241,7 +242,7 @@ export default function TvPage() {
       <footer className={`relative z-10 px-5 pb-5 transition-all duration-500 sm:px-8 ${uiHidden ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
         <div className="mx-auto flex max-w-7xl flex-col gap-3">
           <div className="flex items-center justify-between text-[11px] text-[#8a8577]">
-            <span className="truncate">{settings.footerText}</span>
+            <span className="truncate">{settings.footerText || t('tv.advertise')}</span>
             <span className="hidden rounded-md bg-black/50 px-2 py-1 font-mono text-[10px] tracking-widest text-[#d4af37] sm:inline">{index + 1} / {ads.length}</span>
           </div>
           <div className="h-[3px] w-full overflow-hidden rounded-full bg-white/10">

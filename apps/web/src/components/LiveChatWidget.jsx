@@ -10,8 +10,6 @@ const POS_KEY = 'tb:chat-btn-pos';
 const BTN = 56; // button size in px
 const MARGIN = 12;
 
-const WELCOME = 'Hi! I\'m the TradingBible AI coach. I can help with your dashboard, brokers, charts, billing — and trading strategy. What can I do for you?';
-
 const QUICK_PROMPTS = [
   { key: 'aiw.q1', icon: BarChart3 },
   { key: 'aiw.q2', icon: Cable },
@@ -57,6 +55,7 @@ export default function LiveChatWidget() {
   const { t } = useI18n();
   const nav = useNavigate();
   const { messages, isStreaming, sendMessage, clearMessages } = useIntegratedAi();
+  const WELCOME = t('aiw.welcome');
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState('coach');
   const [pos, setPos] = useState(() => (typeof window !== 'undefined' ? loadPos() : { x: 0, y: 0 }));
@@ -178,18 +177,18 @@ export default function LiveChatWidget() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
                   <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
                 </span>
-                <span className="text-emerald-400">Live</span>
+                <span className="text-emerald-400">{t('aiw.live')}</span>
                 <span className="text-[#5a564a]">·</span>
                 <Sparkles className="h-2.5 w-2.5 text-[#d4af37]" />
                 <span className="text-[#d4af37]">Muse Spark 1.3</span>
               </div>
             </div>
             {messages.length > 0 && (
-              <button onClick={clearMessages} aria-label="Clear conversation" className="ml-auto grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/12 text-[#8a8577] hover:border-[#d4af37]/35 hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
+              <button onClick={clearMessages} aria-label={t('aiw.clearChat')} className="ml-auto grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/12 text-[#8a8577] hover:border-[#d4af37]/35 hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
                 <Eraser className="h-3.5 w-3.5" />
               </button>
             )}
-            <button onClick={() => setOpen(false)} aria-label="Close chat" className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/12 text-[#8a8577] hover:border-[#d4af37]/35 hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
+            <button onClick={() => setOpen(false)} aria-label={t('aiw.closeChat')} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/12 text-[#8a8577] hover:border-[#d4af37]/35 hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -341,13 +340,13 @@ export default function LiveChatWidget() {
             <div className="relative border-t border-[#d4af37]/12 bg-[#0a0a0f]/70 px-3.5 pb-3 pt-2.5 backdrop-blur-md">
               <div className="flex items-center gap-2 rounded-xl border border-[#d4af37]/20 bg-[#0f0f14]/90 px-3 py-1 transition-colors focus-within:border-[#d4af37]/50 focus-within:shadow-[0_0_0_3px_rgba(212,175,55,0.08)]">
                 <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder={t('aiw.askPh')} className="w-full bg-transparent py-1.5 text-[13px] text-[#e9e7df] placeholder-[#6a665a] outline-none" />
-                <button onClick={() => send()} disabled={isStreaming || !text.trim()} aria-label="Send"
+                <button onClick={() => send()} disabled={isStreaming || !text.trim()} aria-label={t('aiw.send')}
                   className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_2px_12px_rgba(212,175,55,0.4)] transition hover:opacity-90 disabled:opacity-40 disabled:shadow-none">
                   <Send className="h-3.5 w-3.5" />
                 </button>
               </div>
               <div className="mt-1.5 text-center font-mono text-[8.5px] uppercase tracking-[0.16em] text-[#5a564a]">
-                enter to send <span className="animate-pulse text-[#d4af37]/70">▊</span>
+                {t('aiw.enterSend')} <span className="animate-pulse text-[#d4af37]/70">▊</span>
               </div>
             </div>
           )}
@@ -359,7 +358,7 @@ export default function LiveChatWidget() {
           onMouseDown={onPointerDown}
           onTouchStart={onPointerDown}
           aria-label={t('aiw.openLabel')}
-          title="TradingBible AI assistant"
+          title={t('aiw.openTitle')}
           className={`tv-chat-btn fixed z-[70] grid place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#f4e6a8] via-[#e2bd4f] to-[#c99a25] shadow-[0_8px_28px_rgba(212,175,55,0.35),0_0_0_1px_rgba(212,175,55,0.4)] ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]'}`}
           style={{ left: pos.x, top: pos.y, height: BTN, width: BTN, touchAction: 'none' }}
         >

@@ -223,7 +223,7 @@ export function PricingPage() {
             const p = translatePlan(t, raw);
             return (
               <div key={p.id} className={`relative flex flex-col rounded-2xl p-6 ${p.highlight ? 'glass gold-glow' : 'glass'}`}>
-                {p.highlight && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-0.5 text-[11px] font-bold text-[#0a0a0f]">MOST POPULAR</div>}
+                {p.highlight && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-0.5 text-[11px] font-bold text-[#0a0a0f]">{t('misc.popular')}</div>}
                 <img src={p.logo} alt={`${p.name} plan logo`} className="mb-3 h-14 w-14 rounded-xl object-contain" />
                 <h3 className="text-lg font-semibold">{p.name}</h3>
                 <p className="mt-1 text-xs text-[#8a8577]">{p.tagline}</p>

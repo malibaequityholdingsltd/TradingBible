@@ -17,21 +17,22 @@ import {
 import { toast } from '@/hooks/use-toast';
 
 const FIELD_DEFS = [
-  { key: 'symbol', label: 'Symbol' },
-  { key: 'market', label: 'Market' },
-  { key: 'direction', label: 'Direction' },
-  { key: 'entry', label: 'Entry' },
-  { key: 'exit', label: 'Exit' },
-  { key: 'sl', label: 'Stop Loss' },
-  { key: 'tp', label: 'Take Profit' },
-  { key: 'size', label: 'Size' },
-  { key: 'risk', label: 'Risk %' },
-  { key: 'pnl', label: 'P&L' },
-  { key: 'strategy', label: 'Strategy' },
-  { key: 'emotion', label: 'Emotion' },
+  { key: 'symbol', labelKey: 'jou.f_symbol' },
+  { key: 'market', labelKey: 'jou.f_market' },
+  { key: 'direction', labelKey: 'jou.f_direction' },
+  { key: 'entry', labelKey: 'jou.f_entry' },
+  { key: 'exit', labelKey: 'jou.f_exit' },
+  { key: 'sl', labelKey: 'jou.f_sl' },
+  { key: 'tp', labelKey: 'jou.f_tp' },
+  { key: 'size', labelKey: 'jou.f_size' },
+  { key: 'risk', labelKey: 'jou.f_risk' },
+  { key: 'pnl', labelKey: 'jou.f_pnl' },
+  { key: 'strategy', labelKey: 'jou.f_strategy' },
+  { key: 'emotion', labelKey: 'jou.f_emotion' },
 ];
 
 function TradeCard({ trade, strategyWinRate, onView }) {
+  const { t } = useI18n();
   const isLong = (trade.direction || '').toLowerCase().startsWith('l') || (trade.direction || '').toLowerCase() === 'buy';
   const isProfit = (trade.pnl || 0) >= 0;
   return (
@@ -53,24 +54,24 @@ function TradeCard({ trade, strategyWinRate, onView }) {
 
       <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-white/[0.03] p-2.5 sm:mt-4 sm:gap-3 sm:p-3">
         <div>
-          <div className="text-[9px] uppercase tracking-wider text-[#6a665a] sm:text-[10px]">Entry</div>
+          <div className="text-[9px] uppercase tracking-wider text-[#6a665a] sm:text-[10px]">{t('jou.f_entry')}</div>
           <div className="font-mono text-xs text-[#c9c4b4] sm:text-sm">{trade.entry ?? '—'}</div>
         </div>
         <div>
-          <div className="text-[9px] uppercase tracking-wider text-[#6a665a] sm:text-[10px]">Exit</div>
+          <div className="text-[9px] uppercase tracking-wider text-[#6a665a] sm:text-[10px]">{t('jou.f_exit')}</div>
           <div className="font-mono text-xs text-[#c9c4b4] sm:text-sm">{trade.exit ?? '—'}</div>
         </div>
       </div>
 
       <div className="mt-2.5 flex items-center justify-between sm:mt-3">
-        <span className="text-[11px] text-[#8a8577] sm:text-xs">Profit / Loss</span>
+        <span className="text-[11px] text-[#8a8577] sm:text-xs">{t('jou.pnl')}</span>
         <span className={`font-mono text-base font-bold sm:text-lg ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>{fmtMoney(trade.pnl || 0)}</span>
       </div>
 
       {strategyWinRate != null && (
         <div className="mt-2.5 sm:mt-3">
           <div className="mb-1 flex items-center justify-between text-[9px] uppercase tracking-wider text-[#6a665a] sm:text-[10px]">
-            <span>Strategy win rate</span>
+            <span>{t('jou.stratWin')}</span>
             <span className="text-[#d4af37]">{strategyWinRate}%</span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
@@ -167,7 +168,7 @@ export default function JournalPage() {
         <select value={direction} onChange={(e) => setDirection(e.target.value)} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2 text-sm text-[#e9e7df] outline-none">
           {['All', 'Long', 'Short', 'Buy', 'Sell'].map((d) => <option key={d} className="bg-[#0f0f14]">{d}</option>)}
         </select>
-        <button onClick={exportCsv} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/15 px-3 py-2 text-sm text-[#c9c4b4] transition hover:border-[#d4af37]/40"><Download className="h-4 w-4" /> <span className="hidden sm:inline">Export</span></button>
+        <button onClick={exportCsv} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/15 px-3 py-2 text-sm text-[#c9c4b4] transition hover:border-[#d4af37]/40"><Download className="h-4 w-4" /> <span className="hidden sm:inline">{t('jou.export')}</span></button>
         <button onClick={syncBrokers} disabled={syncing} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60">
           <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? t('jrn.syncing') : t('jrn.syncBrokers')}
         </button>
@@ -203,25 +204,25 @@ export default function JournalPage() {
         <DialogContent className="glass max-h-[85vh] max-w-md overflow-y-auto border-[#d4af37]/20 bg-[#0c0c11] text-[#e9e7df]">
           <DialogHeader>
             <DialogTitle className="text-[#f0ecdd]">
-              <span className="font-mono">{viewing?.symbol}</span> details
+              <span className="font-mono">{viewing?.symbol}</span> {t('jou.details')}
             </DialogTitle>
           </DialogHeader>
           {viewing && (
             <div className="grid grid-cols-2 gap-3 text-sm">
-              {FIELD_DEFS.map(({ key, label }) => (
+              {FIELD_DEFS.map(({ key, labelKey }) => (
                 <div key={key} className="rounded-lg bg-white/[0.03] p-2.5">
-                  <div className="text-[10px] uppercase tracking-wider text-[#6a665a]">{label}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-[#6a665a]">{t(labelKey)}</div>
                   <div className={`mt-0.5 font-mono ${key === 'pnl' ? ((viewing.pnl || 0) >= 0 ? 'text-emerald-400' : 'text-red-400') : 'text-[#e9e7df]'}`}>
                     {viewing[key] ?? '—'}
                   </div>
                 </div>
               ))}
               <div className="col-span-2 rounded-lg bg-white/[0.03] p-2.5">
-                <div className="text-[10px] uppercase tracking-wider text-[#6a665a]">Notes</div>
+                <div className="text-[10px] uppercase tracking-wider text-[#6a665a]">{t('jou.notes')}</div>
                 <div className="mt-0.5 text-[#c9c4b4]">{viewing.notes || '—'}</div>
               </div>
               <div className="col-span-2 rounded-lg bg-white/[0.03] p-2.5">
-                <div className="text-[10px] uppercase tracking-wider text-[#6a665a]">Date</div>
+                <div className="text-[10px] uppercase tracking-wider text-[#6a665a]">{t('jou.date')}</div>
                 <div className="mt-0.5 text-[#c9c4b4]">{viewing.tradeDate ? String(viewing.tradeDate).slice(0, 10) : '—'}</div>
               </div>
             </div>

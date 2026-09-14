@@ -188,7 +188,7 @@ export default function BillingPage() {
           const canSwitch = hasSub && !isCurrent;
           return (
             <div key={p.id} className={`relative flex flex-col rounded-2xl p-6 sm:flex-row sm:items-center sm:gap-6 ${p.highlight ? 'glass gold-glow' : 'glass'}`}>
-              {p.highlight && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-0.5 text-[11px] font-bold text-[#0a0a0f]">MOST POPULAR</div>}
+              {p.highlight && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-0.5 text-[11px] font-bold text-[#0a0a0f]">{t('misc.popular')}</div>}
               <div className="min-w-0 flex-1">
                 <h4 className="text-lg font-semibold text-[#f0ecdd]">{p.name}</h4>
                 <p className="mt-1 text-xs text-[#8a8577]">{p.tagline}</p>

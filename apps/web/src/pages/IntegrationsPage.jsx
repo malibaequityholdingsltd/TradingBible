@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AppLayout from '@/components/AppLayout';
+import { useI18n } from '@/lib/i18n';
 import {
   Search, CheckCircle2, AlertCircle, CircleDashed, Copy, Check,
   Activity, LineChart, Plug, Mail, MessageSquare, CreditCard, Bot, Workflow,
@@ -169,17 +170,18 @@ function CopyChip({ text }) {
   );
 }
 
-function StatusBadge({ status }) {
+function StatusBadge({ status, t }) {
   const s = STATUS[status];
   const Icon = s.icon;
   return (
     <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${s.cls}`}>
-      <Icon className="h-3 w-3" /> {s.label}
+      <Icon className="h-3 w-3" /> {t('int.st_' + status, null, s.label)}
     </span>
   );
 }
 
 export default function IntegrationsPage() {
+  const { t } = useI18n();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
 
@@ -198,25 +200,24 @@ export default function IntegrationsPage() {
   }, { total: 0, implemented: 0, needed: 0, optional: 0 });
 
   return (
-    <AppLayout title="API Keys & Integrations">
+    <AppLayout title={t('int.pageTitle')}>
       <div className="mx-auto max-w-[96rem]">
         <p className="mb-6 max-w-3xl text-sm leading-relaxed text-[#b3ae9e]">
-          Every external service TradingBible connects to, what it powers, where it lives in the codebase, and how to
-          configure it. Server-side keys go in <span className="font-mono text-[#d4af37]">apps/api/.env</span> (never in the browser); client tokens go in <span className="font-mono text-[#d4af37]">apps/web/.env</span>.
+          {t('int.introA')} <span className="font-mono text-[#d4af37]">apps/api/.env</span> {t('int.introB')} <span className="font-mono text-[#d4af37]">apps/web/.env</span>.
         </p>
         <div className="mb-5 flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-emerald-300">Implemented = already wired</span>
-          <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-amber-300">Needed = add key to activate</span>
-          <span className="rounded-full border border-[#8a8577]/30 bg-[#8a8577]/10 px-2.5 py-1 text-[#c9c4b4]">Optional = only if you need that feature</span>
+          <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-emerald-300">{t('int.legendImpl')}</span>
+          <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-amber-300">{t('int.legendNeed')}</span>
+          <span className="rounded-full border border-[#8a8577]/30 bg-[#8a8577]/10 px-2.5 py-1 text-[#c9c4b4]">{t('int.legendOpt')}</span>
         </div>
 
         {/* Summary + legend */}
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { k: 'total', label: 'Total integrations', val: counts.total, cls: 'text-[#e9e7df]' },
-            { k: 'implemented', label: 'Implemented', val: counts.implemented, cls: 'text-emerald-400' },
-            { k: 'needed', label: 'Keys needed', val: counts.needed, cls: 'text-amber-400' },
-            { k: 'optional', label: 'Optional', val: counts.optional, cls: 'text-[#8a8577]' },
+            { k: 'total', label: t('int.sumTotal'), val: counts.total, cls: 'text-[#e9e7df]' },
+            { k: 'implemented', label: t('int.sumImpl'), val: counts.implemented, cls: 'text-emerald-400' },
+            { k: 'needed', label: t('int.sumNeed'), val: counts.needed, cls: 'text-amber-400' },
+            { k: 'optional', label: t('int.sumOpt'), val: counts.optional, cls: 'text-[#8a8577]' },
           ].map((s) => (
             <div key={s.k} className="glass rounded-xl p-4">
               <div className={`text-2xl font-bold ${s.cls}`}>{s.val}</div>
@@ -231,7 +232,7 @@ export default function IntegrationsPage() {
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8a8577]" />
             <input
               value={query} onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search APIs, providers, env vars…"
+              placeholder={t('int.searchPh')}
               className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] py-2.5 pl-10 pr-3 text-sm text-[#e9e7df] placeholder:text-[#5f5b50] focus:border-[#d4af37]/40 focus:outline-none"
             />
           </div>
@@ -239,7 +240,7 @@ export default function IntegrationsPage() {
             {['all', 'implemented', 'needed', 'optional'].map((f) => (
               <button key={f} onClick={() => setFilter(f)}
                 className={`whitespace-nowrap px-3 py-2.5 text-xs capitalize transition ${filter === f ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
-                {f}
+                {f === 'all' ? t('int.f_all') : t('int.st_' + f, null, f)}
               </button>
             ))}
           </div>
@@ -253,7 +254,7 @@ export default function IntegrationsPage() {
                 <div className="grid h-9 w-9 place-items-center rounded-lg bg-[#d4af37]/10 text-[#d4af37]">
                   <cat.icon className="h-4.5 w-4.5" />
                 </div>
-                <h2 className="text-lg font-semibold text-[#f0ecdd]">{cat.label}</h2>
+                <h2 className="text-lg font-semibold text-[#f0ecdd]">{t('int.cat_' + cat.id, null, cat.label)}</h2>
                 <span className="text-xs text-[#5f5b50]">({cat.items.length})</span>
               </div>
               <div className="grid gap-4 lg:grid-cols-2">
@@ -264,23 +265,23 @@ export default function IntegrationsPage() {
                         <h3 className="font-semibold text-[#f0ecdd]">{it.name}</h3>
                         <p className="text-xs text-[#8a8577]">{it.provider}</p>
                       </div>
-                      <StatusBadge status={it.status} />
+                      <StatusBadge status={it.status} t={t} />
                     </div>
                     <p className="mb-3 text-sm leading-relaxed text-[#b3ae9e]">{it.purpose}</p>
                     <dl className="space-y-2 text-xs">
                       <div>
-                        <dt className="mb-0.5 font-semibold uppercase tracking-wide text-[#5f5b50]">Where it's used</dt>
+                        <dt className="mb-0.5 font-semibold uppercase tracking-wide text-[#5f5b50]">{t('int.whereUsed')}</dt>
                         <dd className="text-[#c9c4b4]">{it.usedIn}</dd>
                       </div>
                       <div>
-                        <dt className="mb-1 font-semibold uppercase tracking-wide text-[#5f5b50]">Environment variables</dt>
+                        <dt className="mb-1 font-semibold uppercase tracking-wide text-[#5f5b50]">{t('int.envVars')}</dt>
                         <dd className="flex flex-wrap gap-1.5">
                           {it.env.split(',').map((e) => e.trim()).map((e) => <CopyChip key={e} text={e} />)}
-                          <span className="self-center text-[10px] text-[#5f5b50]">in {it.envLoc}</span>
+                          <span className="self-center text-[10px] text-[#5f5b50]">{t('int.inLoc', { loc: it.envLoc })}</span>
                         </dd>
                       </div>
                       <div>
-                        <dt className="mb-0.5 font-semibold uppercase tracking-wide text-[#5f5b50]">Setup</dt>
+                        <dt className="mb-0.5 font-semibold uppercase tracking-wide text-[#5f5b50]">{t('int.setup')}</dt>
                         <dd className="leading-relaxed text-[#b3ae9e]">{it.setup}</dd>
                       </div>
                     </dl>
@@ -290,7 +291,7 @@ export default function IntegrationsPage() {
             </section>
           ))}
           {!categories.length && (
-            <div className="grid h-40 place-items-center text-sm text-[#8a8577]">No integrations match your search.</div>
+            <div className="grid h-40 place-items-center text-sm text-[#8a8577]">{t('int.noMatch')}</div>
           )}
         </div>
       </div>

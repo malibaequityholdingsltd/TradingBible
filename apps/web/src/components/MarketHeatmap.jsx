@@ -79,7 +79,7 @@ export default function MarketHeatmap({ type, setType, period, setPeriod, onSele
             ))}
           </div>
           <span className={`h-1.5 w-1.5 rounded-full ${status === 'ready' ? 'bg-emerald-400 animate-pulse' : status === 'error' ? 'bg-red-400' : 'bg-[#d4af37]'}`} />
-          <button onClick={exportImage} title="Export image" className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><Download className="h-3.5 w-3.5" /></button>
+          <button onClick={exportImage} title={t('mh.exportImg')} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><Download className="h-3.5 w-3.5" /></button>
         </div>
       </div>
 

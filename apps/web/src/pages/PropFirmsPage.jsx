@@ -149,7 +149,7 @@ function AccountForm({ initial, onSave, onCancel, manualAllowed }) {
       <p className="text-xs leading-relaxed text-[#8a8577]">{t('pf.linkNote')}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-xs text-[#8a8577]">Prop firm</label>
+          <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.firm')}</label>
           <select value={f.firm} onChange={(e) => applyFirm(e.target.value)} className={numCls}>
             {FIRMS.map((firm) => <option key={firm} value={firm}>{firm}</option>)}
           </select>
@@ -181,23 +181,23 @@ function AccountForm({ initial, onSave, onCancel, manualAllowed }) {
         {manualAllowed && (
           <>
             <div>
-              <label className="mb-1 block text-xs text-[#8a8577]">Balance (manual override)</label>
+              <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.balanceManual')}</label>
               <input type="number" min="0" value={f.balance} onChange={set('balance')} className={numCls} />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-[#8a8577]">Equity (manual override)</label>
+              <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.equityManual')}</label>
               <input type="number" min="0" value={f.equity} onChange={set('equity')} className={numCls} />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-[#8a8577]">Today's loss (manual override)</label>
+              <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.lossManual')}</label>
               <input type="number" min="0" value={f.currentDailyLoss} onChange={set('currentDailyLoss')} className={numCls} />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-[#8a8577]">Current drawdown (manual override)</label>
+              <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.ddManual')}</label>
               <input type="number" min="0" value={f.currentDrawdown} onChange={set('currentDrawdown')} className={numCls} />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-[#8a8577]">Current profit (manual override)</label>
+              <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.profitManual')}</label>
               <input type="number" value={f.currentProfit} onChange={set('currentProfit')} className={numCls} />
             </div>
           </>
@@ -316,10 +316,10 @@ export default function PropFirmsPage() {
       )}
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">Funded accounts</div><div className="mt-1 font-mono text-2xl font-semibold text-[#f0ecdd]">{accounts.length}</div></div>
-        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">Capital managed</div><div className="mt-1 font-mono text-2xl font-semibold gold-text">{money(accounts.reduce((s, a) => s + Number(a.accountSize || 0), 0))}</div></div>
-        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">At risk</div><div className={`mt-1 font-mono text-2xl font-semibold ${dangerAccounts.length ? 'text-red-400' : 'text-emerald-400'}`}>{dangerAccounts.length}</div></div>
-        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">Compliance</div><div className="mt-1 font-mono text-2xl font-semibold text-emerald-400">{accounts.length ? `${Math.round(((accounts.length - dangerAccounts.length) / accounts.length) * 100)}%` : '—'}</div></div>
+        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">{t('pf.funded')}</div><div className="mt-1 font-mono text-2xl font-semibold text-[#f0ecdd]">{accounts.length}</div></div>
+        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">{t('pf.capital')}</div><div className="mt-1 font-mono text-2xl font-semibold gold-text">{money(accounts.reduce((s, a) => s + Number(a.accountSize || 0), 0))}</div></div>
+        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">{t('pf.atRisk')}</div><div className={`mt-1 font-mono text-2xl font-semibold ${dangerAccounts.length ? 'text-red-400' : 'text-emerald-400'}`}>{dangerAccounts.length}</div></div>
+        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">{t('pf.compliance')}</div><div className="mt-1 font-mono text-2xl font-semibold text-emerald-400">{accounts.length ? `${Math.round(((accounts.length - dangerAccounts.length) / accounts.length) * 100)}%` : '—'}</div></div>
       </div>
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -334,7 +334,7 @@ export default function PropFirmsPage() {
       )}
 
       {loading ? (
-        <div className="grid place-items-center py-16 text-sm text-[#8a8577]">Loading accounts...</div>
+        <div className="grid place-items-center py-16 text-sm text-[#8a8577]">{t('pf.loadingAcc')}</div>
       ) : accounts.length === 0 ? (
         <div className="rounded-2xl glass p-10 text-center">
           <ShieldCheck className="mx-auto h-10 w-10 text-[#d4af37]/60" />
@@ -356,8 +356,8 @@ export default function PropFirmsPage() {
                     </div>
                     <div className="mt-1 text-2xl font-bold gold-text">{money(a.accountSize)}</div>
                     <div className="mt-1 flex items-center gap-3 text-xs text-[#8a8577]">
-                      <span>Balance <span className="font-mono text-[#e9e7df]">{money(a.balance)}</span></span>
-                      <span>Equity <span className="font-mono text-[#e9e7df]">{money(a.equity)}</span></span>
+                      <span>{t('pf.balance')} <span className="font-mono text-[#e9e7df]">{money(a.balance)}</span></span>
+                      <span>{t('pf.equity')} <span className="font-mono text-[#e9e7df]">{money(a.equity)}</span></span>
                       {a.syncStatus === 'syncing'
                         ? <span className="text-[#d4af37]">{t('pf.syncing')}</span>
                         : <span className="text-emerald-400">{t('pf.synced')}{a.lastSync ? ` · ${new Date(a.lastSync).toLocaleDateString()}` : ''}</span>}

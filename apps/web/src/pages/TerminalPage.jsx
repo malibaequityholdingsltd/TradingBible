@@ -98,14 +98,14 @@ function Row({ item, quote, display, index, count, onChart, onRemove, onMove, gr
       </div>
       <div className="flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
         {groups.length > 0 && (
-          <select value={item.group || ''} onChange={(e) => onAssign(item.symbol, e.target.value || null)} title="Assign group"
+          <select value={item.group || ''} onChange={(e) => onAssign(item.symbol, e.target.value || null)} title={tr('term.assignGroup')}
             className="rounded border border-[#d4af37]/15 bg-[#0f0f14] px-1 py-0.5 text-[10px] text-[#c9c4b4] outline-none">
             <option value="">—</option>
             {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
           </select>
         )}
-        <button onClick={() => onChart(item.symbol)} title="Open chart" className="text-[#8a8577] hover:text-[#d4af37]"><LineChart className="h-3.5 w-3.5" /></button>
-        <button onClick={() => onRemove(item.symbol)} title="Remove" className="text-[#8a8577] hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>
+        <button onClick={() => onChart(item.symbol)} title={tr('term.openChart')} className="text-[#8a8577] hover:text-[#d4af37]"><LineChart className="h-3.5 w-3.5" /></button>
+        <button onClick={() => onRemove(item.symbol)} title={tr('term.remove')} className="text-[#8a8577] hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>
       </div>
     </div>
   );
