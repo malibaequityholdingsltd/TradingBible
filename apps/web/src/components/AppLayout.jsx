@@ -77,6 +77,7 @@ const NAV_GROUPS = [
 ];
 
 function Brand({ homeTo, platformName }) {
+  const { t } = useI18n();
   const words = String(platformName || 'TradingBible').trim().split(/\s+/);
   const first = words.slice(0, -1).join(' ');
   const last = words[words.length - 1] || '';
