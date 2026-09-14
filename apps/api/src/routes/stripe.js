@@ -352,12 +352,15 @@ router.post('/webhook', async (req, res) => {
         if (user && amount > 0) {
           try {
             const { supabaseRest } = await import('../utils/supabaseClient.js');
-            const rows = await supabaseRest(`/rest/v1/wallet_balances?owner=eq.${user.id}&currency=eq.USD`, { query: { select: '*' } });
-            const bal = rows?.[0];
-            const next = (Number(bal?.balance) || 0) + amount;
-            if (bal) await supabaseRest(`/rest/v1/wallet_balances?owner=eq.${user.id}&currency=eq.USD`, { method: 'PATCH', body: { balance: next }, prefer: 'return=representation' });
-            else await supabaseRest('/rest/v1/wallet_balances', { method: 'POST', body: { owner: user.id, currency: 'USD', balance: next }, prefer: 'return=representation' });
-            await supabaseRest('/rest/v1/wallet_transactions', { method: 'POST', body: { owner: user.id, type: 'deposit', amount, currency: 'USD', status: 'completed', reference: data.id, meta: { source: 'stripe', session: data.id } }, prefer: 'return=representation' });
+            await supabaseRest('/rest/v1/bank_transactions', {
+              method: 'POST',
+              body: {
+                owner: user.id, kind: 'deposit', amount, currency: 'USD',
+                status: 'completed', reference: data.id, counterparty: 'stripe',
+                asset: 'USD', fiatValue: amount,
+              },
+              prefer: 'return=representation',
+            });
             logger.info(`wallet deposit credited ${amount} to ${user.id}`);
           } catch (e) { logger.error('wallet deposit webhook failed', String(e)); }
         }
