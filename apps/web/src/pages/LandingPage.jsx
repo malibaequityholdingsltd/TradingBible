@@ -120,17 +120,17 @@ export default function LandingPage() {
           <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium tracking-wide text-[#d4af37] ${isLight ? 'border-[#d4af37]/45 bg-[#d4af37]/[0.12]' : 'border-[#d4af37]/30 bg-[#d4af37]/[0.07]'}`}>
               <span className="h-1.5 w-1.5 rounded-full bg-[#d4af37]" />
-              AI-POWERED TRADING TERMINAL
+              {t('land.heroKick')}
             </div>
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.08 }} className="mt-7 text-5xl font-extrabold leading-[0.98] tracking-tight sm:text-6xl lg:text-[5.5rem]">
-            Trade like the <span className="gold-text">1%.</span><br />
-            Journal like a <span className="gold-text">fund.</span>
+            {t('land.heroA')} <span className="gold-text">{t('land.heroB')}</span><br />
+            {t('land.heroC')} <span className="gold-text">{t('land.heroD')}</span>
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.16 }} className="mt-7 max-w-2xl text-base leading-relaxed text-[#b8b3a3] sm:text-lg">
-            {settings.tagline || 'An AI-powered trading journal built on a Bloomberg-grade terminal. Track every edge, kill every mistake, and let the coach compound your discipline.'}
+            {settings.tagline || t('land.heroSub')}
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.24 }} className="mt-10 flex flex-col gap-3.5 sm:flex-row sm:items-center sm:gap-4">
@@ -205,12 +205,12 @@ export default function LandingPage() {
           <p className="mt-2 text-[#8a8577]">{t('land.trustedSub')}</p>
         </div>
         <div className="grid gap-5 md:grid-cols-3">
-          {TESTIMONIALS.map((t) => (
-            <div key={t.name} className="portfolio-card glass rounded-2xl p-5">
-              <p className="text-sm leading-relaxed text-[#c9c4b4]">“{t.quote}”</p>
+          {TESTIMONIALS.map((tm) => (
+            <div key={tm.name} className="portfolio-card glass rounded-2xl p-5">
+              <p className="text-sm leading-relaxed text-[#c9c4b4]">“{t(tm.qk, null, tm.quote)}”</p>
               <div className="mt-4 border-t border-[#d4af37]/15 pt-3">
-                <div className="portfolio-card__title text-sm font-semibold text-[#f0ecdd]">{t.name}</div>
-                <div className="text-xs text-[#8a8577]">{t.role}</div>
+                <div className="portfolio-card__title text-sm font-semibold text-[#f0ecdd]">{tm.name}</div>
+                <div className="text-xs text-[#8a8577]">{t(tm.rk, null, tm.role)}</div>
               </div>
             </div>
           ))}
@@ -229,10 +229,10 @@ export default function LandingPage() {
             return (
               <div key={p.id} className={`portfolio-card relative rounded-2xl p-6 ${p.highlight ? 'glass gold-glow' : 'glass'}`}>
                 {p.highlight && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-0.5 text-[11px] font-bold text-[#0a0a0f]">{t('misc.popular')}</div>}
-                <img src={p.logo} alt={`${p.name} plan logo`} className="mb-3 h-12 w-12 rounded-xl object-contain" />
+                <img src={p.logo} alt={p.name} className="mb-3 h-12 w-12 rounded-xl object-contain" />
                 <h3 className="portfolio-card__title text-lg font-semibold">{p.name}</h3>
                 <p className="mt-1 text-xs text-[#8a8577]">{p.tagline}</p>
-                <div className="mt-4 flex items-end gap-1"><span className="text-3xl font-bold gold-text">{p.price === 0 ? 'Free' : `$${p.price}`}</span><span className="mb-1 text-sm text-[#8a8577]">/{p.period}</span></div>
+                <div className="mt-4 flex items-end gap-1"><span className="text-3xl font-bold gold-text">{p.price === 0 ? t('land.free') : `$${p.price}`}</span><span className="mb-1 text-sm text-[#8a8577]">/{p.period}</span></div>
                 <ul className="mt-5 space-y-2 text-sm text-[#b3ae9e]">{p.features.slice(0, 4).map((f) => <li key={f} className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-[#d4af37]" />{f}</li>)}</ul>
                 <Link to="/signup" className={`mt-6 block rounded-lg py-2.5 text-center text-sm font-semibold transition ${p.highlight ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] hover:opacity-90' : 'border border-[#d4af37]/25 text-[#e9e7df] hover:border-[#d4af37]/60'}`}>{p.cta} <ArrowRight className="h-4 w-4" /></Link>
               </div>

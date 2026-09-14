@@ -39,9 +39,9 @@ const TEAM = [
 ];
 
 const TESTIMONIALS = [
-  { quote: 'TradingBible turned my scattered notes into a real edge. The AI coach flags mistakes I never noticed myself making.', name: 'Sofia R.', role: 'Full-time forex trader' },
-  { quote: 'The broker sync and analytics feel genuinely institutional. It is the first journal that keeps up with my volume.', name: 'Daniel K.', role: 'Crypto swing trader' },
-  { quote: 'Discipline scoring changed how I trade. Fewer revenge trades, tighter risk, calmer sessions.', name: 'Aisha B.', role: 'Prop firm trader' },
+  { quote: 'TradingBible turned my scattered notes into a real edge. The AI coach flags mistakes I never noticed myself making.', qk: 'abt.tm1q', name: 'Sofia R.', role: 'Full-time forex trader', rk: 'abt.tm1r' },
+  { quote: 'The broker sync and analytics feel genuinely institutional. It is the first journal that keeps up with my volume.', qk: 'abt.tm2q', name: 'Daniel K.', role: 'Crypto swing trader', rk: 'abt.tm2r' },
+  { quote: 'Discipline scoring changed how I trade. Fewer revenge trades, tighter risk, calmer sessions.', qk: 'abt.tm3q', name: 'Aisha B.', role: 'Prop firm trader', rk: 'abt.tm3r' },
 ];
 
 function Header() {
@@ -188,12 +188,12 @@ export default function AboutPage() {
           <h2 className="text-3xl font-bold sm:text-4xl">{t('abt.trusted')} <span className="gold-text">{t('abt.traders')}</span></h2>
         </div>
         <div className="grid gap-5 lg:grid-cols-3">
-          {TESTIMONIALS.map((t) => (
-            <div key={t.name} className="glass rounded-2xl p-6">
+          {TESTIMONIALS.map((tm) => (
+            <div key={tm.name} className="glass rounded-2xl p-6">
               <Quote className="h-6 w-6 text-[#d4af37]" />
-              <p className="mt-3 leading-relaxed text-[#c9c4b4]">{t.quote}</p>
+              <p className="mt-3 leading-relaxed text-[#c9c4b4]">{t(tm.qk, null, tm.quote)}</p>
               <div className="mt-4 flex items-center gap-1 text-[#d4af37]">{[0,1,2,3,4].map((i) => <Star key={i} className="h-3.5 w-3.5 fill-current" />)}</div>
-              <div className="mt-3"><div className="font-semibold text-[#f0ecdd]">{t.name}</div><div className="text-xs text-[#8a8577]">{t.role}</div></div>
+              <div className="mt-3"><div className="font-semibold text-[#f0ecdd]">{tm.name}</div><div className="text-xs text-[#8a8577]">{t(tm.rk, null, tm.role)}</div></div>
             </div>
           ))}
         </div>

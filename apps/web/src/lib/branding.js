@@ -8,19 +8,25 @@ export const TESTIMONIALS = [
   {
     quote:
       'TradingBible turned my scattered notes into a real edge. The AI coach flags mistakes I never noticed.',
+    qk: 'land.tm1q',
     name: 'Sofia R.',
     role: 'Full-time forex trader',
+    rk: 'land.tm1r',
   },
   {
     quote:
       'The broker sync and analytics feel institutional. It is the first journal that keeps up with my volume.',
+    qk: 'land.tm2q',
     name: 'Daniel K.',
     role: 'Crypto swing trader',
+    rk: 'land.tm2r',
   },
   {
     quote:
       'Discipline scoring changed how I trade. Fewer revenge trades, tighter risk, calmer sessions.',
+    qk: 'land.tm3q',
     name: 'Aisha B.',
     role: 'Prop firm trader',
+    rk: 'land.tm3r',
   },
 ];
