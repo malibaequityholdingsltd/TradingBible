@@ -5,11 +5,11 @@ import { useI18n } from '@/lib/i18n';
 
 const PERIODS = ['1h', '4h', '1d', '1w', '1M'];
 const CATEGORIES = [
-  { id: 'crypto', label: 'Crypto' },
-  { id: 'forex', label: 'Forex' },
-  { id: 'commodity', label: 'Commodities' },
-  { id: 'sector', label: 'Sectors' },
-  { id: 'stock', label: 'Stocks' },
+  { id: 'crypto', key: 'hm.crypto' },
+  { id: 'forex', key: 'hm.forex' },
+  { id: 'commodity', key: 'hm.commodity' },
+  { id: 'sector', key: 'hm.sector' },
+  { id: 'stock', key: 'hm.stock' },
 ];
 
 function cellColor(pct) {
@@ -66,7 +66,7 @@ export default function MarketHeatmap({ type, setType, period, setPeriod, onSele
             {CATEGORIES.map((c) => (
               <button key={c.id} onClick={() => setType(c.id)}
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${type === c.id ? 'bg-[#d4af37]/18 text-[#d4af37]' : 'border border-[#d4af37]/12 text-[#8a8577] hover:text-[#e9e7df]'}`}>
-                {c.label}
+                {t(c.key)}
               </button>
             ))}
           </div>

@@ -3,6 +3,7 @@ import { Plus, Trash2, Star, Search, X, Columns3, List, Loader2, TrendingUp, Tre
 import AppLayout from '@/components/AppLayout';
 import { useWatchlists } from '@/hooks/useWatchlists';
 import { useQuotes } from '@/hooks/useQuotes';
+import { useI18n } from '@/lib/i18n';
 import { SYMBOL_GROUPS, ALL_SYMBOLS } from '@/lib/symbols';
 
 const DEFAULTS = [
@@ -18,17 +19,18 @@ const fmt = (n) => n == null ? '—' : Math.abs(n) >= 1000 ? n.toLocaleString('e
 const fmtVol = (n) => { if (n == null) return '—'; if (n >= 1e9) return `${(n / 1e9).toFixed(1)}B`; if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`; if (n >= 1e3) return `${(n / 1e3).toFixed(1)}K`; return `${n}`; };
 
 function SymbolPicker({ existing, onAdd, onClose }) {
+  const { t } = useI18n();
   const [q, setQ] = useState('');
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 pt-24" onClick={onClose}>
       <div className="shell-panel w-full max-w-lg rounded-3xl p-5" onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-semibold text-[#f0ecdd]">Add symbols</h3>
+          <h3 className="font-semibold text-[#f0ecdd]">{t('term.addSymbols')}</h3>
           <button onClick={onClose} className="text-[#8a8577] hover:text-[#e9e7df]"><X className="h-5 w-5" /></button>
         </div>
         <div className="relative mb-3">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#8a8577]" />
-          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search symbol or name…"
+          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('term.searchPh')}
             className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] py-2 pl-9 pr-3 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
         </div>
         <div className="layered-list max-h-72 space-y-4 overflow-y-auto no-scrollbar">
@@ -61,6 +63,7 @@ function SymbolPicker({ existing, onAdd, onClose }) {
 
 export default function WatchlistsPage() {
   const { lists, loading, createList, updateList, removeList, setDefault, addSymbol, removeSymbol } = useWatchlists();
+  const { t } = useI18n();
   const [activeId, setActiveId] = useState(null);
   const [seeded, setSeeded] = useState(false);
   const [picker, setPicker] = useState(false);
@@ -113,22 +116,22 @@ export default function WatchlistsPage() {
   const toggleCompare = (sym) => setCompare((c) => c.includes(sym) ? c.filter((x) => x !== sym) : c.length < 4 ? [...c, sym] : c);
 
   return (
-    <AppLayout title="Watchlists">
+    <AppLayout title={t('nav.watchlists')}>
       {loading ? (
-        <div className="shell-panel flex items-center justify-center gap-2 rounded-3xl py-20 text-sm text-[#8a8577]"><Loader2 className="h-4 w-4 animate-spin" /> Loading watchlists…</div>
+        <div className="shell-panel flex items-center justify-center gap-2 rounded-3xl py-20 text-sm text-[#8a8577]"><Loader2 className="h-4 w-4 animate-spin" /> {t('wl.loading')}</div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
           {/* Sidebar of lists */}
           <div className="shell-panel rounded-3xl p-3">
             <div className="mb-2 flex items-center justify-between px-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#8a8577]">Lists</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#8a8577]">{t('wl.lists')}</span>
               <button onClick={() => setCreating((v) => !v)} className="grid h-6 w-6 place-items-center rounded-md bg-[#d4af37]/15 text-[#d4af37] hover:bg-[#d4af37]/25"><Plus className="h-3.5 w-3.5" /></button>
             </div>
             {creating && (
               <div className="mb-2 flex gap-1">
                 <input autoFocus value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && submitCreate()}
-                  placeholder="List name" className="w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-1 text-xs text-[#e9e7df] outline-none" />
-                <button onClick={submitCreate} className="rounded-lg bg-[#d4af37]/20 px-2 text-xs text-[#d4af37]">Add</button>
+                  placeholder={t('wl.listName')} className="w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-1 text-xs text-[#e9e7df] outline-none" />
+                <button onClick={submitCreate} className="rounded-lg bg-[#d4af37]/20 px-2 text-xs text-[#d4af37]">{t('wl.add')}</button>
               </div>
             )}
             <div className="space-y-1">
@@ -149,30 +152,30 @@ export default function WatchlistsPage() {
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                   <h2 className="mr-auto text-lg font-semibold text-[#f0ecdd]">{active.name}</h2>
                   <span className={`h-1.5 w-1.5 rounded-full ${status === 'live' ? 'bg-emerald-400 animate-pulse' : 'bg-[#d4af37]'}`} />
-                  {!active.isDefault && <button onClick={() => setDefault(active.id)} className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#d4af37] hover:border-[#d4af37]/40"><Star className="h-3.5 w-3.5" /> Pin</button>}
+                  {!active.isDefault && <button onClick={() => setDefault(active.id)} className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#d4af37] hover:border-[#d4af37]/40"><Star className="h-3.5 w-3.5" /> {t('wl.pin')}</button>}
                   <div className="flex overflow-hidden rounded-lg border border-[#d4af37]/15">
                     <button onClick={() => setView('list')} className={`grid h-8 w-8 place-items-center ${view === 'list' ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577]'}`}><List className="h-4 w-4" /></button>
                     <button onClick={() => setView('compare')} className={`grid h-8 w-8 place-items-center ${view === 'compare' ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577]'}`}><Columns3 className="h-4 w-4" /></button>
                   </div>
-                  <button onClick={() => setPicker(true)} className="flex items-center gap-1 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1.5 text-xs font-semibold text-[#0a0a0f]"><Plus className="h-3.5 w-3.5" /> Add</button>
+                  <button onClick={() => setPicker(true)} className="flex items-center gap-1 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1.5 text-xs font-semibold text-[#0a0a0f]"><Plus className="h-3.5 w-3.5" /> {t('wl.add')}</button>
                   <button onClick={() => { removeList(active.id); setActiveId(null); }} className="grid h-8 w-8 place-items-center rounded-lg border border-red-400/20 text-red-400 hover:bg-red-400/10"><Trash2 className="h-4 w-4" /></button>
                 </div>
 
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                   <div className="relative flex-1 min-w-[160px]">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#8a8577]" />
-                    <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search…" className="w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] py-2 pl-9 pr-3 text-sm text-[#e9e7df] outline-none" />
+                    <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('wl.search')} className="w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] py-2 pl-9 pr-3 text-sm text-[#e9e7df] outline-none" />
                   </div>
                   <select value={sort} onChange={(e) => setSort(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none">
-                    <option value="name">Sort: Name</option>
-                    <option value="price">Sort: Price</option>
-                    <option value="change">Sort: Change %</option>
-                    <option value="volume">Sort: Volume</option>
+                    <option value="name">{t('wl.sortName')}</option>
+                    <option value="price">{t('wl.sortPrice')}</option>
+                    <option value="change">{t('wl.sortChange')}</option>
+                    <option value="volume">{t('wl.sortVol')}</option>
                   </select>
                 </div>
 
                 {symbols.length === 0 ? (
-                  <div className="py-16 text-center text-sm text-[#8a8577]">No symbols yet. Click <span className="text-[#d4af37]">Add</span> to build this list.</div>
+                  <div className="py-16 text-center text-sm text-[#8a8577]">{t('wl.noSymbols')}</div>
                 ) : view === 'compare' ? (
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                     {rows.map((r) => (
@@ -195,8 +198,8 @@ export default function WatchlistsPage() {
                   <div className="layered-list overflow-x-auto no-scrollbar">
                     <table className="w-full min-w-[560px] text-sm">
                       <thead><tr className="text-left text-[11px] uppercase tracking-wider text-[#8a8577]">
-                        <th className="py-2">Symbol</th><th className="py-2 text-right">Price</th><th className="py-2 text-right">Change</th>
-                        <th className="py-2 text-right">24h H/L</th><th className="py-2 text-right">Volume</th><th className="py-2"></th>
+                        <th className="py-2">{t('wl.thSymbol')}</th><th className="py-2 text-right">{t('wl.thPrice')}</th><th className="py-2 text-right">{t('wl.thChange')}</th>
+                        <th className="py-2 text-right">{t('wl.thHL')}</th><th className="py-2 text-right">{t('wl.thVol')}</th><th className="py-2"></th>
                       </tr></thead>
                       <tbody>
                         {rows.map((r) => {
@@ -220,7 +223,7 @@ export default function WatchlistsPage() {
                   </div>
                 )}
               </>
-            ) : <div className="py-16 text-center text-sm text-[#8a8577]">Select or create a watchlist.</div>}
+            ) : <div className="py-16 text-center text-sm text-[#8a8577]">{t('wl.selectCreate')}</div>}
           </div>
         </div>
       )}

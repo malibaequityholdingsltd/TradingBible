@@ -3,6 +3,7 @@ import { Radar, ArrowUpRight, ArrowDownRight, Minus, Save, Loader2, Trophy, Chec
 import { Link } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
 import pb from '@/lib/pocketbaseClient';
+import { useI18n } from '@/lib/i18n';
 import { useCandles } from '@/hooks/useCandles';
 import { analyzeSignal, SIGNAL_META } from '@/lib/signals';
 import { ALL_SYMBOLS } from '@/lib/symbols';
@@ -19,6 +20,7 @@ function DirIcon({ type, className }) {
 
 function SignalCard({ symbol, timeframe, onResult, onSave }) {
   const { candles, status } = useCandles(symbol, timeframe, { limit: 120, refreshMs: 30000 });
+  const { t } = useI18n();
   const sig = useMemo(() => analyzeSignal(candles), [candles]);
 
   useEffect(() => { onResult(symbol, sig); }, [symbol, sig, onResult]);
@@ -36,8 +38,8 @@ function SignalCard({ symbol, timeframe, onResult, onSave }) {
         <span className="flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ color: meta.color, background: meta.bg }}><DirIcon type={sig.signalType} className="h-3.5 w-3.5" />{meta.label}</span>
       </div>
       <div className="mt-3 flex items-center gap-3 text-[11px]">
-        <span className="text-[#8a8577]">Strength <span className="font-semibold text-[#e9e7df]">{sig.strength}</span></span>
-        <span className="text-[#8a8577]">Confidence <span className="font-semibold text-[#e9e7df]">{sig.confidence}</span></span>
+        <span className="text-[#8a8577]">{t('sig.strength')} <span className="font-semibold text-[#e9e7df]">{sig.strength}</span></span>
+        <span className="text-[#8a8577]">{t('sig.confidence')} <span className="font-semibold text-[#e9e7df]">{sig.confidence}</span></span>
       </div>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/8">
         <div className="h-full rounded-full" style={{ width: `${Math.min(100, Math.abs(sig.score) * 50)}%`, background: meta.color }} />
@@ -51,8 +53,8 @@ function SignalCard({ symbol, timeframe, onResult, onSave }) {
       <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-3">
         <span className="font-mono text-xs text-[#8a8577]">px {sig.price}</span>
         <div className="flex gap-2">
-          <Link to={`/app/charts?symbol=${symbol}`} className="rounded-lg border border-[#d4af37]/15 px-2.5 py-1 text-[11px] text-[#d4af37] hover:border-[#d4af37]/40">Chart</Link>
-          <button onClick={() => onSave(symbol, timeframe, sig)} className="flex items-center gap-1 rounded-lg bg-[#d4af37]/15 px-2.5 py-1 text-[11px] text-[#d4af37] hover:bg-[#d4af37]/25"><Save className="h-3 w-3" /> Track</button>
+          <Link to={`/app/charts?symbol=${symbol}`} className="rounded-lg border border-[#d4af37]/15 px-2.5 py-1 text-[11px] text-[#d4af37] hover:border-[#d4af37]/40">{t('sig.chart')}</Link>
+          <button onClick={() => onSave(symbol, timeframe, sig)} className="flex items-center gap-1 rounded-lg bg-[#d4af37]/15 px-2.5 py-1 text-[11px] text-[#d4af37] hover:bg-[#d4af37]/25"><Save className="h-3 w-3" /> {t('c.add')}</button>
         </div>
       </div>
     </div>
@@ -60,6 +62,7 @@ function SignalCard({ symbol, timeframe, onResult, onSave }) {
 }
 
 export default function SignalsPage() {
+  const { t } = useI18n();
   const [timeframe, setTimeframe] = useState('1h');
   const [results, setResults] = useState({});
   const [fType, setFType] = useState('all');
@@ -105,25 +108,25 @@ export default function SignalsPage() {
   const winRate = closed.length ? Math.round((wins / closed.length) * 100) : 0;
 
   return (
-    <AppLayout title="Trading Signals">
+    <AppLayout title={t('nav.signals')}>
       <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="glass rounded-2xl p-4"><div className="text-[11px] uppercase tracking-wider text-[#8a8577]">Tracked</div><div className="mt-1 font-mono text-2xl font-semibold text-[#f0ecdd]">{saved.length}</div></div>
-        <div className="glass rounded-2xl p-4"><div className="text-[11px] uppercase tracking-wider text-[#8a8577]">Closed</div><div className="mt-1 font-mono text-2xl font-semibold text-[#c9c4b4]">{closed.length}</div></div>
-        <div className="glass rounded-2xl p-4"><div className="text-[11px] uppercase tracking-wider text-[#8a8577]">Wins</div><div className="mt-1 font-mono text-2xl font-semibold text-emerald-400">{wins}</div></div>
-        <div className="glass rounded-2xl p-4"><div className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#8a8577]"><Trophy className="h-3 w-3" /> Win rate</div><div className="mt-1 font-mono text-2xl font-semibold text-[#d4af37]">{winRate}%</div></div>
+        <div className="glass rounded-2xl p-4"><div className="text-[11px] uppercase tracking-wider text-[#8a8577]">{t('sig.tracked')}</div><div className="mt-1 font-mono text-2xl font-semibold text-[#f0ecdd]">{saved.length}</div></div>
+        <div className="glass rounded-2xl p-4"><div className="text-[11px] uppercase tracking-wider text-[#8a8577]">{t('sig.closed')}</div><div className="mt-1 font-mono text-2xl font-semibold text-[#c9c4b4]">{closed.length}</div></div>
+        <div className="glass rounded-2xl p-4"><div className="text-[11px] uppercase tracking-wider text-[#8a8577]">{t('sig.wins')}</div><div className="mt-1 font-mono text-2xl font-semibold text-emerald-400">{wins}</div></div>
+        <div className="glass rounded-2xl p-4"><div className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-[#8a8577]"><Trophy className="h-3 w-3" /> {t('dash.winRate')}</div><div className="mt-1 font-mono text-2xl font-semibold text-[#d4af37]">{winRate}%</div></div>
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="flex overflow-hidden rounded-lg border border-[#d4af37]/15">
-          <button onClick={() => setTab('live')} className={`flex items-center gap-1 px-4 py-2 text-sm ${tab === 'live' ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577]'}`}><Radar className="h-3.5 w-3.5" /> Live</button>
-          <button onClick={() => setTab('history')} className={`px-4 py-2 text-sm ${tab === 'history' ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577]'}`}>Tracked</button>
+          <button onClick={() => setTab('live')} className={`flex items-center gap-1 px-4 py-2 text-sm ${tab === 'live' ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577]'}`}><Radar className="h-3.5 w-3.5" /> {t('term.live')}</button>
+          <button onClick={() => setTab('history')} className={`px-4 py-2 text-sm ${tab === 'history' ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577]'}`}>{t('sig.tracked')}</button>
         </div>
         {tab === 'live' && (
           <>
-            <select value={timeframe} onChange={(e) => setTimeframe(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none">{TIMEFRAMES.map((t) => <option key={t} value={t}>TF: {t}</option>)}</select>
-            <select value={fType} onChange={(e) => setFType(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none"><option value="all">All types</option>{Object.entries(SIGNAL_META).map(([k, m]) => <option key={k} value={k}>{m.label}</option>)}</select>
-            <select value={fStrength} onChange={(e) => setFStrength(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none"><option value="all">Any strength</option><option value="weak">Weak</option><option value="moderate">Moderate</option><option value="strong">Strong</option></select>
-            <select value={fConf} onChange={(e) => setFConf(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none"><option value="all">Any confidence</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select>
+            <select value={timeframe} onChange={(e) => setTimeframe(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none">{TIMEFRAMES.map((tf) => <option key={tf} value={tf}>TF: {tf}</option>)}</select>
+            <select value={fType} onChange={(e) => setFType(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none"><option value="all">{t('sig.allTypes')}</option>{Object.entries(SIGNAL_META).map(([k, m]) => <option key={k} value={k}>{m.label}</option>)}</select>
+            <select value={fStrength} onChange={(e) => setFStrength(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none"><option value="all">{t('sig.anyStrength')}</option><option value="weak">{t('sig.weak')}</option><option value="moderate">{t('sig.moderate')}</option><option value="strong">{t('sig.strong')}</option></select>
+            <select value={fConf} onChange={(e) => setFConf(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none"><option value="all">{t('sig.anyConf')}</option><option value="low">{t('sig.low')}</option><option value="medium">{t('sig.medium')}</option><option value="high">{t('sig.high')}</option></select>
           </>
         )}
       </div>
@@ -133,11 +136,11 @@ export default function SignalsPage() {
           {visible.map((sym) => <SignalCard key={`${sym}-${timeframe}`} symbol={sym} timeframe={timeframe} onResult={onResult} onSave={onSave} />)}
         </div>
       ) : saved.length === 0 ? (
-        <div className="glass rounded-2xl py-16 text-center"><Radar className="mx-auto mb-3 h-8 w-8 text-[#d4af37]/60" /><p className="text-sm text-[#8a8577]">No tracked signals yet. Track a live signal to measure its outcome.</p></div>
+        <div className="glass rounded-2xl py-16 text-center"><Radar className="mx-auto mb-3 h-8 w-8 text-[#d4af37]/60" /><p className="text-sm text-[#8a8577]">{t('sig.noTracked')}</p></div>
       ) : (
         <div className="glass overflow-x-auto rounded-2xl no-scrollbar">
           <table className="w-full min-w-[640px] text-sm">
-            <thead><tr className="text-left text-[11px] uppercase tracking-wider text-[#8a8577]"><th className="p-3">Symbol</th><th className="p-3">Signal</th><th className="p-3">Strength</th><th className="p-3">Entry</th><th className="p-3">Date</th><th className="p-3">Outcome</th></tr></thead>
+            <thead><tr className="text-left text-[11px] uppercase tracking-wider text-[#8a8577]"><th className="p-3">{t('sig.thSymbol')}</th><th className="p-3">{t('sig.thSignal')}</th><th className="p-3">{t('sig.thStrength')}</th><th className="p-3">{t('sig.thEntry')}</th><th className="p-3">{t('sig.thDate')}</th><th className="p-3">{t('sig.thOutcome')}</th></tr></thead>
             <tbody>
               {saved.map((s) => {
                 const meta = SIGNAL_META[s.signalType] || SIGNAL_META.hold;

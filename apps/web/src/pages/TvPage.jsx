@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
+import { useI18n } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 
 const DEFAULT_SETTINGS = {
@@ -14,6 +15,7 @@ const DEFAULT_SETTINGS = {
 const HIDE_UI_MS = 3500;
 
 export default function TvPage() {
+  const { t } = useI18n();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [ads, setAds] = useState([]);
   const [index, setIndex] = useState(0);
@@ -129,7 +131,7 @@ export default function TvPage() {
             <div className="absolute -inset-6 animate-ping rounded-full border border-[#d4af37]/20" />
             <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-16 w-16 rounded-2xl object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
           </div>
-          <div className="text-xs tracking-[0.35em] text-[#d4af37] uppercase">Tuning in…</div>
+          <div className="text-xs tracking-[0.35em] text-[#d4af37] uppercase">{t('tv.tuning')}</div>
         </div>
       </div>
     );
@@ -148,8 +150,8 @@ export default function TvPage() {
           <div className="grid h-16 w-16 place-items-center rounded-2xl border border-[#d4af37]/20 bg-[#d4af37]/5">
             <MonitorPlay className="h-7 w-7 text-[#d4af37]" />
           </div>
-          <p className="text-lg font-semibold">No broadcasts are live right now</p>
-          <p className="text-sm text-[#8a8577]">Check back soon — new broadcasts are added regularly.</p>
+          <p className="text-lg font-semibold">{t('tv.noLive')}</p>
+          <p className="text-sm text-[#8a8577]">{t('tv.checkBack')}</p>
         </div>
       ) : (
         <div key={ad.id} className="absolute inset-0">
