@@ -4,12 +4,14 @@ import { useCandles } from '@/hooks/useCandles';
 import { SYMBOL_GROUPS } from '@/lib/symbols';
 import AdvancedChart from '@/components/AdvancedChart';
 import IndicatorPicker from '@/components/IndicatorPicker';
+import { useI18n } from '@/lib/i18n';
 
 // One chart tile: symbol picker + AdvancedChart + indicator modal.
 export default function ChartPanel({
   initialSymbol = 'BTCUSD', initialTimeframe = '1h', initialType = 'candle',
   initialIndicators = [], compact = false, className = '',
 }) {
+  const { t } = useI18n();
   const [symbol, setSymbol] = useState(initialSymbol);
   const [timeframe, setTimeframe] = useState(initialTimeframe);
   const [chartType, setChartType] = useState(initialType);
@@ -61,7 +63,7 @@ export default function ChartPanel({
       <div className={`glass rounded-2xl p-3 sm:p-4 ${className} ${fullscreen ? 'fixed inset-2 z-[55] overflow-y-auto' : ''}`}>
         <div className="mb-2">{symbolPicker}</div>
         {status === 'error' && !candles.length
-          ? <div className="grid h-48 place-items-center text-sm text-red-400/80">Failed to load market data.</div>
+          ? <div className="grid h-48 place-items-center text-sm text-red-400/80">{t('cp.loadFail')}</div>
           : chart}
       </div>
       <IndicatorPicker open={pickerOpen} onClose={() => setPickerOpen(false)} indicators={indicators} setIndicators={setIndicators} />

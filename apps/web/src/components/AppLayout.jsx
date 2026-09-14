@@ -85,7 +85,7 @@ function Brand({ homeTo, platformName }) {
       <img src={TRADINGBIBLE_LOGO} alt={`${platformName} logo`} className="h-9 w-9 rounded-lg object-contain" />
       <div className="leading-tight">
         <div className="font-semibold tracking-tight text-[#f0ecdd]">{first ? `${first} ` : ''}<span className="gold-text">{last}</span></div>
-        <div className="text-[10px] uppercase tracking-[0.2em] text-[#8a8577]">Terminal</div>
+        <div className="text-[10px] uppercase tracking-[0.2em] text-[#8a8577]">{t('nav.terminal')}</div>
       </div>
     </Link>
   );
@@ -219,8 +219,8 @@ const pluralS = (n) => (n === 1 ? '' : 's');
         <main className="p-4 sm:p-5 lg:p-7">
           {isAdmin && isAdminPreview() && (
             <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-[#d4af37]/30 bg-[#d4af37]/[0.07] px-4 py-2.5">
-              <span className="text-xs text-[#d4af37]">Admin preview — you are viewing the app as a user. Changes you make act on your own account.</span>
-              <button onClick={() => { exitAdminPreview(); nav('/admin'); }} className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#d4af37]/30 px-3 py-1.5 text-xs font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10"><LogOut className="h-3.5 w-3.5" /> Exit to admin</button>
+              <span className="text-xs text-[#d4af37]">{t('misc.adminPreview')}</span>
+              <button onClick={() => { exitAdminPreview(); nav('/admin'); }} className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#d4af37]/30 px-3 py-1.5 text-xs font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10"><LogOut className="h-3.5 w-3.5" /> {t('misc.exitAdmin')}</button>
             </div>
           )}
           {children}

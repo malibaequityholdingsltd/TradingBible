@@ -67,17 +67,17 @@ export default function EconomicCalendarPage() {
       if (data.available && Array.isArray(data.events)) {
         setAllEvents(data.events);
         setStatus(data.events.length ? 'ok' : 'unavailable');
-        if (!data.events.length) setReason('No scheduled events returned by the provider.');
+        if (!data.events.length) setReason(t('cal.noEvents'));
         setUpdatedAt(Date.now());
       } else {
         setAllEvents([]);
         setStatus('unavailable');
-        setReason(data.reason || 'Live economic calendar data is not available.');
+        setReason(data.reason || t('cal.noData'));
       }
     } catch {
       setAllEvents([]);
       setStatus('error');
-      setReason('Could not reach the market data service.');
+      setReason(t('cal.unreachable'));
     }
   }, []);
 

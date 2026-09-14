@@ -69,6 +69,7 @@ function AlertsWidget() {
 }
 
 function MiniSignal({ symbol }) {
+  const { t } = useI18n();
   const { candles } = useCandles(symbol, '1h', { limit: 120, refreshMs: 60000 });
   const sig = useMemo(() => analyzeSignal(candles), [candles]);
   const meta = sig ? SIGNAL_META[sig.signalType] : null;
@@ -76,7 +77,7 @@ function MiniSignal({ symbol }) {
   return (
     <div className="flex items-center justify-between text-sm">
       <span className="font-mono text-[#e9e7df]">{symbol}</span>
-      {meta ? <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ color: meta.color, background: meta.bg }}><Icon className="h-3 w-3" />{meta.label}</span> : <span className="text-xs text-[#8a8577]">…</span>}
+      {meta ? <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ color: meta.color, background: meta.bg }}><Icon className="h-3 w-3" />{t('sig.st_' + sig.signalType)}</span> : <span className="text-xs text-[#8a8577]">…</span>}
     </div>
   );
 }

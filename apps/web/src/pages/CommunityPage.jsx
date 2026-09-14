@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { MessageSquare, Trophy, Plus, Send, X } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import PageHeader from '@/components/PageHeader';
+import { useI18n } from '@/lib/i18n';
 import pb from '@/lib/pocketbaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -18,15 +19,16 @@ function Avatar({ src, letter, className = 'h-10 w-10 text-sm' }) {
 const input = 'w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none focus:border-[#d4af37]/50';
 const CATS = ['General', 'Strategies', 'Psychology', 'Crypto', 'Forex', 'Stocks', 'Wins'];
 
-function timeAgo(iso) {
+function timeAgo(iso, t) {
   const diff = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (diff < 1) return 'just now';
-  if (diff < 60) return `${diff}m ago`;
-  if (diff < 1440) return `${Math.round(diff / 60)}h ago`;
-  return `${Math.round(diff / 1440)}d ago`;
+  if (diff < 1) return t('com.now');
+  if (diff < 60) return t('com.minAgo', { n: diff });
+  if (diff < 1440) return t('com.hrAgo', { n: Math.round(diff / 60) });
+  return t('com.dayAgo', { n: Math.round(diff / 1440) });
 }
 
 function ThreadModal({ thread, onClose, onReplied }) {
+  const { t } = useI18n();
   const { user } = useAuth();
   const { toast } = useToast();
   const [replies, setReplies] = useState([]);
@@ -50,7 +52,7 @@ function ThreadModal({ thread, onClose, onReplied }) {
       await pb.collection('forum_threads').update(thread.id, { replyCount: (thread.replyCount || 0) + 1 }).catch(() => {});
       setBody(''); await load(); onReplied?.();
     } catch {
-      toast({ variant: 'destructive', title: 'Could not post reply' });
+      toast({ variant: 'destructive', title: t('com.replyFail') });
     } finally { setBusy(false); }
   };
 
@@ -58,19 +60,19 @@ function ThreadModal({ thread, onClose, onReplied }) {
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4" onClick={onClose}>
       <div className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl border border-[#d4af37]/20 bg-[#0c0c11] p-5 sm:rounded-2xl sm:p-6" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-3">
-          <div><span className="rounded-full bg-[#d4af37]/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-[#d4af37]">{thread.category || 'General'}</span><h3 className="mt-2 text-lg font-semibold text-[#f0ecdd]">{thread.title}</h3></div>
+          <div><span className="rounded-full bg-[#d4af37]/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-[#d4af37]">{t(`com.cat_${(thread.category || 'General').toLowerCase()}`, null, thread.category || 'General')}</span><h3 className="mt-2 text-lg font-semibold text-[#f0ecdd]">{thread.title}</h3></div>
           <button onClick={onClose} className="text-[#8a8577] hover:text-[#e9e7df]"><X className="h-5 w-5" /></button>
         </div>
         <p className="mt-2 whitespace-pre-wrap text-sm text-[#c9c4b4]">{thread.body}</p>
-        <div className="mt-1 text-xs text-[#6a665a]">by {thread.authorName || 'trader'} · {timeAgo(thread.created)}</div>
+        <div className="mt-1 text-xs text-[#6a665a]">{t('com.by', { name: thread.authorName || t('com.trader') })} · {timeAgo(thread.created, t)}</div>
 
         <div className="mt-5 space-y-3 border-t border-white/8 pt-4">
-          {replies.length === 0 && <p className="text-sm text-[#8a8577]">No replies yet. Start the discussion.</p>}
+          {replies.length === 0 && <p className="text-sm text-[#8a8577]">{t('com.noReplies')}</p>}
           {replies.map((r) => (
             <div key={r.id} className="flex gap-3 rounded-xl bg-white/[0.03] p-3">
               <Avatar src={r.authorAvatar} letter={r.authorName} className="h-8 w-8 text-xs" />
               <div className="min-w-0 flex-1">
-                <div className="mb-1 flex items-center gap-2 text-xs text-[#8a8577]"><span className="font-medium text-[#d4af37]">{r.authorName || 'trader'}</span> · {timeAgo(r.created)}</div>
+                <div className="mb-1 flex items-center gap-2 text-xs text-[#8a8577]"><span className="font-medium text-[#d4af37]">{r.authorName || t('com.trader')}</span> · {timeAgo(r.created, t)}</div>
                 <p className="whitespace-pre-wrap text-sm text-[#e9e7df]">{r.body}</p>
               </div>
             </div>
@@ -78,7 +80,7 @@ function ThreadModal({ thread, onClose, onReplied }) {
         </div>
 
         <form onSubmit={submit} className="mt-4 flex gap-2">
-          <input className={input} value={body} onChange={(e) => setBody(e.target.value)} placeholder="Write a reply…" />
+          <input className={input} value={body} onChange={(e) => setBody(e.target.value)} placeholder={t('com.replyPh')} />
           <button disabled={busy} className="flex shrink-0 items-center gap-1 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 text-sm font-semibold text-[#0a0a0f] disabled:opacity-60"><Send className="h-4 w-4" /></button>
         </form>
       </div>
@@ -87,6 +89,7 @@ function ThreadModal({ thread, onClose, onReplied }) {
 }
 
 function Forum() {
+  const { t } = useI18n();
   const { user } = useAuth();
   const { toast } = useToast();
   const [threads, setThreads] = useState([]);
@@ -109,9 +112,9 @@ function Forum() {
     try {
       await pb.collection('forum_threads').create({ ...form, owner: user.id, authorName: user.username || user.email, authorAvatar: avatarUrl(user), replyCount: 0 });
       setForm({ title: '', body: '', category: 'General' }); setCreating(false); await load();
-      toast({ title: 'Thread posted' });
+      toast({ title: t('com.threadPosted') });
     } catch {
-      toast({ variant: 'destructive', title: 'Could not post thread' });
+      toast({ variant: 'destructive', title: t('com.postThreadFail') });
     } finally { setBusy(false); }
   };
 
@@ -119,37 +122,37 @@ function Forum() {
     <div>
       <PageHeader
         icon={MessageSquare}
-        kicker="Community"
-        description="Discuss strategy, psychology and markets with the community."
-        actions={<button onClick={() => setCreating(!creating)} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f]"><Plus className="h-4 w-4" /> New thread</button>}
+        kicker={t('com.kicker')}
+        description={t('com.desc')}
+        actions={<button onClick={() => setCreating(!creating)} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f]"><Plus className="h-4 w-4" /> {t('com.newThread')}</button>}
       />
 
       {creating && (
         <form onSubmit={create} className="mb-5 glass rounded-2xl p-5">
           <div className="grid gap-3">
-            <input className={input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Thread title" />
-            <textarea className={`${input} min-h-[90px] resize-y`} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder="Share your thoughts…" />
+            <input className={input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={t('com.threadTitlePh')} />
+            <textarea className={`${input} min-h-[90px] resize-y`} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder={t('com.thoughtsPh')} />
             <div className="flex items-center gap-3">
-              <select className={`${input} w-auto`} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>{CATS.map((c) => <option key={c} className="bg-[#0f0f14]">{c}</option>)}</select>
-              <button disabled={busy} className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] disabled:opacity-60">Post thread</button>
+              <select className={`${input} w-auto`} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>{CATS.map((c) => <option key={c} value={c} className="bg-[#0f0f14]">{t(`com.cat_${c.toLowerCase()}`)}</option>)}</select>
+              <button disabled={busy} className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] disabled:opacity-60">{t('com.postThread')}</button>
             </div>
           </div>
         </form>
       )}
 
-      {loading ? <div className="glass rounded-2xl py-16 text-center text-sm text-[#8a8577]">Loading discussions…</div> : threads.length === 0 ? (
-        <div className="glass rounded-2xl px-6 py-14 text-center"><MessageSquare className="mx-auto mb-3 h-8 w-8 text-[#d4af37]" /><p className="text-sm text-[#8a8577]">No threads yet — be the first to start a discussion.</p></div>
+      {loading ? <div className="glass rounded-2xl py-16 text-center text-sm text-[#8a8577]">{t('com.loadingDisc')}</div> : threads.length === 0 ? (
+        <div className="glass rounded-2xl px-6 py-14 text-center"><MessageSquare className="mx-auto mb-3 h-8 w-8 text-[#d4af37]" /><p className="text-sm text-[#8a8577]">{t('com.noThreads')}</p></div>
       ) : (
         <div className="space-y-3">
-          {threads.map((t) => (
-            <button key={t.id} onClick={() => setActive(t)} className="glass glass-hover flex w-full items-center gap-4 rounded-2xl p-4 text-left">
-              <Avatar src={t.authorAvatar} letter={t.authorName} />
+          {threads.map((th) => (
+            <button key={th.id} onClick={() => setActive(th)} className="glass glass-hover flex w-full items-center gap-4 rounded-2xl p-4 text-left">
+              <Avatar src={th.authorAvatar} letter={th.authorName} />
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2"><span className="rounded-full bg-[#d4af37]/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-[#d4af37]">{t.category || 'General'}</span></div>
-                <div className="mt-1 truncate font-medium text-[#f0ecdd]">{t.title}</div>
-                <div className="truncate text-xs text-[#8a8577]">{t.authorName || 'trader'} · {timeAgo(t.created)}</div>
+                <div className="flex items-center gap-2"><span className="rounded-full bg-[#d4af37]/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-[#d4af37]">{t(`com.cat_${(th.category || 'General').toLowerCase()}`, null, th.category || 'General')}</span></div>
+                <div className="mt-1 truncate font-medium text-[#f0ecdd]">{th.title}</div>
+                <div className="truncate text-xs text-[#8a8577]">{th.authorName || t('com.trader')} · {timeAgo(th.created, t)}</div>
               </div>
-              <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#d4af37]/15 bg-[#d4af37]/[0.06] px-2.5 py-1 text-xs text-[#c9c4b4]"><MessageSquare className="h-3.5 w-3.5 text-[#d4af37]" />{t.replyCount || 0}</div>
+              <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-[#d4af37]/15 bg-[#d4af37]/[0.06] px-2.5 py-1 text-xs text-[#c9c4b4]"><MessageSquare className="h-3.5 w-3.5 text-[#d4af37]" />{th.replyCount || 0}</div>
             </button>
           ))}
         </div>
@@ -163,6 +166,7 @@ function Forum() {
 // Real contributor leaderboard, ranked by actual forum activity. No synthetic
 // traders or fabricated P&L — until members post, the board is empty.
 function Leaderboard() {
+  const { t } = useI18n();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -190,21 +194,21 @@ function Leaderboard() {
     })();
   }, []);
 
-  if (loading) return <div className="glass rounded-2xl py-16 text-center text-sm text-[#8a8577]">Loading leaderboard…</div>;
+  if (loading) return <div className="glass rounded-2xl py-16 text-center text-sm text-[#8a8577]">{t('com.loadingLb')}</div>;
   if (rows.length === 0) {
     return (
       <div className="glass rounded-2xl px-6 py-14 text-center">
         <Trophy className="mx-auto mb-3 h-8 w-8 text-[#d4af37]" />
-        <p className="text-sm text-[#8a8577]">The leaderboard is empty. It ranks members by real community contributions — start posting to appear here.</p>
+        <p className="text-sm text-[#8a8577]">{t('com.lbEmpty')}</p>
       </div>
     );
   }
   return (
     <div>
-      <p className="mb-4 text-xs text-[#6a665a]">Ranked by community contributions · updated live from the forum</p>
+      <p className="mb-4 text-xs text-[#6a665a]">{t('com.lbRanked')}</p>
       <div className="glass no-scrollbar overflow-x-auto rounded-2xl p-2 sm:p-4">
         <table className="w-full min-w-[420px] text-sm">
-          <thead><tr className="text-left text-xs uppercase tracking-wider text-[#8a8577]"><th className="p-3">#</th><th className="p-3">Trader</th><th className="p-3 text-right">Threads</th><th className="p-3 text-right">Replies</th><th className="p-3 text-right">Contributions</th></tr></thead>
+          <thead><tr className="text-left text-xs uppercase tracking-wider text-[#8a8577]"><th className="p-3">#</th><th className="p-3">{t('com.thTrader')}</th><th className="p-3 text-right">{t('com.thThreads')}</th><th className="p-3 text-right">{t('com.thReplies')}</th><th className="p-3 text-right">{t('com.thContrib')}</th></tr></thead>
           <tbody>
             {rows.map((t, i) => (
               <tr key={t.name} className="border-t border-white/5">
@@ -223,12 +227,13 @@ function Leaderboard() {
 }
 
 export default function CommunityPage() {
+  const { t } = useI18n();
   const [tab, setTab] = useState('forum');
   return (
-    <AppLayout title="Community">
+    <AppLayout title={t('com.pageTitle')}>
       <div className="mb-5 inline-flex rounded-xl border border-[#d4af37]/15 bg-[#0c0c11] p-1">
-        {[{ k: 'forum', l: 'Forum', icon: MessageSquare }, { k: 'leaders', l: 'Leaderboard', icon: Trophy }].map((t) => (
-          <button key={t.k} onClick={() => setTab(t.k)} className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition ${tab === t.k ? 'bg-[#d4af37]/12 text-[#f0ecdd]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}><t.icon className="h-4 w-4" /> {t.l}</button>
+        {[{ k: 'forum', l: t('com.forum'), icon: MessageSquare }, { k: 'leaders', l: t('com.leaders'), icon: Trophy }].map((tb) => (
+          <button key={tb.k} onClick={() => setTab(tb.k)} className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition ${tab === tb.k ? 'bg-[#d4af37]/12 text-[#f0ecdd]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}><tb.icon className="h-4 w-4" /> {tb.l}</button>
         ))}
       </div>
       {tab === 'forum' ? <Forum /> : <Leaderboard />}

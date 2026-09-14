@@ -182,7 +182,7 @@ export default function WalletPage() {
 
 								<div className="mt-4 flex items-center justify-between border-t border-white/5 pt-3 text-xs text-[#6a665a]">
 									<span className="rounded-full bg-[#d4af37]/10 px-2 py-0.5 uppercase tracking-wide text-[#d4af37]">{w.network.replace(/-/g, ' · ')}</span>
-									<a href={EXPLORER[w.network]?.(w.address)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[#8a8577] hover:text-[#e9e7df]">View on explorer <ExternalLink className="h-3 w-3" /></a>
+									<a href={EXPLORER[w.network]?.(w.address)} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[#8a8577] hover:text-[#e9e7df]">{t('wal.explorer')} <ExternalLink className="h-3 w-3" /></a>
 								</div>
 							</div>
 						))}

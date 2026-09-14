@@ -22,11 +22,11 @@ export function analyzeSignal(candles) {
   const r = lastNonNull(rsi(candles, 14));
   if (r != null) {
     weight += 2;
-    if (r <= 30) { score += 2; rules.push({ label: 'RSI oversold', detail: `RSI ${r.toFixed(1)} < 30`, dir: 'bull' }); }
-    else if (r <= 45) { score += 1; rules.push({ label: 'RSI recovering', detail: `RSI ${r.toFixed(1)}`, dir: 'bull' }); }
-    else if (r >= 70) { score -= 2; rules.push({ label: 'RSI overbought', detail: `RSI ${r.toFixed(1)} > 70`, dir: 'bear' }); }
-    else if (r >= 55) { score -= 1; rules.push({ label: 'RSI elevated', detail: `RSI ${r.toFixed(1)}`, dir: 'bear' }); }
-    else rules.push({ label: 'RSI neutral', detail: `RSI ${r.toFixed(1)}`, dir: 'neutral' });
+    if (r <= 30) { score += 2; rules.push({ key: 'rsiOversold', label: 'RSI oversold', detail: `RSI ${r.toFixed(1)} < 30`, dir: 'bull' }); }
+    else if (r <= 45) { score += 1; rules.push({ key: 'rsiRecovering', label: 'RSI recovering', detail: `RSI ${r.toFixed(1)}`, dir: 'bull' }); }
+    else if (r >= 70) { score -= 2; rules.push({ key: 'rsiOverbought', label: 'RSI overbought', detail: `RSI ${r.toFixed(1)} > 70`, dir: 'bear' }); }
+    else if (r >= 55) { score -= 1; rules.push({ key: 'rsiElevated', label: 'RSI elevated', detail: `RSI ${r.toFixed(1)}`, dir: 'bear' }); }
+    else rules.push({ key: 'rsiNeutral', label: 'RSI neutral', detail: `RSI ${r.toFixed(1)}`, dir: 'neutral' });
   }
 
   // MACD crossover
@@ -39,10 +39,10 @@ export function analyzeSignal(candles) {
     weight += 2;
     const crossUp = mLp <= sLp && mL > sL;
     const crossDn = mLp >= sLp && mL < sL;
-    if (crossUp) { score += 2; rules.push({ label: 'MACD bullish cross', detail: 'MACD crossed above signal', dir: 'bull' }); }
-    else if (crossDn) { score -= 2; rules.push({ label: 'MACD bearish cross', detail: 'MACD crossed below signal', dir: 'bear' }); }
-    else if (mL > sL) { score += 1; rules.push({ label: 'MACD above signal', detail: 'Bullish momentum', dir: 'bull' }); }
-    else { score -= 1; rules.push({ label: 'MACD below signal', detail: 'Bearish momentum', dir: 'bear' }); }
+    if (crossUp) { score += 2; rules.push({ key: 'macdBullCross', label: 'MACD bullish cross', detail: 'MACD crossed above signal', dir: 'bull' }); }
+    else if (crossDn) { score -= 2; rules.push({ key: 'macdBearCross', label: 'MACD bearish cross', detail: 'MACD crossed below signal', dir: 'bear' }); }
+    else if (mL > sL) { score += 1; rules.push({ key: 'macdAbove', label: 'MACD above signal', detail: 'Bullish momentum', dir: 'bull' }); }
+    else { score -= 1; rules.push({ key: 'macdBelow', label: 'MACD below signal', detail: 'Bearish momentum', dir: 'bear' }); }
   }
 
   // Bollinger breakout
@@ -50,8 +50,8 @@ export function analyzeSignal(candles) {
   const up = lastNonNull(b.upper), lo = lastNonNull(b.lower);
   if (up != null && lo != null) {
     weight += 1;
-    if (price >= up) { score -= 1; rules.push({ label: 'Upper band tag', detail: 'Price at Bollinger upper band', dir: 'bear' }); }
-    else if (price <= lo) { score += 1; rules.push({ label: 'Lower band tag', detail: 'Price at Bollinger lower band', dir: 'bull' }); }
+    if (price >= up) { score -= 1; rules.push({ key: 'bbUpper', label: 'Upper band tag', detail: 'Price at Bollinger upper band', dir: 'bear' }); }
+    else if (price <= lo) { score += 1; rules.push({ key: 'bbLower', label: 'Lower band tag', detail: 'Price at Bollinger lower band', dir: 'bull' }); }
   }
 
   // MA crossover (EMA21 vs SMA50)
@@ -59,8 +59,8 @@ export function analyzeSignal(candles) {
   const s50 = lastNonNull(sma(candles, 50));
   if (e21 != null && s50 != null) {
     weight += 2;
-    if (e21 > s50) { score += 1.5; rules.push({ label: 'Golden trend', detail: 'EMA21 above SMA50', dir: 'bull' }); }
-    else { score -= 1.5; rules.push({ label: 'Death trend', detail: 'EMA21 below SMA50', dir: 'bear' }); }
+    if (e21 > s50) { score += 1.5; rules.push({ key: 'goldenTrend', label: 'Golden trend', detail: 'EMA21 above SMA50', dir: 'bull' }); }
+    else { score -= 1.5; rules.push({ key: 'deathTrend', label: 'Death trend', detail: 'EMA21 below SMA50', dir: 'bear' }); }
   }
 
   // Price-action breakout over last 20 candles
@@ -68,8 +68,8 @@ export function analyzeSignal(candles) {
   const hi = Math.max(...window.map((c) => c.high));
   const low = Math.min(...window.map((c) => c.low));
   weight += 1;
-  if (price > hi) { score += 1.5; rules.push({ label: 'Resistance break', detail: '20-bar high breakout', dir: 'bull' }); }
-  else if (price < low) { score -= 1.5; rules.push({ label: 'Support break', detail: '20-bar low breakdown', dir: 'bear' }); }
+  if (price > hi) { score += 1.5; rules.push({ key: 'resistBreak', label: 'Resistance break', detail: '20-bar high breakout', dir: 'bull' }); }
+  else if (price < low) { score -= 1.5; rules.push({ key: 'supportBreak', label: 'Support break', detail: '20-bar low breakdown', dir: 'bear' }); }
 
   // Volume spike
   const vols = candles.map((c) => c.volume || 0);
@@ -78,7 +78,7 @@ export function analyzeSignal(candles) {
   if (avgVol > 0 && lastVol > avgVol * 1.8) {
     weight += 1;
     const dir = closes[closes.length - 1] >= closes[closes.length - 2] ? 1 : -1;
-    score += dir * 1; rules.push({ label: 'Volume spike', detail: `${(lastVol / avgVol).toFixed(1)}x average volume`, dir: dir > 0 ? 'bull' : 'bear' });
+    score += dir * 1; rules.push({ key: 'volSpike', label: 'Volume spike', detail: `${(lastVol / avgVol).toFixed(1)}x average volume`, dir: dir > 0 ? 'bull' : 'bear' });
   }
 
   const norm = weight ? score / weight : 0; // roughly -2..2
@@ -100,13 +100,15 @@ export function analyzeSignal(candles) {
   const consensus = agree.length ? Math.max(bull, bear) / agree.length : 0;
   const confidence = consensus >= 0.75 ? 'high' : consensus >= 0.55 ? 'medium' : 'low';
 
+  const topRules = rules.filter((x) => x.dir !== 'neutral').slice(0, 3);
   return {
     signalType, strength, confidence,
     score: +norm.toFixed(2),
     price,
     rsi: r != null ? +r.toFixed(1) : null,
     reasons: rules,
-    reason: rules.filter((x) => x.dir !== 'neutral').slice(0, 3).map((x) => x.label).join(' · ') || 'Mixed conditions',
+    reasonKeys: topRules.map((x) => ({ key: x.key, label: x.label })),
+    reason: topRules.map((x) => x.label).join(' · ') || 'Mixed conditions',
   };
 }
 

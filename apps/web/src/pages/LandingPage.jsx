@@ -64,7 +64,7 @@ function Nav({ homeTo, isAuthed, platformName }) {
               <Link to="/signup" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] shadow-[0_4px_20px_rgba(212,175,55,0.3)] transition hover:opacity-90 hover:shadow-[0_4px_28px_rgba(212,175,55,0.45)]">
                 <span>{t('land.startFree')}</span>
               </Link>
-              <button onClick={() => setMenuOpen((o) => !o)} className="grid h-10 w-10 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60 md:hidden" aria-label="Menu" aria-expanded={menuOpen}>
+              <button onClick={() => setMenuOpen((o) => !o)} className="grid h-10 w-10 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60 md:hidden" aria-label={t('nav.menu')} aria-expanded={menuOpen}>
                 {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </>
@@ -228,7 +228,7 @@ export default function LandingPage() {
             const p = translatePlan(t, raw);
             return (
               <div key={p.id} className={`portfolio-card relative rounded-2xl p-6 ${p.highlight ? 'glass gold-glow' : 'glass'}`}>
-                {p.highlight && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-0.5 text-[11px] font-bold text-[#0a0a0f]">MOST POPULAR</div>}
+                {p.highlight && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-0.5 text-[11px] font-bold text-[#0a0a0f]">{t('misc.popular')}</div>}
                 <img src={p.logo} alt={`${p.name} plan logo`} className="mb-3 h-12 w-12 rounded-xl object-contain" />
                 <h3 className="portfolio-card__title text-lg font-semibold">{p.name}</h3>
                 <p className="mt-1 text-xs text-[#8a8577]">{p.tagline}</p>

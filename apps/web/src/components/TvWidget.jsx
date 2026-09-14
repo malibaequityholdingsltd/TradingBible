@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { MonitorPlay, X, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
-import { useI18n } from '@/lib/i18n';
+import { useI18n, localizeAd } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 
 const POS_KEY = 'tb:tv-btn-pos';
@@ -44,7 +44,7 @@ function loadPos() {
 // Draggable, edge-snapping TradingBible TV launcher — opens a mini
 // broadcast player with the rotating ad feed (same UX as the AI chat bubble).
 export default function TvWidget() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [ads, setAds] = useState([]);
   const [index, setIndex] = useState(0);
@@ -98,6 +98,7 @@ export default function TvWidget() {
   }, [paused, ads.length, settings.rotationSeconds]);
 
   const ad = ads.length > 0 ? ads[index % ads.length] : null;
+  const lad = ad ? localizeAd(ad, lang) : null;
 
   useEffect(() => {
     if (!ad || muted) return;
@@ -185,9 +186,9 @@ export default function TvWidget() {
             <span className="gold-text text-sm font-bold tracking-wide">{settings.headerText || 'TradingBible TV'}</span>
             <span className="ml-auto flex items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ff5a62]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#e50914] shadow-[0_0_6px_rgba(229,9,20,0.9)] animate-pulse" />
-              On Air
+              {t('tv.onAir')}
             </span>
-            <button onClick={() => setOpen(false)} aria-label="Close TV" className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
+            <button onClick={() => setOpen(false)} aria-label={t('tv.closeTv')} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -218,17 +219,17 @@ export default function TvWidget() {
                   {ad.logoUrl && (
                     <img src={ad.logoUrl} alt="" className="h-9 w-9 rounded-lg bg-white/95 object-contain p-1 ring-1 ring-[#d4af37]/40" onError={e => { e.currentTarget.style.display = 'none'; }} />
                   )}
-                  <h2 className="text-lg font-bold leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" style={{ color: ad.accent || '#f0ecdd' }}>
-                    {ad.title}
-                  </h2>
-                  {ad.headline && <p className="line-clamp-2 text-xs leading-snug text-[#e9e7df] drop-shadow-[0_1px_6px_rgba(0,0,0,0.9)]">{ad.headline}</p>}
+                    <h2 className="text-lg font-bold leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" style={{ color: ad.accent || '#f0ecdd' }}>
+                      {lad.title}
+                    </h2>
+                    {lad.headline && <p className="line-clamp-2 text-xs leading-snug text-[#e9e7df] drop-shadow-[0_1px_6px_rgba(0,0,0,0.9)]">{lad.headline}</p>}
                   {ad.linkUrl && (
                     <button
                       onClick={openAd}
                       className="mt-1 w-fit rounded-lg px-3.5 py-1.5 text-xs font-bold text-[#0a0a0f] shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition-transform hover:scale-[1.03]"
                       style={{ background: ad.accent || '#d4af37' }}
                     >
-                      {ad.cta || 'Learn more'} →
+                      {lad.cta || t('tv.learnMore')} →
                     </button>
                   )}
                 </div>
@@ -242,16 +243,16 @@ export default function TvWidget() {
           </div>
 
           <div className="tv-widget-footer flex items-center justify-between border-t border-[#d4af37]/12 bg-[#0a0a0f] px-3 py-2">
-            <button onClick={() => setPaused((p) => !p)} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors" aria-label={paused ? 'Play' : 'Pause'}>
+            <button onClick={() => setPaused((p) => !p)} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors" aria-label={paused ? t('tv.play') : t('tv.pause')}>
               {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
             </button>
             <div className="flex items-center gap-1.5">
               {ads.map((a, i) => (
-                <button key={a.id} onClick={() => setIndex(i)} aria-label={`Broadcast ${i + 1}`}
+                <button key={a.id} onClick={() => setIndex(i)} aria-label={t('tv.broadcastN', { n: i + 1 })}
                   className={`${i === index % ads.length ? 'tv-tv-dot-active w-5 bg-[#d4af37]' : 'tv-tv-dot w-1.5 bg-white/15 hover:bg-white/30'} h-1.5 rounded-full transition-all`} />
               ))}
             </div>
-            <button onClick={() => setMuted((m) => !m)} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors" aria-label={muted ? 'Unmute' : 'Mute'}>
+            <button onClick={() => setMuted((m) => !m)} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors" aria-label={muted ? t('tv.unmute') : t('tv.mute')}>
               {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
             </button>
           </div>
@@ -262,8 +263,8 @@ export default function TvWidget() {
         <button
           onMouseDown={onPointerDown}
           onTouchStart={onPointerDown}
-          aria-label="Open TradingBible TV (drag to move)"
-          title={ads.length > 0 ? `${ads.length} live broadcast${ads.length === 1 ? '' : 's'}` : 'TradingBible TV'}
+          aria-label={t('aiw.openLabel')}
+          title={t('tv.openTv')}
           className={`tv-tv-btn fixed z-[70] grid place-items-center rounded-full bg-gradient-to-br from-[#0c0c11] to-[#0a0a0f] text-[#d4af37] shadow-2xl ring-1 ring-[#d4af37]/40 ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105'}`}
           style={{ left: pos.x, top: pos.y, height: BTN, width: BTN, touchAction: 'none' }}
         >
