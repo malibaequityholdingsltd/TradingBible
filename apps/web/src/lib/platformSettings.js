@@ -5,7 +5,7 @@ export const PLATFORM_SETTINGS_DEFAULTS = {
   platformName: 'TradingBible',
   tagline: 'Trade like the 1%. Journal like a fund.',
   supportEmail: 'support@tradingbible.app',
-  trialDays: 7,
+  trialDays: 3,
   signupsOpen: true,
   maintenance: false,
   twoFARequired: false,

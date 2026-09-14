@@ -16,7 +16,7 @@ const HERO_STATS = [
   { value: '8', label: 'Broker integrations' },
   { value: '14', label: 'Technical indicators' },
   { value: '99.9%', label: 'Platform uptime' },
-  { value: '0', label: 'Card required to start' },
+  { value: '1', label: 'Card required to start' },
 ];
 
 function Nav({ homeTo, isAuthed, platformName }) {
@@ -101,7 +101,7 @@ export default function LandingPage() {
   const isLight = theme === 'light';
   const { settings } = usePlatformSettings();
   const signupsOpen = settings.signupsOpen !== false;
-  const trialDays = Number(settings.trialDays) || 7;
+  const trialDays = Number(settings.trialDays) || 3;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-transparent text-[#e9e7df]">
@@ -218,7 +218,7 @@ export default function LandingPage() {
       <section className="mx-auto max-w-[96rem] px-6 py-24">
         <div className="mb-12 text-center">
           <h2 className="text-4xl font-bold sm:text-5xl">Pricing that <span className="gold-text">scales with you</span></h2>
-          <p className="mt-3 text-[#8a8577]">Start free for 7 days. Billed securely via Paddle. Cancel anytime.</p>
+          <p className="mt-3 text-[#8a8577]">Start free for 3 days. Card required. Billed securely via Stripe. Cancel anytime.</p>
         </div>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {PLANS.map((p) => (

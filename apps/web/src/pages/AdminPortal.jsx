@@ -21,7 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 const GOLD = '#d4af37';
 const PLAN_COLORS = { trial: '#6a665a', pro: '#3b82f6', elite: GOLD, professional: '#a855f7' };
 const PLAN_PRICES = { trial: 0, pro: 19.99, elite: 49.99, professional: 99.00 };
-const DEFAULT_TRIAL_DAYS = 7;
+const DEFAULT_TRIAL_DAYS = 3;
 
 /* M1–M12 forecast from the financial model (loan file): M6 = 185 users / $7,102 MRR, M12 = 600 users / $23,034 MRR */
 const PLAN_FORECAST = (() => {
@@ -2285,7 +2285,7 @@ export function AdminSettings() {
     platformName: 'TradingBible',
     tagline: 'Trade like the 1%. Journal like a fund.',
     supportEmail: 'support@tradingbible.app',
-    trialDays: 7,
+    trialDays: 3,
     signupsOpen: true,
     maintenance: false,
     twoFARequired: false,

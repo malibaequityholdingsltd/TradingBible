@@ -185,7 +185,8 @@ export default function BillingPage() {
           <div>
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><Crown className="h-4 w-4 text-[#d4af37]" /> Current plan</div>
             <div className="mt-2 text-2xl font-bold gold-text">{currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}</div>
-            {currentPlan === 'trial' && <div className="mt-1 text-xs text-[#8a8577]">You are currently on trial access.</div>}
+            {currentPlan === 'trial' && <div className="mt-1 text-xs text-[#8a8577]">You are on a 3-day trial — card required. Subscribe below to activate; your card is verified now and charged after the trial.</div>}
+            {status === 'trialing' && <div className="mt-1 text-xs text-[#d4af37]">Trial active — your card will be charged automatically when the 3-day trial ends unless you cancel.</div>}
             <div className="mt-2 flex items-center gap-2">
               {status && <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[status] || 'bg-white/10 text-[#8a8577]'}`}>{status.replace('_', ' ')}</span>}
               {cancelScheduled && <span className="rounded-full bg-red-500/15 px-2.5 py-0.5 text-xs text-red-400">Cancels {fmtDate(periodEnd)}</span>}

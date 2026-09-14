@@ -176,6 +176,10 @@ router.post('/checkout-session', async (req, res) => {
     });
     return res.json({ url: session.url, id: session.id });
   }
+  // 3-day trial with card required: first-time subscribers get a Stripe trial
+  // (card collected + verified now, charged after 3 days). Existing subscribers
+  // checking out again are charged immediately.
+  const isFirstSubscription = !user.subscriptionId;
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     customer: customerId || undefined,
@@ -185,7 +189,10 @@ router.post('/checkout-session', async (req, res) => {
     cancel_url: `${origin}/app/billing?checkout=cancel`,
     client_reference_id: user.id,
     metadata: { user_id: user.id, plan },
-    subscription_data: { metadata: { user_id: user.id, plan } },
+    subscription_data: {
+      metadata: { user_id: user.id, plan },
+      ...(isFirstSubscription ? { trial_period_days: 3 } : {}),
+    },
   });
   res.json({ url: session.url, id: session.id });
 });

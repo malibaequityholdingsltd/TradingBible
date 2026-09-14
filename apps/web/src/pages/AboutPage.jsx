@@ -213,7 +213,7 @@ export default function AboutPage() {
         <div className="glass gold-glow flex flex-col items-center rounded-2xl p-10 text-center">
           <h2 className="text-2xl font-bold sm:text-3xl">Trade like the 1%. <span className="gold-text">Journal like a fund.</span></h2>
           <p className="mt-3 max-w-xl text-[#8a8577]">Join thousands of traders using TradingBible to sharpen their edge with institutional-grade tools and AI coaching.</p>
-          <Link to="/signup" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 py-3.5 font-semibold text-[#0a0a0f] transition hover:opacity-90">Start your 7-day trial <ArrowRight className="h-4 w-4" /></Link>
+          <Link to="/signup" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 py-3.5 font-semibold text-[#0a0a0f] transition hover:opacity-90">Start your 3-day trial <ArrowRight className="h-4 w-4" /></Link>
         </div>
       </section>
 
