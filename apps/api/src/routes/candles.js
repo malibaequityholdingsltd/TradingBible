@@ -87,18 +87,21 @@ export default async (req, res) => {
 
 	const binanceSymbol = binanceSymbolFor(symbol);
 	if (binanceSymbol) {
-		const upstream = await fetch(
-			`https://api.binance.com/api/v3/klines?symbol=${binanceSymbol}&interval=${interval}&limit=${limit}`,
-		);
-		if (!upstream.ok) {
-			throw new Error(`binance klines failed: ${upstream.status} ${upstream.statusText}`);
+		try {
+			const upstream = await fetch(
+				`https://api.binance.com/api/v3/klines?symbol=${binanceSymbol}&interval=${interval}&limit=${limit}`,
+			);
+			if (!upstream.ok) throw new Error(`binance klines failed: ${upstream.status} ${upstream.statusText}`);
+			const rows = await upstream.json();
+			const candles = rows.map((r) => ({
+				time: r[0],
+				open: +r[1], high: +r[2], low: +r[3], close: +r[4], volume: +r[5],
+			}));
+			if (candles.length) return res.json({ symbol, interval, source: 'binance', candles });
+		} catch {
+			// fall through to Alpha Vantage / synthetic below — charts must
+			// never render empty because one provider hiccuped
 		}
-		const rows = await upstream.json();
-		const candles = rows.map((r) => ({
-			time: r[0],
-			open: +r[1], high: +r[2], low: +r[3], close: +r[4], volume: +r[5],
-		}));
-		return res.json({ symbol, interval, source: 'binance', candles });
 	}
 
 	// Non-crypto: try Alpha Vantage for real OHLCV (cached), fall back to
