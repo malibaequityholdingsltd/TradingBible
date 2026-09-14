@@ -1,13 +1,13 @@
-# DeepSeek V4 Flash — AI Assistant Integration
+# Muse Spark 1.3 — AI Assistant Integration
 
-The TradingBible AI Coach (chat widget + `/app/coach`) streams from **DeepSeek V4 Flash** (`deepseek-v4-flash`) by default, with a free-tier option via OpenRouter.
+The TradingBible AI Coach (chat widget + `/app/coach`) streams from **Muse Spark 1.3** (`opencode/muse-spark-1.3-contributor-free`) by default via the local opencode gateway.
 
 ## Provider resolution (priority order)
 
 1. **Integrated AI proxy** — `INTEGRATED_AI_API_URL` + `INTEGRATED_AI_API_KEY` + `WEBSITE_ID` (full agent/tool pipeline).
-2. **Local opencode gateway** — `OPENCODE_SERVER_URL` set → free chat-only model (`opencode/deepseek-v4-flash-free`) via `opencode serve` (default `http://127.0.0.1:8001`). Chat-only `general` agent: no tools, no file access. One session per TradingBible user is kept in memory and recreated if lost; deltas stream from the `/event` SSE feed.
+2. **Local opencode gateway** — `OPENCODE_SERVER_URL` set → free chat-only model (`opencode/muse-spark-1.3-contributor-free`) via `opencode serve` (default `http://127.0.0.1:8001`). Chat-only `general` agent: no tools, no file access. One session per TradingBible user is kept in memory and recreated if lost; deltas stream from the `/event` SSE feed. The model id must exist in the gateway (`GET /config/providers`); `deepseek-v4-flash-free` was retired and fails with `Model not found`.
 3. **DeepSeek** — `DEEPSEEK_API_KEY` set → OpenAI-compatible `POST {DEEPSEEK_BASE_URL}/chat/completions` (default `https://api.deepseek.com`).
-4. **Any OpenAI-compatible endpoint** — `OPENAI_BASE_URL` + `OPENAI_API_KEY` (OpenAI, Groq, OpenRouter, local servers).
+4. **Any OpenAI-compatible endpoint** — `OPENAI_BASE_URL` + `OPENAI_API_KEY` (OpenAI, Groq, OpenRouter, local servers). For Muse Spark via OpenRouter use `OPENAI_BASE_URL=https://openrouter.ai/api/v1` with `OPENAI_MODEL=meta/muse-spark-1.3`.
 
 ## Environment variables (`apps/api/.env`)
 
@@ -15,7 +15,7 @@ The TradingBible AI Coach (chat widget + `/app/coach`) streams from **DeepSeek V
 | --- | --- | --- |
 | `OPENCODE_SERVER_URL` | — (disabled) | Local `opencode serve` base URL, e.g. `http://127.0.0.1:8001` |
 | `OPENCODE_SERVER_PASSWORD` | — | Sent as `Authorization: Bearer` if the server requires it |
-| `OPENCODE_MODEL` | `deepseek-v4-flash-free` | Model id served by the gateway |
+| `OPENCODE_MODEL` | `muse-spark-1.3-contributor-free` | Model id served by the gateway |
 | `OPENCODE_PROVIDER` | `opencode` | Provider id for the model |
 | `OPENCODE_TIMEOUT_MS` | `180000` | Max wait for a response before erroring |
 | `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` | OpenAI-compatible base URL |

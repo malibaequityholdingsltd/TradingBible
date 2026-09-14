@@ -273,7 +273,7 @@ const apiUrl = process.env.INTEGRATED_AI_API_URL;
 	// Provider resolution priority:
 	//   1. Integrated AI proxy (INTEGRATED_AI_*) — full agent/tool pipeline.
 	//   2. Local opencode gateway (OPENCODE_SERVER_URL) — free chat-only model
-	//      (e.g. opencode/deepseek-v4-flash-free), requires `opencode serve`.
+	//      (e.g. opencode/muse-spark-1.3-contributor-free), requires `opencode serve`.
 	//   3. DeepSeek (DEEPSEEK_*) — OpenAI-compatible /chat/completions, V4 Flash by default.
 	//   4. Any other OpenAI-compatible endpoint (OPENAI_*) — OpenAI / Groq / OpenRouter / etc.
 	if (!apiUrl || !apiKey || !websiteId) {

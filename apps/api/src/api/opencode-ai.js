@@ -62,7 +62,7 @@ async function ensureSession(userId) {
  */
 export async function streamOpencode({ userId, systemPrompt, userMessage }) {
 	const providerID = process.env.OPENCODE_PROVIDER || 'opencode';
-	const modelID = process.env.OPENCODE_MODEL || 'deepseek-v4-flash-free';
+	const modelID = process.env.OPENCODE_MODEL || 'muse-spark-1.3-contributor-free';
 
 	const text = userMessage
 		.filter((b) => b.type === 'text')
@@ -160,7 +160,7 @@ export async function streamOpencode({ userId, systemPrompt, userMessage }) {
  */
 export async function completeOpencode({ userId, systemPrompt, userMessage }) {
 	const providerID = process.env.OPENCODE_PROVIDER || 'opencode';
-	const modelID = process.env.OPENCODE_MODEL || 'deepseek-v4-flash-free';
+	const modelID = process.env.OPENCODE_MODEL || 'muse-spark-1.3-contributor-free';
 
 	const text = userMessage
 		.filter((b) => b.type === 'text')

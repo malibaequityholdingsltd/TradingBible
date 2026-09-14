@@ -6,8 +6,7 @@ import {
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useToast } from '@/hooks/use-toast';
-import { openAcademyCheckout as openPaddleAcademy, getPaddleConfig } from '@/lib/paddle';
-import { openAcademyCheckout as openStripeAcademy, getStripeConfig } from '@/lib/stripe';
+import { openAcademyCheckout, getStripeConfig } from '@/lib/stripe';
 import { useWallet } from '@/hooks/useWallet';
 import {
 	getAcademyAccess, enrollInPath, getCurriculum, getLesson, gradeQuiz,
@@ -252,28 +251,15 @@ function Paywall({ onPurchased }) {
 	const walletBalance = ledger?.balances?.USD || 0;
 
 	useEffect(() => {
-		Promise.allSettled([getStripeConfig(), getPaddleConfig()]).then(([s, p]) => {
-			const stripeReady = Boolean(s.value?.prices?.academy);
-			const paddleReady = Boolean(p.value?.prices?.academy);
-			setConfigured(stripeReady || paddleReady);
+		getStripeConfig().then((cfg) => {
+			setConfigured(Boolean(cfg?.prices?.academy));
 		}).catch(() => {}).finally(() => setChecked(true));
 	}, []);
 
 	const buy = async () => {
 		setBusy(true);
 		try {
-			try {
-				const scfg = await getStripeConfig();
-				if (scfg?.prices?.academy) {
-					await openStripeAcademy();
-					return;
-				}
-			} catch { /* fallback to paddle */ }
-			await openPaddleAcademy((e) => {
-				if (e?.name === 'checkout.completed' || e?.name === 'transaction.completed') {
-					setTimeout(onPurchased, 1500);
-				}
-			});
+			await openAcademyCheckout();
 		} catch (err) {
 			toast({ variant: 'destructive', title: 'Checkout unavailable', description: err.message });
 		} finally { setBusy(false); }
@@ -333,7 +319,7 @@ function Paywall({ onPurchased }) {
 					<div className="text-xs text-[#8a8577]">Wallet: ${walletBalance.toFixed(2)} · <a href="/app/wallet" className="text-[#d4af37] hover:underline">Fund wallet</a></div>
 				</div>
 				{checked && !configured && (
-					<p className="mt-3 max-w-md text-xs text-[#8a8577]">Checkout will activate once <span className="font-mono text-[#d4af37]">STRIPE_PRICE_ACADEMY</span> or <span className="font-mono text-[#d4af37]">PADDLE_PRICE_ACADEMY</span> is set in <span className="font-mono">apps/api/.env</span> (the $150 one-time price id).</p>
+					<p className="mt-3 max-w-md text-xs text-[#8a8577]">Checkout will activate once <span className="font-mono text-[#d4af37]">STRIPE_PRICE_ACADEMY</span> is set in <span className="font-mono">apps/api/.env</span> (the $150 one-time price id).</p>
 				)}
 				<p className="mt-3 text-xs text-[#6a665a]">30-day money-back guarantee · Instant access · A TradingBible LLC education initiative</p>
 			</div>
