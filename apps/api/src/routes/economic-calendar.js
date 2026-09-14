@@ -53,14 +53,14 @@ async function fetchCuratedEvents() {
 	}
 }
 
-export default async (req, res) => {
+export async function fetchWeekEvents() {
 	const curated = await fetchCuratedEvents();
 	try {
 		const upstream = await fetch(FF_URL, {
 			headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TradingBible/1.0)' },
 		});
 		if (!upstream.ok) {
-			return res.json({ source: 'forexfactory', available: false, reason: `Provider error (${upstream.status}).`, events: curated });
+			return { source: 'forexfactory', available: false, reason: `Provider error (${upstream.status}).`, events: curated };
 		}
 		const data = await upstream.json();
 		const raw = Array.isArray(data) ? data : [];
@@ -81,8 +81,12 @@ export default async (req, res) => {
 			};
 		}).filter((e) => e.time).sort((a, b) => a.time - b.time);
 		const merged = [...curated, ...events].sort((a, b) => a.time - b.time);
-		return res.json({ source: 'forexfactory', available: true, events: merged });
+		return { source: 'forexfactory', available: true, events: merged };
 	} catch (err) {
-		return res.json({ source: 'forexfactory', available: false, reason: 'Could not reach the Forex Factory calendar feed.', events: curated });
+		return { source: 'forexfactory', available: false, reason: 'Could not reach the Forex Factory calendar feed.', events: curated };
 	}
+}
+
+export default async (req, res) => {
+	return res.json(await fetchWeekEvents());
 };

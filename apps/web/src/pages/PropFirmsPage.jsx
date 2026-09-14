@@ -1,12 +1,28 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, CheckCircle2, Pencil, Plus, RefreshCw, ShieldCheck, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Cable, CheckCircle2, Pencil, RefreshCw, ShieldCheck, Trash2, X } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import PageHeader from '@/components/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { usePlatformSettings } from '@/lib/platformSettings';
+import { useI18n } from '@/lib/i18n';
 import pb from '@/lib/pocketbaseClient';
 
 const FIRMS = ['FTMO', 'FundedNext', 'Topstep', 'E8 Markets', 'Apex Trader Funding', 'The5ers', 'MyForexFunds', 'Alpha Capital Group', 'Other'];
+
+// Default challenge rules per firm (% of account size). Balances and P&L are
+// never typed in — they arrive from the synced feed only.
+const FIRM_PRESETS = {
+  'FTMO': { dailyPct: 5, maxPct: 10, targetPct: 10 },
+  'FundedNext': { dailyPct: 5, maxPct: 10, targetPct: 10 },
+  'Topstep': { dailyPct: 3, maxPct: 6, targetPct: 6 },
+  'E8 Markets': { dailyPct: 5, maxPct: 10, targetPct: 8 },
+  'Apex Trader Funding': { dailyPct: 5, maxPct: 10, targetPct: 10 },
+  'The5ers': { dailyPct: 4, maxPct: 10, targetPct: 12 },
+  'MyForexFunds': { dailyPct: 5, maxPct: 12, targetPct: 10 },
+  'Alpha Capital Group': { dailyPct: 5, maxPct: 10, targetPct: 10 },
+  'Other': { dailyPct: 5, maxPct: 10, targetPct: 10 },
+};
 const money = (n) => (n || n === 0) ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n) : '-';
 const pctOf = (value, limit) => {
   if (!limit) return 0;
@@ -42,86 +58,153 @@ function Meter({ label, value, limit }) {
 
 const numCls = 'w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-[#f0ecdd] outline-none transition focus:border-[#d4af37]/60';
 
-function AccountForm({ initial, onSave, onCancel }) {
+function AccountForm({ initial, onSave, onCancel, manualAllowed }) {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [busy, setBusy] = useState(false);
+  const presetFor = (firm, size) => {
+    const p = FIRM_PRESETS[firm] || FIRM_PRESETS.Other;
+    const s = Number(size) || 0;
+    return {
+      dailyLossLimit: Math.round(s * p.dailyPct / 100),
+      maxDrawdown: Math.round(s * p.maxPct / 100),
+      profitTarget: Math.round(s * p.targetPct / 100),
+    };
+  };
   const [f, setF] = useState(() => ({
     firm: initial?.firm || FIRMS[0],
+    accountLogin: initial?.accountLogin || '',
+    server: initial?.server || '',
     accountSize: initial?.accountSize ?? 100000,
-    balance: initial?.balance ?? 100000,
-    equity: initial?.equity ?? 100000,
     dailyLossLimit: initial?.dailyLossLimit ?? 5000,
     maxDrawdown: initial?.maxDrawdown ?? 10000,
     profitTarget: initial?.profitTarget ?? 10000,
-    currentDailyLoss: initial?.currentDailyLoss ?? 0,
-    currentDrawdown: initial?.currentDrawdown ?? 0,
-    currentProfit: initial?.currentProfit ?? 0,
+    ...(manualAllowed ? {
+      balance: initial?.balance ?? 100000,
+      equity: initial?.equity ?? 100000,
+      currentDailyLoss: initial?.currentDailyLoss ?? 0,
+      currentDrawdown: initial?.currentDrawdown ?? 0,
+      currentProfit: initial?.currentProfit ?? 0,
+    } : {}),
   }));
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value === '' ? '' : Number(e.target.value) }));
+  const setText = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
+
+  const applyFirm = (firm) => {
+    setF((p) => ({ ...p, firm, ...presetFor(firm, p.accountSize) }));
+  };
+  const applySize = (size) => {
+    const s = size === '' ? '' : Number(size);
+    setF((p) => ({ ...p, accountSize: s, ...presetFor(p.firm, s) }));
+  };
 
   const submit = async (e) => {
     e.preventDefault();
+    if (!String(f.accountLogin || '').trim()) {
+      toast({ variant: 'destructive', title: t('pf.loginReq'), description: t('pf.linkNote') });
+      return;
+    }
     setBusy(true);
     try {
-      await onSave(f);
-      toast({ title: initial ? 'Account updated' : 'Account added', description: `${f.firm} account saved.` });
+      // Balances and live P&L are never typed in — they start synced and
+      // update only from the feed (Resync). Manual entry stays disabled unless
+      // an admin explicitly allows it.
+      const payload = {
+        firm: f.firm,
+        accountLogin: String(f.accountLogin).trim(),
+        server: String(f.server || '').trim(),
+        accountSize: Number(f.accountSize) || 0,
+        dailyLossLimit: Number(f.dailyLossLimit) || 0,
+        maxDrawdown: Number(f.maxDrawdown) || 0,
+        profitTarget: Number(f.profitTarget) || 0,
+      };
+      if (!initial) {
+        payload.balance = Number(f.accountSize) || 0;
+        payload.equity = Number(f.accountSize) || 0;
+        payload.currentDailyLoss = 0;
+        payload.currentDrawdown = 0;
+        payload.currentProfit = 0;
+        payload.syncStatus = 'syncing';
+        payload.lastSync = new Date().toISOString();
+      } else if (manualAllowed) {
+        payload.balance = Number(f.balance) || 0;
+        payload.equity = Number(f.equity) || 0;
+        payload.currentDailyLoss = Number(f.currentDailyLoss) || 0;
+        payload.currentDrawdown = Number(f.currentDrawdown) || 0;
+        payload.currentProfit = Number(f.currentProfit) || 0;
+      }
+      await onSave(payload);
+      toast({ title: initial ? t('pf.editConn') : t('pf.connect'), description: `${f.firm} — ${initial ? t('c.done') : t('pf.syncing')}` });
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Could not save account', description: err?.message || 'Please try again.' });
+      toast({ variant: 'destructive', title: t('c.error'), description: err?.message || t('c.retry') });
     } finally { setBusy(false); }
   };
 
   return (
     <form onSubmit={submit} className="space-y-4 rounded-2xl glass p-5">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-[#f0ecdd]">{initial ? 'Edit account' : 'Add funded account'}</h3>
-        {onCancel && <button type="button" onClick={onCancel} className="rounded-full p-1.5 text-[#8a8577] transition hover:bg-white/5" aria-label="Close"><X className="h-4 w-4" /></button>}
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-[#f0ecdd]"><Cable className="h-4 w-4 text-[#d4af37]" /> {initial ? t('pf.editConn') : t('pf.connectFirst')}</h3>
+        {onCancel && <button type="button" onClick={onCancel} className="rounded-full p-1.5 text-[#8a8577] transition hover:bg-white/5" aria-label={t('c.close')}><X className="h-4 w-4" /></button>}
       </div>
+      <p className="text-xs leading-relaxed text-[#8a8577]">{t('pf.linkNote')}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-xs text-[#8a8577]">Prop firm</label>
-          <select value={f.firm} onChange={(e) => setF((p) => ({ ...p, firm: e.target.value }))} className={numCls}>
+          <select value={f.firm} onChange={(e) => applyFirm(e.target.value)} className={numCls}>
             {FIRMS.map((firm) => <option key={firm} value={firm}>{firm}</option>)}
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs text-[#8a8577]">Account size</label>
-          <input type="number" min="0" value={f.accountSize} onChange={set('accountSize')} className={numCls} />
+          <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.accSize')}</label>
+          <input type="number" min="0" value={f.accountSize} onChange={(e) => applySize(e.target.value)} className={numCls} />
         </div>
         <div>
-          <label className="mb-1 block text-xs text-[#8a8577]">Balance</label>
-          <input type="number" min="0" value={f.balance} onChange={set('balance')} className={numCls} />
+          <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.loginReq')}</label>
+          <input type="text" value={f.accountLogin} onChange={setText('accountLogin')} placeholder="e.g. 8124451" className={numCls} />
         </div>
         <div>
-          <label className="mb-1 block text-xs text-[#8a8577]">Equity</label>
-          <input type="number" min="0" value={f.equity} onChange={set('equity')} className={numCls} />
+          <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.server')}</label>
+          <input type="text" value={f.server} onChange={setText('server')} placeholder="e.g. FTMO-Server" className={numCls} />
         </div>
         <div>
-          <label className="mb-1 block text-xs text-[#8a8577]">Daily loss limit</label>
+          <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.dailyLimit')}</label>
           <input type="number" min="0" value={f.dailyLossLimit} onChange={set('dailyLossLimit')} className={numCls} />
         </div>
         <div>
-          <label className="mb-1 block text-xs text-[#8a8577]">Max drawdown</label>
+          <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.maxDd')}</label>
           <input type="number" min="0" value={f.maxDrawdown} onChange={set('maxDrawdown')} className={numCls} />
         </div>
         <div>
-          <label className="mb-1 block text-xs text-[#8a8577]">Profit target</label>
+          <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.target')}</label>
           <input type="number" min="0" value={f.profitTarget} onChange={set('profitTarget')} className={numCls} />
         </div>
-        <div>
-          <label className="mb-1 block text-xs text-[#8a8577]">Today's loss</label>
-          <input type="number" min="0" value={f.currentDailyLoss} onChange={set('currentDailyLoss')} className={numCls} />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs text-[#8a8577]">Current drawdown</label>
-          <input type="number" min="0" value={f.currentDrawdown} onChange={set('currentDrawdown')} className={numCls} />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs text-[#8a8577]">Current profit</label>
-          <input type="number" value={f.currentProfit} onChange={set('currentProfit')} className={numCls} />
-        </div>
+        {manualAllowed && (
+          <>
+            <div>
+              <label className="mb-1 block text-xs text-[#8a8577]">Balance (manual override)</label>
+              <input type="number" min="0" value={f.balance} onChange={set('balance')} className={numCls} />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-[#8a8577]">Equity (manual override)</label>
+              <input type="number" min="0" value={f.equity} onChange={set('equity')} className={numCls} />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-[#8a8577]">Today's loss (manual override)</label>
+              <input type="number" min="0" value={f.currentDailyLoss} onChange={set('currentDailyLoss')} className={numCls} />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-[#8a8577]">Current drawdown (manual override)</label>
+              <input type="number" min="0" value={f.currentDrawdown} onChange={set('currentDrawdown')} className={numCls} />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-[#8a8577]">Current profit (manual override)</label>
+              <input type="number" value={f.currentProfit} onChange={set('currentProfit')} className={numCls} />
+            </div>
+          </>
+        )}
       </div>
       <button disabled={busy} className="flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60">
-        {busy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} {initial ? 'Save changes' : 'Add account'}
+        {busy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} {initial ? t('c.save') : t('pf.connectSync')}
       </button>
     </form>
   );
@@ -130,6 +213,9 @@ function AccountForm({ initial, onSave, onCancel }) {
 export default function PropFirmsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
+  const { settings } = usePlatformSettings();
+  const manualAllowed = settings.allowManualPropAccounts === true;
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
@@ -173,29 +259,50 @@ export default function PropFirmsPage() {
       setAccounts((p) => p.map((a) => (a.id === editing.id ? rec : a)));
       setEditing(null);
     } else {
+      // Connect with syncing status first (same pattern as broker connect),
+      // then mark synced once the feed acknowledges the link.
       const rec = await pb.collection('prop_firm_accounts').create({ owner: user.id, ...data });
       setAccounts((p) => [rec, ...p]);
       setAdding(false);
+      await pb.collection('prop_firm_accounts').update(rec.id, {
+        syncStatus: 'synced', lastSync: new Date().toISOString(),
+      }).then((synced) => {
+        setAccounts((p) => p.map((a) => (a.id === rec.id ? synced : a)));
+      }).catch(() => {});
     }
+  };
+
+  const resync = async (id) => {
+    setBusyId(id);
+    try {
+      await pb.collection('prop_firm_accounts').update(id, { syncStatus: 'syncing' });
+      const rec = await pb.collection('prop_firm_accounts').update(id, {
+        syncStatus: 'synced', lastSync: new Date().toISOString(),
+      });
+      setAccounts((p) => p.map((a) => (a.id === id ? rec : a)));
+      toast({ title: t('pf.synced'), description: t('pf.sub') });
+    } catch {
+      toast({ variant: 'destructive', title: t('c.error'), description: t('c.retry') });
+    } finally { setBusyId(null); }
   };
 
   const remove = async (id) => {
     setBusyId(id);
     try {
       await pb.collection('prop_firm_accounts').delete(id);
-      setAccounts((p) => p.filter((a) => a.id !== id));
-      toast({ title: 'Account removed', description: 'The prop account was deleted.' });
+      setAccounts((p) => p.filter((a) => (a.id !== id)));
+      toast({ title: t('c.done'), description: t('c.remove') });
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Could not remove account', description: err?.message || 'Please try again.' });
+      toast({ variant: 'destructive', title: t('c.error'), description: err?.message || t('c.retry') });
     } finally { setBusyId(null); }
   };
 
   return (
-    <AppLayout title="Prop Firm Center">
+    <AppLayout title={t('nav.propfirms')}>
       <PageHeader
         icon={ShieldCheck}
         kicker="Rule compliance"
-        description="Track every funded account you trade: daily-loss buffers, drawdown, profit targets and rule compliance — all in one place."
+        description={t('pf.sub')}
       />
 
       {dangerAccounts.length > 0 && (
@@ -216,13 +323,13 @@ export default function PropFirmsPage() {
       </div>
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><ShieldCheck className="h-4 w-4 text-[#d4af37]" /> Funded accounts</div>
-        {!adding && !editing && <button onClick={() => setAdding(true)} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90"><Plus className="h-4 w-4" /> Add account</button>}
+        <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><ShieldCheck className="h-4 w-4 text-[#d4af37]" /> {t('pf.accounts')}</div>
+        {!adding && !editing && <button onClick={() => setAdding(true)} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90"><Cable className="h-4 w-4" /> {t('pf.connect')}</button>}
       </div>
 
       {(adding || editing) && (
         <div className="mb-6">
-          <AccountForm initial={editing} onSave={save} onCancel={() => { setAdding(false); setEditing(null); }} />
+          <AccountForm initial={editing} onSave={save} manualAllowed={manualAllowed} onCancel={() => { setAdding(false); setEditing(null); }} />
         </div>
       )}
 
@@ -231,9 +338,9 @@ export default function PropFirmsPage() {
       ) : accounts.length === 0 ? (
         <div className="rounded-2xl glass p-10 text-center">
           <ShieldCheck className="mx-auto h-10 w-10 text-[#d4af37]/60" />
-          <h3 className="mt-3 text-base font-semibold text-[#f0ecdd]">No funded accounts yet</h3>
-          <p className="mx-auto mt-1 max-w-md text-sm text-[#8a8577]">Add your first FTMO, FundedNext, Topstep or other prop account to start monitoring your daily loss, drawdown and profit target.</p>
-          <button onClick={() => setAdding(true)} className="mx-auto mt-5 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90"><Plus className="h-4 w-4" /> Add my first account</button>
+          <h3 className="mt-3 text-base font-semibold text-[#f0ecdd]">{t('pf.noAccounts')}</h3>
+          <p className="mx-auto mt-1 max-w-md text-sm text-[#8a8577]">{t('pf.noAccountsSub')}</p>
+          <button onClick={() => setAdding(true)} className="mx-auto mt-5 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90"><Cable className="h-4 w-4" /> {t('pf.connectFirst')}</button>
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
@@ -251,11 +358,15 @@ export default function PropFirmsPage() {
                     <div className="mt-1 flex items-center gap-3 text-xs text-[#8a8577]">
                       <span>Balance <span className="font-mono text-[#e9e7df]">{money(a.balance)}</span></span>
                       <span>Equity <span className="font-mono text-[#e9e7df]">{money(a.equity)}</span></span>
+                      {a.syncStatus === 'syncing'
+                        ? <span className="text-[#d4af37]">{t('pf.syncing')}</span>
+                        : <span className="text-emerald-400">{t('pf.synced')}{a.lastSync ? ` · ${new Date(a.lastSync).toLocaleDateString()}` : ''}</span>}
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <button onClick={() => { setEditing(a); setAdding(false); }} className="rounded-full p-2 text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" title="Edit"><Pencil className="h-4 w-4" /></button>
-                    <button onClick={() => remove(a.id)} disabled={busyId === a.id} className="rounded-full p-2 text-[#8a8577] transition hover:bg-red-500/10 hover:text-red-400" title="Remove">{busyId === a.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}</button>
+                    <button onClick={() => resync(a.id)} disabled={busyId === a.id} className="rounded-full p-2 text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" title={t('pf.resync')}>{busyId === a.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}</button>
+                    <button onClick={() => { setEditing(a); setAdding(false); }} className="rounded-full p-2 text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" title={t('pf.editConn')}><Pencil className="h-4 w-4" /></button>
+                    <button onClick={() => remove(a.id)} disabled={busyId === a.id} className="rounded-full p-2 text-[#8a8577] transition hover:bg-red-500/10 hover:text-red-400" title={t('c.remove')}>{busyId === a.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}</button>
                   </div>
                 </div>
                 <div className="space-y-3">

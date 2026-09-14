@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { X, Send, Sparkles, BarChart3, Cable, Wallet, Target, Info, Wrench, MessageSquare, MessageCircle, Eraser, ExternalLink } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useI18n } from '@/lib/i18n';
 import { useIntegratedAi } from '@/hooks/use-integrated-ai';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 
@@ -12,16 +13,16 @@ const MARGIN = 12;
 const WELCOME = 'Hi! I\'m the TradingBible AI coach. I can help with your dashboard, brokers, charts, billing — and trading strategy. What can I do for you?';
 
 const QUICK_PROMPTS = [
-  { label: 'Analyze my trading', icon: BarChart3 },
-  { label: 'Connect my broker', icon: Cable },
-  { label: 'Which plan fits me?', icon: Wallet },
-  { label: 'Fix my discipline', icon: Target },
+  { key: 'aiw.q1', icon: BarChart3 },
+  { key: 'aiw.q2', icon: Cable },
+  { key: 'aiw.q3', icon: Wallet },
+  { key: 'aiw.q4', icon: Target },
 ];
 
 const TABS = [
-  { id: 'coach', label: 'Coach', icon: MessageSquare },
-  { id: 'tools', label: 'Tools', icon: Wrench },
-  { id: 'about', label: 'About', icon: Info },
+  { id: 'coach', key: 'aiw.coach', icon: MessageSquare },
+  { id: 'tools', key: 'aiw.tools', icon: Wrench },
+  { id: 'about', key: 'aiw.about', icon: Info },
 ];
 
 // Clamp a raw {x,y} to the viewport, then snap to the nearest screen edge.
@@ -53,6 +54,7 @@ function loadPos() {
 // Draggable, edge-snapping AI assistant launcher.
 export default function LiveChatWidget() {
   const { isAuthed } = useAuth();
+  const { t } = useI18n();
   const nav = useNavigate();
   const { messages, isStreaming, sendMessage, clearMessages } = useIntegratedAi();
   const [open, setOpen] = useState(false);
@@ -194,13 +196,13 @@ export default function LiveChatWidget() {
 
           {/* Tab bar */}
           <div className="relative flex items-center gap-1 px-3 pt-2">
-            {TABS.map(({ id, label, icon: Icon }) => (
+            {TABS.map(({ id, key, icon: Icon }) => (
               <button key={id} onClick={() => setTab(id)} aria-pressed={tab === id}
                 className={`flex min-h-[30px] items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold transition-colors ${tab === id
                   ? 'bg-[#d4af37]/12 text-[#d4af37] shadow-[inset_0_0_0_1px_rgba(212,175,55,0.25)]'
                   : 'text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd]'}`}>
                 <Icon className="h-3 w-3" />
-                {label}
+                {t(key)}
               </button>
             ))}
           </div>
@@ -211,8 +213,8 @@ export default function LiveChatWidget() {
               <div ref={scrollRef} className="relative flex-1 space-y-3.5 overflow-y-auto px-3.5 py-3">
                 {!isAuthed && (
                   <div className="rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/[0.06] p-3 text-xs text-[#c9c4b4]">
-                    Sign in to chat with the AI coach — it can answer questions about your dashboard, brokers and account.
-                    <Link to="/login" className="mt-2 block font-semibold text-[#d4af37] hover:underline">Sign in</Link>
+                    {t('aiw.signin')}
+                    <Link to="/login" className="mt-2 block font-semibold text-[#d4af37] hover:underline">{t('aiw.signinBtn')}</Link>
                   </div>
                 )}
                 {isFirstRun && isAuthed && (
@@ -222,16 +224,16 @@ export default function LiveChatWidget() {
                         <Sparkles className="h-4 w-4" />
                       </div>
                       <div>
-                        <div className="text-sm font-semibold text-[#f0ecdd]">Your AI trading coach is here</div>
-                        <div className="text-[10px] text-[#8a8577]">Ask anything about performance, markets or the platform</div>
+                        <div className="text-sm font-semibold text-[#f0ecdd]">{t('aiw.heroT')}</div>
+                        <div className="text-[10px] text-[#8a8577]">{t('aiw.heroS')}</div>
                       </div>
                     </div>
                     <div className="mt-3 grid grid-cols-2 gap-1.5">
-                      {QUICK_PROMPTS.map(({ label, icon: Icon }) => (
-                        <button key={label} onClick={() => send(label)} disabled={isStreaming}
+                      {QUICK_PROMPTS.map(({ key, icon: Icon }) => (
+                        <button key={key} onClick={() => send(t(key))} disabled={isStreaming}
                           className="flex min-h-[36px] items-center gap-2 rounded-lg border border-[#d4af37]/15 bg-[#d4af37]/[0.05] px-2.5 text-left text-[11px] text-[#c9c4b4] transition hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.1] hover:text-[#f0ecdd] disabled:opacity-50">
                           <Icon className="h-3.5 w-3.5 shrink-0 text-[#d4af37]" />
-                          {label}
+                          {t(key)}
                         </button>
                       ))}
                     </div>
@@ -249,7 +251,7 @@ export default function LiveChatWidget() {
                         <div className="min-w-0">
                           {m.from === 'agent' && idx > 0 && (
                             <div className="mb-1 ml-1 flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#d4af37]/80">
-                              <Sparkles className="h-2.5 w-2.5" /> AI Coach · Muse Spark
+                              <Sparkles className="h-2.5 w-2.5" /> {t('aiw.coach')} · Muse Spark
                             </div>
                           )}
                           <div className={`break-words rounded-2xl px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap ${m.from === 'you'
@@ -283,15 +285,15 @@ export default function LiveChatWidget() {
 
           {tab === 'tools' && (
             <div className="relative flex-1 space-y-2 overflow-y-auto p-3.5">
-              {QUICK_PROMPTS.map(({ label, icon: Icon }) => (
-                <button key={label} onClick={() => send(label)} disabled={isStreaming}
+              {QUICK_PROMPTS.map(({ key, icon: Icon }) => (
+                <button key={key} onClick={() => send(t(key))} disabled={isStreaming}
                   className="flex w-full items-center gap-3 rounded-xl border border-[#d4af37]/15 bg-[#d4af37]/[0.04] px-3.5 py-3 text-left transition hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.09] disabled:opacity-50">
                   <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-[#f4e6a8]/20 to-[#a67c1e]/20 text-[#d4af37]">
                     <Icon className="h-4 w-4" />
                   </div>
                   <div>
-                    <div className="text-[13px] font-semibold text-[#f0ecdd]">{label}</div>
-                    <div className="text-[10px] text-[#8a8577]">Sends this prompt to the AI coach</div>
+                    <div className="text-[13px] font-semibold text-[#f0ecdd]">{t(key)}</div>
+                    <div className="text-[10px] text-[#8a8577]">{t('aiw.sendsPrompt')}</div>
                   </div>
                 </button>
               ))}
@@ -302,8 +304,8 @@ export default function LiveChatWidget() {
                     <Eraser className="h-4 w-4" />
                   </div>
                   <div>
-                    <div className="text-[13px] font-semibold text-[#c9c4b4]">Clear conversation</div>
-                    <div className="text-[10px] text-[#8a8577]">Start a fresh session with the coach</div>
+                    <div className="text-[13px] font-semibold text-[#c9c4b4]">{t('aiw.clear')}</div>
+                    <div className="text-[10px] text-[#8a8577]">{t('aiw.clearSub')}</div>
                   </div>
                 </button>
               )}
@@ -313,20 +315,20 @@ export default function LiveChatWidget() {
           {tab === 'about' && (
             <div className="relative flex-1 space-y-3 overflow-y-auto p-3.5">
               <div className="rounded-xl border border-[#d4af37]/12 bg-[#0a0a0f]/60 p-3.5">
-                <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">Model</div>
+                <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">{t('aiw.model')}</div>
                 <div className="font-mono mt-1 text-[11px] leading-relaxed text-[#c9c4b4]">
                   muse-spark-1.3-contributor-free<br />
-                  <span className="text-[#8a8577]">via opencode gateway · chat-only agent</span>
+                  <span className="text-[#8a8577]">{t('aiw.via')}</span>
                 </div>
               </div>
               <div className="rounded-xl border border-[#d4af37]/12 bg-[#0a0a0f]/60 p-3.5">
-                <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">Privacy</div>
+                <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">{t('aiw.privacy')}</div>
                 <p className="mt-1 text-[11px] leading-relaxed text-[#c9c4b4]">
-                  Your conversations are stored in your account to keep history across devices. The AI never trades or moves money for you — it only gives guidance.
+                  {t('aiw.privacyB')}
                 </p>
               </div>
               <div className="rounded-xl border border-[#d4af37]/12 bg-[#0a0a0f]/60 p-3.5">
-                <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">Need help?</div>
+                <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">{t('aiw.help')}</div>
                 <a href="mailto:support@tradingbible.app" className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline">
                   support@tradingbible.app <ExternalLink className="h-3 w-3" />
                 </a>
@@ -338,7 +340,7 @@ export default function LiveChatWidget() {
           {tab !== 'tools' && (
             <div className="relative border-t border-[#d4af37]/12 bg-[#0a0a0f]/70 px-3.5 pb-3 pt-2.5 backdrop-blur-md">
               <div className="flex items-center gap-2 rounded-xl border border-[#d4af37]/20 bg-[#0f0f14]/90 px-3 py-1 transition-colors focus-within:border-[#d4af37]/50 focus-within:shadow-[0_0_0_3px_rgba(212,175,55,0.08)]">
-                <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder="Ask your AI coach anything…" className="w-full bg-transparent py-1.5 text-[13px] text-[#e9e7df] placeholder-[#6a665a] outline-none" />
+                <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder={t('aiw.askPh')} className="w-full bg-transparent py-1.5 text-[13px] text-[#e9e7df] placeholder-[#6a665a] outline-none" />
                 <button onClick={() => send()} disabled={isStreaming || !text.trim()} aria-label="Send"
                   className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_2px_12px_rgba(212,175,55,0.4)] transition hover:opacity-90 disabled:opacity-40 disabled:shadow-none">
                   <Send className="h-3.5 w-3.5" />
@@ -356,7 +358,7 @@ export default function LiveChatWidget() {
         <button
           onMouseDown={onPointerDown}
           onTouchStart={onPointerDown}
-          aria-label="Open AI assistant (drag to move)"
+          aria-label={t('aiw.openLabel')}
           title="TradingBible AI assistant"
           className={`tv-chat-btn fixed z-[70] grid place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#f4e6a8] via-[#e2bd4f] to-[#c99a25] shadow-[0_8px_28px_rgba(212,175,55,0.35),0_0_0_1px_rgba(212,175,55,0.4)] ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]'}`}
           style={{ left: pos.x, top: pos.y, height: BTN, width: BTN, touchAction: 'none' }}

@@ -22,6 +22,30 @@ export const PLANS = [
     features: ['Everything in Elite', 'Unlimited broker accounts', 'Team seats', 'API & webhooks', 'White-glove onboarding', 'Dedicated success manager'], cta: 'Choose Professional' },
 ];
 
+const PLAN_I18N_KEY = { trial: 'trial', pro: 'pro', elite: 'elite', professional: 'prof' };
+
+// Localized view of a plan: names, taglines, periods, CTAs and feature lists
+// come from the i18n dictionary so pricing renders in the active language.
+// Pass the `t` function from useI18n().
+export function translatePlan(t, plan) {
+  const k = PLAN_I18N_KEY[plan.id] || plan.id;
+  const features = [];
+  for (let i = 1; i <= 6; i += 1) {
+    const key = `plan.${k}.f${i}`;
+    const v = t(key);
+    if (!v || v === key) break;
+    features.push(v);
+  }
+  return {
+    ...plan,
+    name: t(`plan.${k}.name`),
+    tagline: t(`plan.${k}.tag`),
+    period: t(`plan.${k}.period`),
+    cta: t(`plan.${k}.cta`),
+    features: features.length ? features : plan.features,
+  };
+}
+
 export const MARKETS = ['Forex', 'Stocks', 'Crypto', 'Futures'];
 export const EXPERIENCE = ['Beginner', 'Intermediate', 'Professional'];
 export const GOALS = ['Discipline', 'Risk management', 'Performance improvement'];

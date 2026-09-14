@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom';
 import { Plug, Check, RefreshCw, Users, DollarSign, CreditCard, Activity, Crown, ArrowRight, Bot, ExternalLink, Building2 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import PageHeader from '@/components/PageHeader';
-import { BROKERS, PROP_FIRMS, PLANS, fmtMoney } from '@/lib/mockData';
+import { BROKERS, PROP_FIRMS, PLANS, fmtMoney, translatePlan } from '@/lib/mockData';
 import pb from '@/lib/pocketbaseClient';
 import { connectBroker, disconnectBroker, resyncBrokerAccount } from '@/lib/brokerSync';
 import { useAuth } from '@/hooks/useAuth';
+import { useI18n } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 import Footer from '@/components/Footer';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
@@ -200,6 +201,7 @@ export function AdminPage() {
 
 export function PricingPage() {
   const { user, isAuthed } = useAuth();
+  const { t } = useI18n();
   const homeTo = homeRouteForUser(isAuthed ? user : null);
 
   return (
@@ -207,24 +209,26 @@ export function PricingPage() {
       <div className="mx-auto max-w-[96rem]">
         <Link to={homeTo} className="mb-10 flex items-center gap-2.5"><img src={TRADINGBIBLE_LOGO} alt="TradingBible logo" className="h-9 w-9 rounded-lg object-contain" /><span className="font-semibold">Trading<span className="gold-text">Bible</span></span></Link>
         <div className="mb-12 text-center">
-          <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/30 px-3 py-1 text-xs text-[#d4af37]"><Crown className="h-3.5 w-3.5" /> Billed securely via Stripe</div>
-          <h1 className="text-4xl font-bold sm:text-5xl">Choose your <span className="gold-text">edge</span></h1>
-          <p className="mt-3 text-[#8a8577]">Start with a 3-day premium trial. Card required. Upgrade, downgrade or cancel anytime.</p>
+          <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/30 px-3 py-1 text-xs text-[#d4af37]"><Crown className="h-3.5 w-3.5" /> {t('price.billedStripe')}</div>
+          <h1 className="text-4xl font-bold sm:text-5xl">{t('price.chooseEdge')}</h1>
+          <p className="mt-3 text-[#8a8577]">{t('price.sub')}</p>
         </div>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {PLANS.map((p) => (
-            <div key={p.id} className={`relative flex flex-col rounded-2xl p-6 ${p.highlight ? 'glass gold-glow' : 'glass'}`}>
-              {p.highlight && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-0.5 text-[11px] font-bold text-[#0a0a0f]">MOST POPULAR</div>}
-              <img src={p.logo} alt={`${p.name} plan logo`} className="mb-3 h-14 w-14 rounded-xl object-contain" />
-              <h3 className="text-lg font-semibold">{p.name}</h3>
-              <p className="mt-1 text-xs text-[#8a8577]">{p.tagline}</p>
-              <div className="mt-4 flex items-end gap-1"><span className="text-3xl font-bold gold-text">{p.price === 0 ? 'Free' : `$${p.price}`}</span><span className="mb-1 text-sm text-[#8a8577]">/{p.period}</span></div>
-              <ul className="mt-5 flex-1 space-y-2 text-sm text-[#b3ae9e]">{p.features.map(f => <li key={f} className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-[#d4af37]" />{f}</li>)}</ul>
-              <Link to="/signup" className={`mt-6 flex items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-semibold transition ${p.highlight ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] hover:opacity-90' : 'border border-[#d4af37]/25 text-[#e9e7df] hover:border-[#d4af37]/60'}`}>{p.cta} <ArrowRight className="h-4 w-4" /></Link>
-            </div>
-          ))}
+          {PLANS.map((raw) => {
+            const p = translatePlan(t, raw);
+            return (
+              <div key={p.id} className={`relative flex flex-col rounded-2xl p-6 ${p.highlight ? 'glass gold-glow' : 'glass'}`}>
+                {p.highlight && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-0.5 text-[11px] font-bold text-[#0a0a0f]">MOST POPULAR</div>}
+                <img src={p.logo} alt={`${p.name} plan logo`} className="mb-3 h-14 w-14 rounded-xl object-contain" />
+                <h3 className="text-lg font-semibold">{p.name}</h3>
+                <p className="mt-1 text-xs text-[#8a8577]">{p.tagline}</p>
+                <div className="mt-4 flex items-end gap-1"><span className="text-3xl font-bold gold-text">{p.price === 0 ? 'Free' : `$${p.price}`}</span><span className="mb-1 text-sm text-[#8a8577]">/{p.period}</span></div>
+                <ul className="mt-5 flex-1 space-y-2 text-sm text-[#b3ae9e]">{p.features.map(f => <li key={f} className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-[#d4af37]" />{f}</li>)}</ul>
+                <Link to="/signup" className={`mt-6 flex items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-semibold transition ${p.highlight ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] hover:opacity-90' : 'border border-[#d4af37]/25 text-[#e9e7df] hover:border-[#d4af37]/60'}`}>{p.cta} <ArrowRight className="h-4 w-4" /></Link>
+              </div>
+            );
+          })}
         </div>
-        <p className="mt-10 text-center text-sm text-[#6a665a]">Webhook-ready for Stripe: subscription_created · subscription_updated · subscription_deleted · invoice_payment_failed</p>
       </div>
       <Footer />
     </div>

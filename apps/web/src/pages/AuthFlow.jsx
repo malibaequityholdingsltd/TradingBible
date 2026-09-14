@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Mail, ArrowRight, Check, User, Building2, KeyRound, BookOpen, ShieldCheck, LineChart, Bot, Sparkles } from 'lucide-react';
 import { MARKETS, EXPERIENCE, GOALS } from '@/lib/mockData';
 import { useAuth } from '@/hooks/useAuth';
+import { useI18n } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { usePlatformSettings } from '@/lib/platformSettings';
@@ -95,27 +96,29 @@ function isOtpRateLimited(err) {
   return code === 'over_email_send_rate_limit' || /request this after/i.test(message) || err?.status === 429;
 }
 
-function describeAuthError(err, fallback = 'Please try again.') {
+function describeAuthError(err, t, fallback) {
   const message = String(err?.message || '');
   const code = String(err?.code || '');
+  const fb = fallback || (t ? t('c.retry') : 'Please try again.');
 
   if (code === 'over_email_send_rate_limit' || /request this after/i.test(message)) {
-    return message || 'Please wait before requesting another code.';
+    return message || (t ? t('auth.errRateLimited') : 'Please wait before requesting another code.');
   }
   if (/email rate limit exceeded/i.test(message)) {
-    return `Too many code requests were sent recently. Please wait ${formatCooldownDuration(OTP_RATE_LIMIT_FALLBACK_SECONDS)}, then try again.`;
+    const dur = formatCooldownDuration(OTP_RATE_LIMIT_FALLBACK_SECONDS);
+    return t ? t('auth.errTooMany', { dur }) : `Too many code requests were sent recently. Please wait ${dur}, then try again.`;
   }
   if (code === 'otp_disabled' || /email provider is disabled/i.test(message)) {
-    return 'Email code login is currently unavailable. Please contact support.';
+    return t ? t('auth.errDisabled') : 'Email code login is currently unavailable. Please contact support.';
   }
   if (code === 'invalid_credentials' || /invalid login credentials/i.test(message)) {
-    return 'Invalid or expired code. Request a new code and try again.';
+    return t ? t('auth.errInvalid') : 'Invalid or expired code. Request a new code and try again.';
   }
   if (code === 'user_not_found' || /user not found/i.test(message)) {
-    return 'No account found for that email. Please create an account first.';
+    return t ? t('auth.errNoAccount') : 'No account found for that email. Please create an account first.';
   }
 
-  return message || fallback;
+  return message || fb;
 }
 
 // ─── Layout ──────────────────────────────────────────────────────────
@@ -262,25 +265,26 @@ function OtpInput({ value, onChange, disabled, onComplete }) {
   );
 }
 
-function AuthTabs({ mode }) {
+function AuthTabs({ mode, t }) {
   const base = 'grid h-10 min-h-[40px] place-items-center rounded-full text-sm font-semibold transition';
   const active = 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_8px_24px_-8px_rgba(212,175,55,0.6)]';
   const idle = 'text-[#8a8577] hover:text-[#e9e7df]';
   return (
     <div className="grid grid-cols-2 gap-1 rounded-full border border-[#d4af37]/15 bg-white/[0.03] p-1">
-      <Link to="/login" className={`${base} ${mode === 'login' ? active : idle}`}>Log in</Link>
-      <Link to="/signup" className={`${base} ${mode === 'signup' ? active : idle}`}>Create account</Link>
+      <Link to="/login" className={`${base} ${mode === 'login' ? active : idle}`}>{t('auth.login')}</Link>
+      <Link to="/signup" className={`${base} ${mode === 'signup' ? active : idle}`}>{t('auth.signup')}</Link>
     </div>
   );
 }
 
-function AuthFormFrame({ mode, title, subtitle, step, children, footer }) {
+function AuthFormFrame({ mode, title, subtitle, step, children, footer, t }) {
+  const tt = t || ((k) => k);
   return (
     <section className="auth-card glass relative overflow-hidden rounded-[1.5rem] p-4 shadow-[0_30px_80px_rgba(0,0,0,0.24)] ring-1 ring-white/8 sm:rounded-[2rem] sm:p-6 lg:p-8">
       <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
       <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#d4af37]/10 blur-3xl" />
       <div className="relative space-y-5 sm:space-y-6">
-        <AuthTabs mode={mode} />
+        <AuthTabs mode={mode} t={tt} />
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1.5">
             <h1 className="text-2xl font-bold tracking-tight text-white sm:text-[2rem]">{title}</h1>
@@ -300,30 +304,33 @@ function AuthFormFrame({ mode, title, subtitle, step, children, footer }) {
   );
 }
 
-const ProviderButtons = ({ busy, onGoogle, onApple }) => (
-  <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-    <button
-      type="button"
-      onClick={onGoogle}
-      disabled={busy}
-      aria-label="Continue with Google"
-      className="flex min-h-[48px] items-center justify-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.96] px-3 text-sm font-semibold text-[#121212] shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:border-[#d4af37]/40 hover:shadow-[0_14px_36px_rgba(212,175,55,0.15)] disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      <GoogleLogo />
-      <span className="hidden xs:inline sm:inline">Google</span>
-    </button>
-    <button
-      type="button"
-      onClick={onApple}
-      disabled={busy}
-      aria-label="Continue with Apple"
-      className="flex min-h-[48px] items-center justify-center gap-2.5 rounded-xl border border-white/10 bg-[#111113] px-3 text-sm font-semibold text-[#f5f5f7] shadow-[0_10px_30px_rgba(0,0,0,0.22)] transition hover:-translate-y-0.5 hover:border-[#d4af37]/40 hover:shadow-[0_14px_36px_rgba(0,0,0,0.28)] disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      <AppleLogo />
-      <span className="hidden xs:inline sm:inline">Apple</span>
-    </button>
-  </div>
-);
+const ProviderButtons = ({ busy, onGoogle, onApple, t }) => {
+  const tt = t || ((k) => k);
+  return (
+    <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+      <button
+        type="button"
+        onClick={onGoogle}
+        disabled={busy}
+        aria-label={tt('auth.continueGoogle')}
+        className="flex min-h-[48px] items-center justify-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.96] px-3 text-sm font-semibold text-[#121212] shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:border-[#d4af37]/40 hover:shadow-[0_14px_36px_rgba(212,175,55,0.15)] disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <GoogleLogo />
+        <span className="hidden xs:inline sm:inline">Google</span>
+      </button>
+      <button
+        type="button"
+        onClick={onApple}
+        disabled={busy}
+        aria-label={tt('auth.continueApple')}
+        className="flex min-h-[48px] items-center justify-center gap-2.5 rounded-xl border border-white/10 bg-[#111113] px-3 text-sm font-semibold text-[#f5f5f7] shadow-[0_10px_30px_rgba(0,0,0,0.22)] transition hover:-translate-y-0.5 hover:border-[#d4af37]/40 hover:shadow-[0_14px_36px_rgba(0,0,0,0.28)] disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <AppleLogo />
+        <span className="hidden xs:inline sm:inline">Apple</span>
+      </button>
+    </div>
+  );
+};
 
 const goldBtn = 'flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-3 font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60';
 
@@ -355,6 +362,7 @@ function AppleLogo() {
 export function LoginPage() {
   const nav = useNavigate();
   const { requestOTP, loginWithCode, loginWithProvider, user, isAuthed, isAuthReady, logout } = useAuth();
+  const { t } = useI18n();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -404,11 +412,11 @@ export function LoginPage() {
   const sendCode = async (e) => {
     e?.preventDefault?.();
     if (!email.trim()) {
-      toast({ variant: 'destructive', title: 'Enter your email address', description: 'We need your email to send a code.' });
+      toast({ variant: 'destructive', title: t('auth.e.enterEmail'), description: t('auth.e.needEmail') });
       return;
     }
     if (cooldownSeconds > 0) {
-      toast({ title: 'Please wait', description: `You can request another code in ${formatCooldownDuration(cooldownSeconds)}.` });
+      toast({ title: t('auth.e.waitTitle'), description: t('auth.e.waitMore', { dur: formatCooldownDuration(cooldownSeconds) }) });
       return;
     }
     setBusy(true);
@@ -418,7 +426,7 @@ export function LoginPage() {
       writeOtpCooldownUntil(email, until);
       setCooldownUntil(until);
       setSent(true);
-      toast({ title: 'One-time code sent', description: 'Check your email inbox for the verification code.' });
+      toast({ title: t('auth.e.sentTitle'), description: t('auth.e.sentDesc') });
     } catch (err) {
       if (isOtpRateLimited(err)) {
         const waitFor = parseRetryAfterSeconds(err);
@@ -428,7 +436,7 @@ export function LoginPage() {
         setCooldownUntil(until);
         setSent(true);
       }
-      toast({ variant: 'destructive', title: 'Could not send code', description: describeAuthError(err, 'Please try again.') });
+      toast({ variant: 'destructive', title: t('auth.e.sendFail'), description: describeAuthError(err, t) });
     } finally { setBusy(false); }
   };
 
@@ -437,7 +445,7 @@ export function LoginPage() {
     if (busy) return;
     const token = normalizeOtpCode(code);
     if (!email.trim() || token.length !== 6) {
-      toast({ variant: 'destructive', title: 'Enter your 6-digit code', description: 'Check the email code and try again.' });
+      toast({ variant: 'destructive', title: t('auth.e.enter6'), description: t('auth.e.checkCode') });
       return;
     }
     setBusy(true);
@@ -446,7 +454,7 @@ export function LoginPage() {
       const account = auth?.record?.user_settings?.account;
       if (account?.status === 'closed') {
         await logout?.();
-        toast({ variant: 'destructive', title: 'This account has been closed', description: 'Your data is retained per our legal obligations. Contact support if you believe this is an error.' });
+        toast({ variant: 'destructive', title: t('auth.e.closed'), description: t('auth.e.closedDesc') });
         return;
       }
       if (account?.status === 'deactivated') {
@@ -457,12 +465,12 @@ export function LoginPage() {
         setPendingAuth(auth);
         setSent(false);
         setNeedTotp(true);
-        toast({ title: 'Authenticator code required', description: 'Enter the 6-digit code from your authenticator app.' });
+        toast({ title: t('auth.e.totpNeed'), description: t('auth.e.totpDesc') });
         return;
       }
       finishLogin(auth);
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Invalid code', description: describeAuthError(err, 'Please request a new code and try again.') });
+      toast({ variant: 'destructive', title: t('auth.e.invalidCode'), description: describeAuthError(err, t) });
     } finally { setBusy(false); }
   };
 
@@ -471,7 +479,7 @@ export function LoginPage() {
     if (busy) return;
     const token = normalizeOtpCode(totpCode);
     if (token.length !== 6) {
-      toast({ variant: 'destructive', title: 'Enter your 6-digit code', description: 'Check your authenticator app and try again.' });
+      toast({ variant: 'destructive', title: t('auth.e.enter6'), description: t('auth.e.totpDesc') });
       return;
     }
     setBusy(true);
@@ -479,25 +487,25 @@ export function LoginPage() {
       await verifyTotpLogin(token);
       finishLogin(pendingAuth);
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Invalid authenticator code', description: String(err?.message || 'Please try again.') });
+      toast({ variant: 'destructive', title: t('auth.e.totpBad'), description: String(err?.message || t('c.retry')) });
     } finally { setBusy(false); }
   };
 
   const signInWithPasskey = async () => {
     const normalized = normalizeEmail(email);
     if (!normalized) {
-      toast({ variant: 'destructive', title: 'Enter your email address', description: 'We need your email to look up your passkey.' });
+      toast({ variant: 'destructive', title: t('auth.e.enterEmail'), description: t('auth.e.pkNeedDesc') });
       return;
     }
     setPasskeyBusy(true);
     try {
       const result = await passkeyLogin(normalized);
-      if (!result?.otp) throw new Error('Session could not be created. Please sign in with your email code.');
+      if (!result?.otp) throw new Error(t('auth.e.pkSession'));
       const auth = await loginWithCode(result.email, result.otp);
       const account = auth?.record?.user_settings?.account;
       if (account?.status === 'closed') {
         await logout?.();
-        toast({ variant: 'destructive', title: 'This account has been closed', description: 'Your data is retained per our legal obligations. Contact support if you believe this is an error.' });
+        toast({ variant: 'destructive', title: t('auth.e.closed'), description: t('auth.e.closedDesc') });
         return;
       }
       if (account?.status === 'deactivated') {
@@ -505,7 +513,7 @@ export function LoginPage() {
       }
       finishLogin(auth);
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Face ID / passkey sign-in failed', description: String(err?.message || 'Please try again.') });
+      toast({ variant: 'destructive', title: t('auth.e.pkFail'), description: String(err?.message || t('c.retry')) });
     } finally { setPasskeyBusy(false); }
   };
 
@@ -516,8 +524,8 @@ export function LoginPage() {
     } catch (err) {
       toast({
         variant: 'destructive',
-        title: `Could not start ${provider === 'google' ? 'Google' : 'Apple'} sign-in`,
-        description: describeAuthError(err, 'Please try again.'),
+        title: t('auth.e.oauth', { p: provider === 'google' ? 'Google' : 'Apple' }),
+        description: describeAuthError(err, t),
       });
       setOauthBusy('');
     }
@@ -527,24 +535,25 @@ export function LoginPage() {
     <Shell>
       <AuthFormFrame
         mode="login"
-        title={needTotp ? 'Two-step verification' : (sent ? 'Check your inbox' : 'Welcome back')}
+        t={t}
+        title={needTotp ? t('auth.totpTitle') : (sent ? t('auth.checkInbox') : t('auth.welcomeBack'))}
         subtitle={needTotp
-          ? 'Your account is protected with an authenticator app. Enter the current 6-digit code to continue.'
+          ? t('auth.totpSub')
           : (sent
-            ? `We emailed a 6-digit code to ${email || 'your inbox'}. Enter it below to sign in.`
-            : 'Use Google, Apple, or your email code to get back to your terminal.')}
-        step={needTotp ? 'Step 2 of 2' : (sent ? 'Step 2 of 2' : 'Step 1 of 2')}
+            ? t('auth.sentSub', { email: email || 'your inbox' })
+            : t('auth.loginSub'))}
+        step={needTotp ? t('auth.stepOf', { a: 2, b: 2 }) : (sent ? t('auth.stepOf', { a: 2, b: 2 }) : t('auth.stepOf', { a: 1, b: 2 }))}
         footer={
           <p className="mt-5 text-center text-sm text-[#8a8577]">
-            New to TradingBible? <Link to="/signup" className="font-medium text-[#d4af37] hover:underline">Create an account</Link>
+            {t('auth.newTo')} <Link to="/signup" className="font-medium text-[#d4af37] hover:underline">{t('auth.signup')}</Link>
           </p>
         }
       >
         <div className="rounded-[1.25rem] border border-[#d4af37]/14 bg-gradient-to-b from-white/[0.06] to-transparent p-3 sm:rounded-[1.5rem] sm:p-4">
-          <ProviderButtons busy={oauthBusy} onGoogle={() => startOAuth('google')} onApple={() => startOAuth('apple')} />
+          <ProviderButtons busy={oauthBusy} t={t} onGoogle={() => startOAuth('google')} onApple={() => startOAuth('apple')} />
         </div>
         <form className="mt-4 space-y-3 sm:mt-5 sm:space-y-3.5" onSubmit={needTotp ? verifyTotpStep : (sent ? verifyCode : sendCode)}>
-          {!needTotp && <Field icon={Mail} type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />}
+          {!needTotp && <Field icon={Mail} type="email" placeholder={t('auth.emailPh')} value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />}
           {!needTotp && sent && (
             <div className="space-y-2.5">
               <OtpInput
@@ -553,7 +562,7 @@ export function LoginPage() {
                 onChange={setCode}
                 onComplete={() => verifyCode()}
               />
-              <p className="text-center text-[11px] text-[#8a8577]">Didn’t get it? Check spam or resend below.</p>
+              <p className="text-center text-[11px] text-[#8a8577]">{t('auth.e.noMail')}</p>
             </div>
           )}
           {needTotp && (
@@ -564,15 +573,15 @@ export function LoginPage() {
               onComplete={() => verifyTotpStep()}
             />
           )}
-          <button disabled={busy || (!needTotp && !sent && cooldownSeconds > 0)} className={`${goldBtn} btn-spotlight`}>{busy ? 'Please wait…' : (needTotp ? 'Verify authenticator code' : (sent ? 'Verify & sign in' : 'Send one-time code'))} <ArrowRight className="h-4 w-4" /></button>
+          <button disabled={busy || (!needTotp && !sent && cooldownSeconds > 0)} className={`${goldBtn} btn-spotlight`}>{busy ? t('auth.e.plsWait') : (needTotp ? t('auth.verifyTotp') : (sent ? t('auth.verifySignin') : t('auth.sendCode')))} <ArrowRight className="h-4 w-4" /></button>
         </form>
-        {needTotp && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy} onClick={() => { setNeedTotp(false); setTotpCode(''); setPendingAuth(null); }} className="text-[#8a8577] hover:text-[#d4af37]">Back to email code</button></div>}
-        {!needTotp && sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={sendCode} className="text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? `Resend in ${cooldownSeconds}s` : 'Resend code'}</button></div>}
-        {!needTotp && cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">To protect your account, new code requests are limited. Try again in {formatCooldownDuration(cooldownSeconds)}.</p>}
+        {needTotp && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy} onClick={() => { setNeedTotp(false); setTotpCode(''); setPendingAuth(null); }} className="text-[#8a8577] hover:text-[#d4af37]">{t('auth.backToEmail')}</button></div>}
+        {!needTotp && sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={sendCode} className="text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? t('auth.e.resendIn', { n: cooldownSeconds }) : t('auth.e.resend')}</button></div>}
+        {!needTotp && cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">{t('auth.e.coolNote', { dur: formatCooldownDuration(cooldownSeconds) })}</p>}
         {!needTotp && (
           <div className="mt-3 flex items-center gap-3">
             <div className="h-px flex-1 bg-white/10" />
-            <span className="text-[11px] uppercase tracking-widest text-[#8a8577]">or</span>
+            <span className="text-[11px] uppercase tracking-widest text-[#8a8577]">{t('auth.or')}</span>
             <div className="h-px flex-1 bg-white/10" />
           </div>
         )}
@@ -583,7 +592,7 @@ export function LoginPage() {
             onClick={signInWithPasskey}
             className="mt-1.5 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] py-2.5 text-sm font-medium text-[#e9e7df] transition hover:border-[#d4af37]/40 hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {passkeyBusy ? 'Verifying…' : <><ShieldCheck className="h-4 w-4" /> Face ID / passkey sign-in</>}
+            {passkeyBusy ? t('auth.e.passkeyVerifying') : <><ShieldCheck className="h-4 w-4" /> {t('auth.passkey')}</>}
           </button>
         )}
       </AuthFormFrame>
@@ -595,6 +604,7 @@ export function SignupPage() {
   const nav = useNavigate();
   const { requestOTP, loginWithCode, loginWithProvider, user, isAuthed, isAuthReady } = useAuth();
   const { settings } = usePlatformSettings();
+  const { t } = useI18n();
   const { toast } = useToast();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -643,7 +653,7 @@ export function SignupPage() {
     e?.preventDefault?.();
     if (busy) return;
     if (!sent && cooldownSeconds > 0) {
-      toast({ title: 'Please wait', description: `You can request another code in ${formatCooldownDuration(cooldownSeconds)}.` });
+      toast({ title: t('auth.e.waitTitle'), description: t('auth.e.waitMore', { dur: formatCooldownDuration(cooldownSeconds) }) });
       return;
     }
     setBusy(true);
@@ -661,13 +671,13 @@ export function SignupPage() {
         writeOtpCooldownUntil(email, until);
         setCooldownUntil(until);
         setSent(true);
-        toast({ title: 'One-time code sent', description: 'Check your email for the code to finish account creation.' });
+        toast({ title: t('auth.e.sentTitle'), description: t('auth.e.createdDesc') });
         trackAffiliateSignup(readRefFromUrl(), email.trim());
         return;
       }
       const token = normalizeOtpCode(code);
       if (token.length !== 6) {
-        toast({ variant: 'destructive', title: 'Enter your 6-digit code', description: 'Check the email code and try again.' });
+        toast({ variant: 'destructive', title: t('auth.e.enter6'), description: t('auth.e.checkCode') });
         return;
       }
       const auth = await loginWithCode(email.trim(), token);
@@ -682,7 +692,7 @@ export function SignupPage() {
         setCooldownUntil(until);
         setSent(true);
       }
-      toast({ variant: 'destructive', title: sent ? 'Invalid code' : 'Could not send code', description: describeAuthError(err, 'Please try again.') });
+      toast({ variant: 'destructive', title: sent ? t('auth.e.invalidCode') : t('auth.e.sendFail'), description: describeAuthError(err, t) });
     } finally { setBusy(false); }
   };
 
@@ -693,8 +703,8 @@ export function SignupPage() {
     } catch (err) {
       toast({
         variant: 'destructive',
-        title: `Could not start ${provider === 'google' ? 'Google' : 'Apple'} sign-in`,
-        description: describeAuthError(err, 'Please try again.'),
+        title: t('auth.e.oauth', { p: provider === 'google' ? 'Google' : 'Apple' }),
+        description: describeAuthError(err, t),
       });
       setOauthBusy('');
     }
@@ -702,7 +712,7 @@ export function SignupPage() {
 
   const resend = async () => {
     if (cooldownSeconds > 0) {
-      toast({ title: 'Please wait', description: `You can request another code in ${formatCooldownDuration(cooldownSeconds)}.` });
+      toast({ title: t('auth.e.waitTitle'), description: t('auth.e.waitMore', { dur: formatCooldownDuration(cooldownSeconds) }) });
       return;
     }
     setBusy(true);
@@ -717,7 +727,7 @@ export function SignupPage() {
       const until = Date.now() + OTP_COOLDOWN_SECONDS * 1000;
       writeOtpCooldownUntil(email, until);
       setCooldownUntil(until);
-      toast({ title: 'Code resent' });
+      toast({ title: t('auth.e.codeResent') });
     } catch (err) {
       if (isOtpRateLimited(err)) {
         const waitFor = parseRetryAfterSeconds(err);
@@ -726,7 +736,7 @@ export function SignupPage() {
         writeGlobalOtpCooldownUntil(until);
         setCooldownUntil(until);
       }
-      toast({ variant: 'destructive', title: 'Could not resend code', description: describeAuthError(err, 'Please try again.') });
+      toast({ variant: 'destructive', title: t('auth.e.resendFail'), description: describeAuthError(err, t) });
     } finally { setBusy(false); }
   };
 
@@ -737,11 +747,11 @@ export function SignupPage() {
         <div className="mx-auto w-full max-w-md">
           <div className="auth-card glass rounded-2xl p-6 text-center sm:p-7">
             <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37]"><KeyRound className="h-5 w-5" /></div>
-            <h1 className="text-xl font-bold">Signups are paused</h1>
+            <h1 className="text-xl font-bold">{t('auth.signupsPaused')}</h1>
             <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">
-              {brand} is not accepting new accounts right now. If you already have an account, you can still log in.
+              {t('auth.pausedBody', { brand })}
             </p>
-            <Link to="/login" className={`${goldBtn} mt-6 justify-center`}>Log in to your account <ArrowRight className="h-4 w-4" /></Link>
+            <Link to="/login" className={`${goldBtn} mt-6 justify-center`}>{t('auth.loginAccount')} <ArrowRight className="h-4 w-4" /></Link>
           </div>
         </div>
       </Shell>
@@ -752,27 +762,28 @@ export function SignupPage() {
     <Shell>
       <AuthFormFrame
         mode="signup"
-        title={sent ? 'Almost there' : 'Create your account'}
+        t={t}
+        title={sent ? t('auth.almostThere') : t('auth.createTitle')}
         subtitle={sent
-          ? `We emailed a 6-digit code to ${email || 'your inbox'}. Enter it to activate your account.`
-          : 'Start with Google or Apple for a faster setup — or use your email code.'}
-        step={sent ? 'Step 2 of 2' : 'Step 1 of 2'}
+          ? t('auth.signupSentSub', { email: email || 'your inbox' })
+          : t('auth.signupSub')}
+        step={sent ? t('auth.stepOf', { a: 2, b: 2 }) : t('auth.stepOf', { a: 1, b: 2 })}
         footer={
           <p className="mt-5 text-center text-sm text-[#8a8577]">
-            Already have an account? <Link to="/login" className="font-medium text-[#d4af37] hover:underline">Log in</Link>
+            {t('auth.haveAccount')} <Link to="/login" className="font-medium text-[#d4af37] hover:underline">{t('auth.login')}</Link>
           </p>
         }
       >
         <div className="rounded-[1.25rem] border border-[#d4af37]/14 bg-gradient-to-b from-white/[0.06] to-transparent p-3 sm:rounded-[1.5rem] sm:p-4">
-          <ProviderButtons busy={oauthBusy} onGoogle={() => startOAuth('google')} onApple={() => startOAuth('apple')} />
+          <ProviderButtons busy={oauthBusy} t={t} onGoogle={() => startOAuth('google')} onApple={() => startOAuth('apple')} />
         </div>
         <form className="mt-4 space-y-2.5 sm:mt-5 sm:space-y-3" onSubmit={submit}>
           {!sent && (
             <>
               <div className="grid grid-cols-2 gap-2 rounded-xl border border-[#d4af37]/15 p-1">
                 {[
-                  { id: 'individual', label: 'Individual', icon: User },
-                  { id: 'company', label: 'Company / School', icon: Building2 },
+                  { id: 'individual', label: t('auth.individual'), icon: User },
+                  { id: 'company', label: t('auth.companySchool'), icon: Building2 },
                 ].map(({ id, label, icon: Icon }) => (
                   <button
                     key={id}
@@ -785,12 +796,12 @@ export function SignupPage() {
                   </button>
                 ))}
               </div>
-              <Field icon={User} type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" />
+              <Field icon={User} type="text" placeholder={t('auth.usernamePh')} value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" />
               {accountType === 'company' && (
-                <Field icon={Building2} type="text" placeholder="Company or School name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
+                <Field icon={Building2} type="text" placeholder={t('auth.companyPh')} value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
               )}
-              <Field icon={Mail} type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-              <p className="text-center text-xs text-[#8a8577]">We’ll send both a 6-digit code and a sign-in link to your inbox.</p>
+              <Field icon={Mail} type="email" placeholder={t('auth.emailPh')} value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+              <p className="text-center text-xs text-[#8a8577]">{t('auth.codeHint')}</p>
             </>
           )}
           {sent && (
@@ -801,10 +812,10 @@ export function SignupPage() {
               onComplete={() => submit()}
             />
           )}
-          <button disabled={busy || (!sent && cooldownSeconds > 0)} className={`${goldBtn} btn-spotlight`}>{busy ? 'Please wait…' : (sent ? 'Verify & continue' : 'Send one-time code')} <ArrowRight className="h-4 w-4" /></button>
+          <button disabled={busy || (!sent && cooldownSeconds > 0)} className={`${goldBtn} btn-spotlight`}>{busy ? t('auth.e.plsWait') : (sent ? t('auth.verifyContinue') : t('auth.sendCode'))} <ArrowRight className="h-4 w-4" /></button>
         </form>
-        {sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={resend} className="text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? `Resend in ${cooldownSeconds}s` : 'Resend code'}</button></div>}
-        {cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">To protect your account, new code requests are limited. Try again in {formatCooldownDuration(cooldownSeconds)}.</p>}
+        {sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={resend} className="text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? t('auth.e.resendIn', { n: cooldownSeconds }) : t('auth.e.resend')}</button></div>}
+        {cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">{t('auth.e.coolNote', { dur: formatCooldownDuration(cooldownSeconds) })}</p>}
       </AuthFormFrame>
     </Shell>
   );
@@ -828,6 +839,7 @@ const Group = ({ title, options, value, onChange }) => (
 export function OnboardingPage() {
   const nav = useNavigate();
   const { updateProfile } = useAuth();
+  const { t } = useI18n();
   const [market, setMarket] = useState('Forex');
   const [exp, setExp] = useState('Intermediate');
   const [goal, setGoal] = useState('Discipline');
@@ -850,14 +862,14 @@ export function OnboardingPage() {
     <Shell>
       <div className="mx-auto w-full max-w-md">
       <div className="auth-card glass rounded-2xl p-6 sm:p-7">
-        <h1 className="text-2xl font-bold">Tailor your terminal</h1>
-        <p className="auth-muted mt-1 text-sm text-[#8a8577]">Three quick questions. Your 3-day trial starts now — card required.</p>
+        <h1 className="text-2xl font-bold">{t('auth.tailor')}</h1>
+        <p className="auth-muted mt-1 text-sm text-[#8a8577]">{t('auth.tailorSub')}</p>
         <div className="mt-6 space-y-6">
-          <Group title="Primary market" options={MARKETS} value={market} onChange={setMarket} />
-          <Group title="Experience level" options={EXPERIENCE} value={exp} onChange={setExp} />
-          <Group title="Main goal" options={GOALS} value={goal} onChange={setGoal} />
+          <Group title={t('auth.primaryMarket')} options={MARKETS} value={market} onChange={setMarket} />
+          <Group title={t('auth.experience')} options={EXPERIENCE} value={exp} onChange={setExp} />
+          <Group title={t('auth.mainGoal')} options={GOALS} value={goal} onChange={setGoal} />
         </div>
-        <button onClick={finish} disabled={busy} className={`${goldBtn} mt-8`}>Connect your brokers <ArrowRight className="h-4 w-4" /></button>
+        <button onClick={finish} disabled={busy} className={`${goldBtn} mt-8`}>{t('auth.connectBrokers')} <ArrowRight className="h-4 w-4" /></button>
       </div>
       </div>
     </Shell>

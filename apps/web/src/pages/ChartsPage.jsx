@@ -5,11 +5,12 @@ import AppLayout from '@/components/AppLayout';
 import PageHeader from '@/components/PageHeader';
 import LiveChart from '@/components/LiveChart';
 import AddToWatchlist from '@/components/AddToWatchlist';
+import { useI18n } from '@/lib/i18n';
 
 const LAYOUTS = [
-  { id: 'single', label: 'Single', icon: Square },
-  { id: 'split', label: 'Split', icon: Columns2 },
-  { id: 'grid', label: '4-Grid', icon: Grid2x2 },
+  { id: 'single', key: 'mkt.single', icon: Square },
+  { id: 'split', key: 'mkt.split', icon: Columns2 },
+  { id: 'grid', key: 'mkt.grid4', icon: Grid2x2 },
 ];
 
 const GRID_DEFAULTS = [
@@ -20,16 +21,17 @@ const GRID_DEFAULTS = [
 ];
 
 export default function ChartsPage() {
+  const { t } = useI18n();
   const [layout, setLayout] = useState('single');
   const [params] = useSearchParams();
   const qsSymbol = (params.get('symbol') || 'BTCUSD').toUpperCase();
 
   return (
-    <AppLayout title="Advanced Charts">
+    <AppLayout title={t('nav.charts')}>
       <PageHeader
         icon={CandlestickChart}
-        kicker="Live charting"
-        description="TradingView-grade live charts — draw trendlines, levels and annotations that save to your account per symbol."
+        kicker={t('mkt.liveCharts')}
+        description={t('mkt.chartsSub')}
         actions={
           <>
             {layout === 'single' && <AddToWatchlist symbol={qsSymbol} />}
@@ -37,7 +39,7 @@ export default function ChartsPage() {
               {LAYOUTS.map((l) => (
                 <button key={l.id} onClick={() => setLayout(l.id)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 text-xs transition ${layout === l.id ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
-                  <l.icon className="h-3.5 w-3.5" /><span className="hidden sm:inline">{l.label}</span>
+                  <l.icon className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t(l.key)}</span>
                 </button>
               ))}
             </div>

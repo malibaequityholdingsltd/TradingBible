@@ -17,6 +17,7 @@ import securityRouter from './security.js';
 import adsRouter from './ads.js';
 import adminRouter from './admin.js';
 import academyRouter from './academy.js';
+import digestRouter from './digest.js';
 
 const router = Router();
 
@@ -41,6 +42,7 @@ export default () => {
     router.use('/security', securityRouter);
     router.use('/ads', adsRouter);
     router.use('/admin', adminRouter);
+    router.use('/admin/digest', digestRouter);
     router.use('/academy', academyRouter);
 
     return router;

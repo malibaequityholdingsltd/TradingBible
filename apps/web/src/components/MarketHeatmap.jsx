@@ -1,6 +1,7 @@
 import React, { useRef, useCallback } from 'react';
 import { Download, RefreshCw } from 'lucide-react';
 import { useHeatmap } from '@/hooks/useHeatmap';
+import { useI18n } from '@/lib/i18n';
 
 const PERIODS = ['1h', '4h', '1d', '1w', '1M'];
 const CATEGORIES = [
@@ -24,6 +25,7 @@ function fmtPrice(n) {
 }
 
 export default function MarketHeatmap({ type, setType, period, setPeriod, onSelect, showCategoryTabs = true }) {
+  const { t } = useI18n();
   const { cells, status } = useHeatmap(type, period);
   const gridRef = useRef(null);
 
@@ -82,7 +84,7 @@ export default function MarketHeatmap({ type, setType, period, setPeriod, onSele
       </div>
 
       {status === 'loading' && !cells.length ? (
-        <div className="flex items-center justify-center gap-2 py-16 text-sm text-[#8a8577]"><RefreshCw className="h-4 w-4 animate-spin" /> Loading heatmap…</div>
+        <div className="flex items-center justify-center gap-2 py-16 text-sm text-[#8a8577]"><RefreshCw className="h-4 w-4 animate-spin" /> {t('mkt.loadingHeat')}</div>
       ) : (
         <div ref={gridRef} className={`grid gap-2 ${gridCols}`}>
           {cells.map((c) => (

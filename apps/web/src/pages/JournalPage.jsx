@@ -9,6 +9,8 @@ import { MARKETS, fmtMoney } from '@/lib/mockData';
 import { useTrades, computeStats } from '@/hooks/useTrades';
 import { syncAllBrokers } from '@/lib/brokerSync';
 import { useAuth } from '@/hooks/useAuth';
+import { usePlatformSettings } from '@/lib/platformSettings';
+import { useI18n } from '@/lib/i18n';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
@@ -105,6 +107,9 @@ function TradeCard({ trade, strategyWinRate, onView }) {
 export default function JournalPage() {
   const { trades, loading, reload } = useTrades();
   const { user } = useAuth();
+  const { settings } = usePlatformSettings();
+  const { t } = useI18n();
+  const syncOnly = settings.enforceBrokerSync !== false;
   const [q, setQ] = useState('');
   const [market, setMarket] = useState('All');
   const [direction, setDirection] = useState('All');
@@ -150,11 +155,11 @@ export default function JournalPage() {
   };
 
   return (
-    <AppLayout title="Trading Journal">
+    <AppLayout title={t('nav.journal')}>
       <div className="mb-5 flex flex-wrap items-center gap-2 sm:gap-3">
         <div className="flex min-w-[150px] flex-1 items-center gap-2 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2">
           <Search className="h-4 w-4 shrink-0 text-[#8a8577]" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search symbol, strategy…" className="w-full bg-transparent text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('jrn.search')} className="w-full bg-transparent text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none" />
         </div>
         <select value={market} onChange={(e) => setMarket(e.target.value)} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2 text-sm text-[#e9e7df] outline-none">
           {['All', ...MARKETS].map((m) => <option key={m} className="bg-[#0f0f14]">{m}</option>)}
@@ -164,21 +169,22 @@ export default function JournalPage() {
         </select>
         <button onClick={exportCsv} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/15 px-3 py-2 text-sm text-[#c9c4b4] transition hover:border-[#d4af37]/40"><Download className="h-4 w-4" /> <span className="hidden sm:inline">Export</span></button>
         <button onClick={syncBrokers} disabled={syncing} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60">
-          <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'Syncing…' : 'Sync Brokers'}
+          <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? t('jrn.syncing') : t('jrn.syncBrokers')}
         </button>
+        {syncOnly && <span className="rounded-full border border-[#d4af37]/25 bg-[#d4af37]/[0.06] px-3 py-1.5 text-[11px] font-medium text-[#d4af37]">{t('jrn.syncOnly')}</span>}
       </div>
 
       {loading ? (
-        <div className="glass flex items-center justify-center gap-2 rounded-2xl py-16 text-sm text-[#8a8577]"><RefreshCw className="h-4 w-4 animate-spin" /> Loading synced trades…</div>
+        <div className="glass flex items-center justify-center gap-2 rounded-2xl py-16 text-sm text-[#8a8577]"><RefreshCw className="h-4 w-4 animate-spin" /> {t('jrn.loadingTrades')}</div>
       ) : trades.length === 0 ? (
         <div className="glass flex flex-col items-center rounded-2xl px-6 py-16 text-center">
           <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]"><Plug className="h-6 w-6" /></div>
-          <h3 className="text-lg font-semibold text-[#f0ecdd]">No trades synced yet</h3>
-          <p className="mt-2 max-w-md text-sm text-[#8a8577]">Connect a broker (MT4, MT5, cTrader, DXtrade, Interactive Brokers, Binance, Bybit, Coinbase) and press Sync Brokers to import your trade history automatically — no manual entry.</p>
-          <Link to="/app/brokers" className="mt-5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f]">Connect a broker</Link>
+          <h3 className="text-lg font-semibold text-[#f0ecdd]">{t('jrn.noTrades')}</h3>
+          <p className="mt-2 max-w-md text-sm text-[#8a8577]">{t('jrn.noTradesSub')}</p>
+          <Link to="/app/brokers" className="mt-5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f]">{t('jrn.connectBroker')}</Link>
         </div>
       ) : rows.length === 0 ? (
-        <div className="glass rounded-2xl px-6 py-16 text-center text-sm text-[#8a8577]">No trades match your filters.</div>
+        <div className="glass rounded-2xl px-6 py-16 text-center text-sm text-[#8a8577]">{t('jrn.noMatch')}</div>
       ) : (
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
           {rows.map((t) => (

@@ -5,6 +5,7 @@ import { useWatchlists } from '@/hooks/useWatchlists';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useCandles } from '@/hooks/useCandles';
+import { useI18n } from '@/lib/i18n';
 import { analyzeSignal, SIGNAL_META } from '@/lib/signals';
 import apiServerClient from '@/lib/apiServerClient';
 
@@ -13,11 +14,12 @@ const IMPACT_DOT = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-slate-
 const fmt = (n) => n == null ? '—' : Math.abs(n) >= 1000 ? n.toLocaleString('en-US', { maximumFractionDigits: 0 }) : Math.abs(n) >= 1 ? n.toFixed(2) : n.toFixed(4);
 
 function WidgetShell({ icon: Icon, title, to, children }) {
+  const { t } = useI18n();
   return (
     <div className="glass rounded-2xl p-4 sm:p-5">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2"><Icon className="h-4 w-4 text-[#d4af37]" /><h3 className="font-semibold text-[#f0ecdd]">{title}</h3></div>
-        <Link to={to} className="flex items-center gap-1 text-xs text-[#d4af37] hover:underline">Open <ArrowRight className="h-3.5 w-3.5" /></Link>
+        <Link to={to} className="flex items-center gap-1 text-xs text-[#d4af37] hover:underline">{t('wdg.open')} <ArrowRight className="h-3.5 w-3.5" /></Link>
       </div>
       {children}
     </div>
@@ -26,12 +28,13 @@ function WidgetShell({ icon: Icon, title, to, children }) {
 
 function WatchlistWidget() {
   const { lists } = useWatchlists();
+  const { t } = useI18n();
   const list = lists.find((l) => l.isDefault) || lists[0];
   const symbols = useMemo(() => (Array.isArray(list?.symbols) ? list.symbols.slice(0, 6) : []), [list]);
   const { quotes } = useQuotes(symbols);
   return (
-    <WidgetShell icon={Star} title={list ? list.name : 'Watchlist'} to="/app/watchlists">
-      {symbols.length === 0 ? <p className="py-6 text-center text-xs text-[#8a8577]">Create a watchlist to see live prices.</p> : (
+    <WidgetShell icon={Star} title={list ? list.name : t('wdg.watchlist')} to="/app/watchlists">
+      {symbols.length === 0 ? <p className="py-6 text-center text-xs text-[#8a8577]">{t('wdg.createWl')}</p> : (
         <div className="space-y-1.5">
           {symbols.map((s) => { const q = quotes[s]; const pos = (q?.changePercent || 0) >= 0; return (
             <div key={s} className="flex items-center justify-between text-sm">
@@ -47,10 +50,11 @@ function WatchlistWidget() {
 
 function AlertsWidget() {
   const { alerts } = useAlerts();
+  const { t } = useI18n();
   const active = alerts.filter((a) => a.status === 'active').slice(0, 5);
   return (
-    <WidgetShell icon={Bell} title="Active Alerts" to="/app/alerts">
-      {active.length === 0 ? <p className="py-6 text-center text-xs text-[#8a8577]">No active price alerts.</p> : (
+    <WidgetShell icon={Bell} title={t('wdg.activeAlerts')} to="/app/alerts">
+      {active.length === 0 ? <p className="py-6 text-center text-xs text-[#8a8577]">{t('wdg.noAlerts')}</p> : (
         <div className="space-y-1.5">
           {active.map((a) => { const isPct = a.alertType.startsWith('pct'); const up = a.alertType.includes('up') || a.alertType === 'above'; return (
             <div key={a.id} className="flex items-center justify-between text-sm">
@@ -78,14 +82,16 @@ function MiniSignal({ symbol }) {
 }
 
 function SignalsWidget() {
+  const { t } = useI18n();
   return (
-    <WidgetShell icon={Radar} title="Trading Signals" to="/app/signals">
+    <WidgetShell icon={Radar} title={t('nav.signals')} to="/app/signals">
       <div className="space-y-1.5">{['BTCUSD', 'ETHUSD', 'AAPL', 'XAUUSD', 'EURUSD'].map((s) => <MiniSignal key={s} symbol={s} />)}</div>
     </WidgetShell>
   );
 }
 
 function CalendarWidget() {
+  const { t } = useI18n();
   const [events, setEvents] = useState([]);
   useEffect(() => {
     let alive = true;
@@ -100,8 +106,8 @@ function CalendarWidget() {
     return () => { alive = false; };
   }, []);
   return (
-    <WidgetShell icon={CalendarClock} title="Upcoming Events" to="/app/economic-calendar">
-      {events.length === 0 ? <p className="py-6 text-center text-xs text-[#8a8577]">No upcoming events.</p> : (
+    <WidgetShell icon={CalendarClock} title={t('wdg.upcomingEv')} to="/app/economic-calendar">
+      {events.length === 0 ? <p className="py-6 text-center text-xs text-[#8a8577]">{t('wdg.noEvents')}</p> : (
         <div className="space-y-2">
           {events.map((e) => (
             <div key={e.id} className="flex items-center gap-2 text-sm">

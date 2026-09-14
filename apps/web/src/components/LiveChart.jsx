@@ -7,6 +7,7 @@ import {
   Minimize2, Download, ChevronDown, Save, BookMarked, X,
 } from 'lucide-react';
 import pb from '@/lib/pocketbaseClient';
+import { useI18n } from '@/lib/i18n';
 import { useCandles } from '@/hooks/useCandles';
 import { useDrawings } from '@/hooks/useDrawings';
 import { SYMBOL_GROUPS } from '@/lib/symbols';
@@ -41,6 +42,7 @@ export default function LiveChart({
   const [selected, setSelected] = useState(null);
   const [tick, setTick] = useState(0); // forces overlay recompute on pan/zoom/resize
   const [tplOpen, setTplOpen] = useState(false);
+  const { t } = useI18n();
 
   const wrapRef = useRef(null);
   const chartApi = useRef(null);
@@ -333,10 +335,10 @@ export default function LiveChart({
             </svg>
           )}
           {status === 'error' && !candles.length && (
-            <div className="absolute inset-0 grid place-items-center text-sm text-red-400/80">Failed to load market data.</div>
+            <div className="absolute inset-0 grid place-items-center text-sm text-red-400/80">{t('mkt.failLoad')}</div>
           )}
           {status === 'loading' && !candles.length && (
-            <div className="absolute inset-0 grid place-items-center text-sm text-[#8a8577]">Loading chart…</div>
+            <div className="absolute inset-0 grid place-items-center text-sm text-[#8a8577]">{t('mkt.loadingChart')}</div>
           )}
         </div>
         {drawingsEnabled && tool !== 'cursor' && (

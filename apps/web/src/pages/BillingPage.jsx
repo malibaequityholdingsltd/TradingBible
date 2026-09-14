@@ -4,12 +4,11 @@ import AppLayout from '@/components/AppLayout';
 import PageHeader from '@/components/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { PLANS } from '@/lib/mockData';
+import { PLANS, translatePlan } from '@/lib/mockData';
+import { useI18n } from '@/lib/i18n';
 import pb from '@/lib/pocketbaseClient';
 import { openCheckout, getSubscription, cancelSubscription, resumeSubscription, switchPlan, getStripeConfig } from '@/lib/stripe';
 import { useWallet } from '@/hooks/useWallet';
-
-const PAID = PLANS.filter((p) => p.id !== 'trial');
 
 function fmtDate(iso) {
   if (!iso) return '—';
@@ -29,6 +28,8 @@ const STATUS_STYLE = {
 export default function BillingPage() {
   const { user, updateProfile } = useAuth();
   const { toast } = useToast();
+  const { t } = useI18n();
+  const PAID = PLANS.filter((p) => p.id !== 'trial').map((p) => translatePlan(t, p));
   const [sub, setSub] = useState(null);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +63,7 @@ export default function BillingPage() {
     try {
       await openCheckout(plan);
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Checkout unavailable', description: err?.message || 'Please try again.' });
+      toast({ variant: 'destructive', title: t('c.error'), description: err?.message || t('c.retry') });
     } finally { setBusy(null); }
   };
 
@@ -71,10 +72,10 @@ export default function BillingPage() {
     try {
       await switchPlan(plan);
       await updateProfile({ plan });
-      toast({ title: 'Plan updated', description: `You are now on the ${plan} plan. Charges are prorated.` });
+      toast({ title: t('c.done'), description: t('bill.switchTo', { name: plan }) });
       await load();
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Change failed', description: err?.message || 'Please try again.' });
+      toast({ variant: 'destructive', title: t('c.error'), description: err?.message || t('c.retry') });
     } finally { setBusy(null); }
   };
 
@@ -82,10 +83,10 @@ export default function BillingPage() {
     setBusy('cancel');
     try {
       await cancelSubscription(false);
-      toast({ title: 'Cancellation scheduled', description: 'Your plan stays active until the end of the billing period.' });
+      toast({ title: t('c.done'), description: t('bill.cancelSub') });
       await load();
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Cancel failed', description: err?.message || 'Please try again.' });
+      toast({ variant: 'destructive', title: t('c.error'), description: err?.message || t('c.retry') });
     } finally { setBusy(null); }
   };
 
@@ -93,10 +94,10 @@ export default function BillingPage() {
     setBusy('resume');
     try {
       await resumeSubscription();
-      toast({ title: 'Subscription resumed', description: 'Auto-renewal is back on.' });
+      toast({ title: t('c.done'), description: t('bill.resumeSub') });
       await load();
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Resume failed', description: err?.message || 'Please try again.' });
+      toast({ variant: 'destructive', title: t('c.error'), description: err?.message || t('c.retry') });
     } finally { setBusy(null); }
   };
 
@@ -104,11 +105,11 @@ export default function BillingPage() {
     setBusy(`wallet-${plan}`);
     try {
       await payWithWallet(plan);
-      toast({ title: 'Paid with wallet', description: `You are now on ${plan}.` });
+      toast({ title: t('bill.payWallet'), description: `${plan}` });
       await load();
       await updateProfile({ plan });
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Wallet pay failed', description: err?.message || 'Insufficient balance' });
+      toast({ variant: 'destructive', title: t('bill.payWallet'), description: err?.message || t('c.retry') });
     } finally { setBusy(null); }
   };
 
@@ -119,16 +120,16 @@ export default function BillingPage() {
   const periodEnd = (sub?.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null) || user?.currentPeriodEnd;
 
   return (
-    <AppLayout title="Billing & Subscription">
+    <AppLayout title={t('nav.billing')}>
       <PageHeader
         icon={Crown}
-        kicker="Subscription"
-        description="Manage your trial and paid subscription in one place. Changes apply instantly to your account access."
+        kicker={t('nav.billing')}
+        description={t('bill.manage')}
         actions={stripeEnv && (
           <span className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${stripeEnv === 'live' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#d4af37]/15 text-[#d4af37]'}`}>
             <span className={`h-1.5 w-1.5 rounded-full ${stripeEnv === 'live' ? 'bg-emerald-400' : 'bg-[#d4af37]'}`} />
-            Stripe {stripeEnv === 'live' ? 'Live' : 'Test'} environment
-            {stripeEnv !== 'live' && <span className="hidden font-normal text-[#8a8577] sm:inline">· test mode</span>}
+            {stripeEnv === 'live' ? t('bill.stripeLive') : t('bill.stripeTest')}
+            {stripeEnv !== 'live' && <span className="hidden font-normal text-[#8a8577] sm:inline">· {t('bill.testMode')}</span>}
           </span>
         )}
       />
@@ -137,34 +138,34 @@ export default function BillingPage() {
         <div className="mb-6 flex items-start gap-3 rounded-2xl border border-[#d4af37]/25 bg-[#d4af37]/[0.06] p-4">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#d4af37]" />
           <div className="text-sm text-[#c9c4b4]">
-            <p className="font-medium text-[#f0ecdd]">Stripe credentials are not fully configured yet.</p>
-            <p className="mt-1">Add <span className="font-mono text-[#d4af37]">STRIPE_SECRET_KEY</span> (sk_test_... or sk_live_...), <span className="font-mono text-[#d4af37]">STRIPE_PUBLISHABLE_KEY</span> (pk_...), <span className="font-mono text-[#d4af37]">STRIPE_WEBHOOK_SECRET</span> (whsec_...) and <span className="font-mono text-[#d4af37]">STRIPE_PRICE_PRO / ELITE / PROFESSIONAL / ACADEMY</span> to <span className="font-mono">apps/api/.env</span>. Create them at <span className="font-mono">dashboard.stripe.com</span> → Developers → API keys & Webhooks → Prices.</p>
+            <p className="font-medium text-[#f0ecdd]">Stripe — STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_*</p>
+            <p className="mt-1">dashboard.stripe.com → Developers → API keys & Webhooks → Prices.</p>
           </div>
         </div>
       )}
 
       {/* Wallet balance */}
       <div className="mb-4 glass rounded-2xl p-4 flex items-center justify-between">
-        <div className="text-sm text-[#8a8577]">Wallet balance: <span className="font-mono font-bold text-[#f0ecdd]">{money(walletBalance)}</span> <span className="text-xs">· <a href="/app/wallet" className="text-[#d4af37] hover:underline">Fund wallet</a></span></div>
-        <div className="text-xs text-[#6a665a]">Pay with wallet for instant activation</div>
+        <div className="text-sm text-[#8a8577]">{t('bill.walletBalance')} <span className="font-mono font-bold text-[#f0ecdd]">{money(walletBalance)}</span> <span className="text-xs">· <a href="/app/wallet" className="text-[#d4af37] hover:underline">{t('bill.fundWallet')}</a></span></div>
+        <div className="text-xs text-[#6a665a]">{t('bill.payInstant')}</div>
       </div>
 
       {/* Current subscription */}
       <div className="mb-6 glass rounded-2xl p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><Crown className="h-4 w-4 text-[#d4af37]" /> Current plan</div>
+            <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><Crown className="h-4 w-4 text-[#d4af37]" /> {t('bill.currentPlan')}</div>
             <div className="mt-2 text-2xl font-bold gold-text">{currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}</div>
-            {currentPlan === 'trial' && <div className="mt-1 text-xs text-[#8a8577]">You are on a 3-day trial — card required. Subscribe below to activate; your card is verified now and charged after the trial.</div>}
-            {status === 'trialing' && <div className="mt-1 text-xs text-[#d4af37]">Trial active — your card will be charged automatically when the 3-day trial ends unless you cancel.</div>}
+            {currentPlan === 'trial' && <div className="mt-1 text-xs text-[#8a8577]">{t('bill.trialMsg')}</div>}
+            {status === 'trialing' && <div className="mt-1 text-xs text-[#d4af37]">{t('bill.trialActive')}</div>}
             <div className="mt-2 flex items-center gap-2">
               {status && <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[status] || 'bg-white/10 text-[#8a8577]'}`}>{status.replace('_', ' ')}</span>}
-              {cancelScheduled && <span className="rounded-full bg-red-500/15 px-2.5 py-0.5 text-xs text-red-400">Cancels {fmtDate(periodEnd)}</span>}
+              {cancelScheduled && <span className="rounded-full bg-red-500/15 px-2.5 py-0.5 text-xs text-red-400">{t('bill.cancelsOn', { date: fmtDate(periodEnd) })}</span>}
             </div>
           </div>
           <div className="text-right text-sm text-[#8a8577]">
-            <div className="flex items-center justify-end gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-400" /> Secured by Stripe</div>
-            {periodEnd && <div className="mt-2">{cancelScheduled ? 'Access until' : 'Renews'} <span className="text-[#f0ecdd]">{fmtDate(periodEnd)}</span></div>}
+            <div className="flex items-center justify-end gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-400" /> {t('bill.securedBy')}</div>
+            {periodEnd && <div className="mt-2">{cancelScheduled ? t('bill.accessUntil') : t('bill.renews')} <span className="text-[#f0ecdd]">{fmtDate(periodEnd)}</span></div>}
           </div>
         </div>
 
@@ -180,7 +181,7 @@ export default function BillingPage() {
       </div>
 
       {/* Plans */}
-      <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-[#8a8577]">Plans</h3>
+      <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-[#8a8577]">{t('bill.plans')}</h3>
       <div className="grid max-w-2xl gap-4">
         {PAID.map((p) => {
           const isCurrent = currentPlan === p.id;
@@ -196,13 +197,13 @@ export default function BillingPage() {
               </div>
               <div className="mt-4 shrink-0 sm:mt-0 sm:w-44 space-y-2">
                 {isCurrent ? (
-                  <div className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-lg border border-emerald-500/30 py-2.5 text-sm font-semibold text-emerald-400"><Check className="h-4 w-4" /> Current plan</div>
+                  <div className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-lg border border-emerald-500/30 py-2.5 text-sm font-semibold text-emerald-400"><Check className="h-4 w-4" /> {t('bill.currentPlanBadge')}</div>
                 ) : canSwitch ? (
-                  <button disabled={busy} onClick={() => handleSwitch(p.id)} className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/25 py-2.5 text-sm font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60 disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowUpRight className="h-4 w-4" />} Switch to {p.name}</button>
+                  <button disabled={busy} onClick={() => handleSwitch(p.id)} className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/25 py-2.5 text-sm font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60 disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowUpRight className="h-4 w-4" />} {t('bill.switchTo', { name: p.name })}</button>
                 ) : (
                   <>
-                    <button disabled={busy} onClick={() => handleCheckout(p.id)} className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />} Subscribe</button>
-                    <button disabled={busy || walletBalance < p.price} onClick={() => handleWalletPay(p.id)} className="flex min-h-[36px] w-full items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/20 py-2 text-xs font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 disabled:opacity-40">{busy === `wallet-${p.id}` ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Wallet className="h-3 w-3" />} Pay with wallet</button>
+                    <button disabled={busy} onClick={() => handleCheckout(p.id)} className="flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />} {t('bill.subscribe')}</button>
+                    <button disabled={busy || walletBalance < p.price} onClick={() => handleWalletPay(p.id)} className="flex min-h-[36px] w-full items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/20 py-2 text-xs font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 disabled:opacity-40">{busy === `wallet-${p.id}` ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Wallet className="h-3 w-3" />} {t('bill.payWallet')}</button>
                   </>
                 )}
               </div>
@@ -212,18 +213,18 @@ export default function BillingPage() {
       </div>
 
       {/* Billing history */}
-      <h3 className="mb-3 mt-8 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-[#8a8577]"><Receipt className="h-4 w-4" /> Payment & invoice history</h3>
+      <h3 className="mb-3 mt-8 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-[#8a8577]"><Receipt className="h-4 w-4" /> {t('bill.history')}</h3>
       <div className="glass rounded-2xl">
         {loading ? (
-          <div className="px-4 py-10 text-center text-sm text-[#8a8577]">Loading…</div>
+          <div className="px-4 py-10 text-center text-sm text-[#8a8577]">{t('c.loading')}</div>
         ) : events.length === 0 ? (
-          <div className="px-4 py-12 text-center text-sm text-[#8a8577]">No billing activity yet. Your receipts and invoices will appear here after your first payment.</div>
+          <div className="px-4 py-12 text-center text-sm text-[#8a8577]">{t('bill.noActivity')}</div>
         ) : (
           <>
             {/* Desktop table */}
             <div className="no-scrollbar hidden overflow-x-auto sm:block">
               <table className="w-full min-w-[560px] text-sm">
-                <thead><tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">{['Date', 'Event', 'Plan', 'Amount', 'Status'].map((h) => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
+                <thead><tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">{[t('bill.hDate'), t('bill.hEvent'), t('bill.hPlan'), t('bill.hAmount'), t('bill.hStatus')].map((h) => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
                 <tbody>
                   {events.map((ev) => (
                     <tr key={ev.id} className="border-b border-white/5 hover:bg-white/[0.03]">
