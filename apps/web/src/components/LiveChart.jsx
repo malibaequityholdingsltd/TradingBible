@@ -15,7 +15,7 @@ import { INDICATOR_DEFS } from '@/lib/indicators';
 import IndicatorPicker from '@/components/IndicatorPicker';
 
 const TIMEFRAMES = ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w', '1M'];
-const TYPES = [{ id: 'candle', label: 'Candles' }, { id: 'area', label: 'Area' }, { id: 'line', label: 'Line' }];
+const TYPES = [{ id: 'candle', key: 'ch.candles' }, { id: 'area', key: 'ch.area' }, { id: 'line', key: 'ch.line' }];
 const TOOLS = [
   { id: 'cursor', label: 'Cursor', icon: MousePointer2, clicks: 0 },
   { id: 'trend', label: 'Trendline', icon: TrendingUp, clicks: 2 },
@@ -266,9 +266,9 @@ export default function LiveChart({
             ))}
           </div>
           <div className="flex overflow-hidden rounded-lg border border-[#d4af37]/15">
-            {TYPES.map((t) => (
-              <button key={t.id} onClick={() => setChartType(t.id)}
-                className={`px-2 py-1 text-[11px] transition ${chartType === t.id ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>{t.label}</button>
+            {TYPES.map((ty) => (
+              <button key={ty.id} onClick={() => setChartType(ty.id)}
+                className={`px-2 py-1 text-[11px] transition ${chartType === ty.id ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>{t(ty.key)}</button>
             ))}
           </div>
           <button onClick={() => setPickerOpen(true)} className="rounded-lg border border-[#d4af37]/15 px-2.5 py-1 text-[11px] text-[#c9c4b4] hover:text-[#e9e7df]">Indicators ({indicators.length})</button>

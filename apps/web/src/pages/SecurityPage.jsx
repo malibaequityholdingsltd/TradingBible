@@ -4,6 +4,7 @@ import QRCode from 'qrcode';
 import { Lock, ShieldCheck, Smartphone, KeyRound, Monitor, AlertTriangle, Plus, Trash2, Fingerprint, CheckCircle2, Power, XCircle } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useAuth } from '@/hooks/useAuth';
+import { useI18n } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 import { totpStatus, totpSetup, totpEnable, totpDisable, registerPasskey, passkeyStatus, removePasskey, accountDeactivate, accountReactivate, accountClose } from '@/lib/security';
 
@@ -13,6 +14,7 @@ function normalizeCode(value) {
 
 export default function SecurityPage() {
   const { user, updateProfile, logout } = useAuth();
+  const { t } = useI18n();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -64,7 +66,7 @@ export default function SecurityPage() {
       setQrDataUrl(url);
       setTotpCode('');
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Could not start setup', description: String(err?.message || 'Please try again.') });
+      toast({ variant: 'destructive', title: t('sec.setupFail'), description: String(err?.message || t('c.retry')) });
     } finally { setTotpBusy(false); }
   };
 
@@ -72,7 +74,7 @@ export default function SecurityPage() {
     e.preventDefault();
     const code = normalizeCode(totpCode);
     if (code.length !== 6) {
-      toast({ variant: 'destructive', title: 'Enter the 6-digit code', description: 'Open your authenticator app and enter the current code.' });
+      toast({ variant: 'destructive', title: t('auth.e.enter6'), description: t('auth.e.totpDesc') });
       return;
     }
     setTotpBusy(true);
@@ -82,9 +84,9 @@ export default function SecurityPage() {
       setSetupSecret('');
       setQrDataUrl('');
       setTotpCode('');
-      toast({ title: 'Authenticator enabled', description: 'You will be asked for a 6-digit code at each login.' });
+      toast({ title: t('sec.enabledT'), description: t('sec.enabledDesc') });
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Code rejected', description: String(err?.message || 'Check the code and try again.') });
+      toast({ variant: 'destructive', title: t('sec.rejected'), description: String(err?.message || t('sec.checkCode')) });
     } finally { setTotpBusy(false); }
   };
 
@@ -92,7 +94,7 @@ export default function SecurityPage() {
     e.preventDefault();
     const code = normalizeCode(totpCode);
     if (code.length !== 6) {
-      toast({ variant: 'destructive', title: 'Enter your current code', description: 'We need a valid code from your authenticator app to disable 2FA.' });
+      toast({ variant: 'destructive', title: t('auth.e.enter6'), description: t('sec.enterDisable') });
       return;
     }
     setTotpBusy(true);
@@ -100,9 +102,9 @@ export default function SecurityPage() {
       await totpDisable(code);
       setTotpEnabled(false);
       setTotpCode('');
-      toast({ title: 'Authenticator disabled', description: 'Two-factor codes are no longer required at login.' });
+      toast({ title: t('sec.disabledT'), description: t('sec.disabledDesc') });
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Code rejected', description: String(err?.message || 'Check the code and try again.') });
+      toast({ variant: 'destructive', title: t('sec.rejected'), description: String(err?.message || t('sec.checkCode')) });
     } finally { setTotpBusy(false); }
   };
 
@@ -112,9 +114,9 @@ export default function SecurityPage() {
       await registerPasskey();
       const pStatus = await passkeyStatus();
       setPasskeys(pStatus?.passkeys || []);
-      toast({ title: 'Face ID / passkey added', description: 'You can now sign in with Face ID on this device.' });
+      toast({ title: t('sec.pkAdded'), description: t('sec.pkAddedDesc') });
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Could not add passkey', description: String(err?.message || 'Please try again.') });
+      toast({ variant: 'destructive', title: t('sec.pkAddFail'), description: String(err?.message || t('c.retry')) });
     } finally { setPkBusy(false); }
   };
 
@@ -122,9 +124,9 @@ export default function SecurityPage() {
     try {
       await removePasskey(credId);
       setPasskeys((prev) => prev.filter((p) => p.credId !== credId));
-      toast({ title: 'Passkey removed', description: 'Face ID sign-in is no longer available for that device.' });
+      toast({ title: t('sec.pkRemoved'), description: t('sec.pkRemovedDesc') });
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Could not remove passkey', description: String(err?.message || 'Please try again.') });
+      toast({ variant: 'destructive', title: t('sec.pkRemoveFail'), description: String(err?.message || t('c.retry')) });
     }
   };
 
@@ -134,9 +136,9 @@ export default function SecurityPage() {
       const merged = { ...(user?.user_settings || {}), loginNotifications: mode === 'off' ? false : true };
       await updateProfile({ user_settings: merged });
       setNotifyMode(mode);
-      toast({ title: mode === 'off' ? 'Login notifications off' : 'Login notifications on', description: mode === 'off' ? 'You will no longer receive emails about new sign-ins.' : 'We will email you whenever a new device signs in.' });
+      toast({ title: mode === 'off' ? t('sec.notifOff') : t('sec.notifOn'), description: mode === 'off' ? t('sec.notifOffDesc') : t('sec.notifOnDesc') });
     } catch {
-      toast({ variant: 'destructive', title: 'Update failed', description: 'Please try again.' });
+      toast({ variant: 'destructive', title: t('sec.updateFail'), description: t('c.retry') });
     } finally { setNotifyBusy(false); }
   };
 
@@ -145,10 +147,10 @@ export default function SecurityPage() {
     try {
       await accountDeactivate();
       await logout();
-      toast({ title: 'Account deactivated', description: 'Your account is paused. Log in again anytime to reactivate it.' });
+      toast({ title: t('sec.deactivated'), description: t('sec.deactivatedDesc') });
       navigate('/');
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Could not deactivate', description: String(err?.message || 'Please try again.') });
+      toast({ variant: 'destructive', title: t('sec.deactivateFail'), description: String(err?.message || t('c.retry')) });
     } finally { setAccountBusy(false); }
   };
 
@@ -156,9 +158,9 @@ export default function SecurityPage() {
     setAccountBusy(true);
     try {
       await accountReactivate();
-      toast({ title: 'Account reactivated', description: 'Your account is fully active again.' });
+      toast({ title: t('sec.reactivated'), description: t('sec.reactivatedDesc') });
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Could not reactivate', description: String(err?.message || 'Please try again.') });
+      toast({ variant: 'destructive', title: t('sec.reactivateFail'), description: String(err?.message || t('c.retry')) });
     } finally { setAccountBusy(false); }
   };
 
@@ -167,31 +169,31 @@ export default function SecurityPage() {
     try {
       await accountClose();
       await logout();
-      toast({ title: 'Account closed', description: 'Your account has been closed. Contact support to reopen it.' });
+      toast({ title: t('sec.closedAcc'), description: t('sec.closedAccDesc') });
       navigate('/');
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Could not close account', description: String(err?.message || 'Please try again.') });
+      toast({ variant: 'destructive', title: t('sec.closeFail'), description: String(err?.message || t('c.retry')) });
     } finally { setAccountBusy(false); }
   };
 
   return (
-    <AppLayout title="Security">
+    <AppLayout title={t('nav.security')}>
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="glass rounded-2xl p-6 lg:col-span-2">
           <div className="flex items-start gap-4">
             <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl ${totpEnabled ? 'bg-emerald-400/12 text-emerald-400' : 'bg-[#d4af37]/12 text-[#d4af37]'}`}><ShieldCheck className="h-6 w-6" /></div>
             <div className="flex-1">
               <div className="flex items-center justify-between gap-3">
-                <h3 className="font-semibold text-[#f0ecdd]">Authenticator app (2FA)</h3>
+                <h3 className="font-semibold text-[#f0ecdd]">{t('sec.totp')}</h3>
                 {!setupSecret && <button
                   onClick={totpEnabled ? () => beginTotpSetup() : beginTotpSetup}
                   disabled={totpLoading || totpBusy}
                   className="min-h-[44px] rounded-lg bg-[#d4af37] px-4 text-sm font-semibold text-black transition hover:bg-[#e3c24f] disabled:opacity-60"
-                >{totpLoading ? 'Loading…' : (totpEnabled ? 'Change secret' : 'Enable')}</button>}
+                >{totpLoading ? t('c.loading') : (totpEnabled ? t('sec.changeSecret') : t('sec.enable'))}</button>}
               </div>
-              <p className="mt-1 text-sm text-[#8a8577]">Use Google Authenticator, Authy or any TOTP app. When enabled, a 6-digit code is required at login — the strongest protection against stolen passwords.</p>
+              <p className="mt-1 text-sm text-[#8a8577]">{t('sec.totpBody')}</p>
               <div className={`mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs ${totpEnabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-[#d4af37]/10 text-[#d4af37]'}`}>
-                <span className={`h-2 w-2 rounded-full ${totpEnabled ? 'bg-emerald-400' : 'bg-[#d4af37]'}`} /> {totpEnabled ? 'Active — authenticator code required at login' : 'Inactive'}
+                <span className={`h-2 w-2 rounded-full ${totpEnabled ? 'bg-emerald-400' : 'bg-[#d4af37]'}`} /> {totpEnabled ? t('sec.active') : t('sec.inactive')}
               </div>
             </div>
           </div>
@@ -199,13 +201,13 @@ export default function SecurityPage() {
           {setupSecret && !totpEnabled && (
             <form onSubmit={confirmTotp} className="mt-6 grid gap-4 rounded-2xl border border-[#d4af37]/20 bg-black/20 p-5 sm:grid-cols-[auto_1fr]">
               <div className="flex flex-col items-center justify-center gap-2">
-                {qrDataUrl ? <img src={qrDataUrl} alt="Scan with your authenticator app" className="h-40 w-40 rounded-xl bg-transparent" /> : <div className="h-40 w-40 animate-pulse rounded-xl bg-white/10" />}
-                <span className="text-[11px] text-[#8a8577]">Scan with your authenticator app</span>
+                {qrDataUrl ? <img src={qrDataUrl} alt={t('sec.scanWith')} className="h-40 w-40 rounded-xl bg-transparent" /> : <div className="h-40 w-40 animate-pulse rounded-xl bg-white/10" />}
+                <span className="text-[11px] text-[#8a8577]">{t('sec.scanWith')}</span>
               </div>
               <div className="flex flex-col justify-center gap-3">
-                <p className="text-sm text-[#c9c4b4]">Can't scan? Enter this secret manually:</p>
+                <p className="text-sm text-[#c9c4b4]">{t('sec.cantScan')}</p>
                 <code className="select-all rounded-lg bg-white/[0.06] px-3 py-2 text-xs tracking-widest text-[#d4af37]">{setupSecret.replace(/(.{4})/g, '$1 ').trim()}</code>
-                <FieldRow label="Current 6-digit code" value={totpCode} onChange={setTotpCode} busy={totpBusy} buttonLabel="Verify & enable" disabled={!totpCode} />
+                <FieldRow label={t('sec.currentCode')} value={totpCode} onChange={setTotpCode} busy={totpBusy} buttonLabel={t('sec.verifyEnable')} disabled={!totpCode} t={t} />
               </div>
             </form>
           )}
@@ -213,31 +215,31 @@ export default function SecurityPage() {
           {totpEnabled && !setupSecret && (
             <form onSubmit={disableTotp} className="mt-6 grid gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:grid-cols-[1fr_auto]">
               <div>
-                <label className="mb-1 block text-xs text-[#8a8577]">Enter a current code to disable two-factor authentication</label>
-                <input value={totpCode} onChange={(e) => setTotpCode(normalizeCode(e.target.value))} inputMode="numeric" maxLength={6} placeholder="6-digit code" className="min-h-[44px] w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/50" />
+                <label className="mb-1 block text-xs text-[#8a8577]">{t('sec.enterDisable')}</label>
+                <input value={totpCode} onChange={(e) => setTotpCode(normalizeCode(e.target.value))} inputMode="numeric" maxLength={6} placeholder={t('sec.codePh')} className="min-h-[44px] w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/50" />
               </div>
-              <button disabled={totpBusy || normalizeCode(totpCode).length !== 6} className="min-h-[44px] self-end rounded-lg border border-red-400/40 px-4 text-sm font-semibold text-red-400 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-50">Disable 2FA</button>
+              <button disabled={totpBusy || normalizeCode(totpCode).length !== 6} className="min-h-[44px] self-end rounded-lg border border-red-400/40 px-4 text-sm font-semibold text-red-400 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-50">{t('sec.disable2fa')}</button>
             </form>
           )}
 
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
             {[
-              { icon: Smartphone, t: 'Authenticator codes', d: '6-digit codes from your phone, valid 30 seconds' },
-              { icon: KeyRound, t: 'Offline & private', d: 'Secrets are stored on your device, never on a server' },
-              { icon: Lock, t: 'Account-wide', d: 'Protects login from every device' },
+              { icon: Smartphone, tk: 'sec.f1t', dk: 'sec.f1b' },
+              { icon: KeyRound, tk: 'sec.f2t', dk: 'sec.f2b' },
+              { icon: Lock, tk: 'sec.f3t', dk: 'sec.f3b' },
             ].map((f) => (
-              <div key={f.t} className="rounded-xl bg-white/[0.03] p-4"><f.icon className="h-5 w-5 text-[#d4af37]" /><div className="mt-2 text-sm font-medium text-[#e9e7df]">{f.t}</div><div className="mt-0.5 text-xs text-[#8a8577]">{f.d}</div></div>
+              <div key={f.tk} className="rounded-xl bg-white/[0.03] p-4"><f.icon className="h-5 w-5 text-[#d4af37]" /><div className="mt-2 text-sm font-medium text-[#e9e7df]">{t(f.tk)}</div><div className="mt-0.5 text-xs text-[#8a8577]">{t(f.dk)}</div></div>
             ))}
           </div>
         </div>
 
         <div className="glass rounded-2xl p-6">
-          <h3 className="mb-4 flex items-center gap-2 font-semibold text-[#f0ecdf]"><AlertTriangle className="h-4 w-4 text-[#d4af37]" /> Security tips</h3>
+          <h3 className="mb-4 flex items-center gap-2 font-semibold text-[#f0ecdf]"><AlertTriangle className="h-4 w-4 text-[#d4af37]" /> {t('sec.tips')}</h3>
           <ul className="space-y-3 text-sm text-[#c9c4b4]">
-            <li className="flex gap-2"><span className="text-[#d4af37]">•</span> Enable the authenticator app — it protects you even if your password is stolen.</li>
-            <li className="flex gap-2"><span className="text-[#d4af37]">•</span> Add Face ID to sign in with your face or fingerprint instantly.</li>
-            <li className="flex gap-2"><span className="text-[#d4af37]">•</span> Keep login notifications on to catch unusual sign-ins.</li>
-            <li className="flex gap-2"><span className="text-[#d4af37]">•</span> Never share verification codes — we will never ask for them.</li>
+            <li className="flex gap-2"><span className="text-[#d4af37]">•</span> {t('sec.tip1')}</li>
+            <li className="flex gap-2"><span className="text-[#d4af37]">•</span> {t('sec.tip2')}</li>
+            <li className="flex gap-2"><span className="text-[#d4af37]">•</span> {t('sec.tip3')}</li>
+            <li className="flex gap-2"><span className="text-[#d4af37]">•</span> {t('sec.tip4')}</li>
           </ul>
         </div>
       </div>
@@ -245,12 +247,12 @@ export default function SecurityPage() {
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
         <div className="glass rounded-2xl p-6">
           <h3 className="mb-4 flex items-center justify-between gap-2 font-semibold text-[#f0ecdd]">
-            <span className="flex items-center gap-2"><Fingerprint className="h-4 w-4 text-[#d4af37]" /> Face ID / passkeys</span>
-            <button onClick={addPasskey} disabled={pkBusy || !passkeySupported || pkLoading} className="flex min-h-[44px] items-center gap-1.5 rounded-lg bg-[#d4af37] px-4 text-sm font-semibold text-black transition hover:bg-[#e3c24f] disabled:cursor-not-allowed disabled:opacity-60"><Plus className="h-4 w-4" /> Add</button>
+            <span className="flex items-center gap-2"><Fingerprint className="h-4 w-4 text-[#d4af37]" /> {t('sec.faceId')}</span>
+            <button onClick={addPasskey} disabled={pkBusy || !passkeySupported || pkLoading} className="flex min-h-[44px] items-center gap-1.5 rounded-lg bg-[#d4af37] px-4 text-sm font-semibold text-black transition hover:bg-[#e3c24f] disabled:cursor-not-allowed disabled:opacity-60"><Plus className="h-4 w-4" /> {t('sec.add')}</button>
           </h3>
-          {!passkeySupported && <p className="rounded-xl bg-red-400/10 p-3 text-xs text-red-300">This device or browser does not support passkeys. Use a recent version of Chrome, Safari, Edge or Firefox.</p>}
-          {pkLoading ? <p className="text-sm text-[#8a8577]">Loading…</p> : passkeys.length === 0 ? (
-            <p className="rounded-xl bg-white/[0.03] p-4 text-sm text-[#8a8577]">No Face ID / passkeys yet. Add one to sign in with your face or fingerprint instead of a code.</p>
+          {!passkeySupported && <p className="rounded-xl bg-red-400/10 p-3 text-xs text-red-300">{t('sec.noPkSupport')}</p>}
+          {pkLoading ? <p className="text-sm text-[#8a8577]">{t('c.loading')}</p> : passkeys.length === 0 ? (
+            <p className="rounded-xl bg-white/[0.03] p-4 text-sm text-[#8a8577]">{t('sec.noPk')}</p>
           ) : (
             <div className="space-y-2">
               {passkeys.map((p) => (
@@ -267,12 +269,12 @@ export default function SecurityPage() {
         </div>
 
         <div className="glass rounded-2xl p-6">
-          <h3 className="mb-4 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Monitor className="h-4 w-4 text-[#d4af37]" /> Login notifications</h3>
-          <p className="text-sm text-[#8a8577]">Receive an email whenever a new device signs in to your account, with device, IP and time so you spot suspicious activity fast.</p>
+          <h3 className="mb-4 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Monitor className="h-4 w-4 text-[#d4af37]" /> {t('sec.loginNotif')}</h3>
+          <p className="text-sm text-[#8a8577]">{t('sec.loginNotifBody')}</p>
           <div className="mt-4 space-y-2">
-            {[{ mode: 'email', t: 'Email me on every new sign-in', d: 'Recommended — works on any device' }, { mode: 'off', t: 'Off', d: 'No sign-in emails' }].map((opt) => (
+            {[{ mode: 'email', tk: 'sec.emailEvery', dk: 'sec.emailEveryDesc' }, { mode: 'off', tk: 'sec.offNotif', dk: 'sec.offDesc' }].map((opt) => (
               <label key={opt.mode} className={`flex min-h-[56px] cursor-pointer items-center justify-between gap-3 rounded-xl border px-4 py-3 transition ${notifyMode === opt.mode ? 'border-[#d4af37]/50 bg-[#d4af37]/[0.07]' : 'border-white/10 bg-white/[0.03] hover:border-white/20'}`}>
-                <div><div className="text-sm font-medium text-[#e9e7df]">{opt.t}</div><div className="text-xs text-[#8a8577]">{opt.d}</div></div>
+                <div><div className="text-sm font-medium text-[#e9e7df]">{t(opt.tk)}</div><div className="text-xs text-[#8a8577]">{t(opt.dk)}</div></div>
                 <input type="radio" name="loginNotifications" className="h-4 w-4 accent-[#d4af37]" checked={notifyMode === opt.mode} disabled={notifyBusy} onChange={() => toggleNotifications(opt.mode)} />
               </label>
             ))}
@@ -281,32 +283,32 @@ export default function SecurityPage() {
       </div>
 
       <div className="mt-5 glass rounded-2xl p-6">
-        <h3 className="mb-4 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Monitor className="h-4 w-4 text-[#d4af37]" /> Active sessions</h3>
-        <p className="text-sm text-[#8a8577]">Sign-in history is recorded for every login. You can review the most recent events below.</p>
-        <div className="mt-4 rounded-xl bg-white/[0.03] p-4 text-sm text-[#8a8577]">
-          Recent sign-ins appear here grouped by device — new logins are tracked automatically from your next sign-in.
-        </div>
+          <h3 className="mb-4 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Monitor className="h-4 w-4 text-[#d4af37]" /> {t('sec.sessions')}</h3>
+          <p className="text-sm text-[#8a8577]">{t('sec.sessionsBody')}</p>
+          <div className="mt-4 rounded-xl bg-white/[0.03] p-4 text-sm text-[#8a8577]">
+            {t('sec.sessionsNote')}
+          </div>
       </div>
 
       <div className="mt-5 rounded-2xl border border-red-400/25 bg-red-400/[0.05] p-6">
-        <h3 className="mb-1 flex items-center gap-2 font-semibold text-red-300"><AlertTriangle className="h-4 w-4" /> Danger zone</h3>
-        <p className="text-sm text-[#8a8577]">Account lifecycle actions. Deactivating pauses your account — you can reactivate it by logging in again. Closing permanently blocks login while keeping your data safe.</p>
+        <h3 className="mb-1 flex items-center gap-2 font-semibold text-red-300"><AlertTriangle className="h-4 w-4" /> {t('sec.danger')}</h3>
+        <p className="text-sm text-[#8a8577]">{t('sec.dangerBody')}</p>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-            <div className="flex items-center gap-2 font-medium text-[#e9e7df]"><Power className="h-4 w-4 text-[#d4af37]" /> Deactivate account</div>
-            <p className="mt-1 text-xs text-[#8a8577]">Pause your account temporarily. All data is kept; logging back in reactivates it instantly.</p>
-            <button onClick={deactivateAccount} disabled={accountBusy} className="mt-3 min-h-[44px] rounded-lg border border-[#d4af37]/40 px-4 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-50">Deactivate</button>
+            <div className="flex items-center gap-2 font-medium text-[#e9e7df]"><Power className="h-4 w-4 text-[#d4af37]" /> {t('sec.deactivate')}</div>
+            <p className="mt-1 text-xs text-[#8a8577]">{t('sec.deactivateBody')}</p>
+            <button onClick={deactivateAccount} disabled={accountBusy} className="mt-3 min-h-[44px] rounded-lg border border-[#d4af37]/40 px-4 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-50">{t('sec.deactivateBtn')}</button>
           </div>
           <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-            <div className="flex items-center gap-2 font-medium text-[#e9e7df]"><XCircle className="h-4 w-4 text-red-400" /> Close account</div>
-            <p className="mt-1 text-xs text-[#8a8577]">Permanently block login. Your data is retained for compliance and legal purposes.</p>
+            <div className="flex items-center gap-2 font-medium text-[#e9e7df]"><XCircle className="h-4 w-4 text-red-400" /> {t('sec.close')}</div>
+            <p className="mt-1 text-xs text-[#8a8577]">{t('sec.closeBody')}</p>
             {confirmClose ? (
               <div className="mt-3 flex items-center gap-2">
-                <button onClick={closeAccount} disabled={accountBusy} className="min-h-[44px] rounded-lg bg-red-500 px-4 text-sm font-semibold text-white transition hover:bg-red-600 disabled:opacity-50">Confirm close</button>
-                <button onClick={() => setConfirmClose(false)} disabled={accountBusy} className="min-h-[44px] rounded-lg border border-white/10 px-4 text-sm text-[#8a8577] transition hover:bg-white/5">Cancel</button>
+                <button onClick={closeAccount} disabled={accountBusy} className="min-h-[44px] rounded-lg bg-red-500 px-4 text-sm font-semibold text-white transition hover:bg-red-600 disabled:opacity-50">{t('sec.confirmClose')}</button>
+                <button onClick={() => setConfirmClose(false)} disabled={accountBusy} className="min-h-[44px] rounded-lg border border-white/10 px-4 text-sm text-[#8a8577] transition hover:bg-white/5">{t('c.cancel')}</button>
               </div>
             ) : (
-              <button onClick={() => setConfirmClose(true)} disabled={accountBusy} className="mt-3 min-h-[44px] rounded-lg border border-red-400/40 px-4 text-sm font-semibold text-red-400 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-50">Close account</button>
+              <button onClick={() => setConfirmClose(true)} disabled={accountBusy} className="mt-3 min-h-[44px] rounded-lg border border-red-400/40 px-4 text-sm font-semibold text-red-400 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-50">{t('sec.close')}</button>
             )}
           </div>
         </div>
@@ -315,14 +317,15 @@ export default function SecurityPage() {
   );
 }
 
-function FieldRow({ label, value, onChange, busy, buttonLabel, disabled }) {
+function FieldRow({ label, value, onChange, busy, buttonLabel, disabled, t }) {
+  const tt = t || ((k) => k);
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
       <div className="flex-1">
         <label className="mb-1 block text-xs text-[#8a8577]">{label}</label>
-        <input value={value} onChange={(e) => onChange(normalizeCode(e.target.value))} inputMode="numeric" maxLength={6} placeholder="6-digit code" className="min-h-[44px] w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/50" />
+        <input value={value} onChange={(e) => onChange(normalizeCode(e.target.value))} inputMode="numeric" maxLength={6} placeholder={tt('sec.codePh')} className="min-h-[44px] w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/50" />
       </div>
-      <button disabled={busy || disabled} className="min-h-[44px] rounded-lg bg-[#d4af37] px-5 text-sm font-semibold text-black transition hover:bg-[#e3c24f] disabled:cursor-not-allowed disabled:opacity-60">{busy ? 'Please wait…' : buttonLabel}</button>
+      <button disabled={busy || disabled} className="min-h-[44px] rounded-lg bg-[#d4af37] px-5 text-sm font-semibold text-black transition hover:bg-[#e3c24f] disabled:cursor-not-allowed disabled:opacity-60">{busy ? tt('auth.e.plsWait') : buttonLabel}</button>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useState, useCallback, useEffect } from 'react'
 import { CandlestickChart, LineChart as LineIcon, BarChart3, AreaChart as AreaIcon, ZoomIn, ZoomOut, Maximize2, Minimize2, Download, RotateCcw, Plus, X } from 'lucide-react';
 import { INDICATOR_DEFS } from '@/lib/indicators';
 import { useTheme } from '@/hooks/useTheme';
+import { useI18n } from '@/lib/i18n';
 
 const GOLD = '#d4af37';
 const GREEN = '#34d399';
@@ -9,10 +10,10 @@ const RED = '#e06666';
 
 const TIMEFRAMES = ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w', '1M'];
 const CHART_TYPES = [
-  { id: 'candle', label: 'Candles', icon: CandlestickChart },
-  { id: 'line', label: 'Line', icon: LineIcon },
-  { id: 'bar', label: 'Bar', icon: BarChart3 },
-  { id: 'area', label: 'Area', icon: AreaIcon },
+  { id: 'candle', key: 'ch.candles', icon: CandlestickChart },
+  { id: 'line', key: 'ch.line', icon: LineIcon },
+  { id: 'bar', key: 'ch.bar', icon: BarChart3 },
+  { id: 'area', key: 'ch.area', icon: AreaIcon },
 ];
 
 function fmt(n) {
@@ -35,6 +36,7 @@ export default function AdvancedChart({
   const svgRef = useRef(null);
   const wrapRef = useRef(null);
   const { theme } = useTheme();
+  const { t } = useI18n();
   const isLight = theme === 'light';
   const [dims, setDims] = useState({ w: 800, h: compact ? 260 : 460 });
   const [view, setView] = useState(null); // {start,end} index window
@@ -95,7 +97,7 @@ export default function AdvancedChart({
   }, [dims, symbol, timeframe]);
 
   if (!candles.length || !view) {
-    return <div ref={wrapRef} className="grid h-64 place-items-center text-sm text-[#8a8577]">Loading chart data…</div>;
+    return <div ref={wrapRef} className="grid h-64 place-items-center text-sm text-[#8a8577]">{t('ch.loadingData')}</div>;
   }
 
   const start = Math.max(0, Math.min(view.start, candles.length - 2));
@@ -224,10 +226,10 @@ export default function AdvancedChart({
           </div>
           <div className="ml-auto flex flex-wrap items-center gap-1.5">
             <div className="flex overflow-hidden rounded-lg border border-[#d4af37]/15">
-              {CHART_TYPES.map((t) => (
-                <button key={t.id} onClick={() => onChartType?.(t.id)} title={t.label}
-                  className={`grid h-7 w-7 place-items-center transition ${chartType === t.id ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
-                  <t.icon className="h-3.5 w-3.5" />
+              {CHART_TYPES.map((ct) => (
+                <button key={ct.id} onClick={() => onChartType?.(ct.id)} title={t(ct.key)}
+                  className={`grid h-7 w-7 place-items-center transition ${chartType === ct.id ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
+                  <ct.icon className="h-3.5 w-3.5" />
                 </button>
               ))}
             </div>
@@ -236,14 +238,14 @@ export default function AdvancedChart({
               {TIMEFRAMES.map((tf) => <option key={tf} value={tf}>{tf}</option>)}
             </select>
             {onOpenIndicators && (
-              <button onClick={onOpenIndicators} className="flex h-7 items-center gap-1 rounded-lg border border-[#d4af37]/15 px-2 text-xs text-[#d4af37] hover:border-[#d4af37]/40"><Plus className="h-3 w-3" /> Indicators</button>
+              <button onClick={onOpenIndicators} className="flex h-7 items-center gap-1 rounded-lg border border-[#d4af37]/15 px-2 text-xs text-[#d4af37] hover:border-[#d4af37]/40"><Plus className="h-3 w-3" /> {t('ch.indicators', { n: indicators.length })}</button>
             )}
-            <button onClick={() => zoom(0.7)} title="Zoom in" className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><ZoomIn className="h-3.5 w-3.5" /></button>
-            <button onClick={() => zoom(1.4)} title="Zoom out" className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><ZoomOut className="h-3.5 w-3.5" /></button>
-            <button onClick={reset} title="Reset" className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><RotateCcw className="h-3.5 w-3.5" /></button>
-            <button onClick={exportPng} title="Export PNG" className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><Download className="h-3.5 w-3.5" /></button>
+            <button onClick={() => zoom(0.7)} title={t('ch.zoomIn')} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><ZoomIn className="h-3.5 w-3.5" /></button>
+            <button onClick={() => zoom(1.4)} title={t('ch.zoomOut')} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><ZoomOut className="h-3.5 w-3.5" /></button>
+            <button onClick={reset} title={t('ch.reset')} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><RotateCcw className="h-3.5 w-3.5" /></button>
+            <button onClick={exportPng} title={t('ch.exportPng')} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><Download className="h-3.5 w-3.5" /></button>
             {onToggleFullscreen && (
-              <button onClick={onToggleFullscreen} title="Fullscreen" className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]">{fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}</button>
+              <button onClick={onToggleFullscreen} title={t('ch.fullscreen')} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]">{fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}</button>
             )}
           </div>
         </div>

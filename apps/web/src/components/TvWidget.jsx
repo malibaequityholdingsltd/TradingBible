@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { MonitorPlay, X, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
+import { useI18n } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 
 const POS_KEY = 'tb:tv-btn-pos';
@@ -43,6 +44,7 @@ function loadPos() {
 // Draggable, edge-snapping TradingBible TV launcher — opens a mini
 // broadcast player with the rotating ad feed (same UX as the AI chat bubble).
 export default function TvWidget() {
+  const { t } = useI18n();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [ads, setAds] = useState([]);
   const [index, setIndex] = useState(0);
@@ -194,7 +196,7 @@ export default function TvWidget() {
             {!ad ? (
               <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
                 <MonitorPlay className="h-9 w-9 text-[#6a665a]" />
-                <p className="text-sm text-[#8a8577]">No broadcasts are live right now.</p>
+                <p className="text-sm text-[#8a8577]">{t('tv.noLive')}</p>
               </div>
             ) : (
               <div key={ad.id} className="absolute inset-0">

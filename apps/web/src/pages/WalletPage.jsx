@@ -198,13 +198,13 @@ export default function WalletPage() {
 						<div className="px-4 py-10 text-center text-sm text-[#8a8577]">{t('wal.noLedger')}</div>
 					) : (
 						<div className="divide-y divide-white/5">
-							{ledger.transactions.map(t => (
-								<div key={t.id} className="flex items-center justify-between px-4 py-3 text-sm">
+							{ledger.transactions.map(tx => (
+								<div key={tx.id} className="flex items-center justify-between px-4 py-3 text-sm">
 									<div>
-										<div className="font-medium text-[#f0ecdd]">{t.type} <span className="text-[#8a8577]">{t.currency}</span></div>
-										<div className="text-xs text-[#6a665a]">{new Date(t.created).toLocaleString()} · {t.status} {t.reference ? `· ${shortAddr(t.reference)}` : ''}</div>
+										<div className="font-medium text-[#f0ecdd]">{{ deposit: t('wal.deposit'), withdraw: t('wal.withdraw'), withdraw_crypto: t('wal.withdraw'), pay: t('bill.payWallet') }[tx.type] || tx.type} <span className="text-[#8a8577]">{tx.currency}</span></div>
+										<div className="text-xs text-[#6a665a]">{new Date(tx.created).toLocaleString()} · {tx.status} {tx.reference ? `· ${shortAddr(tx.reference)}` : ''}</div>
 									</div>
-									<div className={`font-mono font-bold ${Number(t.amount) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{Number(t.amount) > 0 ? '+' : ''}{fmtMoney(Number(t.amount))}</div>
+									<div className={`font-mono font-bold ${Number(tx.amount) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{Number(tx.amount) > 0 ? '+' : ''}{fmtMoney(Number(tx.amount))}</div>
 								</div>
 							))}
 						</div>

@@ -13,15 +13,16 @@ import Footer from '@/components/Footer';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { homeRouteForUser } from '@/lib/homeRoute';
 
-function timeAgo(iso) {
+function timeAgo(iso, t) {
   if (!iso) return '—';
   const diff = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (diff < 1) return 'just now';
-  if (diff < 60) return `${diff} min ago`;
-  return `${Math.round(diff / 60)}h ago`;
+  if (diff < 1) return t ? t('bro.justNow') : 'just now';
+  if (diff < 60) return t ? t('bro.minAgo', { n: diff }) : `${diff} min ago`;
+  return t ? t('bro.hrAgo', { n: Math.round(diff / 60) }) : `${Math.round(diff / 60)}h ago`;
 }
 
 function ConnectedList({ items }) {
+  const { t } = useI18n();
   if (!items.length) return null;
   return (
     <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -30,7 +31,7 @@ function ConnectedList({ items }) {
           <div className="flex items-center justify-between gap-1"><span className="min-w-0 truncate font-semibold text-[#f0ecdd]">{c.broker}</span><span className={`flex shrink-0 items-center gap-1.5 text-xs ${c.status === 'synced' ? 'text-emerald-400' : 'text-[#d4af37]'}`}><span className={`h-1.5 w-1.5 rounded-full ${c.status === 'synced' ? 'bg-emerald-400' : 'bg-[#d4af37] animate-pulse'}`} />{c.status === 'synced' ? 'Synced' : 'Syncing'}</span></div>
           <div className="mt-1 truncate font-mono text-xs text-[#8a8577]">{c.accountRef}</div>
           <div className="mt-2 truncate font-mono text-xl font-semibold text-[#f0ecdd]">{fmtMoney(c.balance || 0)}</div>
-          <div className="mt-1 text-[11px] text-[#8a8577]">Last sync: {timeAgo(c.lastSync)}</div>
+          <div className="mt-1 text-[11px] text-[#8a8577]">{t('bro.lastSync')}: {timeAgo(c.lastSync, t)}</div>
         </div>
       ))}
     </div>
@@ -39,6 +40,7 @@ function ConnectedList({ items }) {
 
 export function BrokersPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const { toast } = useToast();
   const [connected, setConnected] = useState([]);
   const [busy, setBusy] = useState(null);
@@ -63,9 +65,9 @@ export function BrokersPage() {
       window.open(b.authUrl, '_blank', 'noopener,noreferrer');
       await connectBroker(b, user.id, kind, { accountRef: `${b.authType} authorization` });
       await load();
-      toast({ title: `${b.name} synced`, description: 'AI imported your historical trades and account balance.' });
+      toast({ title: `${b.name} — ${t('bro.connected')}`, description: t('bro.syncedOk') });
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Sync failed', description: err?.message || 'Please try again.' });
+      toast({ variant: 'destructive', title: t('bro.syncFail'), description: err?.message || t('bro.tryAgain') });
     } finally { setBusy(null); }
   };
 
@@ -74,28 +76,30 @@ export function BrokersPage() {
     try {
       await resyncBrokerAccount(acct.id);
       await load();
-      toast({ title: `${acct.broker} re-synced`, description: 'Latest account data has been refreshed.' });
+      toast({ title: `${acct.broker} — ${t('bro.resync')}`, description: t('bro.resynced') });
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Re-sync failed', description: err?.message || 'Please try again.' });
+      toast({ variant: 'destructive', title: t('bro.resyncFail'), description: err?.message || t('bro.tryAgain') });
     } finally { setBusy(null); }
   };
 
   const disconnect = async (acct) => {
-    if (!window.confirm(`Disconnect ${acct.broker}?`)) return;
+    if (!window.confirm(t('bro.confirmDisc', { name: acct.broker }))) return;
     setBusy(`disconnect:${acct.id}`);
     try {
       await disconnectBroker(acct.id);
       await load();
-      toast({ title: `${acct.broker} disconnected` });
+      toast({ title: `${acct.broker} — ${t('bro.disconnect')}` });
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Disconnect failed', description: err?.message || 'Please try again.' });
+      toast({ variant: 'destructive', title: t('bro.disconnFail'), description: err?.message || t('bro.tryAgain') });
     } finally { setBusy(null); }
   };
 
   const liveAccts = connected.filter((c) => (c.accountKind || 'live') === 'live');
   const propAccts = connected.filter((c) => c.accountKind === 'prop');
 
-  const Grid = ({ list, kind }) => (
+  const Grid = ({ list, kind }) => {
+    const { t } = useI18n();
+    return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {list.map((b) => {
         const acct = connected.find((c) => c.broker === b.name && (c.accountKind || 'live') === kind);
@@ -108,13 +112,13 @@ export function BrokersPage() {
             <div className="mt-3 flex items-center gap-2">
               <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ${on ? 'bg-emerald-500/15 text-emerald-400' : syncingAcct ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'bg-red-500/15 text-red-400'}`}>
                 <span className={`h-1.5 w-1.5 rounded-full ${on ? 'bg-emerald-400' : syncingAcct ? 'bg-[#d4af37]' : 'bg-red-400'}`} />
-                {on ? 'Connected' : syncingAcct ? 'Syncing' : 'Disconnected'}
+                {on ? t('bro.connected') : syncingAcct ? t('bro.syncing') : t('bro.disconnected')}
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-[#d4af37]/20 px-2 py-0.5 text-[11px] text-[#c9c4b4]">{kind === 'live' ? 'Live only' : 'Funded'}</span>
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#d4af37]/20 px-2 py-0.5 text-[11px] text-[#c9c4b4]">{kind === 'live' ? t('bro.liveOnly') : t('bro.funded')}</span>
             </div>
             <button disabled={on || isBusy || loading || syncingAcct} onClick={() => connect(b, kind)}
               className={`mt-3 flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-medium transition disabled:opacity-70 ${on ? 'border border-emerald-500/30 text-emerald-400' : 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] hover:opacity-90'}`}>
-            {on ? <><Check className="h-4 w-4" /> Connected</> : isBusy ? <><RefreshCw className="h-4 w-4 animate-spin" /> Opening…</> : <><Plug className="h-4 w-4" /> Connect</>}
+            {on ? <><Check className="h-4 w-4" /> {t('bro.connected')}</> : isBusy ? <><RefreshCw className="h-4 w-4 animate-spin" /> {t('bro.opening')}</> : <><Plug className="h-4 w-4" /> {t('bro.connect')}</>}
             </button>
             {on && acct && (
               <div className="mt-2 grid grid-cols-2 gap-2">
@@ -123,14 +127,14 @@ export function BrokersPage() {
                   onClick={() => resync(acct)}
                   className="inline-flex min-h-[44px] items-center justify-center gap-1 rounded-lg border border-[#d4af37]/25 px-2 py-2 text-xs text-[#d4af37] transition hover:border-[#d4af37]/50 disabled:opacity-60"
                 >
-                  {busy === `resync:${acct.id}` ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />} Re-sync
+                  {busy === `resync:${acct.id}` ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />} {t('bro.resync')}
                 </button>
                 <button
                   disabled={busy === `disconnect:${acct.id}`}
                   onClick={() => disconnect(acct)}
                   className="inline-flex min-h-[44px] items-center justify-center gap-1 rounded-lg border border-red-500/35 px-2 py-2 text-xs text-red-400 transition hover:bg-red-500/10 disabled:opacity-60"
                 >
-                  {busy === `disconnect:${acct.id}` ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Plug className="h-3.5 w-3.5" />} Disconnect
+                  {busy === `disconnect:${acct.id}` ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Plug className="h-3.5 w-3.5" />} {t('bro.disconnect')}
                 </button>
               </div>
             )}
@@ -139,21 +143,22 @@ export function BrokersPage() {
         );
       })}
     </div>
-  );
+    );
+  };
 
   return (
-    <AppLayout title="Broker Connections">
+    <AppLayout title={t('nav.brokers')}>
       <PageHeader
         icon={Plug}
-        kicker="Account syncing"
-        description={<>Connect a <span className="text-[#f0ecdd]">live broker</span> or <span className="text-[#f0ecdd]">prop-firm account</span> and the AI engine syncs your full historical and live trade history plus your real account balance — no manual entry. <span className="text-[#f0ecdd]">Demo accounts are not supported</span>; only live and funded accounts are allowed.</>}
+        kicker={t('bro.kicker')}
+        description={t('bro.syncDesc')}
       />
 
-      <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-[#8a8577]">Live trading accounts</h3>
+      <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-[#8a8577]">{t('bro.liveAccts')}</h3>
       <ConnectedList items={liveAccts} />
       <Grid list={BROKERS} kind="live" />
 
-      <h3 className="mb-3 mt-8 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-[#8a8577]"><Building2 className="h-4 w-4 text-[#d4af37]" /> Prop firm accounts</h3>
+      <h3 className="mb-3 mt-8 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-[#8a8577]"><Building2 className="h-4 w-4 text-[#d4af37]" /> {t('bro.propAccts')}</h3>
       <ConnectedList items={propAccts} />
       <Grid list={PROP_FIRMS} kind="prop" />
     </AppLayout>

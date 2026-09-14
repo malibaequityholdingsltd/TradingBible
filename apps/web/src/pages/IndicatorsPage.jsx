@@ -1,26 +1,17 @@
 import React, { useMemo, useState } from 'react';
 import { ChevronDown, Plus } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import { useI18n } from '@/lib/i18n';
 import AdvancedChart from '@/components/AdvancedChart';
 import IndicatorPicker from '@/components/IndicatorPicker';
 import { useCandles } from '@/hooks/useCandles';
 import { SYMBOL_GROUPS } from '@/lib/symbols';
 import { INDICATOR_DEFS } from '@/lib/indicators';
 
-const DESCRIPTIONS = {
-  sma: 'Arithmetic mean of closing prices — smooths trend direction.',
-  ema: 'Weights recent prices more heavily; reacts faster than SMA.',
-  wma: 'Linearly weighted average favouring the latest bars.',
-  rsi: 'Momentum oscillator (0–100); >70 overbought, <30 oversold.',
-  macd: 'Difference of two EMAs with a signal line and histogram.',
-  stochastic: 'Compares close to the recent high/low range for momentum.',
-  bollinger: 'SMA envelope ± standard deviations to gauge volatility.',
-  atr: 'Average true range — pure volatility measure.',
-  stddev: 'Standard deviation of price around its mean.',
-  adx: 'Trend strength (0–100); >25 signals a strong trend.',
-  ichimoku: 'Multi-line cloud system for trend, support and momentum.',
-  obv: 'Cumulative volume flow confirming price moves.',
-  vroc: 'Rate of change of volume over a lookback window.',
+const DESC_KEYS = {
+  sma: 'ind.d.sma', ema: 'ind.d.ema', wma: 'ind.d.wma', rsi: 'ind.d.rsi', macd: 'ind.d.macd',
+  stochastic: 'ind.d.stochastic', bollinger: 'ind.d.bollinger', atr: 'ind.d.atr', stddev: 'ind.d.stddev',
+  adx: 'ind.d.adx', ichimoku: 'ind.d.ichimoku', obv: 'ind.d.obv', vroc: 'ind.d.vroc',
 };
 
 function lastValue(arr) {
@@ -30,6 +21,7 @@ function lastValue(arr) {
 }
 
 export default function IndicatorsPage() {
+  const { t } = useI18n();
   const [symbol, setSymbol] = useState('BTCUSD');
   const [timeframe, setTimeframe] = useState('1h');
   const [chartType, setChartType] = useState('candle');
@@ -61,7 +53,7 @@ export default function IndicatorsPage() {
   }, [candles, indicators]);
 
   return (
-    <AppLayout title="Technical Indicators">
+    <AppLayout title={t('ind.title')}>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="relative">
           <button onClick={() => setSymOpen((o) => !o)} className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-1.5 text-sm font-medium text-[#e9e7df]">{symbol} <ChevronDown className="h-3.5 w-3.5" /></button>
@@ -84,22 +76,22 @@ export default function IndicatorsPage() {
             </>
           )}
         </div>
-        <button onClick={() => setPickerOpen(true)} className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 px-3 py-1.5 text-sm text-[#d4af37] hover:border-[#d4af37]/40"><Plus className="h-4 w-4" /> Configure indicators</button>
+        <button onClick={() => setPickerOpen(true)} className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 px-3 py-1.5 text-sm text-[#d4af37] hover:border-[#d4af37]/40"><Plus className="h-4 w-4" /> {t('ind.configure')}</button>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-3">
         <div className="glass rounded-2xl p-3 sm:p-4 xl:col-span-2">
           {status === 'error' && !candles.length
-            ? <div className="grid h-64 place-items-center text-sm text-red-400/80">Failed to load market data.</div>
+            ? <div className="grid h-64 place-items-center text-sm text-red-400/80">{t('mkt.failLoad')}</div>
             : <AdvancedChart symbol={symbol} candles={candles} chartType={chartType} timeframe={timeframe}
                 indicators={indicators} onChartType={setChartType} onTimeframe={setTimeframe}
                 onOpenIndicators={() => setPickerOpen(true)} onRemoveIndicator={(id) => setIndicators(indicators.filter((i) => i.id !== id))} />}
         </div>
 
         <div className="glass rounded-2xl p-4 sm:p-5">
-          <h3 className="mb-3 font-semibold text-[#f0ecdd]">Live indicator values</h3>
+          <h3 className="mb-3 font-semibold text-[#f0ecdd]">{t('ind.liveValues')}</h3>
           <div className="space-y-3">
-            {liveValues.length === 0 && <p className="text-xs text-[#8a8577]">Add indicators to see live values.</p>}
+            {liveValues.length === 0 && <p className="text-xs text-[#8a8577]">{t('ind.addForValues')}</p>}
             {liveValues.map(({ ind, def, values }) => (
               <div key={ind.id} className="rounded-xl border border-white/8 bg-white/[0.03] p-3">
                 <div className="flex items-center gap-2">
@@ -112,7 +104,7 @@ export default function IndicatorsPage() {
                     <span key={v.key} className="text-[#8a8577]">{v.key} <span className="text-[#e9e7df]">{v.value != null ? v.value.toLocaleString() : '—'}</span></span>
                   ))}
                 </div>
-                <p className="mt-2 text-[11px] leading-relaxed text-[#8a8577]">{DESCRIPTIONS[ind.type]}</p>
+                <p className="mt-2 text-[11px] leading-relaxed text-[#8a8577]">{t(DESC_KEYS[ind.type] || 'ind.title')}</p>
               </div>
             ))}
           </div>
@@ -120,15 +112,15 @@ export default function IndicatorsPage() {
       </div>
 
       <div className="mt-5 glass rounded-2xl p-4 sm:p-6">
-        <h3 className="mb-4 font-semibold text-[#f0ecdd]">Indicator library</h3>
+        <h3 className="mb-4 font-semibold text-[#f0ecdd]">{t('ind.library')}</h3>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Object.entries(INDICATOR_DEFS).map(([type, def]) => (
             <div key={type} className="rounded-xl border border-white/8 bg-white/[0.02] p-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-[#f0ecdd]">{def.label}</span>
-                <span className="rounded-full bg-white/5 px-2 py-0.5 text-[9px] uppercase text-[#8a8577]">{def.pane === 'price' ? 'Overlay' : 'Panel'}</span>
+                <span className="rounded-full bg-white/5 px-2 py-0.5 text-[9px] uppercase text-[#8a8577]">{def.pane === 'price' ? t('ind.overlay') : t('ind.panel')}</span>
               </div>
-              <p className="mt-1.5 text-[11px] leading-relaxed text-[#8a8577]">{DESCRIPTIONS[type]}</p>
+              <p className="mt-1.5 text-[11px] leading-relaxed text-[#8a8577]">{t(DESC_KEYS[type] || 'ind.title')}</p>
             </div>
           ))}
         </div>
