@@ -242,7 +242,7 @@ export default function TvPage() {
       <footer className={`relative z-10 px-5 pb-5 transition-all duration-500 sm:px-8 ${uiHidden ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
         <div className="mx-auto flex max-w-7xl flex-col gap-3">
           <div className="flex items-center justify-between text-[11px] text-[#8a8577]">
-            <span className="truncate">{settings.footerText || t('tv.advertise')}</span>
+            <span className="truncate">{settings.footerText && settings.footerText !== 'Advertise with TradingBible' ? settings.footerText : t('tv.advertise')}</span>
             <span className="hidden rounded-md bg-black/50 px-2 py-1 font-mono text-[10px] tracking-widest text-[#d4af37] sm:inline">{index + 1} / {ads.length}</span>
           </div>
           <div className="h-[3px] w-full overflow-hidden rounded-full bg-white/10">
