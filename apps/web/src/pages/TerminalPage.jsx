@@ -71,6 +71,7 @@ function SymbolPicker({ existing, groups, onAdd, onClose }) {
 }
 
 function Row({ item, quote, display, index, count, onChart, onRemove, onMove, groups, onAssign, current }) {
+  const { t: tr } = useI18n();
   const up = (quote?.changePercent ?? 0) >= 0;
   return (
     <div className={`layered-list__row group ${current === item.symbol ? 'layered-list__row--active' : ''}`}>
