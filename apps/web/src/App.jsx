@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/hooks/useTheme';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { I18nProvider } from '@/lib/i18n';
 import { homeRouteForUser } from '@/lib/homeRoute';
+import { isAdminPreview } from '@/lib/adminPreview';
 import { usePlatformSettings } from '@/lib/platformSettings';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { NotificationsProvider } from '@/hooks/useNotifications';
@@ -99,7 +100,7 @@ function SubscriberProtected({ children }) {
     const { isAuthed, isAuthReady, user } = useAuth();
     if (!isAuthReady) return <PageFallback />;
     if (!isAuthed) return <Navigate to="/login" replace />;
-    if (user?.role === 'admin') return <Navigate to="/admin" replace />;
+    if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
     if (!isSubscriber(user)) return <Navigate to="/pricing" replace />;
     return children;
 }
@@ -108,8 +109,8 @@ function Protected({ children }) {
     const { isAuthed, isAuthReady, user } = useAuth();
     if (!isAuthReady) return <PageFallback />;
     if (!isAuthed) return <Navigate to="/login" replace />;
-    // Admins live in their own portal and cannot access subscriber features.
-    if (user?.role === 'admin') return <Navigate to="/admin" replace />;
+    // Admins live in their own portal, unless they entered "View app" preview.
+    if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
     return children;
 }
 
@@ -126,7 +127,7 @@ function CompanyProtected({ children }) {
     const { isAuthed, isAuthReady, user } = useAuth();
     if (!isAuthReady) return <PageFallback />;
     if (!isAuthed) return <Navigate to="/login" replace />;
-    if (user?.role === 'admin') return <Navigate to="/admin" replace />;
+    if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
     if (user?.accountType !== 'company') return <Navigate to="/app" replace />;
     return children;
 }

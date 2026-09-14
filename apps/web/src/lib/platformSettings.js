@@ -10,6 +10,10 @@ export const PLATFORM_SETTINGS_DEFAULTS = {
   maintenance: false,
   twoFARequired: false,
   emailVerification: true,
+  enforceBrokerSync: true,
+  allowManualPropAccounts: false,
+  digestEnabled: false,
+  digestHourUTC: 18,
 };
 
 export const PLATFORM_FEATURES_DEFAULTS = {

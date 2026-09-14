@@ -2274,6 +2274,60 @@ export function AdminTvAds() {
   );
 }
 
+/* ─── WEEKLY DIGEST PANEL ────────────────────────────────────────── */
+function DigestPanel() {
+  const { toast } = useToast();
+  const [busy, setBusy] = useState(false);
+  const [last, setLast] = useState(null);
+
+  const run = async (dry) => {
+    setBusy(true);
+    try {
+      const token = pb.authStore.token;
+      const res = await fetch(`${API_SERVER_URL}/admin/digest/weekly${dry ? '?dry=1' : ''}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      setLast(data);
+      toast({
+        title: dry ? 'Digest preview ready' : 'Digest sent',
+        description: dry
+          ? `${data.eventCount ?? 0} events this week.`
+          : `Emailed to ${data.sent ?? 0} of ${data.total ?? 0} users${data.failed ? ` (${data.failed} failed)` : ''}.`,
+      });
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Digest failed', description: err?.message || 'Please try again.' });
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <div className="glass mt-5 max-w-xl rounded-2xl p-5 sm:p-6">
+      <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><Mail className="h-4 w-4 text-[#d4af37]" /> Sunday Email Digest</h3>
+      <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">
+        Summarizes the coming week's economic calendar and emails every user on Sundays at the configured hour (UTC).
+        Enable it with the toggle above, then install the server cron once via <span className="font-mono text-[#d4af37]">bash deploy/digest-cron.sh</span> on the VPS.
+      </p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button disabled={busy} onClick={() => run(true)} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2.5 text-sm font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60 disabled:opacity-60">
+          <Eye className="h-4 w-4" /> Preview
+        </button>
+        <button disabled={busy} onClick={() => run(false)} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60">
+          <Mail className="h-4 w-4" /> {busy ? 'Sending…' : 'Send now'}
+        </button>
+      </div>
+      {last && (
+        <div className="mt-4 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] p-3 text-xs text-[#c9c4b4]">
+          {last.subject && <p className="font-semibold text-[#f0ecdd]">{last.subject}</p>}
+          {last.summary && <p className="mt-1 whitespace-pre-line leading-relaxed">{last.summary}</p>}
+          {last.sent !== undefined && <p className="mt-1 text-[#8a8577]">Sent {last.sent}/{last.total} · {last.eventCount ?? 0} events</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── ADMIN SETTINGS ─────────────────────────────────────────────── */
 export function AdminSettings() {
   const { toast } = useToast();
@@ -2290,6 +2344,10 @@ export function AdminSettings() {
     maintenance: false,
     twoFARequired: false,
     emailVerification: true,
+    enforceBrokerSync: true,
+    allowManualPropAccounts: false,
+    digestEnabled: false,
+    digestHourUTC: 18,
   });
   const [features, setFeatures] = useState({
     aiCoach: true,
@@ -2373,14 +2431,14 @@ export function AdminSettings() {
             {saveState === 'error' && 'Autosave failed'}
             {saveState === 'idle' && 'Changes save automatically'}
           </div>
-          {[['platformName', 'Platform Name', 'text'], ['tagline', 'Tagline', 'text'], ['supportEmail', 'Support Email', 'email'], ['trialDays', 'Trial Length (days)', 'number']].map(([k, l, t]) => (
+          {[['platformName', 'Platform Name', 'text'], ['tagline', 'Tagline', 'text'], ['supportEmail', 'Support Email', 'email'], ['trialDays', 'Trial Length (days)', 'number'], ['digestHourUTC', 'Weekly Digest Hour (UTC, Sundays)', 'number']].map(([k, l, t]) => (
             <div key={k}>
               <label className="mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">{l}</label>
               <input type={t} value={settings[k]} onChange={e => setSettings({ ...settings, [k]: t === 'number' ? Number(e.target.value) : e.target.value })}
                 className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
             </div>
           ))}
-          {[['signupsOpen', 'Allow new sign-ups'], ['maintenance', 'Maintenance mode'], ['emailVerification', 'Require email verification']].map(([k, l]) => (
+          {[['signupsOpen', 'Allow new sign-ups'], ['maintenance', 'Maintenance mode'], ['emailVerification', 'Require email verification'], ['enforceBrokerSync', 'Broker-sync-only trades (no manual entry)'], ['allowManualPropAccounts', 'Allow manual prop-account entry'], ['digestEnabled', 'Sunday economic-calendar email digest']].map(([k, l]) => (
             <label key={k} className="flex items-center justify-between rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
               <span className="text-sm text-[#c9c4b4]">{l}</span>
               <input type="checkbox" checked={settings[k]} onChange={e => setSettings({ ...settings, [k]: e.target.checked })} className="h-5 w-5 accent-[#d4af37]" />
@@ -2388,6 +2446,10 @@ export function AdminSettings() {
           ))}
           <button className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90"><Save className="h-4 w-4" /> Save Settings</button>
         </form>
+      )}
+
+      {tab === 'general' && (
+        <DigestPanel />
       )}
 
       {tab === 'features' && (

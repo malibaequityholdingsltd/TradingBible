@@ -4,6 +4,7 @@ import { AreaChart, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tool
 import { TrendingUp, TrendingDown, Wallet, Target, Activity, ShieldAlert, Trophy, Percent, Plug, RefreshCw, Landmark, ArrowRight } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { fmtMoney } from '@/lib/mockData';
+import { useI18n } from '@/lib/i18n';
 import { useTrades, computeStats } from '@/hooks/useTrades';
 import { useAuth } from '@/hooks/useAuth';
 import DashboardWidgets from '@/components/DashboardWidgets';
@@ -35,43 +36,44 @@ export default function DashboardPage() {
   const { trades, loading } = useTrades();
   const stats = computeStats(trades);
   const { user } = useAuth();
+  const { t } = useI18n();
   const isSubscriber = ['pro', 'elite', 'professional'].includes((user?.plan || '').toLowerCase());
 
   if (loading) {
-    return <AppLayout title="Dashboard"><div className="glass flex items-center justify-center gap-2 rounded-2xl py-20 text-sm text-[#8a8577]"><RefreshCw className="h-4 w-4 animate-spin" /> Loading your performance…</div></AppLayout>;
+    return <AppLayout title={t('nav.dashboard')}><div className="glass flex items-center justify-center gap-2 rounded-2xl py-20 text-sm text-[#8a8577]"><RefreshCw className="h-4 w-4 animate-spin" /> {t('dash.loading')}</div></AppLayout>;
   }
 
   if (!stats) {
     return (
-      <AppLayout title="Dashboard">
+      <AppLayout title={t('nav.dashboard')}>
         <AccountBalances />
         <div className="mt-5 glass flex flex-col items-center rounded-2xl px-6 py-16 text-center">
           <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]"><Plug className="h-6 w-6" /></div>
-          <h3 className="text-lg font-semibold text-[#f0ecdd]">Connect a live broker to see your terminal</h3>
-          <p className="mt-2 max-w-md text-sm text-[#8a8577]">Your balance stays at $0.00 until you connect a live broker or prop-firm account. The AI then syncs your trades and real balance automatically.</p>
-          <Link to="/app/brokers" className="mt-5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f]">Connect an account</Link>
+          <h3 className="text-lg font-semibold text-[#f0ecdd]">{t('dash.connectTitle')}</h3>
+          <p className="mt-2 max-w-md text-sm text-[#8a8577]">{t('dash.connectSub')}</p>
+          <Link to="/app/brokers" className="mt-5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f]">{t('dash.connectBtn')}</Link>
         </div>
       </AppLayout>
     );
   }
 
   return (
-    <AppLayout title="Dashboard">
+    <AppLayout title={t('nav.dashboard')}>
       <AccountBalances />
       <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        <Stat icon={Wallet} label="Performance P&L" value={fmtMoney(stats.balance - 100000)} delta={`${stats.totalTrades} trades synced`} positive={stats.balance >= 100000} />
-        <Stat icon={Activity} label="Daily P&L" value={fmtMoney(stats.dailyPnl)} delta="today" positive={stats.dailyPnl >= 0} />
-        <Stat icon={Activity} label="Weekly P&L" value={fmtMoney(stats.weeklyPnl)} delta="last 7 days" positive={stats.weeklyPnl >= 0} />
-        <Stat icon={Activity} label="Monthly P&L" value={fmtMoney(stats.monthlyPnl)} delta="last 30 days" positive={stats.monthlyPnl >= 0} />
-        <Stat icon={Percent} label="Win Rate" value={`${stats.winRate}%`} delta={stats.winRate >= 50 ? 'Above target' : 'Below target'} positive={stats.winRate >= 50} />
-        <Stat icon={Target} label="Profit Factor" value={stats.profitFactor.toFixed(2)} delta={stats.profitFactor >= 1.5 ? 'Healthy edge' : 'Needs work'} positive={stats.profitFactor >= 1.5} />
-        <Stat icon={ShieldAlert} label="Max Drawdown" value={`${stats.drawdown}%`} delta={stats.drawdown > -10 ? 'Within limits' : 'Elevated'} positive={stats.drawdown > -10} />
-        <Stat icon={Trophy} label="Trader Score" value={`${stats.traderScore}/100`} delta="AI computed" positive />
+        <Stat icon={Wallet} label={t('dash.perfPnl')} value={fmtMoney(stats.balance - 100000)} delta={t('dash.syncedN', { n: stats.totalTrades })} positive={stats.balance >= 100000} />
+        <Stat icon={Activity} label={t('dash.daily')} value={fmtMoney(stats.dailyPnl)} delta={t('dash.today')} positive={stats.dailyPnl >= 0} />
+        <Stat icon={Activity} label={t('dash.weekly')} value={fmtMoney(stats.weeklyPnl)} delta={t('dash.last7')} positive={stats.weeklyPnl >= 0} />
+        <Stat icon={Activity} label={t('dash.monthly')} value={fmtMoney(stats.monthlyPnl)} delta={t('dash.last30')} positive={stats.monthlyPnl >= 0} />
+        <Stat icon={Percent} label={t('dash.winRate')} value={`${stats.winRate}%`} delta={stats.winRate >= 50 ? t('dash.aboveTarget') : t('dash.belowTarget')} positive={stats.winRate >= 50} />
+        <Stat icon={Target} label={t('dash.profitFactor')} value={stats.profitFactor.toFixed(2)} delta={stats.profitFactor >= 1.5 ? t('dash.healthyEdge') : t('dash.needsWork')} positive={stats.profitFactor >= 1.5} />
+        <Stat icon={ShieldAlert} label={t('dash.maxDd')} value={`${stats.drawdown}%`} delta={stats.drawdown > -10 ? t('dash.withinLimits') : t('dash.elevated')} positive={stats.drawdown > -10} />
+        <Stat icon={Trophy} label={t('dash.traderScore')} value={`${stats.traderScore}/100`} delta={t('dash.aiComputed')} positive />
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-3">
         <div className="glass rounded-2xl p-4 sm:p-6 lg:col-span-2">
-          <h3 className="mb-4 font-semibold text-[#f0ecdd]">Equity Curve</h3>
+          <h3 className="mb-4 font-semibold text-[#f0ecdd]">{t('dash.equityCurve')}</h3>
           <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={stats.equity} margin={{ left: -12, right: 8 }}>
               <defs><linearGradient id="eq" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={GOLD} stopOpacity={0.4} /><stop offset="100%" stopColor={GOLD} stopOpacity={0} /></linearGradient></defs>
@@ -83,7 +85,7 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         </div>
         <div className="glass rounded-2xl p-4 sm:p-6">
-          <h3 className="mb-4 font-semibold text-[#f0ecdd]">Monthly P&L</h3>
+          <h3 className="mb-4 font-semibold text-[#f0ecdd]">{t('dash.monthlyPnlH')}</h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={stats.monthly} margin={{ left: -18, right: 8 }}>
               <XAxis dataKey="m" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -96,7 +98,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-5 glass rounded-2xl p-4 sm:p-6">
-        <h3 className="mb-4 font-semibold text-[#f0ecdd]">Strategy Performance</h3>
+        <h3 className="mb-4 font-semibold text-[#f0ecdd]">{t('dash.stratPerf')}</h3>
         <div className="space-y-3">
           {stats.strategies.map((s) => (
             <div key={s.name} className="flex items-center gap-3 sm:gap-4">
@@ -114,8 +116,8 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Landmark className="h-6 w-6" /></div>
             <div>
-              <h3 className="font-semibold text-[#f0ecdd]">Wallet</h3>
-              <p className="text-sm text-[#8a8577]">Manage balances, issue debit &amp; credit cards, buy, sell, send and receive crypto.</p>
+              <h3 className="font-semibold text-[#f0ecdd]">{t('nav.wallet')}</h3>
+              <p className="text-sm text-[#8a8577]">{t('wal.subtitle')}</p>
             </div>
           </div>
           <ArrowRight className="h-5 w-5 shrink-0 text-[#d4af37]" />

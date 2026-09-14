@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useToast } from '@/hooks/use-toast';
+import { useI18n } from '@/lib/i18n';
 import { openAcademyCheckout, getStripeConfig } from '@/lib/stripe';
 import { useWallet } from '@/hooks/useWallet';
 import {
@@ -244,6 +245,7 @@ function AIChat({ endpoint, buildBody, placeholder, accent = '#d4af37' }) {
 // ── Paywall ($150 lifetime) ──────────────────────────────────────────
 function Paywall({ onPurchased }) {
 	const { toast } = useToast();
+	const { t } = useI18n();
 	const [busy, setBusy] = useState(false);
 	const [configured, setConfigured] = useState(true);
 	const [checked, setChecked] = useState(false);
@@ -261,7 +263,7 @@ function Paywall({ onPurchased }) {
 		try {
 			await openAcademyCheckout();
 		} catch (err) {
-			toast({ variant: 'destructive', title: 'Checkout unavailable', description: err.message });
+			toast({ variant: 'destructive', title: t('c.error'), description: err.message });
 		} finally { setBusy(false); }
 	};
 
@@ -269,20 +271,20 @@ function Paywall({ onPurchased }) {
 		setBusy(true);
 		try {
 			await payWithWallet('academy');
-			toast({ title: 'Academy unlocked', description: 'Paid with wallet balance.' });
+			toast({ title: t('aca.badge'), description: t('bill.payWallet') });
 			onPurchased();
 		} catch (err) {
-			toast({ variant: 'destructive', title: 'Wallet pay failed', description: err.message });
+			toast({ variant: 'destructive', title: t('bill.payWallet'), description: err.message });
 		} finally { setBusy(false); }
 	};
 
 	const features = [
-		{ icon: Route, text: '3 AI-curated learning paths — Beginner to Professional' },
-		{ icon: BookOpen, text: 'Full course catalog, written for you by AI' },
-		{ icon: Video, text: 'Live webinars with an AI host every week' },
-		{ icon: Bot, text: 'One-on-one AI tutor inside every lesson' },
-		{ icon: Trophy, text: 'AI-graded quizzes and shareable certificates' },
-		{ icon: Award, text: 'Lifetime access — one payment, forever' },
+		{ icon: Route, text: t('aca.f1') },
+		{ icon: BookOpen, text: t('aca.f2') },
+		{ icon: Video, text: t('aca.f3') },
+		{ icon: Bot, text: t('aca.f4') },
+		{ icon: Trophy, text: t('aca.f5') },
+		{ icon: Award, text: t('aca.f6') },
 	];
 
 	return (
@@ -290,19 +292,18 @@ function Paywall({ onPurchased }) {
 			<div className="flex flex-col items-center text-center">
 				<div className="flex items-center gap-2 text-[#d4af37]">
 					<GraduationCap className="h-6 w-6" />
-					<span className="rounded-full bg-[#d4af37]/12 px-3 py-1 text-xs font-semibold uppercase tracking-wider">TradingBible Academy</span>
+					<span className="rounded-full bg-[#d4af37]/12 px-3 py-1 text-xs font-semibold uppercase tracking-wider">{t('aca.badge')}</span>
 				</div>
 				<h2 className="mt-4 max-w-2xl text-3xl font-bold text-[#f0ecdd] sm:text-4xl">
-					The Academy where <span className="gold-text">AI teaches</span> — paths, courses, live sessions.
+					{t('aca.titleA')} <span className="gold-text">{t('aca.titleB')}</span> {t('aca.titleC')}
 				</h2>
 				<p className="mt-3 max-w-xl text-sm leading-relaxed text-[#8a8577]">
-					Your personal AI builds a learning path around you, writes every lesson, grades every quiz,
-					hosts live webinars and tutors you one-on-one. From your first candle to institutional desk strategy.
+					{t('aca.sub')}
 				</p>
 
 				<div className="mt-6 flex items-end gap-1.5">
 					<span className="text-5xl font-bold gold-text">$150</span>
-					<span className="mb-1.5 text-sm text-[#8a8577]">one-time · lifetime access</span>
+					<span className="mb-1.5 text-sm text-[#8a8577]">{t('aca.priceNote')}</span>
 				</div>
 
 				<div className="mt-6 flex flex-col items-center gap-3">
@@ -311,17 +312,17 @@ function Paywall({ onPurchased }) {
 						disabled={busy || (checked && !configured)}
 						className="flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-8 text-base font-bold text-[#0a0a0f] shadow-[0_0_30px_rgba(212,175,55,0.35)] transition hover:opacity-90 disabled:opacity-60"
 					>
-						{busy ? <><Loader2 className="h-5 w-5 animate-spin" /> Opening checkout…</> : <><CircleDollarSign className="h-5 w-5" /> Get lifetime access — $150</>}
+						{busy ? <><Loader2 className="h-5 w-5 animate-spin" /> {t('aca.opening')}</> : <><CircleDollarSign className="h-5 w-5" /> {t('aca.cta')}</>}
 					</button>
 					<button onClick={buyWithWallet} disabled={busy || walletBalance < 150} className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#d4af37]/20 px-6 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 disabled:opacity-40">
-						<Wallet className="h-4 w-4" /> Pay with wallet ({walletBalance >= 150 ? 'available' : `need $${(150 - walletBalance).toFixed(2)} more`})
+						<Wallet className="h-4 w-4" /> {t('aca.walletPay')} ({walletBalance >= 150 ? t('aca.available') : t('aca.needMore', { amt: `$${(150 - walletBalance).toFixed(2)}` })})
 					</button>
-					<div className="text-xs text-[#8a8577]">Wallet: ${walletBalance.toFixed(2)} · <a href="/app/wallet" className="text-[#d4af37] hover:underline">Fund wallet</a></div>
+					<div className="text-xs text-[#8a8577]">${walletBalance.toFixed(2)} · <a href="/app/wallet" className="text-[#d4af37] hover:underline">{t('bill.fundWallet')}</a></div>
 				</div>
 				{checked && !configured && (
-					<p className="mt-3 max-w-md text-xs text-[#8a8577]">Checkout will activate once <span className="font-mono text-[#d4af37]">STRIPE_PRICE_ACADEMY</span> is set in <span className="font-mono">apps/api/.env</span> (the $150 one-time price id).</p>
+					<p className="mt-3 max-w-md text-xs text-[#8a8577]">STRIPE_PRICE_ACADEMY — apps/api/.env ($150)</p>
 				)}
-				<p className="mt-3 text-xs text-[#6a665a]">30-day money-back guarantee · Instant access · A TradingBible LLC education initiative</p>
+				<p className="mt-3 text-xs text-[#6a665a]">{t('aca.guarantee')}</p>
 			</div>
 
 			<div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

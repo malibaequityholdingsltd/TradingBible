@@ -4,6 +4,7 @@ import { Twitter, Facebook, Linkedin, Instagram, Youtube, LineChart } from 'luci
 import { MALIBA_LOGO, TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { useAuth } from '@/hooks/useAuth';
 import { homeRouteForUser } from '@/lib/homeRoute';
+import { useI18n } from '@/lib/i18n';
 import { usePlatformSettings } from '@/lib/platformSettings';
 
 const LOGO = TRADINGBIBLE_LOGO;
@@ -103,6 +104,7 @@ const SOCIALS = [
 
 export default function Footer() {
   const { user, isAuthed } = useAuth();
+  const { t } = useI18n();
   const homeTo = homeRouteForUser(isAuthed ? user : null);
   const { settings } = usePlatformSettings();
   const brand = String(settings.platformName || 'TradingBible').trim();
@@ -149,9 +151,9 @@ export default function Footer() {
           </div>
 
           <div className="glass shrink-0 rounded-2xl p-5 lg:w-80">
-            <div className="mb-1 flex items-center gap-2 text-[#d4af37]"><LineChart className="h-4 w-4" /><span className="text-sm font-semibold">Start your edge, free</span></div>
-            <p className="mb-4 text-xs text-[#8a8577]">{trialDays}-day premium trial. Card required. Cancel anytime.</p>
-            <Link to="/signup" className="block rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-center text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">Create free account</Link>
+            <div className="mb-1 flex items-center gap-2 text-[#d4af37]"><LineChart className="h-4 w-4" /><span className="text-sm font-semibold">{t('foot.startEdge')}</span></div>
+            <p className="mb-4 text-xs text-[#8a8577]">{t('foot.trialNote', { n: trialDays })}</p>
+            <Link to="/signup" className="block rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-center text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">{t('foot.createAcct')}</Link>
           </div>
         </div>
 

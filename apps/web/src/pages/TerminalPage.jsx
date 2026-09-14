@@ -7,6 +7,7 @@ import {
 import AppLayout from '@/components/AppLayout';
 import { useTerminal } from '@/hooks/useTerminal';
 import { useQuotes } from '@/hooks/useQuotes';
+import { useI18n } from '@/lib/i18n';
 import { SYMBOL_GROUPS, ALL_SYMBOLS } from '@/lib/symbols';
 
 const nameOf = (sym) => ALL_SYMBOLS.find((s) => s.symbol === sym)?.name || sym;
@@ -14,33 +15,34 @@ const fmt = (n) => (n == null ? '—' : Math.abs(n) >= 1000 ? n.toLocaleString('
 const fmtVol = (n) => { if (n == null) return '—'; if (n >= 1e9) return `${(n / 1e9).toFixed(1)}B`; if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`; if (n >= 1e3) return `${(n / 1e3).toFixed(1)}K`; return `${n}`; };
 
 const DISPLAY_OPTS = [
-  { key: 'showPrice', label: 'Price' },
-  { key: 'showChangePercent', label: 'Change %' },
-  { key: 'showChangeAmount', label: 'Change amount' },
-  { key: 'showVolume', label: 'Volume' },
-  { key: 'showHigh', label: '24h High' },
+  { key: 'showPrice', labelKey: 'term.price' },
+  { key: 'showChangePercent', labelKey: 'term.changePct' },
+  { key: 'showChangeAmount', labelKey: 'term.changeAmt' },
+  { key: 'showVolume', labelKey: 'term.volume' },
+  { key: 'showHigh', labelKey: 'term.high24' },
 ];
 
 function SymbolPicker({ existing, groups, onAdd, onClose }) {
   const [q, setQ] = useState('');
   const [group, setGroup] = useState('');
+  const { t: tr } = useI18n();
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 pt-24" onClick={onClose}>
       <div className="shell-panel w-full max-w-lg rounded-3xl p-5" onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-semibold text-[#f0ecdd]">Add symbols</h3>
+          <h3 className="font-semibold text-[#f0ecdd]">{tr('term.addSymbols')}</h3>
           <button onClick={onClose} className="text-[#8a8577] hover:text-[#e9e7df]"><X className="h-5 w-5" /></button>
         </div>
         {groups.length > 0 && (
           <select value={group} onChange={(e) => setGroup(e.target.value)}
             className="mb-3 w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50">
-            <option value="">Ungrouped</option>
+            <option value="">{tr('term.ungrouped')}</option>
             {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
           </select>
         )}
         <div className="relative mb-3">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#8a8577]" />
-          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search symbol or name…"
+          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr('term.searchPh')}
             className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] py-2 pl-9 pr-3 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
         </div>
         <div className="layered-list max-h-72 space-y-4 overflow-y-auto no-scrollbar">
@@ -112,6 +114,7 @@ function Row({ item, quote, display, index, count, onChart, onRemove, onMove, gr
 export default function TerminalPage() {
   const t = useTerminal();
   const nav = useNavigate();
+  const { t: tr } = useI18n();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [prefsOpen, setPrefsOpen] = useState(false);
   const [current, setCurrent] = useState(null);
@@ -133,7 +136,7 @@ export default function TerminalPage() {
   }, [t.symbols, t.groups]);
 
   if (!t.loaded) {
-    return <AppLayout title="Terminal"><div className="grid place-items-center py-24 text-[#8a8577]"><Loader2 className="h-6 w-6 animate-spin" /></div></AppLayout>;
+    return <AppLayout title={tr('nav.terminal')}><div className="grid place-items-center py-24 text-[#8a8577]"><Loader2 className="h-6 w-6 animate-spin" /></div></AppLayout>;
   }
 
   const renderRows = (items) => items.map((item) => (
@@ -143,28 +146,28 @@ export default function TerminalPage() {
   ));
 
   return (
-    <AppLayout title="Terminal">
+    <AppLayout title={tr('nav.terminal')}>
       {/* Toolbar */}
       <div className="shell-panel mb-4 flex flex-wrap items-center gap-2 rounded-2xl p-3">
         <select value={t.activeId || ''} onChange={(e) => t.selectLayout(e.target.value)}
           className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-1.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50">
           {t.layouts.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
         </select>
-        <button onClick={() => { const n = window.prompt('Rename layout:', t.active?.name); if (n && t.active) t.renameLayout(t.active.id, n); }}
-          title="Rename layout" className="rounded-xl border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]"><Pencil className="h-3.5 w-3.5" /></button>
-        <button onClick={() => { const n = window.prompt('New layout name:'); if (n) t.saveLayout(n); }}
-          className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#c9c4b4] hover:text-[#e9e7df]"><Save className="h-3.5 w-3.5" /> Save as</button>
-        <button onClick={() => { if (t.active && t.layouts.length > 1 && window.confirm('Delete this layout?')) t.deleteLayout(t.active.id); }}
-          disabled={t.layouts.length <= 1} title="Delete layout" className="rounded-xl border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-red-400 disabled:opacity-30"><Trash2 className="h-3.5 w-3.5" /></button>
+        <button onClick={() => { const n = window.prompt(tr('term.renameLayout'), t.active?.name); if (n && t.active) t.renameLayout(t.active.id, n); }}
+          title={tr('term.renameLayout')} className="rounded-xl border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]"><Pencil className="h-3.5 w-3.5" /></button>
+        <button onClick={() => { const n = window.prompt(tr('term.newLayout')); if (n) t.saveLayout(n); }}
+          className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#c9c4b4] hover:text-[#e9e7df]"><Save className="h-3.5 w-3.5" /> {tr('term.saveAs')}</button>
+        <button onClick={() => { if (t.active && t.layouts.length > 1 && window.confirm(tr('term.delLayout'))) t.deleteLayout(t.active.id); }}
+          disabled={t.layouts.length <= 1} title={tr('term.delLayout')} className="rounded-xl border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-red-400 disabled:opacity-30"><Trash2 className="h-3.5 w-3.5" /></button>
 
         <div className="ml-auto flex items-center gap-2">
           <span className={`flex items-center gap-1.5 text-[11px] ${status === 'live' ? 'text-emerald-400' : 'text-[#8a8577]'}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${status === 'live' ? 'animate-pulse bg-emerald-400' : 'bg-[#8a8577]'}`} />{status === 'live' ? 'Live' : status}
+            <span className={`h-1.5 w-1.5 rounded-full ${status === 'live' ? 'animate-pulse bg-emerald-400' : 'bg-[#8a8577]'}`} />{status === 'live' ? tr('term.live') : status}
           </span>
-          <button onClick={() => { const n = window.prompt('New group name:'); if (n) t.createGroup(n); }}
-            className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#c9c4b4] hover:text-[#e9e7df]"><FolderPlus className="h-3.5 w-3.5" /> Group</button>
-          <button onClick={() => setPrefsOpen((o) => !o)} className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#c9c4b4] hover:text-[#e9e7df]"><Settings2 className="h-3.5 w-3.5" /> Display</button>
-          <button onClick={() => setPickerOpen(true)} className="flex items-center gap-1.5 rounded-xl bg-[#d4af37] px-3 py-1.5 text-xs font-semibold text-[#0f0f14] hover:bg-[#e6c04a]"><Plus className="h-3.5 w-3.5" /> Symbol</button>
+          <button onClick={() => { const n = window.prompt(tr('term.newGroup')); if (n) t.createGroup(n); }}
+            className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#c9c4b4] hover:text-[#e9e7df]"><FolderPlus className="h-3.5 w-3.5" /> {tr('term.group')}</button>
+          <button onClick={() => setPrefsOpen((o) => !o)} className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#c9c4b4] hover:text-[#e9e7df]"><Settings2 className="h-3.5 w-3.5" /> {tr('term.display')}</button>
+          <button onClick={() => setPickerOpen(true)} className="flex items-center gap-1.5 rounded-xl bg-[#d4af37] px-3 py-1.5 text-xs font-semibold text-[#0f0f14] hover:bg-[#e6c04a]"><Plus className="h-3.5 w-3.5" /> {tr('term.symbol')}</button>
         </div>
       </div>
 
@@ -174,7 +177,7 @@ export default function TerminalPage() {
           {DISPLAY_OPTS.map((o) => (
             <label key={o.key} className="flex cursor-pointer items-center gap-2 text-xs text-[#c9c4b4]">
               <input type="checkbox" checked={!!t.display[o.key]} onChange={(e) => t.setDisplay(o.key, e.target.checked)}
-                className="h-4 w-4 accent-[#d4af37]" />{o.label}
+                className="h-4 w-4 accent-[#d4af37]" />{tr(o.labelKey)}
             </label>
           ))}
         </div>
@@ -182,8 +185,8 @@ export default function TerminalPage() {
 
       {t.symbols.length === 0 ? (
         <div className="shell-panel grid place-items-center rounded-3xl py-20 text-center">
-          <p className="mb-3 text-sm text-[#8a8577]">Your terminal is empty. Add symbols to start tracking live prices.</p>
-          <button onClick={() => setPickerOpen(true)} className="rounded-xl bg-[#d4af37] px-4 py-2 text-sm font-semibold text-[#0f0f14]">Add symbols</button>
+          <p className="mb-3 text-sm text-[#8a8577]">{tr('term.empty')}</p>
+          <button onClick={() => setPickerOpen(true)} className="rounded-xl bg-[#d4af37] px-4 py-2 text-sm font-semibold text-[#0f0f14]">{tr('term.addSymbols')}</button>
         </div>
       ) : (
         <div className="layered-list">
@@ -194,11 +197,11 @@ export default function TerminalPage() {
               <div key={g.id}>
                 <div className="layered-list__section">
                   <button onClick={() => t.toggleGroup(g.id)} className="text-[#d4af37]">{g.collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</button>
-                  <button onClick={() => { const n = window.prompt('Rename group:', g.name); if (n) t.renameGroup(g.id, n); }} className="text-xs font-semibold uppercase tracking-wider text-[#c9c4b4] hover:text-[#e9e7df]">{g.name}</button>
+                  <button onClick={() => { const n = window.prompt(tr('term.renameGroup'), g.name); if (n) t.renameGroup(g.id, n); }} className="text-xs font-semibold uppercase tracking-wider text-[#c9c4b4] hover:text-[#e9e7df]">{g.name}</button>
                   <span className="text-[10px] text-[#5f5b50]">({items.length})</span>
-                  <button onClick={() => { if (window.confirm(`Delete group "${g.name}"? Symbols move to ungrouped.`)) t.deleteGroup(g.id); }} className="ml-auto text-[#5f5b50] hover:text-red-400"><X className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => { if (window.confirm(tr('term.delGroup', { name: g.name }))) t.deleteGroup(g.id); }} className="ml-auto text-[#5f5b50] hover:text-red-400"><X className="h-3.5 w-3.5" /></button>
                 </div>
-                {!g.collapsed && (items.length ? renderRows(items) : <p className="px-4 py-3 text-[11px] text-[#5f5b50]">No symbols in this group.</p>)}
+                {!g.collapsed && (items.length ? renderRows(items) : <p className="px-4 py-3 text-[11px] text-[#5f5b50]">{tr('term.noGroupSym')}</p>)}
                 {g.collapsed && items.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 px-4 py-2.5">
                     {items.map((item) => {
@@ -225,7 +228,7 @@ export default function TerminalPage() {
           {/* Ungrouped */}
           {buckets.__none.length > 0 && (
             <div>
-              {t.groups.length > 0 && <div className="layered-list__section text-xs font-semibold uppercase tracking-wider text-[#5f5b50]">Ungrouped</div>}
+              {t.groups.length > 0 && <div className="layered-list__section text-xs font-semibold uppercase tracking-wider text-[#5f5b50]">{tr('term.ungrouped')}</div>}
               {renderRows(buckets.__none)}
             </div>
           )}

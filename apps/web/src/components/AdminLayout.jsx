@@ -7,6 +7,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { homeRouteForUser } from '@/lib/homeRoute';
+import { enterAdminPreview } from '@/lib/adminPreview';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -137,9 +138,9 @@ export default function AdminLayout({ children, title }) {
             </div>
           </div>
           <div className="ml-2 flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <NavLink to="/app" className="hidden sm:flex items-center gap-1.5 rounded-lg border border-[#d4af37]/15 px-3 py-1.5 text-xs text-[#8a8577] hover:border-[#d4af37]/30 hover:text-[#c9c4b4]">
+            <button onClick={() => { enterAdminPreview(); nav('/app'); }} className="hidden sm:flex items-center gap-1.5 rounded-lg border border-[#d4af37]/15 px-3 py-1.5 text-xs text-[#8a8577] hover:border-[#d4af37]/30 hover:text-[#c9c4b4]">
               View App
-            </NavLink>
+            </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14]/60 px-2 py-1 sm:gap-2 sm:px-2.5 sm:py-1.5">
@@ -161,7 +162,7 @@ export default function AdminLayout({ children, title }) {
                 <DropdownMenuItem onClick={() => nav('/admin/settings')} className="cursor-pointer gap-2.5">
                   <Settings className="h-4 w-4 text-[#d4af37]" /> Settings
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => nav('/app')} className="cursor-pointer gap-2.5">
+                <DropdownMenuItem onClick={() => { enterAdminPreview(); nav('/app'); }} className="cursor-pointer gap-2.5">
                   <LayoutDashboard className="h-4 w-4 text-[#d4af37]" /> View app
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-white/5" />

@@ -11,6 +11,7 @@ import TvWidget from '@/components/TvWidget';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { homeRouteForUser } from '@/lib/homeRoute';
+import { isAdminPreview, exitAdminPreview } from '@/lib/adminPreview';
 import { usePlatformSettings, featureForRoute } from '@/lib/platformSettings';
 import {
   DropdownMenu,
@@ -156,7 +157,7 @@ const pluralS = (n) => (n === 1 ? '' : 's');
       {!isSubscriber && !isAdmin && (
       <div className="m-3 rounded-xl glass p-4">
         <div className="flex items-center gap-2 text-[#d4af37]"><Crown className="h-4 w-4" /><span className="text-xs font-semibold">{t('app.trial')}</span></div>
-        <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{t('app.trialLeft', { n: trialDaysRemaining, s: pluralS(trialDaysRemaining) })} · Card required.</p>
+        <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{t('app.trialLeft', { n: trialDaysRemaining, s: pluralS(trialDaysRemaining) })} · {t('app.cardRequired')}.</p>
         <button onClick={() => nav('/app/billing')} className="mt-3 min-h-[44px] w-full rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-xs font-semibold text-[#0a0a0f] transition hover:opacity-90">{t('app.upgrade')}</button>
       </div>
       )}
@@ -216,6 +217,12 @@ const pluralS = (n) => (n === 1 ? '' : 's');
           </div>
         </header>
         <main className="p-4 sm:p-5 lg:p-7">
+          {isAdmin && isAdminPreview() && (
+            <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-[#d4af37]/30 bg-[#d4af37]/[0.07] px-4 py-2.5">
+              <span className="text-xs text-[#d4af37]">Admin preview — you are viewing the app as a user. Changes you make act on your own account.</span>
+              <button onClick={() => { exitAdminPreview(); nav('/admin'); }} className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#d4af37]/30 px-3 py-1.5 text-xs font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10"><LogOut className="h-3.5 w-3.5" /> Exit to admin</button>
+            </div>
+          )}
           {children}
         </main>
       </div>
