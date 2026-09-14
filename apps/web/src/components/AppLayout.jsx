@@ -90,7 +90,7 @@ function Brand({ homeTo, platformName }) {
   );
 }
 
-export default function AppLayout({ children, title, trialDays: trialDaysProp = 7 }) {
+export default function AppLayout({ children, title, trialDays: trialDaysProp = 3 }) {
   const [open, setOpen] = useState(false);
   const [tutorial, setTutorial] = useState(false);
   const nav = useNavigate();
@@ -98,7 +98,7 @@ export default function AppLayout({ children, title, trialDays: trialDaysProp = 
   const { unseen } = useNotifications();
   const { t } = useI18n();
   const { settings, features } = usePlatformSettings();
-  const trialDays = Number(settings.trialDays) || Number(trialDaysProp) || 7;
+  const trialDays = Number(settings.trialDays) || Number(trialDaysProp) || 3;
   const initial = (user?.username || user?.email || 'A').charAt(0).toUpperCase();
   const signOut = () => { logout(); nav('/'); };
 
@@ -111,8 +111,8 @@ export default function AppLayout({ children, title, trialDays: trialDaysProp = 
     const trialEndRaw = user.trialEndsAt || user.trial_ends_at;
     const trialEnd = trialEndRaw
       ? new Date(trialEndRaw)
-      : (startRaw ? new Date(new Date(startRaw).getTime() + Number(trialDays || 7) * 24 * 60 * 60 * 1000) : null);
-    if (!trialEnd || Number.isNaN(trialEnd.getTime())) return Number(trialDays || 7);
+      : (startRaw ? new Date(new Date(startRaw).getTime() + Number(trialDays || 3) * 24 * 60 * 60 * 1000) : null);
+    if (!trialEnd || Number.isNaN(trialEnd.getTime())) return Number(trialDays || 3);
     const msLeft = trialEnd.getTime() - Date.now();
     return Math.max(0, Math.ceil(msLeft / (24 * 60 * 60 * 1000)));
   }, [isSubscriber, isAdmin, user, trialDays]);
@@ -156,7 +156,7 @@ const pluralS = (n) => (n === 1 ? '' : 's');
       {!isSubscriber && !isAdmin && (
       <div className="m-3 rounded-xl glass p-4">
         <div className="flex items-center gap-2 text-[#d4af37]"><Crown className="h-4 w-4" /><span className="text-xs font-semibold">{t('app.trial')}</span></div>
-        <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{t('app.trialLeft', { n: trialDaysRemaining, s: pluralS(trialDaysRemaining) })}</p>
+        <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{t('app.trialLeft', { n: trialDaysRemaining, s: pluralS(trialDaysRemaining) })} · Card required.</p>
         <button onClick={() => nav('/app/billing')} className="mt-3 min-h-[44px] w-full rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-xs font-semibold text-[#0a0a0f] transition hover:opacity-90">{t('app.upgrade')}</button>
       </div>
       )}

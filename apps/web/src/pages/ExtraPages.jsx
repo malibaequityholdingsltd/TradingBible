@@ -182,7 +182,7 @@ export function AdminPage() {
       <h3 className="mb-3 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Users className="h-5 w-5 text-[#d4af37]" /> Users & Subscriptions</h3>
       <div className="glass no-scrollbar overflow-x-auto rounded-2xl">
         <table className="w-full min-w-[640px] text-sm">
-          <thead><tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">{['User', 'Plan', 'Status', 'MRR', 'Paddle ID'].map(h => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
+          <thead><tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">{['User', 'Plan', 'Status', 'MRR', 'Sub ID'].map(h => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
           <tbody>{users.map((u) => (
             <tr key={u.email} className="border-b border-white/5 hover:bg-white/[0.03]">
               <td className="px-4 py-3 text-[#f0ecdd]">{u.email}</td>
@@ -207,9 +207,9 @@ export function PricingPage() {
       <div className="mx-auto max-w-[96rem]">
         <Link to={homeTo} className="mb-10 flex items-center gap-2.5"><img src={TRADINGBIBLE_LOGO} alt="TradingBible logo" className="h-9 w-9 rounded-lg object-contain" /><span className="font-semibold">Trading<span className="gold-text">Bible</span></span></Link>
         <div className="mb-12 text-center">
-          <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/30 px-3 py-1 text-xs text-[#d4af37]"><Crown className="h-3.5 w-3.5" /> Billed securely via Paddle</div>
+          <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/30 px-3 py-1 text-xs text-[#d4af37]"><Crown className="h-3.5 w-3.5" /> Billed securely via Stripe</div>
           <h1 className="text-4xl font-bold sm:text-5xl">Choose your <span className="gold-text">edge</span></h1>
-          <p className="mt-3 text-[#8a8577]">Start with a 7-day premium trial. Upgrade, downgrade or cancel anytime.</p>
+          <p className="mt-3 text-[#8a8577]">Start with a 3-day premium trial. Card required. Upgrade, downgrade or cancel anytime.</p>
         </div>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {PLANS.map((p) => (
@@ -224,7 +224,7 @@ export function PricingPage() {
             </div>
           ))}
         </div>
-        <p className="mt-10 text-center text-sm text-[#6a665a]">Webhook-ready for Paddle: subscription_created · subscription_updated · subscription_cancelled · subscription_payment_failed</p>
+        <p className="mt-10 text-center text-sm text-[#6a665a]">Webhook-ready for Stripe: subscription_created · subscription_updated · subscription_deleted · invoice_payment_failed</p>
       </div>
       <Footer />
     </div>

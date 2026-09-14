@@ -71,7 +71,7 @@ export function TermsPage() {
         <p>You are responsible for maintaining the confidentiality of your credentials and for all activity under your account. Enable two-factor authentication where available and notify us immediately of any unauthorised use.</p>
       </Section>
       <Section heading="6. Subscriptions, billing, and taxes">
-        <p>Paid plans are billed in advance on a recurring basis through our payment processor, Paddle, acting as merchant of record. Prices are shown at checkout, are exclusive of applicable taxes unless stated, and may change with prior notice. Your subscription renews automatically until cancelled. Cancellation stops future renewals but does not retroactively refund the current term except as set out in our Refund Policy. You are responsible for any taxes arising from your use of the Service.</p>
+        <p>Paid plans are billed in advance on a recurring basis through our payment processor, Stripe. Prices are shown at checkout, are exclusive of applicable taxes unless stated, and may change with prior notice. Your subscription renews automatically until cancelled. Cancellation stops future renewals but does not retroactively refund the current term except as set out in our Refund Policy. You are responsible for any taxes arising from your use of the Service.</p>
       </Section>
       <Section heading="7. Acceptable use">
         <p>You agree not to: (a) reverse engineer, decompile, scrape, or resell the Service; (b) upload unlawful, infringing, or misleading content; (c) use the Service to facilitate market manipulation, insider dealing, money laundering, fraud, or any illegal activity; (d) attempt to disrupt, overload, or gain unauthorised access to our systems or other users&apos; data; or (e) circumvent usage limits or security controls. Violations may result in immediate suspension or termination and referral to authorities.</p>
@@ -105,19 +105,19 @@ export function PolicyPage() {
   return (
     <LegalShell title="Privacy Policy" subtitle="This policy explains what data TradingBible (operated by TradingBible LLC, the data controller) collects, why we collect it, and the choices you have. It is designed to comply with the EU/UK GDPR, the California Consumer Privacy Act (CCPA/CPRA), and other applicable data-protection laws.">
       <Section heading="1. Data we collect">
-        <p>We collect: (a) account data (email, username, phone, authentication metadata for one-time code access); (b) profile preferences (primary market, experience, goals); (c) trading data synced from brokers and prop firms you connect (symbols, entries, exits, sizes, P&amp;L, balances, timestamps); (d) billing metadata processed by Paddle; and (e) technical logs, device, and usage data needed to secure and operate the Service.</p>
+        <p>We collect: (a) account data (email, username, phone, authentication metadata for one-time code access); (b) profile preferences (primary market, experience, goals); (c) trading data synced from brokers and prop firms you connect (symbols, entries, exits, sizes, P&amp;L, balances, timestamps); (d) billing metadata processed by Stripe; and (e) technical logs, device, and usage data needed to secure and operate the Service.</p>
       </Section>
       <Section heading="2. Legal bases (GDPR)">
         <p>We process personal data on the bases of: performance of our contract with you (providing the Service); our legitimate interests (securing, improving, and analysing the Service); compliance with legal obligations; and your consent where required (e.g. certain communications). You may withdraw consent at any time.</p>
       </Section>
       <Section heading="3. How we use your data">
-        <p>To operate the journal, compute analytics, power AI reviews and coaching, process billing through Paddle, prevent fraud and abuse, comply with law, and send service notifications such as reports and security alerts. AI processing generates insights for you and is not used to train third-party public models.</p>
+        <p>To operate the journal, compute analytics, power AI reviews and coaching, process billing through Stripe, prevent fraud and abuse, comply with law, and send service notifications such as reports and security alerts. AI processing generates insights for you and is not used to train third-party public models.</p>
       </Section>
       <Section heading="4. Broker and prop-firm connections">
         <p>Credentials and API keys are encrypted in transit and at rest, scoped to the minimum permissions required to read trade history and balances, and are never used to place orders or move funds. You can disconnect an account and delete its data at any time.</p>
       </Section>
       <Section heading="5. Sharing and international transfers">
-        <p>We do not sell your personal data. We share limited data with processors strictly to run the Service — for example our payment processor (Paddle), infrastructure and hosting providers, and the AI provider used to generate your reports — each bound by confidentiality and data-processing obligations. Where data is transferred internationally, we rely on appropriate safeguards such as Standard Contractual Clauses.</p>
+        <p>We do not sell your personal data. We share limited data with processors strictly to run the Service — for example our payment processor (Stripe), infrastructure and hosting providers, and the AI provider used to generate your reports — each bound by confidentiality and data-processing obligations. Where data is transferred internationally, we rely on appropriate safeguards such as Standard Contractual Clauses.</p>
       </Section>
       <Section heading="6. Data retention">
         <p>We keep personal data only as long as needed for the purposes described or as required by law. Trading and account data are retained while your account is active. When you delete your account, associated trade and broker records are removed, subject to records we must retain for legal or fraud-prevention purposes.</p>
@@ -145,7 +145,7 @@ export function RefundPage() {
   return (
     <LegalShell title="Refund Policy" subtitle="We want you to trade with confidence in the platform, not just the markets. Here is exactly how refunds work.">
       <Section heading="1. Free trial first">
-        <p>Every new account starts with a 7-day premium trial that requires no card. We encourage you to use the trial fully so you can evaluate the Service before paying.</p>
+        <p>Every new account starts with a 3-day premium trial that requires a valid card. Your card is verified at signup and charged automatically if you continue after the trial. We encourage you to use the trial fully so you can evaluate the Service before paying.</p>
       </Section>
       <Section heading="2. 14-day money-back guarantee">
         <p>If you upgrade to a paid plan and are not satisfied, you may request a full refund within 14 days of your first payment on that plan. Contact billing@tradingbible.app from your account email and we will process the refund to your original payment method.</p>
@@ -157,7 +157,7 @@ export function RefundPage() {
         <p>The following are non-refundable except where required by law: (a) subscription periods used beyond the 14-day guarantee window; (b) partial or unused portions of a term after the guarantee window; (c) add-ons or one-time fees expressly marked non-refundable at checkout; and (d) accounts terminated for breach of our Terms, fraud, or abuse.</p>
       </Section>
       <Section heading="5. Exceptions and goodwill">
-        <p>We may issue prorated or goodwill refunds at our discretion in cases of extended service outages or duplicate charges. Refunds are handled through Paddle, our merchant of record, and may take 5–10 business days to appear on your statement.</p>
+        <p>We may issue prorated or goodwill refunds at our discretion in cases of extended service outages or duplicate charges. Refunds are handled through Stripe and may take 5–10 business days to appear on your statement.</p>
       </Section>
       <Section heading="6. Chargebacks and dispute process">
         <p>Please contact us before initiating a chargeback so we can resolve the issue directly and quickly. Email billing@tradingbible.app with your account email and reason; most requests are answered within one business day. If you remain dissatisfied, disputes are handled under the governing law and dispute-resolution provisions of our Terms of Service.</p>
@@ -173,7 +173,7 @@ const FAQS = [
   { q: 'Is TradingBible financial advice?', a: 'No. TradingBible is a journaling and analytics tool. Our AI reviews and scores are educational and reflect your own historical data — they are never buy/sell recommendations.' },
   { q: 'How does broker sync work?', a: 'You connect a broker using read-oriented API keys or OAuth. We import your historical and ongoing trades automatically into your journal, dashboard, and AI reports. Credentials are encrypted and never used to place trades or withdraw funds.' },
   { q: 'Which brokers are supported?', a: 'MetaTrader 4, MetaTrader 5, cTrader, DXtrade, Interactive Brokers, Binance, Bybit, and Coinbase. More integrations are added regularly.' },
-  { q: 'Do I need a credit card for the trial?', a: 'No. The 7-day premium trial requires no card. You only add payment details if you choose to continue on a paid plan.' },
+  { q: 'Do I need a credit card for the trial?', a: 'Yes. The 3-day premium trial requires a valid card. Your card is verified at signup and you are charged automatically if you continue after the trial.' },
   { q: 'Can I cancel anytime?', a: 'Yes. Cancel from your profile settings in a couple of clicks. You keep access until the end of your current billing period, and no further charges are made.' },
   { q: 'How is my data protected?', a: 'We use row-level security, encrypted storage, isolated per-user data, and protected APIs. Your trade data is only used to generate insights for you.' },
   { q: 'What does the AI Coach actually do?', a: 'It reviews your trades for quality, risk, and discipline, detects recurring mistakes, and answers questions grounded in your real history, such as “What is my biggest mistake?” or “Which strategy works best for me?”.' },

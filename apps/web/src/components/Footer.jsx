@@ -109,7 +109,7 @@ export default function Footer() {
   const words = brand.split(/\s+/);
   const first = words.slice(0, -1).join(' ');
   const last = words[words.length - 1] || '';
-  const trialDays = Number(settings.trialDays) || 7;
+  const trialDays = Number(settings.trialDays) || 3;
 
   return (
     <footer className="border-t border-[#d4af37]/12 bg-[#0a0a0f]">
@@ -150,7 +150,7 @@ export default function Footer() {
 
           <div className="glass shrink-0 rounded-2xl p-5 lg:w-80">
             <div className="mb-1 flex items-center gap-2 text-[#d4af37]"><LineChart className="h-4 w-4" /><span className="text-sm font-semibold">Start your edge, free</span></div>
-            <p className="mb-4 text-xs text-[#8a8577]">{trialDays}-day premium trial. No card required. Cancel anytime.</p>
+            <p className="mb-4 text-xs text-[#8a8577]">{trialDays}-day premium trial. Card required. Cancel anytime.</p>
             <Link to="/signup" className="block rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-center text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">Create free account</Link>
           </div>
         </div>

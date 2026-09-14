@@ -15,6 +15,10 @@ const transporter = smtpHost && smtpPort && smtpUser && smtpPass
       host: smtpHost,
       port: smtpPort,
       secure: smtpPort === 465,
+      requireTLS: smtpPort === 587,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
       auth: { user: smtpUser, pass: smtpPass },
     })
   : null;
@@ -117,18 +121,40 @@ export async function authSendEmailHandler(req, res, next) {
       return res.status(400).json({ error: 'Recipient email is missing' });
     }
 
+    const textBody = `TradingBible ${mail.subject}\n\n${String(emailData?.token || '')}\n${String(emailData?.confirmation_url || emailData?.confirmationURL || '')}`.trim();
+    const htmlBody = brandShell({ title: mail.title, body: mail.body });
+    // Hostinger requires envelope-from == SMTP user exactly, otherwise 553.
+    // First try display-name From, then fall back to bare address.
     try {
       await transporter.sendMail({
         from: `"${smtpFromName}" <${smtpFromEmail}>`,
+        envelope: { from: smtpUser, to },
         to,
         subject: mail.subject,
-        text: `TradingBible ${mail.subject}\n\n${String(emailData?.token || '')}\n${String(emailData?.confirmation_url || emailData?.confirmationURL || '')}`.trim(),
-        html: brandShell({ title: mail.title, body: mail.body }),
+        text: textBody,
+        html: htmlBody,
       });
-    } catch (mailErr) {
-      console.error('SMTP send failed, logging OTP for manual use:', mailErr.message, 'to', to, 'token', String(emailData?.token || '').slice(0, 6) + '...');
-      // Still return 200 so Supabase doesn't treat OTP as failed - login can proceed via code in logs/Supabase dashboard
-      // TODO: fix Hostinger mailbox ownership (support@tradingbible.app not owned by SMTP user)
+    } catch (firstErr) {
+      const msg = String(firstErr?.message || '');
+      console.error('SMTP send attempt 1 failed:', msg, 'to', to);
+      if (/553|sender|owned|rejected/i.test(msg)) {
+        try {
+          await transporter.sendMail({
+            from: smtpFromEmail,
+            envelope: { from: smtpUser, to },
+            to,
+            subject: mail.subject,
+            text: textBody,
+            html: htmlBody,
+          });
+        } catch (secondErr) {
+          console.error('SMTP send attempt 2 failed:', String(secondErr?.message || secondErr), 'to', to, 'token', String(emailData?.token || '').slice(0, 2) + '****');
+        }
+      } else {
+        console.error('SMTP send failed:', msg, 'to', to);
+      }
+      // Always return 200 so Supabase OTP is still created — user can resend,
+      // use OAuth, or contact support. Never block login with a 500.
     }
 
     return res.status(200).json({});

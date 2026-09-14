@@ -12,8 +12,8 @@ export const LOGOS = {
 };
 
 export const PLANS = [
-  { id: 'trial', name: 'Free Trial', price: 0, period: '7 days', tagline: 'Full premium access', logo: LOGOS.whiteBlack,
-    features: ['All Pro features', 'AI trade reviews', 'Broker sync (2 accounts)', 'No card required'], cta: 'Start Free Trial' },
+  { id: 'trial', name: 'Free Trial', price: 0, period: '3 days', tagline: 'Full premium access', logo: LOGOS.whiteBlack,
+    features: ['All Pro features', 'AI trade reviews', 'Broker sync (2 accounts)', 'Card required'], cta: 'Start Free Trial' },
   { id: 'pro', name: 'Pro', price: 19.99, period: 'mo', tagline: 'For serious retail traders', logo: LOGOS.goldBlack,
     features: ['Unlimited trades', 'Full analytics suite', 'AI trade scoring', '5 broker accounts', 'Trading calendar'], cta: 'Choose Pro' },
   { id: 'elite', name: 'Elite AI', price: 49.99, period: 'mo', highlight: true, tagline: 'AI-first performance', logo: LOGOS.goldWhite,

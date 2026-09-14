@@ -671,7 +671,8 @@ export function SignupPage() {
         return;
       }
       const auth = await loginWithCode(email.trim(), token);
-      nav(homeRouteForUser(auth?.record));
+      // New accounts must add a card to activate the 3-day trial.
+      nav('/app/billing', { replace: true });
     } catch (err) {
       if (!sent && isOtpRateLimited(err)) {
         const waitFor = parseRetryAfterSeconds(err);
@@ -850,7 +851,7 @@ export function OnboardingPage() {
       <div className="mx-auto w-full max-w-md">
       <div className="auth-card glass rounded-2xl p-6 sm:p-7">
         <h1 className="text-2xl font-bold">Tailor your terminal</h1>
-        <p className="auth-muted mt-1 text-sm text-[#8a8577]">Three quick questions. Your trial starts now.</p>
+        <p className="auth-muted mt-1 text-sm text-[#8a8577]">Three quick questions. Your 3-day trial starts now — card required.</p>
         <div className="mt-6 space-y-6">
           <Group title="Primary market" options={MARKETS} value={market} onChange={setMarket} />
           <Group title="Experience level" options={EXPERIENCE} value={exp} onChange={setExp} />
