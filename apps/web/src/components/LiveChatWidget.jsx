@@ -156,7 +156,8 @@ export default function LiveChatWidget() {
           className="tv-chat-panel tv-pop fixed z-[70] flex h-[34rem] max-h-[calc(100dvh-2rem)] w-[min(25rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl"
           style={{ bottom: '0.75rem', [onLeft ? 'left' : 'right']: '0.75rem' }}
         >
-          {/* Ambient gold glow + terminal scanlines */}
+          {/* Gold top-edge accent + ambient glow + terminal scanlines */}
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(212,175,55,0.10),transparent)]" />
           <div aria-hidden className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,rgba(212,175,55,0.022)_0px,rgba(212,175,55,0.022)_1px,transparent_1px,transparent_3px)]" />
 
@@ -170,11 +171,15 @@ export default function LiveChatWidget() {
             </div>
             <div className="leading-tight">
               <div className="gold-text text-[13px] font-bold tracking-wide">TradingBible AI</div>
-              <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/20 bg-[#d4af37]/[0.06] px-2 py-[3px] font-mono text-[8.5px] uppercase tracking-[0.12em]">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
+              <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/25 bg-gradient-to-r from-[#d4af37]/[0.10] to-transparent px-2 py-[3px] font-mono text-[8.5px] uppercase tracking-[0.12em]">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
+                </span>
                 <span className="text-emerald-400">Live</span>
                 <span className="text-[#5a564a]">·</span>
-                <span className="text-[#d4af37]">DeepSeek V4 Flash Free</span>
+                <Sparkles className="h-2.5 w-2.5 text-[#d4af37]" />
+                <span className="text-[#d4af37]">Muse Spark 1.3</span>
               </div>
             </div>
             {messages.length > 0 && (
@@ -237,15 +242,22 @@ export default function LiveChatWidget() {
                     {m.text || m.images?.length ? (
                       <div className={`flex max-w-[88%] items-end gap-1.5 ${m.from === 'you' ? 'flex-row-reverse' : ''}`}>
                         {m.from === 'agent' && (
-                          <div className="mb-px grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e]">
+                          <div className="mb-px grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] shadow-[0_0_10px_rgba(212,175,55,0.35)]">
                             <img src={TRADINGBIBLE_LOGO} alt="" className="h-[15px] w-[15px] rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
                           </div>
                         )}
-                        <div className={`min-w-0 break-words rounded-2xl px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap ${m.from === 'you'
-                          ? 'rounded-br-md bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_3px_14px_rgba(212,175,55,0.3)]'
-                          : 'glass rounded-bl-md border border-[#d4af37]/10 text-[#e9e7df]'}`}>
-                          {m.images && m.images.length > 0 && m.images.map((img, i) => (img ? <img key={i} src={img} alt="Generated" className="mb-2 max-h-36 rounded-lg" /> : null))}
-                          {m.text}
+                        <div className="min-w-0">
+                          {m.from === 'agent' && idx > 0 && (
+                            <div className="mb-1 ml-1 flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#d4af37]/80">
+                              <Sparkles className="h-2.5 w-2.5" /> AI Coach · Muse Spark
+                            </div>
+                          )}
+                          <div className={`break-words rounded-2xl px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap ${m.from === 'you'
+                            ? 'rounded-br-md bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_3px_14px_rgba(212,175,55,0.3)]'
+                            : 'glass rounded-bl-md border border-[#d4af37]/10 text-[#e9e7df] shadow-[0_2px_12px_rgba(0,0,0,0.35)]'}`}>
+                            {m.images && m.images.length > 0 && m.images.map((img, i) => (img ? <img key={i} src={img} alt="Generated" className="mb-2 max-h-36 rounded-lg" /> : null))}
+                            {m.text}
+                          </div>
                         </div>
                       </div>
                     ) : null}
@@ -303,7 +315,7 @@ export default function LiveChatWidget() {
               <div className="rounded-xl border border-[#d4af37]/12 bg-[#0a0a0f]/60 p-3.5">
                 <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">Model</div>
                 <div className="font-mono mt-1 text-[11px] leading-relaxed text-[#c9c4b4]">
-                  deepseek-v4-flash-free<br />
+                  muse-spark-1.3-contributor-free<br />
                   <span className="text-[#8a8577]">via opencode gateway · chat-only agent</span>
                 </div>
               </div>
@@ -346,10 +358,11 @@ export default function LiveChatWidget() {
           onTouchStart={onPointerDown}
           aria-label="Open AI assistant (drag to move)"
           title="TradingBible AI assistant"
-          className={`tv-chat-btn fixed z-[70] grid place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#c99a25] shadow-[0_8px_28px_rgba(212,175,55,0.35),0_0_0_1px_rgba(212,175,55,0.4)] ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]'}`}
+          className={`tv-chat-btn fixed z-[70] grid place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#f4e6a8] via-[#e2bd4f] to-[#c99a25] shadow-[0_8px_28px_rgba(212,175,55,0.35),0_0_0_1px_rgba(212,175,55,0.4)] ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]'}`}
           style={{ left: pos.x, top: pos.y, height: BTN, width: BTN, touchAction: 'none' }}
         >
-          <MessageCircle className="h-6 w-6 text-[#0a0a0f]" strokeWidth={2.2} />
+          <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-[#d4af37]/25 [animation-duration:2.2s]" />
+          <MessageCircle className="relative h-6 w-6 text-[#0a0a0f]" strokeWidth={2.2} />
           <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#0c0c11] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
         </button>
       )}
