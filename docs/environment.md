@@ -54,6 +54,15 @@ Both apps load `.env` from their own directory (`node --env-file=.env` for the A
 | `PADDLE_SANDBOX_*` | dep. | Sandbox credentials |
 | `PADDLE_PRICE_PRO` `PADDLE_PRICE_ELITE` `PADDLE_PRICE_PROFESSIONAL` | yes | Price IDs for each plan |
 
+## Dun & Bradstreet (company DUNS verification)
+
+| Variable | Required | Description |
+|---|---|---|
+| `DNB_API_BASE` | | Direct+ base URL (default `https://plus.dnb.com`) |
+| `DNB_CLIENT_ID` `DNB_CLIENT_SECRET` | opt. | Direct+ OAuth credentials (paid contract). Empty = sandbox stub: `/duns/verify` stores the number as `pending` with labeled test data until credentials are wired |
+
+Go-live checklist (when the DUNS number + Direct+ contract arrive): apply `supabase/migrations/20260820000000_duns_verification.sql`, set `DNB_CLIENT_ID`/`DNB_CLIENT_SECRET` on the VPS `.env`, restart the API, re-verify from `/company` → status flips `pending` → `verified`.
+
 ## Circle (optional x402 paywall)
 
 | Variable | Required | Description |
