@@ -8,6 +8,20 @@ import { useI18n } from '@/lib/i18n';
 const box = 'glass rounded-2xl p-5';
 const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40';
 
+function RowBtns({ onEdit, onDelete }) {
+  const { t } = useI18n();
+  return (
+    <div className="mt-2 flex gap-2">
+      {onEdit && <button onClick={onEdit} className="rounded-lg border border-[#d4af37]/25 px-2.5 py-1 text-xs text-[#d4af37]">{t('sch.edit')}</button>}
+      {onDelete && <button onClick={onDelete} className="rounded-lg border border-red-500/35 px-2.5 py-1 text-xs text-red-400">{t('sch.delete')}</button>}
+    </div>
+  );
+}
+
+function confirmDel(t) {
+  return window.confirm(t('sch.confirmDel'));
+}
+
 function RoleBanner({ admin, teacher, student }) {
   const { t } = useI18n();
   return (
@@ -72,24 +86,57 @@ export function CompanyStudentsPage() {
   const { t } = useI18n();
   const { loading, students, setStudents } = useCompanySchoolData();
   const [form, setForm] = useState({ name: '', email: '', classroom: '', academyInterest: true });
+  const [editingId, setEditingId] = useState(null);
 
-  const addStudent = async () => {
+  const resetForm = () => { setForm({ name: '', email: '', classroom: '', academyInterest: true }); setEditingId(null); };
+
+  const saveStudent = async () => {
     if (!form.name.trim() || !form.email.trim()) return;
     try {
-      const created = await pb.collection('school_students').create({
-        name: form.name.trim(),
-        email: form.email.trim(),
-        classroom: form.classroom.trim() || 'General',
-        academyInterest: !!form.academyInterest,
-        status: 'active',
-      });
-      setStudents((prev) => [created, ...prev]);
-      setForm({ name: '', email: '', classroom: '', academyInterest: true });
-      toast({ title: t('sch.tStAdded') });
+      if (editingId) {
+        const updated = await pb.collection('school_students').update(editingId, {
+          name: form.name.trim(),
+          email: form.email.trim(),
+          classroom: form.classroom.trim() || 'General',
+          academyInterest: !!form.academyInterest,
+        });
+        setStudents((prev) => prev.map((s) => (s.id === editingId ? updated : s)));
+        toast({ title: t('sch.save') });
+      } else {
+        const created = await pb.collection('school_students').create({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          classroom: form.classroom.trim() || 'General',
+          academyInterest: !!form.academyInterest,
+          status: 'active',
+        });
+        setStudents((prev) => [created, ...prev]);
+        toast({ title: t('sch.tStAdded') });
+      }
+      resetForm();
     } catch (err) {
       toast({ variant: 'destructive', title: t('sch.tStAddFail'), description: err?.message || t('sch.tTryAgain') });
     }
   };
+
+  const startEdit = (s) => {
+    setEditingId(s.id);
+    setForm({ name: s.name || '', email: s.email || '', classroom: s.classroom || '', academyInterest: !!s.academyInterest });
+  };
+
+  const delStudent = async (s) => {
+    if (!confirmDel(t)) return;
+    try {
+      await pb.collection('school_students').delete(s.id);
+      setStudents((prev) => prev.filter((x) => x.id !== s.id));
+      if (editingId === s.id) resetForm();
+      toast({ title: t('sch.delete') });
+    } catch (err) {
+      toast({ variant: 'destructive', title: t('sch.tTryAgain'), description: err?.message });
+    }
+  };
+
+  const addStudent = saveStudent;
 
   return (
     <AppLayout title={t('sch.stTitle')}>
@@ -109,7 +156,8 @@ export function CompanyStudentsPage() {
               <input type="checkbox" checked={form.academyInterest} onChange={(e) => setForm((p) => ({ ...p, academyInterest: e.target.checked }))} className="h-4 w-4 accent-[#d4af37]" />
               {t('sch.acadTrack')}
             </label>
-            <button onClick={addStudent} className="inline-flex min-h-10 items-center gap-1 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><Plus className="h-4 w-4" /> {t('sch.saveStudent')}</button>
+            <button onClick={addStudent} className="inline-flex min-h-10 items-center gap-1 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><Plus className="h-4 w-4" /> {editingId ? t('sch.save') : t('sch.saveStudent')}</button>
+            {editingId && <button onClick={resetForm} className="inline-flex min-h-10 items-center gap-1 rounded-xl border border-white/10 px-3 py-2 text-sm text-[#8a8577]">{t('sch.cancel')}</button>}
           </div>
         </div>
         <div className={box}>
@@ -121,6 +169,7 @@ export function CompanyStudentsPage() {
                 <div className="font-medium text-[#f0ecdd]">{s.name}</div>
                 <div className="text-xs text-[#8a8577]">{s.email} · {s.classroom || t('sch.general')}</div>
                 <div className="mt-1 text-xs text-[#c9c4b4]">{s.academyInterest ? t('sch.acadInt') : t('sch.genTrack')}</div>
+                <RowBtns onEdit={() => startEdit(s)} onDelete={() => delStudent(s)} />
               </div>
             ))}
           </div>
@@ -135,16 +184,45 @@ export function CompanyTeachersPage() {
   const { t } = useI18n();
   const { loading, teachers, setTeachers } = useCompanySchoolData();
   const [form, setForm] = useState({ name: '', email: '', subject: '' });
+  const [editingId, setEditingId] = useState(null);
 
-  const addTeacher = async () => {
+  const resetForm = () => { setForm({ name: '', email: '', subject: '' }); setEditingId(null); };
+
+  const saveTeacher = async () => {
     if (!form.name.trim() || !form.email.trim()) return;
     try {
-      const created = await pb.collection('school_teachers').create({ ...form, name: form.name.trim(), email: form.email.trim(), subject: form.subject.trim() || t('sch.defaultSubject') });
-      setTeachers((prev) => [created, ...prev]);
-      setForm({ name: '', email: '', subject: '' });
-      toast({ title: t('sch.tTeAdded') });
+      const payload = { name: form.name.trim(), email: form.email.trim(), subject: form.subject.trim() || t('sch.defaultSubject') };
+      if (editingId) {
+        const updated = await pb.collection('school_teachers').update(editingId, payload);
+        setTeachers((prev) => prev.map((x) => (x.id === editingId ? updated : x)));
+        toast({ title: t('sch.save') });
+      } else {
+        const created = await pb.collection('school_teachers').create(payload);
+        setTeachers((prev) => [created, ...prev]);
+        toast({ title: t('sch.tTeAdded') });
+      }
+      resetForm();
     } catch (err) {
       toast({ variant: 'destructive', title: t('sch.tTeAddFail'), description: err?.message || t('sch.tTryAgain') });
+    }
+  };
+
+  const addTeacher = saveTeacher;
+
+  const startEdit = (x) => {
+    setEditingId(x.id);
+    setForm({ name: x.name || '', email: x.email || '', subject: x.subject || '' });
+  };
+
+  const delTeacher = async (x) => {
+    if (!confirmDel(t)) return;
+    try {
+      await pb.collection('school_teachers').delete(x.id);
+      setTeachers((prev) => prev.filter((y) => y.id !== x.id));
+      if (editingId === x.id) resetForm();
+      toast({ title: t('sch.delete') });
+    } catch (err) {
+      toast({ variant: 'destructive', title: t('sch.tTryAgain'), description: err?.message });
     }
   };
 
@@ -162,7 +240,8 @@ export function CompanyTeachersPage() {
             <input className={input} value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder={t('sch.teNamePh')} />
             <input className={input} value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder={t('sch.teEmailPh')} />
             <input className={input} value={form.subject} onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))} placeholder={t('sch.subjPh')} />
-            <button onClick={addTeacher} className="inline-flex min-h-10 items-center gap-1 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><Plus className="h-4 w-4" /> {t('sch.saveTeacher')}</button>
+            <button onClick={addTeacher} className="inline-flex min-h-10 items-center gap-1 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><Plus className="h-4 w-4" /> {editingId ? t('sch.save') : t('sch.saveTeacher')}</button>
+            {editingId && <button onClick={resetForm} className="inline-flex min-h-10 items-center gap-1 rounded-xl border border-white/10 px-3 py-2 text-sm text-[#8a8577]">{t('sch.cancel')}</button>}
           </div>
         </div>
         <div className={box}>
@@ -173,6 +252,7 @@ export function CompanyTeachersPage() {
                 <div className="font-medium text-[#f0ecdd]">{x.name}</div>
                 <div className="text-xs text-[#8a8577]">{x.email}</div>
                 <div className="mt-1 text-xs text-[#c9c4b4]">{x.subject || t('sch.general')}</div>
+                <RowBtns onEdit={() => startEdit(x)} onDelete={() => delTeacher(x)} />
               </div>
             ))}
           </div>
@@ -187,21 +267,60 @@ export function CompanyAssessmentsPage() {
   const { t } = useI18n();
   const { loading, assessments, setAssessments } = useCompanySchoolData();
   const [form, setForm] = useState({ title: '', type: 'quiz', instructions: '' });
+  const [editingId, setEditingId] = useState(null);
 
-  const addAssessment = async () => {
+  const resetForm = () => { setForm({ title: '', type: 'quiz', instructions: '' }); setEditingId(null); };
+
+  const saveAssessment = async () => {
     if (!form.title.trim()) return;
     try {
-      const created = await pb.collection('school_assessments').create({
+      const payload = {
         title: form.title.trim(),
         type: form.type,
-        status: 'published',
         payload: { instructions: form.instructions },
-      });
-      setAssessments((prev) => [created, ...prev]);
-      setForm({ title: '', type: 'quiz', instructions: '' });
-      toast({ title: t('sch.tAsPub', { type: t(`sch.type_${form.type}`, null, form.type) }) });
+      };
+      if (editingId) {
+        const updated = await pb.collection('school_assessments').update(editingId, payload);
+        setAssessments((prev) => prev.map((a) => (a.id === editingId ? updated : a)));
+        toast({ title: t('sch.save') });
+      } else {
+        const created = await pb.collection('school_assessments').create({ ...payload, status: 'published' });
+        setAssessments((prev) => [created, ...prev]);
+        toast({ title: t('sch.tAsPub', { type: t(`sch.type_${form.type}`, null, form.type) }) });
+      }
+      resetForm();
     } catch (err) {
       toast({ variant: 'destructive', title: t('sch.tAsFail'), description: err?.message || t('sch.tTryAgain') });
+    }
+  };
+
+  const addAssessment = saveAssessment;
+
+  const startEdit = (a) => {
+    setEditingId(a.id);
+    setForm({ title: a.title || '', type: a.type || 'quiz', instructions: a.payload?.instructions || '' });
+  };
+
+  const togglePublish = async (a) => {
+    const next = (a.status || 'draft') === 'published' ? 'draft' : 'published';
+    try {
+      const updated = await pb.collection('school_assessments').update(a.id, { status: next });
+      setAssessments((prev) => prev.map((x) => (x.id === a.id ? updated : x)));
+      toast({ title: next === 'published' ? t('sch.publish') : t('sch.unpublish') });
+    } catch (err) {
+      toast({ variant: 'destructive', title: t('sch.tTryAgain'), description: err?.message });
+    }
+  };
+
+  const delAssessment = async (a) => {
+    if (!confirmDel(t)) return;
+    try {
+      await pb.collection('school_assessments').delete(a.id);
+      setAssessments((prev) => prev.filter((x) => x.id !== a.id));
+      if (editingId === a.id) resetForm();
+      toast({ title: t('sch.delete') });
+    } catch (err) {
+      toast({ variant: 'destructive', title: t('sch.tTryAgain'), description: err?.message });
     }
   };
 
@@ -221,7 +340,8 @@ export function CompanyAssessmentsPage() {
               {['quiz', 'test', 'exam', 'homework'].map((o) => <option key={o} value={o}>{t(`sch.type_${o}`)}</option>)}
             </select>
             <textarea className={`${input} min-h-[120px]`} value={form.instructions} onChange={(e) => setForm((p) => ({ ...p, instructions: e.target.value }))} placeholder={t('sch.instructionsPh')} />
-            <button onClick={addAssessment} className="inline-flex min-h-10 items-center gap-1 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><Plus className="h-4 w-4" /> {t('sch.publish')}</button>
+            <button onClick={addAssessment} className="inline-flex min-h-10 items-center gap-1 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><Plus className="h-4 w-4" /> {editingId ? t('sch.save') : t('sch.publish')}</button>
+            {editingId && <button onClick={resetForm} className="inline-flex min-h-10 items-center gap-1 rounded-xl border border-white/10 px-3 py-2 text-sm text-[#8a8577]">{t('sch.cancel')}</button>}
           </div>
         </div>
         <div className={box}>
@@ -231,6 +351,10 @@ export function CompanyAssessmentsPage() {
               <div key={a.id} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
                 <div className="font-medium text-[#f0ecdd]">{a.title}</div>
                 <div className="text-xs text-[#8a8577] capitalize">{t(`sch.type_${a.type}`, null, a.type)} · {t(`sch.st_${a.status || 'draft'}`, null, a.status || 'draft')}</div>
+                <div className="mt-2 flex gap-2">
+                  <button onClick={() => togglePublish(a)} className="rounded-lg border border-[#d4af37]/25 px-2.5 py-1 text-xs text-[#d4af37]">{(a.status || 'draft') === 'published' ? t('sch.unpublish') : t('sch.publish')}</button>
+                  <RowBtns onEdit={() => startEdit(a)} onDelete={() => delAssessment(a)} />
+                </div>
               </div>
             ))}
           </div>
@@ -245,11 +369,16 @@ export function CompanySubmissionsPage() {
   const { t } = useI18n();
   const { loading, submissions, students, assessments, setSubmissions } = useCompanySchoolData();
   const [form, setForm] = useState({ studentName: '', assessmentTitle: '', type: 'quiz', content: '' });
+  const [grades, setGrades] = useState({});
 
   const submitForStudent = async () => {
     if (!form.studentName || !form.assessmentTitle || !form.content.trim()) return;
     try {
+      const student = students.find((s) => s.name === form.studentName);
+      const assessment = assessments.find((a) => a.title === form.assessmentTitle);
       const created = await pb.collection('school_submissions').create({
+        studentId: student?.id || null,
+        assessmentId: assessment?.id || null,
         studentName: form.studentName,
         assessmentTitle: form.assessmentTitle,
         type: form.type,
@@ -262,6 +391,33 @@ export function CompanySubmissionsPage() {
       toast({ title: t('sch.tSuSent') });
     } catch (err) {
       toast({ variant: 'destructive', title: t('sch.tSuFail'), description: err?.message || t('sch.tTryAgain') });
+    }
+  };
+
+  const saveGrade = async (s) => {
+    const g = grades[s.id] || {};
+    try {
+      const updated = await pb.collection('school_submissions').update(s.id, {
+        status: 'graded',
+        score: g.score === '' || g.score == null ? s.score ?? null : Number(g.score),
+        feedback: (g.feedback ?? s.feedback ?? '').toString().slice(0, 2000) || null,
+      });
+      setSubmissions((prev) => prev.map((x) => (x.id === s.id ? updated : x)));
+      setGrades((prev) => { const n = { ...prev }; delete n[s.id]; return n; });
+      toast({ title: t('sch.grade') });
+    } catch (err) {
+      toast({ variant: 'destructive', title: t('sch.tTryAgain'), description: err?.message });
+    }
+  };
+
+  const delSubmission = async (s) => {
+    if (!confirmDel(t)) return;
+    try {
+      await pb.collection('school_submissions').delete(s.id);
+      setSubmissions((prev) => prev.filter((x) => x.id !== s.id));
+      toast({ title: t('sch.delete') });
+    } catch (err) {
+      toast({ variant: 'destructive', title: t('sch.tTryAgain'), description: err?.message });
     }
   };
 
@@ -297,7 +453,14 @@ export function CompanySubmissionsPage() {
             {loading ? <div className="text-sm text-[#8a8577]">{t('sch.loading')}</div> : submissions.length === 0 ? <div className="text-sm text-[#8a8577]">{t('sch.noSubs')}</div> : submissions.map((s) => (
               <div key={s.id} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
                 <div className="font-medium text-[#f0ecdd]">{s.studentName} · {s.assessmentTitle}</div>
-                <div className="text-xs text-[#8a8577] capitalize">{t(`sch.type_${s.type}`, null, s.type)} · {t(`sch.st_${s.status || 'submitted'}`, null, s.status || 'submitted')}</div>
+                <div className="text-xs text-[#8a8577] capitalize">{t(`sch.type_${s.type}`, null, s.type)} · {t(`sch.st_${s.status || 'submitted'}`, null, s.status || 'submitted')}{s.score != null ? ` · ${t('sch.score')}: ${s.score}` : ''}</div>
+                {s.feedback && <div className="mt-1 text-xs text-[#c9c4b4]">{s.feedback}</div>}
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <input value={grades[s.id]?.score ?? ''} onChange={(e) => setGrades((p) => ({ ...p, [s.id]: { ...p[s.id], score: e.target.value } }))} placeholder={t('sch.score')} inputMode="decimal" className="w-20 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-1 text-xs text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
+                  <input value={grades[s.id]?.feedback ?? ''} onChange={(e) => setGrades((p) => ({ ...p, [s.id]: { ...p[s.id], feedback: e.target.value } }))} placeholder={t('sch.feedback')} className="min-w-0 flex-1 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-1 text-xs text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
+                  <button onClick={() => saveGrade(s)} className="rounded-lg border border-[#d4af37]/25 px-2.5 py-1 text-xs text-[#d4af37]">{t('sch.grade')}</button>
+                  <button onClick={() => delSubmission(s)} className="rounded-lg border border-red-500/35 px-2.5 py-1 text-xs text-red-400">{t('sch.delete')}</button>
+                </div>
               </div>
             ))}
           </div>
@@ -309,15 +472,25 @@ export function CompanySubmissionsPage() {
 
 export function CompanyAcademyProfilesPage() {
   const { t } = useI18n();
-  const { loading, users, students } = useCompanySchoolData();
+  const { toast } = useToast();
+  const { loading, students } = useCompanySchoolData();
+  const [platformMatches, setPlatformMatches] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = pb.authStore.token;
+        if (!token) return;
+        const res = await fetch('/hcgi/api/company/academy-interest', { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) setPlatformMatches(await res.json());
+      } catch { /* discovery unavailable */ }
+    })();
+  }, []);
+
   const academyInterested = useMemo(() => {
-    const userMatches = users.filter((u) => {
-      const goal = String(u.goal || '').toLowerCase();
-      return goal.includes('discipline') || goal.includes('learning') || goal.includes('academy');
-    });
     const studentMatches = students.filter((s) => s.academyInterest);
-    return { userMatches, studentMatches };
-  }, [users, students]);
+    return { userMatches: platformMatches, studentMatches };
+  }, [platformMatches, students]);
 
   return (
     <AppLayout title={t('sch.apTitle')}>
@@ -331,10 +504,9 @@ export function CompanyAcademyProfilesPage() {
           <h2 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><User className="h-4 w-4 text-[#d4af37]" /> {t('sch.intProfiles')}</h2>
           <p className="mt-1 text-xs text-[#8a8577]">{t('sch.intProfilesSub')}</p>
           <div className="mt-3 space-y-2">
-            {loading ? <div className="text-sm text-[#8a8577]">{t('sch.loading')}</div> : academyInterested.userMatches.length === 0 ? <div className="text-sm text-[#8a8577]">{t('sch.noMatch')}</div> : academyInterested.userMatches.map((u) => (
-              <div key={u.id} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
-                <div className="font-medium text-[#f0ecdd]">{u.username || u.name || t('sch.userFb')}</div>
-                <div className="text-xs text-[#8a8577]">{u.email}</div>
+            {loading ? <div className="text-sm text-[#8a8577]">{t('sch.loading')}</div> : academyInterested.userMatches.length === 0 ? <div className="text-sm text-[#8a8577]">{t('sch.noMatch')}</div> : academyInterested.userMatches.map((u, i) => (
+              <div key={`${u.username}-${i}`} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
+                <div className="font-medium text-[#f0ecdd]">{u.username || t('sch.userFb')}</div>
                 <div className="mt-1 text-xs text-[#c9c4b4]">{u.goal || t('sch.noGoal')}</div>
               </div>
             ))}

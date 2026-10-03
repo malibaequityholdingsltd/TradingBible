@@ -17,6 +17,7 @@ export default function CompanyDashboardPage() {
   const [classrooms, setClassrooms] = useState([]);
   const [assessments, setAssessments] = useState([]);
   const [certs, setCerts] = useState([]);
+  const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [schoolName, setSchoolName] = useState(user?.companyName || '');
   const [className, setClassName] = useState('');
@@ -25,18 +26,22 @@ export default function CompanyDashboardPage() {
   const [dunsBusy, setDunsBusy] = useState(false);
   const [dunsProfile, setDunsProfile] = useState(null);
   const [assessment, setAssessment] = useState({ title: '', type: 'quiz' });
+  const [certTitle, setCertTitle] = useState('');
+  const [certStudent, setCertStudent] = useState('');
 
   const load = async () => {
     setLoading(true);
     try {
-      const [c, a, cert] = await Promise.all([
+      const [c, a, cert, st] = await Promise.all([
         pb.collection('school_classrooms').getFullList({ sort: '-created' }),
         pb.collection('school_assessments').getFullList({ sort: '-created' }),
         pb.collection('school_certificates').getFullList({ sort: '-created' }),
+        pb.collection('school_students').getFullList({ sort: '-created' }).catch(() => []),
       ]);
       setClassrooms(c);
       setAssessments(a);
       setCerts(cert);
+      setStudents(st);
     } catch (err) {
       toast({ variant: 'destructive', title: t('sch.dLoadFail'), description: err?.message || t('sch.tTryAgain') });
     } finally {
@@ -127,16 +132,33 @@ export default function CompanyDashboardPage() {
   };
 
   const issueCertificate = async () => {
+    if (!certTitle.trim() || !certStudent) {
+      toast({ variant: 'destructive', title: t('sch.certTitlePh') });
+      return;
+    }
     try {
       const rec = await pb.collection('school_certificates').create({
-        title: t('sch.sampleCert'),
-        studentName: t('sch.sampleStudent'),
+        title: certTitle.trim(),
+        studentName: certStudent,
         issuedAt: new Date().toISOString(),
       });
       setCerts((prev) => [rec, ...prev]);
+      setCertTitle('');
+      setCertStudent('');
       toast({ title: t('sch.dCertIssued') });
     } catch (err) {
       toast({ variant: 'destructive', title: t('sch.dCertFail'), description: err?.message || t('sch.tTryAgain') });
+    }
+  };
+
+  const delRow = (coll, id, apply) => async () => {
+    if (!window.confirm(t('sch.confirmDel'))) return;
+    try {
+      await pb.collection(coll).delete(id);
+      apply();
+      toast({ title: t('sch.delete') });
+    } catch (err) {
+      toast({ variant: 'destructive', title: t('sch.tTryAgain'), description: err?.message });
     }
   };
 
@@ -198,7 +220,12 @@ export default function CompanyDashboardPage() {
             <button onClick={addClassroom} className="inline-flex items-center gap-1 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><Plus className="h-4 w-4" /> {t('sch.dAdd')}</button>
           </div>
           <div className="mt-3 space-y-2 text-sm text-[#c9c4b4]">
-            {classrooms.slice(0, 5).map((c) => <div key={c.id} className="rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">{c.name}</div>)}
+            {classrooms.slice(0, 5).map((c) => (
+              <div key={c.id} className="flex items-center justify-between gap-2 rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">
+                <span className="truncate">{c.name}</span>
+                <button onClick={delRow('school_classrooms', c.id, () => setClassrooms((prev) => prev.filter((x) => x.id !== c.id)))} className="shrink-0 rounded-lg border border-red-500/35 px-2 py-0.5 text-xs text-red-400">{t('sch.delete')}</button>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -212,18 +239,35 @@ export default function CompanyDashboardPage() {
             <button onClick={addAssessment} className="rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]">{t('sch.dCreate')}</button>
           </div>
           <div className="mt-3 space-y-2 text-sm text-[#c9c4b4]">
-            {assessments.slice(0, 5).map((a) => <div key={a.id} className="rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">{a.title} · <span className="capitalize">{t(`sch.type_${a.type}`, null, a.type)}</span></div>)}
+            {assessments.slice(0, 5).map((a) => (
+              <div key={a.id} className="flex items-center justify-between gap-2 rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">
+                <span className="truncate">{a.title} · <span className="capitalize">{t(`sch.type_${a.type}`, null, a.type)}</span></span>
+                <button onClick={delRow('school_assessments', a.id, () => setAssessments((prev) => prev.filter((x) => x.id !== a.id)))} className="shrink-0 rounded-lg border border-red-500/35 px-2 py-0.5 text-xs text-red-400">{t('sch.delete')}</button>
+              </div>
+            ))}
           </div>
         </div>
 
         <div className={cardCls}>
           <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><Award className="h-4 w-4 text-[#d4af37]" /> {t('sch.dCertsT')}</h3>
-          <div className="mt-3 flex items-center gap-3 text-sm text-[#8a8577]">
-            <button onClick={issueCertificate} className="inline-flex items-center gap-1 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-[#d4af37]"><Trophy className="h-4 w-4" /> {t('sch.dIssue')}</button>
-            {loading && <span>{t('sch.dSyncing')}</span>}
+          <div className="mt-3 grid gap-2">
+            <input value={certTitle} onChange={(e) => setCertTitle(e.target.value)} placeholder={t('sch.certTitlePh')} className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
+            <div className="flex items-center gap-2">
+              <select value={certStudent} onChange={(e) => setCertStudent(e.target.value)} className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#f0ecdd]">
+                <option value="">{t('sch.selStudent')}</option>
+                {students.map((s) => <option key={s.id} value={s.name}>{s.name}</option>)}
+              </select>
+              <button onClick={issueCertificate} className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><Trophy className="h-4 w-4" /> {t('sch.dIssue')}</button>
+            </div>
+            {loading && <span className="text-sm text-[#8a8577]">{t('sch.dSyncing')}</span>}
           </div>
           <div className="mt-3 space-y-2 text-sm text-[#c9c4b4]">
-            {certs.slice(0, 5).map((c) => <div key={c.id} className="rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">{c.title} · {c.studentName || t('sch.dStudentFb')}</div>)}
+            {certs.slice(0, 5).map((c) => (
+              <div key={c.id} className="flex items-center justify-between gap-2 rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">
+                <span className="truncate">{c.title} · {c.studentName || t('sch.dStudentFb')}</span>
+                <button onClick={delRow('school_certificates', c.id, () => setCerts((prev) => prev.filter((x) => x.id !== c.id)))} className="shrink-0 rounded-lg border border-red-500/35 px-2 py-0.5 text-xs text-red-400">{t('sch.delete')}</button>
+              </div>
+            ))}
           </div>
         </div>
       </div>

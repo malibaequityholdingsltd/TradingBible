@@ -68,7 +68,7 @@ router.post('/enroll', academyAiRateLimit, async (req, res) => {
 	}
 });
 
-// ── Curriculum: generate once, then cache (poll while generating) ───
+// ── Curriculum: generate once in background, client polls while generating
 const generating = new Set();
 const curriculumKey = (userId, pathKey) => `${userId}:${pathKey}`;
 
@@ -76,15 +76,14 @@ async function ensureCurriculum(userId, pathKey, level, about) {
 	const cached = await academyDb.getCurriculum(userId, pathKey);
 	if (cached) return { status: 'ready', curriculum: cached.curriculum };
 	const key = curriculumKey(userId, pathKey);
-	if (generating.has(key)) return { status: 'generating' };
-	generating.add(key);
-	try {
-		const curriculum = await generateCurriculum({ userId, level, about });
-		await academyDb.saveCurriculum(userId, pathKey, curriculum);
-		return { status: 'ready', curriculum };
-	} finally {
-		generating.delete(key);
+	if (!generating.has(key)) {
+		generating.add(key);
+		generateCurriculum({ userId, level, about })
+			.then((curriculum) => academyDb.saveCurriculum(userId, pathKey, curriculum))
+			.catch((err) => logger.error('academy curriculum background failed', String(err?.message || err)))
+			.finally(() => generating.delete(key));
 	}
+	return { status: 'generating' };
 }
 
 router.get('/curriculum', async (req, res) => {
@@ -188,6 +187,7 @@ router.get('/progress', async (req, res) => {
 			enrollments: enrollments || [],
 			curricula: (curricula || []).map((c) => ({ pathKey: c.pathKey, curriculum: c.curriculum })),
 			rsvps: (rsvps || []).map((r) => r.webinarId),
+			attended: (rsvps || []).filter((r) => r.attendedAt).map((r) => r.webinarId),
 		});
 	} catch (err) {
 		logger.error('academy progress failed', String(err?.message || err));
@@ -264,6 +264,19 @@ router.delete('/webinar/rsvp', async (req, res) => {
 	} catch (err) {
 		logger.error('academy rsvp delete failed', String(err?.message || err));
 		res.status(500).json({ error: { message: 'Could not remove your RSVP.' } });
+	}
+});
+
+// ── Webinar attendance — mark when the member enters the live AI room
+router.post('/webinar/attend', async (req, res) => {
+	const { webinarId } = req.body ?? {};
+	if (!webinarId) return res.status(422).json({ error: { message: 'webinarId is required' } });
+	try {
+		await academyDb.markAttended(req.userId, String(webinarId).slice(0, 120));
+		res.json({ status: 'attended', webinarId });
+	} catch (err) {
+		logger.error('academy attend failed', String(err?.message || err));
+		res.status(500).json({ error: { message: 'Could not record attendance.' } });
 	}
 });
 
