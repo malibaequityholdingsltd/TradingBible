@@ -4,20 +4,15 @@ const ThemeContext = createContext({ theme: 'dark', setTheme: () => {}, toggleTh
 
 const STORAGE_KEY = 'tb-theme';
 
-function getSystemTheme() {
-    if (typeof window !== 'undefined' && window.matchMedia) {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    return 'dark';
-}
-
 function getInitialTheme() {
     if (typeof window === 'undefined') return 'dark';
     try {
         const saved = window.localStorage.getItem(STORAGE_KEY);
         if (saved === 'light' || saved === 'dark') return saved;
     } catch (e) { /* ignore */ }
-    return getSystemTheme();
+    // Dark-first brand (matte-black + gold): never auto-switch to light
+    // based on OS preference. Light is explicit opt-in via the toggle.
+    return 'dark';
 }
 
 function applyThemeClass(theme) {
@@ -31,15 +26,11 @@ function applyThemeClass(theme) {
 
 export function ThemeProvider({ children }) {
     const [theme, setThemeState] = useState(getInitialTheme);
-    const [userOverride, setUserOverride] = useState(() => {
-        try { return !!window.localStorage.getItem(STORAGE_KEY); } catch (e) { return false; }
-    });
 
     useEffect(() => { applyThemeClass(theme); }, [theme]);
 
     const setTheme = useCallback((next) => {
         setThemeState(next);
-        setUserOverride(true);
         try { window.localStorage.setItem(STORAGE_KEY, next); } catch (e) { /* ignore */ }
     }, []);
 
@@ -49,19 +40,10 @@ export function ThemeProvider({ children }) {
             try { window.localStorage.setItem(STORAGE_KEY, next); } catch (e) { /* ignore */ }
             return next;
         });
-        setUserOverride(true);
     }, []);
 
-    // Listen for system preference changes when the user has NOT overridden.
-    useEffect(() => {
-        if (!window.matchMedia) return undefined;
-        const mq = window.matchMedia('(prefers-color-scheme: dark)');
-        const handler = (e) => {
-            if (!userOverride) setThemeState(e.matches ? 'dark' : 'light');
-        };
-        mq.addEventListener('change', handler);
-        return () => mq.removeEventListener('change', handler);
-    }, [userOverride]);
+    // No auto-follow of OS theme: light mode is explicit opt-in only,
+    // so users never land in light unexpectedly. Listener removed.
 
     return (
         <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>

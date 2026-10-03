@@ -31,13 +31,14 @@ export default function AdvancedChart({
   onChartType, onTimeframe, onOpenIndicators, onRemoveIndicator,
   fullscreen = false, onToggleFullscreen, showControls = true,
 }) {
-  const GRID = '#1c1c22';
-  const TXT = '#6a665a';
-  const svgRef = useRef(null);
-  const wrapRef = useRef(null);
   const { theme } = useTheme();
   const { t } = useI18n();
   const isLight = theme === 'light';
+  const GRID = isLight ? '#e4ded0' : '#1c1c22';
+  const TXT = isLight ? '#565d68' : '#6a665a';
+  const BG = isLight ? '#fbf9f3' : '#0a0a0f';
+  const svgRef = useRef(null);
+  const wrapRef = useRef(null);
   const [dims, setDims] = useState({ w: 800, h: compact ? 260 : 460 });
   const [view, setView] = useState(null); // {start,end} index window
   const [hover, setHover] = useState(null); // index
@@ -85,7 +86,7 @@ export default function AdvancedChart({
       const scale = 2;
       canvas.width = dims.w * scale; canvas.height = dims.h * scale;
       const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#0a0a0f'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = isLight ? '#fbf9f3' : '#0a0a0f'; ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.scale(scale, scale);
       ctx.drawImage(img, 0, 0);
       const a = document.createElement('a');
@@ -94,7 +95,7 @@ export default function AdvancedChart({
       a.click();
     };
     img.src = `data:image/svg+xml;base64,${svg64}`;
-  }, [dims, symbol, timeframe]);
+  }, [dims, symbol, timeframe, isLight]);
 
   if (!candles.length || !view) {
     return <div ref={wrapRef} className="grid h-64 place-items-center text-sm text-[#8a8577]">{t('ch.loadingData')}</div>;
@@ -267,7 +268,7 @@ export default function AdvancedChart({
 
       <svg ref={svgRef} width="100%" viewBox={`0 0 ${dims.w} ${dims.h}`} style={{ touchAction: 'none', cursor: drag.current ? 'grabbing' : 'crosshair' }}
         onMouseMove={onMove} onMouseDown={onDown} onMouseUp={endDrag} onMouseLeave={() => { endDrag(); setHover(null); }} onWheel={onWheel}>
-        <rect x="0" y="0" width={dims.w} height={dims.h} fill={isLight ? '#f8fafc' : '#0a0a0f'} />
+        <rect x="0" y="0" width={dims.w} height={dims.h} fill={BG} />
         {/* price grid + labels */}
         {Array.from({ length: priceGridLines + 1 }).map((_, i) => {
           const price = lo + (i / priceGridLines) * (hi - lo);

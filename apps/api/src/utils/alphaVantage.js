@@ -86,21 +86,29 @@ const CRYPTO = {
 	BTCUSD: 'BTC', ETHUSD: 'ETH', SOLUSD: 'SOL', XRPUSD: 'XRP', BNBUSD: 'BNB',
 	ADAUSD: 'ADA', DOGEUSD: 'DOGE', AVAXUSD: 'AVAX', DOTUSD: 'DOT', LTCUSD: 'LTC',
 	LINKUSD: 'LINK', TRXUSD: 'TRX', ATOMUSD: 'ATOM', UNIUSD: 'UNI', NEARUSD: 'NEAR',
-	MATICUSD: 'MATIC',
+	MATICUSD: 'MATIC', APTUSD: 'APT', FILUSD: 'FIL', ICPUSD: 'ICP', ETCUSD: 'ETC',
+	ARBUSD: 'ARB', OPUSD: 'OP', SUIUSD: 'SUI', SEIUSD: 'SEI',
+	TIAUSD: 'TIA', ONDOUSD: 'ONDO', INJUSD: 'INJ', STXUSD: 'STX',
+	IMXUSD: 'IMX', HBARUSD: 'HBAR', VETUSD: 'VET', ALGOUSD: 'ALGO',
+	QNTUSD: 'QNT', GRTUSD: 'GRT', THETAUSD: 'THETA', EGLDUSD: 'EGLD',
+	RUNEUSD: 'RUNE', KASUSD: 'KAS', FETUSD: 'FET', RENDERUSD: 'RENDER',
+	GALAUSD: 'GALA', SANDUSD: 'SAND', MANAUSD: 'MANA', AXSUSD: 'AXS',
+	AAVEUSD: 'AAVE', MKRUSD: 'MKR', LDOUSD: 'LDO', ENAUSD: 'ENA',
+	PENDLEUSD: 'PENDLE', JUPUSD: 'JUP', PYTHUSD: 'PYTH', WLDUSD: 'WLD',
+	PEPEUSD: 'PEPE', SHIBUSD: 'SHIB', BONKUSD: 'BONK', WIFUSD: 'WIF',
+	FLOKIUSD: 'FLOKI', JASMYUSD: 'JASMY', ORDIUSD: 'ORDI', BLURUSD: 'BLUR',
 };
 
 // Forex pairs Alpha Vantage understands as from/to currency codes.
-const FOREX = {
-	EURUSD: ['EUR', 'USD'], GBPUSD: ['GBP', 'USD'], USDJPY: ['USD', 'JPY'],
-	JPYUSD: ['JPY', 'USD'], AUDUSD: ['AUD', 'USD'], USDCAD: ['USD', 'CAD'],
-	USDCHF: ['USD', 'CHF'], NZDUSD: ['NZD', 'USD'], EURGBP: ['EUR', 'GBP'],
-	EURJPY: ['EUR', 'JPY'], GBPJPY: ['GBP', 'JPY'],
+// Metals are explicit; any other 6-letter alpha code splits as FROM(3)+TO(3).
+const FOREX_METALS = {
 	XAUUSD: ['XAU', 'USD'], XAGUSD: ['XAG', 'USD'],
 };
 
 export function classify(symbol) {
 	if (CRYPTO[symbol]) return { kind: 'crypto', code: CRYPTO[symbol] };
-	if (FOREX[symbol]) return { kind: 'forex', from: FOREX[symbol][0], to: FOREX[symbol][1] };
+	if (FOREX_METALS[symbol]) return { kind: 'forex', from: FOREX_METALS[symbol][0], to: FOREX_METALS[symbol][1] };
+	if (/^[A-Z]{6}$/.test(symbol)) return { kind: 'forex', from: symbol.slice(0, 3), to: symbol.slice(3) };
 	// Plain equities (AAPL, MSFT, ...). Futures/indices (NQ, ES) aren't
 	// supported by Alpha Vantage and fall through to the caller's fallback.
 	if (/^[A-Z]{1,5}$/.test(symbol)) return { kind: 'stock', code: symbol };

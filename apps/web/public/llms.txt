@@ -8,6 +8,7 @@
 - [Admin Content](/admin/content): TradingBible application page.
 - [Admin Dashboard](/admin): TradingBible application page.
 - [Admin Integrations](/admin/integrations): TradingBible application page.
+- [Admin Jobs](/admin/jobs): TradingBible application page.
 - [Admin Plugins](/admin/plugins): TradingBible application page.
 - [Admin Reports](/admin/reports): TradingBible application page.
 - [Admin Settings](/admin/settings): TradingBible application page.
@@ -25,12 +26,6 @@
 - [Charts](/app/charts): TradingBible application page.
 - [Coach](/app/coach): TradingBible application page.
 - [Community](/app/community): TradingBible application page.
-- [Company Academy Profiles](/company/academy-profiles): TradingBible application page.
-- [Company Assessments](/company/assessments): TradingBible application page.
-- [Company Dashboard](/company): TradingBible application page.
-- [Company Students](/company/students): TradingBible application page.
-- [Company Submissions](/company/submissions): TradingBible application page.
-- [Company Teachers](/company/teachers): TradingBible application page.
 - [Contact](/contact): TradingBible application page.
 - [Dashboard](/app): TradingBible application page.
 - [Economic Calendar](/app/economic-calendar): TradingBible application page.
@@ -42,7 +37,6 @@
 - [Journal](/app/journal): TradingBible application page.
 - [Landing](/): TradingBible application page.
 - [Login](/login): TradingBible application page.
-- [Navigate](/app/crypto-bank): TradingBible application page.
 - [Onboarding](/onboarding): TradingBible application page.
 - [Policy](/policy): TradingBible application page.
 - [Pricing](/pricing): TradingBible application page.
@@ -55,6 +49,8 @@
 - [Security](/app/security): TradingBible application page.
 - [Signals](/app/signals): TradingBible application page.
 - [Signup](/signup): TradingBible application page.
+- [Student Dashboard](/student): TradingBible application page.
+- [Teacher Dashboard](/teacher): TradingBible application page.
 - [Terminal](/app/terminal): TradingBible application page.
 - [Terms](/terms): TradingBible application page.
 - [Tv](/tv): TradingBible application page.
