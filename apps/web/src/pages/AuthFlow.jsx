@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { Mail, ArrowRight, Check, User, Building2, KeyRound, BookOpen, ShieldCheck, LineChart, Bot, Sparkles } from 'lucide-react';
+import { Mail, ArrowRight, User, Building2, KeyRound, BookOpen, ShieldCheck, LineChart, Bot, Sparkles } from 'lucide-react';
 import { MARKETS, EXPERIENCE, GOALS } from '@/lib/mockData';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
@@ -277,7 +277,25 @@ function AuthTabs({ mode, t }) {
   );
 }
 
-function AuthFormFrame({ mode, title, subtitle, step, children, footer, t }) {
+function StepsBar({ step, total }) {
+  return (
+    <div className="flex items-center gap-1.5" aria-hidden="true">
+      {Array.from({ length: total }).map((_, i) => (
+        <div key={i} className={`h-1 flex-1 rounded-full ${i < step ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25]' : 'bg-white/10'}`} />
+      ))}
+    </div>
+  );
+}
+
+function TrustStrip({ t, trialDays }) {
+  return (
+    <p className="mt-4 text-center text-xs leading-relaxed text-[#8a8577]">
+      {t('foot.trialNote', { n: trialDays })}
+    </p>
+  );
+}
+
+function AuthFormFrame({ mode, title, subtitle, step, totalSteps, children, footer, t }) {
   const tt = t || ((k) => k);
   return (
     <section className="auth-card glass relative overflow-hidden rounded-[1.5rem] p-4 shadow-[0_30px_80px_rgba(0,0,0,0.24)] ring-1 ring-white/8 sm:rounded-[2rem] sm:p-6 lg:p-8">
@@ -285,18 +303,11 @@ function AuthFormFrame({ mode, title, subtitle, step, children, footer, t }) {
       <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#d4af37]/10 blur-3xl" />
       <div className="relative space-y-5 sm:space-y-6">
         <AuthTabs mode={mode} t={tt} />
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1.5">
-            <h1 className="text-2xl font-bold tracking-tight text-white sm:text-[2rem]">{title}</h1>
-            <p className="max-w-xl text-xs leading-5 text-[#b5b0a2] sm:text-sm">{subtitle}</p>
-          </div>
-          {step ? (
-            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#d4af37]/25 bg-[#d4af37]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#d4af37]">
-              <Check className="h-3 w-3" />
-              {step}
-            </span>
-          ) : null}
+        <div className="space-y-1.5">
+          <h1 className="text-2xl font-bold tracking-tight text-white sm:text-[2rem]">{title}</h1>
+          <p className="max-w-xl text-xs leading-5 text-[#b5b0a2] sm:text-sm">{subtitle}</p>
         </div>
+        {step ? <StepsBar step={step} total={totalSteps || 2} /> : null}
         <div>{children}</div>
         {footer ? <div>{footer}</div> : null}
       </div>
@@ -362,6 +373,8 @@ function AppleLogo() {
 export function LoginPage() {
   const nav = useNavigate();
   const { requestOTP, loginWithCode, loginWithProvider, user, isAuthed, isAuthReady, logout } = useAuth();
+  const { settings } = usePlatformSettings();
+  const trialDays = Number(settings.trialDays) || 3;
   const { t } = useI18n();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
@@ -542,17 +555,15 @@ export function LoginPage() {
           : (sent
             ? t('auth.sentSub', { email: email || 'your inbox' })
             : t('auth.loginSub'))}
-        step={needTotp ? t('auth.stepOf', { a: 2, b: 2 }) : (sent ? t('auth.stepOf', { a: 2, b: 2 }) : t('auth.stepOf', { a: 1, b: 2 }))}
+        step={needTotp ? 2 : (sent ? 2 : 1)}
+        totalSteps={2}
         footer={
           <p className="mt-5 text-center text-sm text-[#8a8577]">
             {t('auth.newTo')} <Link to="/signup" className="font-medium text-[#d4af37] hover:underline">{t('auth.signup')}</Link>
           </p>
         }
       >
-        <div className="rounded-[1.25rem] border border-[#d4af37]/14 bg-gradient-to-b from-white/[0.06] to-transparent p-3 sm:rounded-[1.5rem] sm:p-4">
-          <ProviderButtons busy={oauthBusy} t={t} onGoogle={() => startOAuth('google')} onApple={() => startOAuth('apple')} />
-        </div>
-        <form className="mt-4 space-y-3 sm:mt-5 sm:space-y-3.5" onSubmit={needTotp ? verifyTotpStep : (sent ? verifyCode : sendCode)}>
+        <form className="space-y-3 sm:space-y-3.5" onSubmit={needTotp ? verifyTotpStep : (sent ? verifyCode : sendCode)}>
           {!needTotp && <Field icon={Mail} type="email" placeholder={t('auth.emailPh')} value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />}
           {!needTotp && sent && (
             <div className="space-y-2.5">
@@ -578,24 +589,28 @@ export function LoginPage() {
         {needTotp && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy} onClick={() => { setNeedTotp(false); setTotpCode(''); setPendingAuth(null); }} className="text-[#8a8577] hover:text-[#d4af37]">{t('auth.backToEmail')}</button></div>}
         {!needTotp && sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={sendCode} className="text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? t('auth.e.resendIn', { n: cooldownSeconds }) : t('auth.e.resend')}</button></div>}
         {!needTotp && cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">{t('auth.e.coolNote', { dur: formatCooldownDuration(cooldownSeconds) })}</p>}
-        {!needTotp && (
-          <div className="mt-3 flex items-center gap-3">
-            <div className="h-px flex-1 bg-white/10" />
-            <span className="text-[11px] uppercase tracking-widest text-[#8a8577]">{t('auth.or')}</span>
-            <div className="h-px flex-1 bg-white/10" />
-          </div>
-        )}
-        {!needTotp && (
-          <button
-            type="button"
-            disabled={passkeyBusy}
-            onClick={signInWithPasskey}
-            className="mt-1.5 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] py-2.5 text-sm font-medium text-[#e9e7df] transition hover:border-[#d4af37]/40 hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {passkeyBusy ? t('auth.e.passkeyVerifying') : <><ShieldCheck className="h-4 w-4" /> {t('auth.passkey')}</>}
-          </button>
+        {!needTotp && !sent && (
+          <>
+            <div className="mt-4 rounded-[1.25rem] border border-[#d4af37]/14 bg-gradient-to-b from-white/[0.06] to-transparent p-3 sm:rounded-[1.5rem] sm:p-4">
+              <ProviderButtons busy={oauthBusy} t={t} onGoogle={() => startOAuth('google')} onApple={() => startOAuth('apple')} />
+            </div>
+            <div className="mt-3 flex items-center gap-3">
+              <div className="h-px flex-1 bg-white/10" />
+              <span className="text-[11px] uppercase tracking-widest text-[#8a8577]">{t('auth.or')}</span>
+              <div className="h-px flex-1 bg-white/10" />
+            </div>
+            <button
+              type="button"
+              disabled={passkeyBusy}
+              onClick={signInWithPasskey}
+              className="mt-1.5 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] py-2.5 text-sm font-medium text-[#e9e7df] transition hover:border-[#d4af37]/40 hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {passkeyBusy ? t('auth.e.passkeyVerifying') : <><ShieldCheck className="h-4 w-4" /> {t('auth.passkey')}</>}
+            </button>
+          </>
         )}
       </AuthFormFrame>
+      <TrustStrip t={t} trialDays={trialDays} />
     </Shell>
   );
 }
@@ -604,6 +619,7 @@ export function SignupPage() {
   const nav = useNavigate();
   const { requestOTP, loginWithCode, loginWithProvider, user, isAuthed, isAuthReady } = useAuth();
   const { settings } = usePlatformSettings();
+  const trialDays = Number(settings.trialDays) || 3;
   const { t } = useI18n();
   const { toast } = useToast();
   const [username, setUsername] = useState('');
@@ -767,17 +783,15 @@ export function SignupPage() {
         subtitle={sent
           ? t('auth.signupSentSub', { email: email || 'your inbox' })
           : t('auth.signupSub')}
-        step={sent ? t('auth.stepOf', { a: 2, b: 2 }) : t('auth.stepOf', { a: 1, b: 2 })}
+        step={sent ? 2 : 1}
+        totalSteps={2}
         footer={
           <p className="mt-5 text-center text-sm text-[#8a8577]">
             {t('auth.haveAccount')} <Link to="/login" className="font-medium text-[#d4af37] hover:underline">{t('auth.login')}</Link>
           </p>
         }
       >
-        <div className="rounded-[1.25rem] border border-[#d4af37]/14 bg-gradient-to-b from-white/[0.06] to-transparent p-3 sm:rounded-[1.5rem] sm:p-4">
-          <ProviderButtons busy={oauthBusy} t={t} onGoogle={() => startOAuth('google')} onApple={() => startOAuth('apple')} />
-        </div>
-        <form className="mt-4 space-y-2.5 sm:mt-5 sm:space-y-3" onSubmit={submit}>
+        <form className="space-y-2.5 sm:space-y-3" onSubmit={submit}>
           {!sent && (
             <>
               <div className="grid grid-cols-2 gap-2 rounded-xl border border-[#d4af37]/15 p-1">
@@ -815,8 +829,14 @@ export function SignupPage() {
           <button disabled={busy || (!sent && cooldownSeconds > 0)} className={`${goldBtn} btn-spotlight`}>{busy ? t('auth.e.plsWait') : (sent ? t('auth.verifyContinue') : t('auth.sendCode'))} <ArrowRight className="h-4 w-4" /></button>
         </form>
         {sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={resend} className="text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? t('auth.e.resendIn', { n: cooldownSeconds }) : t('auth.e.resend')}</button></div>}
+        {!sent && cooldownSeconds <= 0 && (
+          <div className="mt-4 rounded-[1.25rem] border border-[#d4af37]/14 bg-gradient-to-b from-white/[0.06] to-transparent p-3 sm:rounded-[1.5rem] sm:p-4">
+            <ProviderButtons busy={oauthBusy} t={t} onGoogle={() => startOAuth('google')} onApple={() => startOAuth('apple')} />
+          </div>
+        )}
         {cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">{t('auth.e.coolNote', { dur: formatCooldownDuration(cooldownSeconds) })}</p>}
       </AuthFormFrame>
+      <TrustStrip t={t} trialDays={trialDays} />
     </Shell>
   );
 }
