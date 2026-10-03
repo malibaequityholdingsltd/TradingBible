@@ -22,16 +22,16 @@ const SCHEME_KEY = 'tb-bubbles-scheme';
 
 function bubbleFill(pct, scheme) {
   const cap = Math.min(Math.abs(pct) / 8, 1);
-  const alpha = 0.30 + cap * 0.60;
+  const alpha = 0.58 + cap * 0.37; // 0.58–0.95: rich and sharp, never washed
   const c = pct >= 0 ? scheme.up : scheme.down;
   return `rgba(${c},${alpha.toFixed(2)})`;
 }
 
 function bubbleStroke(pct, scheme) {
   const cap = Math.min(Math.abs(pct) / 8, 1);
-  if (cap < 0.55) return 'rgba(255,255,255,0.14)';
   const c = pct >= 0 ? scheme.up : scheme.down;
-  return `rgba(${c},0.75)`;
+  if (cap < 0.55) return `rgba(${c},0.55)`;
+  return `rgba(${c},0.95)`;
 }
 
 function fmtPrice(n) {
@@ -310,11 +310,11 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
         ) : (
           <svg width="100%" height="100%" viewBox={`0 0 ${size.w} ${size.h}`}>
             <defs>
-              {/* 3D sphere shading: clear center → darkened rim */}
+              {/* 3D sphere shading: clear center → lightly darkened rim */}
               <radialGradient id="bbShade" cx="50%" cy="42%" r="72%">
                 <stop offset="0%" stopColor="rgba(255,255,255,0.10)" />
-                <stop offset="55%" stopColor="rgba(0,0,0,0)" />
-                <stop offset="100%" stopColor="rgba(0,0,0,0.42)" />
+                <stop offset="70%" stopColor="rgba(0,0,0,0)" />
+                <stop offset="100%" stopColor="rgba(0,0,0,0.25)" />
               </radialGradient>
               <radialGradient id="bbGloss" cx="50%" cy="50%" r="50%">
                 <stop offset="0%" stopColor="rgba(255,255,255,0.95)" />
@@ -349,13 +349,13 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                     {/* bounced floor light */}
                     <ellipse cx={0} cy={n.r * 0.58} rx={n.r * 0.52} ry={n.r * 0.15} fill="rgba(255,255,255,0.10)" />
                     {/* glossy highlight */}
-                    <ellipse cx={-n.r * 0.33} cy={-n.r * 0.42} rx={n.r * 0.30} ry={n.r * 0.17} fill="url(#bbGloss)" opacity="0.55" transform={`rotate(-18)`} />
+                    <ellipse cx={-n.r * 0.33} cy={-n.r * 0.42} rx={n.r * 0.24} ry={n.r * 0.13} fill="url(#bbGloss)" opacity="0.32" transform={`rotate(-18)`} />
                     {/* rim */}
-                    <circle r={n.r} fill="none" stroke={bubbleStroke(n.cell.changePercent, scheme)} strokeWidth="1.2" />
-                    <text textAnchor="middle" dy={-2} fill={labelColor} fontSize={fontSize} fontWeight="900" fontFamily="JetBrains Mono, monospace" pointerEvents="none" stroke="rgba(0,0,0,0.45)" strokeWidth={3} style={{ paintOrder: 'stroke' }}>
+                    <circle r={n.r} fill="none" stroke={bubbleStroke(n.cell.changePercent, scheme)} strokeWidth="2" />
+                    <text textAnchor="middle" dy={-2} fill={labelColor} fontSize={fontSize} fontWeight="700" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" pointerEvents="none" stroke="rgba(0,0,0,0.45)" strokeWidth={3} style={{ paintOrder: 'stroke' }}>
                       {n.cell.symbol.replace('USD', '')}
                     </text>
-                    <text textAnchor="middle" dy={fontSize + 3} fill={labelColor} fontSize={pctSize} fontWeight="800" fontFamily="JetBrains Mono, monospace" opacity="0.95" pointerEvents="none" stroke="rgba(0,0,0,0.45)" strokeWidth={3} style={{ paintOrder: 'stroke' }}>
+                    <text textAnchor="middle" dy={fontSize + 3} fill={labelColor} fontSize={pctSize} fontWeight="700" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" pointerEvents="none" stroke="rgba(0,0,0,0.45)" strokeWidth={3} style={{ paintOrder: 'stroke' }}>
                       {n.cell.changePercent >= 0 ? '+' : ''}{n.cell.changePercent}%
                     </text>
                   </g>
