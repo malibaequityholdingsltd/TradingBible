@@ -18,6 +18,7 @@ import adsRouter from './ads.js';
 import adminRouter from './admin.js';
 import academyRouter from './academy.js';
 import digestRouter from './digest.js';
+import dunsRouter from './duns.js';
 
 const router = Router();
 
@@ -44,6 +45,7 @@ export default () => {
     router.use('/admin', adminRouter);
     router.use('/admin/digest', digestRouter);
     router.use('/academy', academyRouter);
+    router.use('/duns', dunsRouter);
 
     return router;
 };

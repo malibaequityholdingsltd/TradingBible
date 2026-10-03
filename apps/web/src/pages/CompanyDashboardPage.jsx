@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Award, BookOpen, FileCheck2, GraduationCap, Plus, Trophy } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import pb from '@/lib/pocketbaseClient';
+import { getDunsStatus, verifyDuns } from '@/lib/duns';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useI18n } from '@/lib/i18n';
@@ -19,6 +20,9 @@ export default function CompanyDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [schoolName, setSchoolName] = useState(user?.companyName || '');
   const [className, setClassName] = useState('');
+  const [duns, setDuns] = useState('');
+  const [dunsStatus, setDunsStatus] = useState('unverified');
+  const [dunsBusy, setDunsBusy] = useState(false);
   const [assessment, setAssessment] = useState({ title: '', type: 'quiz' });
 
   const load = async () => {
@@ -41,12 +45,36 @@ export default function CompanyDashboardPage() {
 
   useEffect(() => { load(); }, []);
 
+  useEffect(() => {
+    getDunsStatus()
+      .then((s) => {
+        if (s?.dunsNumber) setDuns(s.dunsNumber);
+        if (s?.dunsStatus) setDunsStatus(s.dunsStatus);
+      })
+      .catch(() => { /* API unavailable — leave defaults */ });
+  }, []);
+
   const saveSchoolProfile = async () => {
     try {
       await pb.collection('users').update(user.id, { accountType: 'company', companyName: schoolName });
       toast({ title: t('sch.dProfileSaved') });
     } catch (err) {
       toast({ variant: 'destructive', title: t('sch.dProfileFail'), description: err?.message || t('sch.tTryAgain') });
+    }
+  };
+
+  const verifyDunsNumber = async () => {
+    if (dunsBusy) return;
+    setDunsBusy(true);
+    try {
+      const res = await verifyDuns(duns);
+      const next = res?.dunsStatus || 'pending';
+      setDunsStatus(next);
+      toast({ title: next === 'verified' ? t('duns.verified', null, 'DUNS verified') : t('duns.pending', null, 'DUNS submitted — pending live verification') });
+    } catch (err) {
+      toast({ variant: 'destructive', title: t('duns.failed', null, 'DUNS verification failed'), description: err?.message || t('sch.tTryAgain') });
+    } finally {
+      setDunsBusy(false);
     }
   };
 
@@ -117,6 +145,13 @@ export default function CompanyDashboardPage() {
             <input value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder={t('sch.dSchoolPh')} className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
             <button onClick={saveSchoolProfile} className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f]">{t('sch.dSave')}</button>
           </div>
+          <div className="mt-3 flex gap-2">
+            <input value={duns} onChange={(e) => setDuns(e.target.value.replace(/\D/g, '').slice(0, 9))} placeholder={t('duns.number', null, 'DUNS number (9 digits)')} inputMode="numeric" className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
+            <button onClick={verifyDunsNumber} disabled={dunsBusy} className="inline-flex items-center gap-1 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37] disabled:opacity-60">{dunsStatus === 'verified' ? t('duns.verified', null, 'Verified') : t('duns.verify', null, 'Verify')}</button>
+          </div>
+          {dunsStatus !== 'unverified' && (
+            <div className="mt-2 text-xs text-[#8a8577]">{t('duns.status', null, 'DUNS status')}: <span className={dunsStatus === 'verified' ? 'text-emerald-400' : 'text-[#d4af37]'}>{dunsStatus}</span></div>
+          )}
         </div>
 
         <div className={cardCls}>
