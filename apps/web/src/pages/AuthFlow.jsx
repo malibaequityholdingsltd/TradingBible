@@ -290,7 +290,7 @@ function StepsBar({ step, total }) {
 function TrustStrip({ t }) {
   return (
     <p className="mt-4 text-center text-xs leading-relaxed text-[#8a8577]">
-      {t('bill.noPlanYet', null, 'Card required — subscribe to unlock the full terminal. No free trial.')}
+      {t('bill.noPlanYet', null, 'Subscribe to unlock the full terminal.')}
     </p>
   );
 }
