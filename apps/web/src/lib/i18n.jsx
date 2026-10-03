@@ -639,6 +639,7 @@ const STRINGS = {
     'wdg.noAlerts': 'No active price alerts.',
     'wdg.upcomingEv': 'Upcoming Events',
     'wdg.noEvents': 'No upcoming events.',
+    'hm.all': 'All',
     'hm.crypto': 'Crypto',
     'hm.forex': 'Forex',
     'hm.commodity': 'Commodities',
