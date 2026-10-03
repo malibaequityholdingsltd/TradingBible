@@ -988,7 +988,7 @@ export default function AcademyPage() {
 				</div>
 			)}
 
-			<div className="mt-8 flex flex-col items-center rounded-2xl border border-[#d4af37]/15 p-6 text-center sm:flex-row sm:justify-between sm:p-8 sm:text-left">
+			<div className="tint-hero mt-8 flex flex-col items-center rounded-2xl border border-[#d4af37]/15 p-6 text-center sm:flex-row sm:justify-between sm:p-8 sm:text-left">
 				<div className="flex items-center gap-4">
 					<Bot className="h-10 w-10 shrink-0 text-[#d4af37]" />
 					<div>
