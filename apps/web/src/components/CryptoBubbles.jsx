@@ -352,10 +352,10 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                     <ellipse cx={-n.r * 0.33} cy={-n.r * 0.42} rx={n.r * 0.24} ry={n.r * 0.13} fill="url(#bbGloss)" opacity="0.32" transform={`rotate(-18)`} />
                     {/* rim */}
                     <circle r={n.r} fill="none" stroke={bubbleStroke(n.cell.changePercent, scheme)} strokeWidth="2" />
-                    <text textAnchor="middle" dy={-2} fill={labelColor} fontSize={fontSize} fontWeight="700" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" pointerEvents="none" stroke="rgba(0,0,0,0.45)" strokeWidth={3} style={{ paintOrder: 'stroke' }}>
+                    <text textAnchor="middle" dy={-2} fill={labelColor} fontSize={fontSize} fontWeight="700" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
                       {n.cell.symbol.replace('USD', '')}
                     </text>
-                    <text textAnchor="middle" dy={fontSize + 3} fill={labelColor} fontSize={pctSize} fontWeight="700" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" pointerEvents="none" stroke="rgba(0,0,0,0.45)" strokeWidth={3} style={{ paintOrder: 'stroke' }}>
+                    <text textAnchor="middle" dy={fontSize + 3} fill={labelColor} fontSize={pctSize} fontWeight="600" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" opacity="0.92" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
                       {n.cell.changePercent >= 0 ? '+' : ''}{n.cell.changePercent}%
                     </text>
                   </g>
