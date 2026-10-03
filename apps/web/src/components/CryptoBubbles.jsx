@@ -10,12 +10,13 @@ import { useI18n } from '@/lib/i18n';
 // volume); color shows direction with intensity via the selected theme.
 // Search fades non-matches, hover shows price/volume tooltip, click opens chart.
 
-// Bubble color themes: [up, down] as "r,g,b" triplets.
+// Bubble color themes: [up, down] as "r,g,b" triplets. Bases are vivid and
+// fully saturated — depth scaling darkens them for flat coins.
 const SCHEMES = {
-  classic: { label: 'Classic', up: '52,211,153', down: '224,102,102' },
-  gold: { label: 'Gold', up: '212,175,55', down: '100,116,139' },
-  ocean: { label: 'Ocean', up: '34,211,238', down: '251,113,133' },
-  sunset: { label: 'Sunset', up: '45,212,191', down: '251,146,60' },
+  classic: { label: 'Classic', up: '16,185,129', down: '239,68,68' },
+  gold: { label: 'Gold', up: '234,179,8', down: '220,38,38' },
+  ocean: { label: 'Ocean', up: '56,189,248', down: '244,63,94' },
+  sunset: { label: 'Sunset', up: '20,184,166', down: '249,115,22' },
 };
 const SCHEME_KEY = 'tb-bubbles-scheme';
 
