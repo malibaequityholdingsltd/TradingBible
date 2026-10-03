@@ -203,10 +203,12 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   // Physics loop: continuous drift around the box — no center pull.
   // Bubbles cruise at a steady speed, ride a slow flowing current, bounce off
   // walls, and push each other apart softly on contact. They never settle.
+  // The All view keeps extra separation so labels never touch each other.
   useEffect(() => {
     let raf;
     const t0 = Date.now();
     const MIN_SPD = 0.45, MAX_SPD = 2.0;
+    const PAD = compact ? 14 : 6;
     const step = () => {
       const map = nodesRef.current;
       const nodes = [...map.values()];
@@ -221,7 +223,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
           const b = nodes[j];
           if (b.drag) continue;
           const dx = b.x - a.x; const dy = b.y - a.y;
-          const min = a.r + b.r + 6;
+          const min = a.r + b.r + PAD;
           const d2 = dx * dx + dy * dy;
           if (d2 > 0.01 && d2 < min * min) {
             const d = Math.sqrt(d2);
@@ -252,7 +254,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [size.w, size.h]);
+  }, [size.w, size.h, compact]);
 
   const toLocal = useCallback((e) => {
     const rect = wrapRef.current?.getBoundingClientRect();
@@ -459,10 +461,10 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
               const pctSize = compact
                 ? Math.max(8, Math.min(11, n.r / 2.8))
                 : Math.max(10, Math.min(15, n.r / 3.1));
-              const showSymbol = !compact || n.r >= 15;
-              // % always shows: stacked under the symbol on roomy bubbles,
-              // lone centered line on tiny ones.
-              const stacked = !compact || n.r >= 23;
+              const showSymbol = !compact || n.r >= 17;
+              // Tiny bubbles get a single combined line ("BTC +2.4%") so the
+              // name and % can never crowd each other.
+              const singleLine = compact && n.r < 26;
               const isHover = hover?.cell.symbol === n.cell.symbol;
               return (
                 <g
@@ -489,12 +491,20 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                     <ellipse cx={-n.r * 0.33} cy={-n.r * 0.42} rx={n.r * 0.24} ry={n.r * 0.13} fill="url(#bbGloss)" opacity="0.32" transform={`rotate(-18)`} />
                     {/* rim */}
                     <circle r={n.r} fill="none" stroke={bubbleStroke(n.cell.changePercent, scheme)} strokeWidth="2" />
-                    <text textAnchor="middle" dy={stacked ? -5 : 4} fill={labelColor} fontSize={fontSize} fontWeight="700" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
+                    {singleLine ? (
+                    <text textAnchor="middle" dy={3.5} fill={labelColor} fontSize={Math.max(8.5, Math.min(11.5, n.r / 2.1))} fontWeight="700" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.3" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
+                      {n.cell.symbol.replace('USD', '')} {n.cell.changePercent >= 0 ? '+' : ''}{n.cell.changePercent}%
+                    </text>
+                    ) : (
+                    <>
+                    <text textAnchor="middle" dy={-5} fill={labelColor} fontSize={fontSize} fontWeight="700" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
                       {showSymbol ? n.cell.symbol.replace('USD', '') : ''}
                     </text>
-                    <text textAnchor="middle" dy={stacked ? fontSize + 6 : showSymbol ? fontSize + 1 : 3.5} fill={labelColor} fontSize={stacked ? pctSize : Math.max(8, Math.min(11, n.r / 2.4))} fontWeight="600" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" opacity="0.92" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
+                    <text textAnchor="middle" dy={fontSize + 6} fill={labelColor} fontSize={pctSize} fontWeight="600" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" opacity="0.92" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
                       {n.cell.changePercent >= 0 ? '+' : ''}{n.cell.changePercent}%
                     </text>
+                    </>
+                    )}
                   </g>
                 </g>
               );
