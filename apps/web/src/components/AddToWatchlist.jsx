@@ -23,7 +23,7 @@ export default function AddToWatchlist({ symbol }) {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 z-50 mt-1 w-48 rounded-xl border border-[#d4af37]/20 bg-[#0f0f14] p-1.5 shadow-xl">
+          <div className="absolute right-0 z-50 mt-1 w-48 rounded-xl border border-[#d4af37]/20 bg-[#0f0f14]/90 p-1.5 shadow-xl backdrop-blur-xl">
             <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-[#5f5b50]">{t('wl.addToWl')} {symbol}</div>
             {lists.length === 0 && <button onClick={handleNew} className="flex w-full items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs text-[#d4af37] hover:bg-white/5"><Plus className="h-3.5 w-3.5" /> {t('wl.createNew')}</button>}
             {lists.map((l) => {

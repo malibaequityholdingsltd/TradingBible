@@ -196,7 +196,7 @@ export default function AppLayout({ children, title }) {
   return (
     <div className="min-h-screen bg-transparent pt-[var(--header-h)]">
       <aside className="fixed bottom-0 left-0 top-[var(--header-h)] z-30 hidden w-[268px] flex-col border-r border-white/5 bg-[#0a0a0f]/80 backdrop-blur-xl lg:block">{SideContent}</aside>
-      {open && <div className="fixed inset-x-0 bottom-0 top-[var(--header-h)] z-40 bg-black/70 lg:hidden" onClick={() => setOpen(false)} />}
+      {open && <div className="fixed inset-x-0 bottom-0 top-[var(--header-h)] z-40 bg-black/70 backdrop-blur-sm lg:hidden" onClick={() => setOpen(false)} />}
       <aside className={`fixed bottom-0 left-0 top-[var(--header-h)] z-40 flex w-[268px] flex-col border-r border-white/5 bg-[#0a0a0f]/95 backdrop-blur-xl transition-transform lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}>{SideContent}</aside>
       <div className="lg:pl-[268px]">
         <header className="sticky top-[var(--header-h)] z-20 flex items-center justify-between border-b border-white/5 bg-[#0a0a0f]/70 px-3 py-3 backdrop-blur-xl sm:px-5 sm:py-4">
