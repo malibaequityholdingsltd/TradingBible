@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { useI18n } from '@/lib/i18n';
 import { usePlatformSettings } from '@/lib/platformSettings';
+import GlobalSearch from '@/components/GlobalSearch';
 
 const LOGO = TRADINGBIBLE_LOGO;
 
@@ -60,7 +61,8 @@ function Nav({ homeTo, isAuthed, platformName }) {
             </Link>
           ) : (
             <>
-              <Link to="/login" className="hidden rounded-full px-4 py-2 text-sm font-medium text-[#c9c4b4] transition-colors hover:bg-white/5 hover:text-[#e9e7df] sm:block">{t('land.login')}</Link>
+              <GlobalSearch />
+            <Link to="/login" className="hidden rounded-full px-4 py-2 text-sm font-medium text-[#c9c4b4] transition-colors hover:bg-white/5 hover:text-[#e9e7df] sm:block">{t('land.login')}</Link>
               <Link to="/pricing" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] shadow-[0_4px_20px_rgba(212,175,55,0.3)] transition hover:opacity-90 hover:shadow-[0_4px_28px_rgba(212,175,55,0.45)]">
                 <span>{t('land.viewPricing')}</span>
               </Link>

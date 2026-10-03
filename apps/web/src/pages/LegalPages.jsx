@@ -169,7 +169,7 @@ export function RefundPage() {
   );
 }
 
-const FAQS = [
+export const FAQS = [
   { q: 'Is TradingBible financial advice?', a: 'No. TradingBible is a journaling and analytics tool. Our AI reviews and scores are educational and reflect your own historical data — they are never buy/sell recommendations.' },
   { q: 'How does broker sync work?', a: 'You connect a broker using read-oriented API keys or OAuth. We import your historical and ongoing trades automatically into your journal, dashboard, and AI reports. Credentials are encrypted and never used to place trades or withdraw funds.' },
   { q: 'Which brokers are supported?', a: 'MetaTrader 4, MetaTrader 5, cTrader, DXtrade, Interactive Brokers, Binance, Bybit, and Coinbase. More integrations are added regularly.' },
