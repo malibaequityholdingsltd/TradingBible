@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n';
 import OnboardingTutorial from '@/components/OnboardingTutorial';
 import LiveChatWidget from '@/components/LiveChatWidget';
 import TvWidget from '@/components/TvWidget';
+import GlobalSearch from '@/components/GlobalSearch';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { homeRouteForUser } from '@/lib/homeRoute';
@@ -207,6 +208,7 @@ export default function AppLayout({ children, title }) {
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
+            <GlobalSearch />
             <LanguageSwitcher />
             {canSeeSignals && (
               <button onClick={() => nav('/app/alerts')} className="relative grid h-11 w-11 place-items-center rounded-2xl border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60" title={t('app.alerts')}>
