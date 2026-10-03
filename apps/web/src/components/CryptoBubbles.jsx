@@ -491,20 +491,44 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                     <ellipse cx={-n.r * 0.33} cy={-n.r * 0.42} rx={n.r * 0.24} ry={n.r * 0.13} fill="url(#bbGloss)" opacity="0.32" transform={`rotate(-18)`} />
                     {/* rim */}
                     <circle r={n.r} fill="none" stroke={bubbleStroke(n.cell.changePercent, scheme)} strokeWidth="2" />
-                    {singleLine ? (
-                    <text textAnchor="middle" dy={3.5} fill={labelColor} fontSize={Math.max(8.5, Math.min(11.5, n.r / 2.1))} fontWeight="700" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.3" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
-                      {n.cell.symbol.replace('USD', '')} {n.cell.changePercent >= 0 ? '+' : ''}{n.cell.changePercent}%
-                    </text>
-                    ) : (
-                    <>
-                    <text textAnchor="middle" dy={-5} fill={labelColor} fontSize={fontSize} fontWeight="700" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
-                      {showSymbol ? n.cell.symbol.replace('USD', '') : ''}
-                    </text>
-                    <text textAnchor="middle" dy={fontSize + 6} fill={labelColor} fontSize={pctSize} fontWeight="600" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" opacity="0.92" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
-                      {n.cell.changePercent >= 0 ? '+' : ''}{n.cell.changePercent}%
-                    </text>
-                    </>
-                    )}
+                    {(() => {
+                      const sym = n.cell.symbol.replace('USD', '');
+                      const pctStr = `${n.cell.changePercent >= 0 ? '+' : ''}${n.cell.changePercent}%`;
+                      // Largest size that fits inside the bubble (80% of diameter).
+                      // Floor of 8px keeps every visible label clearly readable.
+                      const fit = (text, max, min = 8) => {
+                        const s = Math.min(max, (n.r * 1.6) / (Math.max(text.length, 1) * 0.6));
+                        return s >= min ? s : 0;
+                      };
+                      const F = "'Space Grotesk', Sora, sans-serif";
+                      const outline = { pointerEvents: 'none', stroke: 'rgba(0,0,0,0.35)', strokeWidth: 1.25, paintOrder: 'stroke' };
+                      if (singleLine) {
+                        const full = `${sym} ${pctStr}`;
+                        let oneText = full, oneSize = fit(full, 11.5);
+                        if (!oneSize) { oneText = pctStr; oneSize = fit(pctStr, 11); }
+                        if (!oneSize) return null;
+                        return (
+                          <text textAnchor="middle" dy={3.5} fill={labelColor} fontSize={oneSize} fontWeight="700" fontFamily={F} letterSpacing="0.3" style={outline}>
+                            {oneText}
+                          </text>
+                        );
+                      }
+                      const symSize = showSymbol ? fit(sym, fontSize) : 0;
+                      const pctSizeF = fit(pctStr, pctSize);
+                      if (!pctSizeF) return null;
+                      return (
+                        <>
+                          {symSize > 0 && (
+                          <text textAnchor="middle" dy={-5} fill={labelColor} fontSize={symSize} fontWeight="700" fontFamily={F} letterSpacing="0.5" style={outline}>
+                            {sym}
+                          </text>
+                          )}
+                          <text textAnchor="middle" dy={symSize > 0 ? symSize + 6 : 3.5} fill={labelColor} fontSize={pctSizeF} fontWeight="600" fontFamily={F} letterSpacing="0.5" opacity="0.92" style={outline}>
+                            {pctStr}
+                          </text>
+                        </>
+                      );
+                    })()}
                   </g>
                 </g>
               );
