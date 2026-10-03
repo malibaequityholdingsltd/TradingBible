@@ -183,7 +183,7 @@ export default function AppLayout({ children, title }) {
       {!isSubscriber && !isAdmin && (
         <div className="m-3 rounded-2xl border border-[#d4af37]/25 bg-gradient-to-b from-[#d4af37]/[0.08] to-transparent p-4">
           <div className="flex items-center gap-2 text-[#d4af37]"><Crown className="h-4 w-4" /><span className="text-xs font-bold">{t('app.upgrade')}</span></div>
-          <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{t('bill.noPlanYet', null, 'Card required — subscribe to unlock the full terminal. No free trial.')}</p>
+          <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{t('bill.noPlanYet', null, 'Subscribe to unlock the full terminal.')}</p>
           <button onClick={() => nav('/app/billing')} className="mt-3 min-h-[44px] w-full rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-xs font-bold text-[#0a0a0f] transition hover:opacity-90">{t('app.upgrade')}</button>
         </div>
       )}

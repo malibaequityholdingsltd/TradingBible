@@ -155,7 +155,7 @@ export default function BillingPage() {
           <div>
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><Crown className="h-4 w-4 text-[#d4af37]" /> {t('bill.currentPlan')}</div>
             <div className="mt-2 text-2xl font-bold gold-text">{currentPlan ? currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1) : t('bill.noPlan', null, 'No plan')}</div>
-            {!currentPlan && <div className="mt-1 text-xs text-[#8a8577]">{t('bill.noPlanYet', null, 'Card required — subscribe to unlock the full terminal. No free trial.')}</div>}
+            {!currentPlan && <div className="mt-1 text-xs text-[#8a8577]">{t('bill.noPlanYet', null, 'Subscribe to unlock the full terminal.')}</div>}
             <div className="mt-2 flex items-center gap-2">
               {status && <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[status] || 'bg-white/10 text-[#8a8577]'}`}>{status.replace('_', ' ')}</span>}
               {cancelScheduled && <span className="rounded-full bg-red-500/15 px-2.5 py-0.5 text-xs text-red-400">{t('bill.cancelsOn', { date: fmtDate(periodEnd) })}</span>}
