@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Search, Move3d, BarChart3, TrendingUp, TrendingDown, Flame, RefreshCw } from 'lucide-react';
 import { useHeatmap } from '@/hooks/useHeatmap';
-import { useTheme } from '@/hooks/useTheme';
 import { useI18n } from '@/lib/i18n';
 
 // CryptoBubbles — cryptobubbles.net-style interactive 3D bubble visualization
@@ -62,8 +61,6 @@ function radiusFor(cell, mode, volStats) {
 
 export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   const { t } = useI18n();
-  const { theme } = useTheme();
-  const isLight = theme === 'light';
   const { cells, status, retry } = useHeatmap(type, period, 15000);
   const [mode, setMode] = useState('move'); // 'move' | 'volume'
   const [schemeId, setSchemeId] = useState(() => {
@@ -218,7 +215,9 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   }, [cells]);
 
   const nodes = [...nodesRef.current.values()];
-  const labelColor = isLight ? '#2d3440' : '#ffffff';
+  // White labels on solid saturated bubbles in both themes (dark outline
+  // keeps them crisp on every color, including gold in light mode).
+  const labelColor = '#ffffff';
 
   return (
     <div>
