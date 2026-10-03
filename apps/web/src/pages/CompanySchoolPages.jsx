@@ -1,9 +1,36 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { BookOpen, FileCheck2, GraduationCap, Plus, User, Users } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
 import pb from '@/lib/pocketbaseClient';
 import { useToast } from '@/hooks/use-toast';
 import { useI18n } from '@/lib/i18n';
+
+export function CompanyNav() {
+  const { t } = useI18n();
+  const tabs = [
+    { to: '/company', label: t('sch.overview'), end: true },
+    { to: '/company/students', label: t('sch.dStudents') },
+    { to: '/company/teachers', label: t('sch.dTeachers') },
+    { to: '/company/assessments', label: t('sch.dExams') },
+    { to: '/company/submissions', label: t('sch.dSubs') },
+    { to: '/company/academy-profiles', label: t('sch.dAcad') },
+  ];
+  return (
+    <div className="no-scrollbar mb-5 flex gap-2 overflow-x-auto">
+      {tabs.map((tab) => (
+        <NavLink
+          key={tab.to}
+          to={tab.to}
+          end={tab.end}
+          className={({ isActive }) => `shrink-0 rounded-xl px-4 py-2.5 text-sm transition ${isActive ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] font-semibold text-[#0a0a0f]' : 'glass text-[#c9c4b4] hover:text-[#f0ecdd]'}`}
+        >
+          {tab.label}
+        </NavLink>
+      ))}
+    </div>
+  );
+}
 
 const box = 'glass rounded-2xl p-5';
 const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40';
@@ -140,6 +167,7 @@ export function CompanyStudentsPage() {
 
   return (
     <AppLayout title={t('sch.stTitle')}>
+      <CompanyNav />
       <RoleBanner
         admin={t('sch.rbStAdmin')}
         teacher={t('sch.rbStTeacher')}
@@ -244,6 +272,7 @@ export function CompanyTeachersPage() {
 
   return (
     <AppLayout title={t('sch.teTitle')}>
+      <CompanyNav />
       <RoleBanner
         admin={t('sch.rbTeAdmin')}
         teacher={t('sch.rbTeTeacher')}
@@ -350,6 +379,7 @@ export function CompanyAssessmentsPage() {
 
   return (
     <AppLayout title={t('sch.exTitle')}>
+      <CompanyNav />
       <RoleBanner
         admin={t('sch.rbExAdmin')}
         teacher={t('sch.rbExTeacher')}
@@ -447,6 +477,7 @@ export function CompanySubmissionsPage() {
 
   return (
     <AppLayout title={t('sch.suTitle')}>
+      <CompanyNav />
       <RoleBanner
         admin={t('sch.rbSuAdmin')}
         teacher={t('sch.rbSuTeacher')}
@@ -518,6 +549,7 @@ export function CompanyAcademyProfilesPage() {
 
   return (
     <AppLayout title={t('sch.apTitle')}>
+      <CompanyNav />
       <RoleBanner
         admin={t('sch.rbApAdmin')}
         teacher={t('sch.rbApTeacher')}

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Award, BookOpen, FileCheck2, GraduationCap, Plus, Trophy } from 'lucide-react';
+import { Award, FileCheck2, GraduationCap, Trophy, Users } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import pb from '@/lib/pocketbaseClient';
 import { getDunsStatus, verifyDuns, matchDuns } from '@/lib/duns';
@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useI18n } from '@/lib/i18n';
 import { Link } from 'react-router-dom';
+import { CompanyNav } from './CompanySchoolPages';
 
 const cardCls = 'glass rounded-2xl p-5';
 
@@ -14,34 +15,42 @@ export default function CompanyDashboardPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
-  const [classrooms, setClassrooms] = useState([]);
-  const [assessments, setAssessments] = useState([]);
   const [certs, setCerts] = useState([]);
   const [students, setStudents] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
+  const [academyCount, setAcademyCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [schoolName, setSchoolName] = useState(user?.companyName || '');
-  const [className, setClassName] = useState('');
+  const [certTitle, setCertTitle] = useState('');
+  const [certStudent, setCertStudent] = useState('');
   const [duns, setDuns] = useState('');
   const [dunsStatus, setDunsStatus] = useState('unverified');
   const [dunsBusy, setDunsBusy] = useState(false);
   const [dunsProfile, setDunsProfile] = useState(null);
-  const [assessment, setAssessment] = useState({ title: '', type: 'quiz' });
-  const [certTitle, setCertTitle] = useState('');
-  const [certStudent, setCertStudent] = useState('');
 
   const load = async () => {
     setLoading(true);
     try {
-      const [c, a, cert, st] = await Promise.all([
-        pb.collection('school_classrooms').getFullList({ sort: '-created' }),
-        pb.collection('school_assessments').getFullList({ sort: '-created' }),
+      const [cert, st, tc, sb] = await Promise.all([
         pb.collection('school_certificates').getFullList({ sort: '-created' }),
         pb.collection('school_students').getFullList({ sort: '-created' }).catch(() => []),
+        pb.collection('school_teachers').getFullList({ sort: '-created' }).catch(() => []),
+        pb.collection('school_submissions').getFullList({ sort: '-submittedAt' }).catch(() => []),
       ]);
-      setClassrooms(c);
-      setAssessments(a);
       setCerts(cert);
       setStudents(st);
+      setTeachers(tc);
+      setSubmissions(sb);
+      let platformCount = 0;
+      try {
+        const token = pb.authStore.token;
+        if (token) {
+          const res = await fetch('/hcgi/api/company/academy-interest', { headers: { Authorization: `Bearer ${token}` } });
+          if (res.ok) platformCount = (await res.json()).length;
+        }
+      } catch { /* pipeline count stays local */ }
+      setAcademyCount(platformCount + st.filter((s) => s.academyInterest).length);
     } catch (err) {
       toast({ variant: 'destructive', title: t('sch.dLoadFail'), description: err?.message || t('sch.tTryAgain') });
     } finally {
@@ -107,29 +116,18 @@ export default function CompanyDashboardPage() {
       setDunsBusy(false);
     }
   };
-  const addClassroom = async () => {
-    if (!className.trim()) return;
-    try {
-      const rec = await pb.collection('school_classrooms').create({ name: className.trim(), schoolName: schoolName || user?.companyName || 'TradingBible School', studentsCount: 0, teachersCount: 1 });
-      setClassrooms((prev) => [rec, ...prev]);
-      setClassName('');
-      toast({ title: t('sch.dClassAdded') });
-    } catch (err) {
-      toast({ variant: 'destructive', title: t('sch.dClassFail'), description: err?.message || t('sch.tTryAgain') });
-    }
-  };
+  const summary = useMemo(() => {
+    const pending = submissions.filter((s) => s.status !== 'graded').length;
+    return {
+      students: students.length,
+      teachers: teachers.length,
+      pending,
+      academy: academyCount,
+      certificates: certs.length,
+    };
+  }, [students.length, teachers.length, submissions, academyCount, certs.length]);
 
-  const addAssessment = async () => {
-    if (!assessment.title.trim()) return;
-    try {
-      const rec = await pb.collection('school_assessments').create({ title: assessment.title.trim(), type: assessment.type, status: 'draft' });
-      setAssessments((prev) => [rec, ...prev]);
-      setAssessment({ title: '', type: assessment.type });
-      toast({ title: t('sch.dAsCreated', { type: t(`sch.type_${assessment.type}`, null, assessment.type) }) });
-    } catch (err) {
-      toast({ variant: 'destructive', title: t('sch.dAsFail'), description: err?.message || t('sch.tTryAgain') });
-    }
-  };
+  const recentQueue = useMemo(() => submissions.filter((s) => s.status !== 'graded').slice(0, 5), [submissions]);
 
   const issueCertificate = async () => {
     if (!certTitle.trim() || !certStudent) {
@@ -162,25 +160,15 @@ export default function CompanyDashboardPage() {
     }
   };
 
-  const summary = useMemo(() => ({
-    classrooms: classrooms.length,
-    assessments: assessments.length,
-    certificates: certs.length,
-  }), [classrooms.length, assessments.length, certs.length]);
-
   return (
     <AppLayout title={t('sch.dTitle')}>
-      <div className="mb-5 grid gap-3 md:grid-cols-5">
-        <Link to="/company/students" className="glass rounded-xl px-4 py-3 text-sm text-[#c9c4b4] hover:text-[#f0ecdd]">{t('sch.dStudents')}</Link>
-        <Link to="/company/teachers" className="glass rounded-xl px-4 py-3 text-sm text-[#c9c4b4] hover:text-[#f0ecdd]">{t('sch.dTeachers')}</Link>
-        <Link to="/company/assessments" className="glass rounded-xl px-4 py-3 text-sm text-[#c9c4b4] hover:text-[#f0ecdd]">{t('sch.dExams')}</Link>
-        <Link to="/company/submissions" className="glass rounded-xl px-4 py-3 text-sm text-[#c9c4b4] hover:text-[#f0ecdd]">{t('sch.dSubs')}</Link>
-        <Link to="/company/academy-profiles" className="glass rounded-xl px-4 py-3 text-sm text-[#c9c4b4] hover:text-[#f0ecdd]">{t('sch.dAcad')}</Link>
-      </div>
+      <CompanyNav />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className={cardCls}><div className="text-xs text-[#8a8577]">{t('sch.dClassrooms')}</div><div className="mt-2 text-2xl font-semibold text-[#f0ecdd]">{summary.classrooms}</div></div>
-        <div className={cardCls}><div className="text-xs text-[#8a8577]">{t('sch.dAssessments')}</div><div className="mt-2 text-2xl font-semibold text-[#f0ecdd]">{summary.assessments}</div></div>
+      <div className="mb-5 grid gap-3 grid-cols-2 xl:grid-cols-5">
+        <div className={cardCls}><div className="text-xs text-[#8a8577]">{t('sch.dStudents')}</div><div className="mt-2 text-2xl font-semibold text-[#f0ecdd]">{summary.students}</div></div>
+        <div className={cardCls}><div className="text-xs text-[#8a8577]">{t('sch.dTeachers')}</div><div className="mt-2 text-2xl font-semibold text-[#f0ecdd]">{summary.teachers}</div></div>
+        <div className={cardCls}><div className="text-xs text-[#8a8577]">{t('sch.toGrade')}</div><div className="mt-2 text-2xl font-semibold text-[#f0ecdd]">{summary.pending}</div></div>
+        <div className={cardCls}><div className="text-xs text-[#8a8577]">{t('sch.dAcad')}</div><div className="mt-2 text-2xl font-semibold text-[#f0ecdd]">{summary.academy}</div></div>
         <div className={cardCls}><div className="text-xs text-[#8a8577]">{t('sch.dCerts')}</div><div className="mt-2 text-2xl font-semibold text-[#f0ecdd]">{summary.certificates}</div></div>
       </div>
 
@@ -214,38 +202,25 @@ export default function CompanyDashboardPage() {
         </div>
 
         <div className={cardCls}>
-          <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><BookOpen className="h-4 w-4 text-[#d4af37]" /> {t('sch.dClassroomsT')}</h3>
-          <div className="mt-3 flex gap-2">
-            <input value={className} onChange={(e) => setClassName(e.target.value)} placeholder={t('sch.dClassPh')} className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
-            <button onClick={addClassroom} className="inline-flex items-center gap-1 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><Plus className="h-4 w-4" /> {t('sch.dAdd')}</button>
-          </div>
+          <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><FileCheck2 className="h-4 w-4 text-[#d4af37]" /> {t('sch.gradeQueue')}</h3>
           <div className="mt-3 space-y-2 text-sm text-[#c9c4b4]">
-            {classrooms.slice(0, 5).map((c) => (
-              <div key={c.id} className="flex items-center justify-between gap-2 rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">
-                <span className="truncate">{c.name}</span>
-                <button onClick={delRow('school_classrooms', c.id, () => setClassrooms((prev) => prev.filter((x) => x.id !== c.id)))} className="shrink-0 rounded-lg border border-red-500/35 px-2 py-0.5 text-xs text-red-400">{t('sch.delete')}</button>
+            {recentQueue.length === 0 && <div className="text-sm text-[#8a8577]">{t('sch.queueEmpty')}</div>}
+            {recentQueue.map((s) => (
+              <div key={s.id} className="rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">
+                <span className="truncate">{s.studentName} · {s.assessmentTitle}</span>
               </div>
             ))}
           </div>
+          <Link to="/company/submissions" className="mt-3 inline-block text-sm font-semibold text-[#d4af37] hover:underline">{t('sch.dSubs')} →</Link>
         </div>
 
         <div className={cardCls}>
-          <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><FileCheck2 className="h-4 w-4 text-[#d4af37]" /> {t('sch.dTestsT')}</h3>
-          <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_140px_auto]">
-            <input value={assessment.title} onChange={(e) => setAssessment((prev) => ({ ...prev, title: e.target.value }))} placeholder={t('sch.dAssessPh')} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
-            <select value={assessment.type} onChange={(e) => setAssessment((prev) => ({ ...prev, type: e.target.value }))} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#f0ecdd]">
-              {['quiz', 'test', 'exam', 'competition'].map((o) => <option key={o} value={o}>{t(`sch.type_${o}`, null, o)}</option>)}
-            </select>
-            <button onClick={addAssessment} className="rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]">{t('sch.dCreate')}</button>
-          </div>
+          <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><GraduationCap className="h-4 w-4 text-[#d4af37]" /> {t('sch.dAcad')}</h3>
           <div className="mt-3 space-y-2 text-sm text-[#c9c4b4]">
-            {assessments.slice(0, 5).map((a) => (
-              <div key={a.id} className="flex items-center justify-between gap-2 rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">
-                <span className="truncate">{a.title} · <span className="capitalize">{t(`sch.type_${a.type}`, null, a.type)}</span></span>
-                <button onClick={delRow('school_assessments', a.id, () => setAssessments((prev) => prev.filter((x) => x.id !== a.id)))} className="shrink-0 rounded-lg border border-red-500/35 px-2 py-0.5 text-xs text-red-400">{t('sch.delete')}</button>
-              </div>
-            ))}
+            <div className="rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">{t('sch.acadPipeline', null, 'Academy-interested')}: <span className="font-mono text-[#f0ecdd]">{summary.academy}</span></div>
+            <div className="rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">{t('sch.dCerts')}: <span className="font-mono text-[#f0ecdd]">{summary.certificates}</span></div>
           </div>
+          <Link to="/company/academy-profiles" className="mt-3 inline-block text-sm font-semibold text-[#d4af37] hover:underline">{t('sch.dAcad')} →</Link>
         </div>
 
         <div className={cardCls}>
