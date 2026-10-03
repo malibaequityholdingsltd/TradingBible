@@ -1,7 +1,7 @@
 // Static reference constants for TradingBible (brand logos, plan definitions,
 // market/experience/goal option lists, supported brokers & prop firms, money
 // formatters). Contains NO market, account, or trade data — all live data
-// comes from PocketBase and the live Finnhub/Binance feeds.
+// comes from Supabase and the live Binance/Finnhub/Alpha Vantage feeds.
 
 // Brand logo variants supplied for the pricing tiers.
 const OFFICIAL_LOGO = 'https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/f18f53c1fa5ec4181c7033589080fd00.png';
@@ -20,7 +20,7 @@ export const PLANS = [
     features: ['Everything in Elite', 'Unlimited broker accounts', 'Team seats', 'API & webhooks', 'White-glove onboarding', 'Dedicated success manager'], cta: 'Choose Professional' },
 ];
 
-const PLAN_I18N_KEY = { trial: 'trial', pro: 'pro', elite: 'elite', professional: 'prof' };
+const PLAN_I18N_KEY = { pro: 'pro', elite: 'elite', professional: 'prof' };
 
 // Localized view of a plan: names, taglines, periods, CTAs and feature lists
 // come from the i18n dictionary so pricing renders in the active language.

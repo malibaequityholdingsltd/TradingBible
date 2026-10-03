@@ -61,8 +61,8 @@ function Nav({ homeTo, isAuthed, platformName }) {
           ) : (
             <>
               <Link to="/login" className="hidden rounded-full px-4 py-2 text-sm font-medium text-[#c9c4b4] transition-colors hover:bg-white/5 hover:text-[#e9e7df] sm:block">{t('land.login')}</Link>
-              <Link to="/signup" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] shadow-[0_4px_20px_rgba(212,175,55,0.3)] transition hover:opacity-90 hover:shadow-[0_4px_28px_rgba(212,175,55,0.45)]">
-                <span>{t('land.startFree')}</span>
+              <Link to="/pricing" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] shadow-[0_4px_20px_rgba(212,175,55,0.3)] transition hover:opacity-90 hover:shadow-[0_4px_28px_rgba(212,175,55,0.45)]">
+                <span>{t('land.viewPricing')}</span>
               </Link>
               <button onClick={() => setMenuOpen((o) => !o)} className="grid h-10 w-10 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60 md:hidden" aria-label={t('nav.menu')} aria-expanded={menuOpen}>
                 {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -104,7 +104,6 @@ export default function LandingPage() {
   const isLight = theme === 'light';
   const { settings } = usePlatformSettings();
   const signupsOpen = settings.signupsOpen !== false;
-  const trialDays = Number(settings.trialDays) || 3;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-transparent text-[#e9e7df]">
@@ -135,7 +134,7 @@ export default function LandingPage() {
 
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.24 }} className="mt-10 flex flex-col gap-3.5 sm:flex-row sm:items-center sm:gap-4">
             {signupsOpen ? (
-              <Link to="/signup" className="btn-neon inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f7ecb6] via-[#e2bd4f] to-[#c99a25] px-8 py-4 text-base font-bold text-[#0a0a0f] transition hover:opacity-90">{t('land.startTrial', { n: trialDays })} <ArrowRight className="h-4 w-4" /></Link>
+              <Link to="/pricing" className="btn-neon inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f7ecb6] via-[#e2bd4f] to-[#c99a25] px-8 py-4 text-base font-bold text-[#0a0a0f] transition hover:opacity-90">{t('land.choosePlan', null, 'Choose your plan')} <ArrowRight className="h-4 w-4" /></Link>
             ) : (
               <span className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#d4af37]/35 bg-white/[0.03] px-8 py-4 text-base font-semibold text-[#8a8577]">{t('land.signupsPaused')}</span>
             )}

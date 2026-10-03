@@ -134,6 +134,10 @@ function synthCell(symbol, name, price, period) {
 async function cryptoLive(period) {
 	const symbols = CRYPTO.map((c) => c[1]);
 	const query = encodeURIComponent(JSON.stringify(symbols));
+	// Real period-over-period changes via cached klines (1d comes straight
+	// from the 24h ticker). Cache keeps the 15s poll cheap: one Binance
+	// batch per TTL window instead of 60 klines requests per poll.
+	const realChanges = period === '1d' ? null : await periodChanges(period).catch(() => null);
 	try {
 		const upstream = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${query}`);
 		if (!upstream.ok) throw new Error('binance');
@@ -144,7 +148,8 @@ async function cryptoLive(period) {
 			const t = byId[id];
 			if (!t) return synthCell(disp, name, 0, period);
 			const price = Number(t.lastPrice);
-			const changePercent = +(Number(t.priceChangePercent) * scale).toFixed(2);
+			const real = realChanges?.get(id);
+			const changePercent = +(real ?? Number(t.priceChangePercent) * scale).toFixed(2);
 			const volume = Number(t.volume) || 0; // base-asset volume
 			const quoteVolume = Number(t.quoteVolume) || 0; // USDT volume — bubble-size proxy
 			return { symbol: disp, name, price: +price.toFixed(2), changePercent, changeAmount: +((price * changePercent) / 100).toFixed(2), volume, quoteVolume };
@@ -152,6 +157,37 @@ async function cryptoLive(period) {
 	} catch {
 		return CRYPTO.map(([disp, , name]) => synthCell(disp, name, 0, period));
 	}
+}
+
+// Kline window per heatmap period: [interval, candles to compare first-open
+// vs last-close]. Cache TTLs keep upstream load negligible.
+const PERIOD_KLINES = {
+	'1h': ['1h', 3, 60e3], '4h': ['4h', 3, 5 * 60e3],
+	'1w': ['1d', 8, 15 * 60e3], '1M': ['1d', 31, 60 * 60e3], '1Y': ['1w', 53, 6 * 60 * 60e3],
+};
+const periodCache = new Map(); // period -> { ts, changes: Map<binId, pct> }
+
+async function periodChanges(period) {
+	const spec = PERIOD_KLINES[period];
+	if (!spec) return null;
+	const [interval, limit, ttl] = spec;
+	const hit = periodCache.get(period);
+	if (hit && Date.now() - hit.ts < ttl) return hit.changes;
+	const ids = CRYPTO.map((c) => c[1]);
+	const results = await Promise.allSettled(ids.map(async (id) => {
+		const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${id}&interval=${interval}&limit=${limit}`);
+		if (!res.ok) throw new Error('klines');
+		const rows = await res.json();
+		if (!Array.isArray(rows) || rows.length < 2) throw new Error('klines-short');
+		const first = Number(rows[0][1]); const last = Number(rows[rows.length - 1][4]);
+		if (!first) throw new Error('klines-zero');
+		return [id, +(((last - first) / first) * 100).toFixed(2)];
+	}));
+	const changes = new Map();
+	for (const r of results) if (r.status === 'fulfilled') changes.set(r.value[0], r.value[1]);
+	if (!changes.size) throw new Error('klines-empty');
+	periodCache.set(period, { ts: Date.now(), changes });
+	return changes;
 }
 
 export default async (req, res) => {

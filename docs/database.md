@@ -8,7 +8,7 @@ All tables sit in the `public` schema. RLS is enabled; the browser only ever see
 
 | Table | Purpose |
 |---|---|
-| `users` | App users: identity, plan (`trial/pro/elite/professional`), role (`user/admin/company`), preferences, Paddle customer id |
+| `users` | App users: identity, plan (`pro/elite/professional`, null = no plan — no free trial), role (`user/admin/company`), preferences, Paddle customer id |
 | `profiles` | Legacy/alternate profile store (only used as fallback) |
 
 ## Billing

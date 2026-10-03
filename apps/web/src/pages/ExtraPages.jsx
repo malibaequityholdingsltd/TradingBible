@@ -173,7 +173,7 @@ export function AdminPage() {
   const users = [
     { email: 'marcus@fund.io', plan: 'Professional', status: 'Active', mrr: 99 },
     { email: 'sofia.trades@gmail.com', plan: 'Elite AI', status: 'Active', mrr: 49.99 },
-    { email: 'dan.k@proton.me', plan: 'Pro', status: 'Trial', mrr: 0 },
+    { email: 'dan.k@proton.me', plan: 'Pro', status: 'Pending', mrr: 0 },
     { email: 'aisha@desk.co', plan: 'Elite AI', status: 'Past due', mrr: 49.99 },
     { email: 'leo.fx@outlook.com', plan: 'Pro', status: 'Cancelled', mrr: 0 },
   ];
@@ -183,7 +183,7 @@ export function AdminPage() {
         <AdminStat icon={Users} label="Total Users" value="12,480" sub="+312 this week" />
         <AdminStat icon={CreditCard} label="Active Subs" value="4,921" sub="+8.4% MoM" />
         <AdminStat icon={DollarSign} label="MRR" value="$182,540" sub="+11.2% MoM" />
-        <AdminStat icon={Activity} label="Trial → Paid" value="34.8%" sub="Above benchmark" />
+        <AdminStat icon={Activity} label="New → Paid" value="34.8%" sub="Above benchmark" />
       </div>
       <h3 className="mb-3 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Users className="h-5 w-5 text-[#d4af37]" /> Users & Subscriptions</h3>
       <div className="glass no-scrollbar overflow-x-auto rounded-2xl">
@@ -193,7 +193,7 @@ export function AdminPage() {
             <tr key={u.email} className="border-b border-white/5 hover:bg-white/[0.03]">
               <td className="px-4 py-3 text-[#f0ecdd]">{u.email}</td>
               <td className="px-4 py-3 text-[#c9c4b4]">{u.plan}</td>
-              <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-xs ${u.status === 'Active' ? 'bg-emerald-500/15 text-emerald-400' : u.status === 'Trial' ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'bg-red-500/15 text-red-400'}`}>{u.status}</span></td>
+              <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-xs ${u.status === 'Active' ? 'bg-emerald-500/15 text-emerald-400' : u.status === 'Pending' ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'bg-red-500/15 text-red-400'}`}>{u.status}</span></td>
               <td className="px-4 py-3 font-mono text-[#c9c4b4]">${u.mrr}</td>
               <td className="px-4 py-3 font-mono text-xs text-[#6a665a]">sub_{Math.random().toString(36).slice(2, 10)}</td>
             </tr>

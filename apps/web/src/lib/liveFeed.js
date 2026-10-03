@@ -19,10 +19,23 @@ const WS_OPEN_TIMEOUT = 6000;
 const POLL_MS = 15000;
 
 // App symbol (e.g. BTCUSD) -> Binance stream pair (btcusdt). Only crypto maps.
+// Covers the full crypto registry so every coin streams tick-by-tick.
 const CRYPTO_MAP = {
   BTCUSD: 'btcusdt', ETHUSD: 'ethusdt', SOLUSD: 'solusdt', BNBUSD: 'bnbusdt',
   XRPUSD: 'xrpusdt', ADAUSD: 'adausdt', DOGEUSD: 'dogeusdt', AVAXUSD: 'avaxusdt',
   LTCUSD: 'ltcusdt', DOTUSD: 'dotusdt', MATICUSD: 'maticusdt', LINKUSD: 'linkusdt',
+  TRXUSD: 'trxusdt', ATOMUSD: 'atomusdt', UNIUSD: 'uniusdt', NEARUSD: 'nearusdt',
+  APTUSD: 'aptusdt', FILUSD: 'filusdt', ICPUSD: 'icpusdt', ETCUSD: 'etcusdt',
+  ARBUSD: 'arbusdt', OPUSD: 'opusdt', SUIUSD: 'suiusdt', SEIUSD: 'seiusdt',
+  TIAUSD: 'tiausdt', ONDOUSD: 'ondousdt', INJUSD: 'injusdt', STXUSD: 'stxusdt',
+  IMXUSD: 'imxusdt', HBARUSD: 'hbarusdt', VETUSD: 'vetusdt', ALGOUSD: 'algousdt',
+  QNTUSD: 'qntusdt', GRTUSD: 'grtusdt', THETAUSD: 'thetausdt', EGLDUSD: 'egldusdt',
+  RUNEUSD: 'runeusdt', KASUSD: 'kasusdt', FETUSD: 'fetusdt', RENDERUSD: 'renderusdt',
+  GALAUSD: 'galausdt', SANDUSD: 'sandusdt', MANAUSD: 'manausdt', AXSUSD: 'axsusdt',
+  AAVEUSD: 'aaveusdt', MKRUSD: 'mkrusdt', LDOUSD: 'ldousdt', ENAUSD: 'enausdt',
+  PENDLEUSD: 'pendleusdt', JUPUSD: 'jupusdt', PYTHUSD: 'pythusdt', WLDUSD: 'wldusdt',
+  PEPEUSD: 'pepeusdt', SHIBUSD: 'shibusdt', BONKUSD: 'bonkusdt', WIFUSD: 'wifusdt',
+  FLOKIUSD: 'flokiusdt', JASMYUSD: 'jasmyusdt', ORDIUSD: 'ordiusdt', BLURUSD: 'blurusdt',
 };
 const PAIR_TO_SYMBOL = Object.fromEntries(Object.entries(CRYPTO_MAP).map(([s, p]) => [p, s]));
 
