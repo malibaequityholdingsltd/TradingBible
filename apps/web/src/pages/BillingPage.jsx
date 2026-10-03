@@ -180,7 +180,7 @@ export default function BillingPage() {
 
       {/* Plans */}
       <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-[#8a8577]">{t('bill.plans')}</h3>
-      <div className="grid max-w-2xl gap-4">
+      <div className="grid max-w-5xl gap-4 md:grid-cols-2 xl:grid-cols-3">
         {PAID.map((p) => {
           const isCurrent = currentPlan === p.id;
           const canSwitch = hasSub && !isCurrent;

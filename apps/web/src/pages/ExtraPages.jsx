@@ -25,7 +25,7 @@ function ConnectedList({ items }) {
   const { t } = useI18n();
   if (!items.length) return null;
   return (
-    <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((c) => (
         <div key={c.id} className="glass glass-hover rounded-2xl p-4 sm:p-5">
           <div className="flex items-center justify-between gap-1"><span className="min-w-0 truncate font-semibold text-[#f0ecdd]">{c.broker}</span><span className={`flex shrink-0 items-center gap-1.5 text-xs ${c.status === 'synced' ? 'text-emerald-400' : 'text-[#d4af37]'}`}><span className={`h-1.5 w-1.5 rounded-full ${c.status === 'synced' ? 'bg-emerald-400' : 'bg-[#d4af37] animate-pulse'}`} />{c.status === 'synced' ? 'Synced' : 'Syncing'}</span></div>
@@ -100,7 +100,7 @@ export function BrokersPage() {
   const Grid = ({ list, kind }) => {
     const { t } = useI18n();
     return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {list.map((b) => {
         const acct = connected.find((c) => c.broker === b.name && (c.accountKind || 'live') === kind);
         const on = acct && acct.status === 'synced';
@@ -109,7 +109,7 @@ export function BrokersPage() {
         return (
           <div key={b.name} className="glass glass-hover rounded-2xl p-4 sm:p-5">
             <div className="flex items-center gap-3"><div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl font-mono text-xs font-bold" style={{ background: `${b.color}22`, color: b.color }}>{b.tag}</div><div className="min-w-0"><div className="truncate font-semibold text-[#f0ecdd]">{b.name}</div><div className="truncate text-xs text-[#8a8577]">{b.kind}</div></div></div>
-            <div className="mt-3 flex items-center gap-2">
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ${on ? 'bg-emerald-500/15 text-emerald-400' : syncingAcct ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'bg-red-500/15 text-red-400'}`}>
                 <span className={`h-1.5 w-1.5 rounded-full ${on ? 'bg-emerald-400' : syncingAcct ? 'bg-[#d4af37]' : 'bg-red-400'}`} />
                 {on ? t('bro.connected') : syncingAcct ? t('bro.syncing') : t('bro.disconnected')}
@@ -121,7 +121,7 @@ export function BrokersPage() {
             {on ? <><Check className="h-4 w-4" /> {t('bro.connected')}</> : isBusy ? <><RefreshCw className="h-4 w-4 animate-spin" /> {t('bro.opening')}</> : <><Plug className="h-4 w-4" /> {t('bro.connect')}</>}
             </button>
             {on && acct && (
-              <div className="mt-2 grid grid-cols-2 gap-2">
+              <div className="mt-2 grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
                 <button
                   disabled={busy === `resync:${acct.id}`}
                   onClick={() => resync(acct)}

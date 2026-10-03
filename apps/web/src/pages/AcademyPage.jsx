@@ -403,12 +403,12 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 				)}
 			</div>
 
-			<div className="glass rounded-2xl p-5 sm:p-6">
+			<div className="glass mx-auto w-full max-w-4xl rounded-2xl p-5 sm:p-6">
 				<Markdown text={content.content} />
 			</div>
 
 			{content.quiz?.length > 0 && (
-				<div className="glass rounded-2xl p-5 sm:p-6">
+				<div className="glass mx-auto w-full max-w-4xl rounded-2xl p-5 sm:p-6">
 					<h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><Award className="h-5 w-5 text-[#d4af37]" /> {t('aca.quizTitle')}</h3>
 					{grade ? (
 						<div className="mt-4">
@@ -522,10 +522,10 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 				</div>
 			)}
 
-			<div className="mb-3 flex flex-wrap gap-2">
+			<div className="mb-3 flex gap-2 overflow-x-auto no-scrollbar pb-1 sm:flex-wrap">
 				{curriculum.courses.map((c, i) => (
 					<button key={c.courseKey} onClick={() => setCourseIndex(i)}
-						className={`min-h-[40px] rounded-full px-4 py-1.5 text-xs font-medium transition ${courseIndex === i ? 'bg-[#d4af37] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
+						className={`min-h-[40px] shrink-0 rounded-full px-4 py-1.5 text-xs font-medium transition ${courseIndex === i ? 'bg-[#d4af37] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
 						{c.title}
 					</button>
 				))}
@@ -607,9 +607,9 @@ function TopicExplorer({ onStartPath }) {
 						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6a665a]" />
 						<input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search pips, funding, NFP, wallets, SMC, carry…" className="min-h-[44px] w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] pl-9 pr-3 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none focus:border-[#d4af37]/50" />
 					</div>
-					<div className="flex flex-wrap gap-2">
+					<div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 sm:flex-wrap">
 						{TRACKS.map((tr) => (
-							<button key={tr.key} onClick={() => setTrack(tr.key)} className={`min-h-[44px] rounded-xl px-4 text-xs font-semibold transition ${track === tr.key ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>{tr.name}</button>
+							<button key={tr.key} onClick={() => setTrack(tr.key)} className={`min-h-[44px] shrink-0 rounded-xl px-4 text-xs font-semibold transition ${track === tr.key ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>{tr.name}</button>
 						))}
 					</div>
 				</div>
@@ -632,7 +632,7 @@ function TopicExplorer({ onStartPath }) {
 							</div>
 							<button onClick={() => onStartPath(g.pathKey)} className="rounded-xl border border-[#d4af37]/25 px-3.5 py-2 text-xs font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10">Start this path</button>
 						</div>
-						<div className="mt-3 grid gap-2 sm:grid-cols-2">
+						<div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 							{g.items.map((lp) => (
 								<button key={lp.lessonKey} onClick={() => onStartPath(g.pathKey)} className="group flex items-center gap-2.5 rounded-xl border border-[#d4af37]/10 p-3 text-left transition hover:border-[#d4af37]/40 hover:bg-[#d4af37]/[0.04]">
 									<span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#d4af37]/10 text-[#d4af37]"><BookOpen className="h-3.5 w-3.5" /></span>
@@ -922,11 +922,11 @@ export default function AcademyPage() {
 					)}
 				</div>
 				{/* Track filter */}
-				<div className="mt-4 flex flex-wrap items-center gap-2">
-					<Filter className="h-3.5 w-3.5 text-[#6a665a]" />
+				<div className="mt-4 flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:flex-wrap">
+					<Filter className="h-3.5 w-3.5 shrink-0 text-[#6a665a]" />
 					{[{ key: 'all', name: 'All' }, ...TRACKS.filter((x) => x.key !== 'all')].map((tr) => (
 						<button key={tr.key} onClick={() => setTrackFilter(tr.key)}
-							className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${trackFilter === tr.key ? 'bg-[#d4af37] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
+							className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${trackFilter === tr.key ? 'bg-[#d4af37] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
 							{tr.name}
 						</button>
 					))}
@@ -934,7 +934,7 @@ export default function AcademyPage() {
 			</div>
 
 			{/* Tabs */}
-			<div className="mb-5 flex flex-wrap gap-2">
+			<div className="mb-5 flex gap-2 overflow-x-auto no-scrollbar pb-1 sm:flex-wrap">
 				{[
 					{ id: 'learn', icon: GraduationCap, label: t('aca.tabLearn') },
 					{ id: 'topics', icon: Library, label: 'Topics' },
@@ -942,7 +942,7 @@ export default function AcademyPage() {
 					{ id: 'certificates', icon: Award, label: t('aca.tabCert') },
 				].map((tb) => (
 					<button key={tb.id} onClick={() => setTab(tb.id)}
-						className={`frost-tab flex min-h-[42px] items-center gap-2 rounded-xl px-4 text-sm font-semibold transition ${tab === tb.id ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
+						className={`frost-tab flex min-h-[42px] shrink-0 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition ${tab === tb.id ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
 						<tb.icon className="h-4 w-4" /> {tb.label}
 					</button>
 				))}
@@ -950,7 +950,7 @@ export default function AcademyPage() {
 
 			{tab === 'learn' && (
 				<>
-					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
 						{filteredPaths.map((p) => {
 							const isEnrolled = enrolled.some((e) => e.pathKey === p.key);
 							const curriculum = curriculumFor(p.key) || STATIC_CURRICULA[p.key];
@@ -1036,7 +1036,7 @@ export default function AcademyPage() {
 							))}
 						</div>
 					</div>
-					<div className="grid gap-4 md:grid-cols-2">
+					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 						{filteredWebinars.map((w) => {
 							const { live, start } = w.state;
 							const rsvped = rsvps.includes(w.id);

@@ -38,7 +38,7 @@ export default function CoachPage() {
             )}
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-relaxed ${m.role === 'user' ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'glass text-[#e9e7df]'}`}>
+                <div className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-relaxed lg:max-w-2xl xl:max-w-3xl ${m.role === 'user' ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'glass text-[#e9e7df]'}`}>
                   {m.content || (isStreaming && i === messages.length - 1 ? <span className="inline-block h-4 w-2 animate-pulse bg-[#d4af37]" /> : '')}
                   {m.images?.map((url, j) => <img key={j} src={url} alt="" className="mt-2 max-w-full rounded-lg" loading="lazy" />)}
                 </div>
