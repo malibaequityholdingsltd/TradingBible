@@ -79,21 +79,50 @@ const NAV_GROUPS = [
 
 function Brand({ homeTo, platformName, tagline }) {
   const { t } = useI18n();
-  const words = String(platformName || 'TradingBible').trim().split(/\s+/);
+  const words = String(platformName || 'TradingBible SI').trim().split(/\s+/);
   const first = words.slice(0, -1).join(' ');
   const last = words[words.length - 1] || '';
   return (
-    <Link to={homeTo} className="flex items-center gap-2.5">
-      <img src={TRADINGBIBLE_LOGO} alt={`${platformName} logo`} className="h-9 w-9 rounded-lg object-contain" />
-      <div className="leading-tight">
-        <div className="font-semibold tracking-tight text-[#f0ecdd]">{first ? `${first} ` : ''}<span className="gold-text">{last}</span></div>
-        <div className="max-w-[140px] truncate text-[10px] uppercase tracking-[0.2em] text-[#8a8577]">{tagline || t('nav.terminal')}</div>
-      </div>
+    <Link to={homeTo} className="group flex items-center gap-3">
+      <span className="relative">
+        <img src={TRADINGBIBLE_LOGO} alt={`${platformName} logo`} className="h-10 w-10 rounded-2xl object-contain ring-1 ring-[#d4af37]/30 transition group-hover:ring-[#d4af37]/60" />
+        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-[#0a0a0f]" />
+      </span>
+      <span className="leading-tight">
+        <span className="block font-bold tracking-tight text-[#f0ecdd]">{first ? `${first} ` : ''}<span className="gold-text">{last}</span></span>
+        <span className="block max-w-[150px] truncate text-[10px] uppercase tracking-[0.22em] text-[#8a8577]">{tagline || t('nav.terminal')}</span>
+      </span>
     </Link>
   );
 }
 
-export default function AppLayout({ children, title, trialDays: trialDaysProp = 3 }) {
+function NavItem({ to, labelKey, icon: Icon, end, locked, t, onNav }) {
+  const inner = (
+    <>
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/[0.04] text-[#8a8577] transition group-hover:text-[#d4af37]">
+        <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+      </span>
+      <span className="min-w-0 flex-1 truncate text-left text-[13px] font-medium">{t(labelKey)}</span>
+      {locked && <Crown className="h-3.5 w-3.5 shrink-0 text-[#d4af37]" />}
+    </>
+  );
+  const cls = 'group flex min-h-[48px] w-full items-center gap-3 rounded-2xl px-3 py-2 transition-all';
+  if (locked) {
+    return (
+      <button onClick={onNav} className={`${cls} text-[#8a8577]/70 hover:bg-white/[0.04] hover:text-[#e9e7df]`}>
+        {inner}
+      </button>
+    );
+  }
+  return (
+    <NavLink to={to} end={end} onClick={onNav}
+      className={({ isActive }) => `${cls} ${isActive ? 'bg-gradient-to-r from-[#d4af37]/20 to-[#d4af37]/5 text-[#f0ecdd] ring-1 ring-inset ring-[#d4af37]/30' : 'text-[#8a8577] hover:bg-white/[0.04] hover:text-[#e9e7df]'}`}>
+      {inner}
+    </NavLink>
+  );
+}
+
+export default function AppLayout({ children, title }) {
   const [open, setOpen] = useState(false);
   const [tutorial, setTutorial] = useState(false);
   const nav = useNavigate();
@@ -101,116 +130,98 @@ export default function AppLayout({ children, title, trialDays: trialDaysProp = 
   const { unseen } = useNotifications();
   const { t } = useI18n();
   const { settings, features } = usePlatformSettings();
-  const trialDays = Number(settings.trialDays) || Number(trialDaysProp) || 3;
   const initial = (user?.username || user?.email || 'A').charAt(0).toUpperCase();
   const signOut = () => { logout(); nav('/'); };
 
   const isAdmin = user?.role === 'admin';
   const isSubscriber = isAdmin || ['pro', 'elite', 'professional'].includes((user?.plan || '').toLowerCase());
   const canSeeSignals = isAdmin || features.signals !== false;
-  const trialDaysRemaining = useMemo(() => {
-    if (isSubscriber || isAdmin || !user) return 0;
-    const startRaw = user.created || user.created_at;
-    const trialEndRaw = user.trialEndsAt || user.trial_ends_at;
-    const trialEnd = trialEndRaw
-      ? new Date(trialEndRaw)
-      : (startRaw ? new Date(new Date(startRaw).getTime() + Number(trialDays || 3) * 24 * 60 * 60 * 1000) : null);
-    if (!trialEnd || Number.isNaN(trialEnd.getTime())) return Number(trialDays || 3);
-    const msLeft = trialEnd.getTime() - Date.now();
-    return Math.max(0, Math.ceil(msLeft / (24 * 60 * 60 * 1000)));
-  }, [isSubscriber, isAdmin, user, trialDays]);
-const avatar = avatarUrl(user);
-const homeTo = homeRouteForUser(user);
-const pluralS = (n) => (n === 1 ? '' : 's');
+  const avatar = avatarUrl(user);
+  const homeTo = homeRouteForUser(user);
 
   useEffect(() => {
     if (user && user.tutorialDone === false) setTutorial(true);
   }, [user]);
 
   const completeTutorial = () => { updateProfile({ tutorialDone: true }).catch(() => {}); };
+  const closeDrawer = () => setOpen(false);
+  const goPricing = () => { setOpen(false); nav('/pricing'); };
 
   const SideContent = (
     <div className="flex h-full flex-col">
-      <div className="px-5 py-6"><Brand homeTo={homeTo} platformName={settings.platformName} tagline={settings.tagline} /></div>
-      <nav className="flex-1 space-y-4 overflow-y-auto px-3 pb-4">
-        {(NAV_GROUPS).map((group) => (
-          <div key={group.labelKey} className="space-y-1">
-            <div className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#5f5b50]">{t(group.labelKey)}</div>
-            {group.items
-              .filter((it) => !it.hidden)
-              .filter((it) => !it.adminOnly || isAdmin)
-              .filter((it) => {
-                const feature = featureForRoute(it.to);
-                return !feature || features[feature] !== false || isAdmin;
-              })
-              .map((it) => {
-                const { to, labelKey, icon: Icon, end } = it;
-                const locked = it.requiresSubscriber && !isSubscriber;
-                if (locked) {
-                  return (
-                    <button key={to} onClick={() => { setOpen(false); nav('/pricing'); }}
-                      className="nav-button nav-shell-link flex min-h-[44px] w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-[#8a8577]/70 transition-all hover:text-[#e9e7df]">
-                      <span className="nav-icon-frame grid h-8 w-8 place-items-center rounded-lg bg-white/[0.03] text-[#8a8577]/70">
-                        <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
-                      </span>
-                      <span className="min-w-0 flex-1 truncate text-left">{t(labelKey)}</span>
-                      <Crown className="h-3.5 w-3.5 shrink-0 text-[#d4af37]" />
-                    </button>
-                  );
-                }
-                return (
-                  <NavLink key={to} to={to} end={end} onClick={() => setOpen(false)}
-                    className={({ isActive }) => `nav-button nav-shell-link flex min-h-[44px] items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition-all ${isActive ? 'nav-shell-link--active text-[#f0ecdd] gold-glow' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
-                    <span className="nav-icon-frame grid h-8 w-8 place-items-center rounded-lg bg-white/[0.03] text-[#8a8577]">
-                      <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
-                    </span>
-                    <span className="min-w-0 truncate">{t(labelKey)}</span>
-                  </NavLink>
-                );
-              })}
-          </div>
-        ))}
+      <div className="px-5 pb-4 pt-6"><Brand homeTo={homeTo} platformName={settings.platformName} tagline={settings.tagline} /></div>
+      <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-4">
+        {NAV_GROUPS.map((group) => {
+          const items = group.items
+            .filter((it) => !it.hidden)
+            .filter((it) => !it.adminOnly || isAdmin)
+            .filter((it) => {
+              const feature = featureForRoute(it.to);
+              return !feature || features[feature] !== false || isAdmin;
+            });
+          if (!items.length) return null;
+          return (
+            <div key={group.labelKey} className="space-y-1">
+              <div className="px-3 pb-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-[#5f5b50]">{t(group.labelKey)}</div>
+              {items.map((it) => (
+                <NavItem
+                  key={it.to}
+                  to={it.to}
+                  labelKey={it.labelKey}
+                  icon={it.icon}
+                  end={it.end}
+                  locked={it.requiresSubscriber && !isSubscriber}
+                  t={t}
+                  onNav={it.requiresSubscriber && !isSubscriber ? goPricing : closeDrawer}
+                />
+              ))}
+            </div>
+          );
+        })}
       </nav>
       {!isSubscriber && !isAdmin && (
-      <div className="m-3 rounded-xl glass p-4">
-        <div className="flex items-center gap-2 text-[#d4af37]"><Crown className="h-4 w-4" /><span className="text-xs font-semibold">{t('app.upgrade')}</span></div>
-        <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{t('bill.noPlanYet', null, 'Card required — subscribe to unlock the full terminal. No free trial.')}</p>
-        <button onClick={() => nav('/app/billing')} className="mt-3 min-h-[44px] w-full rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-xs font-semibold text-[#0a0a0f] transition hover:opacity-90">{t('app.upgrade')}</button>
-      </div>
+        <div className="m-3 rounded-2xl border border-[#d4af37]/25 bg-gradient-to-b from-[#d4af37]/[0.08] to-transparent p-4">
+          <div className="flex items-center gap-2 text-[#d4af37]"><Crown className="h-4 w-4" /><span className="text-xs font-bold">{t('app.upgrade')}</span></div>
+          <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{t('bill.noPlanYet', null, 'Card required — subscribe to unlock the full terminal. No free trial.')}</p>
+          <button onClick={() => nav('/app/billing')} className="mt-3 min-h-[44px] w-full rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-xs font-bold text-[#0a0a0f] transition hover:opacity-90">{t('app.upgrade')}</button>
+        </div>
       )}
-      <div className="border-t border-[#d4af37]/12 px-3 py-3">
-        <button onClick={signOut} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[#8a8577] transition hover:bg-white/5 hover:text-[#e9e7df]"><LogOut className="h-[18px] w-[18px]" strokeWidth={1.9} />{t('app.signout')}</button>
+      <div className="border-t border-white/5 px-3 py-3">
+        <button onClick={signOut} className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[#8a8577] transition hover:bg-white/5 hover:text-[#e9e7df]"><LogOut className="h-[18px] w-[18px]" strokeWidth={1.9} />{t('app.signout')}</button>
       </div>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-transparent pt-[var(--header-h)]">
-      <aside className="fixed left-0 top-[var(--header-h)] bottom-0 z-30 hidden w-64 flex-col shell-panel lg:block">{SideContent}</aside>
-      {open && <div className="fixed inset-x-0 top-[var(--header-h)] bottom-0 z-40 bg-black/70 lg:hidden" onClick={() => setOpen(false)} />}
-      <aside className={`fixed left-0 top-[var(--header-h)] bottom-0 z-40 w-64 flex-col shell-panel transition-transform lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}>{SideContent}</aside>
-      <div className="lg:pl-64">
-        <header className="sticky top-[var(--header-h)] z-20 flex items-center justify-between border-b border-[#d4af37]/12 shell-panel-soft px-3 py-3 sm:px-5 sm:py-4">
-          <div className="flex items-center gap-3">
-            <button className="grid h-11 w-11 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37] lg:hidden" aria-label={t('app.openNav')} onClick={() => setOpen(true)}><Menu className="h-5 w-5" /></button>
-            <h1 className="min-w-0 truncate text-base font-semibold text-[#f0ecdd] sm:text-xl">{title}</h1>
+      <aside className="fixed bottom-0 left-0 top-[var(--header-h)] z-30 hidden w-[268px] flex-col border-r border-white/5 bg-[#0a0a0f]/80 backdrop-blur-xl lg:block">{SideContent}</aside>
+      {open && <div className="fixed inset-x-0 bottom-0 top-[var(--header-h)] z-40 bg-black/70 lg:hidden" onClick={() => setOpen(false)} />}
+      <aside className={`fixed bottom-0 left-0 top-[var(--header-h)] z-40 flex w-[268px] flex-col border-r border-white/5 bg-[#0a0a0f]/95 backdrop-blur-xl transition-transform lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}>{SideContent}</aside>
+      <div className="lg:pl-[268px]">
+        <header className="sticky top-[var(--header-h)] z-20 flex items-center justify-between border-b border-white/5 bg-[#0a0a0f]/70 px-3 py-3 backdrop-blur-xl sm:px-5 sm:py-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <button className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[#d4af37]/25 text-[#d4af37] lg:hidden" aria-label={t('app.openNav')} onClick={() => setOpen(true)}><Menu className="h-5 w-5" /></button>
+            <div className="min-w-0">
+              <h1 className="truncate text-base font-bold text-[#f0ecdd] sm:text-xl">{title}</h1>
+              <p className="hidden truncate text-[11px] text-[#6a665a] sm:block">{user?.username || user?.email}</p>
+            </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSwitcher />
             {canSeeSignals && (
-              <button onClick={() => nav('/app/alerts')} className="relative grid h-11 w-11 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60" title={t('app.alerts')}>
+              <button onClick={() => nav('/app/alerts')} className="relative grid h-11 w-11 place-items-center rounded-2xl border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60" title={t('app.alerts')}>
                 <Bell className="h-4 w-4" />
                 {unseen > 0 && <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">{unseen > 9 ? '9+' : unseen}</span>}
               </button>
             )}
-            <button onClick={() => setTutorial(true)} className="flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#d4af37]/25 px-3 py-1 text-xs text-[#d4af37] transition hover:border-[#d4af37]/60"><HelpCircle className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t('app.help')}</span></button>
+            <button onClick={() => setTutorial(true)} className="hidden min-h-[44px] items-center gap-1.5 rounded-full border border-[#d4af37]/25 px-3 py-1 text-xs text-[#d4af37] transition hover:border-[#d4af37]/60 sm:flex"><HelpCircle className="h-3.5 w-3.5" /> <span className="hidden md:inline">{t('app.help')}</span></button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 rounded-full border border-[#d4af37]/25 bg-[#0f0f14]/70 px-1.5 py-1 text-left transition hover:border-[#d4af37]/60">
+                <button className="flex items-center gap-2 rounded-full border border-[#d4af37]/25 bg-[#0f0f14]/70 py-1 pl-1 pr-2 text-left transition hover:border-[#d4af37]/60">
                   <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] text-sm font-bold text-[#0a0a0f]">
                     {avatar ? <img src={avatar} alt="avatar" className="h-full w-full object-cover" /> : initial}
                   </span>
-                  <ChevronDown className="mr-0.5 h-3.5 w-3.5 text-[#d4af37]" />
+                  <ChevronDown className="h-3.5 w-3.5 text-[#d4af37]" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" sideOffset={8} className="w-56 border-[#d4af37]/15 bg-[#111113] text-[#e9e7df]">
@@ -238,11 +249,11 @@ const pluralS = (n) => (n === 1 ? '' : 's');
             </DropdownMenu>
           </div>
         </header>
-        <main className="p-4 sm:p-5 lg:p-7">
+        <main className="mx-auto w-full max-w-[110rem] p-4 sm:p-5 lg:p-7">
           {isAdmin && isAdminPreview() && (
-            <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-[#d4af37]/30 bg-[#d4af37]/[0.07] px-4 py-2.5">
+            <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/[0.07] px-4 py-2.5">
               <span className="text-xs text-[#d4af37]">{t('misc.adminPreview')}</span>
-              <button onClick={() => { exitAdminPreview(); nav('/admin'); }} className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#d4af37]/30 px-3 py-1.5 text-xs font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10"><LogOut className="h-3.5 w-3.5" /> {t('misc.exitAdmin')}</button>
+              <button onClick={() => { exitAdminPreview(); nav('/admin'); }} className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#d4af37]/30 px-3 py-1.5 text-xs font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10"><LogOut className="h-3.5 w-3.5" /> {t('misc.exitAdmin')}</button>
             </div>
           )}
           {children}
