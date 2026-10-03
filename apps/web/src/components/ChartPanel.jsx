@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
 import { useCandles } from '@/hooks/useCandles';
-import { SYMBOL_GROUPS } from '@/lib/symbols';
+import SymbolSearchPicker from '@/components/SymbolSearchPicker';
 import AdvancedChart from '@/components/AdvancedChart';
 import IndicatorPicker from '@/components/IndicatorPicker';
 import { useI18n } from '@/lib/i18n';
@@ -18,7 +17,6 @@ export default function ChartPanel({
   const [indicators, setIndicators] = useState(initialIndicators);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
-  const [symOpen, setSymOpen] = useState(false);
 
   const { candles, status } = useCandles(symbol, timeframe, { limit: 200 });
 
@@ -33,29 +31,7 @@ export default function ChartPanel({
   );
 
   const symbolPicker = (
-    <div className="relative">
-      <button onClick={() => setSymOpen((o) => !o)} className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2.5 py-1 text-xs font-medium text-[#e9e7df]">
-        {symbol} <ChevronDown className="h-3 w-3" />
-      </button>
-      {symOpen && (
-        <>
-          <div className="fixed inset-0 z-20" onClick={() => setSymOpen(false)} />
-          <div className="absolute left-0 z-30 mt-1 max-h-72 w-56 overflow-y-auto rounded-xl border border-[#d4af37]/15 bg-[#0d0d12] p-2 no-scrollbar">
-            {SYMBOL_GROUPS.map((g) => (
-              <div key={g.label} className="mb-1">
-                <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#5f5b50]">{g.label}</div>
-                {g.symbols.map((s) => (
-                  <button key={s.symbol} onClick={() => { setSymbol(s.symbol); setSymOpen(false); }}
-                    className={`flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-xs transition hover:bg-white/5 ${symbol === s.symbol ? 'text-[#d4af37]' : 'text-[#c9c4b4]'}`}>
-                    <span className="font-mono">{s.symbol}</span><span className="text-[10px] text-[#8a8577]">{s.name}</span>
-                  </button>
-                ))}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
+    <SymbolSearchPicker value={symbol} onChange={setSymbol} />
   );
 
   return (
