@@ -52,7 +52,7 @@ html.light #app-bg {
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  filter: brightness(0.9) saturate(0.92) contrast(1.02);
+  filter: brightness(1.0) saturate(1.05) contrast(1.04);
 }
 @media (min-width: 768px) {
   html.light #app-bg {
@@ -63,7 +63,7 @@ html.light #app-bg {
   }
 }
 html.light #app-bg::after {
-  background: radial-gradient(120% 90% at 50% 0%, rgba(242,239,231,0.28) 0%, rgba(242,239,231,0.55) 55%, rgba(238,234,223,0.78) 100%);
+  background: radial-gradient(120% 90% at 50% 0%, rgba(242,239,231,0.10) 0%, rgba(242,239,231,0.30) 55%, rgba(238,234,223,0.55) 100%);
 }
 
 /* Mobile optimization */
@@ -532,7 +532,7 @@ html.light .bg-white\/12 {
   background-color: #eeeade !important;
 }
 html.light .auth-shell {
-  background: linear-gradient(180deg, #f2efe7 0%, #f8f5ec 100%) !important;
+  background: transparent !important;
 }
 html.light .auth-card {
   background: rgba(255,254,249,0.9) !important;
