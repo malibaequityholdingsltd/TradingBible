@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Award, BookOpen, FileCheck2, GraduationCap, Plus, Trophy } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import pb from '@/lib/pocketbaseClient';
-import { getDunsStatus, verifyDuns } from '@/lib/duns';
+import { getDunsStatus, verifyDuns, matchDuns } from '@/lib/duns';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useI18n } from '@/lib/i18n';
@@ -23,6 +23,7 @@ export default function CompanyDashboardPage() {
   const [duns, setDuns] = useState('');
   const [dunsStatus, setDunsStatus] = useState('unverified');
   const [dunsBusy, setDunsBusy] = useState(false);
+  const [dunsProfile, setDunsProfile] = useState(null);
   const [assessment, setAssessment] = useState({ title: '', type: 'quiz' });
 
   const load = async () => {
@@ -50,6 +51,7 @@ export default function CompanyDashboardPage() {
       .then((s) => {
         if (s?.dunsNumber) setDuns(s.dunsNumber);
         if (s?.dunsStatus) setDunsStatus(s.dunsStatus);
+        if (s?.profile) setDunsProfile(s.profile);
       })
       .catch(() => { /* API unavailable — leave defaults */ });
   }, []);
@@ -70,6 +72,10 @@ export default function CompanyDashboardPage() {
       const res = await verifyDuns(duns);
       const next = res?.dunsStatus || 'pending';
       setDunsStatus(next);
+      try {
+        const s = await getDunsStatus();
+        if (s?.profile) setDunsProfile(s.profile);
+      } catch { /* keep status only */ }
       toast({ title: next === 'verified' ? t('duns.verified', null, 'DUNS verified') : t('duns.pending', null, 'DUNS submitted — pending live verification') });
     } catch (err) {
       toast({ variant: 'destructive', title: t('duns.failed', null, 'DUNS verification failed'), description: err?.message || t('sch.tTryAgain') });
@@ -78,6 +84,24 @@ export default function CompanyDashboardPage() {
     }
   };
 
+  const findDunsNumber = async () => {
+    if (dunsBusy || !schoolName.trim()) return;
+    setDunsBusy(true);
+    try {
+      const res = await matchDuns({ name: schoolName.trim() });
+      const top = res?.candidates?.[0];
+      if (top?.duns) {
+        setDuns(top.duns);
+        toast({ title: t('duns.found', null, 'DUNS found — press Verify to confirm') });
+      } else {
+        toast({ title: t('duns.noneFound', null, 'No DUNS match yet — enter it manually when yours arrives') });
+      }
+    } catch (err) {
+      toast({ variant: 'destructive', title: t('duns.failed', null, 'DUNS verification failed'), description: err?.message || t('sch.tTryAgain') });
+    } finally {
+      setDunsBusy(false);
+    }
+  };
   const addClassroom = async () => {
     if (!className.trim()) return;
     try {
@@ -148,9 +172,22 @@ export default function CompanyDashboardPage() {
           <div className="mt-3 flex gap-2">
             <input value={duns} onChange={(e) => setDuns(e.target.value.replace(/\D/g, '').slice(0, 9))} placeholder={t('duns.number', null, 'DUNS number (9 digits)')} inputMode="numeric" className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
             <button onClick={verifyDunsNumber} disabled={dunsBusy} className="inline-flex items-center gap-1 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37] disabled:opacity-60">{dunsStatus === 'verified' ? t('duns.verified', null, 'Verified') : t('duns.verify', null, 'Verify')}</button>
+            <button onClick={findDunsNumber} disabled={dunsBusy} title={t('duns.find', null, 'Find my DUNS')} className="inline-flex items-center gap-1 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37] disabled:opacity-60">{t('duns.find', null, 'Find')}</button>
           </div>
           {dunsStatus !== 'unverified' && (
             <div className="mt-2 text-xs text-[#8a8577]">{t('duns.status', null, 'DUNS status')}: <span className={dunsStatus === 'verified' ? 'text-emerald-400' : 'text-[#d4af37]'}>{dunsStatus}</span></div>
+          )}
+          {dunsProfile && (
+            <div className="mt-3 space-y-2 text-sm text-[#c9c4b4]">
+              <div className="text-xs uppercase tracking-wider text-[#8a8577]">{t('duns.profile', null, 'Business profile')}{dunsProfile.sandbox ? ` · ${t('duns.sandboxTag', null, 'test data')}` : ''}</div>
+              {dunsProfile.primaryName && <div className="rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">{dunsProfile.primaryName}</div>}
+              {(dunsProfile.city || dunsProfile.country) && <div className="rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">{[dunsProfile.city, dunsProfile.country].filter(Boolean).join(', ')}</div>}
+              {dunsProfile.employeeCount != null && <div className="rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">{t('duns.employees', null, 'Employees')}: {dunsProfile.employeeCount}</div>}
+              {dunsProfile.annualRevenue != null && <div className="rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">{t('duns.revenue', null, 'Revenue')}: {dunsProfile.annualRevenue}</div>}
+              {dunsProfile.industry && <div className="rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">{t('duns.industry', null, 'Industry')}: {dunsProfile.industry}</div>}
+              {dunsProfile.principals?.length > 0 && <div className="rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">{t('duns.principals', null, 'Principals')}: {dunsProfile.principals.map((p) => p.name).join(', ')}</div>}
+              {(dunsProfile.failureScore != null || dunsProfile.delinquencyScore != null || dunsProfile.paydex != null) && <div className="rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2">{t('duns.risk', null, 'Risk')}: {[dunsProfile.failureScore != null && `failure ${dunsProfile.failureScore}`, dunsProfile.delinquencyScore != null && `delinquency ${dunsProfile.delinquencyScore}`, dunsProfile.paydex != null && `paydex ${dunsProfile.paydex}`].filter(Boolean).join(' · ')}</div>}
+            </div>
           )}
         </div>
 

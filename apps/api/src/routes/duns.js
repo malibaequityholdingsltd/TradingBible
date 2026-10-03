@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import logger from '../utils/logger.js';
 import { supabase, getSupabaseUser } from '../utils/supabaseClient.js';
-import { normalizeDuns, isValidDuns, lookupCompany } from '../api/duns.js';
+import { normalizeDuns, isValidDuns, lookupCompany, matchDuns } from '../api/duns.js';
 
 const router = Router();
 
@@ -13,12 +13,26 @@ async function getAuthedUser(req) {
 }
 
 function publicState(row) {
+	const profile = row?.dunsProfile || row?.dunsprofile || null;
 	return {
 		dunsNumber: row?.dunsNumber || row?.dunsnumber || null,
 		dunsStatus: row?.dunsStatus || row?.dunsstatus || 'unverified',
 		dunsVerifiedAt: row?.dunsVerifiedAt || row?.dunsverifiedat || null,
-		companyName: row?.dunsProfile?.primaryName || row?.dunsprofile?.primaryName || null,
-		sandbox: Boolean(row?.dunsProfile?.sandbox ?? row?.dunsprofile?.sandbox),
+		companyName: profile?.primaryName || null,
+		sandbox: Boolean(profile?.sandbox),
+		profile: profile ? {
+			primaryName: profile.primaryName || null,
+			city: profile.address?.city || null,
+			country: profile.address?.country || null,
+			employeeCount: profile.employeeCount ?? null,
+			annualRevenue: profile.annualRevenue ?? null,
+			industry: profile.industry || null,
+			principals: Array.isArray(profile.principals) ? profile.principals.slice(0, 5) : [],
+			failureScore: profile.failureScore ?? null,
+			delinquencyScore: profile.delinquencyScore ?? null,
+			paydex: profile.paydex ?? null,
+			sandbox: Boolean(profile.sandbox),
+		} : null,
 	};
 }
 
@@ -68,6 +82,20 @@ router.get('/company', async (req, res) => {
 	} catch (err) {
 		logger.error('duns company failed', String(err));
 		res.status(500).json({ error: 'lookup failed' });
+	}
+});
+
+// ── GET /duns/match?name=&city=&country= — resolve DUNS from company name
+router.get('/match', async (req, res) => {
+	const user = await getAuthedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	try {
+		const result = await matchDuns({ name: req.query?.name, city: req.query?.city, country: req.query?.country });
+		res.json(result);
+	} catch (err) {
+		if (String(err?.message) === 'match_name_required') return res.status(400).json({ error: 'match_name_required' });
+		logger.error('duns match failed', String(err));
+		res.status(500).json({ error: 'match failed' });
 	}
 });
 
