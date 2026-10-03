@@ -1,6 +1,18 @@
 import { Router } from 'express';
+import { createHash, randomBytes } from 'crypto';
+import { readFileSync } from 'fs';
+import Stripe from 'stripe';
+import { createTransport } from 'nodemailer';
+import logger from '../utils/logger.js';
 import { supabase, getSupabaseUser, supabaseRest } from '../utils/supabaseClient.js';
 import { supabaseAuth } from '../middleware/supabase-auth.js';
+
+let API_VERSION = '1.1.0';
+try {
+	API_VERSION = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).version || API_VERSION;
+} catch { /* keep default */ }
+
+const BOOT_TS = Date.now();
 
 const router = Router();
 
@@ -280,6 +292,265 @@ router.delete('/content/:prefix/:id', supabaseAuth, async (req, res, next) => {
 	try {
 		await assertAdmin(req);
 		await supabaseRest(`/rest/v1/admin_integrations?id=eq.${encodeURIComponent(req.params.id)}`, { method: 'DELETE' });
+		res.status(204).end();
+	} catch (err) { next(err); }
+});
+
+// ── System health ────────────────────────────────────────────────
+// Live service checks for the admin dashboard (replaces hardcoded ok).
+router.get('/health', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const checks = {
+			supabase: false,
+			smtp: Boolean(process.env.SMTP_HOST && process.env.SMTP_USER),
+			stripe: Boolean(process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SANDBOX_SECRET_KEY),
+			paddle: Boolean(process.env.PADDLE_LIVE_API_KEY || process.env.PADDLE_SANDBOX_API_KEY),
+			dnb: Boolean(process.env.DNB_CLIENT_ID && process.env.DNB_CLIENT_SECRET),
+		};
+		try {
+			const ping = await supabaseRest('/auth/v1/admin/users', { query: { per_page: 1 } });
+			checks.supabase = ping !== undefined;
+		} catch { checks.supabase = false; }
+		res.json({
+			status: checks.supabase ? 'ok' : 'degraded',
+			version: API_VERSION,
+			uptimeSec: Math.floor((Date.now() - BOOT_TS) / 1000),
+			checks,
+		});
+	} catch (err) { next(err); }
+});
+
+// ── Recent API logs (in-memory ring buffer) ──────────────────────
+router.get('/logs', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		res.json(logger.recent(req.query?.limit));
+	} catch (err) { next(err); }
+});
+
+// ── Billing summary from live Stripe data ────────────────────────
+function stripeClient() {
+	const key = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SANDBOX_SECRET_KEY || '';
+	if (!key) return null;
+	return new Stripe(key);
+}
+
+const BILLING_PRICE_MAP = () => ({
+	pro: process.env.STRIPE_PRICE_PRO || '',
+	elite: process.env.STRIPE_PRICE_ELITE || '',
+	professional: process.env.STRIPE_PRICE_PROFESSIONAL || '',
+});
+
+router.get('/billing/summary', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const stripe = stripeClient();
+		if (!stripe) return res.json({ configured: false });
+		const priceToPlan = {};
+		for (const [plan, price] of Object.entries(BILLING_PRICE_MAP())) if (price) priceToPlan[price] = plan;
+		let mrrCents = 0;
+		let activeCount = 0;
+		const byPlan = {};
+		let startingAfter;
+		for (let page = 0; page < 10; page++) {
+			const list = await stripe.subscriptions.list({ status: 'active', limit: 100, ...(startingAfter ? { starting_after: startingAfter } : {}) });
+			for (const sub of list.data || []) {
+				activeCount++;
+				for (const item of sub.items?.data || []) {
+					const plan = priceToPlan[item.price?.id] || 'other';
+					const amt = (item.price?.unit_amount || 0) * (item.quantity || 1);
+					const monthly = item.price?.recurring?.interval === 'year' ? Math.round(amt / 12) : amt;
+					mrrCents += monthly;
+					byPlan[plan] = (byPlan[plan] || 0) + monthly;
+				}
+			}
+			if (!list.has_more) break;
+			startingAfter = list.data?.[list.data.length - 1]?.id;
+		}
+		res.json({ configured: true, mrr: mrrCents / 100, activeCount, byPlanCents: byPlan, currency: 'usd' });
+	} catch (err) { next(err); }
+});
+
+// Recent Stripe payments for a user (for admin refunds).
+router.get('/billing/payments', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const userId = String(req.query?.userId || '').trim();
+		if (!userId) return res.status(400).json({ error: 'userId required' });
+		const stripe = stripeClient();
+		if (!stripe) return res.status(503).json({ error: 'stripe not configured' });
+		const profile = await supabase.getUserById(userId);
+		const customerId = profile?.stripeCustomerId;
+		if (!customerId) return res.json({ payments: [] });
+		const list = await stripe.paymentIntents.list({ customer: customerId, limit: 10 });
+		res.json({
+			payments: (list.data || []).map((pi) => ({
+				id: pi.id, amount: (pi.amount || 0) / 100, currency: pi.currency,
+				status: pi.status, created: pi.created ? new Date(pi.created * 1000).toISOString() : null,
+			})),
+		});
+	} catch (err) { next(err); }
+});
+
+// Cancel a user's active Stripe subscriptions at period end.
+router.post('/billing/cancel', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const userId = String(req.body?.userId || '').trim();
+		if (!userId) return res.status(400).json({ error: 'userId required' });
+		const stripe = stripeClient();
+		if (!stripe) return res.status(503).json({ error: 'stripe not configured' });
+		const profile = await supabase.getUserById(userId);
+		const customerId = profile?.stripeCustomerId;
+		if (!customerId) return res.status(404).json({ error: 'no stripe customer for user' });
+		const list = await stripe.subscriptions.list({ customer: customerId, status: 'active', limit: 20 });
+		const canceled = [];
+		for (const sub of list.data || []) {
+			if (!sub.cancel_at_period_end) await stripe.subscriptions.update(sub.id, { cancel_at_period_end: true });
+			canceled.push(sub.id);
+		}
+		res.json({ canceled });
+	} catch (err) { next(err); }
+});
+
+// Refund a Stripe payment intent / charge.
+router.post('/billing/refund', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const pi = String(req.body?.paymentIntentId || '').trim();
+		if (!pi) return res.status(400).json({ error: 'paymentIntentId required' });
+		const stripe = stripeClient();
+		if (!stripe) return res.status(503).json({ error: 'stripe not configured' });
+		const amount = Number(req.body?.amount);
+		const refund = await stripe.refunds.create({
+			payment_intent: pi,
+			...(Number.isFinite(amount) && amount > 0 ? { amount: Math.round(amount * 100) } : {}),
+		});
+		res.json({ id: refund.id, amount: (refund.amount || 0) / 100, status: refund.status });
+	} catch (err) { next(err); }
+});
+
+// ── Real integration connectivity tests ──────────────────────────
+router.post('/integrations/test', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const kind = String(req.body?.kind || '').toLowerCase();
+		if (kind === 'smtp') {
+			const host = String(req.body?.host || '').trim();
+			const port = Number(req.body?.port) || 587;
+			if (!host) return res.status(400).json({ ok: false, error: 'host required' });
+			const tx = createTransport({
+				host, port, secure: port === 465,
+				auth: req.body?.user ? { user: String(req.body.user), pass: String(req.body?.pass || '') } : undefined,
+				connectionTimeout: 8000,
+			});
+			await tx.verify();
+			return res.json({ ok: true, detail: 'SMTP handshake verified' });
+		}
+		if (kind === 'url') {
+			const url = String(req.body?.url || '').trim();
+			if (!/^https?:\/\//i.test(url)) return res.status(400).json({ ok: false, error: 'http(s) url required' });
+			const ctrl = new AbortController();
+			const t = setTimeout(() => ctrl.abort(), 8000);
+			try {
+				const r = await fetch(url, { method: 'GET', signal: ctrl.signal });
+				return res.json({ ok: r.ok, detail: `HTTP ${r.status}` });
+			} finally { clearTimeout(t); }
+		}
+		if (kind === 'supabase') {
+			const url = String(req.body?.url || '').replace(/\/+$/, '');
+			const key = String(req.body?.key || '');
+			if (!url || !key) return res.status(400).json({ ok: false, error: 'url + key required' });
+			const r = await fetch(`${url}/auth/v1/health`, { headers: { apikey: key } });
+			return res.json({ ok: r.ok, detail: `Auth health HTTP ${r.status}` });
+		}
+		if (kind === 'stripe') {
+			const key = String(req.body?.key || '');
+			if (!key) return res.status(400).json({ ok: false, error: 'secret key required' });
+			const s = new Stripe(key);
+			const bal = await s.balance.retrieve();
+			return res.json({ ok: true, detail: `balance reachable (${(bal?.available?.[0]?.currency || '').toUpperCase()})` });
+		}
+		return res.status(400).json({ ok: false, error: 'unknown kind (smtp|url|supabase|stripe)' });
+	} catch (err) {
+		return res.json({ ok: false, error: String(err?.message || err).slice(0, 200) });
+	}
+});
+
+// ── Server-side API keys (sha256, verifiable, revocable) ─────────
+const sha256 = (v) => createHash('sha256').update(String(v)).digest('hex');
+
+router.get('/api-keys', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const rows = await supabaseRest('/rest/v1/admin_api_keys', { query: { select: '*', order: 'created.desc', limit: 500 } });
+		res.json((rows || []).map((r) => ({
+			id: r.id, name: r.name, enabled: r.enabled !== false,
+			created: r.created, lastUsedAt: r.lastUsedAt || r.lastusedat || null,
+			usageCount: r.usageCount ?? r.usagecount ?? 0,
+			permissions: r.permissions || [], assignedTo: r.assignedTo || r.assignedto || null,
+			expiresAt: r.expiresAt || r.expiresat || null,
+			hint: String(r.keyhash || '').slice(0, 6),
+		})));
+	} catch (err) { next(err); }
+});
+
+router.post('/api-keys', supabaseAuth, async (req, res, next) => {
+	try {
+		const admin = await assertAdmin(req);
+		const name = String(req.body?.name || 'Untitled key').trim().slice(0, 60);
+		const permissions = Array.isArray(req.body?.permissions) ? req.body.permissions.map(String).slice(0, 20) : [];
+		const assignedTo = String(req.body?.assignedTo || '').trim().slice(0, 120) || null;
+		const expiresAt = req.body?.expiresAt ? new Date(String(req.body.expiresAt)).toISOString() : null;
+		const plain = `tb_live_${randomBytes(24).toString('hex')}`;
+		const created = await supabaseRest('/rest/v1/admin_api_keys', {
+			method: 'POST',
+			body: { owner: admin.id, name, keyhash: sha256(plain), enabled: true, permissions, assignedTo, expiresAt, usageCount: 0 },
+			prefer: 'return=representation', query: { select: '*' },
+		});
+		const row = created?.[0] || {};
+		res.status(201).json({ id: row.id, name, key: plain, hint: sha256(plain).slice(0, 6) });
+	} catch (err) { next(err); }
+});
+
+router.post('/api-keys/verify', async (req, res) => {
+	try {
+		const key = String(req.body?.key || '');
+		if (!key) return res.status(400).json({ valid: false });
+		const rows = await supabaseRest('/rest/v1/admin_api_keys', {
+			query: { select: '*', keyhash: `eq.${sha256(key)}`, limit: 1 },
+		});
+		const row = rows?.[0];
+		if (!row) return res.json({ valid: false, reason: 'unknown' });
+		if (row.enabled === false) return res.json({ valid: false, reason: 'revoked' });
+		const exp = row.expiresAt || row.expiresat;
+		if (exp && new Date(exp).getTime() < Date.now()) return res.json({ valid: false, reason: 'expired' });
+		const usage = Number(row.usageCount ?? row.usagecount ?? 0) + 1;
+		await supabaseRest(`/rest/v1/admin_api_keys?id=eq.${encodeURIComponent(row.id)}`, {
+			method: 'PATCH', body: { lastUsedAt: new Date().toISOString(), usageCount: usage },
+		}).catch(() => {});
+		res.json({ valid: true, name: row.name, permissions: row.permissions || [] });
+	} catch {
+		res.status(500).json({ valid: false });
+	}
+});
+
+router.patch('/api-keys/:id', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const updated = await supabaseRest(`/rest/v1/admin_api_keys?id=eq.${encodeURIComponent(req.params.id)}`, {
+			method: 'PATCH', body: { enabled: req.body?.enabled !== false },
+			prefer: 'return=representation', query: { select: 'id,enabled' },
+		});
+		res.json(updated?.[0] || { id: req.params.id });
+	} catch (err) { next(err); }
+});
+
+router.delete('/api-keys/:id', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		await supabaseRest(`/rest/v1/admin_api_keys?id=eq.${encodeURIComponent(req.params.id)}`, { method: 'DELETE' });
 		res.status(204).end();
 	} catch (err) { next(err); }
 });
