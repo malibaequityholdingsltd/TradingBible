@@ -21,17 +21,17 @@ const SCHEMES = {
 const SCHEME_KEY = 'tb-bubbles-scheme';
 
 function bubbleFill(pct, scheme) {
+  // Solid opaque bubbles: intensity encoded as color depth (dim when flat,
+  // full vivid color on big moves) instead of transparency.
   const cap = Math.min(Math.abs(pct) / 8, 1);
-  const alpha = 0.58 + cap * 0.37; // 0.58–0.95: rich and sharp, never washed
-  const c = pct >= 0 ? scheme.up : scheme.down;
-  return `rgba(${c},${alpha.toFixed(2)})`;
+  const f = 0.45 + cap * 0.55;
+  const c = (pct >= 0 ? scheme.up : scheme.down).split(',').map(Number);
+  return `rgb(${Math.round(c[0] * f)},${Math.round(c[1] * f)},${Math.round(c[2] * f)})`;
 }
 
 function bubbleStroke(pct, scheme) {
-  const cap = Math.min(Math.abs(pct) / 8, 1);
   const c = pct >= 0 ? scheme.up : scheme.down;
-  if (cap < 0.55) return `rgba(${c},0.55)`;
-  return `rgba(${c},0.95)`;
+  return `rgb(${c})`;
 }
 
 function fmtPrice(n) {
@@ -384,8 +384,8 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
 
       {/* Legend */}
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[#8a8577]">
-        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: `rgba(${scheme.up},0.8)` }} />{t('hm.up', null, 'Up')}</span>
-        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: `rgba(${scheme.down},0.8)` }} />{t('hm.down', null, 'Down')}</span>
+        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: `rgb(${scheme.up})` }} />{t('hm.up', null, 'Up')}</span>
+        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: `rgb(${scheme.down})` }} />{t('hm.down', null, 'Down')}</span>
         <span>{t('hm.legendSize', null, 'Size = move (or volume in Volume mode) · brighter = bigger move · drag to move')}</span>
       </div>
     </div>
