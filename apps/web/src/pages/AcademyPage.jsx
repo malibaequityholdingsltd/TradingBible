@@ -814,7 +814,7 @@ export default function AcademyPage() {
 					{ id: 'certificates', icon: Award, label: t('aca.tabCert') },
 				].map((tb) => (
 					<button key={tb.id} onClick={() => setTab(tb.id)}
-						className={`flex min-h-[42px] items-center gap-2 rounded-xl px-4 text-sm font-semibold transition ${tab === tb.id ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
+						className={`frost-tab flex min-h-[42px] items-center gap-2 rounded-xl px-4 text-sm font-semibold transition ${tab === tb.id ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
 						<tb.icon className="h-4 w-4" /> {tb.label}
 					</button>
 				))}

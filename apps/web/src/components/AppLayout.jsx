@@ -255,7 +255,7 @@ export default function AppLayout({ children, title }) {
         </header>
         <main className="mx-auto w-full max-w-[110rem] p-4 sm:p-5 lg:p-7">
           {isAdmin && isAdminPreview() && (
-            <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/[0.07] px-4 py-2.5">
+            <div className="admin-frost mb-4 flex items-center justify-between gap-3 rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/[0.07] px-4 py-2.5">
               <span className="text-xs text-[#d4af37]">{t('misc.adminPreview')}</span>
               <button onClick={() => { exitAdminPreview(); nav('/admin'); }} className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#d4af37]/30 px-3 py-1.5 text-xs font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10"><LogOut className="h-3.5 w-3.5" /> {t('misc.exitAdmin')}</button>
             </div>
