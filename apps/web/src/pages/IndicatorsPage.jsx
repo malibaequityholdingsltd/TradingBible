@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { ChevronDown, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useI18n } from '@/lib/i18n';
 import AdvancedChart from '@/components/AdvancedChart';
 import IndicatorPicker from '@/components/IndicatorPicker';
 import { useCandles } from '@/hooks/useCandles';
-import { SYMBOL_GROUPS } from '@/lib/symbols';
 import { INDICATOR_DEFS } from '@/lib/indicators';
+import SymbolSearchPicker from '@/components/SymbolSearchPicker';
 
 const DESC_KEYS = {
   sma: 'ind.d.sma', ema: 'ind.d.ema', wma: 'ind.d.wma', rsi: 'ind.d.rsi', macd: 'ind.d.macd',
@@ -25,7 +25,6 @@ export default function IndicatorsPage() {
   const [symbol, setSymbol] = useState('BTCUSD');
   const [timeframe, setTimeframe] = useState('1h');
   const [chartType, setChartType] = useState('candle');
-  const [symOpen, setSymOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [indicators, setIndicators] = useState([
     { id: 'sma-1', type: 'sma', params: { period: 20 }, color: '#d4af37' },
@@ -55,27 +54,7 @@ export default function IndicatorsPage() {
   return (
     <AppLayout title={t('ind.title')}>
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="relative">
-          <button onClick={() => setSymOpen((o) => !o)} className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-1.5 text-sm font-medium text-[#e9e7df]">{symbol} <ChevronDown className="h-3.5 w-3.5" /></button>
-          {symOpen && (
-            <>
-              <div className="fixed inset-0 z-20" onClick={() => setSymOpen(false)} />
-              <div className="absolute left-0 z-30 mt-1 max-h-72 w-56 overflow-y-auto rounded-xl border border-[#d4af37]/15 bg-[#0d0d12] p-2 no-scrollbar">
-                {SYMBOL_GROUPS.map((g) => (
-                  <div key={g.label} className="mb-1">
-                    <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#5f5b50]">{g.label}</div>
-                    {g.symbols.map((s) => (
-                      <button key={s.symbol} onClick={() => { setSymbol(s.symbol); setSymOpen(false); }}
-                        className={`flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-xs hover:bg-white/5 ${symbol === s.symbol ? 'text-[#d4af37]' : 'text-[#c9c4b4]'}`}>
-                        <span className="font-mono">{s.symbol}</span><span className="text-[10px] text-[#8a8577]">{s.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+        <SymbolSearchPicker value={symbol} onChange={setSymbol} buttonClassName="px-3 py-1.5 text-sm" />
         <button onClick={() => setPickerOpen(true)} className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 px-3 py-1.5 text-sm text-[#d4af37] hover:border-[#d4af37]/40"><Plus className="h-4 w-4" /> {t('ind.configure')}</button>
       </div>
 

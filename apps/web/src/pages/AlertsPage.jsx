@@ -5,6 +5,7 @@ import { useAlerts } from '@/hooks/useAlerts';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useI18n } from '@/lib/i18n';
 import { ALL_SYMBOLS } from '@/lib/symbols';
+import SymbolSearchPicker from '@/components/SymbolSearchPicker';
 
 const TYPE_META = {
   above: { key: 'al.above', icon: ArrowUp, color: 'text-emerald-400' },
@@ -37,9 +38,7 @@ function CreateAlert({ onCreate, onClose }) {
       <div className="glass w-full max-w-md rounded-2xl p-5" onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between"><h3 className="font-semibold text-[#f0ecdd]">{t('al.newAlert')}</h3><button onClick={onClose} className="text-[#8a8577]"><X className="h-5 w-5" /></button></div>
         <label className="mb-1 block text-xs text-[#8a8577]">{t('al.symbol')}</label>
-        <select value={symbol} onChange={(e) => setSymbol(e.target.value)} className="mb-3 w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2 text-sm text-[#e9e7df] outline-none">
-          {ALL_SYMBOLS.map((s) => <option key={s.symbol} value={s.symbol}>{s.symbol} — {s.name}</option>)}
-        </select>
+        <div className="mb-3"><SymbolSearchPicker value={symbol} onChange={setSymbol} buttonClassName="w-full justify-between px-3 py-2 text-sm" /></div>
         {cur && <div className="mb-3 text-xs text-[#8a8577]">{t('al.currentPrice')}: <span className="font-mono text-[#d4af37]">{cur.price}</span> ({cur.changePercent >= 0 ? '+' : ''}{cur.changePercent}%)</div>}
         <label className="mb-1 block text-xs text-[#8a8577]">{t('al.condition')}</label>
         <div className="mb-3 grid grid-cols-2 gap-1.5">
