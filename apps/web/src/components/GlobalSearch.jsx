@@ -163,16 +163,16 @@ export default function GlobalSearch() {
         onClick={() => setOpen(true)}
         aria-label={t('nav.search', null, 'Search')}
         title={`${t('nav.search', null, 'Search')} (⌘K)`}
-        className="flex h-11 items-center gap-2 rounded-2xl border border-[#d4af37]/25 px-3 text-[#8a8577] transition hover:border-[#d4af37]/60 hover:text-[#d4af37]"
+        className="flex h-11 w-full max-w-md items-center gap-2 rounded-2xl border border-[#d4af37]/25 px-3 text-[#8a8577] transition hover:border-[#d4af37]/60 hover:text-[#d4af37] sm:min-w-[220px] lg:min-w-[320px]"
       >
-        <Search className="h-4 w-4" />
-        <span className="hidden text-xs xl:inline">{t('nav.search', null, 'Search anything…')}</span>
-        <kbd className="hidden rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-[#8a8577] xl:inline">⌘K</kbd>
+        <Search className="h-4 w-4 shrink-0" />
+        <span className="hidden truncate text-xs sm:inline">{t('nav.search', null, 'Search anything…')}</span>
+        <kbd className="ml-auto hidden rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-[#8a8577] lg:inline">⌘K</kbd>
       </button>
 
       {open && (
         <div className="fixed inset-0 z-[70] flex items-start justify-center bg-black/70 p-4 pt-[12vh] backdrop-blur-sm" onClick={() => setOpen(false)}>
-          <div className="glass w-full max-w-xl overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="glass w-full max-w-2xl overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2 border-b border-[#d4af37]/10 px-4">
               <Search className="h-4 w-4 shrink-0 text-[#d4af37]" />
               <input
