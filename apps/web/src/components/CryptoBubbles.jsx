@@ -48,15 +48,17 @@ function fmtVol(qv) {
   return `$${qv.toFixed(0)}`;
 }
 
-function radiusFor(cell, mode, volStats) {
+function radiusFor(cell, mode, volStats, compact = false) {
+  // Compact ("All" view, 240 bubbles): scaled to fit the crowd while staying readable.
+  const k = compact ? 0.72 : 1;
   if (mode === 'volume') {
     const { min, max } = volStats;
     const v = Math.log10(Math.max(cell.quoteVolume || 0, 1));
     const t = max > min ? Math.min(Math.max((v - min) / (max - min), 0), 1) : 0.5;
-    return 20 + t * 40; // 20–60: compact, no giants
+    return (20 + t * 40) * k; // 20–60, or ~10–31 compact
   }
   const cap = Math.min(Math.abs(cell.changePercent || 0) / 8, 1);
-  return 28 + cap * 52; // 28–80, bigger move = bigger bubble
+  return (28 + cap * 52) * k; // 28–80, or ~15–42 compact
 }
 
 export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
@@ -105,12 +107,13 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   }, []);
 
   // Sync nodes with fresh cells (keep positions across refreshes).
+  const compact = type === 'all';
   useEffect(() => {
     const map = nodesRef.current;
     const seen = new Set();
     cells.forEach((c) => {
       seen.add(c.symbol);
-      const r = radiusFor(c, mode, volStats);
+      const r = radiusFor(c, mode, volStats, compact);
       const n = map.get(c.symbol);
       if (n) { n.cell = c; n.r = r; }
       else {
@@ -127,7 +130,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
       }
     });
     [...map.keys()].forEach((k) => { if (!seen.has(k)) map.delete(k); });
-  }, [cells, mode, volStats, size.w, size.h]);
+  }, [cells, mode, volStats, compact, size.w, size.h]);
 
   // Physics loop: continuous drift around the box — no center pull.
   // Bubbles cruise at a steady speed, ride a slow flowing current, bounce off
@@ -325,8 +328,14 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
             {nodes.map((n) => {
               const dim = matchSet && !matchSet.has(n.cell.symbol);
               const big = Math.abs(n.cell.changePercent) >= 5;
-              const fontSize = Math.max(11, Math.min(18, n.r / 2.6));
-              const pctSize = Math.max(10, Math.min(15, n.r / 3.1));
+              const fontSize = compact
+                ? Math.max(9, Math.min(13, n.r / 2.2))
+                : Math.max(11, Math.min(18, n.r / 2.6));
+              const pctSize = compact
+                ? Math.max(8, Math.min(11, n.r / 2.8))
+                : Math.max(10, Math.min(15, n.r / 3.1));
+              const showSymbol = !compact || n.r >= 15;
+              const showPct = !compact || n.r >= 23;
               const isHover = hover?.cell.symbol === n.cell.symbol;
               return (
                 <g
@@ -353,12 +362,14 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                     <ellipse cx={-n.r * 0.33} cy={-n.r * 0.42} rx={n.r * 0.24} ry={n.r * 0.13} fill="url(#bbGloss)" opacity="0.32" transform={`rotate(-18)`} />
                     {/* rim */}
                     <circle r={n.r} fill="none" stroke={bubbleStroke(n.cell.changePercent, scheme)} strokeWidth="2" />
-                    <text textAnchor="middle" dy={-2} fill={labelColor} fontSize={fontSize} fontWeight="700" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
-                      {n.cell.symbol.replace('USD', '')}
+                    <text textAnchor="middle" dy={showPct ? -2 : 3} fill={labelColor} fontSize={fontSize} fontWeight="700" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
+                      {showSymbol ? n.cell.symbol.replace('USD', '') : ''}
                     </text>
+                    {showPct && (
                     <text textAnchor="middle" dy={fontSize + 3} fill={labelColor} fontSize={pctSize} fontWeight="600" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" opacity="0.92" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
                       {n.cell.changePercent >= 0 ? '+' : ''}{n.cell.changePercent}%
                     </text>
+                    )}
                   </g>
                 </g>
               );
