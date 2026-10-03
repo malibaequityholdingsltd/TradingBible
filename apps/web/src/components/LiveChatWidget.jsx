@@ -171,7 +171,7 @@ export default function LiveChatWidget() {
               <span className="absolute -bottom-px -right-px h-2.5 w-2.5 rounded-full border-2 border-[#0c0c11] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
             </div>
             <div className="leading-tight">
-              <div className="gold-text text-[13px] font-bold tracking-wide">TradingBible AI</div>
+              <div className="gold-text text-[13px] font-bold tracking-wide">TradingBible SI</div>
               <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/25 bg-gradient-to-r from-[#d4af37]/[0.10] to-transparent px-2 py-[3px] font-mono text-[8.5px] uppercase tracking-[0.12em]">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />

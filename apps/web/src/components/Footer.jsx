@@ -176,7 +176,7 @@ export default function Footer() {
         {/* Legal disclaimer strip */}
         <div className="border-t border-[#d4af37]/10 py-8">
           <p className="max-w-4xl text-xs leading-relaxed text-[#6a665a]">
-            TradingBible provides trade journaling, analytics, and AI-generated insights for educational and record-keeping purposes only. Nothing on this platform constitutes financial, investment, or trading advice. Trading financial instruments carries substantial risk of loss and is not suitable for every investor. Past performance and AI-generated observations are not indicative of future results. Always conduct your own due diligence and consult a licensed financial advisor before making trading decisions.
+            TradingBible provides trade journaling, analytics, and SI-generated insights for educational and record-keeping purposes only. Nothing on this platform constitutes financial, investment, or trading advice. Trading financial instruments carries substantial risk of loss and is not suitable for every investor. Past performance and SI-generated observations are not indicative of future results. Always conduct your own due diligence and consult a licensed financial advisor before making trading decisions.
           </p>
         </div>
 

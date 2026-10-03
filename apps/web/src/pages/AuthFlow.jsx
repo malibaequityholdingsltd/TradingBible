@@ -130,10 +130,10 @@ const HERO_LINES = [
 ];
 
 const HERO_FEATURES = [
-  { icon: LineChart, title: 'AI trade reviews', text: 'Every trade analyzed after the close.' },
-  { icon: Bot, title: '24/7 AI coach', text: 'Ask anything, in your own words.' },
+  { icon: LineChart, title: 'SI trade reviews', text: 'Every trade analyzed after the close.' },
+  { icon: Bot, title: '24/7 SI coach', text: 'Ask anything, in your own words.' },
   { icon: ShieldCheck, title: 'Bank-grade security', text: 'Encrypted, backed up, always yours.' },
-  { icon: Sparkles, title: 'Live Academy', text: 'AI-taught paths and weekly webinars.' },
+  { icon: Sparkles, title: 'Live Academy', text: 'SI-taught paths and weekly webinars.' },
 ];
 
 function Shell({ children }) {
@@ -169,7 +169,7 @@ function HeroPanel() {
     <div>
       <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-4 py-1.5 text-xs font-medium tracking-wide text-[#d4af37]">
         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#d4af37]" />
-        AI-POWERED TRADING TERMINAL
+        SI-POWERED TRADING TERMINAL
       </p>
       <h1 className="text-5xl font-extrabold leading-[0.98] tracking-tight">
         Trade like the <span className="gold-text">1%.</span><br />
@@ -287,10 +287,10 @@ function StepsBar({ step, total }) {
   );
 }
 
-function TrustStrip({ t, trialDays }) {
+function TrustStrip({ t }) {
   return (
     <p className="mt-4 text-center text-xs leading-relaxed text-[#8a8577]">
-      {t('foot.trialNote', { n: trialDays })}
+      {t('bill.noPlanYet', null, 'Card required — subscribe to unlock the full terminal. No free trial.')}
     </p>
   );
 }
@@ -374,7 +374,6 @@ export function LoginPage() {
   const nav = useNavigate();
   const { requestOTP, loginWithCode, loginWithProvider, user, isAuthed, isAuthReady, logout } = useAuth();
   const { settings } = usePlatformSettings();
-  const trialDays = Number(settings.trialDays) || 3;
   const { t } = useI18n();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
@@ -610,7 +609,7 @@ export function LoginPage() {
           </>
         )}
       </AuthFormFrame>
-      <TrustStrip t={t} trialDays={trialDays} />
+      <TrustStrip t={t} />
     </Shell>
   );
 }
@@ -619,7 +618,6 @@ export function SignupPage() {
   const nav = useNavigate();
   const { requestOTP, loginWithCode, loginWithProvider, user, isAuthed, isAuthReady } = useAuth();
   const { settings } = usePlatformSettings();
-  const trialDays = Number(settings.trialDays) || 3;
   const { t } = useI18n();
   const { toast } = useToast();
   const [username, setUsername] = useState('');
@@ -842,7 +840,7 @@ export function SignupPage() {
         )}
         {cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">{t('auth.e.coolNote', { dur: formatCooldownDuration(cooldownSeconds) })}</p>}
       </AuthFormFrame>
-      <TrustStrip t={t} trialDays={trialDays} />
+      <TrustStrip t={t} />
     </Shell>
   );
 }
@@ -875,9 +873,9 @@ export function OnboardingPage() {
     setBusy(true);
     try {
       await updateProfile({ primaryMarket: market, experience: exp, goal });
-      nav('/app/brokers');
+      nav('/app/billing');
     } catch (err) {
-      nav('/app/brokers');
+      nav('/app/billing');
       console.error('Onboarding save failed:', err);
     } finally {
       setBusy(false);
