@@ -602,6 +602,7 @@ export default function AcademyPage() {
 	const isAdmin = user?.role === 'admin'; // admins enter free — everyone else pays $150
 	const [access, setAccess] = useState(null); // null = loading
 	const [data, setData] = useState(null);
+	const [loadError, setLoadError] = useState(null); // 'access' | 'progress' | null
 	const [view, setView] = useState('paths'); // paths | curriculum | lesson
 	const [activePath, setActivePath] = useState(null);
 	const [activeCourse, setActiveCourse] = useState(null);
@@ -612,12 +613,14 @@ export default function AcademyPage() {
 	const [tab, setTab] = useState('learn');
 
 	const refreshAccess = useCallback(async () => {
+		setLoadError(null);
 		try {
 			const res = await getAcademyAccess();
 			setAccess(res.access);
 			if (res.access) refreshProgress();
 		} catch {
-			setAccess(false);
+			setAccess(null);
+			setLoadError('access');
 		}
 	}, []);
 
@@ -627,7 +630,9 @@ export default function AcademyPage() {
 			setData(res);
 			setRsvps(res.rsvps || []);
 			setAttended(res.attended || []);
+			setLoadError(null);
 		} catch (err) {
+			setLoadError('progress');
 			toast({ variant: 'destructive', title: t('aca.loadFail'), description: err.message });
 		}
 	}, [toast]);
@@ -718,6 +723,23 @@ export default function AcademyPage() {
 		return (
 			<AppLayout title={t('aca.page')}>
 				<Paywall onPurchased={() => { toast({ title: t('aca.welcome'), description: t('aca.welcomeSub') }); refreshAccess(); }} />
+			</AppLayout>
+		);
+	}
+
+	// ── Load failure → error panel with retry (never a stuck loader) ──
+	if (loadError) {
+		return (
+			<AppLayout title={t('aca.page')}>
+				<div className="glass flex flex-col items-center rounded-2xl p-10 text-center">
+					<p className="text-sm text-[#c9c4b4]">{t('aca.loadFailRetry', null, 'Could not load your Academy. Check your connection, then try again.')}</p>
+					<button
+						onClick={() => { setLoadError(null); setAccess(null); setData(null); refreshAccess(); }}
+						className="mt-5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90"
+					>
+						{t('c.retry', null, 'Retry')}
+					</button>
+				</div>
 			</AppLayout>
 		);
 	}
