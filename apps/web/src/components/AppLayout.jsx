@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Lock, Code2, Palette, CreditCard, HelpCircle, CandlestickChart, Grid2x2, Gauge, Star, Bell, Radar, CalendarClock, Landmark, ListOrdered, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, School, ClipboardList, FileCheck2, IdCard } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Lock, Code2, Palette, CreditCard, HelpCircle, CandlestickChart, Grid2x2, Gauge, Star, Bell, Radar, CalendarClock, Landmark, ListOrdered, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { avatarUrl } from '@/lib/avatar';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -21,15 +21,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-const COMPANY_ITEMS = [
-  { to: '/company', labelKey: 'nav.school', icon: School, end: true },
-  { to: '/company/students', labelKey: 'nav.students', icon: Users },
-  { to: '/company/teachers', labelKey: 'nav.teachers', icon: GraduationCap },
-  { to: '/company/assessments', labelKey: 'nav.exams', icon: ClipboardList },
-  { to: '/company/submissions', labelKey: 'nav.submissions', icon: FileCheck2 },
-  { to: '/company/academy-profiles', labelKey: 'nav.academyprofiles', icon: IdCard },
-];
 
 const NAV_GROUPS = [
   {
@@ -116,7 +107,6 @@ export default function AppLayout({ children, title, trialDays: trialDaysProp = 
 
   const isAdmin = user?.role === 'admin';
   const isSubscriber = isAdmin || ['pro', 'elite', 'professional'].includes((user?.plan || '').toLowerCase());
-  const isCompany = user?.accountType === 'company';
   const canSeeSignals = isAdmin || features.signals !== false;
   const trialDaysRemaining = useMemo(() => {
     if (isSubscriber || isAdmin || !user) return 0;
@@ -143,7 +133,7 @@ const pluralS = (n) => (n === 1 ? '' : 's');
     <div className="flex h-full flex-col">
       <div className="px-5 py-6"><Brand homeTo={homeTo} platformName={settings.platformName} tagline={settings.tagline} /></div>
       <nav className="flex-1 space-y-4 overflow-y-auto px-3 pb-4">
-        {(isCompany ? [{ labelKey: 'nav.company', items: COMPANY_ITEMS }, ...NAV_GROUPS] : NAV_GROUPS).map((group) => (
+        {(NAV_GROUPS).map((group) => (
           <div key={group.labelKey} className="space-y-1">
             <div className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#5f5b50]">{t(group.labelKey)}</div>
             {group.items

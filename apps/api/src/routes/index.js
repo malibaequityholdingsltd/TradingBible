@@ -20,6 +20,7 @@ import academyRouter from './academy.js';
 import digestRouter from './digest.js';
 import dunsRouter from './duns.js';
 import companyRouter from './company.js';
+import jobsRouter from './jobs.js';
 
 const router = Router();
 
@@ -48,6 +49,7 @@ export default () => {
     router.use('/academy', academyRouter);
     router.use('/duns', dunsRouter);
     router.use('/company', companyRouter);
+    router.use('/jobs', jobsRouter);
 
     return router;
 };

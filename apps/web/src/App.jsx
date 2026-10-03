@@ -59,21 +59,16 @@ const AdminSettings = lazy(() => import('./pages/AdminPortal').then((m) => ({ de
 const AdminIntegrations = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminIntegrations })));
 const AdminApiKeys = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminApiKeys })));
 const AdminPlugins = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminPlugins })));
+const AdminJobs = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminJobs })));
 const AdminTvAds = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminTvAds })));
 const PricingPage = lazy(() => import('./pages/ExtraPages').then((m) => ({ default: m.PricingPage })));
 const UserApiKeysPage = lazy(() => import('./pages/UserApiKeysPage'));
-const CompanyDashboardPage = lazy(() => import('./pages/CompanyDashboardPage'));
 const GuidesPage = lazy(() => import('./pages/PublicInfoPages').then((m) => ({ default: m.GuidesPage })));
 const WebinarsPage = lazy(() => import('./pages/PublicInfoPages').then((m) => ({ default: m.WebinarsPage })));
 const AcademyInfoPage = lazy(() => import('./pages/PublicInfoPages').then((m) => ({ default: m.AcademyInfoPage })));
 const BlogPage = lazy(() => import('./pages/PublicInfoPages').then((m) => ({ default: m.BlogPage })));
 const CareersPage = lazy(() => import('./pages/PublicInfoPages').then((m) => ({ default: m.CareersPage })));
 const ContactPage = lazy(() => import('./pages/PublicInfoPages').then((m) => ({ default: m.ContactPage })));
-const CompanyStudentsPage = lazy(() => import('./pages/CompanySchoolPages').then((m) => ({ default: m.CompanyStudentsPage })));
-const CompanyTeachersPage = lazy(() => import('./pages/CompanySchoolPages').then((m) => ({ default: m.CompanyTeachersPage })));
-const CompanyAssessmentsPage = lazy(() => import('./pages/CompanySchoolPages').then((m) => ({ default: m.CompanyAssessmentsPage })));
-const CompanySubmissionsPage = lazy(() => import('./pages/CompanySchoolPages').then((m) => ({ default: m.CompanySubmissionsPage })));
-const CompanyAcademyProfilesPage = lazy(() => import('./pages/CompanySchoolPages').then((m) => ({ default: m.CompanyAcademyProfilesPage })));
 const TeacherDashboardPage = lazy(() => import('./pages/TeacherDashboardPage').then((m) => ({ default: () => <m.TeacherGuard><m.default /></m.TeacherGuard> })));
 const StudentDashboardPage = lazy(() => import('./pages/StudentDashboardPage').then((m) => ({ default: () => <m.StudentGuard><m.default /></m.StudentGuard> })));
 const TermsPage = lazy(() => import('./pages/LegalPages').then((m) => ({ default: m.TermsPage })));
@@ -125,12 +120,12 @@ function AdminProtected({ children }) {
     return children;
 }
 
-function CompanyProtected({ children }) {
+function TeacherProtected({ children }) {
     const { isAuthed, isAuthReady, user } = useAuth();
     if (!isAuthReady) return <PageFallback />;
     if (!isAuthed) return <Navigate to="/login" replace />;
     if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
-    if (user?.accountType !== 'company') return <Navigate to="/app" replace />;
+    if (user?.accountType !== 'teacher') return <Navigate to="/app" replace />;
     return children;
 }
 
@@ -257,13 +252,7 @@ function RoutesWithBoundary() {
                     <Route path="/app/wallet" element={<SubscriberProtected><FeatureGate feature="wallet"><WalletPage /></FeatureGate></SubscriberProtected>} />
                     <Route path="/app/profile" element={<Protected><ProfilePage /></Protected>} />
                     <Route path="/app/api-keys" element={<Protected><UserApiKeysPage /></Protected>} />
-                    <Route path="/company" element={<CompanyProtected><CompanyDashboardPage /></CompanyProtected>} />
-                    <Route path="/company/students" element={<CompanyProtected><CompanyStudentsPage /></CompanyProtected>} />
-                    <Route path="/company/teachers" element={<CompanyProtected><CompanyTeachersPage /></CompanyProtected>} />
-                    <Route path="/company/assessments" element={<CompanyProtected><CompanyAssessmentsPage /></CompanyProtected>} />
-                    <Route path="/company/submissions" element={<CompanyProtected><CompanySubmissionsPage /></CompanyProtected>} />
-                    <Route path="/company/academy-profiles" element={<CompanyProtected><CompanyAcademyProfilesPage /></CompanyProtected>} />
-                    <Route path="/teacher" element={<Protected><TeacherDashboardPage /></Protected>} />
+                    <Route path="/teacher" element={<TeacherProtected><TeacherDashboardPage /></TeacherProtected>} />
                     <Route path="/student" element={<Protected><StudentDashboardPage /></Protected>} />
                     <Route path="/admin" element={<AdminProtected><AdminDashboard /></AdminProtected>} />
                     <Route path="/admin/users" element={<AdminProtected><AdminUsers /></AdminProtected>} />
@@ -276,6 +265,7 @@ function RoutesWithBoundary() {
                     <Route path="/admin/tv" element={<AdminProtected><AdminTvAds /></AdminProtected>} />
                     <Route path="/admin/api-keys" element={<AdminProtected><AdminApiKeys /></AdminProtected>} />
                     <Route path="/admin/plugins" element={<AdminProtected><AdminPlugins /></AdminProtected>} />
+                    <Route path="/admin/jobs" element={<AdminProtected><AdminJobs /></AdminProtected>} />
                 </Routes>
             </Suspense>
         </ErrorBoundary>

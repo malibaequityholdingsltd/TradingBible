@@ -116,13 +116,16 @@ function createSupabaseCompatClient() {
     listeners.forEach((cb) => cb(authStore.token, authStore.record));
   };
 
+  // Legacy account types (pre-Teacher model) map forward automatically.
+  const LEGACY_TYPES = { individual: 'trader', company: 'teacher' };
   function normalizeProfile(profile, source = 'users') {
     if (!profile) return null;
+    const rawType = profile.accountType || profile.account_type || 'trader';
     return {
       ...profile,
       profileSource: source,
       role: profile.role || profile.user_role || 'user',
-      accountType: profile.accountType || profile.account_type || 'individual',
+      accountType: LEGACY_TYPES[rawType] || rawType,
       created: profile.created || profile.created_at || null,
       trialEndsAt: profile.trialEndsAt || profile.trial_ends_at || null,
     };
@@ -158,8 +161,10 @@ function createSupabaseCompatClient() {
       verified: !!user.email_confirmed_at,
       username: normalized?.username || user.user_metadata?.username || (user.email || '').split('@')[0],
       plan: normalized?.plan || user.user_metadata?.plan || 'trial',
-      accountType: normalized?.accountType || user.user_metadata?.accountType || 'individual',
+      accountType: normalized?.accountType || user.user_metadata?.accountType || 'trader',
       companyName: normalized?.companyName || user.user_metadata?.companyName || null,
+      teacherSubject: normalized?.teacherSubject || user.user_metadata?.teacherSubject || null,
+      teacherBio: normalized?.teacherBio || user.user_metadata?.teacherBio || null,
       collectionName: 'users',
       ...normalized,
       role: admin ? 'admin' : (normalized?.role || user.user_metadata?.role || 'user'),
@@ -185,7 +190,11 @@ function createSupabaseCompatClient() {
     if (!profile) {
       const fallbackUsername = session.user.user_metadata?.username || (session.user.email || '').split('@')[0] || 'user';
       const fallbackRole = session.user.user_metadata?.role || (isAdminEmail(session.user.email) ? 'admin' : 'user');
-      const fallbackAccountType = session.user.user_metadata?.accountType || 'individual';
+      const fallbackAccountType = session.user.user_metadata?.accountType === 'company'
+        ? 'teacher'
+        : session.user.user_metadata?.accountType === 'individual'
+          ? 'trader'
+          : session.user.user_metadata?.accountType || 'trader';
       const fallbackCompanyName = session.user.user_metadata?.companyName || null;
       const { data: createdProfile, error: profileError } = await supabase.from('users')
         .upsert({
@@ -362,11 +371,13 @@ function createSupabaseCompatClient() {
         const email = String(options.email || '').trim();
         if (!email) throw new Error('Email is required.');
 
+        const rawType = options.accountType === 'company' ? 'teacher' : options.accountType === 'individual' ? 'trader' : options.accountType || 'trader';
         const metadata = {
           username: options.username || email.split('@')[0],
           role: isAdminEmail(email) ? 'admin' : (options.role || 'user'),
-          accountType: options.accountType || 'individual',
-          companyName: options.accountType === 'company' ? (options.companyName || options.username || email.split('@')[0]) : null,
+          accountType: rawType,
+          teacherSubject: rawType === 'teacher' ? String(options.teacherSubject || '').slice(0, 120) : null,
+          teacherBio: rawType === 'teacher' ? String(options.teacherBio || '').slice(0, 2000) : null,
         };
 
         const createUserOnLogin = options.shouldCreateUser !== false;

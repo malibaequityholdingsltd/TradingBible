@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Footer from '@/components/Footer';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
@@ -108,13 +108,91 @@ export const BlogPage = () => (
   />
 );
 
-export const CareersPage = () => (
-  <PublicShell
-    titleKey="pub.carTitle"
-    descKey="pub.carDesc"
-    pointKeys={['pub.carP1', 'pub.carP2', 'pub.carP3', 'pub.carP4']}
-  />
-);
+export const CareersPage = () => {
+  const { user, isAuthed } = useAuth();
+  const { t } = useI18n();
+  const homeTo = homeRouteForUser(isAuthed ? user : null);
+  const [jobs, setJobs] = useState([]);
+  const [openId, setOpenId] = useState(null);
+  const [form, setForm] = useState({ name: '', email: '', phone: '', coverLetter: '' });
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/hcgi/api/jobs');
+        if (res.ok) setJobs(await res.json());
+      } catch { /* board stays empty */ }
+    })();
+  }, []);
+
+  const apply = async (e) => {
+    e?.preventDefault?.();
+    if (!openId || !form.name.trim() || !form.email.trim()) return;
+    setBusy(true);
+    try {
+      const res = await fetch('/hcgi/api/jobs/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId: openId, ...form }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || 'request failed');
+      setDone(true);
+      setForm({ name: '', email: '', phone: '', coverLetter: '' });
+    } catch {
+      setDone(false);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#07070a] px-6 pt-24 pb-16 sm:pt-28">
+      <div className="mx-auto max-w-[96rem]">
+        <Link to={homeTo} className="mb-10 flex items-center gap-2.5">
+          <img src={TRADINGBIBLE_LOGO} alt="TradingBible logo" className="h-9 w-9 rounded-lg object-contain" />
+          <span className="font-semibold">Trading<span className="gold-text">Bible</span></span>
+        </Link>
+        <div className="mb-10 max-w-2xl">
+          <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-[#d4af37]">{t('pub.carKicker', null, 'TradingBible Academy')}</p>
+          <h1 className="text-4xl font-bold text-[#f0ecdd] sm:text-5xl">{t('pub.carTitle')}</h1>
+          <p className="mt-3 text-[#8a8577]">{t('pub.carDesc')}</p>
+        </div>
+        {jobs.length === 0 ? (
+          <div className="glass rounded-2xl p-8 text-center text-sm text-[#8a8577]">{t('job.noOpenings')}</div>
+        ) : (
+          <div className="grid gap-5 md:grid-cols-2">
+            {jobs.map((j) => (
+              <div key={j.id} className="glass glass-hover flex flex-col rounded-2xl p-6">
+                <div className="text-xs font-medium uppercase tracking-[0.2em] text-[#d4af37]">{j.department} · {j.employmentType} · {j.location}</div>
+                <h3 className="mt-2 text-xl font-semibold text-[#f0ecdd]">{j.title}</h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-[#8a8577]">{j.description}</p>
+                {j.requirements && <p className="mt-2 text-xs text-[#6a665a]">{t('job.requirements')}: {j.requirements}</p>}
+                <button onClick={() => { setOpenId(openId === j.id ? null : j.id); setDone(false); }} className="mt-5 rounded-lg border border-[#d4af37]/25 py-2.5 text-center text-sm font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60">{t('job.apply')}</button>
+                {openId === j.id && (
+                  done ? (
+                    <p className="mt-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-center text-sm text-emerald-400">{t('job.applied')}</p>
+                  ) : (
+                    <form onSubmit={apply} className="mt-3 space-y-2">
+                      <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder={t('job.namePh')} required className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
+                      <input value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder={t('job.emailPh')} type="email" required className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
+                      <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} placeholder={t('job.phonePh')} className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
+                      <textarea value={form.coverLetter} onChange={(e) => setForm((p) => ({ ...p, coverLetter: e.target.value }))} placeholder={t('job.coverPh')} className="min-h-[100px] w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
+                      <button disabled={busy} className="w-full rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-sm font-semibold text-[#0a0a0f] disabled:opacity-60">{t('job.sendApp')}</button>
+                    </form>
+                  )
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <Footer />
+    </div>
+  );
+};
 
 export const ContactPage = () => (
   <PublicShell
