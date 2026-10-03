@@ -169,14 +169,14 @@ export default function AnalyticsPage() {
         </Card>
 
         <Card title={t('ana.perfHm')} sub={t('ana.perfHmSub')}>
-          <div className="grid grid-cols-7 gap-2 pt-2">
+          <div className="grid grid-cols-7 gap-1 pt-2 sm:gap-2">
             {derived.dow.map((d) => {
               const intensity = Math.abs(d.pnl) / maxAbsPnl;
               const bg = d.trades === 0 ? 'rgba(255,255,255,0.04)' : d.pnl >= 0
                 ? `rgba(52,211,153,${0.15 + intensity * 0.6})`
                 : `rgba(224,102,102,${0.15 + intensity * 0.6})`;
               return (
-                <div key={d.d} className="rounded-lg p-2 text-center" style={{ background: bg }}>
+                <div key={d.d} className="rounded-lg p-1 text-center sm:p-2" style={{ background: bg }}>
                   <div className="text-[10px] uppercase tracking-wide text-[#c9c4b4]">{d.d}</div>
                   <div className="mt-1 font-mono text-[11px] font-semibold text-[#f0ecdd]">{d.trades ? fmtMoney(d.pnl) : '—'}</div>
                   <div className="text-[9px] text-[#8a8577]">{t('ana.tradesN', { n: d.trades })}</div>
