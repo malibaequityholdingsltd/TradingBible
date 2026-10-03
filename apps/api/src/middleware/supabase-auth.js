@@ -11,7 +11,9 @@ function forbiddenError(message) {
 }
 
 export async function supabaseAuth(req, res, next) {
-	const token = req.headers.authorization?.split(' ')?.[1];
+	// Accept "Bearer <token>" (standard) or a raw token (older web clients).
+	const raw = req.headers.authorization || '';
+	const token = raw.startsWith('Bearer ') ? raw.slice(7) : raw || undefined;
 
 	// Auth is enforced by default. To allow public (anonymous) access, remove this
 	// middleware from the route (apps/api/src/routes/integrated-ai.js).
