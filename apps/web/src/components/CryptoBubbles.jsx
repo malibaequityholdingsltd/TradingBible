@@ -371,7 +371,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
             className="pointer-events-none absolute z-10 min-w-[160px] rounded-xl border border-[#d4af37]/25 bg-[#0d0d12]/95 p-3 shadow-xl backdrop-blur"
             style={{ left: Math.min(hover.x + 16, size.w - 180), top: Math.max(hover.y - 20, 8) }}
           >
-            <div className="font-mono text-sm font-bold text-[#f0ecdd]">{hover.cell.symbol.replace('USD', '')} <span className="font-normal text-[#8a8577]">· {hover.cell.name}</span></div>
+            <div className="font-mono text-sm font-bold text-[#f0ecdd]">{hover.cell.symbol.replace('USD', '')} <span className="font-normal text-[#8a8577]">· {hover.cell.name}{hover.cell.market ? ` · ${hover.cell.market}` : ''}</span></div>
             <div className="mt-1 font-mono text-xs text-[#c9c4b4]">${fmtPrice(hover.cell.price)}</div>
             <div className={`font-mono text-xs font-semibold ${hover.cell.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {hover.cell.changePercent >= 0 ? '+' : ''}{hover.cell.changePercent}% · {period}

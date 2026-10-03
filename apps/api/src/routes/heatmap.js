@@ -194,15 +194,27 @@ export default async (req, res) => {
 	const type = String(req.query.type || 'crypto').toLowerCase();
 	const period = PERIODS.includes(String(req.query.period)) ? String(req.query.period) : '1d';
 
+	const tag = (cells, market) => cells.map((c) => ({ ...c, market }));
 	let cells;
 	switch (type) {
-		case 'crypto': cells = await cryptoLive(period); break;
-		case 'forex': cells = FOREX.map(([s, n, p]) => synthCell(s, n, p, period)); break;
-		case 'commodity': cells = COMMODITY.map(([s, n, p]) => synthCell(s, n, p, period)); break;
-		case 'sector': cells = SECTOR.map(([s, n]) => synthCell(s, n, 0, period)); break;
-		case 'stock': cells = STOCK.map(([s, n, p]) => synthCell(s, n, p, period)); break;
+		case 'crypto': cells = tag(await cryptoLive(period), 'crypto'); break;
+		case 'forex': cells = tag(FOREX.map(([s, n, p]) => synthCell(s, n, p, period)), 'forex'); break;
+		case 'commodity': cells = tag(COMMODITY.map(([s, n, p]) => synthCell(s, n, p, period)), 'commodity'); break;
+		case 'sector': cells = tag(SECTOR.map(([s, n]) => synthCell(s, n, 0, period)), 'sector'); break;
+		case 'stock': cells = tag(STOCK.map(([s, n, p]) => synthCell(s, n, p, period)), 'stock'); break;
+		case 'all': {
+			const [c, f, cm, se, st] = await Promise.all([
+				cryptoLive(period),
+				FOREX.map(([s, n, p]) => synthCell(s, n, p, period)),
+				COMMODITY.map(([s, n, p]) => synthCell(s, n, p, period)),
+				SECTOR.map(([s, n]) => synthCell(s, n, 0, period)),
+				STOCK.map(([s, n, p]) => synthCell(s, n, p, period)),
+			]);
+			cells = [...tag(c, 'crypto'), ...tag(f, 'forex'), ...tag(cm, 'commodity'), ...tag(se, 'sector'), ...tag(st, 'stock')];
+			break;
+		}
 		default:
-			return res.status(422).json({ error: 'type must be crypto, forex, commodity, sector or stock' });
+			return res.status(422).json({ error: 'type must be crypto, forex, commodity, sector, stock or all' });
 	}
 
 	res.json({ type, period, cells });

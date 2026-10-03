@@ -4,6 +4,7 @@ import CryptoBubbles from '@/components/CryptoBubbles';
 
 const PERIODS = ['1h', '4h', '1d', '1w', '1M', '1Y'];
 const CATEGORIES = [
+  { id: 'all', key: 'hm.all' },
   { id: 'crypto', key: 'hm.crypto' },
   { id: 'forex', key: 'hm.forex' },
   { id: 'commodity', key: 'hm.commodity' },
