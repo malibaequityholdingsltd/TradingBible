@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Settings, FileText, CreditCard, LibraryBig, BarChart3,
-  LogOut, Menu, Shield, X, ChevronRight, Plug, Key, Package, User, ChevronDown, MonitorPlay
+  LogOut, Menu, Shield, X, ChevronRight, Plug, Key, Package, User, ChevronDown, MonitorPlay, Briefcase
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
@@ -29,6 +29,7 @@ const NAV = [
   { to: '/admin/integrations', label: 'Integrations', icon: Plug },
   { to: '/admin/api-keys', label: 'API Keys', icon: Key },
   { to: '/admin/plugins', label: 'Plugins', icon: Package },
+  { to: '/admin/jobs', label: 'Jobs & Hiring', icon: Briefcase },
   { to: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 

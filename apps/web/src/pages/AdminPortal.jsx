@@ -66,7 +66,9 @@ function normalizeAdminUser(raw, source) {
     username: raw.username || (raw.email ? raw.email.split('@')[0] : 'user'),
     name: raw.name || raw.username || (raw.email ? raw.email.split('@')[0] : 'User'),
     plan: raw.plan || 'trial',
-    accountType: raw.accountType || raw.account_type || (role === 'company' ? 'company' : 'individual'),
+    accountType: raw.accountType === 'company' || raw.account_type === 'company' ? 'teacher'
+      : raw.accountType === 'individual' || raw.account_type === 'individual' ? 'trader'
+      : raw.accountType || raw.account_type || (role === 'teacher' ? 'teacher' : 'trader'),
     trialEndsAt: computeTrialEndsAt(raw, Number(raw.trialDays) || DEFAULT_TRIAL_DAYS),
     subscriptionStatus: raw.subscriptionStatus || (raw.plan && raw.plan !== 'trial' ? 'active' : 'trial'),
   };
@@ -216,7 +218,7 @@ function EditUserModal({ user, userSource, onClose, onSaved }) {
       let updated;
       if (userSource === 'profiles') {
         updated = await pb.collection('profiles').update(user.id, {
-          user_role: form.role === 'admin' ? 'admin' : form.role === 'company' ? 'company' : form.role === 'teacher' ? 'teacher' : 'student',
+          user_role: ['admin', 'trader', 'teacher', 'student'].includes(form.role) ? form.role : 'student',
         });
       } else {
         updated = await pb.collection('users').update(user.id, {
@@ -279,7 +281,7 @@ function EditUserModal({ user, userSource, onClose, onSaved }) {
                 <option value="admin" className="bg-[#0f0f14]">Admin</option>
                 <option value="teacher" className="bg-[#0f0f14]">Teacher</option>
                 <option value="student" className="bg-[#0f0f14]">Student</option>
-                <option value="company" className="bg-[#0f0f14]">Company</option>
+                <option value="trader" className="bg-[#0f0f14]">Trader</option>
               </select>
             </div>
           </div>
@@ -683,7 +685,7 @@ export function AdminUsers() {
           <option value="admin" className="bg-[#0f0f14]">Admin</option>
           <option value="student" className="bg-[#0f0f14]">Student</option>
           <option value="teacher" className="bg-[#0f0f14]">Teacher</option>
-          <option value="company" className="bg-[#0f0f14]">Company</option>
+          <option value="trader" className="bg-[#0f0f14]">Trader</option>
         </select>
         <div className="flex gap-2">
           <button onClick={reload} className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/15 px-3 py-2.5 text-sm text-[#d4af37] hover:border-[#d4af37]/40">
@@ -2283,6 +2285,152 @@ export function AdminPlugins() {
           })}
         </div>
       )}
+    </AdminLayout>
+  );
+}
+
+/* ─── ADMIN JOBS ─────────────────────────────────────────────────── */
+const APP_STATUSES = ['new', 'reviewing', 'shortlisted', 'rejected', 'hired'];
+
+export function AdminJobs() {
+  const { toast } = useToast();
+  const [postings, setPostings] = useState([]);
+  const [apps, setApps] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ title: '', department: 'Academy', employmentType: 'full-time', location: 'Remote', description: '', requirements: '' });
+  const [editingId, setEditingId] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  const call = async (path, opts = {}) => {
+    const res = await fetch(`${API_SERVER_URL}/admin/jobs${path}`, {
+      method: opts.method || 'GET',
+      headers: { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' },
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    if (res.status === 204) return null;
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
+    return data;
+  };
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [p, a] = await Promise.all([call('/postings'), call('/applications')]);
+      setPostings(p || []);
+      setApps(a || []);
+    } catch {
+      setPostings([]);
+      setApps([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const resetForm = () => { setForm({ title: '', department: 'Academy', employmentType: 'full-time', location: 'Remote', description: '', requirements: '' }); setEditingId(null); };
+
+  const savePosting = async () => {
+    if (!form.title.trim()) return toast({ variant: 'destructive', title: 'Title required' });
+    setBusy(true);
+    try {
+      if (editingId) {
+        await call(`/postings/${editingId}`, { method: 'PATCH', body: form });
+        toast({ title: 'Posting updated' });
+      } else {
+        await call('/postings', { method: 'POST', body: form });
+        toast({ title: 'Posting published' });
+      }
+      resetForm();
+      load();
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Save failed', description: err.message });
+    } finally { setBusy(false); }
+  };
+
+  const startEdit = (p) => {
+    setEditingId(p.id);
+    setForm({ title: p.title || '', department: p.department || 'Academy', employmentType: p.employmentType || 'full-time', location: p.location || 'Remote', description: p.description || '', requirements: p.requirements || '' });
+  };
+
+  const togglePosting = async (p) => {
+    await call(`/postings/${p.id}`, { method: 'PATCH', body: { status: p.status === 'open' ? 'closed' : 'open' } });
+    load();
+  };
+
+  const removePosting = async (p) => {
+    if (!window.confirm(`Delete "${p.title}" and its applications?`)) return;
+    await call(`/postings/${p.id}`, { method: 'DELETE' });
+    load();
+  };
+
+  const setAppStatus = async (id, status) => {
+    await call(`/applications/${id}`, { method: 'PATCH', body: { status } });
+    setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
+  };
+
+  const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
+
+  return (
+    <AdminLayout title="Jobs & Hiring">
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="glass rounded-2xl p-4 sm:p-5">
+          <h3 className="font-semibold text-[#f0ecdd]">{editingId ? 'Edit posting' : 'New posting'}</h3>
+          <div className="mt-3 space-y-2">
+            <input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="e.g. Trading Coach (Forex)" className={input} />
+            <div className="grid grid-cols-3 gap-2">
+              <input value={form.department} onChange={(e) => setForm((p) => ({ ...p, department: e.target.value }))} placeholder="Department" className={input} />
+              <input value={form.employmentType} onChange={(e) => setForm((p) => ({ ...p, employmentType: e.target.value }))} placeholder="Type" className={input} />
+              <input value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} placeholder="Location" className={input} />
+            </div>
+            <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Role description" className={`${input} min-h-[100px]`} />
+            <textarea value={form.requirements} onChange={(e) => setForm((p) => ({ ...p, requirements: e.target.value }))} placeholder="Requirements" className={`${input} min-h-[70px]`} />
+            <div className="flex gap-2">
+              <button onClick={savePosting} disabled={busy} className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] disabled:opacity-60">{editingId ? 'Save' : 'Publish'}</button>
+              {editingId && <button onClick={resetForm} className="rounded-xl border border-white/10 px-4 py-2 text-sm text-[#8a8577]">Cancel</button>}
+            </div>
+          </div>
+          <h3 className="mb-3 mt-6 font-semibold text-[#f0ecdd]">Postings ({postings.length})</h3>
+          <div className="space-y-2">
+            {postings.map((p) => (
+              <div key={p.id} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-medium text-[#f0ecdd]">{p.title}</div>
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] ${p.status === 'open' ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[#8a8577]'}`}>{p.status}</span>
+                </div>
+                <div className="mt-1 text-xs text-[#8a8577]">{p.department} · {p.employmentType} · {p.location}</div>
+                <div className="mt-2 flex gap-2">
+                  <button onClick={() => startEdit(p)} className="rounded-lg border border-[#d4af37]/25 px-2.5 py-1 text-xs text-[#d4af37]">Edit</button>
+                  <button onClick={() => togglePosting(p)} className="rounded-lg border border-[#d4af37]/25 px-2.5 py-1 text-xs text-[#d4af37]">{p.status === 'open' ? 'Close' : 'Reopen'}</button>
+                  <button onClick={() => removePosting(p)} className="rounded-lg border border-red-500/35 px-2.5 py-1 text-xs text-red-400">Delete</button>
+                </div>
+              </div>
+            ))}
+            {!postings.length && !loading && <p className="text-sm text-[#8a8577]">No postings yet.</p>}
+          </div>
+        </div>
+
+        <div className="glass rounded-2xl p-4 sm:p-5">
+          <h3 className="font-semibold text-[#f0ecdd]">Applications ({apps.length})</h3>
+          <div className="mt-3 space-y-2">
+            {apps.map((a) => (
+              <div key={a.id} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-medium text-[#f0ecdd]">{a.name}</div>
+                  <span className="shrink-0 text-[10px] text-[#6a665a]">{(a.created || '').slice(0, 10)}</span>
+                </div>
+                <div className="text-xs text-[#8a8577]">{a.email}{a.phone ? ` · ${a.phone}` : ''} → {a.job_postings?.title || 'Opening'}</div>
+                {a.coverLetter && <p className="mt-1 max-h-20 overflow-y-auto text-xs leading-relaxed text-[#c9c4b4]">{a.coverLetter}</p>}
+                <select value={a.status} onChange={(e) => setAppStatus(a.id, e.target.value)} className="mt-2 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-1.5 text-xs text-[#e9e7df]">
+                  {APP_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+            ))}
+            {!apps.length && !loading && <p className="text-sm text-[#8a8577]">No applications yet.</p>}
+          </div>
+        </div>
+      </div>
     </AdminLayout>
   );
 }

@@ -555,4 +555,84 @@ router.delete('/api-keys/:id', supabaseAuth, async (req, res, next) => {
 	} catch (err) { next(err); }
 });
 
+// ── Jobs board management (postings + applications) ──────────────
+router.get('/jobs/postings', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const rows = await supabaseRest('/rest/v1/job_postings', {
+			query: { select: '*', order: 'created.desc', limit: 200 },
+		});
+		res.json(rows || []);
+	} catch (err) { next(err); }
+});
+
+router.post('/jobs/postings', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const title = String(req.body?.title || '').trim().slice(0, 120);
+		if (!title) return res.status(400).json({ error: 'title required' });
+		const created = await supabaseRest('/rest/v1/job_postings', {
+			method: 'POST',
+			body: {
+				title,
+				department: String(req.body?.department || 'Academy').slice(0, 60),
+				employmentType: String(req.body?.employmentType || 'full-time').slice(0, 40),
+				location: String(req.body?.location || 'Remote').slice(0, 80),
+				description: String(req.body?.description || '').slice(0, 8000),
+				requirements: String(req.body?.requirements || '').slice(0, 4000),
+				status: req.body?.status === 'closed' ? 'closed' : 'open',
+			},
+			prefer: 'return=representation', query: { select: '*' },
+		});
+		res.status(201).json(created?.[0] || {});
+	} catch (err) { next(err); }
+});
+
+router.patch('/jobs/postings/:id', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const patch = {};
+		for (const k of ['title', 'department', 'employmentType', 'location', 'description', 'requirements']) {
+			if (req.body?.[k] !== undefined) patch[k] = String(req.body[k]).slice(0, 8000);
+		}
+		if (req.body?.status !== undefined) patch.status = req.body.status === 'closed' ? 'closed' : 'open';
+		const updated = await supabaseRest(`/rest/v1/job_postings?id=eq.${encodeURIComponent(req.params.id)}`, {
+			method: 'PATCH', body: patch, prefer: 'return=representation', query: { select: '*' },
+		});
+		res.json(updated?.[0] || { id: req.params.id });
+	} catch (err) { next(err); }
+});
+
+router.delete('/jobs/postings/:id', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		await supabaseRest(`/rest/v1/job_postings?id=eq.${encodeURIComponent(req.params.id)}`, { method: 'DELETE' });
+		res.status(204).end();
+	} catch (err) { next(err); }
+});
+
+router.get('/jobs/applications', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const rows = await supabaseRest('/rest/v1/job_applications', {
+			query: { select: '*,job_postings(title)', order: 'created.desc', limit: 500 },
+		});
+		res.json(rows || []);
+	} catch (err) { next(err); }
+});
+
+router.patch('/jobs/applications/:id', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const status = String(req.body?.status || '');
+		if (!['new', 'reviewing', 'shortlisted', 'rejected', 'hired'].includes(status)) {
+			return res.status(400).json({ error: 'invalid status' });
+		}
+		const updated = await supabaseRest(`/rest/v1/job_applications?id=eq.${encodeURIComponent(req.params.id)}`, {
+			method: 'PATCH', body: { status }, prefer: 'return=representation', query: { select: '*' },
+		});
+		res.json(updated?.[0] || { id: req.params.id, status });
+	} catch (err) { next(err); }
+});
+
 export default router;
