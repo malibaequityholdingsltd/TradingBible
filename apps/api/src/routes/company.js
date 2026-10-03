@@ -128,6 +128,93 @@ router.get('/teachers/status', supabaseAuth, async (req, res, next) => {
 	} catch (err) { next(err); }
 });
 
+// ── Student helpers ──────────────────────────────────────────────
+// A student is anyone whose auth email matches a school_students row.
+// Same service-role scoping pattern as teachers.
+async function findStudentRow(email) {
+	const rows = await supabaseRest('/rest/v1/school_students', {
+		query: { select: 'id,owner,name,email,classroom', email: `eq.${encodeURIComponent(String(email).toLowerCase())}`, limit: 5 },
+	});
+	const exact = (rows || []).find((r) => String(r.email || '').toLowerCase() === String(email).toLowerCase());
+	return exact || null;
+}
+
+async function assertStudent(req) {
+	const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
+	const authUser = await getSupabaseUser(token);
+	if (!authUser?.id || !authUser.email) {
+		const err = new Error('unauthorized');
+		err.status = 401;
+		throw err;
+	}
+	const row = await findStudentRow(authUser.email);
+	if (!row) {
+		const err = new Error('student account required — ask your school to enroll this email, then open /student');
+		err.status = 403;
+		throw err;
+	}
+	return { authUser, student: row };
+}
+
+// ── GET /company/student-scope — exams, my work, my certificates ──
+router.get('/student-scope', supabaseAuth, async (req, res, next) => {
+	try {
+		const { student } = await assertStudent(req);
+		const owner = student.owner;
+		const [assessments, submissions, certs] = await Promise.all([
+			supabaseRest('/rest/v1/school_assessments', {
+				query: { select: 'id,title,type,status,payload', owner: `eq.${owner}`, status: 'eq.published', order: 'created.desc', limit: 500 },
+			}),
+			supabaseRest('/rest/v1/school_submissions', {
+				query: { select: 'id,assessmentId,assessmentTitle,type,content,status,score,feedback,submittedAt', owner: `eq.${owner}`, studentId: `eq.${student.id}`, order: 'submittedAt.desc', limit: 500 },
+			}),
+			supabaseRest('/rest/v1/school_certificates', {
+				query: { select: 'id,title,studentName,issuedAt', owner: `eq.${owner}`, studentName: `eq.${encodeURIComponent(student.name)}`, order: 'issuedAt.desc', limit: 200 },
+			}),
+		]);
+		const ownerProfile = await supabase.getUserById(owner).catch(() => null);
+		res.json({
+			student: { name: student.name, email: student.email, classroom: student.classroom },
+			schoolName: ownerProfile?.companyName || ownerProfile?.username || 'School',
+			assessments: assessments || [],
+			submissions: submissions || [],
+			certificates: certs || [],
+		});
+	} catch (err) { next(err); }
+});
+
+// ── POST /company/student/submissions — student answers an exam ───
+router.post('/student/submissions', supabaseAuth, async (req, res, next) => {
+	try {
+		const { student } = await assertStudent(req);
+		const assessmentId = String(req.body?.assessmentId || '').trim();
+		const content = String(req.body?.content || '').trim().slice(0, 20000);
+		if (!assessmentId || !content) return res.status(400).json({ error: 'assessmentId and content required' });
+		const aRows = await supabaseRest(`/rest/v1/school_assessments?id=eq.${encodeURIComponent(assessmentId)}`, {
+			query: { select: 'id,title,type,status,owner', limit: 1 },
+		});
+		const exam = aRows?.[0];
+		if (!exam || String(exam.owner) !== String(student.owner)) return res.status(404).json({ error: 'exam not found' });
+		if (exam.status !== 'published') return res.status(409).json({ error: 'exam is not open' });
+		const created = await supabaseRest('/rest/v1/school_submissions', {
+			method: 'POST',
+			body: {
+				owner: student.owner,
+				studentId: student.id,
+				assessmentId: exam.id,
+				studentName: student.name,
+				assessmentTitle: exam.title,
+				type: exam.type || 'quiz',
+				content,
+				status: 'submitted',
+				submittedAt: new Date().toISOString(),
+			},
+			prefer: 'return=representation', query: { select: '*' },
+		});
+		res.status(201).json(created?.[0] || { status: 'submitted' });
+	} catch (err) { next(err); }
+});
+
 // ── GET /company/academy-interest — platform users showing academy ──
 // interest (service-role; RLS will never allow it client-side). Minimal
 // public fields only: username + goal.
