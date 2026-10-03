@@ -173,8 +173,8 @@ const pluralS = (n) => (n === 1 ? '' : 's');
       </nav>
       {!isSubscriber && !isAdmin && (
       <div className="m-3 rounded-xl glass p-4">
-        <div className="flex items-center gap-2 text-[#d4af37]"><Crown className="h-4 w-4" /><span className="text-xs font-semibold">{t('app.trial')}</span></div>
-        <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{t('app.trialLeft', { n: trialDaysRemaining, s: pluralS(trialDaysRemaining) })} · {t('app.cardRequired')}.</p>
+        <div className="flex items-center gap-2 text-[#d4af37]"><Crown className="h-4 w-4" /><span className="text-xs font-semibold">{t('app.upgrade')}</span></div>
+        <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{t('bill.noPlanYet', null, 'Card required — subscribe to unlock the full terminal. No free trial.')}</p>
         <button onClick={() => nav('/app/billing')} className="mt-3 min-h-[44px] w-full rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-xs font-semibold text-[#0a0a0f] transition hover:opacity-90">{t('app.upgrade')}</button>
       </div>
       )}

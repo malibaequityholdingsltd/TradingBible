@@ -129,6 +129,17 @@ function TeacherProtected({ children }) {
     return children;
 }
 
+// No free trial: paid plan + card required before entering the trading app.
+// Billing + profile stay open so new users can pay and manage their account.
+function PaidProtected({ children }) {
+    const { isAuthed, isAuthReady, user } = useAuth();
+    if (!isAuthReady) return <PageFallback />;
+    if (!isAuthed) return <Navigate to="/login" replace />;
+    if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
+    if (!isSubscriber(user)) return <Navigate to="/app/billing" replace />;
+    return children;
+}
+
 // Platform admins can switch features off from the Admin Portal. FeatureGate
 // blocks the page and shows a friendly notice when one is disabled.
 function FeatureGate({ feature, children }) {
@@ -225,33 +236,33 @@ function RoutesWithBoundary() {
                     <Route path="/signup" element={<SignupPage />} />
                     <Route path="/reset" element={<ResetPage />} />
                     <Route path="/onboarding" element={<Protected><OnboardingPage /></Protected>} />
-                    <Route path="/app" element={<Protected><DashboardPage /></Protected>} />
-                    <Route path="/app/analytics" element={<Protected><AnalyticsPage /></Protected>} />
-                    <Route path="/app/watchlists" element={<Protected><WatchlistsPage /></Protected>} />
-                    <Route path="/app/terminal" element={<Protected><TerminalPage /></Protected>} />
-                    <Route path="/app/alerts" element={<Protected><FeatureGate feature="signals"><AlertsPage /></FeatureGate></Protected>} />
-                    <Route path="/app/signals" element={<Protected><FeatureGate feature="signals"><SignalsPage /></FeatureGate></Protected>} />
-                    <Route path="/app/economic-calendar" element={<Protected><FeatureGate feature="economicCalendar"><EconomicCalendarPage /></FeatureGate></Protected>} />
-                    <Route path="/app/charts" element={<Protected><FeatureGate feature="chartBuilder"><ChartsPage /></FeatureGate></Protected>} />
-                    <Route path="/app/heatmaps" element={<Protected><FeatureGate feature="chartBuilder"><HeatmapsPage /></FeatureGate></Protected>} />
-                    <Route path="/app/indicators" element={<Protected><FeatureGate feature="chartBuilder"><IndicatorsPage /></FeatureGate></Protected>} />
-                    <Route path="/app/journal" element={<Protected><JournalPage /></Protected>} />
-                    <Route path="/app/reports" element={<Protected><ReportsPage /></Protected>} />
+                    <Route path="/app" element={<PaidProtected><DashboardPage /></PaidProtected>} />
+                    <Route path="/app/analytics" element={<PaidProtected><AnalyticsPage /></PaidProtected>} />
+                    <Route path="/app/watchlists" element={<PaidProtected><WatchlistsPage /></PaidProtected>} />
+                    <Route path="/app/terminal" element={<PaidProtected><TerminalPage /></PaidProtected>} />
+                    <Route path="/app/alerts" element={<PaidProtected><FeatureGate feature="signals"><AlertsPage /></FeatureGate></PaidProtected>} />
+                    <Route path="/app/signals" element={<PaidProtected><FeatureGate feature="signals"><SignalsPage /></FeatureGate></PaidProtected>} />
+                    <Route path="/app/economic-calendar" element={<PaidProtected><FeatureGate feature="economicCalendar"><EconomicCalendarPage /></FeatureGate></PaidProtected>} />
+                    <Route path="/app/charts" element={<PaidProtected><FeatureGate feature="chartBuilder"><ChartsPage /></FeatureGate></PaidProtected>} />
+                    <Route path="/app/heatmaps" element={<PaidProtected><FeatureGate feature="chartBuilder"><HeatmapsPage /></FeatureGate></PaidProtected>} />
+                    <Route path="/app/indicators" element={<PaidProtected><FeatureGate feature="chartBuilder"><IndicatorsPage /></FeatureGate></PaidProtected>} />
+                    <Route path="/app/journal" element={<PaidProtected><JournalPage /></PaidProtected>} />
+                    <Route path="/app/reports" element={<PaidProtected><ReportsPage /></PaidProtected>} />
                     <Route path="/app/coach" element={<SubscriberProtected><FeatureGate feature="aiCoach"><CoachPage /></FeatureGate></SubscriberProtected>} />
                     <Route path="/app/tools" element={<SubscriberProtected><FeatureGate feature="riskTools"><RiskToolsPage /></FeatureGate></SubscriberProtected>} />
                     <Route path="/app/community" element={<Protected><FeatureGate feature="community"><CommunityPage /></FeatureGate></Protected>} />
                     <Route path="/app/academy" element={<Protected><FeatureGate feature="academy"><AcademyPage /></FeatureGate></Protected>} />
-                    <Route path="/app/security" element={<Protected><SecurityPage /></Protected>} />
+                    <Route path="/app/security" element={<PaidProtected><SecurityPage /></PaidProtected>} />
                     <Route path="/app/api-docs" element={<SubscriberProtected><ApiDocsPage /></SubscriberProtected>} />
                     <Route path="/app/integrations" element={<SubscriberProtected><IntegrationsPage /></SubscriberProtected>} />
                     <Route path="/app/branding" element={<SubscriberProtected><BrandingPage /></SubscriberProtected>} />
-                    <Route path="/app/brokers" element={<Protected><BrokersPage /></Protected>} />
-                    <Route path="/app/prop-firms" element={<Protected><PropFirmsPage /></Protected>} />
-                    <Route path="/app/affiliate" element={<Protected><AffiliatePage /></Protected>} />
+                    <Route path="/app/brokers" element={<PaidProtected><BrokersPage /></PaidProtected>} />
+                    <Route path="/app/prop-firms" element={<PaidProtected><PropFirmsPage /></PaidProtected>} />
+                    <Route path="/app/affiliate" element={<PaidProtected><AffiliatePage /></PaidProtected>} />
                     <Route path="/app/billing" element={<Protected><BillingPage /></Protected>} />
                     <Route path="/app/wallet" element={<SubscriberProtected><FeatureGate feature="wallet"><WalletPage /></FeatureGate></SubscriberProtected>} />
                     <Route path="/app/profile" element={<Protected><ProfilePage /></Protected>} />
-                    <Route path="/app/api-keys" element={<Protected><UserApiKeysPage /></Protected>} />
+                    <Route path="/app/api-keys" element={<PaidProtected><UserApiKeysPage /></PaidProtected>} />
                     <Route path="/teacher" element={<TeacherProtected><TeacherDashboardPage /></TeacherProtected>} />
                     <Route path="/student" element={<Protected><StudentDashboardPage /></Protected>} />
                     <Route path="/admin" element={<AdminProtected><AdminDashboard /></AdminProtected>} />

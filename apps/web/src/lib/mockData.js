@@ -12,12 +12,10 @@ export const LOGOS = {
 };
 
 export const PLANS = [
-  { id: 'trial', name: 'Free Trial', price: 0, period: '3 days', tagline: 'Full premium access', logo: LOGOS.whiteBlack,
-    features: ['All Pro features', 'AI trade reviews', 'Broker sync (2 accounts)', 'Card required'], cta: 'Start Free Trial' },
   { id: 'pro', name: 'Pro', price: 19.99, period: 'mo', tagline: 'For serious retail traders', logo: LOGOS.goldBlack,
-    features: ['Unlimited trades', 'Full analytics suite', 'AI trade scoring', '5 broker accounts', 'Trading calendar'], cta: 'Choose Pro' },
-  { id: 'elite', name: 'Elite AI', price: 49.99, period: 'mo', highlight: true, tagline: 'AI-first performance', logo: LOGOS.goldWhite,
-    features: ['Everything in Pro', 'AI Trading Coach chat', 'Daily & weekly AI reports', 'Mistake detection', '15 broker accounts', 'Priority AI queue'], cta: 'Choose Elite AI' },
+    features: ['Unlimited trades', 'Full analytics suite', 'SI trade scoring', '5 broker accounts', 'Trading calendar'], cta: 'Choose Pro' },
+  { id: 'elite', name: 'Elite SI', price: 49.99, period: 'mo', highlight: true, tagline: 'SI-first performance', logo: LOGOS.goldWhite,
+    features: ['Everything in Pro', 'SI Trading Coach chat', 'Daily & weekly SI reports', 'Mistake detection', '15 broker accounts', 'Priority SI queue'], cta: 'Choose Elite SI' },
   { id: 'professional', name: 'Professional', price: 99, period: 'mo', tagline: 'For funds & prop desks', logo: LOGOS.goldBlack,
     features: ['Everything in Elite', 'Unlimited broker accounts', 'Team seats', 'API & webhooks', 'White-glove onboarding', 'Dedicated success manager'], cta: 'Choose Professional' },
 ];
