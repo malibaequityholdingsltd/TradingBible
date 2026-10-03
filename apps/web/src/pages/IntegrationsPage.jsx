@@ -119,7 +119,7 @@ const CATEGORIES = [
     id: 'payment', label: 'Payment', icon: CreditCard,
     items: [
       { name: 'Stripe API', provider: 'Stripe', status: 'implemented',
-        purpose: 'Subscription billing, checkout, invoices and webhooks (3-day card-required trial).',
+        purpose: 'Subscription billing, checkout, invoices and webhooks (paid-only, charged at checkout — no free trial).',
         usedIn: '/app/billing, /app/academy, Express /stripe routes, subscription fields on users.',
         env: 'STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_*', envLoc: 'apps/api/.env',
         setup: 'From the Stripe dashboard copy the secret + publishable keys, webhook secret and price IDs to apps/api/.env.' },

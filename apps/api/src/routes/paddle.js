@@ -276,7 +276,7 @@ router.post('/webhook', async (req, res) => {
 					paddleCustomerId: data.customer_id || user.paddleCustomerId,
 				};
 				if (type === 'subscription.canceled') {
-					patch.plan = 'trial';
+					patch.plan = null;
 					patch.subscriptionStatus = 'canceled';
 				} else if (plan && (data.status === 'active' || data.status === 'trialing')) {
 					patch.plan = plan;

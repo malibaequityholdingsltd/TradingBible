@@ -697,7 +697,7 @@ export function SignupPage() {
         return;
       }
       const auth = await loginWithCode(email.trim(), token);
-      // New accounts must add a card to activate the 3-day trial.
+      // No free trial: new accounts must complete a paid checkout to enter.
       nav('/app/billing', { replace: true });
     } catch (err) {
       if (!sent && isOtpRateLimited(err)) {

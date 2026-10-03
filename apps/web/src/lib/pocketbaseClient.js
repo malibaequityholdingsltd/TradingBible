@@ -160,7 +160,7 @@ function createSupabaseCompatClient() {
       email: user.email,
       verified: !!user.email_confirmed_at,
       username: normalized?.username || user.user_metadata?.username || (user.email || '').split('@')[0],
-      plan: normalized?.plan || user.user_metadata?.plan || 'trial',
+      plan: normalized?.plan || user.user_metadata?.plan || null,
       accountType: normalized?.accountType || user.user_metadata?.accountType || 'trader',
       companyName: normalized?.companyName || user.user_metadata?.companyName || null,
       teacherSubject: normalized?.teacherSubject || user.user_metadata?.teacherSubject || null,
@@ -205,7 +205,7 @@ function createSupabaseCompatClient() {
           role: fallbackRole,
           accountType: fallbackAccountType,
           companyName: fallbackCompanyName,
-          plan: fallbackRole === 'admin' ? 'professional' : 'trial',
+          plan: fallbackRole === 'admin' ? 'professional' : null,
         })
         .select()
         .single();

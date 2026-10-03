@@ -141,7 +141,7 @@ export default function ProfilePage() {
               </div>
               <div className="min-w-0"><div className="font-semibold text-[#f0ecdd]">{form.username || t('prof.trader')}</div><div className="truncate text-xs text-[#8a8577]">{form.email}</div>{avatar && <button type="button" onClick={removeAvatar} disabled={avatarBusy} className="mt-1 inline-flex items-center gap-1 text-[11px] text-[#8a8577] transition hover:text-red-400"><Trash2 className="h-3 w-3" /> {t('prof.removePhoto')}</button>}</div>
             </div>
-            <div className="mt-4 flex items-center gap-2 rounded-lg bg-[#d4af37]/8 px-3 py-2 text-sm text-[#d4af37]"><Crown className="h-4 w-4" /> {(user?.plan || 'trial').charAt(0).toUpperCase() + (user?.plan || 'trial').slice(1)} plan</div>
+            <div className="mt-4 flex items-center gap-2 rounded-lg bg-[#d4af37]/8 px-3 py-2 text-sm text-[#d4af37]"><Crown className="h-4 w-4" /> {user?.plan ? user.plan.charAt(0).toUpperCase() + user.plan.slice(1) : t('bill.noPlan', null, 'No plan')} {user?.plan ? 'plan' : ''}</div>
           </div>
 
           <div className="glass rounded-2xl p-6">

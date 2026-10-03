@@ -54,7 +54,7 @@ function Header() {
           <Link to="/about" className="text-[#e9e7df]">{t('abt.about')}</Link>
           <Link to="/pricing" className="hover:text-[#e9e7df]">{t('abt.pricing')}</Link>
         </nav>
-        <Link to="/signup" className="rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">{t('abt.startFree')}</Link>
+        <Link to="/pricing" className="rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">{t('land.viewPricing')}</Link>
       </div>
     </header>
   );
@@ -217,7 +217,7 @@ export default function AboutPage() {
         <div className="glass gold-glow flex flex-col items-center rounded-2xl p-10 text-center">
           <h2 className="text-2xl font-bold sm:text-3xl">{t('abt.tagA')} <span className="gold-text">{t('abt.tagB')}</span></h2>
           <p className="mt-3 max-w-xl text-[#8a8577]">{t('abt.ctaSub')}</p>
-          <Link to="/signup" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 py-3.5 font-semibold text-[#0a0a0f] transition hover:opacity-90">{t('abt.startTrial')} <ArrowRight className="h-4 w-4" /></Link>
+          <Link to="/pricing" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 py-3.5 font-semibold text-[#0a0a0f] transition hover:opacity-90">{t('land.choosePlan', null, 'Choose your plan')} <ArrowRight className="h-4 w-4" /></Link>
         </div>
       </section>
 

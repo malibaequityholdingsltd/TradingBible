@@ -144,8 +144,8 @@ export function PolicyPage() {
 export function RefundPage() {
   return (
     <LegalShell title="Refund Policy" subtitle="We want you to trade with confidence in the platform, not just the markets. Here is exactly how refunds work.">
-      <Section heading="1. Free trial first">
-        <p>Every new account starts with a 3-day premium trial that requires a valid card. Your card is verified at signup and charged automatically if you continue after the trial. We encourage you to use the trial fully so you can evaluate the Service before paying.</p>
+      <Section heading="1. No free trial">
+        <p>TradingBible is a paid-only service — there is no free trial. Every new account must complete a paid checkout (card charged immediately) before entering the trading terminal. Paid plans carry the 14-day money-back guarantee below so you can evaluate the Service risk-free.</p>
       </Section>
       <Section heading="2. 14-day money-back guarantee">
         <p>If you upgrade to a paid plan and are not satisfied, you may request a full refund within 14 days of your first payment on that plan. Contact billing@tradingbible.app from your account email and we will process the refund to your original payment method.</p>
@@ -173,7 +173,7 @@ const FAQS = [
   { q: 'Is TradingBible financial advice?', a: 'No. TradingBible is a journaling and analytics tool. Our AI reviews and scores are educational and reflect your own historical data — they are never buy/sell recommendations.' },
   { q: 'How does broker sync work?', a: 'You connect a broker using read-oriented API keys or OAuth. We import your historical and ongoing trades automatically into your journal, dashboard, and AI reports. Credentials are encrypted and never used to place trades or withdraw funds.' },
   { q: 'Which brokers are supported?', a: 'MetaTrader 4, MetaTrader 5, cTrader, DXtrade, Interactive Brokers, Binance, Bybit, and Coinbase. More integrations are added regularly.' },
-  { q: 'Do I need a credit card for the trial?', a: 'Yes. The 3-day premium trial requires a valid card. Your card is verified at signup and you are charged automatically if you continue after the trial.' },
+  { q: 'Do you offer a free trial?', a: 'No. TradingBible is paid-only — your card is charged at checkout. Every first payment is covered by our 14-day money-back guarantee.' },
   { q: 'Can I cancel anytime?', a: 'Yes. Cancel from your profile settings in a couple of clicks. You keep access until the end of your current billing period, and no further charges are made.' },
   { q: 'How is my data protected?', a: 'We use row-level security, encrypted storage, isolated per-user data, and protected APIs. Your trade data is only used to generate insights for you.' },
   { q: 'What does the AI Coach actually do?', a: 'It reviews your trades for quality, risk, and discipline, detects recurring mistakes, and answers questions grounded in your real history, such as “What is my biggest mistake?” or “Which strategy works best for me?”.' },

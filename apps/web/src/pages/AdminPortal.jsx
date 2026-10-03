@@ -19,9 +19,14 @@ import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useToast } from '@/hooks/use-toast';
 
 const GOLD = '#d4af37';
-const PLAN_COLORS = { trial: '#6a665a', pro: '#3b82f6', elite: GOLD, professional: '#a855f7' };
-const PLAN_PRICES = { trial: 0, pro: 19.99, elite: 49.99, professional: 99.00 };
-const DEFAULT_TRIAL_DAYS = 3;
+const PLAN_COLORS = { none: '#6a665a', pro: '#3b82f6', elite: GOLD, professional: '#a855f7' };
+const PLAN_PRICES = { pro: 19.99, elite: 49.99, professional: 99.00 };
+// No free trial: paid plans only. Helpers treat legacy 'trial' rows as no plan.
+const PAID_PLANS = ['pro', 'elite', 'professional'];
+const planKey = (p) => (!p || p === 'trial' ? null : p);
+const isPaidPlan = (p) => PAID_PLANS.includes(planKey(p));
+const displayPlan = (p) => planKey(p) || 'none';
+const planLabel = (p) => { const k = displayPlan(p); return k === 'none' ? 'No plan' : k.charAt(0).toUpperCase() + k.slice(1); };
 
 /* M1–M12 forecast from the financial model (loan file): M6 = 185 users / $7,102 MRR, M12 = 600 users / $23,034 MRR */
 const PLAN_FORECAST = (() => {
@@ -46,13 +51,10 @@ const PLAN_FORECAST = (() => {
   return rows;
 })();
 
-function computeTrialEndsAt(user, trialDays = DEFAULT_TRIAL_DAYS) {
-  if (user.trialEndsAt) return user.trialEndsAt;
-  const joinedAt = user.created || user.created_at;
-  const base = joinedAt ? new Date(joinedAt) : null;
-  if (!base || Number.isNaN(base.getTime())) return null;
-  base.setDate(base.getDate() + trialDays);
-  return base.toISOString();
+// Legacy trial end-date passthrough (no trials are issued anymore;
+// existing rows keep whatever the database holds, otherwise null).
+function computeTrialEndsAt(user) {
+  return user.trialEndsAt || user.trial_ends_at || null;
 }
 
 function normalizeAdminUser(raw, source) {
@@ -65,12 +67,12 @@ function normalizeAdminUser(raw, source) {
     created,
     username: raw.username || (raw.email ? raw.email.split('@')[0] : 'user'),
     name: raw.name || raw.username || (raw.email ? raw.email.split('@')[0] : 'User'),
-    plan: raw.plan || 'trial',
+    plan: planKey(raw.plan),
     accountType: raw.accountType === 'company' || raw.account_type === 'company' ? 'teacher'
       : raw.accountType === 'individual' || raw.account_type === 'individual' ? 'trader'
       : raw.accountType || raw.account_type || (role === 'teacher' ? 'teacher' : 'trader'),
-    trialEndsAt: computeTrialEndsAt(raw, Number(raw.trialDays) || DEFAULT_TRIAL_DAYS),
-    subscriptionStatus: raw.subscriptionStatus || (raw.plan && raw.plan !== 'trial' ? 'active' : 'trial'),
+    trialEndsAt: computeTrialEndsAt(raw),
+    subscriptionStatus: raw.subscriptionStatus || (isPaidPlan(raw.plan) ? 'active' : null),
   };
   return normalized;
 }
@@ -86,7 +88,7 @@ function useUsers() {
       let list = [];
 
       // Admin endpoint merges Supabase auth users + `users`-table rows
-      // (service role), so trial accounts appear even without a users row.
+      // (service role), so unpaid accounts appear even without a users row.
       try {
         const token = pb.authStore.token;
         if (token) {
@@ -166,9 +168,9 @@ function Badge({ children, color = 'gold' }) {
 }
 
 const planBadge = (plan) => {
-  if (!plan || plan === 'trial') return <Badge color="muted">Trial</Badge>;
-  if (plan === 'pro') return <Badge color="blue">Pro</Badge>;
-  if (plan === 'elite') return <Badge color="gold">Elite</Badge>;
+  if (!planKey(plan)) return <Badge color="muted">No plan</Badge>;
+  if (planKey(plan) === 'pro') return <Badge color="blue">Pro</Badge>;
+  if (planKey(plan) === 'elite') return <Badge color="gold">Elite</Badge>;
   return <Badge color="purple">Professional</Badge>;
 };
 
@@ -204,7 +206,7 @@ function EditUserModal({ user, userSource, onClose, onSaved }) {
   const [form, setForm] = useState({
     username: user.username || '',
     name: user.name || '',
-    plan: user.plan || 'trial',
+    plan: planKey(user.plan),
     role: user.role || 'user',
     email: user.email || '',
     phone: user.phone || '',
@@ -270,7 +272,7 @@ function EditUserModal({ user, userSource, onClose, onSaved }) {
               <select value={form.plan} onChange={e => setForm({ ...form, plan: e.target.value })}
                 disabled={userSource === 'profiles'}
                 className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50 disabled:opacity-50">
-                {['trial', 'pro', 'elite', 'professional'].map(p => <option key={p} value={p} className="bg-[#0f0f14]">{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
+                {['none', 'pro', 'elite', 'professional'].map(p => <option key={p} value={p === 'none' ? '' : p} className="bg-[#0f0f14]">{planLabel(p === 'none' ? null : p)}</option>)}
               </select>
             </div>
             <div>
@@ -309,7 +311,7 @@ function UserDetailModal({ user, onClose }) {
     ['Username', user.username || '—'],
     ['Name', user.name || '—'],
     ['Phone', user.phone || '—'],
-    ['Plan', user.plan || 'trial'],
+    ['Plan', planLabel(user.plan)],
     ['Role', user.role || 'user'],
     ['Verified', user.verified ? 'Yes' : 'No'],
     ['Primary Market', user.primaryMarket || '—'],
@@ -354,7 +356,7 @@ export function AdminDashboard() {
   const { trades } = useTrades();
 
   const stats = useMemo(() => {
-    const paid = users.filter(u => u.plan && u.plan !== 'trial');
+    const paid = users.filter(u => isPaidPlan(u.plan));
     const mrr = paid.reduce((s, u) => s + (PLAN_PRICES[u.plan] || 0), 0);
     const verified = users.filter(u => u.verified).length;
     return { total: users.length, paid: paid.length, mrr, verified, trades: trades.length };
@@ -428,7 +430,7 @@ export function AdminDashboard() {
         <>
           <div className="mb-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
             <Stat icon={Users} label="Total Users" value={stats.total.toLocaleString()} sub={`${stats.verified} verified`} trend="up" />
-            <Stat icon={CreditCard} label="Paid Subscribers" value={stats.paid.toLocaleString()} sub={`${stats.total - stats.paid} on trial`} color="#3b82f6" />
+            <Stat icon={CreditCard} label="Paid Subscribers" value={stats.paid.toLocaleString()} sub={`${stats.total - stats.paid} without a plan`} color="#3b82f6" />
             <Stat icon={DollarSign} label="Est. MRR" value={`$${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="Monthly recurring" trend="up" color="#10b981" />
             <Stat icon={Activity} label="Total Trades" value={stats.trades.toLocaleString()} sub="Across all users" color="#a855f7" />
           </div>
@@ -566,7 +568,7 @@ export function AdminUsers() {
   const filtered = useMemo(() => {
     let out = users;
     if (q) out = out.filter(u => (u.email + (u.username || '') + (u.name || '')).toLowerCase().includes(q.toLowerCase()));
-    if (planFilter !== 'all') out = out.filter(u => (u.plan || 'trial') === planFilter);
+    if (planFilter !== 'all') out = out.filter(u => displayPlan(u.plan) === planFilter);
     if (roleFilter !== 'all') out = out.filter(u => (u.role || 'user') === roleFilter);
     return out;
   }, [users, q, planFilter, roleFilter]);
@@ -647,7 +649,7 @@ export function AdminUsers() {
 
   const exportCSV = () => {
     const rows = [['id', 'email', 'username', 'name', 'plan', 'role', 'verified', 'created', 'subscriptionStatus']];
-    filtered.forEach(u => rows.push([u.id, u.email, u.username || '', u.name || '', u.plan || 'trial', u.role || 'user', u.verified ? 'true' : 'false', (u.created || '').slice(0, 10), u.subscriptionStatus || '']));
+    filtered.forEach(u => rows.push([u.id, u.email, u.username || '', u.name || '', displayPlan(u.plan), u.role || 'user', u.verified ? 'true' : 'false', (u.created || '').slice(0, 10), u.subscriptionStatus || '']));
     const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
     const a = document.createElement('a'); a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`; a.download = `users_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
     toast({ title: 'Exported', description: `${filtered.length} users downloaded.` });
@@ -676,7 +678,7 @@ export function AdminUsers() {
         <select value={planFilter} onChange={e => { setPlanFilter(e.target.value); setPage(1); }}
           className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none">
           <option value="all" className="bg-[#0f0f14]">All Plans</option>
-          {['trial', 'pro', 'elite', 'professional'].map(p => <option key={p} value={p} className="bg-[#0f0f14]">{p}</option>)}
+          {['none', 'pro', 'elite', 'professional'].map(p => <option key={p} value={p} className="bg-[#0f0f14]">{planLabel(p === 'none' ? null : p)}</option>)}
         </select>
         <select value={roleFilter} onChange={e => { setRoleFilter(e.target.value); setPage(1); }}
           className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none">
@@ -776,9 +778,9 @@ export function AdminAnalytics() {
   const { toast } = useToast();
 
   const planDist = useMemo(() => {
-    const counts = { trial: 0, pro: 0, elite: 0, professional: 0 };
-    users.forEach(u => { counts[u.plan || 'trial'] = (counts[u.plan || 'trial'] || 0) + 1; });
-    return Object.entries(counts).map(([name, value]) => ({ name: name.charAt(0).toUpperCase() + name.slice(1), value, color: PLAN_COLORS[name] }));
+    const counts = { none: 0, pro: 0, elite: 0, professional: 0 };
+    users.forEach(u => { const k = displayPlan(u.plan); counts[k] = (counts[k] || 0) + 1; });
+    return Object.entries(counts).map(([name, value]) => ({ name: name === 'none' ? 'No plan' : name.charAt(0).toUpperCase() + name.slice(1), value, color: PLAN_COLORS[name] }));
   }, [users]);
 
   const monthlyNew = useMemo(() => {
@@ -796,13 +798,13 @@ export function AdminAnalytics() {
     return Object.entries(counts).sort(([, a], [, b]) => b - a).slice(0, 6).map(([name, value]) => ({ name, value }));
   }, [trades]);
 
-  const paid = users.filter(u => u.plan && u.plan !== 'trial');
+  const paid = users.filter(u => isPaidPlan(u.plan));
   const mrr = paid.reduce((s, u) => s + (PLAN_PRICES[u.plan] || 0), 0);
 
   const churn = useMemo(() => {
-    const expired = users.filter(u => (u.plan === 'trial' || !u.plan) && u.trialEndsAt && new Date(u.trialEndsAt) < new Date());
-    const trialed = users.filter(u => u.trialEndsAt || u.plan === 'trial');
-    return trialed.length ? expired.length / trialed.length : 0;
+    const everPaid = users.filter(u => isPaidPlan(u.plan) || u.subscriptionStatus);
+    const canceled = users.filter(u => u.subscriptionStatus === 'canceled' || u.subscriptionStatus === 'past_due');
+    return everPaid.length ? canceled.length / everPaid.length : 0;
   }, [users]);
   const arpu = paid.length ? mrr / paid.length : 0;
   const ltv = churn > 0 ? arpu / churn : null;
@@ -820,7 +822,7 @@ export function AdminAnalytics() {
       const d = (u.created || '').slice(0, 7);
       if (!d) return;
       liveByMonth[d] = (liveByMonth[d] || 0) + 1;
-      if (u.plan && u.plan !== 'trial') mrrByMonth[d] = (mrrByMonth[d] || 0) + (PLAN_PRICES[u.plan] || 0);
+      if (isPaidPlan(u.plan)) mrrByMonth[d] = (mrrByMonth[d] || 0) + (PLAN_PRICES[u.plan] || 0);
     });
     return PLAN_FORECAST.map((row, i) => {
       const d = new Date(ly, lm - 1 + i, 1);
@@ -859,7 +861,7 @@ export function AdminAnalytics() {
           </div>
 
           <div className="mb-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
-            <Stat icon={UserCheck} label="Est. Churn" value={`${(churn * 100).toFixed(1)}%`} sub="Expired trials / trialed" color={churn > 0.3 ? '#ef4444' : '#10b981'} />
+            <Stat icon={UserCheck} label="Est. Churn" value={`${(churn * 100).toFixed(1)}%`} sub="Canceled / ever subscribed" color={churn > 0.3 ? '#ef4444' : '#10b981'} />
             <Stat icon={DollarSign} label="ARPU" value={`$${arpu.toFixed(2)}`} sub="MRR per paid user" color="#3b82f6" />
             <Stat icon={Crown} label="LTV : CAC" value={ltvCac != null ? `${ltvCac.toFixed(1)}x` : '—'} sub={`LTV $${(ltv ?? 0).toFixed(0)} / CAC $${CAC}`} color={ltvCac >= 3 ? '#10b981' : '#ef4444'} />
             <Stat icon={Target} label="Plan Fit" value={forecastRows.length && mrr > 0 ? `${Math.round(mrr / PLAN_FORECAST[0].mrr * 100)}%` : '—'} sub="Live MRR vs M1 target" color={GOLD} />
@@ -1050,8 +1052,8 @@ export function AdminBilling() {
     } finally { setBusy(null); }
   };
 
-  const paid = useMemo(() => users.filter(u => u.plan && u.plan !== 'trial'), [users]);
-  const trial = users.filter(u => !u.plan || u.plan === 'trial');
+  const paid = useMemo(() => users.filter(u => isPaidPlan(u.plan)), [users]);
+  const noPlan = users.filter(u => !planKey(u.plan));
   const mrr = paid.reduce((s, u) => s + (PLAN_PRICES[u.plan] || 0), 0);
   const arr = mrr * 12;
 
@@ -1067,7 +1069,7 @@ export function AdminBilling() {
         <Stat icon={DollarSign} label={live?.configured ? 'Live MRR' : 'Est. MRR'} value={`$${(live?.configured ? live.mrr : mrr).toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub={live?.configured ? `Stripe live · ${live.activeCount} active` : 'Monthly recurring (est)'} trend="up" color="#10b981" />
         <Stat icon={TrendingUp} label="Est. ARR" value={`$${arr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="Annual recurring" trend="up" color={GOLD} />
         <Stat icon={CreditCard} label="Paid Subscribers" value={paid.length} sub={`$${paid.length ? (mrr / paid.length).toFixed(2) : 0} ARPU`} color="#3b82f6" />
-        <Stat icon={Users} label="Trial Users" value={trial.length} sub={`${users.length ? Math.round(trial.length / users.length * 100) : 0}% of total`} color="#a855f7" />
+        <Stat icon={Users} label="No Plan" value={noPlan.length} sub={`${users.length ? Math.round(noPlan.length / users.length * 100) : 0}% of total`} color="#a855f7" />
       </div>
 
       {planBreakdown.length > 0 && (
@@ -1435,17 +1437,19 @@ function GenericContentTab({ prefix, title, fields, subtitle }) {
   const { items, loading, create, update, remove } = useAdminApi(prefix);
   const [form, setForm] = useState(() => Object.fromEntries(fields.map((f) => [f.key, f.default ?? ''])));
   const [editing, setEditing] = useState(null);
+  const [saveError, setSaveError] = useState(null);
   const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
   const label = 'mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider';
 
   const submit = async (e) => {
     e.preventDefault();
+    setSaveError(null);
     try {
       if (editing) await update(editing.id, { config: { ...form, title: form.title }, enabled: form.enabled !== false });
       else await create({ title: form.title, config: form, enabled: form.enabled !== false });
       setEditing(null);
       setForm(Object.fromEntries(fields.map((f) => [f.key, f.default ?? ''])));
-    } catch (err) { window.alert('Save failed: ' + (err.message || err)); }
+    } catch (err) { setSaveError(err?.message || err || 'Save failed'); }
   };
 
   const startEdit = (item) => {
@@ -1463,6 +1467,7 @@ function GenericContentTab({ prefix, title, fields, subtitle }) {
 
       <form onSubmit={submit} className="glass rounded-2xl p-5">
         <h4 className="mb-4 text-sm font-semibold text-[#f0ecdd]">{editing ? `Edit ${editing.title || ''}` : 'New item'}</h4>
+        {saveError && <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-400">Save failed: {String(saveError)}</div>}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {fields.map((f) => (
             <div key={f.key} className={f.full ? 'sm:col-span-2 lg:col-span-3' : ''}>
@@ -1578,8 +1583,8 @@ export function AdminReports() {
       '',
       `Total Users: ${users.length}`,
       `Verified: ${users.filter(u => u.verified).length}`,
-      `Paid: ${users.filter(u => u.plan && u.plan !== 'trial').length}`,
-      `Trial: ${users.filter(u => !u.plan || u.plan === 'trial').length}`,
+      `Paid: ${users.filter(u => isPaidPlan(u.plan)).length}`,
+      `No plan: ${users.filter(u => !planKey(u.plan)).length}`,
       `Admins: ${users.filter(u => u.role === 'admin').length}`,
       `Total Trades: ${trades.length}`,
     ];
@@ -1609,11 +1614,11 @@ export function AdminReports() {
   const rows = [
     { label: 'Total registered users', value: users.length, icon: Users },
     { label: 'Verified users', value: users.filter(u => u.verified).length, icon: CheckCircle },
-    { label: 'Paid subscribers', value: users.filter(u => u.plan && u.plan !== 'trial').length, icon: CreditCard },
-    { label: 'Trial users', value: users.filter(u => !u.plan || u.plan === 'trial').length, icon: Clock },
+    { label: 'Paid subscribers', value: users.filter(u => isPaidPlan(u.plan)).length, icon: CreditCard },
+    { label: 'No-plan users', value: users.filter(u => !planKey(u.plan)).length, icon: Clock },
     { label: 'Admin accounts', value: users.filter(u => u.role === 'admin').length, icon: Shield },
     { label: 'Total trades logged', value: trades.length, icon: Activity },
-    { label: 'Est. MRR', value: `$${users.filter(u => u.plan && u.plan !== 'trial').reduce((s, u) => s + (PLAN_PRICES[u.plan] || 0), 0).toFixed(0)}`, icon: DollarSign },
+    { label: 'Est. MRR', value: `$${users.filter(u => isPaidPlan(u.plan)).reduce((s, u) => s + (PLAN_PRICES[u.plan] || 0), 0).toFixed(0)}`, icon: DollarSign },
   ];
 
   const [sysLogs, setSysLogs] = useState([]);
@@ -2706,7 +2711,7 @@ export function AdminSettings() {
     platformName: 'TradingBible',
     tagline: 'Trade like the 1%. Journal like a fund.',
     supportEmail: 'support@tradingbible.app',
-    trialDays: 3,
+    trialDays: 0,
     signupsOpen: true,
     maintenance: false,
     twoFARequired: false,
@@ -2798,7 +2803,7 @@ export function AdminSettings() {
             {saveState === 'error' && 'Autosave failed'}
             {saveState === 'idle' && 'Changes save automatically'}
           </div>
-          {[['platformName', 'Platform Name', 'text'], ['tagline', 'Tagline', 'text'], ['supportEmail', 'Support Email', 'email'], ['trialDays', 'Trial Length (days)', 'number'], ['digestHourUTC', 'Weekly Digest Hour (UTC, Sundays)', 'number']].map(([k, l, t]) => (
+          {[['platformName', 'Platform Name', 'text'], ['tagline', 'Tagline', 'text'], ['supportEmail', 'Support Email', 'email'], ['digestHourUTC', 'Weekly Digest Hour (UTC, Sundays)', 'number']].map(([k, l, t]) => (
             <div key={k}>
               <label className="mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">{l}</label>
               <input type={t} value={settings[k]} onChange={e => setSettings({ ...settings, [k]: t === 'number' ? Number(e.target.value) : e.target.value })}

@@ -187,10 +187,8 @@ router.post('/checkout-session', async (req, res) => {
       });
       return res.json({ url: session.url, id: session.id });
     }
-    // 3-day trial with card required: first-time subscribers get a Stripe trial
-    // (card collected + verified now, charged after 3 days). Existing subscribers
-    // checking out again are charged immediately.
-    const isFirstSubscription = !user.subscriptionId;
+    // No free trial: every checkout charges immediately. New subscribers
+    // must complete a paid checkout (card collected + charged now).
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: customerId || undefined,
@@ -202,7 +200,6 @@ router.post('/checkout-session', async (req, res) => {
       metadata: { user_id: user.id, plan },
       subscription_data: {
         metadata: { user_id: user.id, plan },
-        ...(isFirstSubscription ? { trial_period_days: 3 } : {}),
       },
     });
     res.json({ url: session.url, id: session.id });
@@ -323,7 +320,7 @@ router.post('/webhook', async (req, res) => {
           stripeCustomerId: customerId || user.stripeCustomerId,
         };
         if (type === 'customer.subscription.deleted') {
-          patch.plan = 'trial';
+          patch.plan = null;
           patch.subscriptionStatus = 'canceled';
         } else if (plan && (data.status === 'active' || data.status === 'trialing')) {
           patch.plan = plan;
