@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
 import { openAcademyCheckout, getStripeConfig } from '@/lib/stripe';
 import { useWallet } from '@/hooks/useWallet';
@@ -597,6 +598,8 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 export default function AcademyPage() {
 	const { t } = useI18n();
 	const { toast } = useToast();
+	const { user } = useAuth();
+	const isAdmin = user?.role === 'admin'; // admins enter free — everyone else pays $150
 	const [access, setAccess] = useState(null); // null = loading
 	const [data, setData] = useState(null);
 	const [view, setView] = useState('paths'); // paths | curriculum | lesson
@@ -710,8 +713,8 @@ export default function AcademyPage() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [liveWebinar?.id]);
 
-	// ── Not purchased → paywall ──
-	if (access === false) {
+	// ── Not purchased (and not admin) → paywall ──
+	if (access === false && !isAdmin) {
 		return (
 			<AppLayout title={t('aca.page')}>
 				<Paywall onPurchased={() => { toast({ title: t('aca.welcome'), description: t('aca.welcomeSub') }); refreshAccess(); }} />
