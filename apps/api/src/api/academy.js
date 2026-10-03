@@ -34,61 +34,330 @@ function extractJson(raw) {
 	}
 }
 
-// ── Default curriculum (fallback if the AI is unavailable) ──────────
-const DEFAULT_CURRICULUM = {
-	pathName: 'The Disciplined Trader',
-	focus: 'A complete A–Z trading education: markets, risk, analysis and execution.',
-	courses: [
-		{
-			courseKey: 'markets-foundations',
-			title: 'Markets & Foundations',
-			minutes: 65,
-			description: 'How markets work and the assets you trade — Gold, Bitcoin, Forex, Crypto, Commodities and Indices.',
-			lessons: [
-				{ lessonKey: 'what-is-trading', title: 'What trading really is', minutes: 12 },
-				{ lessonKey: 'market-structure', title: 'Market structure and participants', minutes: 14 },
-				{ lessonKey: 'asset-classes', title: 'The asset classes you can trade', minutes: 18 },
-				{ lessonKey: 'how-prices-move', title: 'How prices move: supply, demand and liquidity', minutes: 21 },
-			],
-		},
-		{
-			courseKey: 'risk-first',
-			title: 'Risk Management First',
-			minutes: 70,
-			description: 'Protect capital before anything else: sizing, stops and risk/reward.',
-			lessons: [
-				{ lessonKey: 'position-sizing', title: 'Position sizing fundamentals', minutes: 16 },
-				{ lessonKey: 'stops-losses', title: 'Stop losses done right', minutes: 15 },
-				{ lessonKey: 'risk-reward', title: 'Risk/reward and expectancy', minutes: 19 },
-				{ lessonKey: 'max-drawdown', title: 'Drawdown control and discipline', minutes: 20 },
-			],
-		},
-		{
-			courseKey: 'technical-analysis',
-			title: 'Technical Analysis',
-			minutes: 76,
-			description: 'Candlesticks, support and resistance, trends and confluence.',
-			lessons: [
-				{ lessonKey: 'candlesticks', title: 'Reading candlesticks', minutes: 18 },
-				{ lessonKey: 'support-resistance', title: 'Support and resistance', minutes: 17 },
-				{ lessonKey: 'trends', title: 'Trends, structure and swing points', minutes: 20 },
-				{ lessonKey: 'confluence', title: 'Building a confluence checklist', minutes: 21 },
-			],
-		},
-		{
-			courseKey: 'psychology-execution',
-			title: 'Psychology & Execution',
-			minutes: 66,
-			description: 'The mindset and process that keep you consistent.',
-			lessons: [
-				{ lessonKey: 'trading-plan', title: 'Building a trading plan', minutes: 16 },
-				{ lessonKey: 'emotions', title: 'Emotions and tilt control', minutes: 15 },
-				{ lessonKey: 'journaling', title: 'Journaling every trade', minutes: 17 },
-				{ lessonKey: 'review', title: 'Weekly review cadence', minutes: 18 },
-			],
-		},
-	],
+// ── Default curricula (fallback if the AI is unavailable) ───────────
+// Mirrors apps/web/src/lib/academyCatalog.js STATIC_CURRICULA — keep in sync.
+// Keys: beginner | forex | crypto | intermediate | professional
+const DEFAULT_CURRICULA = {
+	'beginner': {
+		pathName: 'Beginner Foundation',
+		focus: 'A complete A–Z foundation: markets, Forex & Crypto basics, risk, analysis and execution.',
+		courses: [
+			{
+				courseKey: 'markets-foundations',
+				title: 'Markets & Foundations',
+				minutes: 70,
+				description: 'How markets work and the assets you trade — Forex, Crypto, Gold, Indices.',
+				lessons: [
+					{ lessonKey: 'what-is-trading', title: 'What trading really is', minutes: 12 },
+					{ lessonKey: 'market-structure', title: 'Market structure and participants', minutes: 14 },
+					{ lessonKey: 'asset-classes', title: 'Asset classes: Forex, Crypto, Gold, Indices', minutes: 18 },
+					{ lessonKey: 'how-prices-move', title: 'How prices move: supply, demand and liquidity', minutes: 21 },
+				],
+			},
+			{
+				courseKey: 'risk-first',
+				title: 'Risk Management First',
+				minutes: 70,
+				description: 'Protect capital before anything else: sizing, stops and risk/reward.',
+				lessons: [
+					{ lessonKey: 'position-sizing', title: 'Position sizing fundamentals', minutes: 16 },
+					{ lessonKey: 'stops-losses', title: 'Stop losses done right', minutes: 15 },
+					{ lessonKey: 'risk-reward', title: 'Risk/reward and expectancy', minutes: 19 },
+					{ lessonKey: 'max-drawdown', title: 'Drawdown control and discipline', minutes: 20 },
+				],
+			},
+			{
+				courseKey: 'technical-analysis',
+				title: 'Technical Analysis',
+				minutes: 76,
+				description: 'Candlesticks, support and resistance, trends and confluence.',
+				lessons: [
+					{ lessonKey: 'candlesticks', title: 'Reading candlesticks', minutes: 18 },
+					{ lessonKey: 'support-resistance', title: 'Support and resistance', minutes: 17 },
+					{ lessonKey: 'trends', title: 'Trends, structure and swing points', minutes: 20 },
+					{ lessonKey: 'confluence', title: 'Building a confluence checklist', minutes: 21 },
+				],
+			},
+			{
+				courseKey: 'psychology-execution',
+				title: 'Psychology & Execution',
+				minutes: 66,
+				description: 'The mindset and process that keep you consistent.',
+				lessons: [
+					{ lessonKey: 'trading-plan', title: 'Building a trading plan', minutes: 16 },
+					{ lessonKey: 'emotions', title: 'Emotions and tilt control', minutes: 15 },
+					{ lessonKey: 'journaling', title: 'Journaling every trade', minutes: 17 },
+					{ lessonKey: 'review', title: 'Weekly review cadence', minutes: 18 },
+				],
+			},
+		],
+	},
+	'forex': {
+		pathName: 'Forex Mastery A–Z',
+		focus: 'Master currencies end-to-end: mechanics, fundamentals, technicals, sessions, strategies and funded-desk execution.',
+		courses: [
+			{
+				courseKey: 'fx-foundations',
+				title: 'Forex Foundations & Mechanics',
+				minutes: 98,
+				description: 'Pairs, pips, lots, leverage, sessions, brokers and order types.',
+				lessons: [
+					{ lessonKey: 'what-is-forex', title: 'What Forex really is: spot, liquidity & players', minutes: 15 },
+					{ lessonKey: 'pairs-quotes', title: 'Pairs decoded: majors, minors, exotics & quotes', minutes: 16 },
+					{ lessonKey: 'pips-lots-leverage', title: 'Pips, lots, leverage & margin — the math', minutes: 18 },
+					{ lessonKey: 'sessions-killzones', title: 'Sessions: Sydney, Tokyo, London, New York & killzones', minutes: 17 },
+					{ lessonKey: 'brokers-orders', title: 'Brokers, spreads & order types (MT4/MT5/cTrader)', minutes: 16 },
+					{ lessonKey: 'costs-swaps', title: 'Hidden costs: spread, commission, swaps & slippage', minutes: 16 },
+				],
+			},
+			{
+				courseKey: 'fx-fundamentals',
+				title: 'Forex Fundamental Analysis',
+				minutes: 112,
+				description: 'Central banks, rates, inflation, NFP and risk sentiment.',
+				lessons: [
+					{ lessonKey: 'interest-rates', title: 'Interest rates & why currencies follow them', minutes: 18 },
+					{ lessonKey: 'central-banks', title: 'Central banks: Fed, ECB, BOJ, BOE, SNB & RBA', minutes: 20 },
+					{ lessonKey: 'inflation-data', title: 'CPI, PPI, PCE: trading inflation prints', minutes: 17 },
+					{ lessonKey: 'jobs-growth', title: 'NFP, unemployment & GDP: growth surprises', minutes: 18 },
+					{ lessonKey: 'risk-sentiment', title: 'Risk-on / risk-off, DXY, yields & gold correlations', minutes: 19 },
+					{ lessonKey: 'news-calendar', title: 'Economic calendar & COT report like a pro', minutes: 20 },
+				],
+			},
+			{
+				courseKey: 'fx-technicals',
+				title: 'Forex Technical Analysis',
+				minutes: 118,
+				description: 'Price action, SMC/ICT, indicators and multi-timeframe confluence for FX.',
+				lessons: [
+					{ lessonKey: 'fx-candles-structure', title: 'Candlesticks, swings & market structure on FX', minutes: 17 },
+					{ lessonKey: 'sr-supply-demand', title: 'Support, resistance & supply/demand zones', minutes: 18 },
+					{ lessonKey: 'patterns-fib', title: 'Chart patterns, Fibonacci & measured moves', minutes: 19 },
+					{ lessonKey: 'indicators-fx', title: 'MA, RSI, MACD, ATR & ADX tuned for currencies', minutes: 20 },
+					{ lessonKey: 'smc-ict', title: 'SMC / ICT essentials: liquidity, BOS, FVG, OB', minutes: 22 },
+					{ lessonKey: 'mtf-confluence', title: 'Multi-timeframe confluence checklist', minutes: 22 },
+				],
+			},
+			{
+				courseKey: 'fx-strategies',
+				title: 'Forex Strategies & Sessions',
+				minutes: 124,
+				description: 'Playbooks for every session: scalps, London breakout, NY continuation, carry and news.',
+				lessons: [
+					{ lessonKey: 'scalping-fx', title: 'Scalping FX: M1–M5 structure & spread control', minutes: 19 },
+					{ lessonKey: 'london-breakout', title: 'London breakout & liquidity sweep playbook', minutes: 21 },
+					{ lessonKey: 'ny-trend', title: 'New York trend continuation & reversals', minutes: 20 },
+					{ lessonKey: 'range-asian', title: 'Asian range & mean-reversion tactics', minutes: 19 },
+					{ lessonKey: 'news-trading', title: 'News trading: straddles, spikes & post-release drift', minutes: 22 },
+					{ lessonKey: 'carry-swing', title: 'Carry trade & swing positioning for trend riders', minutes: 23 },
+				],
+			},
+			{
+				courseKey: 'fx-risk',
+				title: 'Forex Risk & Execution',
+				minutes: 102,
+				description: 'Lot sizing, ATR stops, correlation, hedging and journaling for FX survival.',
+				lessons: [
+					{ lessonKey: 'lot-sizing', title: 'Lot-size calculator: risk % → lots in 30 seconds', minutes: 17 },
+					{ lessonKey: 'atr-stops', title: 'ATR stops, breakeven & partials', minutes: 18 },
+					{ lessonKey: 'correlation-hedge', title: 'Correlation, exposure & hedging (no over-leverage)', minutes: 19 },
+					{ lessonKey: 'journal-fx', title: 'FX journaling: R-multiples, sessions & mistakes', minutes: 22 },
+					{ lessonKey: 'execution-mt', title: 'Flawless execution on MT4/MT5 & cTrader', minutes: 26 },
+				],
+			},
+			{
+				courseKey: 'fx-pro',
+				title: 'Forex Pro Desk & Funding',
+				minutes: 108,
+				description: 'Prop-firm challenges, trading plans, algos and the funded-trader routine.',
+				lessons: [
+					{ lessonKey: 'trading-plan-fx', title: 'Your FX trading plan: sessions, pairs, rules', minutes: 18 },
+					{ lessonKey: 'prop-firms', title: 'Prop firms: FTMO, FundedNext — passing the challenge', minutes: 22 },
+					{ lessonKey: 'psychology-fx', title: 'FX psychology: overtrading, revenge & patience', minutes: 20 },
+					{ lessonKey: 'backtest-ea', title: 'Backtesting & EAs: forward-test before you fund', minutes: 24 },
+					{ lessonKey: 'playbook-capstone', title: 'Capstone: your complete FX playbook', minutes: 24 },
+				],
+			},
+		],
+	},
+	'crypto': {
+		pathName: 'Crypto Mastery A–Z',
+		focus: 'Master digital assets end-to-end: blockchain, spot vs perps, on-chain, DeFi, volatility risk and custody.',
+		courses: [
+			{
+				courseKey: 'crypto-foundations',
+				title: 'Crypto Foundations & Blockchain',
+				minutes: 96,
+				description: 'Bitcoin, Ethereum, altcoins, stablecoins, wallets and exchanges.',
+				lessons: [
+					{ lessonKey: 'blockchain-btc', title: 'Blockchain & Bitcoin: money without banks', minutes: 16 },
+					{ lessonKey: 'eth-altcoins', title: 'Ethereum, L1s, L2s & altcoin sectors', minutes: 17 },
+					{ lessonKey: 'stablecoins', title: 'Stablecoins: USDT, USDC & why they anchor you', minutes: 14 },
+					{ lessonKey: 'wallets-custody', title: 'Wallets & self-custody: hot, cold, seed phrases', minutes: 17 },
+					{ lessonKey: 'cex-dex', title: 'CEX vs DEX: Binance, Coinbase, Uniswap & order books', minutes: 16 },
+					{ lessonKey: 'spot-orders', title: 'Spot trading & order types on crypto exchanges', minutes: 16 },
+				],
+			},
+			{
+				courseKey: 'crypto-mechanics',
+				title: 'Crypto Market Mechanics',
+				minutes: 108,
+				description: 'Perps, funding, open interest, liquidations and volatility.',
+				lessons: [
+					{ lessonKey: 'market-cap-dominance', title: 'Market cap, BTC dominance & altcoin rotation', minutes: 17 },
+					{ lessonKey: 'perps-futures', title: 'Perpetuals vs futures vs options, simply', minutes: 19 },
+					{ lessonKey: 'funding-oi', title: 'Funding rates & open interest: reading positioning', minutes: 19 },
+					{ lessonKey: 'leverage-liq', title: 'Leverage & liquidations: never blow up again', minutes: 18 },
+					{ lessonKey: 'liquidity-vol', title: 'Liquidity, spreads, slippage & volatility regimes', minutes: 17 },
+					{ lessonKey: 'fees-taxes', title: 'Fees, spreads & crypto taxes essentials', minutes: 18 },
+				],
+			},
+			{
+				courseKey: 'crypto-research',
+				title: 'Crypto Research: Fundamental & On-chain',
+				minutes: 112,
+				description: 'Tokenomics, whitepapers, Glassnode metrics and narratives.',
+				lessons: [
+					{ lessonKey: 'tokenomics', title: 'Tokenomics: supply, vesting, unlocks & dilution', minutes: 19 },
+					{ lessonKey: 'whitepaper-diligence', title: 'Whitepapers & due diligence in 20 minutes', minutes: 17 },
+					{ lessonKey: 'onchain-basics', title: 'On-chain basics: active addresses, exchange flows', minutes: 19 },
+					{ lessonKey: 'onchain-advanced', title: 'NVT, MVRV, SOPR & realized cap signals', minutes: 20 },
+					{ lessonKey: 'narratives', title: 'Narratives: memecoins, AI, RWA, L2s & cycles', minutes: 18 },
+					{ lessonKey: 'airdrops-defi', title: 'Airdrops, staking & DeFi yield without getting rekt', minutes: 19 },
+				],
+			},
+			{
+				courseKey: 'crypto-technicals',
+				title: 'Crypto Technical Analysis',
+				minutes: 110,
+				description: 'Volatility-aware charting: levels, volume, Wyckoff and BTC intermarket context.',
+				lessons: [
+					{ lessonKey: 'crypto-structure', title: 'BTC & ETH structure: swings, ranges & breakouts', minutes: 18 },
+					{ lessonKey: 'indicators-crypto', title: 'MA, RSI, MACD, ATR & volume profile for crypto', minutes: 19 },
+					{ lessonKey: 'wyckoff-cycles', title: 'Wyckoff, halving cycles & bull/bear anatomy', minutes: 20 },
+					{ lessonKey: 'intermarket-btc', title: 'BTC vs DXY, Nasdaq & gold: intermarket edge', minutes: 18 },
+					{ lessonKey: 'volatility-entries', title: 'Volatility entries: ATR bands, breakers & sweeps', minutes: 17 },
+					{ lessonKey: 'mtf-crypto', title: 'Multi-timeframe crypto confluence routine', minutes: 18 },
+				],
+			},
+			{
+				courseKey: 'crypto-strategies',
+				title: 'Crypto Strategies',
+				minutes: 116,
+				description: 'Playbooks for every regime: DCA, swing, scalps, breakouts and funding plays.',
+				lessons: [
+					{ lessonKey: 'hodl-dca', title: 'HODL & DCA done right: accumulation plans', minutes: 17 },
+					{ lessonKey: 'swing-crypto', title: 'Swing trading crypto: 4H–Daily trend systems', minutes: 19 },
+					{ lessonKey: 'scalp-crypto', title: 'Scalping & day trading BTC/ETH volatility', minutes: 19 },
+					{ lessonKey: 'breakout-crypto', title: 'Breakout & listing-momentum playbook', minutes: 20 },
+					{ lessonKey: 'funding-arb', title: 'Funding arbitrage & basis trades (market-neutral)', minutes: 21 },
+					{ lessonKey: 'rotation-stables', title: 'Rotation: risk-on alts ↔ stables risk management', minutes: 20 },
+				],
+			},
+			{
+				courseKey: 'crypto-risk',
+				title: 'Crypto Risk, Security & Mindset',
+				minutes: 104,
+				description: 'Survive 24/7 volatility: sizing, scams, custody and the crypto mindset.',
+				lessons: [
+					{ lessonKey: 'sizing-crypto', title: 'Position sizing for 10% daily movers', minutes: 17 },
+					{ lessonKey: 'scams-rugs', title: 'Rug pulls, phishing & honeypots: the red-flag list', minutes: 18 },
+					{ lessonKey: 'exchange-risk', title: 'Exchange risk: FTX lessons, proof-of-reserves', minutes: 16 },
+					{ lessonKey: 'journal-crypto', title: 'Crypto journaling: setups, narratives & emotions', minutes: 17 },
+					{ lessonKey: 'mindset-24-7', title: '24/7 mindset: sleep, FOMO & taking breaks', minutes: 18 },
+					{ lessonKey: 'capstone-crypto', title: 'Capstone: your complete crypto playbook', minutes: 18 },
+				],
+			},
+		],
+	},
+	'intermediate': {
+		pathName: 'Intermediate Edge',
+		focus: 'Sharpen your Forex & Crypto process: confluence systems, psychology and sizing precision.',
+		courses: [
+			{
+				courseKey: 'advanced-ta',
+				title: 'Advanced Analysis (FX + Crypto)',
+				minutes: 88,
+				description: 'Confluence systems that work on EUR/USD and BTC alike.',
+				lessons: [
+					{ lessonKey: 'confluence-system', title: 'Building a confluence scoring system', minutes: 21 },
+					{ lessonKey: 'liquidity-grabs', title: 'Liquidity grabs on FX & crypto wicks', minutes: 22 },
+					{ lessonKey: 'orderflow-volume', title: 'Volume & order flow: futures, OI & tick', minutes: 22 },
+					{ lessonKey: 'failing-setups', title: 'When setups fail: invalidation & flip rules', minutes: 23 },
+				],
+			},
+			{
+				courseKey: 'strategy-lab',
+				title: 'Strategy Lab',
+				minutes: 92,
+				description: 'Pick and prove your edge: scalps, intraday, swing.',
+				lessons: [
+					{ lessonKey: 'pick-strategy', title: 'Matching strategy to personality & session', minutes: 22 },
+					{ lessonKey: 'backtesting', title: 'Backtesting 100 trades the honest way', minutes: 24 },
+					{ lessonKey: 'forward-test', title: 'Forward-testing on demo without lying to yourself', minutes: 22 },
+					{ lessonKey: 'scale-edge', title: 'Scaling what works, killing what does not', minutes: 24 },
+				],
+			},
+			{
+				courseKey: 'psychology-edge',
+				title: 'Psychology & Sizing',
+				minutes: 84,
+				description: 'Tilt control and math-grade sizing for volatile assets.',
+				lessons: [
+					{ lessonKey: 'tilt-protocol', title: 'Tilt protocol: stops for yourself', minutes: 20 },
+					{ lessonKey: 'risk-models', title: 'Fixed-fractional vs Kelly vs volatility sizing', minutes: 22 },
+					{ lessonKey: 'correlation-portfolio', title: 'Portfolio heat across FX + crypto', minutes: 21 },
+					{ lessonKey: 'performance-review', title: 'Monthly performance review template', minutes: 21 },
+				],
+			},
+		],
+	},
+	'professional': {
+		pathName: 'Professional Desk',
+		focus: 'Institutional process: systematic FX + crypto strategies, portfolio risk and fund-grade review.',
+		courses: [
+			{
+				courseKey: 'systematic',
+				title: 'Systematic Strategies',
+				minutes: 96,
+				description: 'Rules-based FX and crypto systems you can audit.',
+				lessons: [
+					{ lessonKey: 'system-design', title: 'Designing a rules-based system', minutes: 23 },
+					{ lessonKey: 'trend-systems', title: 'Trend systems for FX majors & BTC', minutes: 24 },
+					{ lessonKey: 'mean-reversion', title: 'Mean-reversion in ranges: FX Asia & crypto chop', minutes: 24 },
+					{ lessonKey: 'event-systems', title: 'Event systems: CPI/NFP & FOMC vs CPI-crypto beta', minutes: 25 },
+				],
+			},
+			{
+				courseKey: 'portfolio-desk',
+				title: 'Portfolio & Fund Execution',
+				minutes: 90,
+				description: 'Heat, hedging and execution at size.',
+				lessons: [
+					{ lessonKey: 'portfolio-heat', title: 'Portfolio heat & exposure caps', minutes: 22 },
+					{ lessonKey: 'hedging-fx-crypto', title: 'Hedging: FX offsets & delta-neutral crypto', minutes: 23 },
+					{ lessonKey: 'execution-size', title: 'Executing size: TWAP, ladders & slippage', minutes: 22 },
+					{ lessonKey: 'fund-reporting', title: 'Fund-grade reporting & investor review', minutes: 23 },
+				],
+			},
+			{
+				courseKey: 'mastery-capstone',
+				title: 'Mastery Capstone',
+				minutes: 80,
+				description: 'Your audited playbook and next 90 days.',
+				lessons: [
+					{ lessonKey: 'playbook-audit', title: 'Auditing your full playbook', minutes: 20 },
+					{ lessonKey: 'algo-intro', title: 'Algos & automation intro (EAs + bots)', minutes: 22 },
+					{ lessonKey: 'prop-scale', title: 'Scaling: prop capital & crypto size-up plan', minutes: 19 },
+					{ lessonKey: 'next-90', title: 'Your next 90 days: goals, metrics, review', minutes: 19 },
+				],
+			},
+		],
+	},
 };
+
+// Back-compat alias (old code imported the singular).
+const DEFAULT_CURRICULUM = DEFAULT_CURRICULA['beginner'];
 
 // ── Data access (service role, camelCase columns) ───────────────────
 
@@ -168,16 +437,17 @@ async function aiJson({ systemPrompt, userMessage, fallback, label }) {
 	}
 }
 
-export async function generateCurriculum({ userId, level, about }) {
+export async function generateCurriculum({ userId, level, about, pathKey }) {
+	const fallback = DEFAULT_CURRICULA[pathKey] || DEFAULT_CURRICULA['beginner'] || DEFAULT_CURRICULUM;
 	const curriculum = await aiJson({
-		systemPrompt: AcademyCurriculumPrompt(level || 'Beginner', about || ''),
+		systemPrompt: AcademyCurriculumPrompt(level || 'Beginner', about || '', pathKey || 'beginner'),
 		userMessage: [textBlock(`Please design my personalized learning path.`)],
-		fallback: DEFAULT_CURRICULUM,
+		fallback,
 		label: 'curriculum',
 	});
 	return {
-		pathName: curriculum.pathName || DEFAULT_CURRICULUM.pathName,
-		focus: curriculum.focus || DEFAULT_CURRICULUM.focus,
+		pathName: curriculum.pathName || fallback.pathName,
+		focus: curriculum.focus || fallback.focus,
 		courses: Array.isArray(curriculum.courses) && curriculum.courses.length
 			? curriculum.courses.map((c) => ({
 					courseKey: String(c.courseKey || '').toLowerCase().replace(/[^a-z0-9-]/g, '-') || 'course',
@@ -190,7 +460,7 @@ export async function generateCurriculum({ userId, level, about }) {
 						minutes: Number(l.minutes) || 0,
 					})),
 			  }))
-			: DEFAULT_CURRICULUM.courses,
+			: fallback.courses,
 	};
 }
 

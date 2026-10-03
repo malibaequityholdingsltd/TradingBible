@@ -81,7 +81,7 @@ async function ensureCurriculum(userId, pathKey, level, about) {
 	const key = curriculumKey(userId, pathKey);
 	if (!generating.has(key)) {
 		generating.add(key);
-		generateCurriculum({ userId, level, about })
+		generateCurriculum({ userId, level, about, pathKey })
 			.then((curriculum) => academyDb.saveCurriculum(userId, pathKey, curriculum))
 			.catch((err) => logger.error('academy curriculum background failed', String(err?.message || err)))
 			.finally(() => generating.delete(key));

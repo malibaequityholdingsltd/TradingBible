@@ -40,10 +40,10 @@ const STEPS = [
 ];
 
 const FAQS = [
-  { q: 'Do you offer a free trial?', a: 'No — TradingBible is paid-only, and every first payment is covered by a 14-day money-back guarantee.' },
-  { q: 'Which brokers and platforms are supported?', a: 'MetaTrader 4/5, cTrader, DXtrade, Interactive Brokers, Binance, Bybit, Coinbase and major prop firms like FTMO.' },
-  { q: 'What does the SI Coach actually do?', a: 'It reviews your trades for quality, risk and discipline, detects recurring mistakes, and answers questions grounded in your real history.' },
-  { q: 'How does the Academy work?', a: 'One $150 lifetime payment unlocks the full school: SI-written lessons, graded quizzes, live webinars and certificates. Admins enter free.' },
+  { q: 'Do you offer a free trial?', a: 'No — TradingBible is paid-only: your card is charged at checkout before you enter the terminal. Instead of a trial, every first payment carries a 14-day money-back guarantee, so you can test broker sync, analytics, the SI Coach and signals risk-free.' },
+  { q: 'Which brokers and platforms are supported?', a: 'MetaTrader 4 and 5, cTrader, DXtrade, Interactive Brokers, Binance, Bybit and Coinbase (live accounts only), plus prop firms like FTMO and FundedNext — with self-custody wallet tracking for BTC, ETH, USDC and Solana. Trades and balances sync automatically, nothing is typed by hand.' },
+  { q: 'What does the SI Coach actually do?', a: 'Your 24/7 SI mentor: it reviews every synced trade for quality, risk and discipline, detects recurring mistakes (widened stops, revenge trading, overtrading), grades your discipline and answers questions grounded in your real history — try “What is my biggest mistake?”.' },
+  { q: 'How does the Academy work?', a: 'One $150 lifetime payment unlocks the full school: 5 paths including Forex Mastery A–Z and Crypto Mastery A–Z (110+ topics from pips and wallets to funding rates and prop-firm challenges), an SI that writes every lesson and grades every quiz, a 1-on-1 tutor inside each lesson, 8 live webinars a week and a certificate per path. Admins enter free.' },
 ];
 
 function Nav({ homeTo, isAuthed, platformName }) {

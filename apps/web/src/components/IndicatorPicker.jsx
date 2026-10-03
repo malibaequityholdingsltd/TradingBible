@@ -32,7 +32,7 @@ export default function IndicatorPicker({ open, onClose, indicators, setIndicato
   const deletePreset = (name) => { const next = presets.filter((p) => p.name !== name); setPresets(next); localStorage.setItem('tb_indicator_presets', JSON.stringify(next)); };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
       <div className="glass max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="sticky top-0 flex items-center justify-between border-b border-[#d4af37]/12 bg-[#0d0d12]/95 px-5 py-4 backdrop-blur">
           <h3 className="font-semibold text-[#f0ecdd]">{t('ind.title')}</h3>

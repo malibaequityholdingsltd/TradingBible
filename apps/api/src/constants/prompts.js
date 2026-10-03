@@ -32,9 +32,20 @@ export const SystemPrompt = `You are the TradingBible AI Coach, an elite trading
 // user and cached server-side.
 // ─────────────────────────────────────────────────────────────────────
 
-export const AcademyCurriculumPrompt = (level, about) => `You are the Head of Education at the TradingBible Academy, an elite trading school.
+export const AcademyCurriculumPrompt = (level, about, pathKey = 'beginner') => {
+	const trackBriefs = {
+		'beginner': `Track: BEGINNER FOUNDATION (general). Cover markets broadly with Forex + Crypto intros: what trading is, market structure, asset classes (Forex, Crypto, Gold, Indices), risk first, basic technicals, psychology.`,
+		'forex': `Track: FOREX MASTERY A–Z. This path MUST be 100% Forex. Required coverage across 5-6 courses: (1) mechanics — pairs (majors/minors/exotics), pips, lots, leverage/margin, sessions Sydney/Tokyo/London/New York + killzones, brokers MT4/MT5/cTrader, spreads/commissions/swaps/slippage; (2) fundamentals — interest rates, central banks (Fed, ECB, BOJ, BOE, SNB, RBA), CPI/PPI/PCE, NFP/unemployment/GDP, risk-on/off + DXY/yields/gold, economic calendar + COT; (3) technicals — candlesticks/structure, S/R + supply/demand, chart patterns + Fibonacci, MA/RSI/MACD/ATR/ADX for FX, SMC/ICT (liquidity, BOS, FVG, order blocks), multi-timeframe confluence; (4) strategies — scalping M1-M5, London breakout + liquidity sweep, NY continuation/reversal, Asian range mean-reversion, news trading (CPI/NFP), carry + swing; (5) risk/execution — lot-size math, ATR stops/breakeven/partials, correlation + hedging, FX journaling with R-multiples, MT execution; (6) pro desk — FX trading plan, prop firms (FTMO/FundedNext challenge), FX psychology, backtesting/EAs, capstone FX playbook.`,
+		'crypto': `Track: CRYPTO MASTERY A–Z. This path MUST be 100% Crypto. Required coverage across 5-6 courses: (1) foundations — blockchain + Bitcoin, Ethereum/L1/L2/altcoin sectors, stablecoins (USDT/USDC), wallets + self-custody (hot/cold/seed), CEX vs DEX (Binance/Coinbase/Uniswap) + order books, spot + order types; (2) mechanics — market cap + BTC dominance + alt rotation, perpetuals vs futures vs options, funding rates + open interest, leverage + liquidations, liquidity/spreads/slippage + volatility regimes, fees + taxes; (3) research — tokenomics (supply/vesting/unlocks), whitepaper diligence, on-chain basics (active addresses, exchange flows), advanced on-chain (NVT/MVRV/SOPR/realized cap), narratives (memecoins/AI/RWA/L2s/cycles), airdrops/staking/DeFi yield; (4) technicals — BTC/ETH structure, MA/RSI/MACD/ATR/volume-profile for crypto, Wyckoff + halving cycles, BTC vs DXY/Nasdaq/gold intermarket, volatility entries (ATR bands/breakers/sweeps), multi-timeframe routine; (5) strategies — HODL/DCA, swing 4H-Daily, BTC/ETH scalping, breakout + listing momentum, funding arbitrage/basis (market-neutral), rotation alts↔stables; (6) risk/security — sizing for 10% movers, rug pulls/phishing/honeypots, exchange risk (FTX lessons, proof-of-reserves), crypto journaling, 24/7 mindset (sleep/FOMO/breaks), capstone crypto playbook.`,
+		'intermediate': `Track: INTERMEDIATE EDGE (Forex + Crypto cross-market). Required: confluence scoring for EUR/USD + BTC, liquidity grabs on FX & crypto wicks, volume/order-flow (futures, OI, tick), invalidation/flip rules, strategy-personality matching, 100-trade backtesting, forward-testing, scaling winners, tilt protocol, fixed-fractional vs Kelly vs volatility sizing, portfolio heat across FX+crypto, monthly review template.`,
+		'professional': `Track: PROFESSIONAL DESK (Forex + Crypto institutional). Required: rules-based system design, trend systems for FX majors + BTC, mean-reversion (FX Asia + crypto chop), event systems (CPI/NFP/FOMC + crypto beta), portfolio heat + exposure caps, hedging (FX offsets + delta-neutral crypto), size execution (TWAP/ladders/slippage), fund-grade reporting, playbook audit, algos/EAs + bots intro, prop + crypto scale-up plan, 90-day plan.`,
+	};
+	const brief = trackBriefs[pathKey] || trackBriefs['beginner'];
+	return `You are the Head of Education at the TradingBible Academy, an elite trading school.
 
 The student is at the "${level}" level. ${about ? `About them: ${about}` : ''}
+Enrolled path key: "${pathKey}".
+${brief}
 
 Design a complete, personalized learning path for this student. Return ONLY strict JSON with this exact shape:
 {
@@ -54,11 +65,13 @@ Design a complete, personalized learning path for this student. Return ONLY stri
 }
 
 Rules:
-- 4 courses per path, 4-6 lessons per course. Course 1 must assume ZERO prior knowledge — no jargon, no skipped steps.
-- The path MUST teach beginning to end in strict order. Course 1 = mindset + absolute fundamentals (what trading is, broker mechanics, risk first). Course 2 = core skill (charting, entries, exits). Course 3 = application (strategies, sessions, practice routine). Course 4 = independence (advanced risk, psychology, capstone: the student's own complete trading plan).
+- ${pathKey === 'forex' || pathKey === 'crypto' ? '5-6 courses per path, 5-6 lessons per course, covering EVERY required topic in the track brief above — nothing may be omitted.' : '4-6 courses per path, 4-6 lessons per course.'} Course 1 must assume ZERO prior knowledge of this track — no jargon, no skipped steps.
+- The path MUST teach beginning to end in strict order. ${pathKey === 'forex' ? 'Course 1 = FX mechanics, Course 2 = FX fundamentals, Course 3 = FX technicals, Course 4 = FX strategies/sessions, Course 5 = FX risk/execution, Course 6 = pro desk + capstone FX playbook.' : pathKey === 'crypto' ? 'Course 1 = crypto/blockchain foundations, Course 2 = market mechanics (perps/funding/OI), Course 3 = research (tokenomics/on-chain), Course 4 = crypto technicals, Course 5 = crypto strategies, Course 6 = risk/security/mindset + capstone.' : 'Course 1 = mindset + absolute fundamentals (what trading is, broker mechanics, risk first). Course 2 = core skill (charting, entries, exits). Course 3 = application (strategies, sessions, practice routine). Course 4+ = independence (advanced risk, psychology, capstone: the student\'s own complete trading plan).'}
 - Every lesson builds on the previous one; later lessons may reference earlier lessons. Nothing in course N+1 may assume knowledge only taught in course N+2.
 - Sequence matters: foundations first, then skill, then application.
+- Prefer concrete Forex topics (pips, lots, DXY, NFP, London killzone, FTMO) when pathKey is forex; prefer concrete Crypto topics (sats, funding, OI, dominance, wallets, custody, FTX) when pathKey is crypto.
 - No JSON commentary outside the object. No markdown fences.`;
+};
 
 export const AcademyLessonPrompt = (curriculumCtx, lessonCtx) => `You are a world-class trading educator at the TradingBible Academy writing a single lesson for a serious student.
 
@@ -86,6 +99,7 @@ Rules:
 - 4 quiz questions, 4 options each, exactly one correct index.
 - Every quiz question MUST be answerable from the question and options alone — no reference to the lesson's examples, numbers or phrasing. Prefer conceptual questions ("What is position sizing?" over "How many shares in the example?").
 - Ground every claim in real trading practice (risk, position sizing, psychology, markets). No fabricated broker/bank names.
+- Forex lessons: use concrete FX math (pips, lots, ATR stops, session times in ET, pairs like EUR/USD + GBP/USD, DXY context). Crypto lessons: use concrete crypto mechanics (BTC/ETH, sats, funding + OI, dominance, wallets/custody, volatility sizing for 5-10% days).
 - No JSON commentary outside the object. No markdown fences.`;
 
 export const AcademyGradePrompt = (lessonCtx, userAnswers) => `You are the examining professor at the TradingBible Academy grading a student's lesson quiz.

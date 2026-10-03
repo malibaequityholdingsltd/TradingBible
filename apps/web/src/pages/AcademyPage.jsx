@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
 	PlayCircle, Clock, CheckCircle2, Lock, GraduationCap, Video, Route, Award, Sparkles,
 	Rocket, BookOpen, Bot, ArrowLeft, RotateCcw, ChevronRight, Trophy, Calendar, Radio, Loader2,
-	MessageSquare, Send, BadgeCheck, CircleDollarSign, Wallet,
+	MessageSquare, Send, BadgeCheck, CircleDollarSign, Wallet, Search, Globe, Bitcoin,
+	Sprout, Zap, Briefcase, Layers, Filter, Timer, Library,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useToast } from '@/hooks/use-toast';
@@ -16,45 +17,15 @@ import {
 } from '@/lib/academy';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import pb from '@/lib/pocketbaseClient';
+import { PATHS, STATIC_CURRICULA, WEBINAR_CATALOG, TRACKS, getTopicIndex, pathStats } from '@/lib/academyCatalog';
 
-// ── Learning paths (AI personalizes the curriculum inside each) ─────
-const PATHS = [
-	{
-		key: 'beginner', name: 'Beginner Foundation', level: 'Beginner', color: '#34d399',
-		desc: 'From zero: how markets work, the assets you trade, and the discipline-first habits that keep you alive.',
-	},
-	{
-		key: 'intermediate', name: 'Intermediate Edge', level: 'Intermediate', color: '#d4af37',
-		desc: 'Sharpen your process: advanced analysis, trading psychology and precise position sizing.',
-	},
-	{
-		key: 'professional', name: 'Professional Desk', level: 'Professional', color: '#e0a0f0',
-		desc: 'Trade like an institution: systematic strategies, portfolio management and fund-grade execution.',
-	},
-];
-
-const WEBINAR_SCHEDULE = [
-	{
-		id: 'market-open-breakdown', title: 'Live Market Open Breakdown', day: 1, hour: 8, duration: 60,
-		host: 'AI Host · TradingBible Desk',
-		description: 'A live walkthrough of the market open — key levels, liquidity zones and the trades the day is offering.',
-	},
-	{
-		id: 'journal-review', title: 'Journal Review: Fixing Your Worst Trades', day: 3, hour: 17, duration: 60,
-		host: 'AI Host · TradingBible Coaches',
-		description: 'Bring your worst trade of the week. The room breaks down the mistake and rebuilds the entry.',
-	},
-	{
-		id: 'risk-qa', title: 'Risk & Position Sizing Q&A', day: 5, hour: 14, duration: 45,
-		host: 'AI Host · TradingBible Research',
-		description: 'Open floor on risk: sizing models, stop placement, drawdown control and portfolio heat.',
-	},
-	{
-		id: 'ai-trading-lab', title: 'AI Trading Lab: Strategy Build', day: 6, hour: 11, duration: 75,
-		host: 'AI Host · TradingBible Systems',
-		description: 'A live strategy workshop — the AI host designs a systematic setup with the room, end to end.',
-	},
-];
+// ── Path icon map ────────────────────────────────────────────────────
+const PATH_ICONS = { sprout: Sprout, globe: Globe, bitcoin: Bitcoin, zap: Zap, briefcase: Briefcase };
+const TRACK_COLORS = { general: '#34d399', forex: '#38bdf8', crypto: '#f472b6', pro: '#d4af37' };
+function PathIcon({ icon, color }) {
+	const C = PATH_ICONS[icon] || Route;
+	return <C className="h-5 w-5" style={{ color }} />;
+}
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const TZ = 'America/New_York';
@@ -78,8 +49,7 @@ function getWebinarState(w) {
 	const end = new Date(start.getTime() + w.duration * 60000);
 	const now = Date.now();
 	if (now >= start.getTime() && now < end.getTime()) return { live: true, start, end };
-	if (now < start.getTime()) return { live: false, start, end };
-	return { live: false, start, end }; // wrapped to next occurrence
+	return { live: false, start, end };
 }
 
 function fmtCountdown(target, t) {
@@ -207,7 +177,7 @@ function AIChat({ endpoint, buildBody, placeholder, accent = '#d4af37' }) {
 	};
 
 	return (
-		<div className="flex h-[380px] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/15 bg-[#0d0d12]/60">
+		<div className="flex h-[380px] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/15 bg-[#0d0d12]/60 backdrop-blur-xl">
 			<div className="flex items-center gap-2 border-b border-[#d4af37]/10 px-4 py-3">
 				<Bot className="h-4 w-4" style={{ color: accent }} />
 				<span className="text-sm font-semibold text-[#f0ecdd]">{placeholder}</span>
@@ -219,7 +189,7 @@ function AIChat({ endpoint, buildBody, placeholder, accent = '#d4af37' }) {
 				)}
 				{messages.map((m, i) => (
 					<div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-						<div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${m.role === 'user' ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/12 bg-[#111113] text-[#c9c4b4]'}`}>
+						<div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed backdrop-blur-md ${m.role === 'user' ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/12 bg-[#111113]/85 text-[#c9c4b4]'}`}>
 							{m.role === 'assistant' ? <Markdown text={m.content} /> : m.content}
 						</div>
 					</div>
@@ -281,12 +251,12 @@ function Paywall({ onPurchased }) {
 	};
 
 	const features = [
-		{ icon: Route, text: t('aca.f1') },
-		{ icon: BookOpen, text: t('aca.f2') },
-		{ icon: Video, text: t('aca.f3') },
-		{ icon: Bot, text: t('aca.f4') },
-		{ icon: Trophy, text: t('aca.f5') },
-		{ icon: Award, text: t('aca.f6') },
+		{ icon: Route, text: '5 learning paths — Beginner, Forex Mastery, Crypto Mastery, Intermediate, Professional' },
+		{ icon: Library, text: '100+ Forex & Crypto topics: pairs, sessions, perps, funding, on-chain, SMC, news, DeFi' },
+		{ icon: Video, text: '8 live webinars / week with an AI host — FX London lab, crypto on-chain lab, news reactions' },
+		{ icon: Bot, text: 'One-on-one AI tutor inside every lesson' },
+		{ icon: Trophy, text: 'AI-graded quizzes and shareable certificates per path' },
+		{ icon: Award, text: 'Lifetime access — one payment, forever' },
 	];
 
 	return (
@@ -302,6 +272,11 @@ function Paywall({ onPurchased }) {
 				<p className="mt-3 max-w-xl text-sm leading-relaxed text-[#8a8577]">
 					{t('aca.sub')}
 				</p>
+				<div className="mt-4 flex flex-wrap justify-center gap-2">
+					{['Forex: pairs → prop firms', 'Crypto: wallets → perps → on-chain', 'Risk, psychology & playbooks'].map((s) => (
+						<span key={s} className="rounded-full border border-[#d4af37]/20 px-3 py-1 text-xs text-[#c9c4b4]">{s}</span>
+					))}
+				</div>
 
 				<div className="mt-6 flex items-end gap-1.5">
 					<span className="text-5xl font-bold gold-text">$150</span>
@@ -437,7 +412,7 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 					<h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><Award className="h-5 w-5 text-[#d4af37]" /> {t('aca.quizTitle')}</h3>
 					{grade ? (
 						<div className="mt-4">
-							<div className={`flex items-center gap-3 rounded-xl p-4 ${grade.score >= Math.ceil(grade.total / 2) ? 'bg-emerald-400/10' : 'bg-[#d4af37]/10'}`}>
+							<div className={`flex items-center gap-3 rounded-xl p-4 backdrop-blur-md ${grade.score >= Math.ceil(grade.total / 2) ? 'bg-emerald-400/10' : 'bg-[#d4af37]/10'}`}>
 								{grade.score >= Math.ceil(grade.total / 2) ? <BadgeCheck className="h-6 w-6 text-emerald-400" /> : <Sparkles className="h-6 w-6 text-[#d4af37]" />}
 								<div>
 									<p className="font-semibold text-[#f0ecdd]">{t('aca.scoreN', { s: grade.score, n: grade.total })}</p>
@@ -502,7 +477,7 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 }
 
 // ── Curriculum (enrolled path) ───────────────────────────────────────
-function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeave, certificate }) {
+function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeave, certificate, isPreview }) {
 	const { t } = useI18n();
 	const [courseIndex, setCourseIndex] = useState(0);
 	const totalLessons = curriculum.courses.reduce((a, c) => a + c.lessons.length, 0);
@@ -516,6 +491,9 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 					<div>
 						<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#d4af37]"><Route className="h-4 w-4" /> {curriculum.pathName}</div>
 						<p className="mt-1 max-w-xl text-sm text-[#c9c4b4]">{curriculum.focus}</p>
+						{isPreview && (
+							<p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#38bdf8]/10 px-2.5 py-1 text-[11px] text-[#38bdf8]"><Loader2 className="h-3 w-3 animate-spin" /> AI is personalizing this path — full topic map below.</p>
+						)}
 					</div>
 					<button onClick={onLeave} className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/20 px-3.5 py-2 text-xs text-[#8a8577] hover:text-[#d4af37]"><ArrowLeft className="h-3.5 w-3.5" /> {t('aca.allPaths')}</button>
 				</div>
@@ -530,13 +508,13 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 				</div>
 			</div>
 
-			{certificate && (
-				<div className="rounded-2xl border border-[#d4af37]/25 bg-gradient-to-br from-[#d4af37]/[0.1] via-[#d4af37]/[0.04] to-transparent p-5 sm:p-6">
+			{certificate?.certificateCode && (
+				<div className="rounded-2xl border border-[#d4af37]/25 bg-gradient-to-br from-[#d4af37]/[0.1] via-[#d4af37]/[0.04] to-transparent p-5 backdrop-blur-xl sm:p-6">
 					<div className="flex flex-wrap items-center gap-3">
 						<Trophy className="h-8 w-8 text-[#d4af37]" />
 						<div className="min-w-0 flex-1">
 							<h3 className="font-bold text-[#f0ecdd]">{t('aca.certifiedPf', { path: curriculum.pathName })}</h3>
-							<p className="mt-1 text-xs text-[#8a8577]">{t('aca.codePf')} <span className="font-mono text-[#d4af37]">{certificate.code}</span></p>
+							<p className="mt-1 text-xs text-[#8a8577]">{t('aca.codePf')} <span className="font-mono text-[#d4af37]">{certificate.certificateCode}</span></p>
 							{certificate.certificateText && <p className="mt-2 text-sm italic leading-relaxed text-[#c9c4b4]">“{certificate.certificateText}”</p>}
 						</div>
 						<BadgeCheck className="h-10 w-10 shrink-0 text-[#d4af37]" />
@@ -594,6 +572,85 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 	);
 }
 
+// ── Topic explorer card ──────────────────────────────────────────────
+function TopicExplorer({ onStartPath }) {
+	const [q, setQ] = useState('');
+	const [track, setTrack] = useState('all');
+	const topics = useMemo(() => getTopicIndex(), []);
+	const filtered = useMemo(() => {
+		const needle = q.trim().toLowerCase();
+		return topics.filter((tp) => {
+			if (track !== 'all' && !(tp.tags || []).includes(track) && tp.track !== track) return false;
+			if (!needle) return true;
+			return `${tp.title} ${tp.courseTitle} ${tp.pathName}`.toLowerCase().includes(needle);
+		});
+	}, [topics, q, track]);
+
+	const grouped = useMemo(() => {
+		const map = new Map();
+		for (const tp of filtered) {
+			const k = `${tp.pathKey}::${tp.courseKey}`;
+			if (!map.has(k)) map.set(k, { pathKey: tp.pathKey, pathName: tp.pathName, courseKey: tp.courseKey, courseTitle: tp.courseTitle, items: [] });
+			map.get(k).items.push(tp);
+		}
+		return [...map.values()];
+	}, [filtered]);
+
+	return (
+		<div className="space-y-4">
+			<div className="tint-hero rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
+				<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#d4af37]"><Library className="h-4 w-4" /> Topic library — every Forex & Crypto lesson</div>
+				<h2 className="mt-1.5 text-xl font-bold text-[#f0ecdd] sm:text-2xl">Search {topics.length}+ topics</h2>
+				<p className="mt-1 max-w-2xl text-sm text-[#8a8577]">Pips, lots & leverage · sessions & killzones · CPI/NFP news · SMC/ICT · carry & breakouts · wallets & custody · perps, funding & OI · on-chain · DeFi · volatility sizing and more. Pick a topic to jump into its path.</p>
+				<div className="mt-4 flex flex-col gap-2 sm:flex-row">
+					<div className="relative flex-1">
+						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6a665a]" />
+						<input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search pips, funding, NFP, wallets, SMC, carry…" className="min-h-[44px] w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] pl-9 pr-3 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none focus:border-[#d4af37]/50" />
+					</div>
+					<div className="flex flex-wrap gap-2">
+						{TRACKS.map((tr) => (
+							<button key={tr.key} onClick={() => setTrack(tr.key)} className={`min-h-[44px] rounded-xl px-4 text-xs font-semibold transition ${track === tr.key ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>{tr.name}</button>
+						))}
+					</div>
+				</div>
+				<p className="mt-2 text-xs text-[#6a665a]">{filtered.length} topics {track !== 'all' ? `in ${track}` : 'across all paths'}{q ? ` matching “${q}”` : ''}</p>
+			</div>
+
+			{grouped.length === 0 && (
+				<div className="glass rounded-2xl p-8 text-center text-sm text-[#8a8577]">No topics match. Try “leverage”, “funding”, “NFP” or “wallet”.</div>
+			)}
+
+			{grouped.map((g) => {
+				const path = PATHS.find((p) => p.key === g.pathKey);
+				return (
+					<div key={`${g.pathKey}-${g.courseKey}`} className="glass rounded-2xl p-5">
+						<div className="flex flex-wrap items-center justify-between gap-2">
+							<div>
+								<div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide" style={{ color: path?.color || '#d4af37' }}>
+									<span>{g.pathName}</span><span className="text-[#6a665a]">·</span><span className="text-[#8a8577]">{g.courseTitle}</span>
+								</div>
+							</div>
+							<button onClick={() => onStartPath(g.pathKey)} className="rounded-xl border border-[#d4af37]/25 px-3.5 py-2 text-xs font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10">Start this path</button>
+						</div>
+						<div className="mt-3 grid gap-2 sm:grid-cols-2">
+							{g.items.map((lp) => (
+								<button key={lp.lessonKey} onClick={() => onStartPath(g.pathKey)} className="group flex items-center gap-2.5 rounded-xl border border-[#d4af37]/10 p-3 text-left transition hover:border-[#d4af37]/40 hover:bg-[#d4af37]/[0.04]">
+									<span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#d4af37]/10 text-[#d4af37]"><BookOpen className="h-3.5 w-3.5" /></span>
+									<span className="min-w-0 flex-1">
+										<span className="block truncate text-[13px] font-medium text-[#f0ecdd]">{lp.title}</span>
+										<span className="mt-0.5 flex items-center gap-2 text-[11px] text-[#8a8577]"><span className="flex items-center gap-1"><Timer className="h-3 w-3" />{lp.minutes} min</span><span>· {(lp.tags || []).join(' · ')}</span></span>
+									</span>
+									<ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#6a665a] group-hover:text-[#d4af37]" />
+								</button>
+							))}
+						</div>
+					</div>
+				);
+			})}
+		</div>
+	);
+}
+
 // ── Main page ────────────────────────────────────────────────────────
 export default function AcademyPage() {
 	const { t } = useI18n();
@@ -611,6 +668,16 @@ export default function AcademyPage() {
 	const [rsvps, setRsvps] = useState([]);
 	const [attended, setAttended] = useState([]);
 	const [tab, setTab] = useState('learn');
+	const [trackFilter, setTrackFilter] = useState('all');
+
+	const topicIndex = useMemo(() => getTopicIndex(), []);
+	const totals = useMemo(() => ({
+		lessons: topicIndex.length,
+		minutes: topicIndex.reduce((a, x) => a + (Number(x.minutes) || 0), 0),
+		paths: PATHS.length,
+	}), [topicIndex]);
+	const forexCount = useMemo(() => topicIndex.filter((x) => (x.tags || []).includes('forex')).length, [topicIndex]);
+	const cryptoCount = useMemo(() => topicIndex.filter((x) => (x.tags || []).includes('crypto')).length, [topicIndex]);
 
 	const refreshAccess = useCallback(async () => {
 		setLoadError(null);
@@ -656,6 +723,13 @@ export default function AcademyPage() {
 			toast({ variant: 'destructive', title: t('aca.enrollFail'), description: err.message });
 			setGenerating(null);
 		}
+	};
+
+	const startPathByKey = async (pathKey) => {
+		const path = PATHS.find((p) => p.key === pathKey);
+		if (!path) return;
+		setTab('learn');
+		await enroll(path);
 	};
 
 	const pollCurriculum = async (path, attempt = 0) => {
@@ -707,8 +781,11 @@ export default function AcademyPage() {
 		}
 	};
 
-	const liveWebinars = WEBINAR_SCHEDULE.map((w) => ({ ...w, state: getWebinarState(w) }));
+	const liveWebinars = WEBINAR_CATALOG.map((w) => ({ ...w, state: getWebinarState(w) }));
 	const liveWebinar = liveWebinars.find((w) => w.state.live);
+	const filteredWebinars = trackFilter === 'all' ? liveWebinars : liveWebinars.filter((w) => w.track === trackFilter || w.track === 'general');
+
+	const filteredPaths = trackFilter === 'all' ? PATHS : PATHS.filter((p) => p.track === trackFilter || (trackFilter === 'general' && p.track === 'general'));
 
 	useEffect(() => {
 		if (!liveWebinar || attended.includes(liveWebinar.id)) return;
@@ -723,6 +800,9 @@ export default function AcademyPage() {
 		return (
 			<AppLayout title={t('aca.page')}>
 				<Paywall onPurchased={() => { toast({ title: t('aca.welcome'), description: t('aca.welcomeSub') }); refreshAccess(); }} />
+				<div className="mt-6">
+					<TopicExplorer onStartPath={() => { toast({ title: t('aca.badge'), description: 'Get lifetime access to unlock all paths and lessons.' }); }} />
+				</div>
 			</AppLayout>
 		);
 	}
@@ -763,7 +843,7 @@ export default function AcademyPage() {
 			<AppLayout title={t('aca.page')}>
 				<LessonView
 					pathKey={activePath.key}
-					curriculum={curriculumFor(activePath.key) || { pathName: activePath.name, courses: [] }}
+					curriculum={curriculumFor(activePath.key) || STATIC_CURRICULA[activePath.key] || { pathName: activePath.name, courses: [] }}
 					course={activeCourse}
 					lesson={activeLesson}
 					progress={progressMap[`${activeCourse.courseKey}:${activeLesson.lessonKey}`]}
@@ -776,11 +856,14 @@ export default function AcademyPage() {
 
 	// ── Curriculum view ──
 	if (view === 'curriculum' && activePath) {
-		const curriculum = curriculumFor(activePath.key);
+		const aiCurriculum = curriculumFor(activePath.key);
+		const staticFallback = STATIC_CURRICULA[activePath.key];
+		const curriculum = aiCurriculum || staticFallback;
+		const isPreview = !aiCurriculum && !!staticFallback;
 		const certificate = enrollmentFor(activePath.key);
 		return (
 			<AppLayout title={t('aca.page')}>
-				{!curriculum || generating ? (
+				{!curriculum || generating === activePath.key && !curriculum ? (
 					<div className="glass flex flex-col items-center rounded-2xl p-10 text-center">
 						<div className="relative">
 							<Route className="h-10 w-10 animate-pulse text-[#d4af37]" />
@@ -795,6 +878,7 @@ export default function AcademyPage() {
 						curriculum={curriculum}
 						progressMap={progressMap}
 						certificate={certificate}
+						isPreview={isPreview || generating === activePath.key}
 						onOpenLesson={openLesson}
 						onLeave={() => { setView('paths'); setActivePath(null); }}
 					/>
@@ -803,13 +887,57 @@ export default function AcademyPage() {
 		);
 	}
 
-	// ── Dashboard ──
+	// ── Dashboard / portal ──
 	return (
 		<AppLayout title={t('aca.page')}>
+			{/* Portal hero */}
+			<div className="tint-hero mb-5 rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
+				<div className="flex flex-wrap items-center justify-between gap-4">
+					<div>
+						<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#d4af37]"><Sparkles className="h-4 w-4" /> AI-driven Forex + Crypto Academy</div>
+						<h2 className="mt-1.5 text-xl font-bold text-[#f0ecdd] sm:text-2xl">Pick a desk, master every topic</h2>
+						<p className="mt-1 max-w-2xl text-sm text-[#8a8577]">Your AI builds each path around you, writes every lesson, grades every quiz and tutors you 1-on-1 — from first pip and first satoshi to funded-desk execution.</p>
+						<div className="mt-3 flex flex-wrap gap-2 text-xs">
+							<span className="rounded-full bg-[#d4af37]/12 px-2.5 py-1 text-[#d4af37]">{totals.paths} paths</span>
+							<span className="rounded-full bg-[#38bdf8]/10 px-2.5 py-1 text-[#38bdf8]">{forexCount} Forex topics</span>
+							<span className="rounded-full bg-[#f472b6]/10 px-2.5 py-1 text-[#f472b6]">{cryptoCount} Crypto topics</span>
+							<span className="rounded-full bg-[#34d399]/10 px-2.5 py-1 text-[#34d399]">{Math.round(totals.minutes / 60)}h+ content</span>
+							<span className="rounded-full bg-emerald-400/10 px-2.5 py-1 text-emerald-400">8 live sessions / week</span>
+						</div>
+					</div>
+					{enrolled.length > 0 && (
+						<div className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14]/40 px-4 py-3 text-right backdrop-blur-xl">
+							<p className="text-xs text-[#8a8577]">{t('aca.overall')}</p>
+							<p className="mt-0.5 font-bold text-[#d4af37]">{(() => {
+								let done = 0, total = 0;
+								enrolled.forEach((e) => {
+									const c = curriculumFor(e.pathKey) || STATIC_CURRICULA[e.pathKey];
+									if (!c) return;
+									total += c.courses.reduce((a, co) => a + co.lessons.length, 0);
+									done += c.courses.reduce((a, co) => a + co.lessons.filter((l) => progressMap[`${co.courseKey}:${l.lessonKey}`]?.completed).length, 0);
+								});
+								return total ? `${Math.round((done / total) * 100)}%` : '0%';
+							})()}</p>
+						</div>
+					)}
+				</div>
+				{/* Track filter */}
+				<div className="mt-4 flex flex-wrap items-center gap-2">
+					<Filter className="h-3.5 w-3.5 text-[#6a665a]" />
+					{[{ key: 'all', name: 'All' }, ...TRACKS.filter((x) => x.key !== 'all')].map((tr) => (
+						<button key={tr.key} onClick={() => setTrackFilter(tr.key)}
+							className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${trackFilter === tr.key ? 'bg-[#d4af37] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
+							{tr.name}
+						</button>
+					))}
+				</div>
+			</div>
+
 			{/* Tabs */}
 			<div className="mb-5 flex flex-wrap gap-2">
 				{[
 					{ id: 'learn', icon: GraduationCap, label: t('aca.tabLearn') },
+					{ id: 'topics', icon: Library, label: 'Topics' },
 					{ id: 'webinars', icon: Video, label: t('aca.tabWeb') },
 					{ id: 'certificates', icon: Award, label: t('aca.tabCert') },
 				].map((tb) => (
@@ -822,57 +950,41 @@ export default function AcademyPage() {
 
 			{tab === 'learn' && (
 				<>
-					<div className="tint-hero mb-6 rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
-						<div className="flex flex-wrap items-center justify-between gap-4">
-							<div>
-								<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#d4af37]"><Sparkles className="h-4 w-4" /> {t('aca.aiDriven')}</div>
-								<h2 className="mt-1.5 text-xl font-bold text-[#f0ecdd] sm:text-2xl">{t('aca.pickPath')}</h2>
-								<p className="mt-1 max-w-xl text-sm text-[#8a8577]">{t('aca.pickPathSub')}</p>
-							</div>
-							{enrolled.length > 0 && (
-								<div className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14]/40 px-4 py-3 text-right">
-									<p className="text-xs text-[#8a8577]">{t('aca.overall')}</p>
-									<p className="mt-0.5 font-bold text-[#d4af37]">{(() => {
-										let done = 0, total = 0;
-										enrolled.forEach((e) => {
-											const c = curriculumFor(e.pathKey);
-											if (!c) return;
-											total += c.courses.reduce((a, co) => a + co.lessons.length, 0);
-											done += c.courses.reduce((a, co) => a + co.lessons.filter((l) => progressMap[`${co.courseKey}:${l.lessonKey}`]?.completed).length, 0);
-										});
-										return total ? `${Math.round((done / total) * 100)}%` : '0%';
-									})()}</p>
-								</div>
-							)}
-						</div>
-					</div>
-
-					<div className="grid gap-4 md:grid-cols-3">
-						{PATHS.map((p) => {
+					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+						{filteredPaths.map((p) => {
 							const isEnrolled = enrolled.some((e) => e.pathKey === p.key);
-							const curriculum = curriculumFor(p.key);
+							const curriculum = curriculumFor(p.key) || STATIC_CURRICULA[p.key];
 							const cert = enrollmentFor(p.key);
-							const lessons = curriculum?.courses.reduce((a, c) => a + c.lessons.length, 0) || 0;
+							const stats = pathStats(p.key);
+							const lessons = curriculum?.courses.reduce((a, c) => a + c.lessons.length, 0) || stats.lessons || 0;
 							const done = curriculum ? curriculum.courses.reduce((a, c) => a + c.lessons.filter((l) => progressMap[`${c.courseKey}:${l.lessonKey}`]?.completed).length, 0) : 0;
 							const pct = lessons ? Math.round((done / lessons) * 100) : 0;
+							const trackColor = TRACK_COLORS[p.track] || p.color;
 							return (
 								<div key={p.key} className="glass glass-hover relative flex h-full flex-col rounded-2xl p-5">
 									<div className="flex items-center gap-2">
-										<Route className="h-4 w-4" style={{ color: p.color }} />
-										<span className="text-xs font-semibold uppercase tracking-wide" style={{ color: p.color }}>{t(`aca.path_${p.key}_level`, null, p.level)} {t('aca.pathWord')}</span>
+										<PathIcon icon={p.icon} color={p.color} />
+										<span className="text-xs font-semibold uppercase tracking-wide" style={{ color: p.color }}>{p.level} path</span>
+										<span className="ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide" style={{ background: `${trackColor}1a`, color: trackColor }}>{p.track}</span>
 									</div>
-									<h3 className="mt-2 font-semibold text-[#f0ecdd]">{t(`aca.path_${p.key}_name`, null, p.name)}</h3>
-									<p className="mt-1 flex-1 text-sm leading-relaxed text-[#8a8577]">{t(`aca.path_${p.key}_desc`, null, p.desc)}</p>
+									<h3 className="mt-2 font-semibold text-[#f0ecdd]">{p.name}</h3>
+									<p className="mt-1 flex-1 text-sm leading-relaxed text-[#8a8577]">{p.desc}</p>
+									<div className="mt-3 flex flex-wrap gap-1.5">
+										{(p.skills || []).map((s) => (
+											<span key={s} className="rounded-full border border-[#d4af37]/15 px-2 py-0.5 text-[11px] text-[#8a8577]">{s}</span>
+										))}
+									</div>
+									<p className="mt-3 flex items-center gap-1.5 text-[11px] text-[#6a665a]"><Layers className="h-3 w-3" />{stats.courses} courses · {stats.lessons} lessons · ~{Math.round(stats.minutes / 60)}h</p>
 									{isEnrolled && lessons > 0 && (
-										<div className="mt-3">
-											<div className="flex justify-between text-[11px] text-[#8a8577]"><span>{t('aca.lessonsPct', { d: done, n: lessons, p: pct })}</span><span>{pct}%</span></div>
+										<div className="mt-2">
+											<div className="flex justify-between text-[11px] text-[#8a8577]"><span>{done}/{lessons} lessons · {pct}%</span><span>{pct}%</span></div>
 											<div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#d4af37]/10"><div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25]" style={{ width: `${pct}%` }} /></div>
 										</div>
 									)}
 									<div className="mt-4 flex items-center gap-2">
 										{isEnrolled ? (
 											<button onClick={() => { setActivePath(p); setView('curriculum'); }} className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">
-												{cert?.certificateCode ? <><BadgeCheck className="h-4 w-4" /> {t('aca.certifiedBadge')}</> : pct === 100 ? <><Award className="h-4 w-4" /> {t('aca.claimCert')}</> : <><PlayCircle className="h-4 w-4" /> {t('aca.continue')}</>}
+												{cert?.certificateCode ? <><BadgeCheck className="h-4 w-4" /> Certified</> : pct === 100 ? <><Award className="h-4 w-4" /> {t('aca.claimCert')}</> : <><PlayCircle className="h-4 w-4" /> {t('aca.continue')}</>}
 											</button>
 										) : (
 											<button onClick={() => enroll(p)} disabled={generating === p.key}
@@ -888,7 +1000,28 @@ export default function AcademyPage() {
 							);
 						})}
 					</div>
+					{filteredPaths.length === 0 && (
+						<div className="glass mt-4 rounded-2xl p-8 text-center text-sm text-[#8a8577]">No paths in this track. Switch the filter above.</div>
+					)}
+
+					{/* Forex vs Crypto quick jump */}
+					<div className="mt-6 grid gap-4 md:grid-cols-2">
+						<div className="rounded-2xl border border-[#38bdf8]/25 bg-gradient-to-br from-[#38bdf8]/[0.1] to-transparent p-5 backdrop-blur-xl">
+							<div className="flex items-center gap-2 text-[#38bdf8]"><Globe className="h-5 w-5" /><span className="text-xs font-bold uppercase tracking-wide">Forex desk</span></div>
+							<p className="mt-2 text-sm leading-relaxed text-[#c9c4b4]">Majors → exotics, London & NY killzones, CPI/NFP news, SMC liquidity, carry & prop-firm funding. {forexCount} lessons.</p>
+							<button onClick={() => startPathByKey('forex')} className="mt-3 min-h-[44px] rounded-xl bg-[#38bdf8] px-5 text-sm font-bold text-[#06222f] transition hover:opacity-90">Open Forex Mastery</button>
+						</div>
+						<div className="rounded-2xl border border-[#f472b6]/25 bg-gradient-to-br from-[#f472b6]/[0.1] to-transparent p-5 backdrop-blur-xl">
+							<div className="flex items-center gap-2 text-[#f472b6]"><Bitcoin className="h-5 w-5" /><span className="text-xs font-bold uppercase tracking-wide">Crypto desk</span></div>
+							<p className="mt-2 text-sm leading-relaxed text-[#c9c4b4]">Wallets → spot → perps & funding → on-chain → DeFi → custody. Volatility sizing for 10% days. {cryptoCount} lessons.</p>
+							<button onClick={() => startPathByKey('crypto')} className="mt-3 min-h-[44px] rounded-xl bg-[#f472b6] px-5 text-sm font-bold text-[#2f0618] transition hover:opacity-90">Open Crypto Mastery</button>
+						</div>
+					</div>
 				</>
+			)}
+
+			{tab === 'topics' && (
+				<TopicExplorer onStartPath={startPathByKey} />
 			)}
 
 			{tab === 'webinars' && (
@@ -896,22 +1029,29 @@ export default function AcademyPage() {
 					<div className="tint-hero rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
 						<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#d4af37]"><Radio className="h-4 w-4" /> {t('aca.liveInteractive')}</div>
 						<h2 className="mt-1.5 text-xl font-bold text-[#f0ecdd] sm:text-2xl">{t('aca.webTitle')}</h2>
-						<p className="mt-1 max-w-xl text-sm text-[#8a8577]">{t('aca.webSub')}</p>
+						<p className="mt-1 max-w-xl text-sm text-[#8a8577]">{t('aca.webSub')} Now with dedicated Forex and Crypto desks.</p>
+						<div className="mt-3 flex flex-wrap gap-2">
+							{[{ key: 'all', name: 'All desks' }, { key: 'forex', name: 'Forex' }, { key: 'crypto', name: 'Crypto' }, { key: 'general', name: 'General' }, { key: 'pro', name: 'Pro' }].map((tr) => (
+								<button key={tr.key} onClick={() => setTrackFilter(tr.key)} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${trackFilter === tr.key ? 'bg-[#d4af37] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577]'}`}>{tr.name}</button>
+							))}
+						</div>
 					</div>
 					<div className="grid gap-4 md:grid-cols-2">
-						{liveWebinars.map((w) => {
+						{filteredWebinars.map((w) => {
 							const { live, start } = w.state;
 							const rsvped = rsvps.includes(w.id);
+							const wColor = TRACK_COLORS[w.track] || '#d4af37';
 							return (
 								<div key={w.id} className={`glass h-full rounded-2xl p-5 ${live ? 'border border-[#34d399]/30' : ''}`}>
-									<div className="flex items-center gap-2">
+									<div className="flex flex-wrap items-center gap-2">
 										{live
 											? <span className="flex items-center gap-1.5 rounded-full bg-emerald-400/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-400"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> {t('aca.liveNow')}</span>
-											: <span className="rounded-full bg-[#d4af37]/12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#d4af37]">{t(`aca.wd${w.day}`)} · {w.hour % 12 || 12}:00 {w.hour >= 12 ? 'PM' : 'AM'} EST</span>}
+											: <span className="rounded-full bg-[#d4af37]/12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#d4af37]">{WEEKDAYS[w.day]} · {w.hour % 12 || 12}:00 {w.hour >= 12 ? 'PM' : 'AM'} EST</span>}
+										<span className="rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wide" style={{ background: `${wColor}1a`, color: wColor }}>{w.track}</span>
 									</div>
-									<h3 className="mt-2.5 font-semibold text-[#f0ecdd]">{t(`aca.web_${w.id}_title`, null, w.title)}</h3>
+									<h3 className="mt-2.5 font-semibold text-[#f0ecdd]">{w.title}</h3>
 									<p className="mt-1 text-xs text-[#8a8577]">{w.host}</p>
-									<p className="mt-2 text-sm leading-relaxed text-[#c9c4b4]">{t(`aca.web_${w.id}_desc`, null, w.description)}</p>
+									<p className="mt-2 text-sm leading-relaxed text-[#c9c4b4]">{w.description}</p>
 									<div className="mt-3 flex items-center gap-2 text-xs text-[#8a8577]">
 										{live ? <span className="flex items-center gap-1 text-emerald-400"><Radio className="h-3.5 w-3.5" /> {t('aca.inProgress')}</span>
 											: <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {t('aca.startsIn', { cd: fmtCountdown(start, t) })}</span>}
@@ -926,7 +1066,7 @@ export default function AcademyPage() {
 						})}
 					</div>
 
-					{liveWebinars.find((w) => w.state.live) ? (
+					{filteredWebinars.find((w) => w.state.live) ? (
 						<div>
 							<h3 className="mb-3 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Radio className="h-5 w-5 text-emerald-400" /> {t('aca.liveRoom')}</h3>
 							<AIChat
@@ -934,7 +1074,7 @@ export default function AcademyPage() {
 								placeholder={t('aca.hostPh')}
 								accent="#34d399"
 								buildBody={({ history, question }) => ({
-									webinar: liveWebinars.find((w) => w.state.live),
+									webinar: filteredWebinars.find((w) => w.state.live),
 									scheduleNote: 'LIVE session — attendees are joining now.',
 									history,
 									question,
@@ -944,7 +1084,7 @@ export default function AcademyPage() {
 					) : (
 						<div className="glass flex items-center gap-3 rounded-2xl p-5">
 							<Calendar className="h-6 w-6 text-[#d4af37]" />
-							<p className="text-sm text-[#c9c4b4]">{t('aca.nextSession', { cd: fmtCountdown(liveWebinars.reduce((a, w) => (w.state.start.getTime() < a.state.start.getTime() ? w : a)).state.start, t) })}</p>
+							<p className="text-sm text-[#c9c4b4]">{t('aca.nextSession', { cd: fmtCountdown(filteredWebinars.reduce((a, w) => (w.state.start.getTime() < a.state.start.getTime() ? w : a)).state.start, t) })}</p>
 						</div>
 					)}
 				</div>
@@ -954,7 +1094,7 @@ export default function AcademyPage() {
 				<div className="space-y-4">
 					<div className="tint-hero rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
 						<h2 className="text-xl font-bold text-[#f0ecdd] sm:text-2xl"><Award className="mr-2 inline h-6 w-6 text-[#d4af37]" />{t('aca.yourCerts')}</h2>
-						<p className="mt-1 max-w-xl text-sm text-[#8a8577]">{t('aca.yourCertsSub')}</p>
+						<p className="mt-1 max-w-xl text-sm text-[#8a8577]">{t('aca.yourCertsSub')} Earn one per path — including Forex Mastery and Crypto Mastery.</p>
 					</div>
 					{enrolled.length === 0 ? (
 						<div className="glass flex flex-col items-center rounded-2xl p-10 text-center">
@@ -963,7 +1103,7 @@ export default function AcademyPage() {
 						</div>
 					) : enrolled.map((e) => {
 						const p = PATHS.find((x) => x.key === e.pathKey);
-						const curriculum = curriculumFor(e.pathKey);
+						const curriculum = curriculumFor(e.pathKey) || STATIC_CURRICULA[e.pathKey];
 						const lessons = curriculum?.courses.reduce((a, c) => a + c.lessons.length, 0) || 0;
 						const done = curriculum ? curriculum.courses.reduce((a, c) => a + c.lessons.filter((l) => progressMap[`${c.courseKey}:${l.lessonKey}`]?.completed).length, 0) : 0;
 						const pct = lessons ? Math.round((done / lessons) * 100) : 0;
