@@ -48,17 +48,60 @@ function fmtVol(qv) {
   return `$${qv.toFixed(0)}`;
 }
 
-function radiusFor(cell, mode, volStats, compact = false) {
+function radiusFor(cell, mode, volStats, compact = false, relRange = null) {
   // Compact ("All" view, 240 bubbles): scaled to fit the crowd while staying readable.
   const k = compact ? 0.72 : 1;
   if (mode === 'volume') {
     const { min, max } = volStats;
     const v = Math.log10(Math.max(cell.quoteVolume || 0, 1));
     const t = max > min ? Math.min(Math.max((v - min) / (max - min), 0), 1) : 0.5;
-    return (20 + t * 40) * k; // 20–60, or ~10–31 compact
+    return (20 + t * 40) * k; // 20–60, or ~14–43 compact
+  }
+  // relRange (All view): auto-size relative to the page's own move spread so
+  // forex-sized moves and crypto-sized moves share the full size range.
+  if (relRange && relRange.max > relRange.min) {
+    const t = Math.min(Math.max((Math.abs(cell.changePercent || 0) - relRange.min) / (relRange.max - relRange.min), 0), 1);
+    return (24 + t * 44) * k;
   }
   const cap = Math.min(Math.abs(cell.changePercent || 0) / 8, 1);
-  return (28 + cap * 52) * k; // 28–80, or ~15–42 compact
+  return (28 + cap * 52) * k; // 28–80, or ~20–58 compact
+}
+
+const PAGE_SIZE = 100;
+
+// Primary listing venue per symbol (drives the exchange filter).
+// Crypto default Binance, forex OANDA, commodities Spot, sectors NYSE;
+// stocks/ETFs default NYSE unless listed here as NASDAQ.
+const NASDAQ_STOCKS = new Set(
+  'AAPL MSFT GOOGL AMZN TSLA META NVDA NFLX AMD INTC CSCO ADBE COST GILD AMGN ISRG MU AMAT LRCX KLAC ADI PANW INTU BKNG CSX ADP AVGO EQIX MDLZ PEP TXN QCOM HON EXC UAL'.split(' '),
+);
+const COINBASE_COINS = new Set(
+  'BTCUSD ETHUSD SOLUSD XRPUSD ADAUSD DOGEUSD AVAXUSD DOTUSD LINKUSD LTCUSD UNIUSD NEARUSD APTUSD AAVEUSD MKRUSD GRTUSD SANDUSD MANAUSD GALAUSD AXSUSD'.split(' '),
+);
+const EXCHANGE_LABEL = { binance: 'Binance', coinbase: 'Coinbase', nyse: 'NYSE', nasdaq: 'NASDAQ', oanda: 'OANDA', spot: 'Spot' };
+const EXCHANGES_BY_TYPE = {
+  crypto: ['binance', 'coinbase'],
+  stock: ['nyse', 'nasdaq'],
+  sector: ['nyse'],
+  forex: ['oanda'],
+  commodity: ['spot'],
+  all: ['binance', 'coinbase', 'nyse', 'nasdaq', 'oanda', 'spot'],
+};
+function exchangeOf(cell, type) {
+  // Default attribution follows the price source; Coinbase is an extra
+  // membership filter handled by exchangeMatch below.
+  const m = cell.market || type;
+  if (m === 'crypto') return 'binance';
+  if (m === 'forex') return 'oanda';
+  if (m === 'commodity') return 'spot';
+  if (m === 'sector') return 'nyse';
+  if (m === 'stock') return NASDAQ_STOCKS.has(cell.symbol) ? 'nasdaq' : 'nyse';
+  return 'spot';
+}
+function exchangeMatch(cell, type, exchange) {
+  if (exchange === 'all') return true;
+  if (exchange === 'coinbase') return COINBASE_COINS.has(cell.symbol) && (cell.market || type) === 'crypto';
+  return exchangeOf(cell, type) === exchange;
 }
 
 export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
@@ -75,24 +118,48 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
     try { localStorage.setItem(SCHEME_KEY, id); } catch { /* ignore */ }
   };
   const [query, setQuery] = useState('');
+  const [page, setPage] = useState(0);
+  const [exchange, setExchange] = useState('all');
+  // New market/period starts back on page one.
+  useEffect(() => { setPage(0); setExchange('all'); }, [type, period]);
   const [hover, setHover] = useState(null); // {cell, x, y}
   const wrapRef = useRef(null);
   const [size, setSize] = useState({ w: 800, h: 520 });
   const nodesRef = useRef(new Map());
   const [, force] = useState(0);
 
+  // Exchange filter first, then search/pagination operate on the subset.
+  const availExchanges = EXCHANGES_BY_TYPE[type] || ['spot'];
+  const filteredCells = exchange === 'all' ? cells : cells.filter((c) => exchangeMatch(c, type, exchange));
+
   const volStats = useMemo(() => {
-    const logs = cells.map((c) => Math.log10(Math.max(c.quoteVolume || 0, 1))).sort((a, b) => a - b);
+    const logs = visibleCells.map((c) => Math.log10(Math.max(c.quoteVolume || 0, 1))).sort((a, b) => a - b);
     // Clip at the 95th percentile so one giant (e.g. BTC) can't dwarf the field.
     const p95 = logs.length ? logs[Math.min(logs.length - 1, Math.floor(0.95 * (logs.length - 1)))] : 1;
     return { min: logs.length ? logs[0] : 0, max: Math.max(p95, logs.length ? logs[0] + 0.5 : 1) };
-  }, [cells]);
+  }, [visibleCells]);
+
+  // All-view auto-sizing: normalize move sizes to the visible page's own
+  // spread so small forex moves and large crypto moves share the size range.
+  const relRange = useMemo(() => {
+    if (type !== 'all' || mode !== 'move' || !visibleCells.length) return null;
+    const mags = visibleCells.map((c) => Math.abs(c.changePercent || 0));
+    return { min: Math.min(...mags), max: Math.max(...mags) };
+  }, [type, mode, visibleCells]);
 
   const q = query.trim().toLowerCase();
+  const searching = q.length > 0;
   const matchSet = useMemo(() => {
     if (!q) return null;
-    return new Set(cells.filter((c) => c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)).map((c) => c.symbol));
-  }, [cells, q]);
+    return new Set(filteredCells.filter((c) => c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)).map((c) => c.symbol));
+  }, [filteredCells, q]);
+
+  // Pagination: 100 bubbles per page (searching shows all matches at once).
+  const pageCount = Math.max(1, Math.ceil(filteredCells.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount - 1);
+  const visibleCells = searching
+    ? filteredCells.filter((c) => matchSet.has(c.symbol))
+    : filteredCells.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
   // Measure container.
   useEffect(() => {
@@ -106,14 +173,14 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
     return () => ro.disconnect();
   }, []);
 
-  // Sync nodes with fresh cells (keep positions across refreshes).
+  // Sync nodes with the visible page (keep positions across refreshes).
   const compact = type === 'all';
   useEffect(() => {
     const map = nodesRef.current;
     const seen = new Set();
-    cells.forEach((c) => {
+    visibleCells.forEach((c) => {
       seen.add(c.symbol);
-      const r = radiusFor(c, mode, volStats, compact);
+      const r = radiusFor(c, mode, volStats, compact, relRange);
       const n = map.get(c.symbol);
       if (n) { n.cell = c; n.r = r; }
       else {
@@ -130,7 +197,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
       }
     });
     [...map.keys()].forEach((k) => { if (!seen.has(k)) map.delete(k); });
-  }, [cells, mode, volStats, compact, size.w, size.h]);
+  }, [visibleCells, mode, volStats, relRange, compact, size.w, size.h]);
 
   // Physics loop: continuous drift around the box — no center pull.
   // Bubbles cruise at a steady speed, ride a slow flowing current, bounce off
@@ -276,7 +343,64 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
         ))}
       </div>
 
-      {/* Movers strip */}
+      {/* Exchanges + pages */}
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        {availExchanges.length > 1 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[11px] uppercase tracking-wider text-[#8a8577]">{t('hm.exchange', null, 'Exchange')}</span>
+            <div className="flex overflow-hidden rounded-xl border border-[#d4af37]/15">
+              <button
+                onClick={() => { setExchange('all'); setPage(0); }}
+                className={`px-3 py-1.5 text-xs font-medium transition ${exchange === 'all' ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}
+              >
+                {t('hm.allEx', null, 'All')}
+              </button>
+              {availExchanges.map((ex) => (
+                <button
+                  key={ex}
+                  onClick={() => { setExchange(ex); setPage(0); }}
+                  className={`px-3 py-1.5 text-xs font-medium transition ${exchange === ex ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}
+                >
+                  {EXCHANGE_LABEL[ex]}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {pageCount > 1 && !searching && (
+          <div className="ml-auto flex items-center gap-1.5">
+            <button
+              disabled={safePage === 0}
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              className="rounded-lg border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#8a8577] transition hover:text-[#e9e7df] disabled:opacity-30"
+            >
+              ←
+            </button>
+            {Array.from({ length: pageCount }).map((_, i) => {
+              const start = i * PAGE_SIZE + 1;
+              const end = Math.min((i + 1) * PAGE_SIZE, filteredCells.length);
+              return (
+                <button
+                  key={i}
+                  onClick={() => setPage(i)}
+                  className={`rounded-lg px-2.5 py-1.5 font-mono text-xs transition ${i === safePage ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'}`}
+                >
+                  {start}–{end}
+                </button>
+              );
+            })}
+            <button
+              disabled={safePage >= pageCount - 1}
+              onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+              className="rounded-lg border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#8a8577] transition hover:text-[#e9e7df] disabled:opacity-30"
+            >
+              →
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Movers strip (global: across all pages/exchanges) */}
       {cells.length > 0 && (
         <div className="mb-3 grid grid-cols-3 gap-2">
           {[
