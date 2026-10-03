@@ -39,7 +39,7 @@ export default function HeatmapsPage() {
               <h3 className="font-semibold text-[#f0ecdd]">{selected.name} <span className="font-mono text-[#8a8577]">({selected.symbol})</span></h3>
               <p className={`text-xs ${selected.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{selected.changePercent >= 0 ? '+' : ''}{selected.changePercent}% · {period}</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <AddToWatchlist symbol={selected.symbol} />
               <Link to={`/app/charts?symbol=${encodeURIComponent(selected.symbol)}`} className="flex items-center gap-1 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1.5 text-xs font-semibold text-[#0a0a0f] transition hover:opacity-90">{t('mkt.openFull')} <ArrowUpRight className="h-3.5 w-3.5" /></Link>
               <button onClick={() => setSelected(null)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><X className="h-4 w-4" /></button>

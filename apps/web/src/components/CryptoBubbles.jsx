@@ -405,7 +405,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
 
       {/* Movers strip (global: across all pages/exchanges) */}
       {cells.length > 0 && (
-        <div className="mb-3 grid grid-cols-3 gap-2">
+        <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
           {[
             { icon: TrendingUp, label: t('hm.topGainer', null, 'Top gainer'), cell: stats.gainer, cls: 'text-emerald-400' },
             { icon: TrendingDown, label: t('hm.topLoser', null, 'Top loser'), cell: stats.loser, cls: 'text-red-400' },
@@ -538,8 +538,8 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
         {/* Hover tooltip */}
         {hover && (
           <div
-            className="pointer-events-none absolute z-10 min-w-[160px] rounded-xl border border-[#d4af37]/25 bg-[#0d0d12]/95 p-3 shadow-xl backdrop-blur"
-            style={{ left: Math.min(hover.x + 16, size.w - 180), top: Math.max(hover.y - 20, 8) }}
+            className="pointer-events-none absolute z-10 min-w-[160px] max-w-[calc(100%-16px)] rounded-xl border border-[#d4af37]/25 bg-[#0d0d12]/95 p-3 shadow-xl backdrop-blur"
+            style={{ left: Math.min(Math.max(hover.x + 16, 8), Math.max(8, size.w - 188)), top: Math.max(Math.min(hover.y - 20, size.h - 120), 8) }}
           >
             <div className="font-mono text-sm font-bold text-[#f0ecdd]">{hover.cell.symbol.replace('USD', '')} <span className="font-normal text-[#8a8577]">· {hover.cell.name}{hover.cell.market ? ` · ${hover.cell.market}` : ''}</span></div>
             <div className="mt-1 font-mono text-xs text-[#c9c4b4]">${fmtPrice(hover.cell.price)}</div>
