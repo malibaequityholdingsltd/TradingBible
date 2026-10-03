@@ -53,8 +53,8 @@ function radiusFor(cell, mode, volStats) {
   if (mode === 'volume') {
     const { min, max } = volStats;
     const v = Math.log10(Math.max(cell.quoteVolume || 0, 1));
-    const t = max > min ? (v - min) / (max - min) : 0.5;
-    return 24 + t * 60; // 24–84
+    const t = max > min ? Math.min(Math.max((v - min) / (max - min), 0), 1) : 0.5;
+    return 20 + t * 40; // 20–60: compact, no giants
   }
   const cap = Math.min(Math.abs(cell.changePercent || 0) / 8, 1);
   return 28 + cap * 52; // 28–80, bigger move = bigger bubble
@@ -83,8 +83,10 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   const [, force] = useState(0);
 
   const volStats = useMemo(() => {
-    const logs = cells.map((c) => Math.log10(Math.max(c.quoteVolume || 0, 1)));
-    return { min: Math.min(...logs, 0), max: Math.max(...logs, 1) };
+    const logs = cells.map((c) => Math.log10(Math.max(c.quoteVolume || 0, 1))).sort((a, b) => a - b);
+    // Clip at the 95th percentile so one giant (e.g. BTC) can't dwarf the field.
+    const p95 = logs.length ? logs[Math.min(logs.length - 1, Math.floor(0.95 * (logs.length - 1)))] : 1;
+    return { min: logs.length ? logs[0] : 0, max: Math.max(p95, logs.length ? logs[0] + 0.5 : 1) };
   }, [cells]);
 
   const q = query.trim().toLowerCase();
