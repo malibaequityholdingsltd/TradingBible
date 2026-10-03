@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Lock, Code2, Palette, CreditCard, HelpCircle, CandlestickChart, Grid2x2, Gauge, Star, Bell, Radar, CalendarClock, Landmark, ListOrdered, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2 } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Lock, Code2, Palette, CreditCard, HelpCircle, CandlestickChart, Grid2x2, Gauge, Star, Bell, Radar, CalendarClock, Landmark, ListOrdered, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, School, ClipboardList, FileCheck2, IdCard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { avatarUrl } from '@/lib/avatar';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -23,12 +23,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const COMPANY_ITEMS = [
-  { to: '/company', labelKey: 'nav.school', icon: Building2, end: true },
+  { to: '/company', labelKey: 'nav.school', icon: School, end: true },
   { to: '/company/students', labelKey: 'nav.students', icon: Users },
   { to: '/company/teachers', labelKey: 'nav.teachers', icon: GraduationCap },
-  { to: '/company/assessments', labelKey: 'nav.exams', icon: BookOpen },
-  { to: '/company/submissions', labelKey: 'nav.submissions', icon: FileText },
-  { to: '/company/academy-profiles', labelKey: 'nav.academyprofiles', icon: User },
+  { to: '/company/assessments', labelKey: 'nav.exams', icon: ClipboardList },
+  { to: '/company/submissions', labelKey: 'nav.submissions', icon: FileCheck2 },
+  { to: '/company/academy-profiles', labelKey: 'nav.academyprofiles', icon: IdCard },
 ];
 
 const NAV_GROUPS = [
@@ -36,22 +36,32 @@ const NAV_GROUPS = [
     labelKey: 'nav.trade',
     items: [
       { to: '/app', labelKey: 'nav.dashboard', icon: LayoutDashboard, end: true },
+      { to: '/app/terminal', labelKey: 'nav.terminal', icon: ListOrdered },
+      { to: '/app/journal', labelKey: 'nav.journal', icon: BookOpen },
+      { to: '/app/brokers', labelKey: 'nav.brokers', icon: Plug },
+      { to: '/app/prop-firms', labelKey: 'nav.propfirms', icon: Trophy },
+      { to: '/app/wallet', labelKey: 'nav.wallet', icon: Landmark, requiresSubscriber: true },
+    ],
+  },
+  {
+    labelKey: 'nav.analyze',
+    items: [
       { to: '/app/analytics', labelKey: 'nav.analytics', icon: BarChart3 },
+      { to: '/app/reports', labelKey: 'nav.reports', icon: FileText },
+      { to: '/app/coach', labelKey: 'nav.coach', icon: Bot, requiresSubscriber: true },
+      { to: '/app/tools', labelKey: 'nav.tools', icon: Calculator, requiresSubscriber: true },
+    ],
+  },
+  {
+    labelKey: 'nav.markets',
+    items: [
       { to: '/app/charts', labelKey: 'nav.charts', icon: CandlestickChart },
       { to: '/app/indicators', labelKey: 'nav.indicators', icon: Gauge },
       { to: '/app/heatmaps', labelKey: 'nav.heatmaps', icon: Grid2x2 },
       { to: '/app/watchlists', labelKey: 'nav.watchlists', icon: Star },
-      { to: '/app/terminal', labelKey: 'nav.terminal', icon: ListOrdered },
       { to: '/app/signals', labelKey: 'nav.signals', icon: Radar },
       { to: '/app/alerts', labelKey: 'nav.alerts', icon: Bell },
       { to: '/app/economic-calendar', labelKey: 'nav.economic', icon: CalendarClock },
-      { to: '/app/journal', labelKey: 'nav.journal', icon: BookOpen },
-      { to: '/app/reports', labelKey: 'nav.reports', icon: FileText },
-      { to: '/app/coach', labelKey: 'nav.coach', icon: Bot, requiresSubscriber: true },
-      { to: '/app/tools', labelKey: 'nav.tools', icon: Calculator, requiresSubscriber: true },
-      { to: '/app/brokers', labelKey: 'nav.brokers', icon: Plug },
-      { to: '/app/prop-firms', labelKey: 'nav.propfirms', icon: Trophy },
-      { to: '/app/wallet', labelKey: 'nav.wallet', icon: Landmark, requiresSubscriber: true },
     ],
   },
   {
@@ -59,15 +69,15 @@ const NAV_GROUPS = [
     items: [
       { to: '/app/community', labelKey: 'nav.community', icon: Users },
       { to: '/app/academy', labelKey: 'nav.academy', icon: GraduationCap },
-      { to: '/app/api-docs', labelKey: 'nav.apidocs', icon: Code2, requiresSubscriber: true, hidden: true },
-      { to: '/app/integrations', labelKey: 'nav.integrations', icon: Plug, requiresSubscriber: true, hidden: true },
+      { to: '/app/api-docs', labelKey: 'nav.apidocs', icon: Code2, requiresSubscriber: true },
+      { to: '/app/integrations', labelKey: 'nav.integrations', icon: Settings, requiresSubscriber: true },
     ],
   },
   {
     labelKey: 'nav.account',
     items: [
       { to: '/app/profile', labelKey: 'nav.profile', icon: User },
-      { to: '/app/api-keys', labelKey: 'nav.apikeys', icon: KeyRound, hidden: true },
+      { to: '/app/api-keys', labelKey: 'nav.apikeys', icon: KeyRound },
       { to: '/app/billing', labelKey: 'nav.billing', icon: CreditCard },
       { to: '/app/affiliate', labelKey: 'nav.affiliate', icon: Share2 },
       { to: '/app/security', labelKey: 'nav.security', icon: Lock },
@@ -76,7 +86,7 @@ const NAV_GROUPS = [
   },
 ];
 
-function Brand({ homeTo, platformName }) {
+function Brand({ homeTo, platformName, tagline }) {
   const { t } = useI18n();
   const words = String(platformName || 'TradingBible').trim().split(/\s+/);
   const first = words.slice(0, -1).join(' ');
@@ -86,7 +96,7 @@ function Brand({ homeTo, platformName }) {
       <img src={TRADINGBIBLE_LOGO} alt={`${platformName} logo`} className="h-9 w-9 rounded-lg object-contain" />
       <div className="leading-tight">
         <div className="font-semibold tracking-tight text-[#f0ecdd]">{first ? `${first} ` : ''}<span className="gold-text">{last}</span></div>
-        <div className="text-[10px] uppercase tracking-[0.2em] text-[#8a8577]">{t('nav.terminal')}</div>
+        <div className="max-w-[140px] truncate text-[10px] uppercase tracking-[0.2em] text-[#8a8577]">{tagline || t('nav.terminal')}</div>
       </div>
     </Link>
   );
@@ -105,8 +115,9 @@ export default function AppLayout({ children, title, trialDays: trialDaysProp = 
   const signOut = () => { logout(); nav('/'); };
 
   const isAdmin = user?.role === 'admin';
-  const isSubscriber = ['pro', 'elite', 'professional'].includes((user?.plan || '').toLowerCase());
+  const isSubscriber = isAdmin || ['pro', 'elite', 'professional'].includes((user?.plan || '').toLowerCase());
   const isCompany = user?.accountType === 'company';
+  const canSeeSignals = isAdmin || features.signals !== false;
   const trialDaysRemaining = useMemo(() => {
     if (isSubscriber || isAdmin || !user) return 0;
     const startRaw = user.created || user.created_at;
@@ -130,7 +141,7 @@ const pluralS = (n) => (n === 1 ? '' : 's');
 
   const SideContent = (
     <div className="flex h-full flex-col">
-      <div className="px-5 py-6"><Brand homeTo={homeTo} platformName={settings.platformName} /></div>
+      <div className="px-5 py-6"><Brand homeTo={homeTo} platformName={settings.platformName} tagline={settings.tagline} /></div>
       <nav className="flex-1 space-y-4 overflow-y-auto px-3 pb-4">
         {(isCompany ? [{ labelKey: 'nav.company', items: COMPANY_ITEMS }, ...NAV_GROUPS] : NAV_GROUPS).map((group) => (
           <div key={group.labelKey} className="space-y-1">
@@ -138,20 +149,35 @@ const pluralS = (n) => (n === 1 ? '' : 's');
             {group.items
               .filter((it) => !it.hidden)
               .filter((it) => !it.adminOnly || isAdmin)
-              .filter((it) => !it.requiresSubscriber || isSubscriber)
               .filter((it) => {
                 const feature = featureForRoute(it.to);
                 return !feature || features[feature] !== false || isAdmin;
               })
-              .map(({ to, labelKey, icon: Icon, end }) => (
-              <NavLink key={to} to={to} end={end} onClick={() => setOpen(false)}
-                className={({ isActive }) => `nav-button nav-shell-link flex min-h-[44px] items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition-all ${isActive ? 'nav-shell-link--active text-[#f0ecdd] gold-glow' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
-                <span className="nav-icon-frame grid h-8 w-8 place-items-center rounded-lg bg-white/[0.03] text-[#8a8577]">
-                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
-                </span>
-                <span className="min-w-0 truncate">{t(labelKey)}</span>
-              </NavLink>
-            ))}
+              .map((it) => {
+                const { to, labelKey, icon: Icon, end } = it;
+                const locked = it.requiresSubscriber && !isSubscriber;
+                if (locked) {
+                  return (
+                    <button key={to} onClick={() => { setOpen(false); nav('/pricing'); }}
+                      className="nav-button nav-shell-link flex min-h-[44px] w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-[#8a8577]/70 transition-all hover:text-[#e9e7df]">
+                      <span className="nav-icon-frame grid h-8 w-8 place-items-center rounded-lg bg-white/[0.03] text-[#8a8577]/70">
+                        <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-left">{t(labelKey)}</span>
+                      <Crown className="h-3.5 w-3.5 shrink-0 text-[#d4af37]" />
+                    </button>
+                  );
+                }
+                return (
+                  <NavLink key={to} to={to} end={end} onClick={() => setOpen(false)}
+                    className={({ isActive }) => `nav-button nav-shell-link flex min-h-[44px] items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition-all ${isActive ? 'nav-shell-link--active text-[#f0ecdd] gold-glow' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
+                    <span className="nav-icon-frame grid h-8 w-8 place-items-center rounded-lg bg-white/[0.03] text-[#8a8577]">
+                      <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+                    </span>
+                    <span className="min-w-0 truncate">{t(labelKey)}</span>
+                  </NavLink>
+                );
+              })}
           </div>
         ))}
       </nav>
@@ -181,10 +207,12 @@ const pluralS = (n) => (n === 1 ? '' : 's');
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSwitcher />
-            <button onClick={() => nav('/app/alerts')} className="relative grid h-11 w-11 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60" title={t('app.alerts')}>
-              <Bell className="h-4 w-4" />
-              {unseen > 0 && <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">{unseen > 9 ? '9+' : unseen}</span>}
-            </button>
+            {canSeeSignals && (
+              <button onClick={() => nav('/app/alerts')} className="relative grid h-11 w-11 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60" title={t('app.alerts')}>
+                <Bell className="h-4 w-4" />
+                {unseen > 0 && <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">{unseen > 9 ? '9+' : unseen}</span>}
+              </button>
+            )}
             <button onClick={() => setTutorial(true)} className="flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#d4af37]/25 px-3 py-1 text-xs text-[#d4af37] transition hover:border-[#d4af37]/60"><HelpCircle className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t('app.help')}</span></button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -203,6 +231,9 @@ const pluralS = (n) => (n === 1 ? '' : 's');
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => nav('/app/security')} className="min-h-[44px] cursor-pointer gap-2.5">
                   <Settings className="h-4 w-4 text-[#d4af37]" /> {t('app.settings')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => nav('/app/api-keys')} className="min-h-[44px] cursor-pointer gap-2.5">
+                  <KeyRound className="h-4 w-4 text-[#d4af37]" /> {t('nav.apikeys')}
                 </DropdownMenuItem>
                 {isAdmin && (
                   <DropdownMenuItem onClick={() => nav('/admin')} className="min-h-[44px] cursor-pointer gap-2.5">

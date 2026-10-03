@@ -29,6 +29,8 @@ export function detectLanguage() {
 const STRINGS = {
   en: {
     'nav.trade': 'Trade',
+    'nav.analyze': 'Analyze',
+    'nav.markets': 'Markets',
     'nav.learn': 'Learn & Connect',
     'nav.account': 'Account',
     'nav.company': 'Company',
@@ -1623,6 +1625,8 @@ const STRINGS = {
   },
   fr: {
     'nav.trade': 'Trading',
+    'nav.analyze': 'Analyser',
+    'nav.markets': 'Marchés',
     'nav.learn': 'Apprendre & Échanger',
     'nav.account': 'Compte',
     'nav.company': 'Entreprise',
@@ -3217,6 +3221,8 @@ const STRINGS = {
   },
   es: {
     'nav.trade': 'Operar',
+    'nav.analyze': 'Analizar',
+    'nav.markets': 'Mercados',
     'nav.learn': 'Aprender y conectar',
     'nav.account': 'Cuenta',
     'nav.company': 'Empresa',
@@ -4811,6 +4817,8 @@ const STRINGS = {
   },
   pt: {
     'nav.trade': 'Negociar',
+    'nav.analyze': 'Analisar',
+    'nav.markets': 'Mercados',
     'nav.learn': 'Aprender e conectar',
     'nav.account': 'Conta',
     'nav.company': 'Empresa',
@@ -6405,6 +6413,8 @@ const STRINGS = {
   },
   de: {
     'nav.trade': 'Trading',
+    'nav.analyze': 'Analysieren',
+    'nav.markets': 'Märkte',
     'nav.learn': 'Lernen & Vernetzen',
     'nav.account': 'Konto',
     'nav.company': 'Unternehmen',
@@ -7999,6 +8009,8 @@ const STRINGS = {
   },
   ar: {
     'nav.trade': 'التداول',
+    'nav.analyze': 'تحليل',
+    'nav.markets': 'الأسواق',
     'nav.learn': 'تعلّم وتواصل',
     'nav.account': 'الحساب',
     'nav.company': 'الشركة',
@@ -9593,6 +9605,8 @@ const STRINGS = {
   },
   zh: {
     'nav.trade': '交易',
+    'nav.analyze': '分析',
+    'nav.markets': '市场',
     'nav.learn': '学习与交流',
     'nav.account': '账户',
     'nav.company': '公司',
@@ -11187,6 +11201,8 @@ const STRINGS = {
   },
   hi: {
     'nav.trade': 'ट्रेडिंग',
+    'nav.analyze': 'विश्लेषण',
+    'nav.markets': 'बाज़ार',
     'nav.learn': 'सीखें और जुड़ें',
     'nav.account': 'खाता',
     'nav.company': 'कंपनी',
