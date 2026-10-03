@@ -21,3 +21,7 @@ async function api(path, options = {}) {
 export const getDunsStatus = () => api('/duns/status');
 export const verifyDuns = (dunsNumber) => api('/duns/verify', { method: 'POST', body: JSON.stringify({ dunsNumber }) });
 export const getDunsCompany = (duns) => api(`/duns/company?duns=${encodeURIComponent(duns)}`);
+export const matchDuns = ({ name, city, country }) => {
+	const q = new URLSearchParams({ name: name || '', city: city || '', country: country || '' });
+	return api(`/duns/match?${q.toString()}`);
+};
