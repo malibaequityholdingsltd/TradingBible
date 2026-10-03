@@ -29,7 +29,9 @@ router.use(supabaseAuth);
 async function requireAccess(req, res, next) {
 	try {
 		const user = await academyDb.getUser(req.userId);
-		if (!user?.academyAccess) {
+		// Admins always pass: only the $150 purchase (or an admin role)
+		// unlocks the Academy — no other bypass exists.
+		if (!user?.academyAccess && user?.role !== 'admin') {
 			return res.status(403).json({ error: { message: 'not_purchased', code: 'academy_access_required' } });
 		}
 		req.academyUser = user;
@@ -44,7 +46,8 @@ async function requireAccess(req, res, next) {
 router.get('/access', async (req, res) => {
 	try {
 		const user = await academyDb.getUser(req.userId);
-		res.json({ access: Boolean(user?.academyAccess), purchasedAt: user?.academyPurchasedAt || null });
+		const access = Boolean(user?.academyAccess || user?.role === 'admin');
+		res.json({ access, purchasedAt: user?.academyPurchasedAt || null });
 	} catch (err) {
 		logger.error('academy access failed', String(err?.message || err));
 		res.status(500).json({ error: { message: 'Could not check Academy access.' } });
