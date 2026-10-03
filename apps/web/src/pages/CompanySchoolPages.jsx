@@ -185,6 +185,22 @@ export function CompanyTeachersPage() {
   const { loading, teachers, setTeachers } = useCompanySchoolData();
   const [form, setForm] = useState({ name: '', email: '', subject: '' });
   const [editingId, setEditingId] = useState(null);
+  const [loginMap, setLoginMap] = useState({});
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = pb.authStore.token;
+        if (!token) return;
+        const res = await fetch('/hcgi/api/company/teachers/status', { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) return;
+        const data = await res.json();
+        const map = {};
+        (data.status || []).forEach((s) => { map[String(s.email).toLowerCase()] = !!s.hasLogin; });
+        setLoginMap(map);
+      } catch { /* badges stay hidden */ }
+    })();
+  }, []);
 
   const resetForm = () => { setForm({ name: '', email: '', subject: '' }); setEditingId(null); };
 
@@ -246,10 +262,18 @@ export function CompanyTeachersPage() {
         </div>
         <div className={box}>
           <h2 className="font-semibold text-[#f0ecdd]">{t('sch.teDir')}</h2>
+          <p className="mt-1 text-xs text-[#8a8577]">{t('sch.inviteHint')}</p>
           <div className="mt-3 space-y-2">
             {loading ? <div className="text-sm text-[#8a8577]">{t('sch.loading')}</div> : teachers.length === 0 ? <div className="text-sm text-[#8a8577]">{t('sch.noTeachers')}</div> : teachers.map((x) => (
               <div key={x.id} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
-                <div className="font-medium text-[#f0ecdd]">{x.name}</div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-medium text-[#f0ecdd]">{x.name}</div>
+                  {loginMap[String(x.email || '').toLowerCase()] !== undefined && (
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${loginMap[String(x.email || '').toLowerCase()] ? 'bg-emerald-500/15 text-emerald-400' : 'bg-white/8 text-[#8a8577]'}`}>
+                      {loginMap[String(x.email || '').toLowerCase()] ? t('sch.hasLogin') : t('sch.noLoginYet')}
+                    </span>
+                  )}
+                </div>
                 <div className="text-xs text-[#8a8577]">{x.email}</div>
                 <div className="mt-1 text-xs text-[#c9c4b4]">{x.subject || t('sch.general')}</div>
                 <RowBtns onEdit={() => startEdit(x)} onDelete={() => delTeacher(x)} />
