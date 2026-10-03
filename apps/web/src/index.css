@@ -801,3 +801,28 @@ button {
 button {
   touch-action: manipulation;
 }
+
+/* ─── LIGHT THEME PATCH: missing opacity variants (app shell, drawers, overlays) ─── */
+/* AppLayout sidebar/header use /80 + /85 + /95; mobile drawer uses bg-black/70. */
+html.light .bg-\[\#0a0a0f\]\/80,
+html.light .bg-\[\#0a0a0f\]\/85 {
+  background-color: rgba(251, 249, 243, 0.88) !important;
+}
+html.light .bg-\[\#0f0f14\]\/85 {
+  background-color: rgba(255, 254, 249, 0.9) !important;
+}
+html.light .bg-\[\#0d0d12\]\/95,
+html.light .bg-\[\#0c0c11\]\/95 {
+  background-color: rgba(255, 254, 249, 0.94) !important;
+}
+html.light .bg-black\/70 {
+  background-color: rgba(45, 52, 64, 0.45) !important;
+}
+html.light .bg-black\/80 {
+  background-color: rgba(45, 52, 64, 0.5) !important;
+}
+/* Theme toggle + floating launchers stay readable on ivory */
+html.light .tv-chat-btn,
+html.light .tv-tv-btn {
+  color: #2d3440 !important;
+}

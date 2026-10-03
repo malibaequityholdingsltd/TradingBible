@@ -5,6 +5,7 @@ import apiServerClient from '@/lib/apiServerClient';
 export function useHeatmap(type, period, refreshMs = 25000) {
   const [cells, setCells] = useState([]);
   const [status, setStatus] = useState('loading');
+  const [nonce, setNonce] = useState(0);
   const timer = useRef(null);
 
   const fetchData = useCallback(async () => {
@@ -17,7 +18,7 @@ export function useHeatmap(type, period, refreshMs = 25000) {
     } catch {
       setStatus((prev) => (prev === 'ready' ? 'ready' : 'error'));
     }
-  }, [type, period]);
+  }, [type, period, nonce]);
 
   useEffect(() => {
     setStatus('loading');
@@ -26,7 +27,12 @@ export function useHeatmap(type, period, refreshMs = 25000) {
     return () => clearInterval(timer.current);
   }, [fetchData, refreshMs]);
 
-  return { cells, status };
+  const retry = useCallback(() => {
+    setStatus('loading');
+    setNonce((n) => n + 1);
+  }, []);
+
+  return { cells, status, retry };
 }
 
 export default useHeatmap;

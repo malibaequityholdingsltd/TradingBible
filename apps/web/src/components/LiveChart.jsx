@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import pb from '@/lib/pocketbaseClient';
 import { useI18n } from '@/lib/i18n';
+import { useTheme } from '@/hooks/useTheme';
 import { useCandles } from '@/hooks/useCandles';
 import { useDrawings } from '@/hooks/useDrawings';
 import { SYMBOL_GROUPS } from '@/lib/symbols';
@@ -43,6 +44,8 @@ export default function LiveChart({
   const [tick, setTick] = useState(0); // forces overlay recompute on pan/zoom/resize
   const [tplOpen, setTplOpen] = useState(false);
   const { t } = useI18n();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
 
   const wrapRef = useRef(null);
   const chartApi = useRef(null);
@@ -54,15 +57,16 @@ export default function LiveChart({
   const dz = useDrawings(symbol);
 
   // Build / rebuild the chart when container mounts or type changes.
+  // Rebuilt on theme switch so grid/text colors match light ivory vs dark.
   useEffect(() => {
     if (!wrapRef.current) return;
     const el = wrapRef.current;
     const chart = createChart(el, {
       autoSize: true,
-      layout: { background: { color: 'transparent' }, textColor: '#b3ae9e', fontFamily: 'Inter, sans-serif' },
-      grid: { vertLines: { color: 'rgba(212,175,55,0.06)' }, horzLines: { color: 'rgba(212,175,55,0.06)' } },
-      rightPriceScale: { borderColor: 'rgba(212,175,55,0.15)' },
-      timeScale: { borderColor: 'rgba(212,175,55,0.15)', timeVisible: true, secondsVisible: false },
+      layout: { background: { color: 'transparent' }, textColor: isLight ? '#565d68' : '#b3ae9e', fontFamily: 'Inter, sans-serif' },
+      grid: { vertLines: { color: isLight ? 'rgba(60,55,40,0.08)' : 'rgba(212,175,55,0.06)' }, horzLines: { color: isLight ? 'rgba(60,55,40,0.08)' : 'rgba(212,175,55,0.06)' } },
+      rightPriceScale: { borderColor: isLight ? 'rgba(166,124,30,0.25)' : 'rgba(212,175,55,0.15)' },
+      timeScale: { borderColor: isLight ? 'rgba(166,124,30,0.25)' : 'rgba(212,175,55,0.15)', timeVisible: true, secondsVisible: false },
       crosshair: { mode: 1 },
     });
     chartApi.current = chart;
@@ -90,7 +94,7 @@ export default function LiveChart({
     ro.observe(el);
 
     return () => { ro.disconnect(); chart.remove(); chartApi.current = null; mainSeries.current = null; overlaySeries.current = []; subPanes.current = []; };
-  }, [chartType]);
+  }, [chartType, isLight]);
 
   // Push candle + indicator data whenever candles or indicators change.
   useEffect(() => {

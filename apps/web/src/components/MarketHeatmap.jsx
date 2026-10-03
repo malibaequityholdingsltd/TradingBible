@@ -1,9 +1,10 @@
-import React, { useRef, useCallback } from 'react';
-import { Download, RefreshCw } from 'lucide-react';
+import React, { useRef, useCallback, useState } from 'react';
+import { Download, RefreshCw, LayoutGrid, CircleDot } from 'lucide-react';
 import { useHeatmap } from '@/hooks/useHeatmap';
 import { useI18n } from '@/lib/i18n';
+import CryptoBubbles from '@/components/CryptoBubbles';
 
-const PERIODS = ['1h', '4h', '1d', '1w', '1M'];
+const PERIODS = ['1h', '4h', '1d', '1w', '1M', '1Y'];
 const CATEGORIES = [
   { id: 'crypto', key: 'hm.crypto' },
   { id: 'forex', key: 'hm.forex' },
@@ -24,9 +25,9 @@ function fmtPrice(n) {
   return n.toFixed(4);
 }
 
-export default function MarketHeatmap({ type, setType, period, setPeriod, onSelect, showCategoryTabs = true }) {
+function GridView({ type, period, onSelect }) {
   const { t } = useI18n();
-  const { cells, status } = useHeatmap(type, period);
+  const { cells, status, retry } = useHeatmap(type, period);
   const gridRef = useRef(null);
 
   const exportImage = useCallback(() => {
@@ -60,31 +61,17 @@ export default function MarketHeatmap({ type, setType, period, setPeriod, onSele
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        {showCategoryTabs && (
-          <div className="flex flex-wrap gap-1.5">
-            {CATEGORIES.map((c) => (
-              <button key={c.id} onClick={() => setType(c.id)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${type === c.id ? 'bg-[#d4af37]/18 text-[#d4af37]' : 'border border-[#d4af37]/12 text-[#8a8577] hover:text-[#e9e7df]'}`}>
-                {t(c.key)}
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="ml-auto flex items-center gap-2">
-          <div className="flex overflow-hidden rounded-lg border border-[#d4af37]/15">
-            {PERIODS.map((p) => (
-              <button key={p} onClick={() => setPeriod(p)}
-                className={`px-2.5 py-1 text-xs transition ${period === p ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>{p}</button>
-            ))}
-          </div>
-          <span className={`h-1.5 w-1.5 rounded-full ${status === 'ready' ? 'bg-emerald-400 animate-pulse' : status === 'error' ? 'bg-red-400' : 'bg-[#d4af37]'}`} />
-          <button onClick={exportImage} title={t('mh.exportImg')} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><Download className="h-3.5 w-3.5" /></button>
-        </div>
+      <div className="mb-4 flex items-center justify-end gap-2">
+        <span className={`h-1.5 w-1.5 rounded-full ${status === 'ready' ? 'bg-emerald-400 animate-pulse' : status === 'error' ? 'bg-red-400' : 'bg-[#d4af37]'}`} />
+        <button onClick={exportImage} title={t('mh.exportImg')} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><Download className="h-3.5 w-3.5" /></button>
       </div>
-
       {status === 'loading' && !cells.length ? (
         <div className="flex items-center justify-center gap-2 py-16 text-sm text-[#8a8577]"><RefreshCw className="h-4 w-4 animate-spin" /> {t('mkt.loadingHeat')}</div>
+      ) : status === 'error' && !cells.length ? (
+        <div className="flex flex-col items-center gap-3 py-16 text-center">
+          <p className="text-sm text-[#8a8577]">{t('mkt.heatFail', null, 'Could not load market data. Start the API server, then retry.')}</p>
+          <button onClick={retry} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2 text-xs font-semibold text-[#d4af37] transition hover:border-[#d4af37]/60"><RefreshCw className="h-3.5 w-3.5" />{t('c.retry', null, 'Retry')}</button>
+        </div>
       ) : (
         <div ref={gridRef} className={`grid gap-2 ${gridCols}`}>
           {cells.map((c) => (
@@ -101,6 +88,53 @@ export default function MarketHeatmap({ type, setType, period, setPeriod, onSele
             </button>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+export default function MarketHeatmap({ type, setType, period, setPeriod, onSelect, showCategoryTabs = true }) {
+  const { t } = useI18n();
+  const [view, setView] = useState('bubbles'); // 'bubbles' | 'grid' (all markets)
+  const showBubbles = view === 'bubbles';
+
+  return (
+    <div>
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {showCategoryTabs && (
+          <div className="flex flex-wrap gap-1.5">
+            {CATEGORIES.map((c) => (
+              <button key={c.id} onClick={() => setType(c.id)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${type === c.id ? 'bg-[#d4af37]/18 text-[#d4af37]' : 'border border-[#d4af37]/12 text-[#8a8577] hover:text-[#e9e7df]'}`}>
+                {t(c.key)}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="ml-auto flex items-center gap-2">
+          <div className="flex overflow-hidden rounded-lg border border-[#d4af37]/15">
+            <button onClick={() => setView('bubbles')} title={t('hm.bubbles', null, 'Bubble view')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs transition ${view === 'bubbles' ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
+              <CircleDot className="h-3.5 w-3.5" />{t('hm.bubbles', null, 'Bubbles')}
+            </button>
+            <button onClick={() => setView('grid')} title={t('hm.grid', null, 'Grid view')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs transition ${view === 'grid' ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
+              <LayoutGrid className="h-3.5 w-3.5" />{t('hm.grid', null, 'Grid')}
+            </button>
+          </div>
+          <div className="flex overflow-hidden rounded-lg border border-[#d4af37]/15">
+            {PERIODS.map((p) => (
+              <button key={p} onClick={() => setPeriod(p)}
+                className={`px-2.5 py-1 text-xs transition ${period === p ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>{p}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {showBubbles ? (
+        <CryptoBubbles key={type} type={type} period={period} onSelect={onSelect} />
+      ) : (
+        <GridView type={type} period={period} onSelect={onSelect} />
       )}
     </div>
   );
