@@ -132,6 +132,20 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   const availExchanges = EXCHANGES_BY_TYPE[type] || ['spot'];
   const filteredCells = exchange === 'all' ? cells : cells.filter((c) => exchangeMatch(c, type, exchange));
 
+  const q = query.trim().toLowerCase();
+  const searching = q.length > 0;
+  const matchSet = useMemo(() => {
+    if (!q) return null;
+    return new Set(filteredCells.filter((c) => c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)).map((c) => c.symbol));
+  }, [filteredCells, q]);
+
+  // Pagination: 100 bubbles per page (searching shows all matches at once).
+  const pageCount = Math.max(1, Math.ceil(filteredCells.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount - 1);
+  const visibleCells = searching
+    ? filteredCells.filter((c) => matchSet.has(c.symbol))
+    : filteredCells.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
+
   const volStats = useMemo(() => {
     const logs = visibleCells.map((c) => Math.log10(Math.max(c.quoteVolume || 0, 1))).sort((a, b) => a - b);
     // Clip at the 95th percentile so one giant (e.g. BTC) can't dwarf the field.
@@ -146,20 +160,6 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
     const mags = visibleCells.map((c) => Math.abs(c.changePercent || 0));
     return { min: Math.min(...mags), max: Math.max(...mags) };
   }, [type, mode, visibleCells]);
-
-  const q = query.trim().toLowerCase();
-  const searching = q.length > 0;
-  const matchSet = useMemo(() => {
-    if (!q) return null;
-    return new Set(filteredCells.filter((c) => c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)).map((c) => c.symbol));
-  }, [filteredCells, q]);
-
-  // Pagination: 100 bubbles per page (searching shows all matches at once).
-  const pageCount = Math.max(1, Math.ceil(filteredCells.length / PAGE_SIZE));
-  const safePage = Math.min(page, pageCount - 1);
-  const visibleCells = searching
-    ? filteredCells.filter((c) => matchSet.has(c.symbol))
-    : filteredCells.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
   // Measure container.
   useEffect(() => {

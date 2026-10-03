@@ -180,7 +180,7 @@ export default function GlobalSearch() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder={t('nav.searchPh', null, 'Search pages, help, actions…')}
-                className="h-13 w-full bg-transparent py-4 text-sm text-[#e9e7df] outline-none placeholder:text-[#5f5b50]"
+                className="h-12 w-full bg-transparent py-4 text-sm text-[#e9e7df] outline-none placeholder:text-[#5f5b50]"
               />
               <button onClick={() => setOpen(false)} className="text-[#8a8577] hover:text-[#e9e7df]" aria-label="Close"><X className="h-4 w-4" /></button>
             </div>
