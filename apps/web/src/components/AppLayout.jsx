@@ -207,8 +207,10 @@ export default function AppLayout({ children, title }) {
               <p className="hidden truncate text-[11px] text-[#6a665a] sm:block">{user?.username || user?.email}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex min-w-0 flex-1 justify-center px-2">
             <GlobalSearch />
+          </div>
+          <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSwitcher />
             {canSeeSignals && (
               <button onClick={() => nav('/app/alerts')} className="relative grid h-11 w-11 place-items-center rounded-2xl border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60" title={t('app.alerts')}>
