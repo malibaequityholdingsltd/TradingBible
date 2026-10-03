@@ -22,7 +22,7 @@ export async function getStripe() {
 }
 
 function authHeaders() {
-  return { Authorization: pb.authStore.token, 'Content-Type': 'application/json' };
+  return { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' };
 }
 
 export async function openCheckout(plan) {

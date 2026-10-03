@@ -2,7 +2,7 @@ import apiServerClient from '@/lib/apiServerClient';
 import pb from '@/lib/pocketbaseClient';
 
 function headers() {
-	return { Authorization: pb.authStore.token, 'Content-Type': 'application/json' };
+	return { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' };
 }
 
 async function api(path, options = {}) {

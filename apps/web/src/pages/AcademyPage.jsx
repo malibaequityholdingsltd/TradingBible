@@ -156,7 +156,7 @@ function AIChat({ endpoint, buildBody, placeholder, accent = '#d4af37' }) {
 		try {
 			const res = await window.fetch(API_SERVER_URL + endpoint, {
 				method: 'POST',
-				headers: { Authorization: pb.authStore.token, 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+				headers: { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json', Accept: 'text/event-stream' },
 				body: JSON.stringify(buildBody({ history, question: text })),
 				signal: controller.signal,
 			});
