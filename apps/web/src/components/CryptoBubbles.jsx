@@ -6,20 +6,32 @@ import { useI18n } from '@/lib/i18n';
 
 // CryptoBubbles — cryptobubbles.net-style interactive 3D bubble visualization
 // for every market (crypto, forex, commodities, sectors, stocks).
-// Every asset is a draggable glossy 3D sphere: size tracks the move (or volume),
-// color shows direction with intensity (green up / red down, brighter = bigger).
+// Bubbles drift continuously around the box (no center clustering), bounce off
+// walls and each other, and are fully draggable. Size tracks the move (or
+// volume); color shows direction with intensity via the selected theme.
 // Search fades non-matches, hover shows price/volume tooltip, click opens chart.
 
-function bubbleFill(pct) {
+// Bubble color themes: [up, down] as "r,g,b" triplets.
+const SCHEMES = {
+  classic: { label: 'Classic', up: '52,211,153', down: '224,102,102' },
+  gold: { label: 'Gold', up: '212,175,55', down: '100,116,139' },
+  ocean: { label: 'Ocean', up: '34,211,238', down: '251,113,133' },
+  sunset: { label: 'Sunset', up: '45,212,191', down: '251,146,60' },
+};
+const SCHEME_KEY = 'tb-bubbles-scheme';
+
+function bubbleFill(pct, scheme) {
   const cap = Math.min(Math.abs(pct) / 8, 1);
   const alpha = 0.30 + cap * 0.60;
-  return pct >= 0 ? `rgba(52,211,153,${alpha.toFixed(2)})` : `rgba(224,102,102,${alpha.toFixed(2)})`;
+  const c = pct >= 0 ? scheme.up : scheme.down;
+  return `rgba(${c},${alpha.toFixed(2)})`;
 }
 
-function bubbleStroke(pct) {
+function bubbleStroke(pct, scheme) {
   const cap = Math.min(Math.abs(pct) / 8, 1);
   if (cap < 0.55) return 'rgba(255,255,255,0.14)';
-  return pct >= 0 ? 'rgba(52,211,153,0.75)' : 'rgba(224,102,102,0.75)';
+  const c = pct >= 0 ? scheme.up : scheme.down;
+  return `rgba(${c},0.75)`;
 }
 
 function fmtPrice(n) {
@@ -54,6 +66,15 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   const isLight = theme === 'light';
   const { cells, status, retry } = useHeatmap(type, period, 15000);
   const [mode, setMode] = useState('move'); // 'move' | 'volume'
+  const [schemeId, setSchemeId] = useState(() => {
+    try { return SCHEMES[localStorage.getItem(SCHEME_KEY)] ? localStorage.getItem(SCHEME_KEY) : 'classic'; }
+    catch { return 'classic'; }
+  });
+  const scheme = SCHEMES[schemeId] || SCHEMES.classic;
+  const pickScheme = (id) => {
+    setSchemeId(id);
+    try { localStorage.setItem(SCHEME_KEY, id); } catch { /* ignore */ }
+  };
   const [query, setQuery] = useState('');
   const [hover, setHover] = useState(null); // {cell, x, y}
   const wrapRef = useRef(null);
@@ -94,31 +115,38 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
       const n = map.get(c.symbol);
       if (n) { n.cell = c; n.r = r; }
       else {
+        // Random spread position + steady cruising velocity (never settles).
+        const ang = Math.random() * Math.PI * 2;
+        const spd = 0.5 + Math.random() * 0.7;
         map.set(c.symbol, {
           cell: c, r,
-          x: Math.random() * size.w, y: Math.random() * size.h,
-          vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2,
+          x: r + Math.random() * Math.max(size.w - r * 2, 1),
+          y: r + Math.random() * Math.max(size.h - r * 2, 1),
+          vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+          phase: Math.random() * Math.PI * 2,
         });
       }
     });
     [...map.keys()].forEach((k) => { if (!seen.has(k)) map.delete(k); });
   }, [cells, mode, volStats, size.w, size.h]);
 
-  // Physics loop: gentle drift + collision + centering + damping + bounds.
+  // Physics loop: continuous drift around the box — no center pull.
+  // Bubbles cruise at a steady speed, ride a slow flowing current, bounce off
+  // walls, and push each other apart softly on contact. They never settle.
   useEffect(() => {
     let raf;
+    const t0 = Date.now();
+    const MIN_SPD = 0.45, MAX_SPD = 2.0;
     const step = () => {
       const map = nodesRef.current;
       const nodes = [...map.values()];
-      const cx = size.w / 2; const cy = size.h / 2;
+      const t = (Date.now() - t0) / 1000;
       for (let i = 0; i < nodes.length; i++) {
         const a = nodes[i];
         if (a.drag) continue;
-        a.vx += (cx - a.x) * 0.0016;
-        a.vy += (cy - a.y) * 0.0016;
-        // Slight float so the field feels alive.
-        a.vx += (Math.random() - 0.5) * 0.05;
-        a.vy += (Math.random() - 0.5) * 0.05;
+        // Gentle flowing current so paths curve instead of going straight.
+        a.vx += Math.sin(t * 0.5 + a.phase + a.y / 220) * 0.012;
+        a.vy += Math.cos(t * 0.4 + a.phase + a.x / 260) * 0.012;
         for (let j = i + 1; j < nodes.length; j++) {
           const b = nodes[j];
           if (b.drag) continue;
@@ -127,7 +155,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
           const d2 = dx * dx + dy * dy;
           if (d2 > 0.01 && d2 < min * min) {
             const d = Math.sqrt(d2);
-            const push = ((min - d) / d) * 0.06;
+            const push = ((min - d) / d) * 0.05;
             a.vx -= dx * push; a.vy -= dy * push;
             b.vx += dx * push; b.vy += dy * push;
           }
@@ -135,12 +163,19 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
       }
       nodes.forEach((n) => {
         if (n.drag) return;
-        n.vx *= 0.92; n.vy *= 0.92;
+        // Enforce cruising speed band — bubbles always keep moving.
+        const spd = Math.hypot(n.vx, n.vy);
+        if (spd < MIN_SPD) {
+          const ang = spd > 0.01 ? Math.atan2(n.vy, n.vx) : Math.random() * Math.PI * 2;
+          n.vx = Math.cos(ang) * MIN_SPD; n.vy = Math.sin(ang) * MIN_SPD;
+        } else if (spd > MAX_SPD) {
+          n.vx = (n.vx / spd) * MAX_SPD; n.vy = (n.vy / spd) * MAX_SPD;
+        }
         n.x += n.vx; n.y += n.vy;
-        if (n.x < n.r) { n.x = n.r; n.vx *= -0.6; }
-        if (n.x > size.w - n.r) { n.x = size.w - n.r; n.vx *= -0.6; }
-        if (n.y < n.r) { n.y = n.r; n.vy *= -0.6; }
-        if (n.y > size.h - n.r) { n.y = size.h - n.r; n.vy *= -0.6; }
+        if (n.x < n.r) { n.x = n.r; n.vx = Math.abs(n.vx); }
+        if (n.x > size.w - n.r) { n.x = size.w - n.r; n.vx = -Math.abs(n.vx); }
+        if (n.y < n.r) { n.y = n.r; n.vy = Math.abs(n.vy); }
+        if (n.y > size.h - n.r) { n.y = size.h - n.r; n.vy = -Math.abs(n.vy); }
       });
       force((f) => f + 1);
       raf = requestAnimationFrame(step);
@@ -218,6 +253,25 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
         </span>
       </div>
 
+      {/* Bubble color themes */}
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <span className="text-[11px] uppercase tracking-wider text-[#8a8577]">{t('hm.colors', null, 'Colors')}</span>
+        {Object.entries(SCHEMES).map(([id, sc]) => (
+          <button
+            key={id}
+            onClick={() => pickScheme(id)}
+            title={sc.label}
+            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition ${schemeId === id ? 'border-[#d4af37]/60 bg-[#d4af37]/10 text-[#e9e7df]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'}`}
+          >
+            <span className="flex overflow-hidden rounded-full">
+              <span className="h-3 w-3" style={{ background: `rgb(${sc.up})` }} />
+              <span className="h-3 w-3" style={{ background: `rgb(${sc.down})` }} />
+            </span>
+            {sc.label}
+          </button>
+        ))}
+      </div>
+
       {/* Movers strip */}
       {cells.length > 0 && (
         <div className="mb-3 grid grid-cols-3 gap-2">
@@ -270,7 +324,8 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
             {nodes.map((n) => {
               const dim = matchSet && !matchSet.has(n.cell.symbol);
               const big = Math.abs(n.cell.changePercent) >= 5;
-              const fontSize = Math.max(10, Math.min(15, n.r / 4.2));
+              const fontSize = Math.max(11, Math.min(18, n.r / 2.6));
+              const pctSize = Math.max(10, Math.min(15, n.r / 3.1));
               const isHover = hover?.cell.symbol === n.cell.symbol;
               return (
                 <g
@@ -286,21 +341,21 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                 >
                   <g transform={isHover ? 'scale(1.07)' : undefined} style={{ transition: 'transform .18s ease-out' }}>
                     {big && !dim && (
-                      <circle r={n.r + 5} fill="none" stroke={bubbleStroke(n.cell.changePercent)} strokeWidth="1.5" opacity="0.45" />
+                      <circle r={n.r + 5} fill="none" stroke={bubbleStroke(n.cell.changePercent, scheme)} strokeWidth="1.5" opacity="0.45" />
                     )}
                     {/* sphere body */}
-                    <circle r={n.r} fill={bubbleFill(n.cell.changePercent)} />
+                    <circle r={n.r} fill={bubbleFill(n.cell.changePercent, scheme)} />
                     <circle r={n.r} fill="url(#bbShade)" />
                     {/* bounced floor light */}
                     <ellipse cx={0} cy={n.r * 0.58} rx={n.r * 0.52} ry={n.r * 0.15} fill="rgba(255,255,255,0.10)" />
                     {/* glossy highlight */}
                     <ellipse cx={-n.r * 0.33} cy={-n.r * 0.42} rx={n.r * 0.30} ry={n.r * 0.17} fill="url(#bbGloss)" opacity="0.55" transform={`rotate(-18)`} />
                     {/* rim */}
-                    <circle r={n.r} fill="none" stroke={bubbleStroke(n.cell.changePercent)} strokeWidth="1.2" />
-                    <text textAnchor="middle" dy={-2} fill={labelColor} fontSize={fontSize} fontWeight="800" fontFamily="JetBrains Mono, monospace" pointerEvents="none">
+                    <circle r={n.r} fill="none" stroke={bubbleStroke(n.cell.changePercent, scheme)} strokeWidth="1.2" />
+                    <text textAnchor="middle" dy={-2} fill={labelColor} fontSize={fontSize} fontWeight="900" fontFamily="JetBrains Mono, monospace" pointerEvents="none" stroke="rgba(0,0,0,0.45)" strokeWidth={3} style={{ paintOrder: 'stroke' }}>
                       {n.cell.symbol.replace('USD', '')}
                     </text>
-                    <text textAnchor="middle" dy={fontSize + 2} fill={labelColor} fontSize={Math.max(9, fontSize - 3)} fontWeight="600" fontFamily="JetBrains Mono, monospace" opacity="0.85" pointerEvents="none">
+                    <text textAnchor="middle" dy={fontSize + 3} fill={labelColor} fontSize={pctSize} fontWeight="800" fontFamily="JetBrains Mono, monospace" opacity="0.95" pointerEvents="none" stroke="rgba(0,0,0,0.45)" strokeWidth={3} style={{ paintOrder: 'stroke' }}>
                       {n.cell.changePercent >= 0 ? '+' : ''}{n.cell.changePercent}%
                     </text>
                   </g>
@@ -327,8 +382,8 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
 
       {/* Legend */}
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[#8a8577]">
-        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(52,211,153,0.8)' }} />{t('hm.up', null, 'Up')}</span>
-        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(224,102,102,0.8)' }} />{t('hm.down', null, 'Down')}</span>
+        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: `rgba(${scheme.up},0.8)` }} />{t('hm.up', null, 'Up')}</span>
+        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: `rgba(${scheme.down},0.8)` }} />{t('hm.down', null, 'Down')}</span>
         <span>{t('hm.legendSize', null, 'Size = move (or volume in Volume mode) · brighter = bigger move · drag to move')}</span>
       </div>
     </div>
