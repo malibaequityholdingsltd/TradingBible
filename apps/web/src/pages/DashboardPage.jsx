@@ -102,10 +102,10 @@ export default function DashboardPage() {
         <div className="space-y-3">
           {stats.strategies.map((s) => (
             <div key={s.name} className="flex items-center gap-3 sm:gap-4">
-              <div className="w-24 shrink-0 text-sm text-[#c9c4b4] sm:w-32">{s.name}</div>
-              <div className="h-2 flex-1 rounded-full bg-white/8"><div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25]" style={{ width: `${s.winRate}%` }} /></div>
-              <div className="w-10 text-right font-mono text-sm text-[#d4af37] sm:w-12">{s.winRate}%</div>
-              <div className={`w-16 text-right font-mono text-sm sm:w-20 ${s.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmtMoney(s.pnl)}</div>
+              <div className="w-24 min-w-0 shrink-0 truncate text-sm text-[#c9c4b4] sm:w-32">{s.name}</div>
+              <div className="h-2 min-w-0 flex-1 rounded-full bg-white/8"><div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25]" style={{ width: `${s.winRate}%` }} /></div>
+              <div className="w-10 shrink-0 whitespace-nowrap text-right font-mono text-sm text-[#d4af37] sm:w-12">{s.winRate}%</div>
+              <div className={`w-16 shrink-0 whitespace-nowrap text-right font-mono text-sm sm:w-20 ${s.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmtMoney(s.pnl)}</div>
             </div>
           ))}
         </div>

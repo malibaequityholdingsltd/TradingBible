@@ -2384,7 +2384,7 @@ export function AdminJobs() {
           <h3 className="font-semibold text-[#f0ecdd]">{editingId ? 'Edit posting' : 'New posting'}</h3>
           <div className="mt-3 space-y-2">
             <input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="e.g. Trading Coach (Forex)" className={input} />
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <input value={form.department} onChange={(e) => setForm((p) => ({ ...p, department: e.target.value }))} placeholder="Department" className={input} />
               <input value={form.employmentType} onChange={(e) => setForm((p) => ({ ...p, employmentType: e.target.value }))} placeholder="Type" className={input} />
               <input value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} placeholder="Location" className={input} />

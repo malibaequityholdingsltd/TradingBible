@@ -45,7 +45,7 @@ export default function ApiDocsPage() {
     <AppLayout title="API Documentation">
       <div className="mb-5 glass rounded-2xl p-4 sm:p-6">
         <div className="flex items-center gap-3"><div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Code2 className="h-5 w-5" /></div><div className="min-w-0"><h3 className="font-semibold text-[#f0ecdd]">TradingBible REST API v1</h3><p className="truncate text-xs text-[#8a8577]">Base URL: <span className="font-mono text-[#d4af37]">https://api.tradingbible.app</span></p></div></div>
-        <p className="mt-4 text-sm text-[#c9c4b4]">Integrate your trade data, analytics and broker connections into third-party tools, dashboards and bots. All requests are authenticated with a bearer API key and return JSON.</p>
+        <p className="mt-4 max-w-3xl text-sm text-[#c9c4b4]">Integrate your trade data, analytics and broker connections into third-party tools, dashboards and bots. All requests are authenticated with a bearer API key and return JSON.</p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">

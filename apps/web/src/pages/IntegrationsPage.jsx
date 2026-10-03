@@ -257,7 +257,7 @@ export default function IntegrationsPage() {
                 <h2 className="text-lg font-semibold text-[#f0ecdd]">{t('int.cat_' + cat.id, null, cat.label)}</h2>
                 <span className="text-xs text-[#5f5b50]">({cat.items.length})</span>
               </div>
-              <div className="grid gap-4 lg:grid-cols-2">
+              <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
                 {cat.items.map((it) => (
                   <div key={it.name} className="glass glass-hover rounded-2xl p-5">
                     <div className="mb-2 flex items-start justify-between gap-3">

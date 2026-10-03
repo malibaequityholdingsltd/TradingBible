@@ -73,7 +73,7 @@ export default function BrandingPage() {
             <div><label className="mb-1.5 block text-xs text-[#8a8577]">{t('brd.company')}</label><input className={input} value={form.companyName} onChange={set('companyName')} placeholder={t('brd.companyPh')} /></div>
             <div><label className="mb-1.5 block text-xs text-[#8a8577]">{t('brd.tagline')}</label><input className={input} value={form.tagline} onChange={set('tagline')} placeholder={t('brd.sloganPh')} /></div>
             <div><label className="mb-1.5 block text-xs text-[#8a8577]">{t('brd.logoUrl')}</label><input className={input} value={form.logoUrl} onChange={set('logoUrl')} placeholder="https://…" /></div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div><label className="mb-1.5 block text-xs text-[#8a8577]">{t('brd.primary')}</label>
                 <div className="flex items-center gap-2"><input type="color" value={form.primaryColor} onChange={set('primaryColor')} className="h-10 w-12 shrink-0 cursor-pointer rounded-lg border border-white/10 bg-transparent" /><input className={input} value={form.primaryColor} onChange={set('primaryColor')} /></div>
               </div>
@@ -102,7 +102,7 @@ export default function BrandingPage() {
                 <button className="rounded-xl px-5 py-2.5 text-sm font-semibold" style={{ background: form.accentColor, color: form.primaryColor }}>{t('brd.getStarted')}</button>
                 <button className="rounded-xl border px-5 py-2.5 text-sm font-semibold text-white" style={{ borderColor: form.accentColor }}>{t('brd.learnMore')}</button>
               </div>
-              <div className="mt-6 grid grid-cols-3 gap-3">
+              <div className="mt-6 grid grid-cols-1 gap-3 min-[420px]:grid-cols-3">
                 {[t('brd.statWin'), t('brd.statPf'), t('brd.statBal')].map((l) => (
                   <div key={l} className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.05)' }}>
                     <div className="text-[10px] uppercase text-white/40">{l}</div>

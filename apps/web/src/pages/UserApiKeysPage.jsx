@@ -106,11 +106,11 @@ export default function UserApiKeysPage() {
           <div className="mt-4 rounded-xl border border-[#d4af37]/20 bg-[#0f0f14] p-3">
             <div className="text-xs text-[#8a8577]">{t('uak.copyNow')}</div>
             <div className="mt-1 flex items-center gap-2">
-              <code className="flex-1 overflow-x-auto rounded bg-black/20 px-2 py-1.5 text-xs text-[#f0ecdd]">{newKey}</code>
+              <code className="min-w-0 flex-1 overflow-x-auto no-scrollbar whitespace-nowrap rounded bg-black/20 px-2 py-1.5 text-xs text-[#f0ecdd]">{newKey}</code>
               <button
                 type="button"
                 onClick={() => { navigator.clipboard?.writeText(newKey); toast({ title: t('uak.copied') }); }}
-                className="rounded-lg border border-[#d4af37]/25 p-2 text-[#d4af37] hover:border-[#d4af37]/50"
+                className="shrink-0 rounded-lg border border-[#d4af37]/25 p-2 text-[#d4af37] hover:border-[#d4af37]/50"
               >
                 <Copy className="h-4 w-4" />
               </button>

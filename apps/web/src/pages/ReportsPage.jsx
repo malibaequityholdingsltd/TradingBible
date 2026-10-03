@@ -79,12 +79,12 @@ export default function ReportsPage() {
       ) : (
         <>
           <div className="print-area glass rounded-2xl p-5 sm:p-6">
-            <div className="flex items-center justify-between border-b border-white/10 pb-5">
-              <div>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-5">
+              <div className="min-w-0">
                 <h2 className="text-xl font-bold text-[#f0ecdd]">{t('rep.docTitle')}</h2>
-                <p className="mt-1 text-xs text-[#8a8577]">{user?.username || user?.email} · {t('rep.generated', { dt: generatedAt })}</p>
+                <p className="mt-1 truncate text-xs text-[#8a8577]">{user?.username || user?.email} · {t('rep.generated', { dt: generatedAt })}</p>
               </div>
-              <div className="text-right"><div className="font-semibold text-[#d4af37]">TradingBible</div><div className="text-[10px] uppercase tracking-widest text-[#8a8577]">{t('rep.terminal')}</div></div>
+              <div className="shrink-0 text-right"><div className="font-semibold text-[#d4af37]">TradingBible</div><div className="text-[10px] uppercase tracking-widest text-[#8a8577]">{t('rep.terminal')}</div></div>
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -99,24 +99,28 @@ export default function ReportsPage() {
             </div>
 
             <h3 className="mt-8 mb-3 font-semibold text-[#f0ecdd]">{t('rep.monthlyAnalysis')}</h3>
-            <table className="w-full text-sm">
-              <thead><tr className="text-left text-xs uppercase tracking-wider text-[#8a8577]"><th className="py-2">{t('rep.thMonth')}</th><th className="py-2 text-right">{t('rep.thNetPnl')}</th><th className="py-2 text-right">{t('rep.thReturn')}</th></tr></thead>
+            <div className="overflow-x-auto no-scrollbar -mx-1 px-1">
+            <table className="w-full min-w-[480px] text-sm">
+              <thead><tr className="whitespace-nowrap text-left text-xs uppercase tracking-wider text-[#8a8577]"><th className="py-2">{t('rep.thMonth')}</th><th className="py-2 text-right">{t('rep.thNetPnl')}</th><th className="py-2 text-right">{t('rep.thReturn')}</th></tr></thead>
               <tbody>
                 {stats.monthly.map((m) => (
-                  <tr key={m.m} className="border-t border-white/8"><td className="py-2 text-[#e9e7df]">{m.m}</td><td className={`py-2 text-right font-mono ${m.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmtMoney(m.pnl)}</td><td className="py-2 text-right font-mono text-[#c9c4b4]">{((m.pnl / 100000) * 100).toFixed(2)}%</td></tr>
+                  <tr key={m.m} className="border-t border-white/8"><td className="py-2 text-[#e9e7df]">{m.m}</td><td className={`whitespace-nowrap py-2 text-right font-mono ${m.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmtMoney(m.pnl)}</td><td className="whitespace-nowrap py-2 text-right font-mono text-[#c9c4b4]">{((m.pnl / 100000) * 100).toFixed(2)}%</td></tr>
                 ))}
               </tbody>
             </table>
+            </div>
 
             <h3 className="mt-8 mb-3 font-semibold text-[#f0ecdd]">{t('rep.stratPerf')}</h3>
-            <table className="w-full text-sm">
-              <thead><tr className="text-left text-xs uppercase tracking-wider text-[#8a8577]"><th className="py-2">{t('rep.thStrategy')}</th><th className="py-2 text-right">{t('rep.thTrades')}</th><th className="py-2 text-right">{t('rep.thWinRate')}</th><th className="py-2 text-right">{t('rep.thNetPnl')}</th></tr></thead>
+            <div className="overflow-x-auto no-scrollbar -mx-1 px-1">
+            <table className="w-full min-w-[520px] text-sm">
+              <thead><tr className="whitespace-nowrap text-left text-xs uppercase tracking-wider text-[#8a8577]"><th className="py-2">{t('rep.thStrategy')}</th><th className="py-2 text-right">{t('rep.thTrades')}</th><th className="py-2 text-right">{t('rep.thWinRate')}</th><th className="py-2 text-right">{t('rep.thNetPnl')}</th></tr></thead>
               <tbody>
                 {stats.strategies.map((s) => (
-                  <tr key={s.name} className="border-t border-white/8"><td className="py-2 text-[#e9e7df]">{s.name}</td><td className="py-2 text-right font-mono text-[#c9c4b4]">{s.trades}</td><td className="py-2 text-right font-mono text-[#d4af37]">{s.winRate}%</td><td className={`py-2 text-right font-mono ${s.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmtMoney(s.pnl)}</td></tr>
+                  <tr key={s.name} className="border-t border-white/8"><td className="max-w-[220px] truncate py-2 text-[#e9e7df]">{s.name}</td><td className="whitespace-nowrap py-2 text-right font-mono text-[#c9c4b4]">{s.trades}</td><td className="whitespace-nowrap py-2 text-right font-mono text-[#d4af37]">{s.winRate}%</td><td className={`whitespace-nowrap py-2 text-right font-mono ${s.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmtMoney(s.pnl)}</td></tr>
                 ))}
               </tbody>
             </table>
+            </div>
             <p className="mt-8 text-[11px] text-[#8a8577]">{t('rep.disclaimer')}</p>
           </div>
 

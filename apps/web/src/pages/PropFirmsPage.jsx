@@ -147,7 +147,7 @@ function AccountForm({ initial, onSave, onCancel, manualAllowed }) {
         {onCancel && <button type="button" onClick={onCancel} className="rounded-full p-1.5 text-[#8a8577] transition hover:bg-white/5" aria-label={t('c.close')}><X className="h-4 w-4" /></button>}
       </div>
       <p className="text-xs leading-relaxed text-[#8a8577]">{t('pf.linkNote')}</p>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         <div>
           <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.firm')}</label>
           <select value={f.firm} onChange={(e) => applyFirm(e.target.value)} className={numCls}>
@@ -343,7 +343,7 @@ export default function PropFirmsPage() {
           <button onClick={() => setAdding(true)} className="mx-auto mt-5 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90"><Cable className="h-4 w-4" /> {t('pf.connectFirst')}</button>
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
           {accounts.map((a) => {
             const st = computeStatus(a);
             return (
