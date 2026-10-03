@@ -143,6 +143,8 @@ export const academyDb = {
 	listRsvps: (owner) => selectWhere('academy_webinar_rsvps', `owner=eq.${owner}`),
 	upsertRsvp: (owner, webinarId) =>
 		upsert('academy_webinar_rsvps', { owner, webinarId, rsvpAt: new Date().toISOString() }, 'owner,webinarId'),
+	markAttended: (owner, webinarId) =>
+		upsert('academy_webinar_rsvps', { owner, webinarId, attendedAt: new Date().toISOString() }, 'owner,webinarId'),
 	deleteRsvp: (owner, webinarId) =>
 		supabaseRest(`/rest/v1/academy_webinar_rsvps?owner=eq.${owner}&webinarId=eq.${encodeURIComponent(webinarId)}`, { method: 'DELETE' }),
 	createPurchase: (row) =>

@@ -81,4 +81,11 @@ export async function unrsvpWebinar(webinarId) {
 	return parse(res, 'Could not remove your RSVP');
 }
 
+export async function attendWebinar(webinarId) {
+	const res = await apiServerClient.fetch('/academy/webinar/attend', {
+		method: 'POST', headers: headers(), body: JSON.stringify({ webinarId }),
+	});
+	return parse(res, 'Could not record attendance');
+}
+
 export { pb };

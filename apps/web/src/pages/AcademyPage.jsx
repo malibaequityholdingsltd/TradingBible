@@ -11,7 +11,7 @@ import { openAcademyCheckout, getStripeConfig } from '@/lib/stripe';
 import { useWallet } from '@/hooks/useWallet';
 import {
 	getAcademyAccess, enrollInPath, getCurriculum, getLesson, gradeQuiz,
-	completeLesson, getAcademyProgress, claimCertificate, rsvpWebinar, unrsvpWebinar,
+	completeLesson, getAcademyProgress, claimCertificate, rsvpWebinar, unrsvpWebinar, attendWebinar,
 } from '@/lib/academy';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import pb from '@/lib/pocketbaseClient';
@@ -605,6 +605,7 @@ export default function AcademyPage() {
 	const [activeLesson, setActiveLesson] = useState(null);
 	const [generating, setGenerating] = useState(null); // pathKey being generated
 	const [rsvps, setRsvps] = useState([]);
+	const [attended, setAttended] = useState([]);
 	const [tab, setTab] = useState('learn');
 
 	const refreshAccess = useCallback(async () => {
@@ -622,6 +623,7 @@ export default function AcademyPage() {
 			const res = await getAcademyProgress();
 			setData(res);
 			setRsvps(res.rsvps || []);
+			setAttended(res.attended || []);
 		} catch (err) {
 			toast({ variant: 'destructive', title: t('aca.loadFail'), description: err.message });
 		}
@@ -697,6 +699,17 @@ export default function AcademyPage() {
 		}
 	};
 
+	const liveWebinars = WEBINAR_SCHEDULE.map((w) => ({ ...w, state: getWebinarState(w) }));
+	const liveWebinar = liveWebinars.find((w) => w.state.live);
+
+	useEffect(() => {
+		if (!liveWebinar || attended.includes(liveWebinar.id)) return;
+		attendWebinar(liveWebinar.id)
+			.then(() => setAttended((prev) => (prev.includes(liveWebinar.id) ? prev : [...prev, liveWebinar.id])))
+			.catch(() => {});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [liveWebinar?.id]);
+
 	// ── Not purchased → paywall ──
 	if (access === false) {
 		return (
@@ -718,7 +731,6 @@ export default function AcademyPage() {
 	}
 
 	const enrolled = data.enrollments || [];
-	const liveWebinars = WEBINAR_SCHEDULE.map((w) => ({ ...w, state: getWebinarState(w) }));
 
 	// ── Lesson view ──
 	if (view === 'lesson' && activePath && activeCourse && activeLesson) {
@@ -878,6 +890,7 @@ export default function AcademyPage() {
 									<div className="mt-3 flex items-center gap-2 text-xs text-[#8a8577]">
 										{live ? <span className="flex items-center gap-1 text-emerald-400"><Radio className="h-3.5 w-3.5" /> {t('aca.inProgress')}</span>
 											: <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {t('aca.startsIn', { cd: fmtCountdown(start, t) })}</span>}
+										{attended.includes(w.id) && <span className="rounded-full bg-emerald-400/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">{t('aca.attended')}</span>}
 									</div>
 									<button onClick={() => toggleRsvp(w.id)}
 										className={`mt-4 min-h-[42px] w-full rounded-xl border px-4 text-sm font-semibold transition ${rsvped ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-400' : 'border-[#d4af37]/25 text-[#d4af37] hover:bg-[#d4af37]/10'}`}>
