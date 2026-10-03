@@ -335,7 +335,9 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                 ? Math.max(8, Math.min(11, n.r / 2.8))
                 : Math.max(10, Math.min(15, n.r / 3.1));
               const showSymbol = !compact || n.r >= 15;
-              const showPct = !compact || n.r >= 23;
+              // % always shows: stacked under the symbol on roomy bubbles,
+              // lone centered line on tiny ones.
+              const stacked = !compact || n.r >= 23;
               const isHover = hover?.cell.symbol === n.cell.symbol;
               return (
                 <g
@@ -362,14 +364,12 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                     <ellipse cx={-n.r * 0.33} cy={-n.r * 0.42} rx={n.r * 0.24} ry={n.r * 0.13} fill="url(#bbGloss)" opacity="0.32" transform={`rotate(-18)`} />
                     {/* rim */}
                     <circle r={n.r} fill="none" stroke={bubbleStroke(n.cell.changePercent, scheme)} strokeWidth="2" />
-                    <text textAnchor="middle" dy={showPct ? -2 : 3} fill={labelColor} fontSize={fontSize} fontWeight="700" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
+                    <text textAnchor="middle" dy={stacked ? -2 : 4} fill={labelColor} fontSize={fontSize} fontWeight="700" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
                       {showSymbol ? n.cell.symbol.replace('USD', '') : ''}
                     </text>
-                    {showPct && (
-                    <text textAnchor="middle" dy={fontSize + 3} fill={labelColor} fontSize={pctSize} fontWeight="600" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" opacity="0.92" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
+                    <text textAnchor="middle" dy={stacked ? fontSize + 3 : showSymbol ? fontSize + 1 : 3.5} fill={labelColor} fontSize={stacked ? pctSize : Math.max(8, Math.min(11, n.r / 2.4))} fontWeight="600" fontFamily="'Space Grotesk', Sora, sans-serif" letterSpacing="0.5" opacity="0.92" pointerEvents="none" stroke="rgba(0,0,0,0.35)" strokeWidth={1.25} style={{ paintOrder: 'stroke' }}>
                       {n.cell.changePercent >= 0 ? '+' : ''}{n.cell.changePercent}%
                     </text>
-                    )}
                   </g>
                 </g>
               );
