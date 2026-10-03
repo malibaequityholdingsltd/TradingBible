@@ -387,14 +387,38 @@ export function AdminDashboard() {
     ].map(m => ({ ...m, monthsLive }));
   }, [users, stats]);
 
-  const sysHealth = [
-    { label: 'Database', status: 'ok', icon: Database },
-    { label: 'API Server', status: 'ok', icon: Server },
-    { label: 'Auth Service', status: 'ok', icon: Shield },
-    { label: 'Market Data', status: 'ok', icon: Globe },
-    { label: 'Email Service', status: 'ok', icon: Mail },
-    { label: 'WebSockets', status: 'ok', icon: Wifi },
-  ];
+  const [sysHealth, setSysHealth] = useState([
+    { label: 'Database', status: 'unknown', icon: Database },
+    { label: 'API Server', status: 'unknown', icon: Server },
+    { label: 'Auth Service', status: 'unknown', icon: Shield },
+    { label: 'Email Service', status: 'unknown', icon: Mail },
+    { label: 'Billing (Stripe)', status: 'unknown', icon: CreditCard },
+    { label: 'D&B (DUNS)', status: 'unknown', icon: Globe },
+  ]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = pb.authStore.token;
+        if (!token) return;
+        const res = await fetch(`${API_SERVER_URL}/admin/health`, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) throw new Error();
+        const h = await res.json();
+        const c = h.checks || {};
+        const ok = (v) => (v ? 'ok' : 'off');
+        setSysHealth([
+          { label: 'Database', status: ok(c.supabase), detail: c.supabase ? 'connected' : 'unreachable', icon: Database },
+          { label: 'API Server', status: 'ok', detail: `v${h.version || '?'} · up ${Math.floor((h.uptimeSec || 0) / 3600)}h`, icon: Server },
+          { label: 'Auth Service', status: ok(c.supabase), detail: c.supabase ? 'GoTrue' : 'unreachable', icon: Shield },
+          { label: 'Email Service', status: ok(c.smtp), detail: c.smtp ? 'SMTP set' : 'not configured', icon: Mail },
+          { label: 'Billing (Stripe)', status: ok(c.stripe), detail: c.stripe ? 'keys set' : 'not configured', icon: CreditCard },
+          { label: 'D&B (DUNS)', status: ok(c.dnb), detail: c.dnb ? 'Direct+ live' : 'sandbox stub', icon: Globe },
+        ]);
+      } catch {
+        setSysHealth((prev) => prev.map((s) => ({ ...s, status: s.label === 'API Server' ? 'ok' : 'off' })));
+      }
+    })();
+  }, []);
 
   return (
     <AdminLayout title="Admin Dashboard">
@@ -459,15 +483,15 @@ export function AdminDashboard() {
             <div className="glass rounded-2xl p-4 sm:p-5">
               <h3 className="mb-4 font-semibold text-[#f0ecdd]">System Health</h3>
               <div className="space-y-2">
-                {sysHealth.map(({ label, status, icon: Icon }) => (
+                {sysHealth.map(({ label, status, detail, icon: Icon }) => (
                   <div key={label} className="flex items-center justify-between rounded-lg bg-white/[0.03] px-3 py-2">
                     <div className="flex items-center gap-2 text-sm text-[#c9c4b4]">
                       <Icon className="h-3.5 w-3.5 shrink-0 text-[#8a8577]" />
-                      <span className="truncate">{label}</span>
+                      <span className="truncate">{label}{detail ? <span className="text-[#6a665a]"> · {detail}</span> : ''}</span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-xs text-emerald-400">Online</span>
+                      <div className={`h-1.5 w-1.5 rounded-full ${status === 'ok' ? 'bg-emerald-400 animate-pulse' : status === 'unknown' ? 'bg-[#6a665a]' : 'bg-red-400'}`} />
+                      <span className={`text-xs ${status === 'ok' ? 'text-emerald-400' : status === 'unknown' ? 'text-[#6a665a]' : 'text-red-400'}`}>{status === 'ok' ? 'Online' : status === 'unknown' ? '…' : 'Off'}</span>
                     </div>
                   </div>
                 ))}
@@ -956,6 +980,73 @@ export function AdminAnalytics() {
 /* ─── ADMIN BILLING ──────────────────────────────────────────────── */
 export function AdminBilling() {
   const { users, loading } = useUsers();
+  const { toast } = useToast();
+  const [live, setLive] = useState(null);
+  const [payUser, setPayUser] = useState(null);
+  const [payments, setPayments] = useState([]);
+  const [busy, setBusy] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = pb.authStore.token;
+        if (!token) return;
+        const res = await fetch(`${API_SERVER_URL}/admin/billing/summary`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) setLive(await res.json());
+      } catch { /* estimates remain */ }
+    })();
+  }, []);
+
+  const adminCall = async (path, body) => {
+    const res = await fetch(`${API_SERVER_URL}${path}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {}),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
+    return data;
+  };
+
+  const cancelSub = async (u) => {
+    if (!window.confirm(`Cancel ${u.email}'s subscription at period end?`)) return;
+    setBusy(`cancel:${u.id}`);
+    try {
+      const r = await adminCall('/admin/billing/cancel', { userId: u.id });
+      toast({ title: `Cancelled ${r.canceled?.length || 0} subscription(s) — access until period end` });
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Cancel failed', description: err.message });
+    } finally { setBusy(null); }
+  };
+
+  const openPayments = async (u) => {
+    setPayUser(u);
+    setPayments([]);
+    setBusy(`pay:${u.id}`);
+    try {
+      const res = await fetch(`${API_SERVER_URL}/admin/billing/payments?userId=${encodeURIComponent(u.id)}`, { headers: { Authorization: `Bearer ${pb.authStore.token}` } });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
+      setPayments(data.payments || []);
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Payments lookup failed', description: err.message });
+    } finally { setBusy(null); }
+  };
+
+  const refundPayment = async (pi) => {
+    const amountStr = window.prompt(`Refund amount in USD (blank = full $${pi.amount}):`, '');
+    if (amountStr === null) return;
+    const amount = amountStr.trim() === '' ? undefined : Number(amountStr);
+    if (amount !== undefined && !(amount > 0)) { toast({ variant: 'destructive', title: 'Invalid amount' }); return; }
+    setBusy(`refund:${pi.id}`);
+    try {
+      const r = await adminCall('/admin/billing/refund', { paymentIntentId: pi.id, amount });
+      toast({ title: `Refunded $${r.amount} (${r.status})` });
+      setPayments((prev) => prev.map((p) => (p.id === pi.id ? { ...p, status: 'refunded' } : p)));
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Refund failed', description: err.message });
+    } finally { setBusy(null); }
+  };
 
   const paid = useMemo(() => users.filter(u => u.plan && u.plan !== 'trial'), [users]);
   const trial = users.filter(u => !u.plan || u.plan === 'trial');
@@ -971,7 +1062,7 @@ export function AdminBilling() {
   return (
     <AdminLayout title="Billing & Revenue">
       <div className="mb-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
-        <Stat icon={DollarSign} label="Est. MRR" value={`$${mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="Monthly recurring" trend="up" color="#10b981" />
+        <Stat icon={DollarSign} label={live?.configured ? 'Live MRR' : 'Est. MRR'} value={`$${(live?.configured ? live.mrr : mrr).toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub={live?.configured ? `Stripe live · ${live.activeCount} active` : 'Monthly recurring (est)'} trend="up" color="#10b981" />
         <Stat icon={TrendingUp} label="Est. ARR" value={`$${arr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="Annual recurring" trend="up" color={GOLD} />
         <Stat icon={CreditCard} label="Paid Subscribers" value={paid.length} sub={`$${paid.length ? (mrr / paid.length).toFixed(2) : 0} ARPU`} color="#3b82f6" />
         <Stat icon={Users} label="Trial Users" value={trial.length} sub={`${users.length ? Math.round(trial.length / users.length * 100) : 0}% of total`} color="#a855f7" />
@@ -1021,32 +1112,57 @@ export function AdminBilling() {
           </div>
           <table className="w-full min-w-[560px] text-sm">
             <thead>
-              <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
-                <th className="px-5 py-3 font-medium">User</th>
-                <th className="px-5 py-3 font-medium">Plan</th>
-                <th className="px-5 py-3 font-medium hidden sm:table-cell">Status</th>
-                <th className="px-5 py-3 font-medium hidden md:table-cell">Period End</th>
-                <th className="px-5 py-3 font-medium hidden lg:table-cell">Sub ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paid.map(u => (
-                <tr key={u.id} className="border-b border-white/5 hover:bg-white/[0.03]">
-                  <td className="px-5 py-3">
-                    <div className="text-[#f0ecdd] truncate max-w-[140px]">{u.username || u.name || '—'}</div>
-                    <div className="text-xs text-[#8a8577] truncate max-w-[160px]">{u.email}</div>
-                  </td>
-                  <td className="px-5 py-3">{planBadge(u.plan)}</td>
-                  <td className="px-5 py-3 hidden sm:table-cell"><Badge color={u.subscriptionStatus === 'active' ? 'green' : 'muted'}>{u.subscriptionStatus || 'active'}</Badge></td>
-                  <td className="px-5 py-3 font-mono text-xs text-[#8a8577] hidden md:table-cell">{u.currentPeriodEnd ? u.currentPeriodEnd.slice(0, 10) : '—'}</td>
-                  <td className="px-5 py-3 font-mono text-xs text-[#6a665a] max-w-[120px] truncate hidden lg:table-cell">{u.subscriptionId || '—'}</td>
+                <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
+                  <th className="px-5 py-3 font-medium">User</th>
+                  <th className="px-5 py-3 font-medium">Plan</th>
+                  <th className="px-5 py-3 font-medium hidden sm:table-cell">Status</th>
+                  <th className="px-5 py-3 font-medium hidden md:table-cell">Period End</th>
+                  <th className="px-5 py-3 font-medium hidden lg:table-cell">Sub ID</th>
+                  <th className="px-5 py-3 font-medium">Actions</th>
                 </tr>
-              ))}
-              {!paid.length && <tr><td colSpan={5} className="px-5 py-10 text-center text-sm text-[#8a8577]">No paid subscriptions yet.</td></tr>}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {paid.map(u => (
+                  <tr key={u.id} className="border-b border-white/5 hover:bg-white/[0.03]">
+                    <td className="px-5 py-3">
+                      <div className="text-[#f0ecdd] truncate max-w-[140px]">{u.username || u.name || '—'}</div>
+                      <div className="text-xs text-[#8a8577] truncate max-w-[160px]">{u.email}</div>
+                    </td>
+                    <td className="px-5 py-3">{planBadge(u.plan)}</td>
+                    <td className="px-5 py-3 hidden sm:table-cell"><Badge color={u.subscriptionStatus === 'active' ? 'green' : 'muted'}>{u.subscriptionStatus || 'active'}</Badge></td>
+                    <td className="px-5 py-3 font-mono text-xs text-[#8a8577] hidden md:table-cell">{u.currentPeriodEnd ? u.currentPeriodEnd.slice(0, 10) : '—'}</td>
+                    <td className="px-5 py-3 font-mono text-xs text-[#6a665a] max-w-[120px] truncate hidden lg:table-cell">{u.subscriptionId || '—'}</td>
+                    <td className="px-5 py-3">
+                      <div className="flex gap-2">
+                        <button onClick={() => openPayments(u)} disabled={busy === `pay:${u.id}`} className="rounded-lg border border-[#d4af37]/25 px-2.5 py-1.5 text-xs text-[#d4af37] disabled:opacity-60">Payments</button>
+                        <button onClick={() => cancelSub(u)} disabled={busy === `cancel:${u.id}`} className="rounded-lg border border-red-500/35 px-2.5 py-1.5 text-xs text-red-400 disabled:opacity-60">Cancel</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {!paid.length && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#8a8577]">No paid subscriptions yet.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {payUser && (
+          <div className="glass mt-4 rounded-2xl p-4 sm:p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-semibold text-[#f0ecdd]">Recent payments · {payUser.email}</h3>
+              <button onClick={() => { setPayUser(null); setPayments([]); }} className="text-xs text-[#8a8577] hover:text-[#e9e7df]">Close</button>
+            </div>
+            {busy === `pay:${payUser.id}` ? <Spinner /> : payments.length ? (
+              <div className="space-y-2">
+                {payments.map((p) => (
+                  <div key={p.id} className="flex items-center justify-between rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2 text-sm">
+                    <div className="font-mono text-xs text-[#c9c4b4]">${p.amount} {String(p.currency || '').toUpperCase()} · {p.status} · {p.created ? p.created.slice(0, 10) : '—'}</div>
+                    <button onClick={() => refundPayment(p)} disabled={busy === `refund:${p.id}` || p.status === 'refunded'} className="rounded-lg border border-red-500/35 px-2.5 py-1.5 text-xs text-red-400 disabled:opacity-60">Refund</button>
+                  </div>
+                ))}
+              </div>
+            ) : <p className="text-sm text-[#8a8577]">No Stripe payments found for this user.</p>}
+          </div>
+        )}
     </AdminLayout>
   );
 }
@@ -1061,29 +1177,30 @@ const CONTENT_TABS = [
 
 const SIGNAL_STATUSES = ['published', 'draft', 'rejected'];
 
-function useAdminApi(prefix) {
+function useAdminApi(prefix, base) {
   const { toast } = useToast();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const root = base || `/admin/content/${prefix}`;
 
   const load = useCallback(async () => {
     const token = pb.authStore.token;
     try {
-      const res = await fetch(`${API_SERVER_URL}/admin/content/${prefix}`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_SERVER_URL}${root}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
-      setItems(res.ok ? data : []);
+      setItems(res.ok ? (Array.isArray(data) ? data : data.items || []) : []);
     } catch {
       setItems([]);
     } finally {
       setLoading(false);
     }
-  }, [prefix]);
+  }, [root]);
 
   useEffect(() => { load(); }, [load]);
 
   const api = async (path, opts = {}) => {
     const token = pb.authStore.token;
-    const res = await fetch(`${API_SERVER_URL}/admin/content/${prefix}${path}`, {
+    const res = await fetch(`${API_SERVER_URL}${root}${path}`, {
       method: opts.method || 'GET',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: opts.body ? JSON.stringify(opts.body) : undefined,
@@ -1146,7 +1263,7 @@ function SignalForm({ initial, onSave, onCancel }) {
 
 function SignalsTab() {
   const { toast } = useToast();
-  const { items, loading, api } = useAdminApi('signals');
+  const { items, loading, api } = useAdminApi('signals', '/admin/signals');
   const [editing, setEditing] = useState(null);
   const [creating, setCreating] = useState(false);
 
@@ -1497,13 +1614,18 @@ export function AdminReports() {
     { label: 'Est. MRR', value: `$${users.filter(u => u.plan && u.plan !== 'trial').reduce((s, u) => s + (PLAN_PRICES[u.plan] || 0), 0).toFixed(0)}`, icon: DollarSign },
   ];
 
-  const sysLogs = [
-    { time: new Date().toISOString().slice(11, 19), level: 'INFO', msg: 'PocketBase running — all migrations applied' },
-    { time: new Date(Date.now() - 60000).toISOString().slice(11, 19), level: 'INFO', msg: 'Express API healthy on port 3001' },
-    { time: new Date(Date.now() - 120000).toISOString().slice(11, 19), level: 'INFO', msg: 'Integrated AI routes mounted' },
-    { time: new Date(Date.now() - 180000).toISOString().slice(11, 19), level: 'INFO', msg: 'Auth store initialised' },
-    { time: new Date(Date.now() - 240000).toISOString().slice(11, 19), level: 'INFO', msg: 'Market data cache active (60s TTL)' },
-  ];
+  const [sysLogs, setSysLogs] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = pb.authStore.token;
+        if (!token) return;
+        const res = await fetch(`${API_SERVER_URL}/admin/logs?limit=50`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) setSysLogs(await res.json());
+      } catch { /* empty feed */ }
+    })();
+  }, []);
 
   return (
     <AdminLayout title="Reports & Logs">
@@ -1536,13 +1658,13 @@ export function AdminReports() {
       <div className="glass rounded-2xl p-4 sm:p-5">
         <h3 className="mb-4 font-semibold text-[#f0ecdd]">System Logs (Latest)</h3>
         <div className="space-y-2 font-mono text-xs overflow-x-auto">
-          {sysLogs.map((l, i) => (
+          {sysLogs.length ? sysLogs.slice().reverse().map((l, i) => (
             <div key={i} className="flex items-start gap-2 sm:gap-3 rounded-lg bg-white/[0.03] px-3 py-2 min-w-0">
-              <span className="text-[#6a665a] shrink-0">{l.time}</span>
-              <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${l.level === 'ERROR' ? 'bg-red-500/20 text-red-400' : l.level === 'WARN' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-emerald-500/15 text-emerald-400'}`}>{l.level}</span>
+              <span className="text-[#6a665a] shrink-0">{String(l.ts || '').slice(11, 19)}</span>
+              <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${String(l.level).toLowerCase() === 'error' || String(l.level).toLowerCase() === 'fatal' ? 'bg-red-500/20 text-red-400' : String(l.level).toLowerCase() === 'warn' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-emerald-500/15 text-emerald-400'}`}>{String(l.level || 'info').toUpperCase()}</span>
               <span className="text-[#c9c4b4] break-all">{l.msg}</span>
             </div>
-          ))}
+          )) : <p className="py-6 text-center font-sans text-sm text-[#8a8577]">No log entries yet — they appear as the API runs.</p>}
         </div>
       </div>
     </AdminLayout>
@@ -1593,8 +1715,11 @@ function IntegrationCard({ preset, record, onSave, onTest, onDelete }) {
 
   const handleTest = async () => {
     setTesting(true);
-    try { await onTest(record?.id, preset.provider, form.apiKey); toast({ title: 'Connection tested', description: `${preset.name} responded successfully.` }); }
-    catch { toast({ variant: 'destructive', title: 'Test failed', description: `Could not connect to ${preset.name}.` }); }
+    try {
+      await onTest(record?.id, preset.provider, form);
+      toast({ title: 'Connection tested', description: `${preset.name} responded successfully.` });
+    }
+    catch (err) { toast({ variant: 'destructive', title: 'Test failed', description: err?.message || `Could not connect to ${preset.name}.` }); }
     finally { setTesting(false); }
   };
 
@@ -1702,16 +1827,42 @@ export function AdminIntegrations() {
     }
   };
 
-  const handleTest = async (id, provider, apiKey) => {
-    // Simulate test — in production you'd call an Express endpoint
-    await new Promise(r => setTimeout(r, 1200));
+  const handleTest = async (id, provider, form) => {
+    const key = (form?.apiKey || '').trim();
+    let payload;
+    if (provider === 'smtp') {
+      let extra = {};
+      try { extra = JSON.parse(form?.extraConfig || '{}'); } catch { extra = {}; }
+      payload = { kind: 'smtp', host: key, port: Number(extra.port) || 587, user: extra.user || extra.username || '', pass: form?.apiSecret || '' };
+    } else if (provider === 'binance') {
+      payload = { kind: 'url', url: 'https://api.binance.com/api/v3/ping' };
+    } else if (provider === 'alpha_vantage') {
+      payload = { kind: 'url', url: `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=${encodeURIComponent(key)}` };
+    } else if (provider === 'finnhub') {
+      payload = { kind: 'url', url: `https://finnhub.io/api/v1/quote?symbol=AAPL&token=${encodeURIComponent(key)}` };
+    } else if (provider === 'polygon') {
+      payload = { kind: 'url', url: `https://api.polygon.io/v2/aggs/ticker/AAPL/prev?apiKey=${encodeURIComponent(key)}` };
+    } else if (provider === 'forex_factory') {
+      payload = { kind: 'url', url: 'https://nfs.faireconomy.media/ff_calendar_thisweek.json' };
+    } else {
+      throw new Error(`No test defined for ${provider}`);
+    }
+    const res = await fetch(`${API_SERVER_URL}/admin/integrations/test`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
     const now = new Date().toISOString();
+    const passed = res.ok && data.ok;
+    const result = passed ? `OK — ${data.detail || 'reachable'} at ${now.slice(11, 19)} UTC` : `FAIL — ${data.error || data.detail || `HTTP ${res.status}`} at ${now.slice(11, 19)} UTC`;
     if (id) {
       const updated = await pb.collection('admin_integrations').update(id, {
-        status: 'connected', lastTestedAt: now, lastTestResult: `OK — tested at ${now.slice(11, 19)} UTC`
+        status: passed ? 'connected' : 'error', lastTestedAt: now, lastTestResult: result,
       });
       setRecords(prev => prev.map(r => r.id === id ? updated : r));
     }
+    if (!passed) throw new Error(result);
   };
 
   const handleDelete = async (id) => {
@@ -1751,15 +1902,16 @@ export function AdminIntegrations() {
   );
 }
 
-/* ─── ADMIN API KEYS ─────────────────────────────────────────────── */
-function generateKey() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let key = 'tb_';
-  for (let i = 0; i < 48; i++) key += chars.charAt(Math.floor(Math.random() * chars.length));
-  return key;
-}
-
+/* ─── ADMIN API KEYS (server-issued, sha256, verifiable) ─────────── */
 const ALL_PERMISSIONS = ['read:market', 'read:journal', 'write:journal', 'read:signals', 'read:alerts', 'write:alerts', 'read:community'];
+
+function mapApiKey(r) {
+  return {
+    ...r,
+    status: r.enabled === false ? 'revoked' : 'active',
+    keyPrefix: r.hint || '',
+  };
+}
 
 export function AdminApiKeys() {
   const { toast } = useToast();
@@ -1771,10 +1923,25 @@ export function AdminApiKeys() {
   const [showModal, setShowModal] = useState(false);
   const [revealed, setRevealed] = useState({});
 
+  const apiCall = async (path, opts = {}) => {
+    const res = await fetch(`${API_SERVER_URL}/admin/api-keys${path}`, {
+      method: opts.method || 'GET',
+      headers: { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' },
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    if (res.status === 204) return null;
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
+    return data;
+  };
+
   const load = async () => {
     setLoading(true);
-    try { setKeys(await pb.collection('admin_api_keys').getFullList({ sort: '-created', requestKey: 'admin-api-keys' })); }
-    catch { /* ignore */ } finally { setLoading(false); }
+    try {
+      const rows = await apiCall('');
+      setKeys((Array.isArray(rows) ? rows : []).map(mapApiKey));
+    }
+    catch { setKeys([]); } finally { setLoading(false); }
   };
 
   useEffect(() => { load(); }, []);
@@ -1783,21 +1950,18 @@ export function AdminApiKeys() {
     if (!newForm.name.trim()) return toast({ variant: 'destructive', title: 'Name required' });
     setCreating(true);
     try {
-      const plain = generateKey();
-      const prefix = plain.slice(0, 7);
-      const hash = btoa(plain); // base64 as a simple "hash" for display
-      const rec = await pb.collection('admin_api_keys').create({
-        name: newForm.name,
-        keyHash: hash,
-        keyPrefix: prefix,
-        permissions: newForm.permissions,
-        assignedTo: newForm.assignedTo,
-        status: 'active',
-        usageCount: 0,
-        expiresAt: newForm.expiresAt || null,
+      const row = await apiCall('', {
+        method: 'POST',
+        body: {
+          name: newForm.name.trim(),
+          permissions: newForm.permissions,
+          assignedTo: newForm.assignedTo.trim() || undefined,
+          expiresAt: newForm.expiresAt || undefined,
+        },
       });
-      setKeys(prev => [rec, ...prev]);
-      setNewKeyPlain(plain);
+      setKeys(prev => [mapApiKey({ ...row, permissions: newForm.permissions, assignedTo: newForm.assignedTo || null }), ...prev]);
+      setNewKeyPlain(row.key);
+      setNewForm({ name: '', assignedTo: '', permissions: ['read:market'], expiresAt: '' });
       setShowModal(false);
       toast({ title: 'API Key created', description: 'Copy the key now — it will not be shown again.' });
     } catch (err) {
@@ -1805,16 +1969,18 @@ export function AdminApiKeys() {
     } finally { setCreating(false); }
   };
 
-  const revoke = async (id) => {
-    if (!window.confirm('Revoke this API key? This action cannot be undone.')) return;
-    await pb.collection('admin_api_keys').update(id, { status: 'revoked' });
-    setKeys(prev => prev.map(k => k.id === id ? { ...k, status: 'revoked' } : k));
-    toast({ title: 'Key revoked' });
+  const setEnabled = async (id, enabled) => {
+    if (!enabled && !window.confirm('Revoke this API key? Calls using it will fail verification.')) return;
+    await apiCall(`/${id}`, { method: 'PATCH', body: { enabled } });
+    setKeys(prev => prev.map(k => k.id === id ? { ...k, status: enabled ? 'active' : 'revoked' } : k));
+    toast({ title: enabled ? 'Key re-enabled' : 'Key revoked' });
   };
+
+  const revoke = (id) => setEnabled(id, false);
 
   const remove = async (id) => {
     if (!window.confirm('Delete this API key?')) return;
-    await pb.collection('admin_api_keys').delete(id);
+    await apiCall(`/${id}`, { method: 'DELETE' });
     setKeys(prev => prev.filter(k => k.id !== id));
     toast({ title: 'Key deleted' });
   };
@@ -1932,9 +2098,13 @@ export function AdminApiKeys() {
                   <td className="px-4 py-3 font-mono text-xs text-[#8a8577] hidden lg:table-cell">{(k.created || '').slice(0, 10)}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
-                      {k.status === 'active' && (
+                      {k.status === 'active' ? (
                         <button onClick={() => revoke(k.id)} title="Revoke" className="rounded-lg p-1.5 text-[#8a8577] hover:bg-orange-500/10 hover:text-orange-400">
                           <Power className="h-4 w-4" />
+                        </button>
+                      ) : (
+                        <button onClick={() => setEnabled(k.id, true)} title="Re-enable" className="rounded-lg p-1.5 text-[#8a8577] hover:bg-emerald-500/10 hover:text-emerald-400">
+                          <RotateCcw className="h-4 w-4" />
                         </button>
                       )}
                       <button onClick={() => remove(k.id)} title="Delete" className="rounded-lg p-1.5 text-red-400/60 hover:bg-red-500/10 hover:text-red-400">
@@ -1968,6 +2138,30 @@ export function AdminPlugins() {
   const [plugins, setPlugins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
+
+  // Built-in plugins gate real platform features when toggled.
+  const PLUGIN_FEATURES = {
+    'ai-coach': 'aiCoach',
+    academy: 'academy',
+    'community-forum': 'community',
+    'economic-calendar': 'economicCalendar',
+    'market-data': 'chartBuilder',
+    'chart-drawings': 'chartBuilder',
+  };
+
+  const syncPluginFeature = async (slug, enabled) => {
+    const feature = PLUGIN_FEATURES[slug];
+    if (!feature) return false;
+    try {
+      const existing = await pb.collection('admin_platform_settings').getFirstListItem('key = "default"');
+      await pb.collection('admin_platform_settings').update(existing.id, {
+        features: { ...(existing.features || {}), [feature]: enabled },
+      });
+      notifyPlatformSettingsChanged();
+      return true;
+    } catch { return false; }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -1997,7 +2191,8 @@ export function AdminPlugins() {
       await pb.collection('admin_plugins').create({ ...plugin, enabled: newEnabled });
     }
     setPlugins(prev => prev.map(p => p.slug === plugin.slug ? { ...p, enabled: newEnabled } : p));
-    toast({ title: newEnabled ? `${plugin.name} enabled` : `${plugin.name} disabled` });
+    const gated = await syncPluginFeature(plugin.slug, newEnabled);
+    toast({ title: newEnabled ? `${plugin.name} enabled` : `${plugin.name} disabled`, description: gated ? 'App feature flag updated — takes effect immediately.' : undefined });
   };
 
   const remove = async (plugin) => {
@@ -2008,12 +2203,35 @@ export function AdminPlugins() {
     toast({ title: 'Plugin removed' });
   };
 
-  const handleUpload = () => {
+  const handleUpload = () => fileRef.current?.click();
+
+  const handleManifestFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
     setUploading(true);
-    setTimeout(() => {
-      setUploading(false);
-      toast({ title: 'Upload feature', description: 'Custom plugin upload requires a plugin ZIP package. Contact support.' });
-    }, 800);
+    try {
+      const manifest = JSON.parse(await file.text());
+      const slug = String(manifest.slug || '').trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-').slice(0, 40);
+      const name = String(manifest.name || '').trim().slice(0, 80);
+      if (!slug || !name) throw new Error('Manifest must include "slug" and "name".');
+      if (plugins.some(p => p.slug === slug)) throw new Error(`A plugin with slug "${slug}" already exists.`);
+      const rec = await pb.collection('admin_plugins').create({
+        key: `plugin:${slug}`,
+        slug,
+        name,
+        version: String(manifest.version || '1.0.0').slice(0, 20),
+        description: String(manifest.description || '').slice(0, 500),
+        author: String(manifest.author || 'Custom').slice(0, 80),
+        enabled: true,
+        status: 'installed',
+        config: manifest.config && typeof manifest.config === 'object' ? manifest.config : {},
+      });
+      setPlugins(prev => [...prev, rec]);
+      toast({ title: 'Plugin installed', description: `${name} added from manifest.` });
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Upload failed', description: err?.message || 'Invalid manifest file.' });
+    } finally { setUploading(false); }
   };
 
   return (
@@ -2027,6 +2245,7 @@ export function AdminPlugins() {
           className="flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2.5 text-sm text-[#d4af37] hover:border-[#d4af37]/50">
           {uploading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Upload Plugin
         </button>
+        <input ref={fileRef} type="file" accept=".json,application/json" onChange={handleManifestFile} className="hidden" />
       </div>
 
       {loading ? <Spinner /> : (
