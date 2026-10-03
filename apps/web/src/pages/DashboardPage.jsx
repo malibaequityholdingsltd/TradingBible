@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const stats = computeStats(trades);
   const { user } = useAuth();
   const { t } = useI18n();
-  const isSubscriber = ['pro', 'elite', 'professional'].includes((user?.plan || '').toLowerCase());
+  const isSubscriber = user?.role === 'admin' || ['pro', 'elite', 'professional'].includes((user?.plan || '').toLowerCase());
 
   if (loading) {
     return <AppLayout title={t('nav.dashboard')}><div className="glass flex items-center justify-center gap-2 rounded-2xl py-20 text-sm text-[#8a8577]"><RefreshCw className="h-4 w-4 animate-spin" /> {t('dash.loading')}</div></AppLayout>;

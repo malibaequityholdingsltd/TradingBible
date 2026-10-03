@@ -255,7 +255,6 @@ function RoutesWithBoundary() {
                     <Route path="/app/affiliate" element={<Protected><AffiliatePage /></Protected>} />
                     <Route path="/app/billing" element={<Protected><BillingPage /></Protected>} />
                     <Route path="/app/wallet" element={<SubscriberProtected><FeatureGate feature="wallet"><WalletPage /></FeatureGate></SubscriberProtected>} />
-                    <Route path="/app/crypto-bank" element={<Navigate to="/app/wallet" replace />} />
                     <Route path="/app/profile" element={<Protected><ProfilePage /></Protected>} />
                     <Route path="/app/api-keys" element={<Protected><UserApiKeysPage /></Protected>} />
                     <Route path="/company" element={<CompanyProtected><CompanyDashboardPage /></CompanyProtected>} />

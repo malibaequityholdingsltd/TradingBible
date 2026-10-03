@@ -9,8 +9,6 @@ import AppLayout from '@/components/AppLayout';
 import { useI18n } from '@/lib/i18n';
 import { fmtMoney } from '@/lib/mockData';
 import { useTrades, computeStats } from '@/hooks/useTrades';
-import ChartPanel from '@/components/ChartPanel';
-import MarketHeatmap from '@/components/MarketHeatmap';
 
 const GOLD = '#d4af37';
 const GREEN = '#34d399';
@@ -42,8 +40,6 @@ export default function AnalyticsPage() {
   const { trades, loading } = useTrades();
   const DOW = [t('ana.mon'), t('ana.tue'), t('ana.wed'), t('ana.thu'), t('ana.fri'), t('ana.sat'), t('ana.sun')];
   const stats = computeStats(trades);
-  const [hmType, setHmType] = useState('crypto');
-  const [hmPeriod, setHmPeriod] = useState('1d');
 
   const derived = useMemo(() => {
     if (!stats) return null;
@@ -191,23 +187,23 @@ export default function AnalyticsPage() {
         </Card>
       </div>
 
-      <div className="mt-5 flex items-center justify-between">
-        <div className="flex items-center gap-2"><CandlestickChart className="h-5 w-5 text-[#d4af37]" /><h2 className="text-lg font-semibold text-[#f0ecdd]">{t('ana.advCharts')}</h2></div>
-        <Link to="/app/charts" className="flex items-center gap-1 text-xs text-[#d4af37] hover:underline">{t('ana.openCharts')} <ArrowRight className="h-3.5 w-3.5" /></Link>
+      <div className="mt-5 grid gap-4 md:grid-cols-3">
+        <Link to="/app/charts" className="glass glass-hover rounded-2xl p-5">
+          <div className="flex items-center gap-2"><CandlestickChart className="h-5 w-5 text-[#d4af37]" /><h2 className="font-semibold text-[#f0ecdd]">{t('ana.advCharts')}</h2></div>
+          <p className="mt-2 text-sm text-[#8a8577]">{t('ana.openCharts')}</p>
+          <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-[#d4af37]">{t('ana.openCharts')} <ArrowRight className="h-3.5 w-3.5" /></span>
+        </Link>
+        <Link to="/app/indicators" className="glass glass-hover rounded-2xl p-5">
+          <div className="flex items-center gap-2"><Gauge className="h-5 w-5 text-[#d4af37]" /><h2 className="font-semibold text-[#f0ecdd]">{t('ana.techInd')}</h2></div>
+          <p className="mt-2 text-sm text-[#8a8577]">{t('ana.fullStudio')}</p>
+          <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-[#d4af37]">{t('ana.fullStudio')} <ArrowRight className="h-3.5 w-3.5" /></span>
+        </Link>
+        <Link to="/app/heatmaps" className="glass glass-hover rounded-2xl p-5">
+          <div className="flex items-center gap-2"><Grid2x2 className="h-5 w-5 text-[#d4af37]" /><h2 className="font-semibold text-[#f0ecdd]">{t('ana.mktHm')}</h2></div>
+          <p className="mt-2 text-sm text-[#8a8577]">{t('ana.exploreHm')}</p>
+          <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-[#d4af37]">{t('ana.exploreHm')} <ArrowRight className="h-3.5 w-3.5" /></span>
+        </Link>
       </div>
-      <div className="mt-3"><ChartPanel initialSymbol="BTCUSD" initialTimeframe="1h" compact initialIndicators={[{ id: 'sma-a', type: 'sma', params: { period: 20 }, color: '#d4af37' }]} /></div>
-
-      <div className="mt-6 flex items-center justify-between">
-        <div className="flex items-center gap-2"><Gauge className="h-5 w-5 text-[#d4af37]" /><h2 className="text-lg font-semibold text-[#f0ecdd]">{t('ana.techInd')}</h2></div>
-        <Link to="/app/indicators" className="flex items-center gap-1 text-xs text-[#d4af37] hover:underline">{t('ana.fullStudio')} <ArrowRight className="h-3.5 w-3.5" /></Link>
-      </div>
-      <div className="mt-3"><ChartPanel initialSymbol="ETHUSD" initialTimeframe="1h" compact initialIndicators={[{ id: 'rsi-a', type: 'rsi', params: { period: 14 }, color: '#d4af37' }, { id: 'macd-a', type: 'macd', params: { fast: 12, slow: 26, signal: 9 }, color: '#60a5fa' }]} /></div>
-
-      <div className="mt-6 flex items-center justify-between">
-        <div className="flex items-center gap-2"><Grid2x2 className="h-5 w-5 text-[#d4af37]" /><h2 className="text-lg font-semibold text-[#f0ecdd]">{t('ana.mktHm')}</h2></div>
-        <Link to="/app/heatmaps" className="flex items-center gap-1 text-xs text-[#d4af37] hover:underline">{t('ana.exploreHm')} <ArrowRight className="h-3.5 w-3.5" /></Link>
-      </div>
-      <div className="mt-3 glass rounded-2xl p-4 sm:p-6"><MarketHeatmap type={hmType} setType={setHmType} period={hmPeriod} setPeriod={setHmPeriod} /></div>
 
       <div className="mt-5">
         <Card title={t('ana.monthBreak')} sub={t('ana.monthBreakSub')}>
