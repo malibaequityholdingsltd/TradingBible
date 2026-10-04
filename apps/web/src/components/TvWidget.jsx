@@ -113,8 +113,11 @@ export default function TvWidget() {
     return [...live, ...clock, ...sched];
   }, [liveChannels, liveStates]);
   const frozenRef = useRef([]);
-  if (view !== 'player' && liveOrdered.length) frozenRef.current = liveOrdered;
-  const ordered = view === 'player' && frozenRef.current.length ? frozenRef.current : liveOrdered;
+  // Freeze the order while watching OR browsing: probe updates still flip
+  // badges/counts live in place, but rows never jump under a scrolling
+  // finger. Re-syncs on the ads view and whenever desks are added/removed.
+  if (liveOrdered.length && (view === 'ads' || frozenRef.current.length !== liveOrdered.length)) frozenRef.current = liveOrdered;
+  const ordered = view !== 'ads' && frozenRef.current.length ? frozenRef.current : liveOrdered;
   const ytRef = useRef(null);
   const [ytMuted, setYtMuted] = useState(true);
   const [ytStarted, setYtStarted] = useState(false);
