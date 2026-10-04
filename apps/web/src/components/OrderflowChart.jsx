@@ -3,6 +3,7 @@ import {
 	Pause, Play, RotateCcw, Crosshair, X, Maximize2,
 } from 'lucide-react';
 import orderflowFeed from '@/lib/orderflowFeed';
+import { useI18n } from '@/lib/i18n';
 
 const COLS = 180;
 const BID = [56, 189, 248];
@@ -72,13 +73,14 @@ export default function OrderflowChart({
 	const [tape, setTape] = useState([]);
 	const [ladder, setLadder] = useState({ bids: [], asks: [], spread: 0 });
 	const [cross, setCross] = useState(null);
+	const { t } = useI18n();
 
 	const canvasRef = useRef(null);
 	const wrapRef = useRef(null);
 	const pausedRef = useRef(paused);
-	const settingsRef = useRef({ colSecs, rows, minTrade, intensity, candleSecs });
+	const settingsRef = useRef({ colSecs, rows, minTrade, intensity, candleSecs, waiting: '' });
 	pausedRef.current = paused;
-	settingsRef.current = { colSecs, rows, minTrade, intensity, candleSecs };
+	settingsRef.current = { colSecs, rows, minTrade, intensity, candleSecs, waiting: t('of.waitingBook') };
 	const sampleRef = useRef(onSample);
 	sampleRef.current = onSample;
 
@@ -343,7 +345,7 @@ export default function OrderflowChart({
 				ctx.fillText(fmtPrice(price), 4, r * cellH + cellH / 2);
 			}
 		} else {
-			ctx.fillText('waiting for book…', 4, 20);
+			ctx.fillText(settingsRef.current.waiting || '…', 4, 20);
 		}
 
 		ctx.textAlign = 'center';
@@ -476,10 +478,10 @@ export default function OrderflowChart({
 				</button>
 				<span className={`flex shrink-0 items-center gap-1 text-[10px] font-bold uppercase ${statusColor}`}>
 					<span className={`h-1.5 w-1.5 rounded-full ${status === 'connected' ? 'animate-pulse bg-emerald-400' : 'bg-current'}`} />
-					{status}
+					{t(`of.st${status.charAt(0).toUpperCase() + status.slice(1)}`, null, status)}
 				</span>
 				{canRemove && (
-					<button onClick={onRemove} className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-red-400" aria-label={`Remove ${symbol}`}>
+					<button onClick={onRemove} className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-red-400" aria-label={t('of.removeSym', { s: symbol })}>
 						<X className="h-3.5 w-3.5" />
 					</button>
 				)}
@@ -521,7 +523,7 @@ export default function OrderflowChart({
 
 			{/* Stat strip */}
 			<div className="grid grid-cols-3 gap-1.5 border-t border-[#d4af37]/10 p-2.5 sm:grid-cols-5">
-				{[['Vol', fmtMoney(stats.vol)], ['Buy %', `${buyShare.toFixed(1)}%`], ['Prints', stats.count.toLocaleString()], ['Biggest', fmtMoney(stats.biggest)], ['Spread', stats.spread ? fmtPrice(stats.spread) : '—']].map(([l, v]) => (
+				{[[t('of.vol'), fmtMoney(stats.vol)], [t('of.buyPct'), `${buyShare.toFixed(1)}%`], [t('of.prints'), stats.count.toLocaleString()], [t('of.biggest'), fmtMoney(stats.biggest)], [t('of.spread'), stats.spread ? fmtPrice(stats.spread) : '—']].map(([l, v]) => (
 					<div key={l} className="rounded-lg bg-white/[0.02] px-2 py-1.5">
 						<div className="text-[9px] uppercase tracking-wider text-[#8a8577]">{l}</div>
 						<div className="truncate font-mono text-xs font-semibold text-[#f0ecdd]">{v}</div>
@@ -538,24 +540,24 @@ export default function OrderflowChart({
 			{expanded && (
 				<div className="grid gap-2 border-t border-[#d4af37]/10 p-2.5 sm:grid-cols-2">
 					<div>
-						<h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#8a8577]">Depth ladder</h4>
+						<h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#8a8577]">{t('of.depthLadder')}</h4>
 						<div className="space-y-[3px] font-mono text-[11px]">
 							{[...ladder.asks].reverse().map((a, i) => (
 								<LadderRow key={`a-${i}`} price={a.p} qty={a.q} cum={a.cum} max={Math.max(1e-9, ...ladder.asks.map((x) => x.cum), ...ladder.bids.map((x) => x.cum))} side="ask" />
 							))}
 							<div className="flex items-center justify-between rounded bg-[#d4af37]/10 px-2 py-1 text-[#d4af37]">
-								<span>SPREAD</span><span>{ladder.spread ? fmtPrice(ladder.spread) : '—'}</span>
+								<span>{t('of.spread').toUpperCase()}</span><span>{ladder.spread ? fmtPrice(ladder.spread) : '—'}</span>
 							</div>
 							{ladder.bids.map((b, i) => (
 								<LadderRow key={`b-${i}`} price={b.p} qty={b.q} cum={b.cum} max={Math.max(1e-9, ...ladder.asks.map((x) => x.cum), ...ladder.bids.map((x) => x.cum))} side="bid" />
 							))}
-							{!ladder.bids.length && <p className="py-2 text-center text-[11px] text-[#5f5b50]">waiting for book…</p>}
+							{!ladder.bids.length && <p className="py-2 text-center text-[11px] text-[#5f5b50]">{t('of.waitingBook')}</p>}
 						</div>
 					</div>
 					<div>
-						<h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#8a8577]">Big-trade tape</h4>
+						<h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#8a8577]">{t('of.bigTape')}</h4>
 						<div className="no-scrollbar max-h-72 space-y-1 overflow-y-auto font-mono text-[11px]">
-							{tape.length === 0 && <p className="py-2 text-center text-[11px] text-[#5f5b50]">prints appear here live…</p>}
+							{tape.length === 0 && <p className="py-2 text-center text-[11px] text-[#5f5b50]">{t('of.printsLive')}</p>}
 							{tape.map((p) => (
 								<div key={p.id} className="flex items-center gap-2 rounded bg-white/[0.02] px-2 py-1">
 									<span className={`font-bold ${p.side === 'buy' ? 'text-emerald-400' : 'text-red-400'}`}>{p.side === 'buy' ? 'B' : 'S'}</span>
