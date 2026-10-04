@@ -518,12 +518,6 @@ export default function TvWidget() {
                   <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#ff5a62]">
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e50914]" /> Live
                   </span>
-                  <button onClick={() => zapChannel(-1)} className={iconBtn} aria-label="Previous channel">
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <button onClick={() => zapChannel(1)} className={iconBtn} aria-label="Next channel">
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
                 </div>
                 <div className="relative min-h-0 flex-1 bg-black">
                   {!frameLoaded && (
@@ -768,7 +762,7 @@ export default function TvWidget() {
           <div className="tv-widget-footer flex items-center justify-between gap-1 border-t border-[#d4af37]/12 bg-[#0a0a0f] px-3 py-2">
             {view === 'player' ? (
               <>
-                <button onClick={openChannels} className={iconBtn} aria-label="Back to channels">
+                <button onClick={() => zapChannel(-1)} className={iconBtn} aria-label="Previous channel" title="Previous channel">
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <span className="flex min-w-0 flex-1 flex-col items-center gap-1">
@@ -794,8 +788,8 @@ export default function TvWidget() {
                 <span className="min-w-0 flex-1 truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
                   {liveCount > 0 ? `${liveCount} live · ${ordered.length} channels` : `${ordered.length} live channels`}
                 </span>
-                <button onClick={toggleBell} aria-label="Toggle go-live alerts" title={bell ? 'Live alerts on — tap to mute' : 'Notify me when a desk goes live'} className={bell ? iconBtnActive : iconBtn}>
-                  {bell ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+                <button onClick={() => watchChannel(channelIndex)} className={iconBtn} aria-label="Resume watching" title="Resume watching">
+                  <Play className="h-4 w-4" />
                 </button>
               </>
             ) : (
