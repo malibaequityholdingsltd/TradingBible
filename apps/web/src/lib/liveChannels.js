@@ -22,17 +22,6 @@ function ytLive(channelId) {
 
 export const LIVE_CHANNELS = [
 	{
-		id: 'bloomberg-yt-live',
-		title: 'Bloomberg TV — YouTube Live',
-		desk: 'Global',
-		url: 'https://www.youtube.com/@markets/live',
-		embedUrl: ytLive('UCIALMKvObZNtJ6AmdCLP7Lg'),
-		blurb: 'Official 24/7 stream — plays instantly in the player, no login.',
-		isNew: false,
-		plan: 'pro',
-		roundTheClock: true,
-	},
-	{
 		id: 'bloomberg-news-live',
 		title: 'Bloomberg News Live',
 		desk: 'News',
@@ -130,7 +119,7 @@ export const LIVE_CHANNELS = [
 	},
 	{
 		id: 'tastytrade-live',
-		title: 'tastylive',
+		title: 'tastytrade Live',
 		desk: 'Options',
 		url: 'https://www.youtube.com/channel/UCk99MvmvHZutKIkh2u0ImrA/live',
 		embedUrl: ytLive('UCk99MvmvHZutKIkh2u0ImrA'),
@@ -192,8 +181,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Headline news, business and interviews from Berlin.',
 		isNew: true,
 		plan: 'pro',
-		roundTheClock: false,
-		hours: 'Daily live blocks CET',
+		roundTheClock: true,
 	},
 	{
 		id: 'trt-world-live',
@@ -204,8 +192,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Breaking news and business from Istanbul around the clock.',
 		isNew: true,
 		plan: 'pro',
-		roundTheClock: false,
-		hours: 'Daily live blocks',
+		roundTheClock: true,
 	},
 	{
 		id: 'cna-live',
