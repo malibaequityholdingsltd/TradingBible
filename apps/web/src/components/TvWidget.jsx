@@ -589,17 +589,6 @@ export default function TvWidget() {
                 </div>
                 <div className="flex items-center justify-between gap-2 border-t border-[#d4af37]/10 px-3 py-1.5">
                   <span className="truncate text-[10px] text-[#6a665a]">{ordered[playing].desk} · live in player</span>
-                  <span className="flex shrink-0 items-center gap-2">
-                    {isYoutube && ytApi && (
-                      <button onClick={toggleYtSound} className="flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
-                        {ytMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-                        {ytMuted ? 'Tap for sound' : 'Sound on'}
-                      </button>
-                    )}
-                    <button onClick={openChannels} className="shrink-0 text-[11px] font-semibold text-[#8a8577] hover:text-[#d4af37] hover:underline">
-                      All channels
-                    </button>
-                  </span>
                 </div>
               </div>
               </ErrorBoundary>
