@@ -144,7 +144,7 @@ export default function AdminLayout({ children, title }) {
             <AdminSearch />
           </div>
           <div className="ml-2 flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <button onClick={() => { enterAdminPreview(); nav('/app'); }} className="hidden sm:flex items-center gap-1.5 rounded-lg border border-[#d4af37]/15 px-3 py-1.5 text-xs text-[#8a8577] hover:border-[#d4af37]/30 hover:text-[#c9c4b4]">
+            <button onClick={() => setChooserOpen(true)} className="hidden sm:flex items-center gap-1.5 rounded-lg border border-[#d4af37]/15 px-3 py-1.5 text-xs text-[#8a8577] hover:border-[#d4af37]/30 hover:text-[#c9c4b4]">
               View App
             </button>
             <DropdownMenu>
