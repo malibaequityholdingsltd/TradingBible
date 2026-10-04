@@ -104,7 +104,7 @@ html.light .sheen-panel::after {
   margin-inline: auto;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 /* 4D page enter: soft rise cascade as each page mounts. */
 .tb-page > * { animation: tb-rise 0.38s var(--tb-ease) both; }
