@@ -37,7 +37,9 @@
 - [Journal](/app/journal): TradingBible application page.
 - [Landing](/): TradingBible application page.
 - [Login](/login): TradingBible application page.
+- [Navigate](/app/watchlists): TradingBible application page.
 - [Onboarding](/onboarding): TradingBible application page.
+- [Order Flow](/app/orderflow): TradingBible application page.
 - [Policy](/policy): TradingBible application page.
 - [Pricing](/pricing): TradingBible application page.
 - [Profile](/app/profile): TradingBible application page.
@@ -56,5 +58,4 @@
 - [Tv](/tv): TradingBible application page.
 - [User Api Keys](/app/api-keys): TradingBible application page.
 - [Wallet](/app/wallet): TradingBible application page.
-- [Watchlists](/app/watchlists): TradingBible application page.
 - [Webinars](/webinars): TradingBible application page.

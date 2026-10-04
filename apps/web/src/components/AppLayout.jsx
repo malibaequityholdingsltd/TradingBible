@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Lock, Code2, Palette, CreditCard, HelpCircle, CandlestickChart, Grid2x2, Gauge, Star, Bell, Radar, CalendarClock, Landmark, ListOrdered, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2 } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Lock, Code2, Palette, CreditCard, HelpCircle, CandlestickChart, Grid2x2, Gauge, Bell, Radar, CalendarClock, Landmark, ListOrdered, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, Layers } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { avatarUrl } from '@/lib/avatar';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -50,7 +50,7 @@ const NAV_GROUPS = [
       { to: '/app/charts', labelKey: 'nav.charts', icon: CandlestickChart },
       { to: '/app/indicators', labelKey: 'nav.indicators', icon: Gauge },
       { to: '/app/heatmaps', labelKey: 'nav.heatmaps', icon: Grid2x2 },
-      { to: '/app/watchlists', labelKey: 'nav.watchlists', icon: Star },
+      { to: '/app/orderflow', labelKey: 'nav.orderflow', icon: Layers },
       { to: '/app/signals', labelKey: 'nav.signals', icon: Radar },
       { to: '/app/alerts', labelKey: 'nav.alerts', icon: Bell },
       { to: '/app/economic-calendar', labelKey: 'nav.economic', icon: CalendarClock },

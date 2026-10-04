@@ -20,8 +20,8 @@ import pb from '@/lib/pocketbaseClient';
 import { PATHS, STATIC_CURRICULA, WEBINAR_CATALOG, TRACKS, getTopicIndex, pathStats } from '@/lib/academyCatalog';
 
 // ── Path icon map ────────────────────────────────────────────────────
-const PATH_ICONS = { sprout: Sprout, globe: Globe, bitcoin: Bitcoin, zap: Zap, briefcase: Briefcase };
-const TRACK_COLORS = { general: '#34d399', forex: '#38bdf8', crypto: '#f472b6', pro: '#d4af37' };
+const PATH_ICONS = { sprout: Sprout, globe: Globe, bitcoin: Bitcoin, zap: Zap, briefcase: Briefcase, layers: Layers };
+const TRACK_COLORS = { general: '#34d399', forex: '#38bdf8', crypto: '#f472b6', orderflow: '#a78bfa', pro: '#d4af37' };
 function PathIcon({ icon, color }) {
 	const C = PATH_ICONS[icon] || Route;
 	return <C className="h-5 w-5" style={{ color }} />;

@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { MonitorPlay, X, Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ExternalLink, ChevronLeft, ChevronRight, Loader2, Shuffle, Lock } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
+import { LIVE_CHANNELS } from '@/lib/liveChannels';
 
 const POS_KEY = 'tb:tv-btn-pos';
 const BTN = 56;
@@ -51,6 +52,73 @@ export default function TvWidget() {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const [open, setOpen] = useState(false);
+  const [showChannels, setShowChannels] = useState(false);
+  const [channelIndex, setChannelIndex] = useState(0);
+  const [playingIndex, setPlayingIndex] = useState(null);
+  const [frameLoaded, setFrameLoaded] = useState(false);
+  // Gate: no Bloomberg channel opens until the user signs in to Bloomberg
+  // inside the widget. bloombergAuthed remembers the confirmation so later
+  // channels play directly. No popups, no new tabs, no credentials ever
+  // touch our code — the session lives in the user's own browser.
+  // gateIndex = channel waiting behind the sign-in gate (null = no gate).
+  const [gateIndex, setGateIndex] = useState(null);
+  const [bloombergAuthed, setBloombergAuthed] = useState(false);
+
+  const BLOOMBERG_SIGNIN = 'https://www.bloomberg.com/auth/signin';
+  const YT_INDEX = Math.max(0, LIVE_CHANNELS.findIndex((c) => c.embedUrl));
+
+  // Watch a channel inside the widget stage (no new tab).
+  const watchInWidget = useCallback((i) => {
+    setChannelIndex(i);
+    setPlayingIndex(i);
+    setGateIndex(null);
+    setFrameLoaded(false);
+  }, []);
+
+  const exitPlayer = useCallback(() => {
+    setPlayingIndex(null);
+    setGateIndex(null);
+    setShowChannels(true);
+  }, []);
+
+  // Entry point for tapping a channel: instant-play sources (YouTube) go
+  // straight to the player; Bloomberg desks are gated — sign-in first.
+  const startChannel = useCallback((i) => {
+    const c = LIVE_CHANNELS[i];
+    if (c.embedUrl || bloombergAuthed) { watchInWidget(i); return; }
+    setChannelIndex(i);
+    setGateIndex(i);
+    setPlayingIndex(null);
+    setFrameLoaded(false);
+  }, [bloombergAuthed, watchInWidget]);
+
+  // Zap to prev/next live channel and play it in the widget.
+  const zapChannel = useCallback((dir) => {
+    const next = (channelIndex + dir + LIVE_CHANNELS.length) % LIVE_CHANNELS.length;
+    startChannel(next);
+  }, [channelIndex, startChannel]);
+
+  const openChannel = useCallback((i) => {
+    startChannel(i);
+  }, [startChannel]);
+
+  // Play a random channel (never repeats the current one).
+  const shuffleChannel = useCallback(() => {
+    if (LIVE_CHANNELS.length < 2) { startChannel(0); return; }
+    let next = Math.floor(Math.random() * (LIVE_CHANNELS.length - 1));
+    if (next >= channelIndex) next += 1;
+    startChannel(next);
+  }, [channelIndex, startChannel]);
+
+  // User confirmed Bloomberg sign-in inside the widget — unlock TV and
+  // auto-play the channel they tried to open.
+  const confirmSignedIn = useCallback(() => {
+    setBloombergAuthed(true);
+    const i = gateIndex;
+    setGateIndex(null);
+    if (i !== null) watchInWidget(i);
+    else setFrameLoaded(false);
+  }, [gateIndex, watchInWidget]);
   const [pos, setPos] = useState(() => (typeof window !== 'undefined' ? loadPos() : { x: 0, y: 0 }));
   const [dragging, setDragging] = useState(false);
   const timerRef = useRef(null);
@@ -194,7 +262,130 @@ export default function TvWidget() {
           </div>
 
           <div className="relative flex-1 overflow-hidden">
-            {!ad ? (
+            {gateIndex !== null ? (
+              <div className="flex h-full flex-col">
+                <div className="flex items-center gap-1 border-b border-[#d4af37]/10 px-2 py-1.5">
+                  <button onClick={() => setGateIndex(null)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" aria-label="Back to channels">
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <span className="flex min-w-0 flex-1 items-center gap-1.5 truncate text-[13px] font-bold text-[#f0ecdd]">
+                    <Lock className="h-3.5 w-3.5 shrink-0 text-[#d4af37]" /> Sign in to unlock TV
+                  </span>
+                </div>
+                <div className="relative min-h-0 flex-1 bg-black">
+                  {!frameLoaded && (
+                    <div className="absolute inset-0 grid place-items-center gap-2">
+                      <Loader2 className="h-6 w-6 animate-spin text-[#d4af37]" />
+                    </div>
+                  )}
+                  <iframe
+                    key="bloomberg-signin"
+                    src={BLOOMBERG_SIGNIN}
+                    title="Bloomberg sign in"
+                    className="absolute inset-0 h-full w-full border-0"
+                    allow="encrypted-media; fullscreen"
+                    allowFullScreen
+                    onLoad={() => setFrameLoaded(true)}
+                  />
+                </div>
+                <div className="space-y-2 border-t border-[#d4af37]/10 p-2.5">
+                  <p className="text-center text-[10px] leading-relaxed text-[#6a665a]">Sign in above with your own Bloomberg account, then unlock. We never see your password.</p>
+                  <button
+                    onClick={confirmSignedIn}
+                    className="flex min-h-[42px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90"
+                  >
+                    <Lock className="h-4 w-4" /> I signed in — unlock {LIVE_CHANNELS[gateIndex].title}
+                  </button>
+                  <button onClick={() => startChannel(YT_INDEX)} className="w-full text-center text-[11px] font-semibold text-[#d4af37] hover:underline">
+                    No Bloomberg login? Watch YouTube Live instead
+                  </button>
+                </div>
+              </div>
+            ) : playingIndex !== null ? (
+              <div className="flex h-full flex-col">
+                <div className="flex items-center gap-1 border-b border-[#d4af37]/10 px-2 py-1.5">
+                  <button onClick={exitPlayer} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" aria-label="Back to channels">
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-[#f0ecdd]">{LIVE_CHANNELS[playingIndex].title}</span>
+                  <span className="flex items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#ff5a62]">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e50914]" /> Live
+                  </span>
+                  <button onClick={() => zapChannel(-1)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" aria-label="Previous channel">
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => zapChannel(1)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" aria-label="Next channel">
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="relative min-h-0 flex-1 bg-black">
+                  {!frameLoaded && (
+                    <div className="absolute inset-0 grid place-items-center gap-2">
+                      <Loader2 className="h-6 w-6 animate-spin text-[#d4af37]" />
+                    </div>
+                  )}
+                  <iframe
+                    key={LIVE_CHANNELS[playingIndex].id}
+                    src={LIVE_CHANNELS[playingIndex].embedUrl || LIVE_CHANNELS[playingIndex].url}
+                    title={LIVE_CHANNELS[playingIndex].title}
+                    className="absolute inset-0 h-full w-full border-0"
+                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                    allowFullScreen
+                    onLoad={() => setFrameLoaded(true)}
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-2 border-t border-[#d4af37]/10 px-3 py-1.5">
+                  <span className="truncate text-[10px] text-[#6a665a]">{LIVE_CHANNELS[playingIndex].desk} · signed in as you</span>
+                  <button onClick={() => { setBloombergAuthed(false); setGateIndex(playingIndex); setPlayingIndex(null); setFrameLoaded(false); }} className="shrink-0 text-[11px] font-semibold text-[#8a8577] hover:text-[#d4af37] hover:underline">
+                    Switch account
+                  </button>
+                </div>
+              </div>
+            ) : showChannels ? (
+              <div className="no-scrollbar flex h-full flex-col overflow-hidden">
+                {/* Zap bar — one tap to change channel */}
+                <div className="flex items-center gap-1 border-b border-[#d4af37]/10 px-2 py-1.5">
+                  <button onClick={() => zapChannel(-1)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" aria-label="Previous channel">
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => openChannel(channelIndex)} className="min-w-0 flex-1 rounded-lg px-1 py-1 text-center transition hover:bg-white/5">
+                    <span className="block truncate text-[13px] font-bold text-[#f0ecdd]">{LIVE_CHANNELS[channelIndex].title}</span>
+                    <span className="block text-[10px] uppercase tracking-wider text-[#d4af37]">{LIVE_CHANNELS[channelIndex].desk} · tap to watch</span>
+                  </button>
+                  <button onClick={() => zapChannel(1)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" aria-label="Next channel">
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                  <button onClick={shuffleChannel} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" aria-label="Random channel" title="Play a random channel">
+                    <Shuffle className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="no-scrollbar flex-1 space-y-1.5 overflow-y-auto p-2">
+                  {LIVE_CHANNELS.map((c, ci) => (
+                    <button
+                      key={c.id}
+                      onClick={() => openChannel(ci)}
+                      className="group flex w-full items-center gap-2.5 rounded-xl border border-[#d4af37]/10 bg-white/[0.02] p-2.5 text-left transition hover:border-[#d4af37]/40 hover:bg-[#d4af37]/[0.05]"
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#d4af37]/12 text-[#d4af37]">
+                        {(!c.embedUrl && !bloombergAuthed) ? <Lock className="h-3.5 w-3.5" /> : <Radio className="h-3.5 w-3.5" />}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-1.5">
+                          <span className="block truncate text-[13px] font-semibold text-[#f0ecdd]">{c.title}</span>
+                          {c.isNew && <span className="shrink-0 rounded-full bg-[#d4af37] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#0a0a0f]">New</span>}
+                        </span>
+                        <span className="block truncate text-[11px] text-[#8a8577]">{c.desk} · {c.embedUrl ? 'plays here' : (bloombergAuthed ? 'tap to watch' : 'sign-in to unlock')}</span>
+                      </span>
+                      {(!c.embedUrl && !bloombergAuthed) ? (
+                        <Lock className="h-3.5 w-3.5 shrink-0 text-[#d4af37]/60 transition group-hover:text-[#d4af37]" />
+                      ) : (
+                        <ExternalLink className="h-3.5 w-3.5 shrink-0 text-[#6a665a] transition group-hover:text-[#d4af37]" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : !ad ? (
               <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
                 <MonitorPlay className="h-9 w-9 text-[#6a665a]" />
                 <p className="text-sm text-[#8a8577]">{t('tv.noLive')}</p>
@@ -243,9 +434,14 @@ export default function TvWidget() {
           </div>
 
           <div className="tv-widget-footer flex items-center justify-between border-t border-[#d4af37]/12 bg-[#0a0a0f] px-3 py-2">
-            <button onClick={() => setPaused((p) => !p)} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors" aria-label={paused ? t('tv.play') : t('tv.pause')}>
-              {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-            </button>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setPaused((p) => !p)} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors" aria-label={paused ? t('tv.play') : t('tv.pause')}>
+                {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+              </button>
+              <button onClick={() => { if (playingIndex !== null) exitPlayer(); else if (gateIndex !== null) setGateIndex(null); else setShowChannels((v) => !v); }} className={`grid h-7 w-7 place-items-center rounded-lg transition-colors ${showChannels || playingIndex !== null || gateIndex !== null ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd]'}`} aria-label="Live TV channels" title="Live TV channels">
+                <Radio className="h-4 w-4" />
+              </button>
+            </div>
             <div className="flex items-center gap-1.5">
               {ads.map((a, i) => (
                 <button key={a.id} onClick={() => setIndex(i)} aria-label={t('tv.broadcastN', { n: i + 1 })}
