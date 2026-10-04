@@ -663,7 +663,7 @@ export default function TvWidget() {
                       <button
                         key={c.id}
                         onClick={() => watchChannel(ci)}
-                        className={`group flex w-full items-center gap-2.5 rounded-xl border p-2.5 text-left transition ${st === true ? 'border-[#e50914]/40 bg-[#e50914]/[0.06] shadow-[0_0_18px_rgba(229,9,20,0.12)] hover:border-[#e50914]/70' : locked ? 'border-[#d4af37]/10 opacity-80 hover:border-[#d4af37]/40' : 'border-[#d4af37]/10 bg-white/[0.02] hover:border-[#d4af37]/40 hover:bg-[#d4af37]/[0.05]'} ${st === false ? 'opacity-60' : ''}`}
+                        className={`group flex w-full items-center gap-2.5 rounded-xl border p-2.5 text-left transition ${st === true ? 'tv-live-row border-[#e50914]/40 bg-[#e50914]/[0.06] shadow-[0_0_18px_rgba(229,9,20,0.12)] hover:border-[#e50914]/70' : locked ? 'border-[#d4af37]/10 opacity-80 hover:border-[#d4af37]/40' : 'border-[#d4af37]/10 bg-white/[0.02] hover:border-[#d4af37]/40 hover:bg-[#d4af37]/[0.05]'} ${st === false ? 'opacity-60' : ''}`}
                       >
                         <span className={`relative grid h-9 w-9 shrink-0 place-items-center rounded-lg ${st === true ? 'bg-[#e50914]/15 text-[#ff5a62]' : 'bg-[#d4af37]/12 text-[#d4af37]'}`}>
                           {locked ? <Lock className="h-3.5 w-3.5" /> : <Radio className="h-3.5 w-3.5" />}
