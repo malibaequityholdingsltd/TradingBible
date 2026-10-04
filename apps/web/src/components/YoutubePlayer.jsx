@@ -55,10 +55,10 @@ const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPl
     loadedFlag.current = false;
     let apiOk = false;
     let playTries = 0;
-    const markPlaying = () => {
+    const markPlaying = (proven = false) => {
       if (cancelled || played) return;
       played = true;
-      playingRef.current?.(true);
+      playingRef.current?.(true, !!proven);
     };
     const reportDead = () => {
       if (cancelled || played) return;
@@ -120,7 +120,7 @@ const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPl
                 if (e?.data === PS?.PLAYING) {
                   if (ref) ref.current = e.target;
                   try { apiRef.current?.(true); } catch { /* noop */ }
-                  markPlaying();
+                  markPlaying(true);
                 } else if (e?.data === PS?.ENDED) {
                   // Stream/VOD ended — hand back to the auto-advance chain
                   // so the next desk starts with no tap.

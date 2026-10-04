@@ -414,6 +414,21 @@ async function watchIsLiveNow(videoId) {
 	}
 }
 
+// Live video title via oEmbed (tiny JSON, no key): lets the guide show the
+// CURRENT broadcast name and refresh it every poll — desks that open a new
+// live with a different name update automatically.
+async function liveVideoTitle(videoId) {
+	try {
+		const { text } = await fetchText(`https://www.youtube.com/oembed?url=${encodeURIComponent(`https://www.youtube.com/watch?v=${videoId}`)}&format=json`, 6000);
+		const clean = String(text || '').split('\n__FINAL_URL__:')[0].trim();
+		const data = JSON.parse(clean);
+		const t = String(data?.title || '').trim();
+		return t ? t.slice(0, 90) : null;
+	} catch {
+		return null;
+	}
+}
+
 async function probeChannel({ url, embedUrl }) {
 	const target = String(embedUrl || url || '');
 	try {
@@ -472,6 +487,14 @@ router.post('/channels/live', async (req, res) => {
 		await Promise.all(list.map(async (c) => {
 			const id = String(c?.id || c?.url || 'unknown');
 			states[id] = await probeChannel(c);
+		}));
+		// Attach the CURRENT broadcast name to every confirmed live desk —
+		// guides refresh it each poll, so renames track automatically.
+		await Promise.all(Object.entries(states).map(async ([id, st]) => {
+			if (st?.live === true && st?.videoId && !st?.title) {
+				const title = await liveVideoTitle(st.videoId);
+				if (title) states[id] = { ...st, title };
+			}
 		}));
 		const result = { states, checkedAt: new Date(now).toISOString(), cached: false };
 		liveCache.key = key;
