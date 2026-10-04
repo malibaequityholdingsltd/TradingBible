@@ -12,6 +12,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useCandles } from '@/hooks/useCandles';
 import { useDrawings } from '@/hooks/useDrawings';
 import SymbolSearchPicker from '@/components/SymbolSearchPicker';
+import AddToWatchlist from '@/components/AddToWatchlist';
 import { INDICATOR_DEFS } from '@/lib/indicators';
 import IndicatorPicker from '@/components/IndicatorPicker';
 
@@ -30,6 +31,7 @@ const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 export default function LiveChart({
   initialSymbol = 'BTCUSD', initialTimeframe = '1h', initialType = 'candle',
   initialIndicators = [], drawingsEnabled = true, compact = false,
+  onSymbolChange,
 }) {
   const [symbol, setSymbol] = useState(initialSymbol);
   const [timeframe, setTimeframe] = useState(initialTimeframe);
@@ -231,7 +233,7 @@ export default function LiveChart({
   });
 
   const symbolPicker = (
-    <SymbolSearchPicker value={symbol} onChange={(s) => { setSymbol(s); setSelected(null); }} />
+    <SymbolSearchPicker value={symbol} onChange={(s) => { setSymbol(s); setSelected(null); if (onSymbolChange) onSymbolChange(s); }} />
   );
 
   return (
@@ -253,6 +255,7 @@ export default function LiveChart({
             ))}
           </div>
           <button onClick={() => setPickerOpen(true)} className="rounded-lg border border-[#d4af37]/15 px-2.5 py-1 text-[11px] text-[#c9c4b4] hover:text-[#e9e7df]">Indicators ({indicators.length})</button>
+          <AddToWatchlist symbol={symbol} />
           <div className="ml-auto flex items-center gap-1.5">
             <button onClick={exportPng} title={t('lc.exportPng')} className="rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]"><Download className="h-3.5 w-3.5" /></button>
             <button onClick={() => setFullscreen((f) => !f)} title={t('lc.fullscreen')} className="rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]">{fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}</button>
@@ -277,7 +280,7 @@ export default function LiveChart({
               {tplOpen && (
                 <>
                   <div className="fixed inset-0 z-20" onClick={() => setTplOpen(false)} />
-                  <div className="absolute right-0 z-30 mt-1 w-64 rounded-xl border border-[#d4af37]/15 bg-[#0d0d12] p-2">
+                  <div className="absolute right-0 z-30 mt-1 w-64 rounded-xl border border-[#d4af37]/15 bg-[#0d0d12]/95 p-2 shadow-xl backdrop-blur-xl">
                     <button onClick={() => { const n = window.prompt('Template name:'); if (n) dz.saveTemplate(n, window.confirm('Share this template with other users?')); setTplOpen(false); }}
                       className="mb-1 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-[#d4af37] hover:bg-white/5"><Save className="h-3.5 w-3.5" /> Save current as template</button>
                     <div className="max-h-48 overflow-y-auto no-scrollbar">

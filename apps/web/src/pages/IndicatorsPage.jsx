@@ -4,9 +4,12 @@ import AppLayout from '@/components/AppLayout';
 import { useI18n } from '@/lib/i18n';
 import AdvancedChart from '@/components/AdvancedChart';
 import IndicatorPicker from '@/components/IndicatorPicker';
+import AddToWatchlist from '@/components/AddToWatchlist';
+import WatchlistStrip from '@/components/WatchlistStrip';
 import { useCandles } from '@/hooks/useCandles';
 import { INDICATOR_DEFS } from '@/lib/indicators';
 import SymbolSearchPicker from '@/components/SymbolSearchPicker';
+import { Card, EmptyState, PageHero, SectionHead } from '@/components/ui-kit';
 
 const DESC_KEYS = {
   sma: 'ind.d.sma', ema: 'ind.d.ema', wma: 'ind.d.wma', rsi: 'ind.d.rsi', macd: 'ind.d.macd',
@@ -53,59 +56,69 @@ export default function IndicatorsPage() {
 
   return (
     <AppLayout title={t('ind.title')}>
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <SymbolSearchPicker value={symbol} onChange={setSymbol} buttonClassName="px-3 py-1.5 text-sm" />
-        <button onClick={() => setPickerOpen(true)} className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 px-3 py-1.5 text-sm text-[#d4af37] hover:border-[#d4af37]/40"><Plus className="h-4 w-4" /> {t('ind.configure')}</button>
-      </div>
+      <div className="tb-page">
+        <PageHero
+          kicker={t('ind.title')}
+          title={t('ind.pick')}
+          actions={<AddToWatchlist symbol={symbol} />}
+        />
 
-      <div className="grid gap-5 xl:grid-cols-3">
-        <div className="glass rounded-2xl p-3 sm:p-4 xl:col-span-2">
-          {status === 'error' && !candles.length
-            ? <div className="grid h-64 place-items-center text-sm text-red-400/80">{t('mkt.failLoad')}</div>
-            : <AdvancedChart symbol={symbol} candles={candles} chartType={chartType} timeframe={timeframe}
-                indicators={indicators} onChartType={setChartType} onTimeframe={setTimeframe}
-                onOpenIndicators={() => setPickerOpen(true)} onRemoveIndicator={(id) => setIndicators(indicators.filter((i) => i.id !== id))} />}
+        <WatchlistStrip active={symbol} onSelect={setSymbol} />
+
+        <div className="flex flex-wrap items-center gap-2">
+          <SymbolSearchPicker value={symbol} onChange={setSymbol} buttonClassName="px-3 py-1.5 text-sm" />
+          <button onClick={() => setPickerOpen(true)} className="flex min-h-[42px] items-center gap-1 rounded-lg border border-[#d4af37]/15 px-3 py-1.5 text-sm text-[#d4af37] transition hover:border-[#d4af37]/40"><Plus className="h-4 w-4" /> {t('ind.configure')}</button>
         </div>
 
-        <div className="glass rounded-2xl p-4 sm:p-5">
-          <h3 className="mb-3 font-semibold text-[#f0ecdd]">{t('ind.liveValues')}</h3>
-          <div className="space-y-3">
-            {liveValues.length === 0 && <p className="text-xs text-[#8a8577]">{t('ind.addForValues')}</p>}
-            {liveValues.map(({ ind, def, values }) => (
-              <div key={ind.id} className="rounded-xl border border-white/8 bg-white/[0.03] p-3">
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: ind.color || def.color }} />
+        <div className="grid gap-4 xl:grid-cols-3">
+          <Card className="p-3 sm:p-4 xl:col-span-2">
+            {status === 'error' && !candles.length
+              ? <div className="grid h-64 place-items-center text-sm text-red-400/80">{t('mkt.failLoad')}</div>
+              : <AdvancedChart symbol={symbol} candles={candles} chartType={chartType} timeframe={timeframe}
+                  indicators={indicators} onChartType={setChartType} onTimeframe={setTimeframe}
+                  onOpenIndicators={() => setPickerOpen(true)} onRemoveIndicator={(id) => setIndicators(indicators.filter((i) => i.id !== id))} />}
+          </Card>
+
+          <Card className="p-4 sm:p-5">
+            <SectionHead title={t('ind.liveValues')} />
+            <div className="space-y-3">
+              {liveValues.length === 0 && <p className="text-xs text-[#8a8577]">{t('ind.addForValues')}</p>}
+              {liveValues.map(({ ind, def, values }) => (
+                <div key={ind.id} className="rounded-xl border border-white/8 bg-white/[0.03] p-3">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: ind.color || def.color }} />
+                    <span className="text-sm font-medium text-[#f0ecdd]">{def.label}</span>
+                    <span className="ml-auto text-[10px] text-[#8a8577]">{Object.entries(ind.params).map(([k, v]) => `${k} ${v}`).join(' · ')}</span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
+                    {values.map((v) => (
+                      <span key={v.key} className="text-[#8a8577]">{v.key} <span className="text-[#e9e7df]">{v.value != null ? v.value.toLocaleString() : '—'}</span></span>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-[11px] leading-relaxed text-[#8a8577]">{t(DESC_KEYS[ind.type] || 'ind.title')}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        <Card className="p-4 sm:p-6">
+          <SectionHead title={t('ind.library')} />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {Object.entries(INDICATOR_DEFS).map(([type, def]) => (
+              <div key={type} className="rounded-xl border border-white/8 bg-white/[0.02] p-3">
+                <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-[#f0ecdd]">{def.label}</span>
-                  <span className="ml-auto text-[10px] text-[#8a8577]">{Object.entries(ind.params).map(([k, v]) => `${k} ${v}`).join(' · ')}</span>
+                  <span className="rounded-full bg-white/5 px-2 py-0.5 text-[9px] uppercase text-[#8a8577]">{def.pane === 'price' ? t('ind.overlay') : t('ind.panel')}</span>
                 </div>
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
-                  {values.map((v) => (
-                    <span key={v.key} className="text-[#8a8577]">{v.key} <span className="text-[#e9e7df]">{v.value != null ? v.value.toLocaleString() : '—'}</span></span>
-                  ))}
-                </div>
-                <p className="mt-2 text-[11px] leading-relaxed text-[#8a8577]">{t(DESC_KEYS[ind.type] || 'ind.title')}</p>
+                <p className="mt-1.5 text-[11px] leading-relaxed text-[#8a8577]">{t(DESC_KEYS[type] || 'ind.title')}</p>
               </div>
             ))}
           </div>
-        </div>
-      </div>
+        </Card>
 
-      <div className="mt-5 glass rounded-2xl p-4 sm:p-6">
-        <h3 className="mb-4 font-semibold text-[#f0ecdd]">{t('ind.library')}</h3>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {Object.entries(INDICATOR_DEFS).map(([type, def]) => (
-            <div key={type} className="rounded-xl border border-white/8 bg-white/[0.02] p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-[#f0ecdd]">{def.label}</span>
-                <span className="rounded-full bg-white/5 px-2 py-0.5 text-[9px] uppercase text-[#8a8577]">{def.pane === 'price' ? t('ind.overlay') : t('ind.panel')}</span>
-              </div>
-              <p className="mt-1.5 text-[11px] leading-relaxed text-[#8a8577]">{t(DESC_KEYS[type] || 'ind.title')}</p>
-            </div>
-          ))}
-        </div>
+        <IndicatorPicker open={pickerOpen} onClose={() => setPickerOpen(false)} indicators={indicators} setIndicators={setIndicators} />
       </div>
-
-      <IndicatorPicker open={pickerOpen} onClose={() => setPickerOpen(false)} indicators={indicators} setIndicators={setIndicators} />
     </AppLayout>
   );
 }
