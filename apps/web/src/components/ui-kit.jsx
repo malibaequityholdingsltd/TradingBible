@@ -99,7 +99,7 @@ export function GoldButton({ to, href, onClick, className = '', children, ...res
 }
 
 export function GhostButton({ to, href, onClick, className = '', children, ...rest }) {
-	const cls = `inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#d4af37]/30 px-5 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 ${className}`;
+	const cls = `inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#d4af37]/30 bg-white/[0.03] px-5 text-sm font-semibold text-[#d4af37] backdrop-blur-md transition hover:bg-[#d4af37]/10 ${className}`;
 	if (to) return <Link to={to} className={cls} {...rest}>{children}</Link>;
 	if (href) return <a href={href} className={cls} {...rest}>{children}</a>;
 	return <button onClick={onClick} className={cls} {...rest}>{children}</button>;
