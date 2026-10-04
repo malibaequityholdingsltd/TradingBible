@@ -198,6 +198,19 @@ export default function TvPage() {
     window.open(ad.linkUrl, '_blank', 'noopener');
   };
 
+  // Minimize: hand the live channel to the floating widget and leave the
+  // full-screen page — the stream keeps playing in the mini player while
+  // the user browses the app. The widget picks the handoff up on mount.
+  const minimizeTv = useCallback(() => {
+    try {
+      if (playChannel !== null) {
+        localStorage.setItem('tb:tv-minimized', JSON.stringify({ i: playChannel, at: Date.now() }));
+      }
+    } catch { /* ignore */ }
+    if (window.history.length > 1) nav(-1);
+    else nav(isAuthed ? '/app' : '/');
+  }, [playChannel, nav, isAuthed]);
+
   const toggleFullscreen = () => {
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {});
@@ -308,6 +321,9 @@ export default function TvPage() {
             <>
               <button onClick={() => { setChannelsOpen(true); }} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="All channels">
                 <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button onClick={minimizeTv} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="Minimize to widget" title="Minimize to widget">
+                <Minimize className="h-4 w-4" />
               </button>
               <button onClick={exitLiveChannel} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="Close live TV">
                 <X className="h-4 w-4" />

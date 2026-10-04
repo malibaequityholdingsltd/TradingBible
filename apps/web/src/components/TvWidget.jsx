@@ -103,6 +103,30 @@ export default function TvWidget() {
     return () => { cancelled = true; };
   }, []);
 
+  // Minimized handoff from the full TV page (/tv "minimize" button):
+  // resume the same channel in the floating mini player.
+  const consumeHandoff = useCallback(() => {
+    try {
+      const raw = localStorage.getItem('tb:tv-minimized');
+      if (!raw) return false;
+      localStorage.removeItem('tb:tv-minimized');
+      const { i, at } = JSON.parse(raw);
+      if (typeof i !== 'number' || Date.now() - Number(at || 0) > 60000) return false;
+      if (i < 0 || i >= liveChannels.length) return false;
+      const c = liveChannels[i];
+      if (c && !canWatch(c)) return false;
+      setChannelIndex(i);
+      setView('player');
+      setFrameLoaded(false);
+      setOpen(true);
+      return true;
+    } catch { return false; }
+  }, [canWatch, liveChannels]);
+
+  useEffect(() => {
+    consumeHandoff();
+  }, [consumeHandoff]);
+
   useEffect(() => {
     const handler = () => { setOpen(true); setView('ads'); };
     window.addEventListener('tb:open-tv', handler);
