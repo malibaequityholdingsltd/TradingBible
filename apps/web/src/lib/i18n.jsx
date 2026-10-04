@@ -40,6 +40,7 @@ const STRINGS = {
     'nav.indicators': 'Indicators',
     'nav.heatmaps': 'Heatmaps',
     'nav.watchlists': 'Watchlists',
+    'nav.orderflow': 'Order Flow',
     'nav.terminal': 'Terminal',
     'nav.signals': 'Trading Signals',
     'nav.alerts': 'Price Alerts',

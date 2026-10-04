@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink } from 'lucide-react';
+import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Shuffle } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
+import { LIVE_CHANNELS, openLiveChannel } from '@/lib/liveChannels';
 
 const DEFAULT_SETTINGS = {
   rotationSeconds: 12,
@@ -25,6 +26,8 @@ export default function TvPage() {
   const [error, setError] = useState('');
   const [uiHidden, setUiHidden] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [channelsOpen, setChannelsOpen] = useState(false);
+  const [activeChannel, setActiveChannel] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const timerRef = useRef(null);
   const hideTimerRef = useRef(null);
@@ -78,6 +81,35 @@ export default function TvPage() {
     setDetailsOpen(false);
   }, [index]);
 
+  useEffect(() => {
+    if (!channelsOpen) return undefined;
+    const cols = window.innerWidth >= 640 ? 2 : 1;
+    const onKey = (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); setActiveChannel((a) => Math.min(a + cols, LIVE_CHANNELS.length - 1)); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveChannel((a) => Math.max(a - cols, 0)); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); setActiveChannel((a) => Math.min(a + 1, LIVE_CHANNELS.length - 1)); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); setActiveChannel((a) => Math.max(a - 1, 0)); }
+      else if (e.key === 'Enter') { e.preventDefault(); openLiveChannel(LIVE_CHANNELS[activeChannel].url); }
+      else if (e.key === 'Escape') { setChannelsOpen(false); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [channelsOpen, activeChannel]);
+
+  // Keep the keyboard-selected channel visible.
+  useEffect(() => {
+    if (!channelsOpen) return undefined;
+    document.querySelector(`[data-chidx="${activeChannel}"]`)?.scrollIntoView({ block: 'nearest' });
+    return undefined;
+  }, [channelsOpen, activeChannel]);
+
+  const shuffleTvChannel = useCallback(() => {
+    if (LIVE_CHANNELS.length < 2) { setActiveChannel(0); openLiveChannel(LIVE_CHANNELS[0].url); return; }
+    let next = Math.floor(Math.random() * (LIVE_CHANNELS.length - 1));
+    if (next >= activeChannel) next += 1;
+    setActiveChannel(next);
+    openLiveChannel(LIVE_CHANNELS[next].url);
+  }, [activeChannel]);
   const wakeUi = useCallback(() => {
     setUiHidden(false);
     clearTimeout(hideTimerRef.current);
@@ -92,8 +124,8 @@ export default function TvPage() {
       if (e.code === 'Space') { e.preventDefault(); setPaused((p) => !p); }
       else if (e.key === 'm' || e.key === 'M') setMuted((m) => !m);
       else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
-      else if (e.key === 'ArrowRight' && ads.length > 1) setIndex((i) => (i + 1) % ads.length);
-      else if (e.key === 'ArrowLeft' && ads.length > 1) setIndex((i) => (i - 1 + ads.length) % ads.length);
+      else if (e.key === 'ArrowRight' && !channelsOpen && ads.length > 1) setIndex((i) => (i + 1) % ads.length);
+      else if (e.key === 'ArrowLeft' && !channelsOpen && ads.length > 1) setIndex((i) => (i - 1 + ads.length) % ads.length);
     };
     const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
     window.addEventListener('keydown', onKey);
@@ -106,7 +138,7 @@ export default function TvPage() {
       clearTimeout(hideTimerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ads.length, wakeUi]);
+  }, [ads.length, wakeUi, channelsOpen]);
 
   const openAd = () => {
     if (!ad?.linkUrl) return;
@@ -191,6 +223,9 @@ export default function TvPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => setChannelsOpen((o) => !o)} className={`grid h-10 w-10 place-items-center rounded-xl backdrop-blur-sm transition-colors ${channelsOpen ? 'bg-[#d4af37] text-[#0a0a0f]' : 'bg-black/50 text-[#e9e7df] hover:bg-black/70'}`} aria-label="Live channels">
+            <Radio className="h-4 w-4" />
+          </button>
           <button onClick={() => setMuted((m) => !m)} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label={muted ? t('tv.unmute') : t('tv.mute')}>
             {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </button>
@@ -236,6 +271,57 @@ export default function TvPage() {
             )}
           </div>
         </main>
+      )}
+
+      {/* ── Live channel guide (Bloomberg live desks) ─────────────── */}
+      {channelsOpen && (
+        <div className="absolute inset-0 z-20 flex flex-col bg-[#07070a]/85 backdrop-blur-xl" onClick={() => setChannelsOpen(false)}>
+          <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col overflow-hidden px-4 py-6 sm:px-8" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] text-[#d4af37]">
+                  <Radio className="h-4 w-4" /> Live TV
+                </div>
+                <h2 className="mt-1 text-xl font-bold text-[#f0ecdd] sm:text-2xl">Bloomberg live desks</h2>
+                <p className="mt-1 text-xs text-[#8a8577]">Opens on bloomberg.com in a new tab · {LIVE_CHANNELS.length} channels · <span className="font-mono">↑↓←→</span> browse · <span className="font-mono">Enter</span> watch</p>
+              </div>
+              <button onClick={() => setChannelsOpen(false)} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="Close">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="mt-3 flex items-center gap-2">
+              <button onClick={shuffleTvChannel} className="flex min-h-[42px] items-center gap-2 rounded-xl border border-[#d4af37]/30 px-4 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10">
+                <Shuffle className="h-4 w-4" /> Surprise me — random channel
+              </button>
+            </div>
+            <div className="no-scrollbar mt-5 grid flex-1 content-start gap-2 overflow-y-auto pb-4 sm:grid-cols-2">
+              {LIVE_CHANNELS.map((c, ci) => (
+                <button
+                  key={c.id}
+                  data-chidx={ci}
+                  onClick={() => { setActiveChannel(ci); openLiveChannel(c.url); }}
+                  onMouseEnter={() => setActiveChannel(ci)}
+                  className={`group flex items-center gap-3 rounded-xl border p-3.5 text-left backdrop-blur-md transition ${ci === activeChannel ? 'border-[#d4af37]/60 bg-[#d4af37]/[0.08]' : 'border-[#d4af37]/15 bg-white/[0.03] hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.06]'}`}
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]">
+                    <Radio className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-1.5">
+                      <span className="block truncate text-sm font-semibold text-[#f0ecdd]">{c.title}</span>
+                      {c.isNew && <span className="shrink-0 rounded-full bg-[#d4af37] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#0a0a0f]">New</span>}
+                    </span>
+                    <span className="mt-0.5 block truncate text-xs text-[#8a8577]">{c.blurb}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <span className="rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#ff5a62]">{c.desk}</span>
+                    <ExternalLink className="h-3.5 w-3.5 text-[#6a665a] transition group-hover:text-[#d4af37]" />
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── Bottom bar ───────────────────────────────────────────── */}

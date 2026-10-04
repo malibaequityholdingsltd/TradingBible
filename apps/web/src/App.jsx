@@ -39,7 +39,7 @@ const IntegrationsPage = lazy(() => import('./pages/IntegrationsPage'));
 const BrandingPage = lazy(() => import('./pages/BrandingPage'));
 const BillingPage = lazy(() => import('./pages/BillingPage'));
 const WalletPage = lazy(() => import('./pages/WalletPage'));
-const WatchlistsPage = lazy(() => import('./pages/WatchlistsPage'));
+const OrderFlowPage = lazy(() => import('./pages/OrderFlowPage'));
 const TerminalPage = lazy(() => import('./pages/TerminalPage'));
 const AlertsPage = lazy(() => import('./pages/AlertsPage'));
 const SignalsPage = lazy(() => import('./pages/SignalsPage'));
@@ -238,7 +238,8 @@ function RoutesWithBoundary() {
                     <Route path="/onboarding" element={<Protected><OnboardingPage /></Protected>} />
                     <Route path="/app" element={<PaidProtected><DashboardPage /></PaidProtected>} />
                     <Route path="/app/analytics" element={<PaidProtected><AnalyticsPage /></PaidProtected>} />
-                    <Route path="/app/watchlists" element={<PaidProtected><WatchlistsPage /></PaidProtected>} />
+                    <Route path="/app/watchlists" element={<Navigate to="/app/orderflow" replace />} />
+                    <Route path="/app/orderflow" element={<PaidProtected><OrderFlowPage /></PaidProtected>} />
                     <Route path="/app/terminal" element={<PaidProtected><TerminalPage /></PaidProtected>} />
                     <Route path="/app/alerts" element={<PaidProtected><FeatureGate feature="signals"><AlertsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/signals" element={<PaidProtected><FeatureGate feature="signals"><SignalsPage /></FeatureGate></PaidProtected>} />
