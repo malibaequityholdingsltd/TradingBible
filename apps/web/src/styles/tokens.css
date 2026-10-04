@@ -135,7 +135,7 @@ main > *, .tb-enter { animation: tb-rise 0.35s var(--tb-ease) both; }
     linear-gradient(135deg, rgba(212, 175, 55, 0.08), rgba(15, 15, 20, 0.5) 60%, transparent);
   backdrop-filter: var(--tb-blur-lg);
   -webkit-backdrop-filter: var(--tb-blur-lg);
-  padding: 1.5rem;
+  padding: 1rem;
   box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.85), 0 0 70px -38px rgba(212, 175, 55, 0.4);
 }
 /* Slow light sweep across every hero — the time dimension. */
@@ -153,7 +153,7 @@ main > *, .tb-enter { animation: tb-rise 0.35s var(--tb-ease) both; }
   55%, 100% { transform: translateX(100%); }
 }
 @media (min-width: 640px) {
-  .tb-hero { padding: 2.25rem; }
+  .tb-hero { padding: 1.5rem; }
 }
 
 .tb-card {
@@ -163,7 +163,7 @@ main > *, .tb-enter { animation: tb-rise 0.35s var(--tb-ease) both; }
   backdrop-filter: var(--tb-blur-md);
   -webkit-backdrop-filter: var(--tb-blur-md);
   box-shadow: var(--tb-shadow-card), inset 0 1px 0 rgba(244, 230, 168, 0.09);
-  padding: 1.25rem;
+  padding: 1rem;
 }
 html.light .tb-card {
   background: rgba(255, 254, 249, 0.85);

@@ -152,7 +152,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   useEffect(() => { setPage(0); setExchange('all'); }, [type, period]);
   const [hover, setHover] = useState(null); // {cell, x, y}
   const wrapRef = useRef(null);
-  const [size, setSize] = useState({ w: 800, h: 520 });
+  const [size, setSize] = useState({ w: 800, h: 460 });
   const nodesRef = useRef(new Map());
   const timeRef = useRef(0);
   const frameRef = useRef(0);
@@ -197,7 +197,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
     if (!el) return undefined;
     const ro = new ResizeObserver(() => {
       const r = el.getBoundingClientRect();
-      setSize({ w: Math.max(300, r.width), h: 520 });
+      setSize({ w: Math.max(300, r.width), h: 460 });
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -335,7 +335,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   return (
     <div>
       {/* Premium glass control bar: search + size mode + live status */}
-      <div className="mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-[#d4af37]/15 bg-gradient-to-b from-white/[0.04] to-transparent p-2 shadow-[0_8px_32px_rgba(0,0,0,0.25)] backdrop-blur">
+      <div className="mb-2 flex flex-wrap items-center gap-2 rounded-2xl border border-[#d4af37]/15 bg-gradient-to-b from-white/[0.04] to-transparent p-2 shadow-[0_8px_32px_rgba(0,0,0,0.25)] backdrop-blur">
         <div className="relative min-w-[180px] flex-1 sm:max-w-xs">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#d4af37]" />
           <input
@@ -370,7 +370,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
       </div>
 
       {/* Design themes */}
-      <div className="mb-3 flex flex-wrap items-center gap-2">
+      <div className="mb-2 flex flex-wrap items-center gap-2">
         <span className="text-[11px] uppercase tracking-wider text-[#8a8577]">{t('hm.design', null, 'Design')}</span>
         {Object.entries(THEMES).map(([id, sc]) => (
           <button
@@ -390,7 +390,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
       </div>
 
       {/* Exchanges + pages */}
-      <div className="mb-3 flex flex-wrap items-center gap-2">
+      <div className="mb-2 flex flex-wrap items-center gap-2">
         {availExchanges.length > 1 && (
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-[11px] uppercase tracking-wider text-[#8a8577]">{t('hm.exchange', null, 'Exchange')}</span>
@@ -448,7 +448,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
 
       {/* Movers strip (global: across all pages/exchanges) */}
       {cells.length > 0 && (
-        <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div className="mb-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
           {[
             { icon: TrendingUp, label: t('hm.topGainer', null, 'Top gainer'), cell: stats.gainer, cls: 'text-emerald-400' },
             { icon: TrendingDown, label: t('hm.topLoser', null, 'Top loser'), cell: stats.loser, cls: 'text-red-400' },
@@ -484,7 +484,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
       )}
 
       {/* Bubble field */}
-      <div ref={wrapRef} className="relative w-full touch-none select-none overflow-hidden rounded-2xl border border-[#d4af37]/20 shadow-[0_0_80px_rgba(212,175,55,0.10),0_24px_80px_rgba(0,0,0,0.5)]" style={{ height: 520, ...(scheme.fieldBg ? { background: scheme.fieldBg } : {}) }}>
+      <div ref={wrapRef} className="relative w-full touch-none select-none overflow-hidden rounded-2xl border border-[#d4af37]/20 shadow-[0_0_80px_rgba(212,175,55,0.10),0_24px_80px_rgba(0,0,0,0.5)]" style={{ height: 460, ...(scheme.fieldBg ? { background: scheme.fieldBg } : {}) }}>
         <div className="pointer-events-none absolute inset-0 grain opacity-20" />
         {status === 'loading' && !cells.length ? (
           <div className="grid h-full place-items-center text-sm text-[#8a8577]">{t('mkt.loadingHeat')}</div>
@@ -638,7 +638,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
       </div>
 
       {/* Legend */}
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-white/5 bg-black/20 px-3 py-2 text-[11px] text-[#8a8577]">
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-white/5 bg-black/20 px-3 py-2 text-[11px] text-[#8a8577]">
         <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.8)]" style={{ background: `rgb(${scheme.up})` }} />{t('hm.up', null, 'Up')}</span>
         <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.8)]" style={{ background: `rgb(${scheme.down})` }} />{t('hm.down', null, 'Down')}</span>
         <span className="ml-auto">{t('hm.legendSize', null, 'Size = move (or volume in Volume mode) · brighter = bigger move · ribbons = motion trail · drag to move')}</span>
