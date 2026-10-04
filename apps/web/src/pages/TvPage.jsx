@@ -1,9 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Shuffle, Loader2, ChevronLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Shuffle, Loader2, ChevronLeft, Lock, Crown } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
+import { useAuth } from '@/hooks/useAuth';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { hardenEmbed, useLiveChannels } from '@/lib/liveChannels';
+import { meetsPlan } from '@/lib/entitlements';
 import { EmptyState, GhostButton } from '@/components/ui-kit';
 
 const DEFAULT_SETTINGS = {
@@ -18,6 +21,8 @@ const HIDE_UI_MS = 3500;
 
 export default function TvPage() {
   const { t, lang } = useI18n();
+  const { user, isAuthed } = useAuth();
+  const nav = useNavigate();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [ads, setAds] = useState([]);
   const [index, setIndex] = useState(0);
@@ -33,13 +38,28 @@ export default function TvPage() {
   const [frameLoaded, setFrameLoaded] = useState(false);
   const liveChannels = useLiveChannels();
 
+  // Channel entitlements: the Bloomberg desk plays for everyone (top of
+  // funnel, even logged out); higher desks need their plan, and logged-out
+  // viewers are sent to sign in first.
+  const canWatch = useCallback((c) => {
+    if (!c?.plan || c.plan === 'pro') return true;
+    return meetsPlan(user, c.plan);
+  }, [user]);
+
+  const goUpgrade = useCallback((c) => {
+    if (!isAuthed) nav('/login');
+    else nav('/pricing');
+  }, [isAuthed, nav]);
+
   // Play a live channel full-stage inside the TV (no new tab, no login).
   const playLiveChannel = useCallback((i) => {
+    const c = liveChannels[i];
+    if (c && !canWatch(c)) { goUpgrade(c); return; }
     setActiveChannel(i);
     setPlayChannel(i);
     setChannelsOpen(false);
     setFrameLoaded(false);
-  }, []);
+  }, [canWatch, goUpgrade, liveChannels]);
 
   const exitLiveChannel = useCallback(() => {
     setPlayChannel(null);
@@ -120,11 +140,12 @@ export default function TvPage() {
   }, [channelsOpen, activeChannel]);
 
   const shuffleTvChannel = useCallback(() => {
-    if (liveChannels.length < 2) { playLiveChannel(0); return; }
-    let next = Math.floor(Math.random() * (liveChannels.length - 1));
-    if (next >= activeChannel) next += 1;
-    playLiveChannel(next);
-  }, [activeChannel, playLiveChannel, liveChannels.length]);
+    const open = liveChannels.map((c, i) => ({ c, i })).filter(({ c }) => canWatch(c));
+    if (!open.length) { goUpgrade(); return; }
+    const pool = open.filter(({ i }) => i !== activeChannel);
+    const pick = (pool.length ? pool : open)[Math.floor(Math.random() * (pool.length ? pool.length : open.length))];
+    playLiveChannel(pick.i);
+  }, [activeChannel, playLiveChannel, liveChannels, canWatch, goUpgrade]);
   const wakeUi = useCallback(() => {
     setUiHidden(false);
     clearTimeout(hideTimerRef.current);
@@ -206,6 +227,9 @@ export default function TvPage() {
             allowFullScreen
             onLoad={() => setFrameLoaded(true)}
           />
+          {/* No-touch shield: autoplay on select, no tap can pause the
+              stream or open suggestions. Channel controls live above. */}
+          <div className="absolute inset-0 bg-transparent" />
         </div>
       ) : error ? (
         <div className="flex flex-1 flex-col items-center justify-center px-6">
@@ -337,7 +361,9 @@ export default function TvPage() {
               </GhostButton>
             </div>
             <div className="no-scrollbar mt-5 grid flex-1 content-start gap-2 overflow-y-auto pb-4 sm:grid-cols-2">
-              {liveChannels.map((c, ci) => (
+              {liveChannels.map((c, ci) => {
+                const locked = !canWatch(c);
+                return (
                 <button
                   key={c.id}
                   data-chidx={ci}
@@ -346,21 +372,23 @@ export default function TvPage() {
                   className={`group flex items-center gap-3 rounded-xl border p-3.5 text-left backdrop-blur-md transition ${ci === activeChannel ? 'border-[#d4af37]/60 bg-[#d4af37]/[0.08]' : 'border-[#d4af37]/15 bg-white/[0.03] hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.06]'}`}
                 >
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]">
-                    <Radio className="h-4 w-4" />
+                    {locked ? <Lock className="h-4 w-4" /> : <Radio className="h-4 w-4" />}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5">
                       <span className="block truncate text-sm font-semibold text-[#f0ecdd]">{c.title}</span>
                       {c.isNew && <span className="shrink-0 rounded-full bg-[#d4af37] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#0a0a0f]">New</span>}
+                      {locked && <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#d4af37]"><Crown className="h-2.5 w-2.5" />{c.plan}</span>}
                     </span>
-                    <span className="mt-0.5 block truncate text-xs text-[#8a8577]">{c.blurb}</span>
+                    <span className="mt-0.5 block truncate text-xs text-[#8a8577]">{locked ? (isAuthed ? 'Upgrade to unlock this desk' : 'Sign in to unlock this desk') : c.blurb}</span>
                   </span>
                   <span className="flex shrink-0 items-center gap-1.5">
                     <span className="rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#ff5a62]">{c.desk}</span>
                     <Play className="h-3.5 w-3.5 text-[#6a665a] transition group-hover:text-[#d4af37]" />
                   </span>
                 </button>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

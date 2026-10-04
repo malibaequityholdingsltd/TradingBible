@@ -2454,7 +2454,7 @@ export function AdminTvAds() {
   const [channels, setChannels] = useState([]);
   const [chEditing, setChEditing] = useState(null);
   const [chBusy, setChBusy] = useState(false);
-  const [chForm, setChForm] = useState({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true });
+  const [chForm, setChForm] = useState({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true, plan: 'pro' });
 
   const load = useCallback(async () => {
     const token = pb.authStore.token;
@@ -2560,7 +2560,7 @@ export function AdminTvAds() {
         toast({ title: 'Channel added' });
       }
       setChEditing(null);
-      setChForm({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true });
+      setChForm({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true, plan: 'pro' });
       await load();
     } catch (err) {
       toast({ title: 'Save failed', description: String(err.message || err) });
@@ -2716,6 +2716,13 @@ export function AdminTvAds() {
           <div><label className={label}>Stream page URL *</label><input required className={input} value={chForm.url} onChange={setCF('url')} placeholder="https://…" /></div>
           <div><label className={label}>Embed URL (optional)</label><input className={input} value={chForm.embedUrl} onChange={setCF('embedUrl')} placeholder="https://…/embed/…" /></div>
           <div className="sm:col-span-2"><label className={label}>Blurb</label><input className={input} value={chForm.blurb} onChange={setCF('blurb')} placeholder="One-line description shown in the guide…" /></div>
+          <div><label className={label}>Minimum plan</label>
+            <select className={input} value={chForm.plan || 'pro'} onChange={setCF('plan')}>
+              <option value="pro" className="bg-[#0f0f14]">Pro — every paid plan</option>
+              <option value="elite" className="bg-[#0f0f14]">Elite SI and up</option>
+              <option value="professional" className="bg-[#0f0f14]">Professional only</option>
+            </select>
+          </div>
           <label className="flex items-center gap-3 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
             <input type="checkbox" checked={chForm.isNew} onChange={setCF('isNew')} className="h-5 w-5 accent-[#d4af37]" />
             <span className="text-sm text-[#c9c4b4]">Mark as NEW badge</span>
@@ -2728,7 +2735,7 @@ export function AdminTvAds() {
             <button type="submit" disabled={chBusy} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90 disabled:opacity-50">
               <Save className="h-4 w-4" /> {chEditing ? 'Update channel' : 'Add channel'}
             </button>
-            {chEditing && <button type="button" onClick={() => { setChEditing(null); setChForm({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true }); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
+            {chEditing && <button type="button" onClick={() => { setChEditing(null); setChForm({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true, plan: 'pro' }); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
           </div>
         </form>
       </div>
@@ -2755,7 +2762,7 @@ export function AdminTvAds() {
                   <tr key={ch.id} className="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
                     <td className="px-5 py-4">
                       <div className="font-medium text-[#f0ecdd]">{c.title || ch.key}</div>
-                      <div className="text-xs text-[#6a665a]">{c.desk || 'Live'}{c.isNew ? ' · NEW' : ''}{c.blurb ? ` — ${c.blurb}` : ''}</div>
+                      <div className="text-xs text-[#6a665a]">{c.desk || 'Live'}{c.isNew ? ' · NEW' : ''}{c.blurb ? ` — ${c.blurb}` : ''} · <span className="text-[#d4af37]">{c.plan || 'pro'}</span></div>
                     </td>
                     <td className="max-w-[220px] truncate px-5 py-4 font-mono text-xs text-[#8a8577]">{c.embedUrl || c.url}</td>
                     <td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-xs ${ch.enabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[#8a8577]'}`}>{ch.builtin ? 'Built-in' : ch.enabled ? 'Live' : 'Paused'}</span></td>

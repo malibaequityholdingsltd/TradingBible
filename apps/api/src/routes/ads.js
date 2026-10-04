@@ -22,6 +22,7 @@ function cleanUrl(raw) {
 
 function sanitizeChannel(raw) {
 	const c = raw && typeof raw === 'object' ? raw : {};
+	const plan = String(c.plan || 'pro').toLowerCase();
 	return {
 		title: String(c.title || '').trim().slice(0, 80),
 		desk: String(c.desk || 'Live').trim().slice(0, 24),
@@ -29,6 +30,7 @@ function sanitizeChannel(raw) {
 		embedUrl: cleanUrl(c.embedUrl),
 		blurb: String(c.blurb || '').trim().slice(0, 160),
 		isNew: c.isNew === true,
+		plan: ['pro', 'elite', 'professional'].includes(plan) ? plan : 'pro',
 	};
 }
 
@@ -43,6 +45,7 @@ function publicChannel(row) {
 		embedUrl: c.embedUrl,
 		blurb: c.blurb,
 		isNew: c.isNew,
+		plan: c.plan,
 	};
 }
 
