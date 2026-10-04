@@ -50,6 +50,23 @@ export default function TvPage() {
   const [fallbackVid, setFallbackVid] = useState(null);
   const attemptsRef = useRef(new Set());
   const advanceTimer = useRef(null);
+  // Self-retry: exhausted slates silently reset and remount every 30s.
+  const retryTimerTv = useRef(null);
+  const retryIdTv = useRef(null);
+  const playChannelRef = useRef(playChannel);
+  playChannelRef.current = playChannel;
+
+  const scheduleAutoRetryTv = useCallback(() => {
+    clearTimeout(retryTimerTv.current);
+    const id = String(liveChannels[playChannelRef.current]?.id || '');
+    retryIdTv.current = id;
+    retryTimerTv.current = setTimeout(() => {
+      if (String(liveChannels[playChannelRef.current]?.id || '') !== retryIdTv.current) return;
+      attemptsRef.current.clear();
+      setFallbackVid(null); setYtError(false); setYtBlocked(false); setFrameLoaded(false);
+      setYtRetry((n) => n + 1);
+    }, 30000);
+  }, [liveChannels]);
   const liveChannels = useLiveChannels();
   const ytRef = useRef(null);
   // Shared broadcast state (read-only here — the widget owns notifications).
@@ -65,7 +82,22 @@ export default function TvPage() {
     } catch { /* noop */ }
   }, []);
 
-  useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); setYtRetry(0); setYtApi(false); setFallbackVid(null); return () => clearTimeout(advanceTimer.current); }, [playChannel]);
+  // Auto-sound: the channel tap's user activation is still valid when the
+  // player API attaches — sound starts with the picture, no second tap.
+  const tryAutoTvSound = useCallback(() => {
+    try {
+      const ua = navigator.userActivation;
+      if (!ua || (!ua.isActive && !ua.hasBeenActive)) return;
+      const p = ytRef.current;
+      if (!p || typeof p.unMute !== 'function') return;
+      if (typeof p.isMuted === 'function' && !p.isMuted()) { setYtMuted(false); return; }
+      p.unMute();
+      if (typeof p.setVolume === 'function') p.setVolume(100);
+      setYtMuted(false);
+    } catch { /* stays muted */ }
+  }, []);
+
+  useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); setYtRetry(0); setYtApi(false); setFallbackVid(null); return () => { clearTimeout(advanceTimer.current); clearTimeout(retryTimerTv.current); }; }, [playChannel]);
 
   // Channel entitlements: the Bloomberg desk plays for everyone (top of
   // funnel, even logged out); higher desks need their plan, and logged-out
@@ -128,10 +160,12 @@ export default function TvPage() {
       advanceTimer.current = setTimeout(() => playLiveChannel(next), 1200);
     } else if (blocked) {
       setYtBlocked(true);
+      scheduleAutoRetryTv();
     } else {
       setYtError(true);
+      scheduleAutoRetryTv();
     }
-  }, [playChannel, liveChannels, fallbackVid, tvStates, findNextPlayableTv, playLiveChannel]);
+  }, [playChannel, liveChannels, fallbackVid, tvStates, findNextPlayableTv, playLiveChannel, scheduleAutoRetryTv]);
 
   // Autoplay on load: /tv opens straight into the best desk
   // (live → 24/7 → first unlocked) — motion with zero taps.
@@ -323,7 +357,8 @@ export default function TvPage() {
               ref={ytRef}
               onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); markConfirmed(liveChannels[playChannel]?.id); } else { handleStreamErrorTv(false); } }}
               onBlocked={() => handleStreamErrorTv(true)}
-              onApiReady={(ready) => setYtApi(!!ready)}
+              onApiReady={(ready) => { setYtApi(!!ready); if (ready) tryAutoTvSound(); }}
+              onLoaded={() => setFrameLoaded(true)}
             />
           ) : (
             <iframe
@@ -340,6 +375,7 @@ export default function TvPage() {
               <WifiOff className="h-8 w-8 text-[#6a665a]" />
               <p className="font-semibold text-[#f0ecdd]">Can't reach YouTube</p>
               <p className="max-w-sm text-sm leading-relaxed text-[#8a8577]">Your network is blocking youtube.com — check connection, VPN, ad-blocker or region restrictions, then try again.</p>
+              <p className="text-[10px] uppercase tracking-wider text-[#6a665a]">Retrying automatically…</p>
               <button onClick={() => { attemptsRef.current.clear(); setFallbackVid(null); setYtBlocked(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="mt-1 min-h-[44px] rounded-xl border border-[#d4af37]/30 px-6 text-sm font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
                 Try again
               </button>
@@ -362,6 +398,7 @@ export default function TvPage() {
                 </button>
               </div>
               <p className="max-w-sm text-xs text-[#6a665a]">Tip: tap the bell in the guide — we'll ping you the moment a desk goes live.</p>
+              <p className="text-[10px] uppercase tracking-wider text-[#6a665a]">Retrying automatically…</p>
             </div>
           )}
           {/* No-touch shield (engages once playing): no tap can pause the

@@ -29,7 +29,7 @@ function loadApi() {
   return apiPromise;
 }
 
-const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPlaying, onBlocked, onApiReady }, ref) {
+const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPlaying, onBlocked, onApiReady, onLoaded }, ref) {
   const frameRef = useRef(null);
   const playerRef = useRef(null);
   const playingRef = useRef(onPlaying);
@@ -38,6 +38,8 @@ const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPl
   blockedRef.current = onBlocked;
   const apiRef = useRef(onApiReady);
   apiRef.current = onApiReady;
+  const loadedRef = useRef(onLoaded);
+  loadedRef.current = onLoaded;
 
   useEffect(() => {
     let cancelled = false;
@@ -110,6 +112,7 @@ const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPl
       className="absolute inset-0 h-full w-full border-0"
       allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
       allowFullScreen
+      onLoad={() => { try { loadedRef.current?.(); } catch { /* noop */ } }}
     />
   );
 });
