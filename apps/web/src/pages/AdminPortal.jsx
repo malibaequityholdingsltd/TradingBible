@@ -2467,7 +2467,22 @@ export function AdminTvAds() {
       const [adsData, feedData, chData] = await Promise.all([adsRes.json(), setRes.json(), chRes.json().catch(() => ({}))]);
       setAds(adsRes.ok ? adsData.ads || [] : []);
       if (feedData?.settings) setSettings((s) => ({ ...s, ...feedData.settings }));
-      setChannels(chRes.ok ? chData.channels || [] : []);
+      // Built-in entry first (locked row — it ships in code, not the DB).
+      const builtin = {
+        id: 'builtin-yt-live',
+        key: 'builtin:bloomberg-yt-live',
+        enabled: true,
+        builtin: true,
+        config: {
+          title: 'Bloomberg TV — YouTube Live',
+          desk: 'Global',
+          url: 'https://www.youtube.com/@markets/live',
+          embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCIALMKvObZNtJ6AmdCLP7Lg&autoplay=1',
+          blurb: 'Built-in entry — always shown first in the guide.',
+          isNew: true,
+        },
+      };
+      setChannels(chRes.ok ? [builtin, ...(chData.channels || [])] : [builtin]);
     } catch {
       setAds([]);
       setChannels([]);
@@ -2743,12 +2758,16 @@ export function AdminTvAds() {
                       <div className="text-xs text-[#6a665a]">{c.desk || 'Live'}{c.isNew ? ' · NEW' : ''}{c.blurb ? ` — ${c.blurb}` : ''}</div>
                     </td>
                     <td className="max-w-[220px] truncate px-5 py-4 font-mono text-xs text-[#8a8577]">{c.embedUrl || c.url}</td>
-                    <td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-xs ${ch.enabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[#8a8577]'}`}>{ch.enabled ? 'Live' : 'Paused'}</span></td>
+                    <td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-xs ${ch.enabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[#8a8577]'}`}>{ch.builtin ? 'Built-in' : ch.enabled ? 'Live' : 'Paused'}</span></td>
                     <td className="px-5 py-4">
+                      {ch.builtin ? (
+                        <div className="flex justify-end"><span className="text-[11px] text-[#5f5b50]">Ships with the app</span></div>
+                      ) : (
                       <div className="flex justify-end gap-2">
                         <button onClick={() => startChannelEdit(ch)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
                         <button onClick={() => removeChannel(ch.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/20 text-red-400 hover:border-red-500/60" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
                       </div>
+                      )}
                     </td>
                   </tr>
                 );
