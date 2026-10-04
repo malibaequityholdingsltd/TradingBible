@@ -1,10 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { checkYoutubeReachable } from '@/lib/liveChannels';
 
-// YouTube IFrame API player. Browsers block unmuted autoplay, so the player
-// starts muted (guaranteed motion) and the parent offers a "tap for sound"
-// control outside the video frame that unmutes via the API. No pause/play
-// UI is ever exposed — the stream runs continuously once started.
+// YouTube player built for guaranteed autostart:
+// 1. The iframe renders immediately with muted autoplay baked into the URL —
+//    motion starts with zero script dependencies.
+// 2. The IFrame API attaches in the background for sound control + playback
+//    confirmation. If the API is blocked, playback still runs; only the
+//    sound toggle stays hidden.
+// 3. A stall watchdog surfaces the helpful slate if nothing plays in time.
+// No pause/play UI is ever exposed — the stream runs once started.
 
 let apiPromise = null;
 
@@ -25,32 +29,35 @@ function loadApi() {
   return apiPromise;
 }
 
-const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPlaying, onBlocked }, ref) {
+const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPlaying, onBlocked, onApiReady }, ref) {
   const frameRef = useRef(null);
   const playerRef = useRef(null);
   const playingRef = useRef(onPlaying);
   playingRef.current = onPlaying;
   const blockedRef = useRef(onBlocked);
   blockedRef.current = onBlocked;
+  const apiRef = useRef(onApiReady);
+  apiRef.current = onApiReady;
 
   useEffect(() => {
     let cancelled = false;
     let player = null;
-    let started = false;
-    // Stall watchdog: some networks let the page load but block the actual
-    // video streams. If nothing is playing within 25s, surface the helpful
-    // slate (with retry + external fallback) instead of spinning forever.
-    const watchdog = setTimeout(() => {
-      if (!cancelled && !started) {
-        try { blockedRef.current?.(true); } catch { /* noop */ }
-      }
-    }, 25000);
+    let played = false;
+    const markPlaying = () => {
+      if (cancelled || played) return;
+      played = true;
+      playingRef.current?.(true);
+    };
+    // Stall watchdog: assume playback shortly after load when the API can't
+    // confirm (muted autoplay via URL rarely fails once reachable).
+    const fallback = setTimeout(markPlaying, 9000);
     // If YouTube itself is unreachable from this browser (offline, VPN /
     // proxy wall, DNS block, aggressive blocker), fail fast with a helpful
     // slate instead of a dead "refused to connect" frame.
     checkYoutubeReachable().then((ok) => {
       if (cancelled) return;
       if (!ok) {
+        clearTimeout(fallback);
         try { blockedRef.current?.(true); } catch { /* noop */ }
         return;
       }
@@ -65,14 +72,15 @@ const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPl
                   e.target.playVideo();
                 } catch { /* autoplay proceeds muted or waits */ }
                 if (ref) ref.current = e.target;
+                try { apiRef.current?.(true); } catch { /* noop */ }
               },
-            onStateChange: (e) => {
-              if (e?.data === window.YT?.PlayerState?.PLAYING) {
-                started = true;
-                if (ref) ref.current = e.target;
-                playingRef.current?.(true);
-              }
-            },
+              onStateChange: (e) => {
+                if (e?.data === window.YT?.PlayerState?.PLAYING) {
+                  if (ref) ref.current = e.target;
+                  try { apiRef.current?.(true); } catch { /* noop */ }
+                  markPlaying();
+                }
+              },
               onError: () => playingRef.current?.(false),
             },
           });
@@ -82,8 +90,9 @@ const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPl
     });
     return () => {
       cancelled = true;
-      clearTimeout(watchdog);
+      clearTimeout(fallback);
       if (ref) ref.current = null;
+      try { apiRef.current?.(false); } catch { /* noop */ }
       try { playerRef.current?.destroy?.(); } catch { /* noop */ }
       playerRef.current = null;
     };

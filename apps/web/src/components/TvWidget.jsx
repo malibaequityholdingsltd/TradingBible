@@ -85,6 +85,7 @@ export default function TvWidget() {
   const [ytError, setYtError] = useState(false);
   const [ytBlocked, setYtBlocked] = useState(false);
   const [ytRetry, setYtRetry] = useState(0);
+  const [ytApi, setYtApi] = useState(false);
   const isYoutube = playing !== null && /youtube\.com\/embed\//.test(ordered[playing]?.embedUrl || '');
 
   const toggleYtSound = useCallback(() => {
@@ -192,7 +193,7 @@ export default function TvWidget() {
   // Every new channel starts muted (autoplay policy) until tapped.
   // The no-touch shield engages only once playback actually starts, so
   // YouTube's own play control stays tappable if autoplay gets blocked.
-  useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); }, [channelIndex]);
+  useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); setYtApi(false); }, [channelIndex]);
 
   const watchChannel = useCallback((i) => {
     if (typeof i !== 'number' || i < 0 || i >= ordered.length) return;
@@ -355,6 +356,7 @@ export default function TvWidget() {
                       title={ordered[playing].title}
                       onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); setYtMuted(true); } else { setYtError(true); } }}
                       onBlocked={() => setYtBlocked(true)}
+                      onApiReady={(ready) => setYtApi(!!ready)}
                     />
                   ) : (
                     <iframe
@@ -400,7 +402,7 @@ export default function TvWidget() {
                 <div className="flex items-center justify-between gap-2 border-t border-[#d4af37]/10 px-3 py-1.5">
                   <span className="truncate text-[10px] text-[#6a665a]">{ordered[playing].desk} · live in player</span>
                   <span className="flex shrink-0 items-center gap-2">
-                    {isYoutube && frameLoaded && (
+                    {isYoutube && ytApi && (
                       <button onClick={toggleYtSound} className="flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
                         {ytMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
                         {ytMuted ? 'Tap for sound' : 'Sound on'}
