@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, Shuffle, ListVideo, Lock, Crown } from 'lucide-react';
+import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, Shuffle, ListVideo, Lock, Crown, WifiOff } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -76,6 +76,9 @@ export default function TvWidget() {
   const ytRef = useRef(null);
   const [ytMuted, setYtMuted] = useState(true);
   const [ytStarted, setYtStarted] = useState(false);
+  const [ytError, setYtError] = useState(false);
+  const [ytBlocked, setYtBlocked] = useState(false);
+  const [ytRetry, setYtRetry] = useState(0);
   const isYoutube = playing !== null && /youtube\.com\/embed\//.test(liveChannels[playing]?.embedUrl || '');
 
   const toggleYtSound = useCallback(() => {
@@ -183,7 +186,7 @@ export default function TvWidget() {
   // Every new channel starts muted (autoplay policy) until tapped.
   // The no-touch shield engages only once playback actually starts, so
   // YouTube's own play control stays tappable if autoplay gets blocked.
-  useEffect(() => { setYtMuted(true); setYtStarted(false); }, [channelIndex]);
+  useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); }, [channelIndex]);
 
   const watchChannel = useCallback((i) => {
     const c = liveChannels[i];
@@ -329,11 +332,12 @@ export default function TvWidget() {
                   )}
                   {isYoutube ? (
                     <YoutubePlayer
-                      key={liveChannels[playing].id}
+                      key={`${liveChannels[playing].id}-${ytRetry}`}
                       ref={ytRef}
                       src={hardenEmbed(liveChannels[playing].embedUrl || liveChannels[playing].url)}
                       title={liveChannels[playing].title}
-                      onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); setYtMuted(true); } }}
+                      onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); setYtMuted(true); } else { setYtError(true); } }}
+                      onBlocked={() => setYtBlocked(true)}
                     />
                   ) : (
                     <iframe
@@ -345,6 +349,28 @@ export default function TvWidget() {
                       allowFullScreen
                       onLoad={() => setFrameLoaded(true)}
                     />
+                  )}
+                  {/* Network wall slate: this browser can't reach YouTube. */}
+                  {isYoutube && ytBlocked && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#07070a] p-4 text-center">
+                      <WifiOff className="h-6 w-6 text-[#6a665a]" />
+                      <p className="text-xs font-semibold text-[#f0ecdd]">Can't reach YouTube</p>
+                      <p className="max-w-[240px] text-[11px] leading-relaxed text-[#8a8577]">Your network is blocking youtube.com — check connection, VPN, ad-blocker or region restrictions, then re-open the channel.</p>
+                      <button onClick={() => { setYtBlocked(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="mt-1 min-h-[40px] rounded-xl border border-[#d4af37]/30 px-5 text-xs font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
+                        Try again
+                      </button>
+                    </div>
+                  )}
+                  {/* Off-air slate: this desk isn't broadcasting right now. */}
+                  {isYoutube && ytError && !ytStarted && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#07070a] p-4 text-center">
+                      <Radio className="h-6 w-6 text-[#6a665a]" />
+                      <p className="text-xs font-semibold text-[#f0ecdd]">This desk is off-air right now</p>
+                      <p className="text-[11px] text-[#8a8577]">Live shows run at set hours — Bloomberg runs 24/7.</p>
+                      <button onClick={() => watchChannel(0)} className="mt-1 min-h-[40px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 text-xs font-bold text-[#0a0a0f] transition hover:opacity-90">
+                        Watch Bloomberg 24/7
+                      </button>
+                    </div>
                   )}
                   {/* No-touch shield (engages once playing): no tap on the
                       video can pause it or open suggestions. Sound and
