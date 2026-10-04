@@ -16,15 +16,21 @@ import { API_SERVER_URL } from '@/lib/apiServerClient';
 // in by the channel owner can't be suppressed by any parameter.
 const YOUTUBE_LOCKDOWN = 'autoplay=1&mute=1&enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1';
 
+// Privacy-enhanced embeds: youtube-nocookie.com serves the identical
+// player/API with NO consent wall — youtube.com embeds in consent regions
+// (UK/EU) halt on a "Before you continue" screen that no autoplay or API
+// call can dismiss, which surfaced as permanently queued/paused desks.
+const YT_EMBED_HOST = 'https://www.youtube-nocookie.com/embed';
+
 function ytLive(channelId) {
-	return `https://www.youtube.com/embed/live_stream?channel=${channelId}&${YOUTUBE_LOCKDOWN}`;
+	return `${YT_EMBED_HOST}/live_stream?channel=${channelId}&${YOUTUBE_LOCKDOWN}`;
 }
 
 // Direct video embed with the same lockdown — fallback when a channel's
 // live_stream endpoint errors but the probe confirmed a live video id
 // (owner-restricted live endpoints sometimes still play direct).
 export function ytVideoEmbed(videoId) {
-	return `https://www.youtube.com/embed/${videoId}?${YOUTUBE_LOCKDOWN}`;
+	return `${YT_EMBED_HOST}/${videoId}?${YOUTUBE_LOCKDOWN}`;
 }
 
 export const LIVE_CHANNELS = [
@@ -329,7 +335,7 @@ function sanitizeRemote(row, i) {
 // (covers admin-added YouTube embeds too). Non-YouTube URLs pass through.
 export function hardenEmbed(url) {
 	const u = String(url || '');
-	if (!/youtube\.com\/embed\//.test(u)) return u;
+	if (!/(youtube\.com|youtube-nocookie\.com)\/embed\//.test(u)) return u;
 	const sep = u.includes('?') ? '&' : '?';
 	const missing = YOUTUBE_LOCKDOWN.split('&').filter((p) => {
 		const k = p.split('=')[0];

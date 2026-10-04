@@ -131,7 +131,7 @@ export default function TvWidget() {
       setYtRetry((n) => n + 1);
     }, 30000);
   }, [ordered]);
-  const isYoutube = playing !== null && /youtube\.com\/embed\//.test(ordered[playing]?.embedUrl || '');
+  const isYoutube = playing !== null && /(youtube\.com|youtube-nocookie\.com)\/embed\//.test(ordered[playing]?.embedUrl || '');
 
   const toggleYtSound = useCallback(() => {
     try {

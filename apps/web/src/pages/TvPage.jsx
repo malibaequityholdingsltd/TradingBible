@@ -71,7 +71,7 @@ export default function TvPage() {
   const ytRef = useRef(null);
   // Shared broadcast state (read-only here — the widget owns notifications).
   const { states: tvStates, liveOf, liveCount, bell, toggleBell, markConfirmed } = useLiveStatus(liveChannels);
-  const playIsYoutube = playChannel !== null && /youtube\.com\/embed\//.test(liveChannels[playChannel]?.embedUrl || '');
+  const playIsYoutube = playChannel !== null && /(youtube\.com|youtube-nocookie\.com)\/embed\//.test(liveChannels[playChannel]?.embedUrl || '');
 
   const toggleYtSound = useCallback(() => {
     try {
