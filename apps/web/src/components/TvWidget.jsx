@@ -620,8 +620,9 @@ export default function TvWidget() {
                     const withIdx = ordered.map((c, i) => ({ c, ci: i })).filter(({ c }) => matches(c) && liveOf(c) !== false);
                     const sections = [
                       { id: 'live', label: `Live now${liveCount > 0 ? ` · ${liveCount}` : ''}`, dot: 'bg-[#e50914]', items: withIdx.filter(({ c }) => liveOf(c) === true) },
-                      { id: 'live247', label: 'On air 24/7', dot: 'bg-emerald-400', items: withIdx.filter(({ c }) => c.roundTheClock && liveOf(c) !== true) },
-                      { id: 'scheduled', label: 'Scheduled live shows', dot: 'bg-[#d4af37]', items: withIdx.filter(({ c }) => !c.roundTheClock && liveOf(c) !== true) },
+                      { id: 'live247', label: 'On air 24/7', dot: 'bg-emerald-400', items: withIdx.filter(({ c }) => c.roundTheClock && c.desk !== 'Music' && liveOf(c) !== true) },
+                      { id: 'music', label: 'Music', dot: 'bg-violet-400', items: withIdx.filter(({ c }) => c.desk === 'Music' && liveOf(c) !== true) },
+                      { id: 'scheduled', label: 'Scheduled live shows', dot: 'bg-[#d4af37]', items: withIdx.filter(({ c }) => !c.roundTheClock && c.desk !== 'Music' && liveOf(c) !== true) },
                     ].filter((s) => s.items.length);
                     if (!sections.length) {
                       return (
