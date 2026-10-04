@@ -48,7 +48,7 @@ function loadPos() {
   return { x: MARGIN, y: MARGIN };
 }
 
-const iconBtn = 'grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]';
+const iconBtn = 'grid h-7 w-7 place-items-center rounded-lg text-[#d4af37] transition-colors hover:bg-[#d4af37]/10 hover:text-[#f0d675]';
 const iconBtnActive = 'grid h-7 w-7 place-items-center rounded-lg bg-[#d4af37]/15 text-[#d4af37] transition-colors';
 
 // Draggable, edge-snapping TradingBible TV launcher + mini broadcast player.
@@ -684,7 +684,7 @@ export default function TvWidget() {
                             <span className="mt-0.5 flex items-center gap-1 text-[10px] text-[#6a665a]"><Clock className="h-2.5 w-2.5 shrink-0" /> Typically live: {c.hours}</span>
                           )}
                         </span>
-                        <Play className="h-3.5 w-3.5 shrink-0 text-[#6a665a] transition group-hover:text-[#d4af37]" />
+                        <Play className="h-3.5 w-3.5 shrink-0 text-[#d4af37] transition group-hover:scale-110" />
                       </button>
                           );
                         })}
