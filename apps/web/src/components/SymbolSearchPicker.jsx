@@ -48,7 +48,7 @@ export default function SymbolSearchPicker({ value, onChange, buttonClassName = 
       {open && (
         <>
           <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
-          <div className={`absolute left-0 z-30 mt-1 flex max-h-80 w-64 flex-col overflow-hidden rounded-xl border border-[#d4af37]/15 bg-[#0d0d12]/90 shadow-xl backdrop-blur-xl ${dropdownClassName}`}>
+          <div className={`sheen-panel overlay-pop absolute left-0 z-30 mt-1 flex max-h-80 w-64 flex-col overflow-hidden rounded-xl border border-[#d4af37]/15 bg-[#0d0d12]/90 shadow-xl backdrop-blur-xl ${dropdownClassName}`}>
             <div className="relative border-b border-[#d4af37]/10 p-2">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a8577]" />
               <input
