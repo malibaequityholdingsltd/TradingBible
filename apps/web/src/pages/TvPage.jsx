@@ -278,6 +278,9 @@ export default function TvPage() {
               <button onClick={() => { setYtBlocked(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="mt-1 min-h-[44px] rounded-xl border border-[#d4af37]/30 px-6 text-sm font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
                 Try again
               </button>
+              <a href={liveChannels[playChannel]?.url} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-[#8a8577] hover:text-[#d4af37] hover:underline">
+                Open on YouTube instead
+              </a>
             </div>
           )}
           {playIsYoutube && ytError && !ytBlocked && !ytStarted && (
