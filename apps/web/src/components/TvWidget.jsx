@@ -103,6 +103,17 @@ export default function TvWidget() {
     return () => { cancelled = true; };
   }, []);
 
+  // ── Live TV controls ───────────────────────────────────────────
+  // Channel entitlements: widgets show for every plan, but individual
+  // channels unlock per tier (null/pro = any paid plan). Locked channels
+  // route to pricing instead of playing.
+  // NOTE: canWatch/goUpgrade must stay above every consumer — a use-before-
+  // declare here throws on mount and blanks the entire app (this widget
+  // renders above the route error boundary).
+  const canWatch = useCallback((c) => !c?.plan || meetsPlan(user, c.plan || 'pro'), [user]);
+
+  const goUpgrade = useCallback(() => nav('/pricing'), [nav]);
+
   // Minimized handoff from the full TV page (/tv "minimize" button):
   // resume the same channel in the floating mini player.
   const consumeHandoff = useCallback(() => {
@@ -168,14 +179,6 @@ export default function TvWidget() {
     else { el.play().catch(() => {}); }
     el.muted = muted;
   }, [paused, muted, ad]);
-
-  // ── Live TV controls ───────────────────────────────────────────
-  // Channel entitlements: widgets show for every plan, but individual
-  // channels unlock per tier (null/pro = any paid plan). Locked channels
-  // route to pricing instead of playing.
-  const canWatch = useCallback((c) => !c?.plan || meetsPlan(user, c.plan || 'pro'), [user]);
-
-  const goUpgrade = useCallback(() => nav('/pricing'), [nav]);
 
   // Every new channel starts muted (autoplay policy) until tapped.
   // The no-touch shield engages only once playback actually starts, so
