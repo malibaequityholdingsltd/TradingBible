@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Cable, CheckCircle2, Pencil, RefreshCw, ShieldCheck, Trash2, X } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import PageHeader from '@/components/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { usePlatformSettings } from '@/lib/platformSettings';
 import { useI18n } from '@/lib/i18n';
 import pb from '@/lib/pocketbaseClient';
+import { PageHero, Card, Stat, StatGrid, EmptyState, GoldButton } from '@/components/ui-kit';
 
 const FIRMS = ['FTMO', 'FundedNext', 'Topstep', 'E8 Markets', 'Apex Trader Funding', 'The5ers', 'MyForexFunds', 'Alpha Capital Group', 'Other'];
 
@@ -45,9 +45,9 @@ function Meter({ label, value, limit }) {
   const tone = pct >= 90 ? 'from-red-600 to-red-400' : pct >= 70 ? 'from-orange-600 to-orange-400' : 'from-[#f4e6a8] to-[#c99a25]';
   return (
     <div>
-      <div className="mb-1 flex items-center justify-between text-xs">
-        <span className="text-[#8a8577]">{label}</span>
-        <span className="font-mono text-[#c9c4b4]">{money(value)} <span className="text-[#5f5b50]">/ {money(limit)}</span></span>
+      <div className="mb-1 flex items-center justify-between gap-2 text-xs">
+        <span className="truncate text-[#8a8577]">{label}</span>
+        <span className="shrink-0 font-mono text-[#c9c4b4]">{money(value)} <span className="text-[#5f5b50]">/ {money(limit)}</span></span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
         <div className={`h-full rounded-full bg-gradient-to-r ${tone} transition-all duration-500`} style={{ width: `${pct}%` }} />
@@ -141,71 +141,71 @@ function AccountForm({ initial, onSave, onCancel, manualAllowed }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-2xl glass p-5">
-      <div className="flex items-center justify-between">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-[#f0ecdd]"><Cable className="h-4 w-4 text-[#d4af37]" /> {initial ? t('pf.editConn') : t('pf.connectFirst')}</h3>
+    <form onSubmit={submit} className="tb-card space-y-4 p-5">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="flex min-w-0 items-center gap-2 text-sm font-semibold text-[#f0ecdd]"><Cable className="h-4 w-4 shrink-0 text-[#d4af37]" /> <span className="truncate">{initial ? t('pf.editConn') : t('pf.connectFirst')}</span></h3>
         {onCancel && <button type="button" onClick={onCancel} className="rounded-full p-1.5 text-[#8a8577] transition hover:bg-white/5" aria-label={t('c.close')}><X className="h-4 w-4" /></button>}
       </div>
       <p className="text-xs leading-relaxed text-[#8a8577]">{t('pf.linkNote')}</p>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-        <div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        <div className="min-w-0">
           <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.firm')}</label>
           <select value={f.firm} onChange={(e) => applyFirm(e.target.value)} className={numCls}>
             {FIRMS.map((firm) => <option key={firm} value={firm}>{firm}</option>)}
           </select>
         </div>
-        <div>
+        <div className="min-w-0">
           <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.accSize')}</label>
           <input type="number" min="0" value={f.accountSize} onChange={(e) => applySize(e.target.value)} className={numCls} />
         </div>
-        <div>
+        <div className="min-w-0">
           <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.loginReq')}</label>
           <input type="text" value={f.accountLogin} onChange={setText('accountLogin')} placeholder="e.g. 8124451" className={numCls} />
         </div>
-        <div>
+        <div className="min-w-0">
           <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.server')}</label>
           <input type="text" value={f.server} onChange={setText('server')} placeholder="e.g. FTMO-Server" className={numCls} />
         </div>
-        <div>
+        <div className="min-w-0">
           <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.dailyLimit')}</label>
           <input type="number" min="0" value={f.dailyLossLimit} onChange={set('dailyLossLimit')} className={numCls} />
         </div>
-        <div>
+        <div className="min-w-0">
           <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.maxDd')}</label>
           <input type="number" min="0" value={f.maxDrawdown} onChange={set('maxDrawdown')} className={numCls} />
         </div>
-        <div>
+        <div className="min-w-0">
           <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.target')}</label>
           <input type="number" min="0" value={f.profitTarget} onChange={set('profitTarget')} className={numCls} />
         </div>
         {manualAllowed && (
           <>
-            <div>
+            <div className="min-w-0">
               <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.balanceManual')}</label>
               <input type="number" min="0" value={f.balance} onChange={set('balance')} className={numCls} />
             </div>
-            <div>
+            <div className="min-w-0">
               <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.equityManual')}</label>
               <input type="number" min="0" value={f.equity} onChange={set('equity')} className={numCls} />
             </div>
-            <div>
+            <div className="min-w-0">
               <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.lossManual')}</label>
               <input type="number" min="0" value={f.currentDailyLoss} onChange={set('currentDailyLoss')} className={numCls} />
             </div>
-            <div>
+            <div className="min-w-0">
               <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.ddManual')}</label>
               <input type="number" min="0" value={f.currentDrawdown} onChange={set('currentDrawdown')} className={numCls} />
             </div>
-            <div>
+            <div className="min-w-0">
               <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.profitManual')}</label>
               <input type="number" value={f.currentProfit} onChange={set('currentProfit')} className={numCls} />
             </div>
           </>
         )}
       </div>
-      <button disabled={busy} className="flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60">
+      <GoldButton disabled={busy}>
         {busy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} {initial ? t('c.save') : t('pf.connectSync')}
-      </button>
+      </GoldButton>
     </form>
   );
 }
@@ -299,86 +299,89 @@ export default function PropFirmsPage() {
 
   return (
     <AppLayout title={t('nav.propfirms')}>
-      <PageHeader
-        icon={ShieldCheck}
-        kicker="Rule compliance"
-        description={t('pf.sub')}
-      />
+      <div className="tb-page">
+        <PageHero
+          kickerIcon={ShieldCheck}
+          kicker="Rule compliance"
+          title={t('nav.propfirms')}
+          subtitle={t('pf.sub')}
+        />
 
-      {dangerAccounts.length > 0 && (
-        <div className="mb-5 flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/[0.08] p-4">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
-          <div className="text-sm">
-            <p className="font-medium text-red-300">{dangerAccounts.length} account{dangerAccounts.length > 1 ? 's' : ''} near the daily-loss or drawdown limit.</p>
-            <p className="mt-0.5 text-[#c9c4b4]">Reduce risk now or halt trading on {dangerAccounts.map((a) => a.firm).join(', ')}.</p>
+        {dangerAccounts.length > 0 && (
+          <div className="flex items-start gap-3 rounded-2xl border border-red-500/30 bg-red-500/[0.08] p-4">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
+            <div className="min-w-0 text-sm">
+              <p className="font-medium text-red-300">{dangerAccounts.length} account{dangerAccounts.length > 1 ? 's' : ''} near the daily-loss or drawdown limit.</p>
+              <p className="mt-0.5 text-[#c9c4b4]">Reduce risk now or halt trading on {dangerAccounts.map((a) => a.firm).join(', ')}.</p>
+            </div>
           </div>
+        )}
+
+        <StatGrid cols={4}>
+          <Stat label={t('pf.funded')} value={accounts.length} />
+          <Stat label={t('pf.capital')} value={money(accounts.reduce((s, a) => s + Number(a.accountSize || 0), 0))} />
+          <Stat label={t('pf.atRisk')} value={dangerAccounts.length} tone={dangerAccounts.length ? 'text-red-400' : 'text-emerald-400'} />
+          <Stat label={t('pf.compliance')} value={accounts.length ? `${Math.round(((accounts.length - dangerAccounts.length) / accounts.length) * 100)}%` : '—'} tone="text-emerald-400" />
+        </StatGrid>
+
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><ShieldCheck className="h-4 w-4 text-[#d4af37]" /> {t('pf.accounts')}</div>
+          {!adding && !editing && <GoldButton onClick={() => setAdding(true)} className="!min-h-[42px]"><Cable className="h-4 w-4" /> {t('pf.connect')}</GoldButton>}
         </div>
-      )}
 
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">{t('pf.funded')}</div><div className="mt-1 font-mono text-2xl font-semibold text-[#f0ecdd]">{accounts.length}</div></div>
-        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">{t('pf.capital')}</div><div className="mt-1 font-mono text-2xl font-semibold gold-text">{money(accounts.reduce((s, a) => s + Number(a.accountSize || 0), 0))}</div></div>
-        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">{t('pf.atRisk')}</div><div className={`mt-1 font-mono text-2xl font-semibold ${dangerAccounts.length ? 'text-red-400' : 'text-emerald-400'}`}>{dangerAccounts.length}</div></div>
-        <div className="glass rounded-2xl p-4"><div className="text-[10px] font-semibold uppercase tracking-wider text-[#8a8577]">{t('pf.compliance')}</div><div className="mt-1 font-mono text-2xl font-semibold text-emerald-400">{accounts.length ? `${Math.round(((accounts.length - dangerAccounts.length) / accounts.length) * 100)}%` : '—'}</div></div>
-      </div>
+        {(adding || editing) && (
+          <div>
+            <AccountForm initial={editing} onSave={save} manualAllowed={manualAllowed} onCancel={() => { setAdding(false); setEditing(null); }} />
+          </div>
+        )}
 
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><ShieldCheck className="h-4 w-4 text-[#d4af37]" /> {t('pf.accounts')}</div>
-        {!adding && !editing && <button onClick={() => setAdding(true)} className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90"><Cable className="h-4 w-4" /> {t('pf.connect')}</button>}
-      </div>
-
-      {(adding || editing) && (
-        <div className="mb-6">
-          <AccountForm initial={editing} onSave={save} manualAllowed={manualAllowed} onCancel={() => { setAdding(false); setEditing(null); }} />
-        </div>
-      )}
-
-      {loading ? (
-        <div className="grid place-items-center py-16 text-sm text-[#8a8577]">{t('pf.loadingAcc')}</div>
-      ) : accounts.length === 0 ? (
-        <div className="rounded-2xl glass p-10 text-center">
-          <ShieldCheck className="mx-auto h-10 w-10 text-[#d4af37]/60" />
-          <h3 className="mt-3 text-base font-semibold text-[#f0ecdd]">{t('pf.noAccounts')}</h3>
-          <p className="mx-auto mt-1 max-w-md text-sm text-[#8a8577]">{t('pf.noAccountsSub')}</p>
-          <button onClick={() => setAdding(true)} className="mx-auto mt-5 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90"><Cable className="h-4 w-4" /> {t('pf.connectFirst')}</button>
-        </div>
-      ) : (
-        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-          {accounts.map((a) => {
-            const st = computeStatus(a);
-            return (
-              <div key={a.id} className="glass glass-hover rounded-2xl p-5">
-                <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-base font-semibold text-[#f0ecdd]">{a.firm}</h3>
-                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-wide ${st.cls}`}>{st.label}</span>
+        {loading ? (
+          <div className="tb-card grid place-items-center py-16 text-sm text-[#8a8577]">{t('pf.loadingAcc')}</div>
+        ) : accounts.length === 0 ? (
+          <EmptyState
+            icon={ShieldCheck}
+            title={t('pf.noAccounts')}
+            sub={t('pf.noAccountsSub')}
+            action={<GoldButton onClick={() => setAdding(true)}><Cable className="h-4 w-4" /> {t('pf.connectFirst')}</GoldButton>}
+          />
+        ) : (
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            {accounts.map((a) => {
+              const st = computeStatus(a);
+              return (
+                <Card hover key={a.id} className="p-5">
+                  <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="truncate text-base font-semibold text-[#f0ecdd]">{a.firm}</h3>
+                        <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-wide ${st.cls}`}>{st.label}</span>
+                      </div>
+                      <div className="mt-1 truncate text-2xl font-bold gold-text">{money(a.accountSize)}</div>
+                      <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-[#8a8577]">
+                        <span>{t('pf.balance')} <span className="font-mono text-[#e9e7df]">{money(a.balance)}</span></span>
+                        <span>{t('pf.equity')} <span className="font-mono text-[#e9e7df]">{money(a.equity)}</span></span>
+                        {a.syncStatus === 'syncing'
+                          ? <span className="text-[#d4af37]">{t('pf.syncing')}</span>
+                          : <span className="text-emerald-400">{t('pf.synced')}{a.lastSync ? ` · ${new Date(a.lastSync).toLocaleDateString()}` : ''}</span>}
+                      </div>
                     </div>
-                    <div className="mt-1 text-2xl font-bold gold-text">{money(a.accountSize)}</div>
-                    <div className="mt-1 flex items-center gap-3 text-xs text-[#8a8577]">
-                      <span>{t('pf.balance')} <span className="font-mono text-[#e9e7df]">{money(a.balance)}</span></span>
-                      <span>{t('pf.equity')} <span className="font-mono text-[#e9e7df]">{money(a.equity)}</span></span>
-                      {a.syncStatus === 'syncing'
-                        ? <span className="text-[#d4af37]">{t('pf.syncing')}</span>
-                        : <span className="text-emerald-400">{t('pf.synced')}{a.lastSync ? ` · ${new Date(a.lastSync).toLocaleDateString()}` : ''}</span>}
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <button onClick={() => resync(a.id)} disabled={busyId === a.id} className="rounded-full p-2 text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" title={t('pf.resync')}>{busyId === a.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}</button>
+                      <button onClick={() => { setEditing(a); setAdding(false); }} className="rounded-full p-2 text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" title={t('pf.editConn')}><Pencil className="h-4 w-4" /></button>
+                      <button onClick={() => remove(a.id)} disabled={busyId === a.id} className="rounded-full p-2 text-[#8a8577] transition hover:bg-red-500/10 hover:text-red-400" title={t('c.remove')}>{busyId === a.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}</button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <button onClick={() => resync(a.id)} disabled={busyId === a.id} className="rounded-full p-2 text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" title={t('pf.resync')}>{busyId === a.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}</button>
-                    <button onClick={() => { setEditing(a); setAdding(false); }} className="rounded-full p-2 text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" title={t('pf.editConn')}><Pencil className="h-4 w-4" /></button>
-                    <button onClick={() => remove(a.id)} disabled={busyId === a.id} className="rounded-full p-2 text-[#8a8577] transition hover:bg-red-500/10 hover:text-red-400" title={t('c.remove')}>{busyId === a.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}</button>
+                  <div className="space-y-3">
+                    <Meter label="Daily loss" value={a.currentDailyLoss} limit={a.dailyLossLimit} />
+                    <Meter label="Max drawdown" value={a.currentDrawdown} limit={a.maxDrawdown} />
+                    <Meter label="Profit target" value={a.currentProfit} limit={a.profitTarget} />
                   </div>
-                </div>
-                <div className="space-y-3">
-                  <Meter label="Daily loss" value={a.currentDailyLoss} limit={a.dailyLossLimit} />
-                  <Meter label="Max drawdown" value={a.currentDrawdown} limit={a.maxDrawdown} />
-                  <Meter label="Profit target" value={a.currentProfit} limit={a.profitTarget} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </AppLayout>
   );
 }

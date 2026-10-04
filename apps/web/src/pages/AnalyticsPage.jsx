@@ -1,14 +1,15 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, RadialBarChart, RadialBar,
   ResponsiveContainer, XAxis, YAxis, Tooltip, Cell, CartesianGrid, Legend,
 } from 'recharts';
-import { TrendingDown, Percent, CalendarDays, Activity, Plug, CandlestickChart, Grid2x2, Gauge, ArrowRight } from 'lucide-react';
+import { Plug, CandlestickChart, Grid2x2, Gauge, ArrowRight, BarChart3 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useI18n } from '@/lib/i18n';
 import { fmtMoney } from '@/lib/mockData';
 import { useTrades, computeStats } from '@/hooks/useTrades';
+import { PageHero, Card, SectionHead, Stat, StatGrid, EmptyState, GoldButton } from '@/components/ui-kit';
 
 const GOLD = '#d4af37';
 const GREEN = '#34d399';
@@ -22,18 +23,6 @@ const TT = ({ active, payload, label, prefix = '', suffix = '' }) => active && p
     ))}
   </div>
 ) : null;
-
-function Card({ title, sub, children, className = '' }) {
-  return (
-    <div className={`glass rounded-2xl p-4 sm:p-6 ${className}`}>
-      <div className="mb-4">
-        <h3 className="font-semibold text-[#f0ecdd]">{title}</h3>
-        {sub && <p className="mt-0.5 text-xs text-[#8a8577]">{sub}</p>}
-      </div>
-      {children}
-    </div>
-  );
-}
 
 export default function AnalyticsPage() {
   const { t } = useI18n();
@@ -74,15 +63,17 @@ export default function AnalyticsPage() {
     return { drawdown, monthlyReturns, buckets, dow, donut, wins, losses };
   }, [stats, trades, t]);
 
-  if (loading) return <AppLayout title={t('ana.pageTitle')}><div className="glass rounded-2xl py-20 text-center text-sm text-[#8a8577]">{t('ana.loading')}</div></AppLayout>;
+  if (loading) return <AppLayout title={t('ana.pageTitle')}><div className="tb-page"><div className="tb-card py-20 text-center text-sm text-[#8a8577]">{t('ana.loading')}</div></div></AppLayout>;
 
   if (!stats) return (
     <AppLayout title={t('ana.pageTitle')}>
-      <div className="glass flex flex-col items-center rounded-2xl px-6 py-16 text-center">
-        <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]"><Plug className="h-6 w-6" /></div>
-        <h3 className="text-lg font-semibold text-[#f0ecdd]">{t('ana.noDataTitle')}</h3>
-        <p className="mt-2 max-w-md text-sm text-[#8a8577]">{t('ana.noDataSub')}</p>
-        <Link to="/app/brokers" className="mt-5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f]">{t('ana.connectBroker')}</Link>
+      <div className="tb-page">
+        <EmptyState
+          icon={Plug}
+          title={t('ana.noDataTitle')}
+          sub={t('ana.noDataSub')}
+          action={<GoldButton to="/app/brokers">{t('ana.connectBroker')}</GoldButton>}
+        />
       </div>
     </AppLayout>
   );
@@ -91,122 +82,124 @@ export default function AnalyticsPage() {
 
   return (
     <AppLayout title={t('ana.pageTitle')}>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          { icon: Percent, label: t('ana.winRate'), value: `${stats.winRate}%` },
-          { icon: Activity, label: t('ana.profitFactor'), value: stats.profitFactor.toFixed(2) },
-          { icon: TrendingDown, label: t('ana.maxDd'), value: `${stats.drawdown}%` },
-          { icon: CalendarDays, label: t('ana.totalTrades'), value: stats.totalTrades },
-        ].map((s) => (
-          <div key={s.label} className="glass rounded-2xl p-4">
-            <div className="flex items-center justify-between text-[#8a8577]"><span className="text-[11px] uppercase tracking-wider">{s.label}</span><s.icon className="h-4 w-4 text-[#d4af37]" /></div>
-            <div className="mt-2 font-mono text-2xl font-semibold text-[#f0ecdd]">{s.value}</div>
-          </div>
-        ))}
-      </div>
+      <div className="tb-page">
+        <PageHero kickerIcon={BarChart3} kicker={t('ana.pageTitle')} title={t('ana.pageTitle')} subtitle={t('ana.equitySub')} />
 
-      <div className="mt-5 grid gap-5 lg:grid-cols-3">
-        <Card title={t('ana.equity')} sub={t('ana.equitySub')} className="lg:col-span-2">
-          <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={stats.equity} margin={{ left: -12, right: 8 }}>
-              <defs><linearGradient id="eqg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={GOLD} stopOpacity={0.4} /><stop offset="100%" stopColor={GOLD} stopOpacity={0} /></linearGradient></defs>
-              <CartesianGrid stroke="#1c1c22" vertical={false} />
-              <XAxis dataKey="day" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-              <Tooltip content={<TT prefix="$" />} />
-              <Area type="monotone" dataKey="equity" stroke={GOLD} strokeWidth={2} fill="url(#eqg)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </Card>
+        <StatGrid cols={4}>
+          <Stat label={t('ana.winRate')} value={`${stats.winRate}%`} />
+          <Stat label={t('ana.profitFactor')} value={stats.profitFactor.toFixed(2)} />
+          <Stat label={t('ana.maxDd')} value={`${stats.drawdown}%`} />
+          <Stat label={t('ana.totalTrades')} value={stats.totalTrades} />
+        </StatGrid>
 
-        <Card title={t('ana.wlSplit')} sub={t('ana.wlSub', { w: derived.wins, l: derived.losses })}>
-          <ResponsiveContainer width="100%" height={260}>
-            <RadialBarChart innerRadius="55%" outerRadius="100%" data={derived.donut} startAngle={90} endAngle={-270}>
-              <RadialBar background={{ fill: '#1c1c22' }} dataKey="value" cornerRadius={8} />
-              <Legend iconType="circle" wrapperStyle={{ fontSize: 12, color: '#8a8577' }} />
-              <Tooltip content={<TT />} />
-            </RadialBarChart>
-          </ResponsiveContainer>
-        </Card>
-      </div>
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <Card className="p-4 sm:p-6 lg:col-span-2">
+            <SectionHead title={t('ana.equity')} sub={t('ana.equitySub')} />
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={stats.equity} margin={{ left: -12, right: 8 }}>
+                <defs><linearGradient id="eqg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={GOLD} stopOpacity={0.4} /><stop offset="100%" stopColor={GOLD} stopOpacity={0} /></linearGradient></defs>
+                <CartesianGrid stroke="#1c1c22" vertical={false} />
+                <XAxis dataKey="day" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                <Tooltip content={<TT prefix="$" />} />
+                <Area type="monotone" dataKey="equity" stroke={GOLD} strokeWidth={2} fill="url(#eqg)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </Card>
 
-      <div className="mt-5 grid gap-5 lg:grid-cols-2">
-        <Card title={t('ana.dd')} sub={t('ana.ddSub')}>
-          <ResponsiveContainer width="100%" height={240}>
-            <AreaChart data={derived.drawdown} margin={{ left: -12, right: 8 }}>
-              <defs><linearGradient id="ddg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={RED} stopOpacity={0} /><stop offset="100%" stopColor={RED} stopOpacity={0.45} /></linearGradient></defs>
-              <CartesianGrid stroke="#1c1c22" vertical={false} />
-              <XAxis dataKey="day" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
-              <Tooltip content={<TT suffix="%" />} />
-              <Area type="monotone" dataKey="dd" stroke={RED} strokeWidth={2} fill="url(#ddg)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </Card>
+          <Card className="p-4 sm:p-6">
+            <SectionHead title={t('ana.wlSplit')} sub={t('ana.wlSub', { w: derived.wins, l: derived.losses })} />
+            <ResponsiveContainer width="100%" height={260}>
+              <RadialBarChart innerRadius="55%" outerRadius="100%" data={derived.donut} startAngle={90} endAngle={-270}>
+                <RadialBar background={{ fill: '#1c1c22' }} dataKey="value" cornerRadius={8} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 12, color: '#8a8577' }} />
+                <Tooltip content={<TT />} />
+              </RadialBarChart>
+            </ResponsiveContainer>
+          </Card>
+        </div>
 
-        <Card title={t('ana.monthlyRet')} sub={t('ana.monthlyRetSub')}>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={derived.monthlyReturns} margin={{ left: -18, right: 8 }}>
-              <CartesianGrid stroke="#1c1c22" vertical={false} />
-              <XAxis dataKey="m" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
-              <Tooltip content={<TT suffix="%" />} cursor={{ fill: 'rgba(212,175,55,0.06)' }} />
-              <Bar dataKey="ret" radius={[4, 4, 0, 0]}>{derived.monthlyReturns.map((e, i) => <Cell key={i} fill={e.ret >= 0 ? GREEN : RED} />)}</Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <Card className="p-4 sm:p-6">
+            <SectionHead title={t('ana.dd')} sub={t('ana.ddSub')} />
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart data={derived.drawdown} margin={{ left: -12, right: 8 }}>
+                <defs><linearGradient id="ddg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={RED} stopOpacity={0} /><stop offset="100%" stopColor={RED} stopOpacity={0.45} /></linearGradient></defs>
+                <CartesianGrid stroke="#1c1c22" vertical={false} />
+                <XAxis dataKey="day" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
+                <Tooltip content={<TT suffix="%" />} />
+                <Area type="monotone" dataKey="dd" stroke={RED} strokeWidth={2} fill="url(#ddg)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </Card>
 
-        <Card title={t('ana.wlTrend')} sub={t('ana.wlTrendSub')}>
-          <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={derived.buckets} margin={{ left: -18, right: 8 }}>
-              <CartesianGrid stroke="#1c1c22" vertical={false} />
-              <XAxis dataKey="b" tick={{ fill: '#6a665a', fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis domain={[0, 100]} tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
-              <Tooltip content={<TT suffix="%" />} />
-              <Line type="monotone" dataKey="winRate" stroke={GOLD} strokeWidth={2.5} dot={{ r: 3, fill: GOLD }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </Card>
+          <Card className="p-4 sm:p-6">
+            <SectionHead title={t('ana.monthlyRet')} sub={t('ana.monthlyRetSub')} />
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={derived.monthlyReturns} margin={{ left: -18, right: 8 }}>
+                <CartesianGrid stroke="#1c1c22" vertical={false} />
+                <XAxis dataKey="m" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
+                <Tooltip content={<TT suffix="%" />} cursor={{ fill: 'rgba(212,175,55,0.06)' }} />
+                <Bar dataKey="ret" radius={[4, 4, 0, 0]}>{derived.monthlyReturns.map((e, i) => <Cell key={i} fill={e.ret >= 0 ? GREEN : RED} />)}</Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
 
-        <Card title={t('ana.perfHm')} sub={t('ana.perfHmSub')}>
-          <div className="grid grid-cols-7 gap-1 pt-2 sm:gap-2">
-            {derived.dow.map((d) => {
-              const intensity = Math.abs(d.pnl) / maxAbsPnl;
-              const bg = d.trades === 0 ? 'rgba(255,255,255,0.04)' : d.pnl >= 0
-                ? `rgba(52,211,153,${0.15 + intensity * 0.6})`
-                : `rgba(224,102,102,${0.15 + intensity * 0.6})`;
-              return (
-                <div key={d.d} className="rounded-lg p-1 text-center sm:p-2" style={{ background: bg }}>
-                  <div className="text-[10px] uppercase tracking-wide text-[#c9c4b4]">{d.d}</div>
-                  <div className="mt-1 font-mono text-[11px] font-semibold text-[#f0ecdd]">{d.trades ? fmtMoney(d.pnl) : '—'}</div>
-                  <div className="text-[9px] text-[#8a8577]">{t('ana.tradesN', { n: d.trades })}</div>
-                </div>
-              );
-            })}
-          </div>
-        </Card>
-      </div>
+          <Card className="p-4 sm:p-6">
+            <SectionHead title={t('ana.wlTrend')} sub={t('ana.wlTrendSub')} />
+            <ResponsiveContainer width="100%" height={240}>
+              <LineChart data={derived.buckets} margin={{ left: -18, right: 8 }}>
+                <CartesianGrid stroke="#1c1c22" vertical={false} />
+                <XAxis dataKey="b" tick={{ fill: '#6a665a', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 100]} tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
+                <Tooltip content={<TT suffix="%" />} />
+                <Line type="monotone" dataKey="winRate" stroke={GOLD} strokeWidth={2.5} dot={{ r: 3, fill: GOLD }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </Card>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-3">
-        <Link to="/app/charts" className="glass glass-hover rounded-2xl p-5">
-          <div className="flex items-center gap-2"><CandlestickChart className="h-5 w-5 text-[#d4af37]" /><h2 className="font-semibold text-[#f0ecdd]">{t('ana.advCharts')}</h2></div>
-          <p className="mt-2 text-sm text-[#8a8577]">{t('ana.openCharts')}</p>
-          <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-[#d4af37]">{t('ana.openCharts')} <ArrowRight className="h-3.5 w-3.5" /></span>
-        </Link>
-        <Link to="/app/indicators" className="glass glass-hover rounded-2xl p-5">
-          <div className="flex items-center gap-2"><Gauge className="h-5 w-5 text-[#d4af37]" /><h2 className="font-semibold text-[#f0ecdd]">{t('ana.techInd')}</h2></div>
-          <p className="mt-2 text-sm text-[#8a8577]">{t('ana.fullStudio')}</p>
-          <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-[#d4af37]">{t('ana.fullStudio')} <ArrowRight className="h-3.5 w-3.5" /></span>
-        </Link>
-        <Link to="/app/heatmaps" className="glass glass-hover rounded-2xl p-5">
-          <div className="flex items-center gap-2"><Grid2x2 className="h-5 w-5 text-[#d4af37]" /><h2 className="font-semibold text-[#f0ecdd]">{t('ana.mktHm')}</h2></div>
-          <p className="mt-2 text-sm text-[#8a8577]">{t('ana.exploreHm')}</p>
-          <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-[#d4af37]">{t('ana.exploreHm')} <ArrowRight className="h-3.5 w-3.5" /></span>
-        </Link>
-      </div>
+          <Card className="p-4 sm:p-6">
+            <SectionHead title={t('ana.perfHm')} sub={t('ana.perfHmSub')} />
+            <div className="grid grid-cols-7 gap-1 pt-2 sm:gap-2">
+              {derived.dow.map((d) => {
+                const intensity = Math.abs(d.pnl) / maxAbsPnl;
+                const bg = d.trades === 0 ? 'rgba(255,255,255,0.04)' : d.pnl >= 0
+                  ? `rgba(52,211,153,${0.15 + intensity * 0.6})`
+                  : `rgba(224,102,102,${0.15 + intensity * 0.6})`;
+                return (
+                  <div key={d.d} className="min-w-0 rounded-lg p-1 text-center sm:p-2" style={{ background: bg }}>
+                    <div className="truncate text-[10px] uppercase tracking-wide text-[#c9c4b4]">{d.d}</div>
+                    <div className="mt-1 truncate font-mono text-[11px] font-semibold text-[#f0ecdd]">{d.trades ? fmtMoney(d.pnl) : '—'}</div>
+                    <div className="truncate text-[9px] text-[#8a8577]">{t('ana.tradesN', { n: d.trades })}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        </div>
 
-      <div className="mt-5">
-        <Card title={t('ana.monthBreak')} sub={t('ana.monthBreakSub')}>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <Link to="/app/charts" className="tb-card tb-card-hover p-5">
+            <div className="flex items-center gap-2"><CandlestickChart className="h-5 w-5 text-[#d4af37]" /><h2 className="font-semibold text-[#f0ecdd]">{t('ana.advCharts')}</h2></div>
+            <p className="mt-2 text-sm text-[#8a8577]">{t('ana.openCharts')}</p>
+            <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-[#d4af37]">{t('ana.openCharts')} <ArrowRight className="h-3.5 w-3.5" /></span>
+          </Link>
+          <Link to="/app/indicators" className="tb-card tb-card-hover p-5">
+            <div className="flex items-center gap-2"><Gauge className="h-5 w-5 text-[#d4af37]" /><h2 className="font-semibold text-[#f0ecdd]">{t('ana.techInd')}</h2></div>
+            <p className="mt-2 text-sm text-[#8a8577]">{t('ana.fullStudio')}</p>
+            <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-[#d4af37]">{t('ana.fullStudio')} <ArrowRight className="h-3.5 w-3.5" /></span>
+          </Link>
+          <Link to="/app/heatmaps" className="tb-card tb-card-hover p-5">
+            <div className="flex items-center gap-2"><Grid2x2 className="h-5 w-5 text-[#d4af37]" /><h2 className="font-semibold text-[#f0ecdd]">{t('ana.mktHm')}</h2></div>
+            <p className="mt-2 text-sm text-[#8a8577]">{t('ana.exploreHm')}</p>
+            <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-[#d4af37]">{t('ana.exploreHm')} <ArrowRight className="h-3.5 w-3.5" /></span>
+          </Link>
+        </div>
+
+        <Card className="p-4 sm:p-6">
+          <SectionHead title={t('ana.monthBreak')} sub={t('ana.monthBreakSub')} />
           <div className="overflow-x-auto">
             <table className="w-full min-w-[420px] text-sm">
               <thead><tr className="text-left text-xs uppercase tracking-wider text-[#8a8577]">

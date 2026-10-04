@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Save, RotateCcw, Building2, Eye } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import { Card, GhostButton, GoldButton, Note, SectionHead } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
 import pb from '@/lib/pocketbaseClient';
 import { useAuth } from '@/hooks/useAuth';
@@ -61,14 +62,17 @@ export default function BrandingPage() {
 
   return (
     <AppLayout title={t('brd.pageTitle')}>
-      <div className="mb-5 flex items-start gap-3 rounded-2xl border border-[#d4af37]/15 bg-[#d4af37]/[0.06] p-4">
-        <img src={MALIBA_LOGO} alt="TradingBible LLC" className="h-11 w-11 shrink-0 rounded-lg object-contain" />
-        <p className="text-sm text-[#c9c4b4]">{t('brd.intro', { brand: 'TradingBible LLC' })}</p>
-      </div>
+      <div className="tb-page">
+      <Note icon={Building2}>
+        <div className="flex items-start gap-3">
+          <img src={MALIBA_LOGO} alt="TradingBible LLC" className="h-11 w-11 shrink-0 rounded-lg object-contain" />
+          <p className="text-sm leading-relaxed text-[#c9c4b4]">{t('brd.intro', { brand: 'TradingBible LLC' })}</p>
+        </div>
+      </Note>
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        <form onSubmit={save} className="glass rounded-2xl p-6">
-          <h3 className="mb-5 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Building2 className="h-4 w-4 text-[#d4af37]" /> {t('brd.settings')}</h3>
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2">
+        <form onSubmit={save} className="tb-card">
+          <SectionHead icon={Building2} title={t('brd.settings')} />
           <div className="space-y-4">
             <div><label className="mb-1.5 block text-xs text-[#8a8577]">{t('brd.company')}</label><input className={input} value={form.companyName} onChange={set('companyName')} placeholder={t('brd.companyPh')} /></div>
             <div><label className="mb-1.5 block text-xs text-[#8a8577]">{t('brd.tagline')}</label><input className={input} value={form.tagline} onChange={set('tagline')} placeholder={t('brd.sloganPh')} /></div>
@@ -82,14 +86,14 @@ export default function BrandingPage() {
               </div>
             </div>
           </div>
-          <div className="mt-5 flex gap-2">
-            <button disabled={busy} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] disabled:opacity-60"><Save className="h-4 w-4" /> {t('brd.save')}</button>
-            <button type="button" onClick={reset} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2.5 text-sm text-[#e9e7df]"><RotateCcw className="h-4 w-4" /> {t('brd.reset')}</button>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <GoldButton disabled={busy}><Save className="h-4 w-4" /> {t('brd.save')}</GoldButton>
+            <GhostButton type="button" onClick={reset}><RotateCcw className="h-4 w-4" /> {t('brd.reset')}</GhostButton>
           </div>
         </form>
 
-        <div className="glass rounded-2xl p-6">
-          <h3 className="mb-4 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Eye className="h-4 w-4 text-[#d4af37]" /> {t('brd.preview')}</h3>
+        <Card>
+          <SectionHead icon={Eye} title={t('brd.preview')} />
           <div className="overflow-hidden rounded-2xl border border-white/10" style={{ background: form.primaryColor }}>
             <div className="flex items-center gap-3 border-b border-white/10 px-5 py-4">
               {form.logoUrl && <img src={form.logoUrl} alt="logo" className="h-9 w-9 rounded-lg object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
@@ -102,7 +106,7 @@ export default function BrandingPage() {
                 <button className="rounded-xl px-5 py-2.5 text-sm font-semibold" style={{ background: form.accentColor, color: form.primaryColor }}>{t('brd.getStarted')}</button>
                 <button className="rounded-xl border px-5 py-2.5 text-sm font-semibold text-white" style={{ borderColor: form.accentColor }}>{t('brd.learnMore')}</button>
               </div>
-              <div className="mt-6 grid grid-cols-1 gap-3 min-[420px]:grid-cols-3">
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 {[t('brd.statWin'), t('brd.statPf'), t('brd.statBal')].map((l) => (
                   <div key={l} className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.05)' }}>
                     <div className="text-[10px] uppercase text-white/40">{l}</div>
@@ -113,7 +117,8 @@ export default function BrandingPage() {
             </div>
           </div>
           <p className="mt-3 text-xs text-[#8a8577]">{t('brd.previewSub')}</p>
-        </div>
+        </Card>
+      </div>
       </div>
     </AppLayout>
   );

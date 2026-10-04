@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { Lock, ShieldCheck, Smartphone, KeyRound, Monitor, AlertTriangle, Plus, Trash2, Fingerprint, CheckCircle2, Power, XCircle } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import { Card, GhostButton, GoldButton, SectionHead } from '@/components/ui-kit';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
@@ -178,18 +179,18 @@ export default function SecurityPage() {
 
   return (
     <AppLayout title={t('nav.security')}>
-      <div className="grid gap-5 lg:grid-cols-3">
-        <div className="glass rounded-2xl p-6 lg:col-span-2">
+      <div className="tb-page">
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
           <div className="flex items-start gap-4">
             <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl ${totpEnabled ? 'bg-emerald-400/12 text-emerald-400' : 'bg-[#d4af37]/12 text-[#d4af37]'}`}><ShieldCheck className="h-6 w-6" /></div>
             <div className="flex-1">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-semibold text-[#f0ecdd]">{t('sec.totp')}</h3>
-                {!setupSecret && <button
+                {!setupSecret && <GoldButton
                   onClick={totpEnabled ? () => beginTotpSetup() : beginTotpSetup}
                   disabled={totpLoading || totpBusy}
-                  className="min-h-[44px] rounded-lg bg-[#d4af37] px-4 text-sm font-semibold text-black transition hover:bg-[#e3c24f] disabled:opacity-60"
-                >{totpLoading ? t('c.loading') : (totpEnabled ? t('sec.changeSecret') : t('sec.enable'))}</button>}
+                >{totpLoading ? t('c.loading') : (totpEnabled ? t('sec.changeSecret') : t('sec.enable'))}</GoldButton>}
               </div>
               <p className="mt-1 text-sm text-[#8a8577]">{t('sec.totpBody')}</p>
               <div className={`mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs ${totpEnabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-[#d4af37]/10 text-[#d4af37]'}`}>
@@ -222,7 +223,7 @@ export default function SecurityPage() {
             </form>
           )}
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
             {[
               { icon: Smartphone, tk: 'sec.f1t', dk: 'sec.f1b' },
               { icon: KeyRound, tk: 'sec.f2t', dk: 'sec.f2b' },
@@ -231,25 +232,26 @@ export default function SecurityPage() {
               <div key={f.tk} className="rounded-xl bg-white/[0.03] p-4"><f.icon className="h-5 w-5 text-[#d4af37]" /><div className="mt-2 text-sm font-medium text-[#e9e7df]">{t(f.tk)}</div><div className="mt-0.5 text-xs text-[#8a8577]">{t(f.dk)}</div></div>
             ))}
           </div>
-        </div>
+        </Card>
 
-        <div className="glass rounded-2xl p-6">
-          <h3 className="mb-4 flex items-center gap-2 font-semibold text-[#f0ecdf]"><AlertTriangle className="h-4 w-4 text-[#d4af37]" /> {t('sec.tips')}</h3>
+        <Card>
+          <SectionHead icon={AlertTriangle} title={t('sec.tips')} />
           <ul className="space-y-3 text-sm text-[#c9c4b4]">
             <li className="flex gap-2"><span className="text-[#d4af37]">•</span> {t('sec.tip1')}</li>
             <li className="flex gap-2"><span className="text-[#d4af37]">•</span> {t('sec.tip2')}</li>
             <li className="flex gap-2"><span className="text-[#d4af37]">•</span> {t('sec.tip3')}</li>
             <li className="flex gap-2"><span className="text-[#d4af37]">•</span> {t('sec.tip4')}</li>
           </ul>
-        </div>
+        </Card>
       </div>
 
-      <div className="mt-5 grid gap-5 lg:grid-cols-2">
-        <div className="glass rounded-2xl p-6">
-          <h3 className="mb-4 flex items-center justify-between gap-2 font-semibold text-[#f0ecdd]">
-            <span className="flex items-center gap-2"><Fingerprint className="h-4 w-4 text-[#d4af37]" /> {t('sec.faceId')}</span>
-            <button onClick={addPasskey} disabled={pkBusy || !passkeySupported || pkLoading} className="flex min-h-[44px] items-center gap-1.5 rounded-lg bg-[#d4af37] px-4 text-sm font-semibold text-black transition hover:bg-[#e3c24f] disabled:cursor-not-allowed disabled:opacity-60"><Plus className="h-4 w-4" /> {t('sec.add')}</button>
-          </h3>
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2">
+        <Card>
+          <SectionHead
+            icon={Fingerprint}
+            title={t('sec.faceId')}
+            right={<GoldButton onClick={addPasskey} disabled={pkBusy || !passkeySupported || pkLoading}><Plus className="h-4 w-4" /> {t('sec.add')}</GoldButton>}
+          />
           {!passkeySupported && <p className="rounded-xl bg-red-400/10 p-3 text-xs text-red-300">{t('sec.noPkSupport')}</p>}
           {pkLoading ? <p className="text-sm text-[#8a8577]">{t('c.loading')}</p> : passkeys.length === 0 ? (
             <p className="rounded-xl bg-white/[0.03] p-4 text-sm text-[#8a8577]">{t('sec.noPk')}</p>
@@ -266,10 +268,10 @@ export default function SecurityPage() {
               ))}
             </div>
           )}
-        </div>
+        </Card>
 
-        <div className="glass rounded-2xl p-6">
-          <h3 className="mb-4 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Monitor className="h-4 w-4 text-[#d4af37]" /> {t('sec.loginNotif')}</h3>
+        <Card>
+          <SectionHead icon={Monitor} title={t('sec.loginNotif')} />
           <p className="text-sm text-[#8a8577]">{t('sec.loginNotifBody')}</p>
           <div className="mt-4 space-y-2">
             {[{ mode: 'email', tk: 'sec.emailEvery', dk: 'sec.emailEveryDesc' }, { mode: 'off', tk: 'sec.offNotif', dk: 'sec.offDesc' }].map((opt) => (
@@ -279,25 +281,25 @@ export default function SecurityPage() {
               </label>
             ))}
           </div>
-        </div>
+        </Card>
       </div>
 
-      <div className="mt-5 glass rounded-2xl p-6">
-          <h3 className="mb-4 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Monitor className="h-4 w-4 text-[#d4af37]" /> {t('sec.sessions')}</h3>
+      <Card>
+          <SectionHead icon={Monitor} title={t('sec.sessions')} />
           <p className="text-sm text-[#8a8577]">{t('sec.sessionsBody')}</p>
           <div className="mt-4 rounded-xl bg-white/[0.03] p-4 text-sm text-[#8a8577]">
             {t('sec.sessionsNote')}
           </div>
-      </div>
+      </Card>
 
-      <div className="mt-5 rounded-2xl border border-red-400/25 bg-red-400/[0.05] p-6">
+      <div className="rounded-2xl border border-red-400/25 bg-red-400/[0.05] p-6">
         <h3 className="mb-1 flex items-center gap-2 font-semibold text-red-300"><AlertTriangle className="h-4 w-4" /> {t('sec.danger')}</h3>
         <p className="text-sm text-[#8a8577]">{t('sec.dangerBody')}</p>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-white/10 bg-black/20 p-4">
             <div className="flex items-center gap-2 font-medium text-[#e9e7df]"><Power className="h-4 w-4 text-[#d4af37]" /> {t('sec.deactivate')}</div>
             <p className="mt-1 text-xs text-[#8a8577]">{t('sec.deactivateBody')}</p>
-            <button onClick={deactivateAccount} disabled={accountBusy} className="mt-3 min-h-[44px] rounded-lg border border-[#d4af37]/40 px-4 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-50">{t('sec.deactivateBtn')}</button>
+            <GhostButton onClick={deactivateAccount} disabled={accountBusy} className="mt-3">{t('sec.deactivateBtn')}</GhostButton>
           </div>
           <div className="rounded-xl border border-white/10 bg-black/20 p-4">
             <div className="flex items-center gap-2 font-medium text-[#e9e7df]"><XCircle className="h-4 w-4 text-red-400" /> {t('sec.close')}</div>
@@ -313,6 +315,7 @@ export default function SecurityPage() {
           </div>
         </div>
       </div>
+      </div>
     </AppLayout>
   );
 }
@@ -325,7 +328,7 @@ function FieldRow({ label, value, onChange, busy, buttonLabel, disabled, t }) {
         <label className="mb-1 block text-xs text-[#8a8577]">{label}</label>
         <input value={value} onChange={(e) => onChange(normalizeCode(e.target.value))} inputMode="numeric" maxLength={6} placeholder={tt('sec.codePh')} className="min-h-[44px] w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/50" />
       </div>
-      <button disabled={busy || disabled} className="min-h-[44px] rounded-lg bg-[#d4af37] px-5 text-sm font-semibold text-black transition hover:bg-[#e3c24f] disabled:cursor-not-allowed disabled:opacity-60">{busy ? tt('auth.e.plsWait') : buttonLabel}</button>
+      <GoldButton disabled={busy || disabled}>{busy ? tt('auth.e.plsWait') : buttonLabel}</GoldButton>
     </div>
   );
 }

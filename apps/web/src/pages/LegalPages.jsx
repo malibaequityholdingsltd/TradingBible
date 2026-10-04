@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ChevronDown } from 'lucide-react';
 import Footer from '@/components/Footer';
+import { Card, PageHero } from '@/components/ui-kit';
 import { useAuth } from '@/hooks/useAuth';
 import { homeRouteForUser } from '@/lib/homeRoute';
 
@@ -21,9 +22,11 @@ function LegalShell({ title, subtitle, children }) {
       </header>
 
       <div className="mx-auto max-w-[72rem] px-6 py-16">
-        <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-[#d4af37]">Legal · Last updated {UPDATED}</p>
-        <h1 className="text-4xl font-bold sm:text-5xl">{title}</h1>
-        {subtitle && <p className="mt-4 max-w-2xl text-[#b3ae9e]">{subtitle}</p>}
+        <PageHero
+          kicker={`Legal · Last updated ${UPDATED}`}
+          title={title}
+          subtitle={subtitle}
+        />
         <div className="mt-10 space-y-8">{children}</div>
 
         <div className="mt-16 flex items-center gap-3 border-t border-[#d4af37]/10 pt-8">
@@ -47,7 +50,9 @@ function Section({ heading, children }) {
   return (
     <section>
       <h2 className="mb-3 text-xl font-semibold text-[#f0ecdd]">{heading}</h2>
-      <div className="space-y-3 text-sm leading-relaxed text-[#b3ae9e]">{children}</div>
+      <Card>
+        <div className="space-y-3 text-sm leading-relaxed text-[#b3ae9e]">{children}</div>
+      </Card>
     </section>
   );
 }
@@ -185,20 +190,20 @@ export function FaqPage() {
   const [open, setOpen] = React.useState(0);
   return (
     <LegalShell title="Frequently asked questions" subtitle="Everything you need to know about TradingBible, broker sync, billing, and the AI coach. Still stuck? Email support@tradingbible.app.">
-      <div className="divide-y divide-[#d4af37]/10 rounded-2xl border border-[#d4af37]/10">
+      <Card className="divide-y divide-[#d4af37]/10">
         {FAQS.map((f, i) => {
           const isOpen = open === i;
           return (
             <div key={f.q}>
-              <button onClick={() => setOpen(isOpen ? -1 : i)} className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left">
+              <button onClick={() => setOpen(isOpen ? -1 : i)} className="flex w-full items-center justify-between gap-4 px-1 py-4 text-left">
                 <span className="font-medium text-[#f0ecdd]">{f.q}</span>
                 <ChevronDown className={`h-4 w-4 shrink-0 text-[#d4af37] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
               </button>
-              {isOpen && <p className="px-5 pb-5 text-sm leading-relaxed text-[#b3ae9e]">{f.a}</p>}
+              {isOpen && <p className="px-1 pb-4 text-sm leading-relaxed text-[#b3ae9e]">{f.a}</p>}
             </div>
           );
         })}
-      </div>
+      </Card>
     </LegalShell>
   );
 }
