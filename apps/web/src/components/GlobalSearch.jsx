@@ -79,7 +79,7 @@ export default function GlobalSearch() {
       P(t('nav.account', null, 'Account'), Share2, t('nav.affiliate', null, 'Affiliate'), 'affiliate refer referral commission earnings payout', '/app/affiliate'),
       P(t('nav.account', null, 'Account'), Lock, t('nav.security', null, 'Security'), 'security 2fa totp password passkey sessions', '/app/security'),
       P(t('nav.account', null, 'Account'), Palette, t('nav.branding', null, 'White-label'), 'branding white label logo company tagline subdomain', '/app/branding'),
-      P(t('nav.company', null, 'Company'), Info, t('nav.school', null, 'School Dashboard'), 'school dashboard classrooms tests certificates students teacher', user?.accountType === 'teacher' ? '/teacher' : '/student'),
+      P(t('nav.company', null, 'Company'), Info, t('nav.school', null, 'School Dashboard'), 'school dashboard classrooms tests certificates students teacher', '/student'),
       P(t('fot.h_company', null, 'Company'), Tag, t('fot.l_pricing', null, 'Pricing'), 'pricing plans cost price subscribe trial pro elite professional', '/pricing'),
       P(t('fot.h_company', null, 'Company'), Info, t('fot.l_about_tradingbible', null, 'About'), 'about mission company maliba story', '/about'),
       P(t('fot.h_education', null, 'Education'), Newspaper, t('fot.l_trading_guides', null, 'Guides'), 'guides how to start tutorial help learn', '/guides'),
