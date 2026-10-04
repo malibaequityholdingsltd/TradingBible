@@ -6,7 +6,38 @@ import {
 import AppLayout from '@/components/AppLayout';
 import { useI18n } from '@/lib/i18n';
 import OrderflowChart from '@/components/OrderflowChart';
+import FlowTapePane from '@/components/FlowTapePane';
 import { ALL_SYMBOLS } from '@/lib/orderflowFeed';
+import { SYMBOL_GROUPS } from '@/lib/symbols';
+
+const MARKET_TABS = [
+	{ id: 'all', label: 'All' },
+	{ id: 'crypto', label: 'Crypto' },
+	{ id: 'forex', label: 'Forex' },
+	{ id: 'commodity', label: 'Commodities' },
+	{ id: 'sector', label: 'Sectors' },
+	{ id: 'stock', label: 'Stocks' },
+];
+
+function groupSymbols(label) {
+	return (SYMBOL_GROUPS.find((g) => g.label === label)?.symbols || []).map((s) => ({ symbol: s.symbol, name: s.name }));
+}
+
+const DEFAULT_TAPES = {
+	forex: ['EURUSD', 'GBPUSD', 'USDJPY'],
+	commodity: ['XAUUSD', 'XAGUSD', 'WTIUSD'],
+	sector: ['XLK', 'XLF', 'XLE'],
+	stock: ['AAPL', 'NVDA', 'TSLA'],
+};
+const ALL_TAPES = ['EURUSD', 'XAUUSD', 'AAPL'];
+
+function nameFor(symbol) {
+	for (const g of SYMBOL_GROUPS) {
+		const hit = g.symbols.find((s) => s.symbol === symbol);
+		if (hit) return hit.name;
+	}
+	return symbol;
+}
 
 const COL_SECS = [1, 2, 5];
 const ROW_OPTS = [41, 61, 81];
@@ -43,6 +74,8 @@ export default function OrderFlowPage() {
 	const { t } = useI18n();
 	const [panes, setPanes] = useState(['BTCUSD']);
 	const [focus, setFocus] = useState('BTCUSD');
+	const [market, setMarket] = useState('all');
+	const [tapePanes, setTapePanes] = useState(ALL_TAPES);
 	const [colSecs, setColSecs] = useState(2);
 	const [rows, setRows] = useState(61);
 	const [minTrade, setMinTrade] = useState(10000);
@@ -74,6 +107,29 @@ export default function OrderFlowPage() {
 			setCorr(matrix);
 		}, 2000);
 		return () => clearInterval(id);
+	}, []);
+
+	const switchMarket = useCallback((m) => {
+		setMarket(m);
+		if (m !== 'all' && m !== 'crypto') setTapePanes(DEFAULT_TAPES[m] || []);
+		if (m === 'all') setTapePanes(ALL_TAPES);
+		setPickerQ('');
+	}, []);
+
+	const addTape = useCallback((s) => {
+		setTapePanes((prev) => {
+			if (prev.includes(s) || prev.length >= MAX_PANES) return prev;
+			return [...prev, s];
+		});
+		setPickerQ('');
+	}, []);
+
+	const removeTape = useCallback((s) => {
+		setTapePanes((prev) => {
+			if (prev.length <= 1) return prev;
+			delete histories.current[s];
+			return prev.filter((x) => x !== s);
+		});
 	}, []);
 
 	const addPane = useCallback((s) => {
@@ -108,7 +164,7 @@ export default function OrderFlowPage() {
 				<div className="flex flex-wrap items-center gap-3">
 					<div className="flex items-center gap-2">
 						<Activity className="h-5 w-5 text-[#d4af37]" />
-						<span className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">Bookmap-style depth · {panes.length}/{MAX_PANES}</span>
+						<span className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">{market === 'crypto' || market === 'all' ? `Bookmap-style depth · ${panes.length}/${MAX_PANES}` : `Live tape · ${tapePanes.length}/${MAX_PANES}`}</span>
 					</div>
 					<span className="ml-auto flex items-center gap-1.5">
 						<button onClick={() => setPaused((p) => !p)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60" aria-label={paused ? 'Resume all' : 'Pause all'}>
@@ -117,7 +173,22 @@ export default function OrderFlowPage() {
 					</span>
 				</div>
 
-				{/* Add-pane picker — all pairs */}
+				{/* Market tabs — All / Crypto / Forex / Commodities / Sectors / Stocks */}
+				<div className="no-scrollbar mt-3 flex gap-1.5 overflow-x-auto pb-1 sm:flex-wrap">
+					{MARKET_TABS.map((m) => (
+						<button
+							key={m.id}
+							onClick={() => switchMarket(m.id)}
+							className={`shrink-0 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition ${market === m.id ? 'bg-[#d4af37] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}
+						>
+							{m.label}
+						</button>
+					))}
+				</div>
+
+				{(market === 'crypto' || market === 'all') && (
+				<>
+				{/* Add-pane picker — all crypto pairs */}
 				<div className="mt-3 flex flex-col gap-2 sm:flex-row">
 					<input
 						value={pickerQ}
@@ -139,8 +210,21 @@ export default function OrderFlowPage() {
 						{available.length === 0 && <span className="px-2 py-1.5 text-xs text-[#5f5b50]">{panes.length >= MAX_PANES ? `Max ${MAX_PANES} panes — remove one to add another.` : 'All pairs on screen.'}</span>}
 					</div>
 				</div>
+				</>
+				)}
 
-				{/* Shared settings */}
+				{market !== 'crypto' && (
+				<TapePicker
+					market={market}
+					tapePanes={tapePanes}
+					pickerQ={pickerQ}
+					setPickerQ={setPickerQ}
+					onAdd={addTape}
+				/>
+				)}
+
+				{/* Shared heatmap settings (crypto depth panes) */}
+				{(market === 'crypto' || market === 'all') && (
 				<div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#8a8577]">
 					<span className="flex items-center gap-1.5">
 						<Timer className="h-3.5 w-3.5" />
@@ -165,9 +249,11 @@ export default function OrderFlowPage() {
 						<input type="range" min={0.4} max={2.5} step={0.1} value={intensity} onChange={(e) => setIntensity(Number(e.target.value))} className="h-1 w-20 accent-[#d4af37]" />
 					</label>
 				</div>
+				)}
 			</div>
 
 			{/* ── Panes — all in one screen ────────────────────────── */}
+			{(market === 'crypto' || market === 'all') && (
 			<div className={`grid gap-4 ${panes.length > 1 ? '2xl:grid-cols-2' : ''}`}>
 				{panes.map((s) => (
 					<OrderflowChart
@@ -187,6 +273,28 @@ export default function OrderFlowPage() {
 					/>
 				))}
 			</div>
+			)}
+
+			{market !== 'crypto' && (
+			<>
+				<div className="mt-4 flex items-start gap-2 rounded-2xl border border-[#38bdf8]/20 bg-[#38bdf8]/[0.05] p-4 text-xs leading-relaxed text-[#8a8577] backdrop-blur-md">
+					<Activity className="mt-0.5 h-4 w-4 shrink-0 text-[#38bdf8]" />
+					<p>Live quote tape — every print is a real market quote classified by tick rule (uptick = buy pressure, downtick = sell pressure). No public order book exists for {market === 'all' ? 'these markets' : MARKET_TABS.find((m) => m.id === market)?.label}, so depth, heatmaps and volume-weighted stats are crypto-only. Quotes refresh from the live market feed (~15s); if prints stop, the pane says idle instead of inventing flow.</p>
+				</div>
+				<div className="mt-4 grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+					{tapePanes.map((s) => (
+						<FlowTapePane
+							key={s}
+							symbol={s}
+							name={nameFor(s)}
+							onRemove={() => removeTape(s)}
+							canRemove={tapePanes.length > 1}
+							onSample={onSample}
+						/>
+					))}
+				</div>
+			</>
+			)}
 
 			{/* ── Correlation tracker ─────────────────────────────── */}
 			<div className="glass mt-4 rounded-2xl p-4 sm:p-5">
@@ -212,5 +320,37 @@ export default function OrderFlowPage() {
 				<p>Live depth + executed prints stream from Binance public market data (no account needed) — up to {MAX_PANES} pairs on one screen. Blue = resting bid liquidity, orange = resting ask liquidity, dots = executed trades sized by notional, cyan = session VWAP. Click a pane to focus its ladder + tape. Crypto only — forex and stocks have no public order book. Not financial advice. Bookmap® is a trademark of its owner; this is an original TradingBible implementation.</p>
 			</div>
 		</AppLayout>
+	);
+}
+
+function TapePicker({ market, tapePanes, pickerQ, setPickerQ, onAdd }) {
+	const labels = market === 'all' ? ['Forex', 'Commodities', 'Sectors', 'Stocks']
+		: market === 'forex' ? ['Forex']
+		: market === 'commodity' ? ['Commodities']
+		: market === 'sector' ? ['Sectors']
+		: ['Stocks'];
+	const pool = labels.flatMap((l) => groupSymbols(l)).filter((s) => !tapePanes.includes(s.symbol) && `${s.symbol} ${s.name}`.toLowerCase().includes(pickerQ.trim().toLowerCase()));
+	return (
+		<div className="mt-3 flex flex-col gap-2 sm:flex-row">
+			<input
+				value={pickerQ}
+				onChange={(e) => setPickerQ(e.target.value)}
+				placeholder="Add a symbol — search EURUSD, Gold, AAPL…"
+				className="min-h-[42px] w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3.5 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none focus:border-[#d4af37]/50 sm:max-w-xs"
+			/>
+			<div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1">
+				{pool.slice(0, 30).map((s) => (
+					<button
+						key={s.symbol}
+						onClick={() => onAdd(s.symbol)}
+						disabled={tapePanes.length >= MAX_PANES}
+						className="flex shrink-0 items-center gap-1 rounded-lg border border-[#38bdf8]/25 px-3 py-1.5 font-mono text-xs font-semibold text-[#8a8577] transition hover:text-[#38bdf8] disabled:opacity-40"
+					>
+						<Plus className="h-3 w-3" />{s.symbol}
+					</button>
+				))}
+				{pool.length === 0 && <span className="px-2 py-1.5 text-xs text-[#5f5b50]">{tapePanes.length >= MAX_PANES ? `Max ${MAX_PANES} panes — remove one to add another.` : 'All symbols on screen.'}</span>}
+			</div>
+		</div>
 	);
 }
