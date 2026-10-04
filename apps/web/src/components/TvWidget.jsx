@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, Shuffle } from 'lucide-react';
+import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, Shuffle, ListVideo } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
@@ -42,8 +42,12 @@ function loadPos() {
   return { x: MARGIN, y: MARGIN };
 }
 
-// Draggable, edge-snapping TradingBible TV launcher — opens a mini
-// broadcast player with the rotating ad feed (same UX as the AI chat bubble).
+const iconBtn = 'grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]';
+const iconBtnActive = 'grid h-7 w-7 place-items-center rounded-lg bg-[#d4af37]/15 text-[#d4af37] transition-colors';
+
+// Draggable, edge-snapping TradingBible TV launcher + mini broadcast player.
+// Three stage views: rotating house ads, the live-TV channel guide, and the
+// in-widget live player. Everything plays inside the panel — no new tabs.
 export default function TvWidget() {
   const { t, lang } = useI18n();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
@@ -52,53 +56,18 @@ export default function TvWidget() {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const [open, setOpen] = useState(false);
-  const [showChannels, setShowChannels] = useState(false);
+  const [view, setView] = useState('ads'); // ads | channels | player
   const [channelIndex, setChannelIndex] = useState(0);
-  const [playingIndex, setPlayingIndex] = useState(null);
   const [frameLoaded, setFrameLoaded] = useState(false);
-  // Every channel plays directly inside the widget stage — no login, no
-  // popups, no new tabs. Page-URL channels load Bloomberg's own player in
-  // the frame; the YouTube channel plays instantly with no account.
-  // Watch a channel inside the widget stage (no new tab).
-  const watchInWidget = useCallback((i) => {
-    setChannelIndex(i);
-    setPlayingIndex(i);
-    setFrameLoaded(false);
-  }, []);
-
-  const exitPlayer = useCallback(() => {
-    setPlayingIndex(null);
-    setShowChannels(true);
-  }, []);
-
-  // Entry point for tapping a channel: everything plays in-widget.
-  const startChannel = useCallback((i) => {
-    watchInWidget(i);
-  }, [watchInWidget]);
-
-  // Zap to prev/next live channel and play it in the widget.
-  const zapChannel = useCallback((dir) => {
-    const next = (channelIndex + dir + LIVE_CHANNELS.length) % LIVE_CHANNELS.length;
-    startChannel(next);
-  }, [channelIndex, startChannel]);
-
-  const openChannel = useCallback((i) => {
-    startChannel(i);
-  }, [startChannel]);
-
-  // Play a random channel (never repeats the current one).
-  const shuffleChannel = useCallback(() => {
-    if (LIVE_CHANNELS.length < 2) { startChannel(0); return; }
-    let next = Math.floor(Math.random() * (LIVE_CHANNELS.length - 1));
-    if (next >= channelIndex) next += 1;
-    startChannel(next);
-  }, [channelIndex, startChannel]);
   const [pos, setPos] = useState(() => (typeof window !== 'undefined' ? loadPos() : { x: 0, y: 0 }));
   const [dragging, setDragging] = useState(false);
   const timerRef = useRef(null);
   const dragState = useRef({ active: false, moved: false, offX: 0, offY: 0 });
   const videoRef = useRef(null);
 
+  const playing = view === 'player' ? channelIndex : null;
+
+  // ── Data ───────────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -115,7 +84,7 @@ export default function TvWidget() {
   }, []);
 
   useEffect(() => {
-    const handler = () => setOpen(true);
+    const handler = () => { setOpen(true); setView('ads'); };
     window.addEventListener('tb:open-tv', handler);
     return () => window.removeEventListener('tb:open-tv', handler);
   }, []);
@@ -130,14 +99,15 @@ export default function TvWidget() {
     };
   }, []);
 
+  // Ads rotation pauses while watching live TV.
   useEffect(() => {
-    if (paused || ads.length === 0) return;
+    if (paused || ads.length === 0 || view !== 'ads') return;
     const seconds = Math.max(4, Math.min(60, Number(settings.rotationSeconds) || 12));
     timerRef.current = setInterval(() => {
       setIndex((i) => (i + 1) % ads.length);
     }, seconds * 1000);
     return () => clearInterval(timerRef.current);
-  }, [paused, ads.length, settings.rotationSeconds]);
+  }, [paused, ads.length, settings.rotationSeconds, view]);
 
   const ad = ads.length > 0 ? ads[index % ads.length] : null;
   const lad = ad ? localizeAd(ad, lang) : null;
@@ -155,12 +125,43 @@ export default function TvWidget() {
     el.muted = muted;
   }, [paused, muted, ad]);
 
+  // ── Live TV controls ───────────────────────────────────────────
+  const watchChannel = useCallback((i) => {
+    setChannelIndex(i);
+    setView('player');
+    setFrameLoaded(false);
+  }, []);
+
+  const zapChannel = useCallback((dir) => {
+    setChannelIndex((cur) => {
+      const next = (cur + dir + LIVE_CHANNELS.length) % LIVE_CHANNELS.length;
+      setFrameLoaded(false);
+      return next;
+    });
+    setView('player');
+  }, []);
+
+  const shuffleChannel = useCallback(() => {
+    setChannelIndex((cur) => {
+      if (LIVE_CHANNELS.length < 2) return cur;
+      let next = Math.floor(Math.random() * (LIVE_CHANNELS.length - 1));
+      if (next >= cur) next += 1;
+      return next;
+    });
+    setFrameLoaded(false);
+    setView('player');
+  }, []);
+
+  const openChannels = useCallback(() => setView('channels'), []);
+  const closePanel = useCallback(() => { setOpen(false); setView('ads'); }, []);
+
   const openAd = () => {
     if (!ad?.linkUrl) return;
     fetch(`${API_SERVER_URL}/ads/${encodeURIComponent(ad.id)}/click`, { method: 'POST' }).catch(() => {});
     window.open(ad.linkUrl, '_blank', 'noopener');
   };
 
+  // ── Launcher drag ──────────────────────────────────────────────
   const onPointerDown = useCallback((e) => {
     const p = e.touches ? e.touches[0] : e;
     dragState.current = { active: true, moved: false, offX: p.clientX - pos.x, offY: p.clientY - pos.y };
@@ -206,8 +207,7 @@ export default function TvWidget() {
 
   const seconds = Math.max(4, Math.min(60, Number(settings.rotationSeconds) || 12));
 
-  // Panel placement: fit the panel inside the viewport regardless of where
-  // the launcher bubble is snapped (important on phones / narrow screens).
+  // Panel placement: fit inside the viewport wherever the launcher sits.
   const vw = typeof window !== 'undefined' ? window.innerWidth : 1024;
   const vh = typeof window !== 'undefined' ? window.innerHeight : 768;
   const margin = 8;
@@ -216,6 +216,8 @@ export default function TvWidget() {
   const px = Math.max(margin, Math.min(pos.x, vw - panelW - margin));
   const py = Math.max(margin, Math.min(pos.y, vh - panelH - margin));
 
+  const live = view === 'player' || view === 'channels';
+
   return (
     <div className="tv-widget-root">
       {open && (
@@ -223,46 +225,51 @@ export default function TvWidget() {
           className="tv-pop tv-widget-panel fixed z-[70] flex max-h-[calc(100dvh-1rem)] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/30 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.7),0_0_40px_rgba(212,175,55,0.12)] backdrop-blur-xl"
           style={{ left: px, top: py, width: panelW, height: panelH, maxWidth: 'calc(100vw - 1rem)' }}
         >
+          {/* Header */}
           <div className="tv-widget-header flex items-center gap-2 border-b border-[#d4af37]/12 bg-[#0a0a0f]/80 backdrop-blur-md px-3 py-2">
             <img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
-            <span className="gold-text text-sm font-bold tracking-wide">{settings.headerText || 'TradingBible TV'}</span>
-            <span className="ml-auto flex items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ff5a62]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#e50914] shadow-[0_0_6px_rgba(229,9,20,0.9)] animate-pulse" />
+            <span className="gold-text min-w-0 flex-1 truncate text-sm font-bold tracking-wide">{settings.headerText || 'TradingBible TV'}</span>
+            <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ff5a62]">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e50914] shadow-[0_0_6px_rgba(229,9,20,0.9)]" />
               {t('tv.onAir')}
             </span>
-            <button onClick={() => setOpen(false)} aria-label={t('tv.closeTv')} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
+            <button onClick={() => setView((v) => (v === 'channels' ? (playing !== null ? 'player' : 'ads') : 'channels'))} className={view === 'channels' ? iconBtnActive : iconBtn} aria-label="Live TV channels" title="Live TV channels">
+              <ListVideo className="h-4 w-4" />
+            </button>
+            <button onClick={closePanel} aria-label={t('tv.closeTv')} className={iconBtn}>
               <X className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="relative flex-1 overflow-hidden">
-            {playingIndex !== null ? (
+          {/* Stage */}
+          <div className="relative min-h-0 flex-1 overflow-hidden">
+            {view === 'player' && playing !== null && (
               <div className="flex h-full flex-col">
                 <div className="flex items-center gap-1 border-b border-[#d4af37]/10 px-2 py-1.5">
-                  <button onClick={exitPlayer} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" aria-label="Back to channels">
+                  <button onClick={openChannels} className={iconBtn} aria-label="Back to channels">
                     <ChevronLeft className="h-4 w-4" />
                   </button>
-                  <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-[#f0ecdd]">{LIVE_CHANNELS[playingIndex].title}</span>
-                  <span className="flex items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#ff5a62]">
+                  <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-[#f0ecdd]">{LIVE_CHANNELS[playing].title}</span>
+                  <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#ff5a62]">
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e50914]" /> Live
                   </span>
-                  <button onClick={() => zapChannel(-1)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" aria-label="Previous channel">
+                  <button onClick={() => zapChannel(-1)} className={iconBtn} aria-label="Previous channel">
                     <ChevronLeft className="h-4 w-4" />
                   </button>
-                  <button onClick={() => zapChannel(1)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" aria-label="Next channel">
+                  <button onClick={() => zapChannel(1)} className={iconBtn} aria-label="Next channel">
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
                 <div className="relative min-h-0 flex-1 bg-black">
                   {!frameLoaded && (
-                    <div className="absolute inset-0 grid place-items-center gap-2">
+                    <div className="absolute inset-0 grid place-items-center">
                       <Loader2 className="h-6 w-6 animate-spin text-[#d4af37]" />
                     </div>
                   )}
                   <iframe
-                    key={LIVE_CHANNELS[playingIndex].id}
-                    src={LIVE_CHANNELS[playingIndex].embedUrl || LIVE_CHANNELS[playingIndex].url}
-                    title={LIVE_CHANNELS[playingIndex].title}
+                    key={LIVE_CHANNELS[playing].id}
+                    src={LIVE_CHANNELS[playing].embedUrl || LIVE_CHANNELS[playing].url}
+                    title={LIVE_CHANNELS[playing].title}
                     className="absolute inset-0 h-full w-full border-0"
                     allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                     allowFullScreen
@@ -270,27 +277,28 @@ export default function TvWidget() {
                   />
                 </div>
                 <div className="flex items-center justify-between gap-2 border-t border-[#d4af37]/10 px-3 py-1.5">
-                  <span className="truncate text-[10px] text-[#6a665a]">{LIVE_CHANNELS[playingIndex].desk} · live in player</span>
-                  <button onClick={() => setShowChannels(true)} className="shrink-0 text-[11px] font-semibold text-[#d4af37] hover:underline">
+                  <span className="truncate text-[10px] text-[#6a665a]">{LIVE_CHANNELS[playing].desk} · live in player</span>
+                  <button onClick={openChannels} className="shrink-0 text-[11px] font-semibold text-[#d4af37] hover:underline">
                     All channels
                   </button>
                 </div>
               </div>
-            ) : showChannels ? (
+            )}
+
+            {view === 'channels' && (
               <div className="no-scrollbar flex h-full flex-col overflow-hidden">
-                {/* Zap bar — one tap to change channel */}
                 <div className="flex items-center gap-1 border-b border-[#d4af37]/10 px-2 py-1.5">
-                  <button onClick={() => zapChannel(-1)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" aria-label="Previous channel">
+                  <button onClick={() => zapChannel(-1)} className={iconBtn} aria-label="Previous channel">
                     <ChevronLeft className="h-4 w-4" />
                   </button>
-                  <button onClick={() => openChannel(channelIndex)} className="min-w-0 flex-1 rounded-lg px-1 py-1 text-center transition hover:bg-white/5">
+                  <button onClick={() => watchChannel(channelIndex)} className="min-w-0 flex-1 rounded-lg px-1 py-1 text-center transition hover:bg-white/5">
                     <span className="block truncate text-[13px] font-bold text-[#f0ecdd]">{LIVE_CHANNELS[channelIndex].title}</span>
                     <span className="block text-[10px] uppercase tracking-wider text-[#d4af37]">{LIVE_CHANNELS[channelIndex].desk} · tap to watch</span>
                   </button>
-                  <button onClick={() => zapChannel(1)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" aria-label="Next channel">
+                  <button onClick={() => zapChannel(1)} className={iconBtn} aria-label="Next channel">
                     <ChevronRight className="h-4 w-4" />
                   </button>
-                  <button onClick={shuffleChannel} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" aria-label="Random channel" title="Play a random channel">
+                  <button onClick={shuffleChannel} className={iconBtn} aria-label="Random channel" title="Play a random channel">
                     <Shuffle className="h-4 w-4" />
                   </button>
                 </div>
@@ -298,7 +306,7 @@ export default function TvWidget() {
                   {LIVE_CHANNELS.map((c, ci) => (
                     <button
                       key={c.id}
-                      onClick={() => openChannel(ci)}
+                      onClick={() => watchChannel(ci)}
                       className="group flex w-full items-center gap-2.5 rounded-xl border border-[#d4af37]/10 bg-white/[0.02] p-2.5 text-left transition hover:border-[#d4af37]/40 hover:bg-[#d4af37]/[0.05]"
                     >
                       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#d4af37]/12 text-[#d4af37]">
@@ -316,72 +324,100 @@ export default function TvWidget() {
                   ))}
                 </div>
               </div>
-            ) : !ad ? (
-              <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
-                <MonitorPlay className="h-9 w-9 text-[#6a665a]" />
-                <p className="text-sm text-[#8a8577]">{t('tv.noLive')}</p>
-              </div>
-            ) : (
-              <div key={ad.id} className="absolute inset-0">
-                {ad.videoUrl ? (
-                  <video
-                    ref={videoRef}
-                    src={ad.videoUrl}
-                    className="h-full w-full object-cover opacity-90"
-                    autoPlay muted={muted} loop playsInline
+            )}
+
+            {view === 'ads' && (
+              !ad ? (
+                <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
+                  <MonitorPlay className="h-9 w-9 text-[#6a665a]" />
+                  <p className="text-sm text-[#8a8577]">{t('tv.noLive')}</p>
+                </div>
+              ) : (
+                <div key={ad.id} className="absolute inset-0">
+                  {ad.videoUrl ? (
+                    <video
+                      ref={videoRef}
+                      src={ad.videoUrl}
+                      className="h-full w-full object-cover opacity-90"
+                      autoPlay muted={muted} loop playsInline
+                    />
+                  ) : ad.imageUrl ? (
+                    <img src={ad.imageUrl} alt="" className="h-full w-full object-cover opacity-70" onError={e => { e.currentTarget.style.display = 'none'; }} />
+                  ) : null}
+                  <div
+                    className="absolute inset-0"
+                    style={{ background: 'linear-gradient(to top, rgba(10,10,15,0.92) 0%, rgba(10,10,15,0.35) 55%, rgba(10,10,15,0.6) 100%)' }}
                   />
-                ) : ad.imageUrl ? (
-                  <img src={ad.imageUrl} alt="" className="h-full w-full object-cover opacity-70" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                ) : null}
-                <div
-                  className="absolute inset-0"
-                  style={{ background: 'linear-gradient(to top, rgba(10,10,15,0.92) 0%, rgba(10,10,15,0.35) 55%, rgba(10,10,15,0.6) 100%)' }}
-                />
-                <div className="tv-stage-text absolute bottom-3 left-3 right-3 flex flex-col gap-2">
-                  {ad.logoUrl && (
-                    <img src={ad.logoUrl} alt="" className="h-9 w-9 rounded-lg bg-white/95 object-contain p-1 ring-1 ring-[#d4af37]/40" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                  )}
+                  <div className="tv-stage-text absolute bottom-3 left-3 right-3 flex flex-col gap-2">
+                    {ad.logoUrl && (
+                      <img src={ad.logoUrl} alt="" className="h-9 w-9 rounded-lg bg-white/95 object-contain p-1 ring-1 ring-[#d4af37]/40" onError={e => { e.currentTarget.style.display = 'none'; }} />
+                    )}
                     <h2 className="text-lg font-bold leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" style={{ color: ad.accent || '#f0ecdd' }}>
                       {lad.title}
                     </h2>
                     {lad.headline && <p className="line-clamp-2 text-xs leading-snug text-[#e9e7df] drop-shadow-[0_1px_6px_rgba(0,0,0,0.9)]">{lad.headline}</p>}
-                  {ad.linkUrl && (
-                    <button
-                      onClick={openAd}
-                      className="mt-1 w-fit rounded-lg px-3.5 py-1.5 text-xs font-bold text-[#0a0a0f] shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition-transform hover:scale-[1.03]"
-                      style={{ background: ad.accent || '#d4af37' }}
-                    >
-                      {lad.cta || t('tv.learnMore')} →
-                    </button>
-                  )}
+                    {ad.linkUrl && (
+                      <button
+                        onClick={openAd}
+                        className="mt-1 w-fit rounded-lg px-3.5 py-1.5 text-xs font-bold text-[#0a0a0f] shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition-transform hover:scale-[1.03]"
+                        style={{ background: ad.accent || '#d4af37' }}
+                      >
+                        {lad.cta || t('tv.learnMore')} →
+                      </button>
+                    )}
+                  </div>
+                  <div
+                    key={`${ad.id}-${index}`}
+                    className="tv-progress absolute bottom-0 left-0 h-[3px] rounded-r-full bg-gradient-to-r from-[#d4af37] to-[#f0d675]"
+                    style={{ animationDuration: `${seconds}s`, animationPlayState: paused ? 'paused' : 'running' }}
+                  />
                 </div>
-                <div
-                  key={`${ad.id}-${index}`}
-                  className="tv-progress absolute bottom-0 left-0 h-[3px] rounded-r-full bg-gradient-to-r from-[#d4af37] to-[#f0d675]"
-                  style={{ animationDuration: `${seconds}s`, animationPlayState: paused ? 'paused' : 'running' }}
-                />
-              </div>
+              )
             )}
           </div>
 
-          <div className="tv-widget-footer flex items-center justify-between border-t border-[#d4af37]/12 bg-[#0a0a0f] px-3 py-2">
-            <div className="flex items-center gap-1">
-              <button onClick={() => setPaused((p) => !p)} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors" aria-label={paused ? t('tv.play') : t('tv.pause')}>
-                {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-              </button>
-              <button onClick={() => { if (playingIndex !== null) exitPlayer(); else setShowChannels((v) => !v); }} className={`grid h-7 w-7 place-items-center rounded-lg transition-colors ${showChannels || playingIndex !== null ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd]'}`} aria-label="Live TV channels" title="Live TV channels">
-                <Radio className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="flex items-center gap-1.5">
-              {ads.map((a, i) => (
-                <button key={a.id} onClick={() => setIndex(i)} aria-label={t('tv.broadcastN', { n: i + 1 })}
-                  className={`${i === index % ads.length ? 'tv-tv-dot-active w-5 bg-[#d4af37]' : 'tv-tv-dot w-1.5 bg-white/15 hover:bg-white/30'} h-1.5 rounded-full transition-all`} />
-              ))}
-            </div>
-            <button onClick={() => setMuted((m) => !m)} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd] transition-colors" aria-label={muted ? t('tv.unmute') : t('tv.mute')}>
-              {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-            </button>
+          {/* Footer — controls per view */}
+          <div className="tv-widget-footer flex items-center justify-between gap-1 border-t border-[#d4af37]/12 bg-[#0a0a0f] px-3 py-2">
+            {view === 'player' ? (
+              <>
+                <button onClick={openChannels} className={iconBtn} aria-label="Back to channels">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <span className="min-w-0 flex-1 truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
+                  {LIVE_CHANNELS[playing]?.desk} · {playing + 1}/{LIVE_CHANNELS.length}
+                </span>
+                <button onClick={shuffleChannel} className={iconBtn} aria-label="Random channel" title="Play a random channel">
+                  <Shuffle className="h-4 w-4" />
+                </button>
+              </>
+            ) : view === 'channels' ? (
+              <>
+                <button onClick={() => setView('ads')} className={iconBtn} aria-label="Back to broadcasts">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <span className="min-w-0 flex-1 truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
+                  {LIVE_CHANNELS.length} live channels
+                </span>
+                <button onClick={shuffleChannel} className={iconBtn} aria-label="Random channel" title="Play a random channel">
+                  <Shuffle className="h-4 w-4" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => setPaused((p) => !p)} className={iconBtn} aria-label={paused ? t('tv.play') : t('tv.pause')}>
+                  {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+                </button>
+                <div className="flex min-w-0 flex-1 items-center justify-center gap-1.5">
+                  {ads.map((a, i) => (
+                    <button key={a.id} onClick={() => setIndex(i)} aria-label={t('tv.broadcastN', { n: i + 1 })}
+                      className={`${i === index % ads.length ? 'tv-tv-dot-active w-5 bg-[#d4af37]' : 'tv-tv-dot w-1.5 bg-white/15 hover:bg-white/30'} h-1.5 rounded-full transition-all`} />
+                  ))}
+                </div>
+                <button onClick={() => setMuted((m) => !m)} className={iconBtn} aria-label={muted ? t('tv.unmute') : t('tv.mute')}>
+                  {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
