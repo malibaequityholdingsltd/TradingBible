@@ -116,7 +116,7 @@ export default function AdminSearch() {
 
       {open && (
         <div className="fixed inset-0 z-[80] flex items-start justify-center bg-black/70 p-4 pt-[12vh] backdrop-blur-sm" onClick={() => setOpen(false)}>
-          <div className="glass sheen-panel overlay-pop w-full max-w-xl overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="glass sheen-panel overlay-pop relative w-full max-w-xl overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2 border-b border-[#d4af37]/10 px-4">
               <Search className="h-4 w-4 shrink-0 text-[#d4af37]" />
               <input
@@ -128,7 +128,7 @@ export default function AdminSearch() {
               />
               <button onClick={() => setOpen(false)} className="text-[#8a8577] hover:text-[#e9e7df]" aria-label="Close"><X className="h-4 w-4" /></button>
             </div>
-            <div ref={listRef} className="no-scrollbar max-h-[50vh] overflow-y-auto p-2">
+            <div ref={listRef} className="no-scrollbar scroll-contain max-h-[50vh] overflow-y-auto p-2">
               {results.length === 0 && (
                 <p className="px-3 py-8 text-center text-sm text-[#8a8577]">Nothing found. Try “users”, “billing”, “TV” or “settings”.</p>
               )}

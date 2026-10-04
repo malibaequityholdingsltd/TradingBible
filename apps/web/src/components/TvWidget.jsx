@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, ListVideo, Lock, Crown, WifiOff, Clock, Bell, BellRing, Search, Maximize, Minimize } from 'lucide-react';
+import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, ListVideo, Lock, Crown, WifiOff, Clock, Bell, BellRing, Search, Maximize, Minimize, Megaphone } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useI18n, localizeAd } from '@/lib/i18n';
@@ -16,8 +16,6 @@ import YoutubePlayer from '@/components/YoutubePlayer';
 const POS_KEY = 'tb:tv-btn-pos';
 const BTN = 56;
 const MARGIN = 12;
-const PANEL_W = 344;
-const PANEL_H = 396;
 const DEFAULT_SETTINGS = {
   rotationSeconds: 12,
   headerText: 'TradingBible TV',
@@ -27,6 +25,12 @@ const DEFAULT_SETTINGS = {
 
 const iconBtn = 'grid h-7 w-7 place-items-center rounded-lg bg-[#d4af37]/15 text-[#d4af37] transition-colors hover:bg-[#d4af37]/25 hover:text-[#f0d675]';
 const iconBtnActive = 'grid h-7 w-7 place-items-center rounded-lg bg-[#d4af37] text-[#0a0a0f] transition-colors hover:opacity-90';
+
+const TABS = [
+  { id: 'player', icon: MonitorPlay },
+  { id: 'channels', icon: ListVideo },
+  { id: 'ads', icon: Megaphone },
+];
 
 function snapToEdge(x, y) {
   const w = window.innerWidth;
@@ -276,6 +280,15 @@ export default function TvWidget() {
   const openChannels = useCallback(() => { setView('channels'); guardScroll(); }, [guardScroll]);
   const closePanel = useCallback(() => { setOpen(false); setView('ads'); guardScroll(); }, [guardScroll]);
 
+  // Tab bar (SI arrangement): Watch | Guide | Ads.
+  const switchTab = useCallback((id) => {
+    if (id === 'player') {
+      if (playing !== null) { setView('player'); guardScroll(); }
+      else openTv();
+    } else if (id === 'channels') openChannels();
+    else { setView('ads'); guardScroll(); }
+  }, [playing, openTv, openChannels, guardScroll]);
+
   const watchToastChannel = useCallback((channelId) => {
     const idx = ordered.findIndex((c) => String(c.id) === String(channelId));
     if (idx < 0) return;
@@ -478,14 +491,9 @@ export default function TvWidget() {
 
   const seconds = Math.max(4, Math.min(60, Number(settings.rotationSeconds) || 12));
 
-  // Panel placement: fit inside the viewport wherever the launcher sits.
+  // Panel anchoring side (SI arrangement): bottom to the launcher's side.
   const vw = typeof window !== 'undefined' ? window.innerWidth : 1024;
-  const vh = typeof window !== 'undefined' ? window.innerHeight : 768;
-  const margin = 8;
-  const panelW = Math.min(PANEL_W, vw - margin * 2);
-  const panelH = Math.min(PANEL_H, vh - margin * 2);
-  const px = Math.max(margin, Math.min(pos.x, vw - panelW - margin));
-  const py = Math.max(margin, Math.min(pos.y, vh - panelH - margin));
+  const onLeft = pos.x < vw / 2;
 
   // Guide sections with live counts. Every desk always lists — confirmed
   // off-air ones sit dimmed in their own section, so visible rows always
@@ -511,37 +519,60 @@ export default function TvWidget() {
     <div className="tv-widget-root" style={{ display: 'contents' }}>
       {open && (
         <div
-          className={`tv-pop tv-widget-panel sheen-panel fixed flex max-h-[calc(100dvh-1rem)] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/30 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.7),0_0_40px_rgba(212,175,55,0.12)] backdrop-blur-xl ${expanded ? 'z-[90]' : 'z-[70]'}`}
+          className={`tv-pop tv-widget-panel sheen-panel fixed flex h-[34rem] max-h-[calc(100dvh-2rem)] w-[min(25rem,calc(100vw-1rem))] flex-col overflow-hidden ${expanded ? 'rounded-none' : 'rounded-[1.6rem]'} border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl ${expanded ? 'z-[90]' : 'z-[70]'}`}
           style={expanded
-            ? { left: '50%', top: 76, transform: 'translateX(-50%)', width: 'min(1060px, calc(100vw - 32px))', height: 'calc(100dvh - 168px)', maxWidth: 'none' }
-            : { left: px, top: py, width: panelW, height: panelH, maxWidth: 'calc(100vw - 1rem)' }}
+            // True full-screen mode: edge to edge, no margins.
+            ? { left: 0, right: 0, top: 0, bottom: 0, height: 'auto', maxWidth: 'none' }
+            : { bottom: '0.75rem', [onLeft ? 'left' : 'right']: '0.75rem' }}
         >
-          {/* Header */}
-          <div className="tv-widget-header relative flex items-center gap-2 border-b border-[#d4af37]/12 bg-[#0a0a0f]/80 backdrop-blur-md px-3 py-2">
-            <span className={expanded ? 'pointer-events-none absolute left-1/2 flex max-w-[46vw] -translate-x-1/2 items-center gap-2' : 'flex min-w-0 flex-1 items-center gap-2'}>
-              <img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 shrink-0 rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
-              <span className="gold-text truncate text-sm font-bold tracking-wide">{settings.headerText || 'TradingBible TV'}</span>
-            </span>
-            {liveCount > 0 ? (
-              <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#ff5a62]">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e50914] shadow-[0_0_6px_rgba(229,9,20,0.9)]" />
-                {liveCount} live
-              </span>
-            ) : (
-              <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ff5a62]">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e50914] shadow-[0_0_6px_rgba(229,9,20,0.9)]" />
-                {t('tv.onAir')}
-              </span>
-            )}
-            <button onClick={toggleExpanded} className={`${expanded ? 'ml-auto ' : ''}${expanded ? iconBtnActive : iconBtn}`} aria-label={expanded ? 'Zoom out TV' : 'Zoom TV big'} title={expanded ? 'Zoom out' : 'Zoom big (keeps header visible)'}>
+          {/* Gold top-edge accent + ambient glow + terminal scanlines */}
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-0 h-28 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(212,175,55,0.10),transparent)]" />
+          <div aria-hidden className="pointer-events-none absolute inset-0 z-0 bg-[repeating-linear-gradient(0deg,rgba(212,175,55,0.022)_0px,rgba(212,175,55,0.022)_1px,transparent_1px,transparent_3px)]" />
+
+          {/* Header: avatar + title block + actions */}
+          <div className="tv-widget-header relative flex items-center gap-2.5 border-b border-[#d4af37]/12 bg-[#0a0a0f]/70 px-3.5 py-2.5 backdrop-blur-md">
+            <div className="relative shrink-0">
+              <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] shadow-[0_0_16px_rgba(212,175,55,0.35)]">
+                <img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
+              </div>
+              <span className={`absolute -bottom-px -right-px h-2.5 w-2.5 rounded-full border-2 border-[#0c0c11] ${liveCount > 0 ? 'bg-[#e50914] shadow-[0_0_8px_rgba(229,9,20,0.9)] animate-pulse' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]'}`} />
+            </div>
+            <div className="min-w-0 flex-1 leading-tight">
+              <div className="gold-text truncate text-[13px] font-bold tracking-wide">{settings.headerText || 'TradingBible TV'}</div>
+              <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/25 bg-gradient-to-r from-[#d4af37]/[0.10] to-transparent px-2 py-[3px] font-mono text-[8.5px] uppercase tracking-[0.12em]">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#e50914] opacity-60" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#e50914] shadow-[0_0_6px_rgba(229,9,20,0.9)]" />
+                </span>
+                <span className="text-[#ff5a62]">{liveCount > 0 ? `${liveCount} live` : t('tv.onAir')}</span>
+                <span className="text-[#5a564a]">·</span>
+                <span className="text-[#d4af37]">{ordered.length} desks</span>
+              </div>
+            </div>
+            <button onClick={toggleExpanded} className={`${expanded ? iconBtnActive : iconBtn} ml-auto shrink-0`} aria-label={expanded ? 'Zoom out TV' : 'Zoom TV big'} title={expanded ? 'Zoom out' : 'Zoom big'}>
               {expanded ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
             </button>
-            <button onClick={() => { setView((v) => (v === 'channels' ? (playing !== null ? 'player' : 'ads') : 'channels')); guardScroll(); }} className={view === 'channels' ? iconBtnActive : iconBtn} aria-label="Live TV channels" title="Live TV channels">
-              <ListVideo className="h-4 w-4" />
-            </button>
-            <button onClick={closePanel} aria-label={t('tv.closeTv')} className={iconBtn}>
+            <button onClick={closePanel} aria-label={t('tv.closeTv')} className={`${iconBtn} shrink-0`}>
               <X className="h-4 w-4" />
             </button>
+          </div>
+
+          {/* Tab bar: Watch | Guide | Ads */}
+          <div className="relative flex items-center gap-1 px-3 pt-2">
+            {TABS.map(({ id, icon: Icon }) => {
+              const label = id === 'player' ? 'Watch' : id === 'channels' ? 'Guide' : 'Ads';
+              const isActive = view === id;
+              return (
+                <button key={id} onClick={() => switchTab(id)} aria-pressed={isActive}
+                  className={`flex min-h-[30px] flex-1 items-center justify-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold transition-colors ${isActive
+                    ? 'bg-[#d4af37]/12 text-[#d4af37] shadow-[inset_0_0_0_1px_rgba(212,175,55,0.25)]'
+                    : 'text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd]'}`}>
+                  <Icon className="h-3 w-3" />
+                  {label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Stage */}
@@ -833,11 +864,15 @@ export default function TvWidget() {
           onTouchStart={onPointerDown}
           aria-label={t('aiw.openLabel')}
           title={t('tv.openTv')}
-          className={`tv-tv-btn fixed z-[70] grid place-items-center rounded-full bg-gradient-to-br from-[#0c0c11] to-[#0a0a0f] text-[#d4af37] shadow-2xl ring-1 ring-[#d4af37]/40 ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105'}`}
+          className={`tv-tv-btn fixed z-[70] grid place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#f4e6a8] via-[#e2bd4f] to-[#c99a25] shadow-[0_8px_28px_rgba(212,175,55,0.35),0_0_0_1px_rgba(212,175,55,0.4)] ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]'}`}
           style={{ left: pos.x, top: pos.y, height: BTN, width: BTN, touchAction: 'none' }}
         >
-          <img src={TRADINGBIBLE_LOGO} alt="" className="h-8 w-8 rounded-full object-contain opacity-90" onError={e => { e.currentTarget.style.display = 'none'; }} />
-          {ads.length > 0 && (
+          <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-[#d4af37]/25 [animation-duration:2.2s]" />
+          <MonitorPlay className="relative h-6 w-6 text-[#0a0a0f]" strokeWidth={2.2} />
+          <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#0c0c11] ${liveCount > 0 ? 'bg-[#e50914] shadow-[0_0_8px_rgba(229,9,20,0.9)] animate-pulse' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]'}`} />
+          {liveCount > 0 ? (
+            <span className="absolute -left-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full border-2 border-[#0c0c11] bg-[#e50914] px-0.5 text-[9px] font-bold text-white">{liveCount > 9 ? '9+' : liveCount}</span>
+          ) : ads.length > 0 && (
             <span className="absolute -bottom-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full border-2 border-[#0c0c11] bg-[#d4af37] px-0.5 text-[9px] font-bold text-[#0a0a0f]">{ads.length > 9 ? '9+' : ads.length}</span>
           )}
         </button>

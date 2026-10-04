@@ -43,7 +43,7 @@ export default function OnboardingTutorial({ onClose, onComplete }) {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/75 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-      <div className="sheen-panel w-full max-w-lg animate-[floaty_0.4s_ease-out] overflow-hidden rounded-t-2xl border border-[#d4af37]/25 bg-[#0c0c11]/90 shadow-2xl backdrop-blur-xl sm:rounded-2xl">
+      <div className="sheen-panel relative w-full max-w-lg animate-[floaty_0.4s_ease-out] overflow-hidden rounded-t-2xl border border-[#d4af37]/25 bg-[#0c0c11]/90 shadow-2xl backdrop-blur-xl sm:rounded-2xl">
         <div className="flex items-center justify-between border-b border-[#d4af37]/12 px-5 py-4">
           <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8a8577]">{t('guide.kicker')} · {i + 1}/{STEPS.length}</span>
           <button onClick={onClose} aria-label={t('c.skipTour')} className="text-[#8a8577] transition hover:text-[#e9e7df]"><X className="h-5 w-5" /></button>
