@@ -288,7 +288,9 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
           if (n.trail.length > 8) n.trail.shift();
         }
       });
-      force((f) => f + 1);
+      // Render at ~30fps (physics stays 60fps) — halves React work, motion
+      // stays smooth while scrolling and batteries last longer.
+      if (frameRef.current % 2 === 0) force((f) => f + 1);
       raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
