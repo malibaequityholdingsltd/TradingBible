@@ -109,6 +109,28 @@ export default function TvWidget() {
   // so playback never sits on a slate asking for a tap.
   const attemptsRef = useRef(new Set());
   const advanceTimer = useRef(null);
+  // Self-retry: when every desk is exhausted the slate keeps a 30s timer
+  // that silently clears the dead-desk memory and remounts — playback
+  // recovers with zero taps the moment anything becomes playable.
+  const retryTimer = useRef(null);
+  const retryId = useRef(null);
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  const channelIndexRef = useRef(channelIndex);
+  channelIndexRef.current = channelIndex;
+
+  const scheduleAutoRetry = useCallback(() => {
+    clearTimeout(retryTimer.current);
+    const id = String(ordered[channelIndexRef.current]?.id || '');
+    retryId.current = id;
+    retryTimer.current = setTimeout(() => {
+      if (viewRef.current !== 'player') return;
+      if (String(ordered[channelIndexRef.current]?.id || '') !== retryId.current) return;
+      attemptsRef.current.clear();
+      setFallbackVid(null); setYtError(false); setYtBlocked(false); setFrameLoaded(false);
+      setYtRetry((n) => n + 1);
+    }, 30000);
+  }, [ordered]);
   const isYoutube = playing !== null && /youtube\.com\/embed\//.test(ordered[playing]?.embedUrl || '');
 
   const toggleYtSound = useCallback(() => {
@@ -118,6 +140,23 @@ export default function TvWidget() {
       if (p.isMuted()) { p.unMute(); p.setVolume(100); setYtMuted(false); }
       else { p.mute(); setYtMuted(true); }
     } catch { /* noop */ }
+  }, []);
+
+  // Auto-sound: the channel-row tap counts as a user gesture, and its
+  // activation is still valid when the player API attaches moments later —
+  // so sound starts with the picture and no second tap is ever needed.
+  // Browsers without a valid activation simply stay muted (their law).
+  const tryAutoSound = useCallback(() => {
+    try {
+      const ua = navigator.userActivation;
+      if (!ua || (!ua.isActive && !ua.hasBeenActive)) return;
+      const p = ytRef.current;
+      if (!p || typeof p.unMute !== 'function') return;
+      if (typeof p.isMuted === 'function' && !p.isMuted()) { setYtMuted(false); return; }
+      p.unMute();
+      if (typeof p.setVolume === 'function') p.setVolume(100);
+      setYtMuted(false);
+    } catch { /* stays muted */ }
   }, []);
 
   // ── Data ───────────────────────────────────────────────────────
@@ -184,10 +223,12 @@ export default function TvWidget() {
       }, 1200);
     } else if (blocked) {
       setYtBlocked(true);
+      scheduleAutoRetry();
     } else {
       setYtError(true);
+      scheduleAutoRetry();
     }
-  }, [ordered, channelIndex, fallbackVid, liveStates, findNextPlayable]);
+  }, [ordered, channelIndex, fallbackVid, liveStates, findNextPlayable, scheduleAutoRetry]);
 
   // Instant live on open: the launcher jumps straight into the best desk
   // (live → 24/7 → first unlocked) — motion starts with zero extra taps.
@@ -296,7 +337,7 @@ export default function TvWidget() {
   // Every new channel starts muted (autoplay policy) until tapped.
   // The no-touch shield engages only once playback actually starts, so
   // YouTube's own play control stays tappable if autoplay gets blocked.
-  useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); setYtApi(false); setFallbackVid(null); return () => clearTimeout(advanceTimer.current); }, [channelIndex]);
+  useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); setYtApi(false); setFallbackVid(null); return () => { clearTimeout(advanceTimer.current); clearTimeout(retryTimer.current); }; }, [channelIndex]);
 
   const watchChannel = useCallback((i) => {
     if (typeof i !== 'number' || i < 0 || i >= ordered.length) return;
@@ -467,9 +508,10 @@ export default function TvWidget() {
                       ref={ytRef}
                       src={fallbackVid ? ytVideoEmbed(fallbackVid) : hardenEmbed(ordered[playing].embedUrl || ordered[playing].url)}
                       title={ordered[playing].title}
-                      onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); setYtMuted(true); markConfirmed(ordered[playing]?.id); } else { handleStreamError(false); } }}
+                      onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); try { setYtMuted(ytRef.current?.isMuted?.() ?? true); } catch { setYtMuted(true); } markConfirmed(ordered[playing]?.id); } else { handleStreamError(false); } }}
                       onBlocked={() => handleStreamError(true)}
-                      onApiReady={(ready) => setYtApi(!!ready)}
+                      onApiReady={(ready) => { setYtApi(!!ready); if (ready) tryAutoSound(); }}
+                      onLoaded={() => setFrameLoaded(true)}
                     />
                   ) : (
                     <iframe
@@ -488,6 +530,7 @@ export default function TvWidget() {
                       <WifiOff className="h-6 w-6 text-[#6a665a]" />
                       <p className="text-xs font-semibold text-[#f0ecdd]">Can't reach YouTube</p>
                       <p className="max-w-[240px] text-[11px] leading-relaxed text-[#8a8577]">Your network is blocking youtube.com — check connection, VPN, ad-blocker or region restrictions, then re-open the channel.</p>
+                      <p className="text-[10px] uppercase tracking-wider text-[#6a665a]">Retrying automatically…</p>
                       <button onClick={() => { attemptsRef.current.clear(); setFallbackVid(null); setYtBlocked(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="mt-1 min-h-[40px] rounded-xl border border-[#d4af37]/30 px-5 text-xs font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
                         Try again
                       </button>
@@ -511,6 +554,7 @@ export default function TvWidget() {
                         </button>
                       </div>
                       <p className="max-w-[240px] text-[10px] leading-relaxed text-[#6a665a]">Tip: tap the bell in the guide — we'll ping you the moment a desk goes live.</p>
+                      <p className="text-[10px] uppercase tracking-wider text-[#6a665a]">Retrying automatically…</p>
                     </div>
                   )}
                   {/* No-touch shield (engages once playing): no tap on the
