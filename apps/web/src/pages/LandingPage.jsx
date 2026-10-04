@@ -66,10 +66,10 @@ function Nav({ homeTo, isAuthed, platformName }) {
 
   return (
     <header className={`fixed inset-x-0 top-[var(--header-h)] z-40 border-b transition-all duration-300 ${scrolled ? 'border-[#d4af37]/15 bg-[#07070a]/92 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl' : 'border-[#d4af37]/10 bg-[#07070a]/70 backdrop-blur-xl'}`}>
-      <div className="mx-auto flex w-full max-w-[96rem] items-center justify-between gap-4 px-4 py-3 sm:px-6 sm:py-4">
-        <Link to={homeTo} className="flex shrink-0 items-center gap-2.5">
+      <div className="mx-auto flex w-full max-w-[96rem] items-center justify-between gap-2 overflow-hidden px-3 py-3 sm:gap-4 sm:px-6 sm:py-4">
+        <Link to={homeTo} className="flex min-w-0 shrink-0 items-center gap-2.5">
           <img src={LOGO} alt={`${brand} logo`} className="h-9 w-9 shrink-0 rounded-xl object-contain gold-glow sm:h-10 sm:w-10" />
-          <span className="text-xl font-extrabold tracking-tight text-[#e9e7df] sm:text-2xl">{first ? `${first} ` : ''}<span className="tb-gold-text">{last}</span></span>
+          <span className="hidden truncate text-xl font-extrabold tracking-tight text-[#e9e7df] sm:inline sm:text-2xl">{first ? `${first} ` : ''}<span className="tb-gold-text">{last}</span></span>
         </Link>
 
         <nav className="hidden items-center gap-1 rounded-full border border-white/5 bg-white/[0.03] p-1.5 backdrop-blur-md md:flex">
@@ -79,14 +79,18 @@ function Nav({ homeTo, isAuthed, platformName }) {
           <Link to="/about" className={navLink}>{t('land.about')}</Link>
         </nav>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-3">
           {isAuthed ? (
-            <GoldButton to={homeTo}><span>{t('land.openDash')}</span></GoldButton>
+            <>
+              <GoldButton to={homeTo} className="hidden px-5 py-2.5 text-base sm:inline-flex"><span>{t('land.openDash')}</span></GoldButton>
+              <Link to={homeTo} className="grid h-9 place-items-center whitespace-nowrap rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 text-[13px] font-bold text-[#0a0a0f] sm:hidden">{t('land.openDash')}</Link>
+            </>
           ) : (
             <>
               <Link to="/login" className="hidden rounded-full px-4 py-2 text-sm font-medium text-[#c9c4b4] transition-colors hover:bg-white/5 hover:text-[#e9e7df] sm:block">{t('land.login')}</Link>
-              <GoldButton to="/pricing"><span>{t('land.viewPricing')}</span></GoldButton>
-              <button onClick={() => setMenuOpen((o) => !o)} className="grid h-10 w-10 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60 md:hidden" aria-label={t('nav.menu')} aria-expanded={menuOpen}>
+              <GoldButton to="/pricing" className="hidden px-5 py-2.5 text-base sm:inline-flex"><span>{t('land.viewPricing')}</span></GoldButton>
+              <Link to="/pricing" className="grid h-9 place-items-center whitespace-nowrap rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 text-[13px] font-bold text-[#0a0a0f] sm:hidden">{t('land.viewPricing')}</Link>
+              <button onClick={() => setMenuOpen((o) => !o)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60 md:hidden" aria-label={t('nav.menu')} aria-expanded={menuOpen}>
                 {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </>
@@ -138,7 +142,7 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.08 }} className="mt-7 text-5xl font-extrabold leading-[0.98] tracking-tight sm:text-6xl lg:text-[5.5rem]">
+          <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.08 }} className="mt-7 text-balance text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl lg:text-[5.5rem]">
             {t('land.heroA')} <span className="tb-gold-text">{t('land.heroB')}</span><br />
             {t('land.heroC')} <span className="tb-gold-text">{t('land.heroD')}</span>
           </motion.h1>
@@ -173,7 +177,7 @@ export default function LandingPage() {
       <section id="features" className="mx-auto w-full max-w-[96rem] scroll-mt-24 px-4 py-16 sm:px-6 sm:py-24">
         <div className="mb-10 max-w-2xl sm:mb-14">
           <Kicker icon={Sparkles}>{t('land.featKick')}</Kicker>
-          <h2 className="tb-h2 text-4xl sm:text-5xl">{t('land.featTitleA')} <span className="tb-gold-text">{t('land.featTitleB')}</span></h2>
+          <h2 className="tb-h2 text-balance text-3xl sm:text-5xl">{t('land.featTitleA')} <span className="tb-gold-text">{t('land.featTitleB')}</span></h2>
         </div>
         <div className="tb-grid-auto">
           {FEATURES.map((f, i) => (
@@ -193,7 +197,7 @@ export default function LandingPage() {
         <div className="mx-auto w-full max-w-[96rem] px-4 py-16 sm:px-6 sm:py-24">
           <div className="mb-10 max-w-2xl sm:mb-12">
             <Kicker>{t('land.howKick', null, 'How it works')}</Kicker>
-            <h2 className="tb-h2 text-4xl sm:text-5xl">{t('land.howTitle', null, 'Live in three steps')}</h2>
+            <h2 className="tb-h2 text-balance text-3xl sm:text-5xl">{t('land.howTitle', null, 'Live in three steps')}</h2>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
             {STEPS.map((s, i) => (
@@ -214,7 +218,7 @@ export default function LandingPage() {
         <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
           <div>
             <Kicker>{t('land.aiKick')}</Kicker>
-            <h2 className="tb-h2 text-4xl sm:text-5xl">{t('land.aiTitleA')} <span className="tb-gold-text">{t('land.aiTitleB')}</span>{t('land.aiTitleC')}</h2>
+            <h2 className="tb-h2 text-balance text-3xl sm:text-5xl">{t('land.aiTitleA')} <span className="tb-gold-text">{t('land.aiTitleB')}</span>{t('land.aiTitleC')}</h2>
             <p className="tb-sub">{t('land.aiSub')}</p>
             <div className="mt-8 space-y-3">
               {[t('land.q1'), t('land.q2'), t('land.q3'), t('land.q4')].map((q) => (
@@ -240,7 +244,7 @@ export default function LandingPage() {
         <div className="mx-auto grid w-full max-w-[96rem] items-center gap-8 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-2 lg:gap-12">
           <div>
             <Kicker icon={GraduationCap}>{t('land.acadKick', null, 'TradingBible Academy')}</Kicker>
-            <h2 className="tb-h2 text-4xl sm:text-5xl">{t('land.acadTitle', null, 'A school run by SI')}</h2>
+            <h2 className="tb-h2 text-balance text-3xl sm:text-5xl">{t('land.acadTitle', null, 'A school run by SI')}</h2>
             <p className="tb-sub">{t('land.acadSub', null, 'Personal learning paths, SI-written lessons, graded quizzes, live webinars and one-on-one tutoring — from your first candle to the professional desk. One $150 lifetime payment, yours forever.')}</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <GoldButton to="/academy" className="px-6 py-3.5">{t('land.acadCta', null, 'Explore the Academy')} <ArrowRight className="h-4 w-4" /></GoldButton>
@@ -287,7 +291,7 @@ export default function LandingPage() {
       <section id="pricing" className={`scroll-mt-24 border-t border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/60' : 'bg-[#0a0a0f]/60'} backdrop-blur-sm`}>
         <div className="mx-auto w-full max-w-[96rem] px-4 py-16 sm:px-6 sm:py-24">
           <div className="mb-10 text-center sm:mb-12">
-            <h2 className="tb-h2 text-4xl sm:text-5xl">{t('price.chooseEdge')}</h2>
+            <h2 className="tb-h2 text-balance text-3xl sm:text-5xl">{t('price.chooseEdge')}</h2>
             <p className="tb-sub mx-auto">{t('price.sub')}</p>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
