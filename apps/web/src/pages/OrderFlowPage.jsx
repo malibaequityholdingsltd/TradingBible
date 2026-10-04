@@ -4,7 +4,6 @@ import {
 	Plus, GitCompareArrows, CandlestickChart,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { useI18n } from '@/lib/i18n';
 import OrderflowChart from '@/components/OrderflowChart';
 import FlowTapePane from '@/components/FlowTapePane';
 import { ALL_SYMBOLS, isFlowSymbol } from '@/lib/orderflowFeed';
@@ -77,7 +76,7 @@ function corrStyle(r) {
 }
 
 export default function OrderFlowPage() {
-	const { t } = useI18n();
+	// Order Flow is English-only by design (trading terminology stays in English).
 	const [panes, setPanes] = useState(['BTCUSD']);
 	const [focus, setFocus] = useState('BTCUSD');
 	const [market, setMarket] = useState('all');
@@ -165,7 +164,7 @@ export default function OrderFlowPage() {
 	const available = ALL_SYMBOLS.filter((s) => !panes.includes(s) && s.toLowerCase().includes(pickerQ.trim().toLowerCase()));
 
 	return (
-		<AppLayout title={t('nav.orderflow', null, 'Order Flow')}>
+		<AppLayout title="Order Flow">
 			{/* ── Control bar ─────────────────────────────────────── */}
 			<div className="tint-hero mb-4 rounded-2xl border border-[#d4af37]/15 p-4 sm:p-5">
 				<div className="flex flex-wrap items-center gap-3">
