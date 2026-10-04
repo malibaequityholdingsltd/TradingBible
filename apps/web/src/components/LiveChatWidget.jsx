@@ -313,20 +313,20 @@ export default function LiveChatWidget() {
 
           {tab === 'about' && (
             <div className="relative flex-1 space-y-3 overflow-y-auto p-3.5">
-              <div className="rounded-xl border border-[#d4af37]/12 bg-[#0a0a0f]/60 p-3.5">
+              <div className="rounded-xl border border-[#d4af37]/12 bg-[#0a0a0f]/60 p-3.5 backdrop-blur-md">
                 <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">{t('aiw.model')}</div>
                 <div className="font-mono mt-1 text-[11px] leading-relaxed text-[#c9c4b4]">
                   muse-spark-1.3-contributor-free<br />
                   <span className="text-[#8a8577]">{t('aiw.via')}</span>
                 </div>
               </div>
-              <div className="rounded-xl border border-[#d4af37]/12 bg-[#0a0a0f]/60 p-3.5">
+              <div className="rounded-xl border border-[#d4af37]/12 bg-[#0a0a0f]/60 p-3.5 backdrop-blur-md">
                 <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">{t('aiw.privacy')}</div>
                 <p className="mt-1 text-[11px] leading-relaxed text-[#c9c4b4]">
                   {t('aiw.privacyB')}
                 </p>
               </div>
-              <div className="rounded-xl border border-[#d4af37]/12 bg-[#0a0a0f]/60 p-3.5">
+              <div className="rounded-xl border border-[#d4af37]/12 bg-[#0a0a0f]/60 p-3.5 backdrop-blur-md">
                 <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">{t('aiw.help')}</div>
                 <a href="mailto:support@tradingbible.app" className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline">
                   support@tradingbible.app <ExternalLink className="h-3 w-3" />
