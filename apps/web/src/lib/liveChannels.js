@@ -30,6 +30,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Official 24/7 stream — plays instantly in the player, no login.',
 		isNew: false,
 		plan: 'pro',
+		roundTheClock: true,
 	},
 	{
 		id: 'yahoo-finance-live',
@@ -40,6 +41,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Nonstop market coverage — Opening Bid to Market Domination.',
 		isNew: true,
 		plan: 'elite',
+		roundTheClock: true,
 	},
 	{
 		id: 'schwab-network-live',
@@ -120,6 +122,18 @@ export const LIVE_CHANNELS = [
 		blurb: '24/7 world news with business coverage that moves markets.',
 		isNew: true,
 		plan: 'pro',
+		roundTheClock: true,
+	},
+	{
+		id: 'france24-live',
+		title: 'France 24 English 24/7',
+		desk: 'World',
+		url: 'https://www.youtube.com/@France24_en/live',
+		embedUrl: ytLive('UCQfwfsi5VrQ8yKZ-UWmAEFg'),
+		blurb: '24/7 international news and market-moving headlines.',
+		isNew: true,
+		plan: 'pro',
+		roundTheClock: true,
 	},
 ];
 
