@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Shuffle } from 'lucide-react';
+import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Shuffle, Loader2, ChevronLeft } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
-import { LIVE_CHANNELS, openLiveChannel } from '@/lib/liveChannels';
+import { LIVE_CHANNELS } from '@/lib/liveChannels';
 import { EmptyState, GhostButton } from '@/components/ui-kit';
 
 const DEFAULT_SETTINGS = {
@@ -29,6 +29,20 @@ export default function TvPage() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [channelsOpen, setChannelsOpen] = useState(false);
   const [activeChannel, setActiveChannel] = useState(0);
+  const [playChannel, setPlayChannel] = useState(null); // index into LIVE_CHANNELS, or null for ads rotation
+  const [frameLoaded, setFrameLoaded] = useState(false);
+
+  // Play a live channel full-stage inside the TV (no new tab, no login).
+  const playLiveChannel = useCallback((i) => {
+    setActiveChannel(i);
+    setPlayChannel(i);
+    setChannelsOpen(false);
+    setFrameLoaded(false);
+  }, []);
+
+  const exitLiveChannel = useCallback(() => {
+    setPlayChannel(null);
+  }, []);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const timerRef = useRef(null);
   const hideTimerRef = useRef(null);
@@ -57,13 +71,13 @@ export default function TvPage() {
   const lad = ad ? localizeAd(ad, lang) : null;
 
   useEffect(() => {
-    if (paused || ads.length === 0) return;
+    if (paused || ads.length === 0 || playChannel !== null) return;
     const seconds = Math.max(4, Math.min(60, Number(settings.rotationSeconds) || 12));
     timerRef.current = setInterval(() => {
       setIndex((i) => (i + 1) % ads.length);
     }, seconds * 1000);
     return () => clearInterval(timerRef.current);
-  }, [paused, ads.length, settings.rotationSeconds]);
+  }, [paused, ads.length, settings.rotationSeconds, playChannel]);
 
   useEffect(() => {
     if (!ad || muted) return;
@@ -90,12 +104,12 @@ export default function TvPage() {
       else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveChannel((a) => Math.max(a - cols, 0)); }
       else if (e.key === 'ArrowRight') { e.preventDefault(); setActiveChannel((a) => Math.min(a + 1, LIVE_CHANNELS.length - 1)); }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); setActiveChannel((a) => Math.max(a - 1, 0)); }
-      else if (e.key === 'Enter') { e.preventDefault(); openLiveChannel(LIVE_CHANNELS[activeChannel].url); }
+      else if (e.key === 'Enter') { e.preventDefault(); playLiveChannel(activeChannel); }
       else if (e.key === 'Escape') { setChannelsOpen(false); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [channelsOpen, activeChannel]);
+  }, [channelsOpen, activeChannel, playLiveChannel]);
 
   // Keep the keyboard-selected channel visible.
   useEffect(() => {
@@ -105,12 +119,11 @@ export default function TvPage() {
   }, [channelsOpen, activeChannel]);
 
   const shuffleTvChannel = useCallback(() => {
-    if (LIVE_CHANNELS.length < 2) { setActiveChannel(0); openLiveChannel(LIVE_CHANNELS[0].url); return; }
+    if (LIVE_CHANNELS.length < 2) { playLiveChannel(0); return; }
     let next = Math.floor(Math.random() * (LIVE_CHANNELS.length - 1));
     if (next >= activeChannel) next += 1;
-    setActiveChannel(next);
-    openLiveChannel(LIVE_CHANNELS[next].url);
-  }, [activeChannel]);
+    playLiveChannel(next);
+  }, [activeChannel, playLiveChannel]);
   const wakeUi = useCallback(() => {
     setUiHidden(false);
     clearTimeout(hideTimerRef.current);
@@ -173,8 +186,27 @@ export default function TvPage() {
 
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#0a0a0f] text-[#f0ecdd]" onClick={wakeUi}>
-      {/* ── Full-bleed stage ─────────────────────────────────────── */}
-      {error ? (
+      {/* ── Full-bleed stage: live channel or ads rotation ────────── */}
+      {playChannel !== null ? (
+        <div key={LIVE_CHANNELS[playChannel].id} className="absolute inset-0 bg-black">
+          {!frameLoaded && (
+            <div className="absolute inset-0 grid place-items-center">
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="h-8 w-8 animate-spin text-[#d4af37]" />
+                <span className="text-xs tracking-[0.25em] text-[#d4af37] uppercase">Tuning in…</span>
+              </div>
+            </div>
+          )}
+          <iframe
+            src={LIVE_CHANNELS[playChannel].embedUrl || LIVE_CHANNELS[playChannel].url}
+            title={LIVE_CHANNELS[playChannel].title}
+            className="absolute inset-0 h-full w-full border-0"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+            allowFullScreen
+            onLoad={() => setFrameLoaded(true)}
+          />
+        </div>
+      ) : error ? (
         <div className="flex flex-1 flex-col items-center justify-center px-6">
           <EmptyState icon={MonitorPlay} title={error} />
         </div>
@@ -222,12 +254,25 @@ export default function TvPage() {
           <button onClick={() => setChannelsOpen((o) => !o)} className={`grid h-10 w-10 place-items-center rounded-xl backdrop-blur-sm transition-colors ${channelsOpen ? 'bg-[#d4af37] text-[#0a0a0f]' : 'bg-black/50 text-[#e9e7df] hover:bg-black/70'}`} aria-label="Live channels">
             <Radio className="h-4 w-4" />
           </button>
+          {playChannel !== null ? (
+            <>
+              <button onClick={() => { setChannelsOpen(true); }} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="All channels">
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button onClick={exitLiveChannel} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="Close live TV">
+                <X className="h-4 w-4" />
+              </button>
+            </>
+          ) : (
+            <>
           <button onClick={() => setMuted((m) => !m)} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label={muted ? t('tv.unmute') : t('tv.mute')}>
             {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </button>
           <button onClick={() => setPaused((p) => !p)} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label={paused ? t('tv.play') : t('tv.pause')}>
             {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
           </button>
+            </>
+          )}
           <button onClick={toggleFullscreen} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label={t('tv.fullscreen')}>
             {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
           </button>
@@ -235,7 +280,7 @@ export default function TvPage() {
       </header>
 
       {/* ── Content ──────────────────────────────────────────────── */}
-      {ad && (
+      {ad && playChannel === null && (
         <main className="tv-stage-text relative z-10 flex flex-1 flex-col justify-end px-6 pb-10 sm:px-12">
           <div className="max-w-2xl">
             <div className="flex items-center gap-3">
@@ -279,7 +324,7 @@ export default function TvPage() {
                   <Radio className="h-4 w-4" /> Live TV
                 </div>
                 <h2 className="mt-1 text-xl font-bold text-[#f0ecdd] sm:text-2xl">Bloomberg live desks</h2>
-                <p className="mt-1 text-xs text-[#8a8577]">Opens on bloomberg.com in a new tab · {LIVE_CHANNELS.length} channels · <span className="font-mono">↑↓←→</span> browse · <span className="font-mono">Enter</span> watch</p>
+                <p className="mt-1 text-xs text-[#8a8577]">Plays right here on TradingBible TV · {LIVE_CHANNELS.length} channels · <span className="font-mono">↑↓←→</span> browse · <span className="font-mono">Enter</span> watch</p>
               </div>
               <button onClick={() => setChannelsOpen(false)} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="Close">
                 <X className="h-4 w-4" />
@@ -295,7 +340,7 @@ export default function TvPage() {
                 <button
                   key={c.id}
                   data-chidx={ci}
-                  onClick={() => { setActiveChannel(ci); openLiveChannel(c.url); }}
+                  onClick={() => playLiveChannel(ci)}
                   onMouseEnter={() => setActiveChannel(ci)}
                   className={`group flex items-center gap-3 rounded-xl border p-3.5 text-left backdrop-blur-md transition ${ci === activeChannel ? 'border-[#d4af37]/60 bg-[#d4af37]/[0.08]' : 'border-[#d4af37]/15 bg-white/[0.03] hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.06]'}`}
                 >
@@ -311,7 +356,7 @@ export default function TvPage() {
                   </span>
                   <span className="flex shrink-0 items-center gap-1.5">
                     <span className="rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#ff5a62]">{c.desk}</span>
-                    <ExternalLink className="h-3.5 w-3.5 text-[#6a665a] transition group-hover:text-[#d4af37]" />
+                    <Play className="h-3.5 w-3.5 text-[#6a665a] transition group-hover:text-[#d4af37]" />
                   </span>
                 </button>
               ))}
@@ -322,19 +367,29 @@ export default function TvPage() {
 
       {/* ── Bottom bar ───────────────────────────────────────────── */}
       <footer className={`relative z-10 px-5 pb-5 transition-all duration-500 sm:px-8 ${uiHidden ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
-        <div className="mx-auto flex max-w-7xl flex-col gap-3">
-          <div className="flex items-center justify-between text-[11px] text-[#8a8577]">
-            <span className="truncate">{settings.footerText && settings.footerText !== 'Advertise with TradingBible' ? settings.footerText : t('tv.advertise')}</span>
-            <span className="hidden rounded-md bg-black/50 px-2 py-1 font-mono text-[10px] tracking-widest text-[#d4af37] backdrop-blur-sm sm:inline">{index + 1} / {ads.length}</span>
+        {playChannel !== null ? (
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+            <span className="flex min-w-0 items-center gap-2 truncate text-[11px] text-[#e9e7df]">
+              <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-[#e50914]" />
+              <span className="truncate">LIVE TV · {LIVE_CHANNELS[playChannel].title}</span>
+            </span>
+            <button onClick={() => setChannelsOpen(true)} className="shrink-0 rounded-md bg-black/50 px-2 py-1 font-mono text-[10px] tracking-widest text-[#d4af37] backdrop-blur-sm">ALL CHANNELS</button>
           </div>
-          <div className="h-[3px] w-full overflow-hidden rounded-full bg-white/10">
-            <div
-              key={`${ad?.id}-${index}`}
-              className="tv-progress h-full rounded-full bg-gradient-to-r from-[#d4af37] to-[#f0d675]"
-              style={{ animationDuration: `${seconds}s`, animationPlayState: paused ? 'paused' : 'running' }}
-            />
+        ) : (
+          <div className="mx-auto flex max-w-7xl flex-col gap-3">
+            <div className="flex items-center justify-between text-[11px] text-[#8a8577]">
+              <span className="truncate">{settings.footerText && settings.footerText !== 'Advertise with TradingBible' ? settings.footerText : t('tv.advertise')}</span>
+              <span className="hidden rounded-md bg-black/50 px-2 py-1 font-mono text-[10px] tracking-widest text-[#d4af37] backdrop-blur-sm sm:inline">{index + 1} / {ads.length}</span>
+            </div>
+            <div className="h-[3px] w-full overflow-hidden rounded-full bg-white/10">
+              <div
+                key={`${ad?.id}-${index}`}
+                className="tv-progress h-full rounded-full bg-gradient-to-r from-[#d4af37] to-[#f0d675]"
+                style={{ animationDuration: `${seconds}s`, animationPlayState: paused ? 'paused' : 'running' }}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </footer>
     </div>
   );

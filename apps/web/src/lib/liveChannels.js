@@ -1,8 +1,8 @@
 // TradingBible TV — curated live channel guide (Bloomberg live desks).
-// Bloomberg's live pages are DRM/bot protected with no public embed or
-// restream URL, so page-URL channels open on bloomberg.com in a new tab —
-// we do not hotlink or rebroadcast their streams. Entries with an `embedUrl`
-// (official YouTube live embed) play directly inside the widget, no login.
+// Every channel plays inside our own player (widget + TV page) — no login,
+// no popups, no new tabs. Page URLs load Bloomberg's own player in-frame;
+// entries with an `embedUrl` (official YouTube live embed) play instantly.
+// We do not hotlink or rebroadcast streams; framing shows their player.
 
 export const LIVE_CHANNELS = [
 	{
@@ -100,7 +100,3 @@ export const LIVE_CHANNELS = [
 		isNew: true,
 	},
 ];
-
-export function openLiveChannel(url) {
-	window.open(url, '_blank', 'noopener');
-}
