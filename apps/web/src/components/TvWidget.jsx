@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, Shuffle, ListVideo, Lock, Crown, WifiOff, Clock } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
@@ -194,12 +195,13 @@ export default function TvWidget() {
   useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); }, [channelIndex]);
 
   const watchChannel = useCallback((i) => {
+    if (typeof i !== 'number' || i < 0 || i >= ordered.length) return;
     const c = ordered[i];
     if (c && !canWatch(c)) { goUpgrade(); return; }
     setChannelIndex(i);
     setView('player');
     setFrameLoaded(false);
-  }, [canWatch, goUpgrade, liveChannels]);
+  }, [canWatch, goUpgrade, ordered]);
 
   const unlockedIdx = ordered.map((c, i) => (canWatch(c) ? i : -1)).filter((i) => i >= 0);
 
@@ -313,6 +315,16 @@ export default function TvWidget() {
           {/* Stage */}
           <div className="relative min-h-0 flex-1 overflow-hidden">
             {view === 'player' && playing !== null && (
+              <ErrorBoundary
+                fallback={
+                  <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-center">
+                    <p className="text-xs font-semibold text-[#f0ecdd]">This player hit a snag</p>
+                    <button onClick={() => { setView('channels'); }} className="min-h-[40px] rounded-xl border border-[#d4af37]/30 px-5 text-xs font-bold text-[#d4af37]">
+                      Back to channels
+                    </button>
+                  </div>
+                }
+              >
               <div className="flex h-full flex-col">
                 <div className="flex items-center gap-1 border-b border-[#d4af37]/10 px-2 py-1.5">
                   <button onClick={openChannels} className={iconBtn} aria-label="Back to channels">
@@ -400,6 +412,7 @@ export default function TvWidget() {
                   </span>
                 </div>
               </div>
+              </ErrorBoundary>
             )}
 
             {view === 'channels' && (

@@ -9,6 +9,7 @@ import { hardenEmbed, useLiveChannels } from '@/lib/liveChannels';
 import { meetsPlan } from '@/lib/entitlements';
 import YoutubePlayer from '@/components/YoutubePlayer';
 import { EmptyState, GhostButton } from '@/components/ui-kit';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const DEFAULT_SETTINGS = {
   rotationSeconds: 12,
@@ -72,6 +73,7 @@ export default function TvPage() {
 
   // Play a live channel full-stage inside the TV (no new tab, no login).
   const playLiveChannel = useCallback((i) => {
+    if (typeof i !== 'number' || i < 0 || i >= liveChannels.length) return;
     const c = liveChannels[i];
     if (c && !canWatch(c)) { goUpgrade(c); return; }
     setActiveChannel(i);
@@ -242,6 +244,16 @@ export default function TvPage() {
     <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#0a0a0f] text-[#f0ecdd]" onClick={wakeUi}>
       {/* ── Full-bleed stage: live channel or ads rotation ────────── */}
       {playChannel !== null ? (
+        <ErrorBoundary
+          fallback={
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#07070a] p-6 text-center">
+              <p className="font-semibold text-[#f0ecdd]">This player hit a snag</p>
+              <button onClick={() => { setPlayChannel(null); setChannelsOpen(true); }} className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f]">
+                Back to guide
+              </button>
+            </div>
+          }
+        >
         <div key={liveChannels[playChannel].id} className="absolute inset-0 bg-black">
           {!frameLoaded && (
             <div className="absolute inset-0 grid place-items-center">
@@ -297,6 +309,7 @@ export default function TvPage() {
               stream or open suggestions. Channel controls live above. */}
           {(!playIsYoutube || ytStarted) && !ytBlocked && !(ytError && !ytStarted) && <div className="absolute inset-0 bg-transparent" />}
         </div>
+        </ErrorBoundary>
       ) : error ? (
         <div className="flex flex-1 flex-col items-center justify-center px-6">
           <EmptyState icon={MonitorPlay} title={error} />
