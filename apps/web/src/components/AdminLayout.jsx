@@ -5,6 +5,7 @@ import {
   LogOut, Menu, Shield, X, ChevronRight, Plug, Key, Package, User, ChevronDown, MonitorPlay, Briefcase
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import AdminSearch from '@/components/AdminSearch';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { enterAdminPreview } from '@/lib/adminPreview';
@@ -137,6 +138,9 @@ export default function AdminLayout({ children, title }) {
                 <span className="truncate text-sm font-medium text-[#e9e7df] sm:text-base">{title || 'Admin Dashboard'}</span>
               </div>
             </div>
+          </div>
+          <div className="mx-2 flex min-w-0 flex-1 justify-center">
+            <AdminSearch />
           </div>
           <div className="ml-2 flex shrink-0 items-center gap-1.5 sm:gap-2">
             <button onClick={() => { enterAdminPreview(); nav('/app'); }} className="hidden sm:flex items-center gap-1.5 rounded-lg border border-[#d4af37]/15 px-3 py-1.5 text-xs text-[#8a8577] hover:border-[#d4af37]/30 hover:text-[#c9c4b4]">
