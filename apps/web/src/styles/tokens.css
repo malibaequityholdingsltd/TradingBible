@@ -26,7 +26,7 @@
   --tb-blur-md: blur(14px);
   --tb-blur-lg: blur(20px);
 
-  --tb-shadow-card: 0 18px 44px -26px rgba(0, 0, 0, 0.7);
+  --tb-shadow-card: 0 24px 60px -28px rgba(0, 0, 0, 0.8), 0 0 44px -30px rgba(212, 175, 55, 0.35);
   --tb-shadow-gold: 0 12px 40px -12px rgba(212, 175, 55, 0.45);
   --tb-ring: 0 0 0 1px rgba(212, 175, 55, 0.28);
 
@@ -61,6 +61,20 @@ html.light .tb-kicker { color: #8a6714; }
   flex-direction: column;
   gap: 1.25rem;
 }
+/* 4D page enter: soft rise cascade as each page mounts. */
+.tb-page > * { animation: tb-rise 0.5s var(--tb-ease) both; }
+.tb-page > *:nth-child(2) { animation-delay: 0.06s; }
+.tb-page > *:nth-child(3) { animation-delay: 0.12s; }
+.tb-page > *:nth-child(4) { animation-delay: 0.18s; }
+.tb-page > *:nth-child(5) { animation-delay: 0.24s; }
+.tb-page > *:nth-child(n+6) { animation-delay: 0.3s; }
+@keyframes tb-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tb-page > *, .tb-hero::after { animation: none; }
+}
 
 .tb-hero {
   position: relative;
@@ -73,6 +87,21 @@ html.light .tb-kicker { color: #8a6714; }
   backdrop-filter: var(--tb-blur-lg);
   -webkit-backdrop-filter: var(--tb-blur-lg);
   padding: 1.5rem;
+  box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.85), 0 0 70px -38px rgba(212, 175, 55, 0.4);
+}
+/* Slow light sweep across every hero — the time dimension. */
+.tb-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 42%, rgba(244, 230, 168, 0.08) 50%, transparent 58%);
+  transform: translateX(-100%);
+  animation: tb-sheen 9s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes tb-sheen {
+  0% { transform: translateX(-100%); }
+  55%, 100% { transform: translateX(100%); }
 }
 @media (min-width: 640px) {
   .tb-hero { padding: 2.25rem; }
@@ -84,7 +113,7 @@ html.light .tb-kicker { color: #8a6714; }
   background: linear-gradient(160deg, rgba(30, 30, 30, 0.72), rgba(18, 18, 18, 0.62));
   backdrop-filter: var(--tb-blur-md);
   -webkit-backdrop-filter: var(--tb-blur-md);
-  box-shadow: var(--tb-shadow-card);
+  box-shadow: var(--tb-shadow-card), inset 0 1px 0 rgba(244, 230, 168, 0.09);
   padding: 1.25rem;
 }
 html.light .tb-card {
@@ -117,7 +146,9 @@ html.light .tb-card {
   font-size: 1.35rem;
   font-weight: 800;
   letter-spacing: -0.02em;
+  text-wrap: balance;
   color: var(--tb-ink);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
 }
 @media (min-width: 640px) {
   .tb-h2 { font-size: 1.75rem; }
@@ -158,4 +189,12 @@ html.light .tb-card {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  filter: drop-shadow(0 2px 10px rgba(212, 175, 55, 0.25));
+}
+
+/* HD focus visibility everywhere. */
+:where(a, button, input, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--tb-gold);
+  outline-offset: 2px;
+  border-radius: 0.4rem;
 }
