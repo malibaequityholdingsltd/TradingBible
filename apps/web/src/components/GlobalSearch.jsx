@@ -172,7 +172,7 @@ export default function GlobalSearch() {
 
       {open && (
         <div className="fixed inset-0 z-[70] flex items-start justify-center bg-black/70 p-4 pt-[12vh] backdrop-blur-sm" onClick={() => setOpen(false)}>
-          <div className="glass w-full max-w-2xl overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="glass sheen-panel overlay-pop w-full max-w-2xl overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2 border-b border-[#d4af37]/10 px-4">
               <Search className="h-4 w-4 shrink-0 text-[#d4af37]" />
               <input

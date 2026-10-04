@@ -525,7 +525,7 @@ export default function TvPage() {
 
       {/* ── Live channel guide (Bloomberg live desks) ─────────────── */}
       {channelsOpen && (
-        <div className="absolute inset-0 z-20 flex flex-col bg-[#07070a]/85 backdrop-blur-xl" onClick={() => setChannelsOpen(false)}>
+        <div className="sheen-panel overlay-pop absolute inset-0 z-20 flex flex-col bg-[#07070a]/85 backdrop-blur-xl" onClick={() => setChannelsOpen(false)}>
           <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col overflow-hidden px-4 py-6 sm:px-8" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between gap-3">
               <div>

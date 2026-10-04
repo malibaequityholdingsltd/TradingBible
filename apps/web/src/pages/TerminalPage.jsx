@@ -30,7 +30,7 @@ function SymbolPicker({ existing, groups, onAdd, onClose }) {
   const { t: tr } = useI18n();
   return (
     <div className="term-opaque fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 pt-24 backdrop-blur-sm" onClick={onClose}>
-      <div className="tb-card w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="tb-card sheen-panel overlay-pop w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between">
           <h3 className="font-semibold text-[#f0ecdd]">{tr('term.addSymbols')}</h3>
           <button onClick={onClose} className="text-[#8a8577] hover:text-[#e9e7df]"><X className="h-5 w-5" /></button>
