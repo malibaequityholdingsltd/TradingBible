@@ -71,7 +71,25 @@ export function Stat({ label, value, tone }) {
 
 export function StatGrid({ children, cols = 4 }) {
 	const map = { 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3', 4: 'sm:grid-cols-2 xl:grid-cols-4', 5: 'sm:grid-cols-3 xl:grid-cols-5', 7: 'sm:grid-cols-4 xl:grid-cols-7' };
-	return <div className={`grid grid-cols-2 gap-2 sm:gap-3 ${map[cols] || map[4]}`}>{children}</div>;
+	return <div className={`tb-stagger grid grid-cols-2 gap-2 sm:gap-3 ${map[cols] || map[4]}`}>{children}</div>;
+}
+
+// Skeleton blocks for premium loading states.
+export function Skeleton({ className = '' }) {
+	return <div aria-hidden className={`tb-shimmer rounded-lg ${className}`} />;
+}
+
+export function CardSkeleton({ rows = 3 }) {
+	return (
+		<div className="tb-card" aria-hidden>
+			<Skeleton className="h-5 w-1/3" />
+			<div className="mt-3 space-y-2">
+				{Array.from({ length: rows }).map((_, i) => (
+					<Skeleton key={i} className="h-4 w-full" />
+				))}
+			</div>
+		</div>
+	);
 }
 
 export function Tabs({ tabs, active, onChange }) {

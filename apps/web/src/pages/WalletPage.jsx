@@ -5,7 +5,7 @@ import { fmtMoney } from '@/lib/mockData';
 import { useI18n } from '@/lib/i18n';
 import { useWallet, NETWORK_LIST } from '@/hooks/useWallet';
 import { useToast } from '@/hooks/use-toast';
-import { PageHero, Card, SectionHead, EmptyState, GoldButton, GhostButton } from '@/components/ui-kit';
+import { PageHero, Card, SectionHead, EmptyState, GoldButton, GhostButton, Skeleton, CardSkeleton } from '@/components/ui-kit';
 
 const input = 'w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none focus:border-[#d4af37]/50 min-h-[44px]';
 
@@ -152,7 +152,7 @@ export default function WalletPage() {
 				{/* Tracked wallets */}
 				<div>
 					{loading ? (
-						<div className="tb-card flex items-center justify-center gap-2 py-20 text-sm text-[#8a8577]"><RefreshCw className="h-4 w-4 animate-spin" /> {t('wal.loadingBal')}</div>
+						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><Skeleton className="h-36" /><Skeleton className="h-36" /></div>
 					) : wallets.length === 0 ? (
 						<EmptyState icon={Wallet} title={t('wal.noTrack')} />
 					) : (

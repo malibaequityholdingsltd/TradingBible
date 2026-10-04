@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Bell, Plus, Trash2, Pause, Play, Loader2, ArrowUp, ArrowDown, Percent, History, X, Volume2, Mail, Smartphone } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { PageHero, Card, Tabs, Stat, StatGrid, EmptyState, GoldButton, GhostButton } from '@/components/ui-kit';
+import { PageHero, Card, Tabs, Stat, StatGrid, EmptyState, GoldButton, GhostButton, CardSkeleton } from '@/components/ui-kit';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useI18n } from '@/lib/i18n';
@@ -105,7 +105,7 @@ export default function AlertsPage() {
         />
 
         {loading ? (
-          <Card><div className="flex items-center justify-center gap-2 py-20 text-sm text-[#8a8577]"><Loader2 className="h-4 w-4 animate-spin" /> {t('c.loading')}</div></Card>
+          <Card><CardSkeleton rows={5} /></Card>
         ) : tab === 'active' ? (
           alerts.length === 0 ? (
             <EmptyState
