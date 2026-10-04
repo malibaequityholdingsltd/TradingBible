@@ -10,13 +10,40 @@ import { useI18n } from '@/lib/i18n';
 // volume); color shows direction with intensity via the selected theme.
 // Search fades non-matches, hover shows price/volume tooltip, click opens chart.
 
-// Bubble color themes: [up, down] as "r,g,b" triplets. Bases are vivid and
-// fully saturated — depth scaling darkens them for flat coins.
-const SCHEMES = {
-  classic: { label: 'Classic', up: '16,185,129', down: '239,68,68' },
-  gold: { label: 'Gold', up: '234,179,8', down: '220,38,38' },
-  ocean: { label: 'Ocean', up: '56,189,248', down: '244,63,94' },
-  sunset: { label: 'Sunset', up: '20,184,166', down: '249,115,22' },
+// Full design themes: bubble colors + stage + labels + accents in one pick.
+// Persists under the same key as the old color schemes (unknown ids fall
+// back to Gold Glass).
+const THEMES = {
+  goldglass: {
+    label: 'Gold Glass', up: '16,185,129', down: '239,68,68',
+    dark: true, label: '#ffffff', bubbleOutline: 'rgba(0,0,0,0.35)',
+    accent: '#d4af37', activeBg: 'linear-gradient(to right, #f4e6a8, #c99a25)', activeText: '#0a0a0f',
+    medalBg: 'rgba(212,175,55,0.12)', fieldBg: null, vignette: true,
+  },
+  amber: {
+    label: 'Terminal Amber', up: '255,180,0', down: '255,106,0',
+    dark: true, label: '#ffe9c4', bubbleOutline: 'rgba(0,0,0,0.45)',
+    accent: '#ffb000', activeBg: 'linear-gradient(to right, #ffd54d, #ff9e00)', activeText: '#140d00',
+    medalBg: 'rgba(255,176,0,0.12)', fieldBg: 'radial-gradient(ellipse at 50% 40%, rgba(255,176,0,0.06), rgba(0,0,0,0) 65%)', vignette: true,
+  },
+  neon: {
+    label: 'Neon Cyber', up: '34,211,238', down: '244,114,182',
+    dark: true, label: '#ffffff', bubbleOutline: 'rgba(0,0,0,0.45)',
+    accent: '#22d3ee', activeBg: 'linear-gradient(to right, #67e8f9, #e879f9)', activeText: '#05010f',
+    medalBg: 'rgba(34,211,238,0.12)', fieldBg: 'radial-gradient(ellipse at 50% 40%, rgba(88,28,135,0.25), rgba(0,0,0,0) 65%)', vignette: true,
+  },
+  mono: {
+    label: 'Mono Minimal', up: '235,235,238', down: '120,120,128',
+    dark: true, label: '#f4f4f5', bubbleOutline: 'rgba(0,0,0,0.5)',
+    accent: '#d4af37', activeBg: 'linear-gradient(to right, #e4e4e7, #a1a1aa)', activeText: '#09090b',
+    medalBg: 'rgba(255,255,255,0.08)', fieldBg: null, vignette: true,
+  },
+  ivory: {
+    label: 'Light Luxury', up: '16,122,87', down: '185,28,28',
+    dark: false, label: '#1c1917', bubbleOutline: 'rgba(255,255,255,0.6)',
+    accent: '#a16207', activeBg: 'linear-gradient(to right, #f4e6a8, #b8860b)', activeText: '#1c1917',
+    medalBg: 'rgba(161,98,7,0.10)', fieldBg: 'linear-gradient(to bottom, #f7f1e2, #e9dfc9)', vignette: false,
+  },
 };
 const SCHEME_KEY = 'tb-bubbles-scheme';
 
@@ -110,10 +137,10 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   const { cells, status, retry } = useHeatmap(type, period, 15000);
   const [mode, setMode] = useState('move'); // 'move' | 'volume'
   const [schemeId, setSchemeId] = useState(() => {
-    try { return SCHEMES[localStorage.getItem(SCHEME_KEY)] ? localStorage.getItem(SCHEME_KEY) : 'classic'; }
-    catch { return 'classic'; }
+    try { return THEMES[localStorage.getItem(SCHEME_KEY)] ? localStorage.getItem(SCHEME_KEY) : 'goldglass'; }
+    catch { return 'goldglass'; }
   });
-  const scheme = SCHEMES[schemeId] || SCHEMES.classic;
+  const scheme = THEMES[schemeId] || THEMES.goldglass;
   const pickScheme = (id) => {
     setSchemeId(id);
     try { localStorage.setItem(SCHEME_KEY, id); } catch { /* ignore */ }
@@ -300,9 +327,8 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   }, [cells]);
 
   const nodes = [...nodesRef.current.values()];
-  // White labels on solid saturated bubbles in both themes (dark outline
-  // keeps them crisp on every color, including gold in light mode).
-  const labelColor = '#ffffff';
+  // Labels follow the theme (dark text on the ivory stage, white elsewhere).
+  const labelColor = scheme.label;
 
   return (
     <div>
@@ -321,14 +347,16 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
           <button
             onClick={() => setMode('move')}
             title={t('hm.sizeMove', null, 'Bubble size = move size')}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${mode === 'move' ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}
+            style={mode === 'move' ? { background: scheme.activeBg, color: scheme.activeText } : undefined}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${mode === 'move' ? '' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}
           >
             <Move3d className="h-3.5 w-3.5" />{t('hm.move', null, 'Move')}
           </button>
           <button
             onClick={() => setMode('volume')}
             title={t('hm.sizeVol', null, 'Bubble size = 24h volume')}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${mode === 'volume' ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}
+            style={mode === 'volume' ? { background: scheme.activeBg, color: scheme.activeText } : undefined}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${mode === 'volume' ? '' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}
           >
             <BarChart3 className="h-3.5 w-3.5" />{t('hm.volume', null, 'Volume')}
           </button>
@@ -339,15 +367,16 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
         </span>
       </div>
 
-      {/* Bubble color themes */}
+      {/* Design themes */}
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <span className="text-[11px] uppercase tracking-wider text-[#8a8577]">{t('hm.colors', null, 'Colors')}</span>
-        {Object.entries(SCHEMES).map(([id, sc]) => (
+        <span className="text-[11px] uppercase tracking-wider text-[#8a8577]">{t('hm.design', null, 'Design')}</span>
+        {Object.entries(THEMES).map(([id, sc]) => (
           <button
             key={id}
             onClick={() => pickScheme(id)}
             title={sc.label}
-            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition ${schemeId === id ? 'border-[#d4af37]/60 bg-[#d4af37]/10 text-[#e9e7df]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'}`}
+            style={schemeId === id ? { borderColor: sc.accent } : undefined}
+            className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition ${schemeId === id ? 'bg-white/[0.04] text-[#e9e7df]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'}`}
           >
             <span className="flex overflow-hidden rounded-full">
               <span className="h-3 w-3" style={{ background: `rgb(${sc.up})` }} />
@@ -419,10 +448,10 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
       {cells.length > 0 && (
         <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
           {[
-            { icon: TrendingUp, label: t('hm.topGainer', null, 'Top gainer'), cell: stats.gainer, cls: 'text-emerald-400', bar: 'from-emerald-400 to-emerald-400/20' },
-            { icon: TrendingDown, label: t('hm.topLoser', null, 'Top loser'), cell: stats.loser, cls: 'text-red-400', bar: 'from-red-400 to-red-400/20' },
-            { icon: Flame, label: t('hm.mostActive', null, 'Most active'), cell: stats.active, cls: 'text-[#d4af37]', bar: 'from-[#f4e6a8] to-[#c99a25]/20' },
-          ].map(({ icon: Icon, label, cell, cls, bar }, ri) => {
+            { icon: TrendingUp, label: t('hm.topGainer', null, 'Top gainer'), cell: stats.gainer, cls: 'text-emerald-400' },
+            { icon: TrendingDown, label: t('hm.topLoser', null, 'Top loser'), cell: stats.loser, cls: 'text-red-400' },
+            { icon: Flame, label: t('hm.mostActive', null, 'Most active'), cell: stats.active, cls: 'text-[#d4af37]' },
+          ].map(({ icon: Icon, label, cell, cls }, ri) => {
             const mag = cell ? Math.abs(cell.changePercent || 0) : 0;
             const maxMag = Math.max(0.01, ...cells.map((c) => Math.abs(c.changePercent || 0)));
             return (
@@ -431,7 +460,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
               onClick={() => cell && onSelect?.(cell)}
               className="group relative flex min-w-0 items-center gap-3 overflow-hidden rounded-2xl border border-[#d4af37]/12 bg-gradient-to-b from-white/[0.04] to-transparent px-4 py-3 text-left shadow-[0_8px_32px_rgba(0,0,0,0.25)] transition hover:border-[#d4af37]/40"
             >
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 font-mono text-sm font-bold text-[#d4af37]">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl font-mono text-sm font-bold" style={{ background: scheme.medalBg, color: scheme.accent }}>
                 {ri + 1}
               </span>
               <span className="min-w-0 flex-1">
@@ -443,7 +472,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                   {cell && <span className={cls}>{cell.changePercent >= 0 ? '+' : ''}{cell.changePercent}%</span>}
                 </span>
                 <span className="mt-1.5 block h-1 overflow-hidden rounded-full bg-white/5">
-                  <span className={`block h-full rounded-full bg-gradient-to-r ${bar} transition-all`} style={{ width: `${Math.min(100, (mag / maxMag) * 100)}%` }} />
+                  <span className="block h-full rounded-full transition-all" style={{ width: `${Math.min(100, (mag / maxMag) * 100)}%`, background: scheme.accent }} />
                 </span>
               </span>
             </button>
@@ -453,7 +482,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
       )}
 
       {/* Bubble field */}
-      <div ref={wrapRef} className="relative w-full touch-none select-none overflow-hidden rounded-2xl border border-[#d4af37]/20 shadow-[0_0_80px_rgba(212,175,55,0.10),0_24px_80px_rgba(0,0,0,0.5)]" style={{ height: 520 }}>
+      <div ref={wrapRef} className="relative w-full touch-none select-none overflow-hidden rounded-2xl border border-[#d4af37]/20 shadow-[0_0_80px_rgba(212,175,55,0.10),0_24px_80px_rgba(0,0,0,0.5)]" style={{ height: 520, ...(scheme.fieldBg ? { background: scheme.fieldBg } : {}) }}>
         <div className="pointer-events-none absolute inset-0 grain opacity-20" />
         {status === 'loading' && !cells.length ? (
           <div className="grid h-full place-items-center text-sm text-[#8a8577]">{t('mkt.loadingHeat')}</div>
@@ -482,7 +511,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                 <stop offset="100%" stopColor="rgba(0,0,0,0.42)" />
               </radialGradient>
             </defs>
-            <rect x={0} y={0} width={size.w} height={size.h} fill="url(#bbStage)" />
+            {scheme.vignette && <rect x={0} y={0} width={size.w} height={size.h} fill="url(#bbStage)" />}
             {nodes.map((n) => {
               const dim = matchSet && !matchSet.has(n.cell.symbol);
               const big = Math.abs(n.cell.changePercent) >= 5;
@@ -556,7 +585,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                         return s >= min ? s : 0;
                       };
                       const F = "'Space Grotesk', Sora, sans-serif";
-                      const outline = { pointerEvents: 'none', stroke: 'rgba(0,0,0,0.35)', strokeWidth: 1.25, paintOrder: 'stroke' };
+                      const outline = { pointerEvents: 'none', stroke: scheme.bubbleOutline, strokeWidth: 1.25, paintOrder: 'stroke' };
                       if (singleLine) {
                         const full = `${sym} ${pctStr}`;
                         let oneText = full, oneSize = fit(full, 11.5);
