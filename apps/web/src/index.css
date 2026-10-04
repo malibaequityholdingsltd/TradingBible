@@ -488,15 +488,21 @@ html.light .hover\:bg-white\/5:hover {
   background-color: rgba(45, 52, 64, 0.06) !important;
 }
 
-/* Gold accents — darken for contrast on light surfaces */
+/* Gold accents — darkened for contrast on light surfaces */
 html.light .text-\[\#d4af37\] {
-  color: #a67c1e !important;
+  color: #8a6714 !important;
 }
 html.light .text-\[\#d4af37\]\/60 {
-  color: rgba(166,124,30,0.68) !important;
+  color: rgba(138,103,20,0.8) !important;
 }
 html.light .text-\[\#d4af37\]\/70 {
-  color: rgba(166,124,30,0.78) !important;
+  color: rgba(138,103,20,0.88) !important;
+}
+html.light .text-\[\#38bdf8\] {
+  color: #0284c7 !important;
+}
+html.light .text-\[\#ff5a62\] {
+  color: #dc2626 !important;
 }
 html.light .border-\[\#07070a\],
 html.light .border-\[\#0a0a0f\],
@@ -707,10 +713,10 @@ html.light .text-\[\#c9c4b4\] { color: #454d5c; }
 html.light .text-\[\#b3ae9e\] { color: #5a6373; }
 html.light .text-\[\#b8b3a3\],
 html.light .text-\[\#b5b0a2\] { color: #5a6373; }
-html.light .text-\[\#8a8577\] { color: #6b7280; }
+html.light .text-\[\#8a8577\] { color: #545a65; }
 html.light .text-\[\#6a665a\] { color: #5f646d; }
 html.light .text-\[\#5a564a\],
-html.light .text-\[\#5f5b50\] { color: #6b7078; }
+html.light .text-\[\#5f5b50\] { color: #5f646d; }
 html.light .text-\[\#f5f5f7\],
 html.light .text-\[\#f5f2e8\],
 html.light .text-\[\#0f0f14\] { color: #2d3440; }
@@ -800,6 +806,24 @@ button {
 [class*='-btn'],
 button {
   touch-action: manipulation;
+}
+
+/* Terminal overlays: fully opaque panels (no see-through), both themes */
+.term-opaque .tb-card,
+.term-opaque .glass,
+.term-opaque .layered-list,
+.term-opaque .layered-list__section,
+.term-opaque .layered-list__row {
+  background: #101014 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html.light .term-opaque .tb-card,
+html.light .term-opaque .glass,
+html.light .term-opaque .layered-list,
+html.light .term-opaque .layered-list__section,
+html.light .term-opaque .layered-list__row {
+  background: #fbf9f3 !important;
 }
 
 /* ─── LIGHT THEME PATCH: missing opacity variants (app shell, drawers, overlays) ─── */
