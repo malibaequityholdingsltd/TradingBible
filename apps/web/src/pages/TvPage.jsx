@@ -401,9 +401,11 @@ export default function TvPage() {
               <p className="text-[10px] uppercase tracking-wider text-[#6a665a]">Retrying automatically…</p>
             </div>
           )}
-          {/* No-touch shield (engages once playing): no tap can pause the
-              stream or open suggestions. Channel controls live above. */}
-          {(!playIsYoutube || ytStarted) && !ytBlocked && !(ytError && !ytStarted) && <div className="absolute inset-0 bg-transparent" />}
+          {/* No-touch shield — always on from the first frame: no tap on the
+              video can pause or start it, or open suggestions. Fully
+              automatic; controls live above. Hidden while a slate shows so
+              its buttons stay tappable. */}
+          {!ytBlocked && !ytError && <div aria-hidden className="absolute inset-0 bg-transparent" />}
         </div>
         </ErrorBoundary>
       ) : error ? (
