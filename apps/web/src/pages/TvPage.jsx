@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Shuffle, Loader2, ChevronLeft, Lock, Crown } from 'lucide-react';
+import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Shuffle, Loader2, ChevronLeft, Lock, Crown, WifiOff } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -39,6 +39,9 @@ export default function TvPage() {
   const [frameLoaded, setFrameLoaded] = useState(false);
   const [ytMuted, setYtMuted] = useState(true);
   const [ytStarted, setYtStarted] = useState(false);
+  const [ytError, setYtError] = useState(false);
+  const [ytBlocked, setYtBlocked] = useState(false);
+  const [ytRetry, setYtRetry] = useState(0);
   const liveChannels = useLiveChannels();
   const ytRef = useRef(null);
   const playIsYoutube = playChannel !== null && /youtube\.com\/embed\//.test(liveChannels[playChannel]?.embedUrl || '');
@@ -52,7 +55,7 @@ export default function TvPage() {
     } catch { /* noop */ }
   }, []);
 
-  useEffect(() => { setYtMuted(true); setYtStarted(false); }, [playChannel]);
+  useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); setYtRetry(0); }, [playChannel]);
 
   // Channel entitlements: the Bloomberg desk plays for everyone (top of
   // funnel, even logged out); higher desks need their plan, and logged-out
@@ -250,10 +253,12 @@ export default function TvPage() {
           )}
           {playIsYoutube ? (
             <YoutubePlayer
+              key={`yt-${playChannel}-${ytRetry}`}
               src={hardenEmbed(liveChannels[playChannel].embedUrl || liveChannels[playChannel].url)}
               title={liveChannels[playChannel].title}
               ref={ytRef}
-              onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); } }}
+              onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); } else { setYtError(true); } }}
+              onBlocked={() => setYtBlocked(true)}
             />
           ) : (
             <iframe
@@ -265,9 +270,29 @@ export default function TvPage() {
               onLoad={() => setFrameLoaded(true)}
             />
           )}
+          {playIsYoutube && ytBlocked && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#07070a] p-6 text-center">
+              <WifiOff className="h-8 w-8 text-[#6a665a]" />
+              <p className="font-semibold text-[#f0ecdd]">Can't reach YouTube</p>
+              <p className="max-w-sm text-sm leading-relaxed text-[#8a8577]">Your network is blocking youtube.com — check connection, VPN, ad-blocker or region restrictions, then try again.</p>
+              <button onClick={() => { setYtBlocked(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="mt-1 min-h-[44px] rounded-xl border border-[#d4af37]/30 px-6 text-sm font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
+                Try again
+              </button>
+            </div>
+          )}
+          {playIsYoutube && ytError && !ytBlocked && !ytStarted && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#07070a] p-6 text-center">
+              <Radio className="h-8 w-8 text-[#6a665a]" />
+              <p className="font-semibold text-[#f0ecdd]">This desk is off-air right now</p>
+              <p className="max-w-sm text-sm text-[#8a8577]">Live shows run at set hours — Bloomberg runs 24/7.</p>
+              <button onClick={() => playLiveChannel(0)} className="mt-1 min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90">
+                Watch Bloomberg 24/7
+              </button>
+            </div>
+          )}
           {/* No-touch shield (engages once playing): no tap can pause the
               stream or open suggestions. Channel controls live above. */}
-          {(!playIsYoutube || ytStarted) && <div className="absolute inset-0 bg-transparent" />}
+          {(!playIsYoutube || ytStarted) && !ytBlocked && !(ytError && !ytStarted) && <div className="absolute inset-0 bg-transparent" />}
         </div>
       ) : error ? (
         <div className="flex flex-1 flex-col items-center justify-center px-6">

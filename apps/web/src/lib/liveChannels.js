@@ -153,6 +153,25 @@ export function hardenEmbed(url) {
 	});
 	return missing.length ? `${u}${sep}${missing.join('&')}` : u;
 }
+
+// Reachability probe: can this browser actually load YouTube? A no-cors
+// fetch resolves on any HTTP response (even opaque) and rejects only when
+// the network itself fails (DNS blocked, offline, VPN/proxy wall, aggressive
+// blocker). Used to show a helpful slate instead of a dead player.
+export function checkYoutubeReachable(timeoutMs = 8000) {
+	return (async () => {
+		try {
+			const ctrl = new AbortController();
+			const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+			await fetch('https://www.youtube.com/favicon.ico', { mode: 'no-cors', cache: 'no-store', signal: ctrl.signal });
+			clearTimeout(timer);
+			return true;
+		} catch {
+			return false;
+		}
+	})();
+}
+
 // Falls back to built-in only when the feed is unreachable.
 export function useLiveChannels() {
 	const [channels, setChannels] = useState(LIVE_CHANNELS);

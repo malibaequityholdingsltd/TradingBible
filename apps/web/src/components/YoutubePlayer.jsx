@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { checkYoutubeReachable } from '@/lib/liveChannels';
 
 // YouTube IFrame API player. Browsers block unmuted autoplay, so the player
 // starts muted (guaranteed motion) and the parent offers a "tap for sound"
@@ -24,39 +25,51 @@ function loadApi() {
   return apiPromise;
 }
 
-const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPlaying }, ref) {
+const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPlaying, onBlocked }, ref) {
   const frameRef = useRef(null);
   const playerRef = useRef(null);
   const playingRef = useRef(onPlaying);
   playingRef.current = onPlaying;
+  const blockedRef = useRef(onBlocked);
+  blockedRef.current = onBlocked;
 
   useEffect(() => {
     let cancelled = false;
     let player = null;
-    loadApi()
-      .then((YT) => {
-        if (cancelled || !frameRef.current) return;
-        player = new YT.Player(frameRef.current, {
-          events: {
-            onReady: (e) => {
-              try {
-                e.target.mute();
-                e.target.playVideo();
-              } catch { /* autoplay proceeds muted or waits */ }
-              if (ref) ref.current = e.target;
-            },
-            onStateChange: (e) => {
-              if (e?.data === window.YT?.PlayerState?.PLAYING) {
+    // If YouTube itself is unreachable from this browser (offline, VPN /
+    // proxy wall, DNS block, aggressive blocker), fail fast with a helpful
+    // slate instead of a dead "refused to connect" frame.
+    checkYoutubeReachable().then((ok) => {
+      if (cancelled) return;
+      if (!ok) {
+        try { blockedRef.current?.(true); } catch { /* noop */ }
+        return;
+      }
+      loadApi()
+        .then((YT) => {
+          if (cancelled || !frameRef.current) return;
+          player = new YT.Player(frameRef.current, {
+            events: {
+              onReady: (e) => {
+                try {
+                  e.target.mute();
+                  e.target.playVideo();
+                } catch { /* autoplay proceeds muted or waits */ }
                 if (ref) ref.current = e.target;
-                playingRef.current?.(true);
-              }
+              },
+              onStateChange: (e) => {
+                if (e?.data === window.YT?.PlayerState?.PLAYING) {
+                  if (ref) ref.current = e.target;
+                  playingRef.current?.(true);
+                }
+              },
+              onError: () => playingRef.current?.(false),
             },
-            onError: () => playingRef.current?.(false),
-          },
-        });
-        playerRef.current = player;
-      })
-      .catch(() => playingRef.current?.(false));
+          });
+          playerRef.current = player;
+        })
+        .catch(() => playingRef.current?.(false));
+    });
     return () => {
       cancelled = true;
       if (ref) ref.current = null;
