@@ -126,8 +126,8 @@ export default function AdminLayout({ children, title }) {
       {/* Main content */}
       <main className="flex min-h-[calc(100dvh-var(--header-h))] flex-1 flex-col pt-14 lg:ml-60">
         {/* Top bar */}
-        <header className="fixed left-0 right-0 top-[var(--header-h)] z-30 flex min-h-14 items-center justify-between border-b border-[#d4af37]/10 shell-panel-soft px-3 py-2 sm:px-4 lg:left-60 lg:px-6">
-          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+        <header className="fixed left-0 right-0 top-[var(--header-h)] z-30 grid min-h-14 grid-cols-[1fr_auto_1fr] items-center border-b border-[#d4af37]/10 shell-panel-soft px-3 py-2 sm:px-4 lg:left-60 lg:px-6">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <button onClick={() => setOpen(true)} className="lg:hidden rounded-lg p-1.5 text-[#8a8577] hover:bg-white/8">
               <Menu className="h-5 w-5" />
             </button>
@@ -139,10 +139,10 @@ export default function AdminLayout({ children, title }) {
               </div>
             </div>
           </div>
-          <div className="mx-2 flex min-w-0 flex-1 justify-center">
+          <div className="flex min-w-0 items-center justify-center px-2">
             <AdminSearch />
           </div>
-          <div className="ml-2 flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <div className="ml-2 flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
             <button onClick={() => { enterAdminPreview(); nav('/app'); }} className="hidden sm:flex items-center gap-1.5 rounded-lg border border-[#d4af37]/15 px-3 py-1.5 text-xs text-[#8a8577] hover:border-[#d4af37]/30 hover:text-[#c9c4b4]">
               View App
             </button>
