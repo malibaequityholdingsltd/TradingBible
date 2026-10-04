@@ -1,0 +1,152 @@
+/* TradingBible design tokens — Phase 1 of the full-app rewrite.
+   Single source of truth for color, radius, blur, shadow and motion.
+   Pages consume these via the ui-kit components; raw hexes in new code
+   should reference a token below. */
+
+:root {
+  --tb-gold: #d4af37;
+  --tb-gold-hi: #f4e6a8;
+  --tb-gold-deep: #a67c1e;
+  --tb-ink: #f0ecdd;
+  --tb-body: #c9c4b4;
+  --tb-muted: #8a8577;
+  --tb-faint: #5f5b50;
+  --tb-up: #34d399;
+  --tb-down: #fb7185;
+  --tb-info: #38bdf8;
+  --tb-violet: #a78bfa;
+  --tb-pink: #f472b6;
+
+  --tb-radius-sm: 0.6rem;
+  --tb-radius-md: 0.9rem;
+  --tb-radius-lg: 1.25rem;
+  --tb-radius-xl: 1.6rem;
+
+  --tb-blur-sm: blur(8px);
+  --tb-blur-md: blur(14px);
+  --tb-blur-lg: blur(20px);
+
+  --tb-shadow-card: 0 18px 44px -26px rgba(0, 0, 0, 0.7);
+  --tb-shadow-gold: 0 12px 40px -12px rgba(212, 175, 55, 0.45);
+  --tb-ring: 0 0 0 1px rgba(212, 175, 55, 0.28);
+
+  --tb-ease: cubic-bezier(0.2, 0.9, 0.28, 1.15);
+  --tb-speed: 0.25s;
+}
+
+html.light {
+  --tb-ink: #232830;
+  --tb-body: #454d5c;
+  --tb-muted: #6b7280;
+  --tb-faint: #8a8f99;
+  --tb-shadow-card: 0 10px 30px -22px rgba(60, 55, 40, 0.35);
+  --tb-shadow-gold: 0 12px 40px -22px rgba(166, 124, 30, 0.35);
+}
+
+/* ── Shared layout primitives ─────────────────────────────── */
+.tb-page {
+  width: 100%;
+  max-width: 96rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.tb-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--tb-radius-lg);
+  border: 1px solid rgba(212, 175, 55, 0.16);
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(212, 175, 55, 0.14), transparent 55%),
+    linear-gradient(135deg, rgba(212, 175, 55, 0.08), rgba(15, 15, 20, 0.5) 60%, transparent);
+  backdrop-filter: var(--tb-blur-lg);
+  -webkit-backdrop-filter: var(--tb-blur-lg);
+  padding: 1.5rem;
+}
+@media (min-width: 640px) {
+  .tb-hero { padding: 2.25rem; }
+}
+
+.tb-card {
+  border-radius: var(--tb-radius-lg);
+  border: 1px solid rgba(212, 175, 55, 0.16);
+  background: linear-gradient(160deg, rgba(30, 30, 30, 0.72), rgba(18, 18, 18, 0.62));
+  backdrop-filter: var(--tb-blur-md);
+  -webkit-backdrop-filter: var(--tb-blur-md);
+  box-shadow: var(--tb-shadow-card);
+  padding: 1.25rem;
+}
+html.light .tb-card {
+  background: rgba(255, 254, 249, 0.85);
+  border-color: #e4ded0;
+}
+
+.tb-card-hover {
+  transition: transform var(--tb-speed) ease, border-color var(--tb-speed) ease, box-shadow var(--tb-speed) ease;
+}
+.tb-card-hover:hover {
+  transform: translateY(-3px);
+  border-color: rgba(212, 175, 55, 0.42);
+  box-shadow: 0 20px 50px -20px rgba(212, 175, 55, 0.25);
+}
+
+.tb-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--tb-gold);
+}
+
+.tb-h2 {
+  margin-top: 0.5rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--tb-ink);
+}
+@media (min-width: 640px) {
+  .tb-h2 { font-size: 1.75rem; }
+}
+
+.tb-sub {
+  margin-top: 0.4rem;
+  max-width: 42rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--tb-muted);
+}
+
+.tb-scroll-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.tb-scroll-row::-webkit-scrollbar { display: none; }
+@media (min-width: 640px) {
+  .tb-scroll-row { flex-wrap: wrap; overflow-x: visible; }
+}
+.tb-scroll-row > * { flex-shrink: 0; }
+@media (min-width: 640px) {
+  .tb-scroll-row > * { flex-shrink: 1; }
+}
+
+.tb-grid-auto { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .tb-grid-auto { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1280px) { .tb-grid-auto { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1600px) { .tb-grid-auto { grid-template-columns: repeat(4, 1fr); } }
+
+.tb-gold-text {
+  background: linear-gradient(120deg, var(--tb-gold-hi) 0%, var(--tb-gold) 45%, var(--tb-gold-deep) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
