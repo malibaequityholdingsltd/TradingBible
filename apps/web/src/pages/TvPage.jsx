@@ -560,7 +560,7 @@ export default function TvPage() {
                   data-chidx={ci}
                   onClick={() => playLiveChannel(ci)}
                   onMouseEnter={() => setActiveChannel(ci)}
-                  className={`group flex items-center gap-3 rounded-xl border p-3.5 text-left backdrop-blur-md transition ${st === true ? 'border-[#e50914]/40 bg-[#e50914]/[0.06] shadow-[0_0_18px_rgba(229,9,20,0.12)]' : ci === activeChannel ? 'border-[#d4af37]/60 bg-[#d4af37]/[0.08]' : 'border-[#d4af37]/15 bg-white/[0.03] hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.06]'} ${st === false ? 'opacity-60' : ''}`}
+                  className={`group flex items-center gap-3 rounded-xl border p-3.5 text-left backdrop-blur-md transition ${st === true ? 'tv-live-row border-[#e50914]/40 bg-[#e50914]/[0.06] shadow-[0_0_18px_rgba(229,9,20,0.12)]' : ci === activeChannel ? 'border-[#d4af37]/60 bg-[#d4af37]/[0.08]' : 'border-[#d4af37]/15 bg-white/[0.03] hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.06]'} ${st === false ? 'opacity-60' : ''}`}
                 >
                   <span className={`relative grid h-10 w-10 shrink-0 place-items-center rounded-xl ${st === true ? 'bg-[#e50914]/15 text-[#ff5a62]' : 'bg-[#d4af37]/12 text-[#d4af37]'}`}>
                     {locked ? <Lock className="h-4 w-4" /> : <Radio className="h-4 w-4" />}
