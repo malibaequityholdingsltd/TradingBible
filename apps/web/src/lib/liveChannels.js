@@ -157,6 +157,17 @@ export const LIVE_CHANNELS = [
 		roundTheClock: true,
 	},
 	{
+		id: 'goodlife-radio-live',
+		title: 'The Good Life Radio',
+		desk: 'Music',
+		url: 'https://www.youtube.com/@TheGoodLiferadio',
+		embedUrl: ytLive('UChs0pSaEoNLV4mevBFGaoKA'),
+		blurb: '24/7 deep house radio — relaxing focus music for trading sessions.',
+		isNew: true,
+		plan: 'pro',
+		roundTheClock: true,
+	},
+	{
 		id: 'yahoo-finance-live',
 		title: 'Yahoo Finance 24/7',
 		desk: 'Stocks',
