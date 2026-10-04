@@ -74,7 +74,10 @@ html.light #app-bg::after {
   html { font-size: 15px; }
 }
 
-html, body, #root { max-width: 100%; overflow-x: hidden; }
+/* NOTE: overflow-x must stay `clip` (never `hidden`) on html/body/#root —
+   `hidden` turns #root into a scroll container, which silently breaks every
+   position:sticky header in the app (trader header, admin bar, table heads). */
+html, body, #root { max-width: 100%; overflow-x: clip; }
 
 body {
   padding-top: env(safe-area-inset-top);
