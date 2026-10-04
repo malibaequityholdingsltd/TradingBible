@@ -758,7 +758,7 @@ export default function TvWidget() {
                     {ordered[playing]?.desk} · {playing + 1}/{ordered.length}
                   </span>
                   {isYoutube && ytApi && !onTvPage && (
-                    <button onClick={toggleYtSound} className="flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0f] shadow-[0_2px_10px_rgba(212,175,55,0.3)] transition hover:opacity-95 active:scale-95" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
+                    <button onClick={toggleYtSound} className="btn-sheen flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0f] shadow-[0_2px_10px_rgba(212,175,55,0.3)] transition hover:opacity-95 active:scale-95" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
                       {ytMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
                       {ytMuted ? 'Tap for sound' : 'Tap to play'}
                     </button>
