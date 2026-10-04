@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/hooks/useTheme';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { I18nProvider } from '@/lib/i18n';
 import { homeRouteForUser } from '@/lib/homeRoute';
+import { meetsPlan } from '@/lib/entitlements';
 import { isAdminPreview } from '@/lib/adminPreview';
 import { usePlatformSettings } from '@/lib/platformSettings';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
@@ -103,6 +104,19 @@ function SubscriberProtected({ children }) {
     return children;
 }
 
+// Tier gate: requires a paid plan AT or ABOVE the given tier
+// ('pro' | 'elite' | 'professional'). Below-tier users land on pricing to
+// upgrade. Admins always pass.
+function PlanProtected({ plan, children }) {
+    const { isAuthed, isAuthReady, user } = useAuth();
+    if (!isAuthReady) return <PageFallback />;
+    if (!isAuthed) return <Navigate to="/login" replace />;
+    if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
+    if (!isSubscriber(user)) return <Navigate to="/pricing" replace />;
+    if (!meetsPlan(user, plan)) return <Navigate to="/pricing" replace />;
+    return children;
+}
+
 function Protected({ children }) {
     const { isAuthed, isAuthReady, user } = useAuth();
     if (!isAuthReady) return <PageFallback />;
@@ -186,8 +200,10 @@ function AppChrome() {
     // SI coach + TV widgets live here (above the per-route error boundary)
     // so they mount ONCE and survive page navigation without reloading
     // videos, chats, drag positions or panel state. App routes only —
-    // public pages and auth flows stay clean.
+    // public pages and auth flows stay clean. The SI bubble is an Elite
+    // feature: below-Elite plans never receive the widget at all.
     const { features } = usePlatformSettings();
+    const { user } = useAuth();
     const inApp = pathname.startsWith('/app') || pathname.startsWith('/student');
 
     return (
@@ -195,7 +211,7 @@ function AppChrome() {
             {!hideTicker && <GlobalTicker />}
             <AlertMonitor />
             <ScrollToTop />
-            {inApp && features.aiCoach !== false && <LiveChatWidget />}
+            {inApp && features.aiCoach !== false && meetsPlan(user, 'elite') && <LiveChatWidget />}
             {inApp && <TvWidget />}
         </>
     );
@@ -248,22 +264,22 @@ function RoutesWithBoundary() {
                     <Route path="/app/heatmaps" element={<PaidProtected><FeatureGate feature="chartBuilder"><HeatmapsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/indicators" element={<PaidProtected><FeatureGate feature="chartBuilder"><IndicatorsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/journal" element={<PaidProtected><JournalPage /></PaidProtected>} />
-                    <Route path="/app/reports" element={<PaidProtected><ReportsPage /></PaidProtected>} />
-                    <Route path="/app/coach" element={<SubscriberProtected><FeatureGate feature="aiCoach"><CoachPage /></FeatureGate></SubscriberProtected>} />
+                    <Route path="/app/reports" element={<PlanProtected plan="elite"><ReportsPage /></PlanProtected>} />
+                    <Route path="/app/coach" element={<PlanProtected plan="elite"><FeatureGate feature="aiCoach"><CoachPage /></FeatureGate></PlanProtected>} />
                     <Route path="/app/tools" element={<SubscriberProtected><FeatureGate feature="riskTools"><RiskToolsPage /></FeatureGate></SubscriberProtected>} />
                     <Route path="/app/community" element={<Protected><FeatureGate feature="community"><CommunityPage /></FeatureGate></Protected>} />
                     <Route path="/app/academy" element={<Protected><FeatureGate feature="academy"><AcademyPage /></FeatureGate></Protected>} />
                     <Route path="/app/security" element={<PaidProtected><SecurityPage /></PaidProtected>} />
-                    <Route path="/app/api-docs" element={<SubscriberProtected><ApiDocsPage /></SubscriberProtected>} />
-                    <Route path="/app/integrations" element={<SubscriberProtected><IntegrationsPage /></SubscriberProtected>} />
-                    <Route path="/app/branding" element={<SubscriberProtected><BrandingPage /></SubscriberProtected>} />
+                    <Route path="/app/api-docs" element={<PlanProtected plan="professional"><ApiDocsPage /></PlanProtected>} />
+                    <Route path="/app/integrations" element={<PlanProtected plan="professional"><IntegrationsPage /></PlanProtected>} />
+                    <Route path="/app/branding" element={<PlanProtected plan="professional"><BrandingPage /></PlanProtected>} />
                     <Route path="/app/brokers" element={<PaidProtected><BrokersPage /></PaidProtected>} />
                     <Route path="/app/prop-firms" element={<PaidProtected><PropFirmsPage /></PaidProtected>} />
                     <Route path="/app/affiliate" element={<PaidProtected><AffiliatePage /></PaidProtected>} />
                     <Route path="/app/billing" element={<Protected><BillingPage /></Protected>} />
                     <Route path="/app/wallet" element={<SubscriberProtected><FeatureGate feature="wallet"><WalletPage /></FeatureGate></SubscriberProtected>} />
                     <Route path="/app/profile" element={<Protected><ProfilePage /></Protected>} />
-                    <Route path="/app/api-keys" element={<PaidProtected><UserApiKeysPage /></PaidProtected>} />
+                    <Route path="/app/api-keys" element={<PlanProtected plan="professional"><UserApiKeysPage /></PlanProtected>} />
                     <Route path="/teacher" element={<Navigate to="/app" replace />} />
                     <Route path="/student" element={<Protected><StudentDashboardPage /></Protected>} />
                     <Route path="/admin" element={<AdminProtected><AdminDashboard /></AdminProtected>} />
