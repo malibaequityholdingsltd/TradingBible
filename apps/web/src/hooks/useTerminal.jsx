@@ -28,9 +28,30 @@ const DEFAULT_GROUPS = [
 
 const gid = () => `g-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
+// The real table only guarantees (id, owner, name, layout jsonb) —
+// symbols/groups/display/isActive live INSIDE layout. This maps any row
+// (legacy or new) into the shape the UI needs, so reads never crash and
+// writes always hit real columns.
+const normalize = (r) => ({
+  id: r.id,
+  name: r.name || 'My Terminal',
+  isActive: r.isActive ?? r.layout?.isActive ?? false,
+  symbols: r.symbols ?? r.layout?.symbols ?? [],
+  groups: r.groups ?? r.layout?.groups ?? [],
+  display: r.display ?? r.layout?.display ?? {},
+});
+
+const layoutJson = (l) => ({
+  symbols: l.symbols || [],
+  groups: l.groups || [],
+  display: l.display || {},
+  isActive: !!l.isActive,
+});
+
 // Manages the user's customizable terminal watchlists (layouts). Each layout
-// stores its symbols, groups and display preferences and is persisted to the
-// PocketBase `terminal_layouts` collection with a debounced auto-save.
+// stores its symbols, groups and display preferences inside the `layout`
+// jsonb column (the only shape the real table guarantees) with a debounced
+// auto-save. Logged-out traders get a full in-memory layout instead.
 export function useTerminal() {
   const [layouts, setLayouts] = useState([]);
   const [activeId, setActiveId] = useState(null);
@@ -66,14 +87,16 @@ export function useTerminal() {
         if (!live) return;
         if (list.length === 0) {
           const rec = await pb.collection('terminal_layouts').create({
-            owner: uid, name: 'My Terminal', isActive: true,
-            symbols: DEFAULT_SYMBOLS, groups: DEFAULT_GROUPS, display: DEFAULT_DISPLAY,
+            owner: uid, name: 'My Terminal',
+            layout: { symbols: DEFAULT_SYMBOLS, groups: DEFAULT_GROUPS, display: DEFAULT_DISPLAY, isActive: true },
           });
-          setLayouts([rec]);
-          setActiveId(rec.id);
+          const first = normalize(rec);
+          setLayouts([first]);
+          setActiveId(first.id);
         } else {
-          setLayouts(list);
-          setActiveId((list.find((l) => l.isActive) || list[0]).id);
+          const rows = list.map(normalize);
+          setLayouts(rows);
+          setActiveId((rows.find((l) => l.isActive) || rows[0]).id);
         }
       } catch { /* ignore */ }
       if (live) setLoaded(true);
@@ -81,19 +104,21 @@ export function useTerminal() {
     return () => { live = false; };
   }, [uid]);
 
-  const persist = useCallback((id, patch) => {
+  const persist = useCallback((id, full) => {
     if (!uid || !id) return;
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      pb.collection('terminal_layouts').update(id, patch, { requestKey: `terminal-save-${id}` }).catch(() => {});
+      pb.collection('terminal_layouts').update(id, { layout: layoutJson(full) }, { requestKey: `terminal-save-${id}` }).catch(() => {});
     }, 500);
   }, [uid]);
 
   // Patch the active layout in state + queue a save.
   const patchActive = useCallback((patch) => {
-    setLayouts((prev) => prev.map((l) => (l.id === active?.id ? { ...l, ...patch } : l)));
-    persist(active?.id, patch);
-  }, [active?.id, persist]);
+    if (!active) return;
+    const merged = { ...active, ...patch };
+    setLayouts((prev) => prev.map((l) => (l.id === active.id ? merged : l)));
+    persist(active.id, merged);
+  }, [active, persist]);
 
   const addSymbol = useCallback((symbol, group = null) => {
     if (!active) return;
@@ -153,11 +178,18 @@ export function useTerminal() {
     if (!active) return;
     const snapshot = { name: name || 'Layout', isActive: false, symbols: active.symbols, groups: active.groups, display: active.display };
     if (!uid) {
-      setLayouts((prev) => [...prev, { ...snapshot, id: gid(), owner: null }]);
+      const local = { ...snapshot, id: gid(), owner: null };
+      setLayouts((prev) => [...prev, local]);
+      setActiveId(local.id);
       return;
     }
-    const rec = await pb.collection('terminal_layouts').create({ owner: uid, ...snapshot });
-    setLayouts((prev) => [...prev, rec]);
+    const rec = await pb.collection('terminal_layouts').create({
+      owner: uid, name: snapshot.name,
+      layout: { symbols: snapshot.symbols, groups: snapshot.groups, display: snapshot.display, isActive: false },
+    });
+    const row = normalize(rec);
+    setLayouts((prev) => [...prev, row]);
+    setActiveId(row.id);
   }, [uid, active]);
 
   const selectLayout = useCallback((id) => {
@@ -166,7 +198,7 @@ export function useTerminal() {
       layouts.forEach((l) => {
         const shouldBe = l.id === id;
         if (!!l.isActive !== shouldBe) {
-          pb.collection('terminal_layouts').update(l.id, { isActive: shouldBe }, { requestKey: `terminal-active-${l.id}` }).catch(() => {});
+          pb.collection('terminal_layouts').update(l.id, { layout: layoutJson({ ...l, isActive: shouldBe }) }, { requestKey: `terminal-active-${l.id}` }).catch(() => {});
         }
       });
     }
