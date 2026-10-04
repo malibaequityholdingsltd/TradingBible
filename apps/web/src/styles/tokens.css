@@ -107,20 +107,20 @@ html.light .sheen-panel::after {
   gap: 1.25rem;
 }
 /* 4D page enter: soft rise cascade as each page mounts. */
-.tb-page > * { animation: tb-rise 0.5s var(--tb-ease) both; }
-.tb-page > *:nth-child(2) { animation-delay: 0.06s; }
-.tb-page > *:nth-child(3) { animation-delay: 0.12s; }
-.tb-page > *:nth-child(4) { animation-delay: 0.18s; }
-.tb-page > *:nth-child(5) { animation-delay: 0.24s; }
-.tb-page > *:nth-child(n+6) { animation-delay: 0.3s; }
+.tb-page > * { animation: tb-rise 0.38s var(--tb-ease) both; }
+.tb-page > *:nth-child(2) { animation-delay: 0.05s; }
+.tb-page > *:nth-child(3) { animation-delay: 0.1s; }
+.tb-page > *:nth-child(4) { animation-delay: 0.14s; }
+.tb-page > *:nth-child(5) { animation-delay: 0.18s; }
+.tb-page > *:nth-child(n+6) { animation-delay: 0.22s; }
 @keyframes tb-rise {
-  from { opacity: 0; transform: translateY(14px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 /* Pages without .tb-page still enter with motion — their root mounts fresh
    inside main on every navigation. Standalone full-screen pages (TV) use
    .tb-enter on their root instead. */
-main > *, .tb-enter { animation: tb-rise 0.45s var(--tb-ease) both; }
+main > *, .tb-enter { animation: tb-rise 0.35s var(--tb-ease) both; }
 @media (prefers-reduced-motion: reduce) {
   .tb-page > *, main > *, .tb-enter, .tb-hero::after { animation: none; }
 }
