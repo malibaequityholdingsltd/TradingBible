@@ -57,7 +57,7 @@ function ThreadModal({ thread, onClose, onReplied }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
       <div className="tb-card max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-3">
           <div><span className="rounded-full bg-[#d4af37]/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-[#d4af37]">{t(`com.cat_${(thread.category || 'General').toLowerCase()}`, null, thread.category || 'General')}</span><h3 className="mt-2 text-lg font-semibold text-[#f0ecdd]">{thread.title}</h3></div>
