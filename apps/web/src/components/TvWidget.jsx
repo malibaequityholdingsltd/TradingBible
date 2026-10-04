@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, Shuffle, ListVideo, Lock, Crown, WifiOff } from 'lucide-react';
+import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, Shuffle, ListVideo, Lock, Crown, WifiOff, Clock } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -73,13 +73,18 @@ export default function TvWidget() {
 
   const playing = view === 'player' ? channelIndex : null;
   const liveChannels = useLiveChannels();
+  // Guide order: round-the-clock desks first, scheduled shows after.
+  const ordered = useMemo(
+    () => [...liveChannels.filter((c) => c.roundTheClock), ...liveChannels.filter((c) => !c.roundTheClock)],
+    [liveChannels],
+  );
   const ytRef = useRef(null);
   const [ytMuted, setYtMuted] = useState(true);
   const [ytStarted, setYtStarted] = useState(false);
   const [ytError, setYtError] = useState(false);
   const [ytBlocked, setYtBlocked] = useState(false);
   const [ytRetry, setYtRetry] = useState(0);
-  const isYoutube = playing !== null && /youtube\.com\/embed\//.test(liveChannels[playing]?.embedUrl || '');
+  const isYoutube = playing !== null && /youtube\.com\/embed\//.test(ordered[playing]?.embedUrl || '');
 
   const toggleYtSound = useCallback(() => {
     try {
@@ -126,8 +131,8 @@ export default function TvWidget() {
       localStorage.removeItem('tb:tv-minimized');
       const { i, at } = JSON.parse(raw);
       if (typeof i !== 'number' || Date.now() - Number(at || 0) > 60000) return false;
-      if (i < 0 || i >= liveChannels.length) return false;
-      const c = liveChannels[i];
+      if (i < 0 || i >= ordered.length) return false;
+      const c = ordered[i];
       if (c && !canWatch(c)) return false;
       setChannelIndex(i);
       setView('player');
@@ -189,14 +194,14 @@ export default function TvWidget() {
   useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); }, [channelIndex]);
 
   const watchChannel = useCallback((i) => {
-    const c = liveChannels[i];
+    const c = ordered[i];
     if (c && !canWatch(c)) { goUpgrade(); return; }
     setChannelIndex(i);
     setView('player');
     setFrameLoaded(false);
   }, [canWatch, goUpgrade, liveChannels]);
 
-  const unlockedIdx = liveChannels.map((c, i) => (canWatch(c) ? i : -1)).filter((i) => i >= 0);
+  const unlockedIdx = ordered.map((c, i) => (canWatch(c) ? i : -1)).filter((i) => i >= 0);
 
   const zapChannel = useCallback((dir) => {
     if (!unlockedIdx.length) { goUpgrade(); return; }
@@ -313,7 +318,7 @@ export default function TvWidget() {
                   <button onClick={openChannels} className={iconBtn} aria-label="Back to channels">
                     <ChevronLeft className="h-4 w-4" />
                   </button>
-                  <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-[#f0ecdd]">{liveChannels[playing].title}</span>
+                  <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-[#f0ecdd]">{ordered[playing].title}</span>
                   <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#ff5a62]">
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e50914]" /> Live
                   </span>
@@ -332,18 +337,18 @@ export default function TvWidget() {
                   )}
                   {isYoutube ? (
                     <YoutubePlayer
-                      key={`${liveChannels[playing].id}-${ytRetry}`}
+                      key={`${ordered[playing].id}-${ytRetry}`}
                       ref={ytRef}
-                      src={hardenEmbed(liveChannels[playing].embedUrl || liveChannels[playing].url)}
-                      title={liveChannels[playing].title}
+                      src={hardenEmbed(ordered[playing].embedUrl || ordered[playing].url)}
+                      title={ordered[playing].title}
                       onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); setYtMuted(true); } else { setYtError(true); } }}
                       onBlocked={() => setYtBlocked(true)}
                     />
                   ) : (
                     <iframe
-                      key={liveChannels[playing].id}
-                      src={hardenEmbed(liveChannels[playing].embedUrl || liveChannels[playing].url)}
-                      title={liveChannels[playing].title}
+                      key={ordered[playing].id}
+                      src={hardenEmbed(ordered[playing].embedUrl || ordered[playing].url)}
+                      title={ordered[playing].title}
                       className="absolute inset-0 h-full w-full border-0"
                       allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                       allowFullScreen
@@ -359,7 +364,7 @@ export default function TvWidget() {
                       <button onClick={() => { setYtBlocked(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="mt-1 min-h-[40px] rounded-xl border border-[#d4af37]/30 px-5 text-xs font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
                         Try again
                       </button>
-                      <a href={liveChannels[playing]?.url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-semibold text-[#8a8577] hover:text-[#d4af37] hover:underline">
+                      <a href={ordered[playing]?.url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-semibold text-[#8a8577] hover:text-[#d4af37] hover:underline">
                         Open on YouTube instead
                       </a>
                     </div>
@@ -381,7 +386,7 @@ export default function TvWidget() {
                   {(!isYoutube || ytStarted) && <div className="absolute inset-0 bg-transparent" />}
                 </div>
                 <div className="flex items-center justify-between gap-2 border-t border-[#d4af37]/10 px-3 py-1.5">
-                  <span className="truncate text-[10px] text-[#6a665a]">{liveChannels[playing].desk} · live in player</span>
+                  <span className="truncate text-[10px] text-[#6a665a]">{ordered[playing].desk} · live in player</span>
                   <span className="flex shrink-0 items-center gap-2">
                     {isYoutube && frameLoaded && (
                       <button onClick={toggleYtSound} className="flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
@@ -404,8 +409,8 @@ export default function TvWidget() {
                     <ChevronLeft className="h-4 w-4" />
                   </button>
                   <button onClick={() => watchChannel(channelIndex)} className="min-w-0 flex-1 rounded-lg px-1 py-1 text-center transition hover:bg-white/5">
-                    <span className="block truncate text-[13px] font-bold text-[#f0ecdd]">{liveChannels[channelIndex].title}</span>
-                    <span className="block text-[10px] uppercase tracking-wider text-[#d4af37]">{liveChannels[channelIndex].desk} · tap to watch</span>
+                    <span className="block truncate text-[13px] font-bold text-[#f0ecdd]">{ordered[channelIndex].title}</span>
+                    <span className="block text-[10px] uppercase tracking-wider text-[#d4af37]">{ordered[channelIndex].desk} · tap to watch</span>
                   </button>
                   <button onClick={() => zapChannel(1)} className={iconBtn} aria-label="Next channel">
                     <ChevronRight className="h-4 w-4" />
@@ -414,10 +419,17 @@ export default function TvWidget() {
                     <Shuffle className="h-4 w-4" />
                   </button>
                 </div>
-                <div className="no-scrollbar flex-1 space-y-1.5 overflow-y-auto p-2">
-                  {liveChannels.map((c, ci) => {
-                    const locked = !canWatch(c);
-                    return (
+                <div className="no-scrollbar flex-1 space-y-3 overflow-y-auto p-2">
+                  {[
+                    { id: 'live247', label: 'On air 24/7', items: ordered.map((c, i) => ({ c, i })).filter(({ c }) => c.roundTheClock) },
+                    { id: 'scheduled', label: 'Scheduled live shows', items: ordered.map((c, i) => ({ c, i })).filter(({ c }) => !c.roundTheClock) },
+                  ].filter((s) => s.items.length).map((section) => (
+                    <div key={section.id}>
+                      <p className="px-1 pb-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#8a8577]">{section.label}</p>
+                      <div className="space-y-1.5">
+                      {section.items.map(({ c, ci }) => {
+                        const locked = !canWatch(c);
+                        return (
                     <button
                       key={c.id}
                       onClick={() => watchChannel(ci)}
@@ -434,11 +446,17 @@ export default function TvWidget() {
                           {locked && <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#d4af37]"><Crown className="h-2.5 w-2.5" />{c.plan}</span>}
                         </span>
                         <span className="block truncate text-[11px] text-[#8a8577]">{c.desk} · {locked ? 'tap to upgrade' : 'tap to watch'}</span>
+                        {!c.roundTheClock && c.hours && (
+                          <span className="mt-0.5 flex items-center gap-1 text-[10px] text-[#6a665a]"><Clock className="h-2.5 w-2.5 shrink-0" /> Typically live: {c.hours}</span>
+                        )}
                       </span>
                       <Play className="h-3.5 w-3.5 shrink-0 text-[#6a665a] transition group-hover:text-[#d4af37]" />
                     </button>
-                    );
-                  })}
+                        );
+                      })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -501,7 +519,7 @@ export default function TvWidget() {
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <span className="min-w-0 flex-1 truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
-                  {liveChannels[playing]?.desk} · {playing + 1}/{liveChannels.length}
+                  {ordered[playing]?.desk} · {playing + 1}/{ordered.length}
                 </span>
                 <button onClick={shuffleChannel} className={iconBtn} aria-label="Random channel" title="Play a random channel">
                   <Shuffle className="h-4 w-4" />
@@ -513,7 +531,7 @@ export default function TvWidget() {
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <span className="min-w-0 flex-1 truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
-                  {liveChannels.length} live channels
+                  {ordered.length} live channels
                 </span>
                 <button onClick={shuffleChannel} className={iconBtn} aria-label="Random channel" title="Play a random channel">
                   <Shuffle className="h-4 w-4" />

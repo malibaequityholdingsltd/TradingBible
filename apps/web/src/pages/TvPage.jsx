@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Shuffle, Loader2, ChevronLeft, Lock, Crown, WifiOff } from 'lucide-react';
+import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Shuffle, Loader2, ChevronLeft, Lock, Crown, WifiOff, Clock } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -451,6 +451,9 @@ export default function TvPage() {
                       {locked && <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#d4af37]"><Crown className="h-2.5 w-2.5" />{c.plan}</span>}
                     </span>
                     <span className="mt-0.5 block truncate text-xs text-[#8a8577]">{locked ? (isAuthed ? 'Upgrade to unlock this desk' : 'Sign in to unlock this desk') : c.blurb}</span>
+                    {!c.roundTheClock && c.hours && (
+                      <span className="mt-0.5 flex items-center gap-1 text-[11px] text-[#6a665a]"><Clock className="h-3 w-3 shrink-0" /> Typically live: {c.hours}</span>
+                    )}
                   </span>
                   <span className="flex shrink-0 items-center gap-1.5">
                     <span className="rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#ff5a62]">{c.desk}</span>

@@ -52,6 +52,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Live trader talk — options, futures and market strategy.',
 		isNew: true,
 		plan: 'professional',
+		hours: 'Mon–Fri · 8a–4p CT',
 	},
 	{
 		id: 'kitco-news-live',
@@ -62,6 +63,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Gold, silver and macro interviews — live event coverage.',
 		isNew: true,
 		plan: 'elite',
+		hours: 'Event-driven · US daytime ET',
 	},
 	{
 		id: 'cnbc-live',
@@ -72,6 +74,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Wall Street daytime coverage — Squawk Box to Closing Bell.',
 		isNew: true,
 		plan: 'elite',
+		hours: 'Mon–Fri · 5a–7p ET',
 	},
 	{
 		id: 'fox-business-live',
@@ -82,6 +85,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Mornings with Maria to Kudlow — markets and money.',
 		isNew: true,
 		plan: 'elite',
+		hours: 'Mon–Fri · 6a–5p ET',
 	},
 	{
 		id: 'ig-live-trading',
@@ -92,6 +96,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Daily live shows — Morning Markets, Trade Live US Open.',
 		isNew: true,
 		plan: 'pro',
+		hours: 'Weekdays · London mornings',
 	},
 	{
 		id: 'tastytrade-live',
@@ -102,6 +107,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Live options and futures shows from the trade desk.',
 		isNew: true,
 		plan: 'professional',
+		hours: 'Mon–Fri · 7a–4p CT',
 	},
 	{
 		id: 'tradertv-live',
@@ -112,6 +118,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Live day-trading sessions and market opens.',
 		isNew: true,
 		plan: 'pro',
+		hours: 'Mon–Fri · US market hours ET',
 	},
 	{
 		id: 'aje-live',
@@ -188,6 +195,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Live world news, business and market wraps from Delhi.',
 		isNew: true,
 		plan: 'pro',
+		hours: 'Daily live blocks IST',
 		roundTheClock: false,
 	},
 ];
