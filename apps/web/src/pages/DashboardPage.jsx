@@ -100,6 +100,16 @@ export default function DashboardPage() {
           }
         />
         <AccountBalances />
+        <StatGrid cols={4}>
+          <DashStat icon={Wallet} label={t('dash.perfPnl')} value={fmtMoney(stats.balance - 100000)} delta={t('dash.syncedN', { n: stats.totalTrades })} positive={stats.balance >= 100000} />
+          <DashStat icon={Activity} label={t('dash.daily')} value={fmtMoney(stats.dailyPnl)} delta={t('dash.today')} positive={stats.dailyPnl >= 0} />
+          <DashStat icon={Activity} label={t('dash.weekly')} value={fmtMoney(stats.weeklyPnl)} delta={t('dash.last7')} positive={stats.weeklyPnl >= 0} />
+          <DashStat icon={Activity} label={t('dash.monthly')} value={fmtMoney(stats.monthlyPnl)} delta={t('dash.last30')} positive={stats.monthlyPnl >= 0} />
+          <DashStat icon={Percent} label={t('dash.winRate')} value={`${stats.winRate}%`} delta={stats.winRate >= 50 ? t('dash.aboveTarget') : t('dash.belowTarget')} positive={stats.winRate >= 50} />
+          <DashStat icon={Target} label={t('dash.profitFactor')} value={stats.profitFactor.toFixed(2)} delta={stats.profitFactor >= 1.5 ? t('dash.healthyEdge') : t('dash.needsWork')} positive={stats.profitFactor >= 1.5} />
+          <DashStat icon={ShieldAlert} label={t('dash.maxDd')} value={`${stats.drawdown}%`} delta={stats.drawdown > -10 ? t('dash.withinLimits') : t('dash.elevated')} positive={stats.drawdown > -10} />
+          <DashStat icon={Trophy} label={t('dash.traderScore')} value={`${stats.traderScore}/100`} delta={t('dash.aiComputed')} positive />
+        </StatGrid>
 
         {/* Command deck — every list, widget and desk, one tap away */}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:grid-cols-5">
@@ -120,17 +130,6 @@ export default function DashboardPage() {
             </Link>
           ))}
         </div>
-
-        <StatGrid cols={4}>
-          <DashStat icon={Wallet} label={t('dash.perfPnl')} value={fmtMoney(stats.balance - 100000)} delta={t('dash.syncedN', { n: stats.totalTrades })} positive={stats.balance >= 100000} />
-          <DashStat icon={Activity} label={t('dash.daily')} value={fmtMoney(stats.dailyPnl)} delta={t('dash.today')} positive={stats.dailyPnl >= 0} />
-          <DashStat icon={Activity} label={t('dash.weekly')} value={fmtMoney(stats.weeklyPnl)} delta={t('dash.last7')} positive={stats.weeklyPnl >= 0} />
-          <DashStat icon={Activity} label={t('dash.monthly')} value={fmtMoney(stats.monthlyPnl)} delta={t('dash.last30')} positive={stats.monthlyPnl >= 0} />
-          <DashStat icon={Percent} label={t('dash.winRate')} value={`${stats.winRate}%`} delta={stats.winRate >= 50 ? t('dash.aboveTarget') : t('dash.belowTarget')} positive={stats.winRate >= 50} />
-          <DashStat icon={Target} label={t('dash.profitFactor')} value={stats.profitFactor.toFixed(2)} delta={stats.profitFactor >= 1.5 ? t('dash.healthyEdge') : t('dash.needsWork')} positive={stats.profitFactor >= 1.5} />
-          <DashStat icon={ShieldAlert} label={t('dash.maxDd')} value={`${stats.drawdown}%`} delta={stats.drawdown > -10 ? t('dash.withinLimits') : t('dash.elevated')} positive={stats.drawdown > -10} />
-          <DashStat icon={Trophy} label={t('dash.traderScore')} value={`${stats.traderScore}/100`} delta={t('dash.aiComputed')} positive />
-        </StatGrid>
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
           <Card className="p-4 sm:p-6 lg:col-span-2">
