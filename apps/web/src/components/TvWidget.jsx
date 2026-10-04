@@ -139,19 +139,29 @@ export default function TvWidget() {
   const attemptsRef = useRef(new Set());
   const advanceTimer = useRef(null);
   // Scroll guard: opening / switching / closing TV must never move page
-  // scroll (focus shifts, iframe focus, anchoring). Snapshot around every
-  // tap path and restore unless the user scrolled themselves meanwhile.
-  const lastUserScroll = useRef(0);
+  // scroll (focus shifts, iframe focus, anchoring) — but it must NEVER fight
+  // the user: any touch, click, wheel or key after the tap cancels the
+  // restore, so free scrolling always wins, like the SI widget.
+  const interactedRef = useRef(false);
   useEffect(() => {
-    const onScroll = () => { lastUserScroll.current = Date.now(); };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const mark = () => { interactedRef.current = true; };
+    window.addEventListener('touchstart', mark, { passive: true, capture: true });
+    window.addEventListener('mousedown', mark, { capture: true });
+    window.addEventListener('wheel', mark, { passive: true, capture: true });
+    window.addEventListener('keydown', mark, { capture: true });
+    return () => {
+      window.removeEventListener('touchstart', mark, { capture: true });
+      window.removeEventListener('mousedown', mark, { capture: true });
+      window.removeEventListener('wheel', mark, { capture: true });
+      window.removeEventListener('keydown', mark, { capture: true });
+    };
   }, []);
   const guardScroll = useCallback(() => {
     const y = typeof window !== 'undefined' ? window.scrollY : 0;
+    interactedRef.current = false;
     requestAnimationFrame(() => requestAnimationFrame(() => {
       try {
-        if (Date.now() - lastUserScroll.current > 400 && Math.abs(window.scrollY - y) > 2) {
+        if (!interactedRef.current && Math.abs(window.scrollY - y) > 2) {
           window.scrollTo(0, y);
         }
       } catch { /* ignore */ }
