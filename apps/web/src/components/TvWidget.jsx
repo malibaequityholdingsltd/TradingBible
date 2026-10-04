@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { hardenEmbed, useLiveChannels } from '@/lib/liveChannels';
 import { meetsPlan } from '@/lib/entitlements';
+import YoutubePlayer from '@/components/YoutubePlayer';
 
 const POS_KEY = 'tb:tv-btn-pos';
 const BTN = 56;
@@ -72,6 +73,19 @@ export default function TvWidget() {
 
   const playing = view === 'player' ? channelIndex : null;
   const liveChannels = useLiveChannels();
+  const ytRef = useRef(null);
+  const [ytMuted, setYtMuted] = useState(true);
+  const [ytStarted, setYtStarted] = useState(false);
+  const isYoutube = playing !== null && /youtube\.com\/embed\//.test(liveChannels[playing]?.embedUrl || '');
+
+  const toggleYtSound = useCallback(() => {
+    try {
+      const p = ytRef.current;
+      if (!p) return;
+      if (p.isMuted()) { p.unMute(); p.setVolume(100); setYtMuted(false); }
+      else { p.mute(); setYtMuted(true); }
+    } catch { /* noop */ }
+  }, []);
 
   // ── Data ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -138,6 +152,11 @@ export default function TvWidget() {
   const canWatch = useCallback((c) => !c?.plan || meetsPlan(user, c.plan || 'pro'), [user]);
 
   const goUpgrade = useCallback(() => nav('/pricing'), [nav]);
+
+  // Every new channel starts muted (autoplay policy) until tapped.
+  // The no-touch shield engages only once playback actually starts, so
+  // YouTube's own play control stays tappable if autoplay gets blocked.
+  useEffect(() => { setYtMuted(true); setYtStarted(false); }, [channelIndex]);
 
   const watchChannel = useCallback((i) => {
     const c = liveChannels[i];
@@ -281,25 +300,43 @@ export default function TvWidget() {
                       <Loader2 className="h-6 w-6 animate-spin text-[#d4af37]" />
                     </div>
                   )}
-                  <iframe
-                    key={liveChannels[playing].id}
-                    src={hardenEmbed(liveChannels[playing].embedUrl || liveChannels[playing].url)}
-                    title={liveChannels[playing].title}
-                    className="absolute inset-0 h-full w-full border-0"
-                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-                    allowFullScreen
-                    onLoad={() => setFrameLoaded(true)}
-                  />
-                  {/* No-touch shield: the stream autoplays on select and no tap
-                      on the video can pause it or open suggestions. All control
-                      lives in the header/zap bar above. */}
-                  <div className="absolute inset-0 bg-transparent" />
+                  {isYoutube ? (
+                    <YoutubePlayer
+                      key={liveChannels[playing].id}
+                      ref={ytRef}
+                      src={hardenEmbed(liveChannels[playing].embedUrl || liveChannels[playing].url)}
+                      title={liveChannels[playing].title}
+                      onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); setYtMuted(true); } }}
+                    />
+                  ) : (
+                    <iframe
+                      key={liveChannels[playing].id}
+                      src={hardenEmbed(liveChannels[playing].embedUrl || liveChannels[playing].url)}
+                      title={liveChannels[playing].title}
+                      className="absolute inset-0 h-full w-full border-0"
+                      allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                      allowFullScreen
+                      onLoad={() => setFrameLoaded(true)}
+                    />
+                  )}
+                  {/* No-touch shield (engages once playing): no tap on the
+                      video can pause it or open suggestions. Sound and
+                      channel controls live outside the frame. */}
+                  {(!isYoutube || ytStarted) && <div className="absolute inset-0 bg-transparent" />}
                 </div>
                 <div className="flex items-center justify-between gap-2 border-t border-[#d4af37]/10 px-3 py-1.5">
                   <span className="truncate text-[10px] text-[#6a665a]">{liveChannels[playing].desk} · live in player</span>
-                  <button onClick={openChannels} className="shrink-0 text-[11px] font-semibold text-[#d4af37] hover:underline">
-                    All channels
-                  </button>
+                  <span className="flex shrink-0 items-center gap-2">
+                    {isYoutube && frameLoaded && (
+                      <button onClick={toggleYtSound} className="flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
+                        {ytMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                        {ytMuted ? 'Tap for sound' : 'Sound on'}
+                      </button>
+                    )}
+                    <button onClick={openChannels} className="shrink-0 text-[11px] font-semibold text-[#8a8577] hover:text-[#d4af37] hover:underline">
+                      All channels
+                    </button>
+                  </span>
                 </div>
               </div>
             )}
