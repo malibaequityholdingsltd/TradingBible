@@ -3,7 +3,7 @@ import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, Externa
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
-import { useLiveChannels } from '@/lib/liveChannels';
+import { hardenEmbed, useLiveChannels } from '@/lib/liveChannels';
 import { EmptyState, GhostButton } from '@/components/ui-kit';
 
 const DEFAULT_SETTINGS = {
@@ -199,7 +199,7 @@ export default function TvPage() {
             </div>
           )}
           <iframe
-            src={liveChannels[playChannel].embedUrl || liveChannels[playChannel].url}
+            src={hardenEmbed(liveChannels[playChannel].embedUrl || liveChannels[playChannel].url)}
             title={liveChannels[playChannel].title}
             className="absolute inset-0 h-full w-full border-0"
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture"

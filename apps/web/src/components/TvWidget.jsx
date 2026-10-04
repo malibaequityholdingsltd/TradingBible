@@ -3,7 +3,7 @@ import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, Chev
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
-import { useLiveChannels } from '@/lib/liveChannels';
+import { hardenEmbed, useLiveChannels } from '@/lib/liveChannels';
 
 const POS_KEY = 'tb:tv-btn-pos';
 const BTN = 56;
@@ -269,7 +269,7 @@ export default function TvWidget() {
                   )}
                   <iframe
                     key={liveChannels[playing].id}
-                    src={liveChannels[playing].embedUrl || liveChannels[playing].url}
+                    src={hardenEmbed(liveChannels[playing].embedUrl || liveChannels[playing].url)}
                     title={liveChannels[playing].title}
                     className="absolute inset-0 h-full w-full border-0"
                     allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
