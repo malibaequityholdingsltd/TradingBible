@@ -333,6 +333,154 @@ router.delete('/admin/channels/:id', async (req, res) => {
 	}
 });
 
+// ── Public: live-status probe ──────────────────────────────────────
+// POST /ads/channels/live { channels: [{ id, url, embedUrl }] }
+// Checks whether each YouTube channel/video is broadcasting RIGHT NOW by
+// resolving the channel's /live redirect (lands on watch?v=… when live) or
+// inspecting the video page for the live flag. No API key needed.
+// Results are cached 180s keyed by channel set. States: true (live),
+// false (off-air), null (unknown — page blocked, non-YouTube, or error).
+// Never marks a channel off-air on fetch failure.
+const liveCache = { key: '', at: 0, result: null };
+const LIVE_TTL_MS = 300000;
+
+function extractChannelId(url) {
+	const m = String(url || '').match(/[?&]channel=(UC[A-Za-z0-9_-]{22})/);
+	return m ? m[1] : null;
+}
+
+function extractVideoId(url) {
+	const m = String(url || '').match(/\/embed\/([A-Za-z0-9_-]{11})/);
+	return m ? m[1] : null;
+}
+
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
+const YT_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
+
+// YouTube serves stub pages to plain Node fetch (HTTP/1.1 bot fingerprint),
+// so probes go through curl, which receives full pages. Failures and stubs
+// resolve to live:null downstream — never a false off-air.
+async function fetchText(url, timeoutMs = 8000) {
+	try {
+		const secs = Math.max(3, Math.ceil(timeoutMs / 1000));
+		const { stdout } = await execFileAsync('curl', [
+			'-sL', '--max-time', String(secs),
+			'-A', YT_UA,
+			'-H', 'Accept-Language: en-US,en;q=0.9',
+			'-w', '\n__FINAL_URL__:%{url_effective}',
+			url,
+		], { maxBuffer: 16 * 1024 * 1024 });
+		const out = String(stdout || '');
+		const marker = out.lastIndexOf('\n__FINAL_URL__:');
+		const finalUrl = marker >= 0 ? out.slice(marker + 15).trim() : url;
+		const text = marker >= 0 ? out.slice(0, marker) : out;
+		return { url: finalUrl || url, text };
+	} catch {
+		return { url, text: '' };
+	}
+}
+
+// The only trustworthy "broadcasting right now" flag in YouTube's HTML is
+// "isLiveNow":true on a video's watch page. Channel /live pages mix VOD,
+// upcoming and live contexts, so a channel probe is always two-step:
+//  1. fetch the channel /live page, collect candidate video ids
+//  2. confirm via each candidate's watch page until one shows isLiveNow
+// Anything inconclusive returns live:null — never a false off-air.
+function candidateVideoIds(html, max = 2) {
+	const out = [];
+	const re = /"videoId":"([A-Za-z0-9_-]{11})"/g;
+	let m;
+	while ((m = re.exec(html)) && out.length < max) {
+		if (!out.includes(m[1])) out.push(m[1]);
+	}
+	return out;
+}
+
+async function watchIsLiveNow(videoId) {
+	try {
+		const { text } = await fetchText(`https://www.youtube.com/watch?v=${videoId}`);
+		if (!text || text.length < 50000) return null;
+		if (/"isLiveNow"\s*:\s*true/.test(text)) return true;
+		if (/"isLiveNow"\s*:\s*false/.test(text)) return false;
+		return null;
+	} catch {
+		return null;
+	}
+}
+
+async function probeChannel({ url, embedUrl }) {
+	const target = String(embedUrl || url || '');
+	try {
+		const channelId = extractChannelId(target) || extractChannelId(url);
+		// Preferred: YouTube Data API when a key is configured (set
+		// YOUTUBE_API_KEY in the API env — reliable, no scraping).
+		if (channelId && process.env.YOUTUBE_API_KEY) {
+			try {
+				const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=id&channelId=${channelId}&eventType=live&type=video&maxResults=1&key=${process.env.YOUTUBE_API_KEY}`;
+				const ctrl = new AbortController();
+				const timer = setTimeout(() => ctrl.abort(), 8000);
+				const res = await fetch(apiUrl, { signal: ctrl.signal });
+				clearTimeout(timer);
+				if (res.ok) {
+					const data = await res.json().catch(() => null);
+					const vid = data?.items?.[0]?.id?.videoId;
+					return vid ? { live: true, videoId: vid } : { live: false };
+				}
+			} catch { /* fall through to scraping */ }
+		}
+		if (channelId) {
+			const { text } = await fetchText(`https://www.youtube.com/channel/${channelId}/live`);
+			if (!text || text.length < 50000) return { live: null };
+			const candidates = candidateVideoIds(text);
+			if (!candidates.length) return { live: null };
+			let sawFalse = false;
+			for (const vid of candidates) {
+				const flag = await watchIsLiveNow(vid);
+				if (flag === true) return { live: true, videoId: vid };
+				if (flag === false) sawFalse = true;
+			}
+			return sawFalse ? { live: false } : { live: null };
+		}
+		const videoId = extractVideoId(target);
+		if (videoId) {
+			const flag = await watchIsLiveNow(videoId);
+			if (flag === true) return { live: true, videoId };
+			if (flag === false) return { live: false };
+			return { live: null };
+		}
+		return { live: null };
+	} catch {
+		return { live: null };
+	}
+}
+
+router.post('/channels/live', async (req, res) => {
+	try {
+		const list = Array.isArray(req.body?.channels) ? req.body.channels.slice(0, 40) : [];
+		const key = list.map((c) => String(c?.id || c?.url || '')).sort().join('|');
+		const now = Date.now();
+		if (liveCache.key === key && now - liveCache.at < LIVE_TTL_MS && liveCache.result) {
+			return res.json({ ...liveCache.result, cached: true });
+		}
+		const states = {};
+		await Promise.all(list.map(async (c) => {
+			const id = String(c?.id || c?.url || 'unknown');
+			states[id] = await probeChannel(c);
+		}));
+		const result = { states, checkedAt: new Date(now).toISOString(), cached: false };
+		liveCache.key = key;
+		liveCache.at = now;
+		liveCache.result = result;
+		return res.json(result);
+	} catch (err) {
+		logger.error('channels live probe failed', String(err));
+		return res.status(500).json({ error: 'live check failed' });
+	}
+});
+
 // ── Admin: TV settings ───────────────────────────────────────────
 router.put('/admin/settings', async (req, res) => {	if (!(await isAdmin(req))) return res.status(403).json({ error: 'forbidden' });
 	try {
