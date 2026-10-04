@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X, Radio } from 'lucide-react';
 import { useQuotes } from '@/hooks/useQuotes';
+import { useI18n } from '@/lib/i18n';
 import { fmtPrice } from '@/components/OrderflowChart';
 
 const ROWS = 41;
@@ -37,6 +38,7 @@ function emptyCol() {
 // pressure per price level over time; dots are individual prints. The AVG
 // line is the session print average (NOT volume-weighted — no volume data).
 export default function FlowTapePane({ symbol, name, onRemove, canRemove, onSample }) {
+	const { t } = useI18n();
 	const { quotes, status } = useQuotes([symbol], { refreshMs: 15000 });
 	const [prints, setPrints] = useState([]);
 	const [idlePolls, setIdlePolls] = useState(0);
@@ -215,7 +217,7 @@ export default function FlowTapePane({ symbol, name, onRemove, canRemove, onSamp
 				</div>
 				<span className={`flex shrink-0 items-center gap-1 text-[10px] font-bold uppercase ${idle ? 'text-[#8a8577]' : status === 'live' ? 'text-emerald-400' : 'text-[#d4af37]'}`}>
 					<span className={`h-1.5 w-1.5 rounded-full ${!idle && status === 'live' ? 'animate-pulse bg-emerald-400' : 'bg-current'}`} />
-					{idle ? 'idle' : status}
+					{idle ? t('of.idle') : status === 'live' ? t('of.liveWord') : t(`of.st${String(status).charAt(0).toUpperCase() + String(status).slice(1)}`, null, status)}
 				</span>
 				{canRemove && (
 					<button onClick={onRemove} className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-[#8a8577] transition hover:bg-white/5 hover:text-red-400" aria-label={`Remove ${symbol}`}>
@@ -229,7 +231,7 @@ export default function FlowTapePane({ symbol, name, onRemove, canRemove, onSamp
 				<canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
 				{!buf.current.anchor && (
 					<div className="pointer-events-none absolute inset-0 grid place-items-center px-6 text-center text-[11px] leading-relaxed text-[#5f5b50]">
-						{idle && prints.length === 0 ? 'No live ticks for this symbol — market may be closed or the feed idle. No flow invented.' : 'Collecting live prints…'}
+						{idle && prints.length === 0 ? t('of.idleMsg') : t('of.waitingPrints')}
 					</div>
 				)}
 			</div>
@@ -244,16 +246,16 @@ export default function FlowTapePane({ symbol, name, onRemove, canRemove, onSamp
 							<span className="text-[#5f5b50]">{fmtClock(p.ts)}</span>
 						</div>
 					))}
-					{prints.length === 0 && <p className="py-1 text-center text-[11px] text-[#5f5b50]">tape is live — prints appear on real ticks</p>}
+					{prints.length === 0 && <p className="py-1 text-center text-[11px] text-[#5f5b50]">{t('of.tapeLive')}</p>}
 				</div>
 				<div className="mt-2">
 					<div className="flex h-1.5 overflow-hidden rounded-full bg-[#fb7185]/25">
 						<div className="h-full bg-[#34d399]" style={{ width: `${buyShare}%` }} />
 					</div>
 					<div className="mt-1 flex justify-between text-[10px] text-[#8a8577]">
-						<span>{buys} buys</span>
-						<span className="text-[#5f5b50]">print heatmap · no public depth</span>
-						<span>{sells} sells</span>
+						<span>{buys} {t('of.buys')}</span>
+						<span className="text-[#5f5b50]">{t('of.noDepthNote')}</span>
+						<span>{sells} {t('of.sells')}</span>
 					</div>
 				</div>
 			</div>
