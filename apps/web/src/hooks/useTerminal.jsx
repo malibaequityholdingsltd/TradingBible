@@ -40,11 +40,23 @@ export function useTerminal() {
 
   const active = layouts.find((l) => l.id === activeId) || layouts[0] || null;
 
-  // Load layouts, seeding a default one for first-time users.
+  // Load layouts, seeding a default one for first-time users. Logged-out
+  // traders get a full local layout (same defaults) that works in-memory —
+  // every button works, only cloud sync waits for sign-in.
   useEffect(() => {
     let live = true;
     (async () => {
-      if (!uid) { setLoaded(true); return; }
+      if (!uid) {
+        if (!live) return;
+        const local = {
+          id: gid(), name: 'My Terminal', isActive: true,
+          symbols: DEFAULT_SYMBOLS, groups: DEFAULT_GROUPS, display: DEFAULT_DISPLAY,
+        };
+        setLayouts([local]);
+        setActiveId(local.id);
+        setLoaded(true);
+        return;
+      }
       try {
         const list = await pb.collection('terminal_layouts').getFullList({
           filter: `owner = "${uid}"`,
@@ -138,24 +150,28 @@ export function useTerminal() {
   }, [active, patchActive]);
 
   const saveLayout = useCallback(async (name) => {
-    if (!uid || !active) return;
-    const rec = await pb.collection('terminal_layouts').create({
-      owner: uid, name: name || 'Layout', isActive: false,
-      symbols: active.symbols, groups: active.groups, display: active.display,
-    });
+    if (!active) return;
+    const snapshot = { name: name || 'Layout', isActive: false, symbols: active.symbols, groups: active.groups, display: active.display };
+    if (!uid) {
+      setLayouts((prev) => [...prev, { ...snapshot, id: gid(), owner: null }]);
+      return;
+    }
+    const rec = await pb.collection('terminal_layouts').create({ owner: uid, ...snapshot });
     setLayouts((prev) => [...prev, rec]);
   }, [uid, active]);
 
   const selectLayout = useCallback((id) => {
     setActiveId(id);
-    layouts.forEach((l) => {
-      const shouldBe = l.id === id;
-      if (!!l.isActive !== shouldBe) {
-        pb.collection('terminal_layouts').update(l.id, { isActive: shouldBe }, { requestKey: `terminal-active-${l.id}` }).catch(() => {});
-      }
-    });
+    if (uid) {
+      layouts.forEach((l) => {
+        const shouldBe = l.id === id;
+        if (!!l.isActive !== shouldBe) {
+          pb.collection('terminal_layouts').update(l.id, { isActive: shouldBe }, { requestKey: `terminal-active-${l.id}` }).catch(() => {});
+        }
+      });
+    }
     setLayouts((prev) => prev.map((l) => ({ ...l, isActive: l.id === id })));
-  }, [layouts]);
+  }, [layouts, uid]);
 
   const renameLayout = useCallback((id, name) => {
     setLayouts((prev) => prev.map((l) => (l.id === id ? { ...l, name } : l)));
