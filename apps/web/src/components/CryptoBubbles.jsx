@@ -127,6 +127,8 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   const wrapRef = useRef(null);
   const [size, setSize] = useState({ w: 800, h: 520 });
   const nodesRef = useRef(new Map());
+  const timeRef = useRef(0);
+  const frameRef = useRef(0);
   const [, force] = useState(0);
 
   // Exchange filter first, then search/pagination operate on the subset.
@@ -204,6 +206,8 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   // Bubbles cruise at a steady speed, ride a slow flowing current, bounce off
   // walls, and push each other apart softly on contact. They never settle.
   // The All view keeps extra separation so labels never touch each other.
+  // Every node also keeps a short position trail — the time dimension (4D):
+  // direction and speed read straight off the motion ribbon.
   useEffect(() => {
     let raf;
     const t0 = Date.now();
@@ -213,6 +217,8 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
       const map = nodesRef.current;
       const nodes = [...map.values()];
       const t = (Date.now() - t0) / 1000;
+      timeRef.current = t;
+      frameRef.current += 1;
       for (let i = 0; i < nodes.length; i++) {
         const a = nodes[i];
         if (a.drag) continue;
@@ -248,6 +254,12 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
         if (n.x > size.w - n.r) { n.x = size.w - n.r; n.vx = -Math.abs(n.vx); }
         if (n.y < n.r) { n.y = n.r; n.vy = Math.abs(n.vy); }
         if (n.y > size.h - n.r) { n.y = size.h - n.r; n.vy = -Math.abs(n.vy); }
+        // Trail ribbon: one point every 3rd frame, 8 points deep.
+        if (frameRef.current % 3 === 0) {
+          if (!n.trail) n.trail = [];
+          n.trail.push([n.x, n.y]);
+          if (n.trail.length > 8) n.trail.shift();
+        }
       });
       force((f) => f + 1);
       raf = requestAnimationFrame(step);
@@ -451,10 +463,20 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                 <stop offset="0%" stopColor="rgba(255,255,255,0.95)" />
                 <stop offset="100%" stopColor="rgba(255,255,255,0)" />
               </radialGradient>
+              {/* HD depth vignette: darkened stage edges so bubbles float */}
+              <radialGradient id="bbStage" cx="50%" cy="46%" r="75%">
+                <stop offset="0%" stopColor="rgba(0,0,0,0)" />
+                <stop offset="78%" stopColor="rgba(0,0,0,0)" />
+                <stop offset="100%" stopColor="rgba(0,0,0,0.42)" />
+              </radialGradient>
             </defs>
+            <rect x={0} y={0} width={size.w} height={size.h} fill="url(#bbStage)" />
             {nodes.map((n) => {
               const dim = matchSet && !matchSet.has(n.cell.symbol);
               const big = Math.abs(n.cell.changePercent) >= 5;
+              const tNow = timeRef.current;
+              // Live pulse for big movers: expanding signal ring, phase by node.
+              const pulse = big && !dim ? (tNow * 0.9 + n.phase) % 1 : -1;
               const fontSize = compact
                 ? Math.max(9, Math.min(13, n.r / 2.2))
                 : Math.max(11, Math.min(18, n.r / 2.6));
@@ -482,6 +504,20 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                     {big && !dim && (
                       <circle r={n.r + 5} fill="none" stroke={bubbleStroke(n.cell.changePercent, scheme)} strokeWidth="1.5" opacity="0.45" />
                     )}
+                    {/* 4D motion ribbon: fading trail of where it just was */}
+                    {!dim && n.trail && n.trail.length > 1 && (
+                      <polyline
+                        points={n.trail.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')}
+                        fill="none" stroke={bubbleStroke(n.cell.changePercent, scheme)}
+                        strokeWidth={Math.max(2, n.r * 0.22)} strokeLinecap="round" strokeLinejoin="round" opacity="0.16"
+                      />
+                    )}
+                    {/* expanding signal pulse on big movers */}
+                    {pulse >= 0 && (
+                      <circle r={n.r + 4 + pulse * 22} fill="none" stroke={bubbleStroke(n.cell.changePercent, scheme)} strokeWidth="2" opacity={0.5 * (1 - pulse)} />
+                    )}
+                    {/* grounded contact shadow for HD depth layering */}
+                    <ellipse cx={0} cy={n.r * 0.96} rx={n.r * 0.72} ry={Math.max(2.5, n.r * 0.1)} fill="rgba(0,0,0,0.35)" />
                     {/* sphere body */}
                     <circle r={n.r} fill={bubbleFill(n.cell.changePercent, scheme)} />
                     <circle r={n.r} fill="url(#bbShade)" />
@@ -489,6 +525,13 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                     <ellipse cx={0} cy={n.r * 0.58} rx={n.r * 0.52} ry={n.r * 0.15} fill="rgba(255,255,255,0.10)" />
                     {/* glossy highlight */}
                     <ellipse cx={-n.r * 0.33} cy={-n.r * 0.42} rx={n.r * 0.24} ry={n.r * 0.13} fill="url(#bbGloss)" opacity="0.32" transform={`rotate(-18)`} />
+                    {/* secondary sparkle dot for HD glass feel */}
+                    <circle cx={-n.r * 0.22} cy={-n.r * 0.55} r={Math.max(1.2, n.r * 0.045)} fill="rgba(255,255,255,0.85)" />
+                    {/* rim light crescent: bright arc on the lit side */}
+                    <circle
+                      r={n.r - 1} fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"
+                      strokeDasharray={`${n.r * 1.1} ${n.r * 5.2}`} strokeLinecap="round" transform="rotate(-58)"
+                    />
                     {/* rim */}
                     <circle r={n.r} fill="none" stroke={bubbleStroke(n.cell.changePercent, scheme)} strokeWidth="2" />
                     {(() => {
@@ -555,7 +598,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[#8a8577]">
         <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: `rgb(${scheme.up})` }} />{t('hm.up', null, 'Up')}</span>
         <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: `rgb(${scheme.down})` }} />{t('hm.down', null, 'Down')}</span>
-        <span>{t('hm.legendSize', null, 'Size = move (or volume in Volume mode) · brighter = bigger move · drag to move')}</span>
+        <span>{t('hm.legendSize', null, 'Size = move (or volume in Volume mode) · brighter = bigger move · ribbons = motion trail · drag to move')}</span>
       </div>
     </div>
   );
