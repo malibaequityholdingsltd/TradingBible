@@ -247,7 +247,7 @@ export default function TerminalPage() {
           </div>
         )}
 
-        {pickerOpen && <SymbolPicker existing={symbolStrings} groups={t.groups} onAdd={(s, grp) => t.addSymbol(s, grp)} onClose={() => setPickerOpen(false)} />}
+        {pickerOpen && <SymbolPicker existing={symbolStrings} groups={t.groups} onAdd={(s, grp) => { t.addSymbol(s, grp); setPickerOpen(false); }} onClose={() => setPickerOpen(false)} />}
       </div>
     </AppLayout>
   );
