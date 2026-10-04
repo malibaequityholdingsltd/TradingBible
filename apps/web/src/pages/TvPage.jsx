@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Shuffle, Loader2, ChevronLeft, Lock, Crown, WifiOff, Clock, Bell, BellRing } from 'lucide-react';
+import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Loader2, ChevronLeft, Lock, Crown, WifiOff, Clock, Bell, BellRing } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -164,13 +164,6 @@ export default function TvPage() {
     return undefined;
   }, [channelsOpen, activeChannel]);
 
-  const shuffleTvChannel = useCallback(() => {
-    const open = liveChannels.map((c, i) => ({ c, i })).filter(({ c }) => canWatch(c));
-    if (!open.length) { goUpgrade(); return; }
-    const pool = open.filter(({ i }) => i !== activeChannel);
-    const pick = (pool.length ? pool : open)[Math.floor(Math.random() * (pool.length ? pool.length : open.length))];
-    playLiveChannel(pick.i);
-  }, [activeChannel, playLiveChannel, liveChannels, canWatch, goUpgrade]);
   const wakeUi = useCallback(() => {
     setUiHidden(false);
     clearTimeout(hideTimerRef.current);
@@ -455,13 +448,14 @@ export default function TvPage() {
                 </button>
               </div>
             </div>
-            <div className="mt-3 flex items-center gap-2">
-              <button onClick={shuffleTvChannel} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] px-4 py-2.5 text-sm font-bold text-[#0a0a0f] shadow-[0_4px_20px_rgba(212,175,55,0.25)] transition hover:opacity-95 active:scale-[0.99]">
-                <Shuffle className="h-4 w-4" /> Shuffle play{liveCount > 0 ? ` — ${liveCount} live now` : ' — random channel'}
-              </button>
-            </div>
+            {bell && (
+              <p className="mt-2 text-xs text-[#8a8577]">Alerts on — we'll ping you the moment an off-air desk goes live.</p>
+            )}
             <div className="no-scrollbar mt-5 grid flex-1 content-start gap-2 overflow-y-auto pb-4 sm:grid-cols-2">
               {liveChannels.map((c, ci) => {
+                // Off-air desks never display — only live or
+                // not-yet-checked desks are listed.
+                if (liveOf(c) === false) return null;
                 const locked = !canWatch(c);
                 const st = liveOf(c);
                 return (
@@ -470,7 +464,7 @@ export default function TvPage() {
                   data-chidx={ci}
                   onClick={() => playLiveChannel(ci)}
                   onMouseEnter={() => setActiveChannel(ci)}
-                  className={`group flex items-center gap-3 rounded-xl border p-3.5 text-left backdrop-blur-md transition ${st === true ? 'border-[#e50914]/40 bg-[#e50914]/[0.06] shadow-[0_0_18px_rgba(229,9,20,0.12)]' : ci === activeChannel ? 'border-[#d4af37]/60 bg-[#d4af37]/[0.08]' : 'border-[#d4af37]/15 bg-white/[0.03] hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.06]'} ${st === false ? 'opacity-60' : ''}`}
+                  className={`group flex items-center gap-3 rounded-xl border p-3.5 text-left backdrop-blur-md transition ${st === true ? 'border-[#e50914]/40 bg-[#e50914]/[0.06] shadow-[0_0_18px_rgba(229,9,20,0.12)]' : ci === activeChannel ? 'border-[#d4af37]/60 bg-[#d4af37]/[0.08]' : 'border-[#d4af37]/15 bg-white/[0.03] hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.06]'}`}
                 >
                   <span className={`relative grid h-10 w-10 shrink-0 place-items-center rounded-xl ${st === true ? 'bg-[#e50914]/15 text-[#ff5a62]' : 'bg-[#d4af37]/12 text-[#d4af37]'}`}>
                     {locked ? <Lock className="h-4 w-4" /> : <Radio className="h-4 w-4" />}
@@ -480,12 +474,11 @@ export default function TvPage() {
                     <span className="flex items-center gap-1.5">
                       <span className="block truncate text-sm font-semibold text-[#f0ecdd]">{c.title}</span>
                       {st === true && <span className="shrink-0 rounded-full bg-[#e50914] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-white">Live</span>}
-                      {st === false && <span className="shrink-0 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#8a8577]">Off-air</span>}
                       {c.isNew && <span className="shrink-0 rounded-full bg-[#d4af37] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#0a0a0f]">New</span>}
                       {c.roundTheClock && st !== true && <span className="shrink-0 rounded-full bg-emerald-400/15 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-emerald-400">24/7</span>}
                       {locked && <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#d4af37]"><Crown className="h-2.5 w-2.5" />{c.plan}</span>}
                     </span>
-                    <span className="mt-0.5 block truncate text-xs text-[#8a8577]">{locked ? (isAuthed ? 'Upgrade to unlock this desk' : 'Sign in to unlock this desk') : st === false ? 'Off-air — tap to retry' : c.blurb}</span>
+                    <span className="mt-0.5 block truncate text-xs text-[#8a8577]">{locked ? (isAuthed ? 'Upgrade to unlock this desk' : 'Sign in to unlock this desk') : c.blurb}</span>
                     {!c.roundTheClock && c.hours && st !== true && (
                       <span className="mt-0.5 flex items-center gap-1 text-[11px] text-[#6a665a]"><Clock className="h-3 w-3 shrink-0" /> Typically live: {c.hours}</span>
                     )}
@@ -497,6 +490,12 @@ export default function TvPage() {
                 </button>
                 );
               })}
+              {liveChannels.length > 0 && liveChannels.every((c) => liveOf(c) === false) && (
+                <div className="col-span-full px-1 py-8 text-center">
+                  <p className="text-sm text-[#8a8577]">No desks are live right now.</p>
+                  <p className="mt-1 text-xs text-[#6a665a]">Turn on the bell above — we'll ping you the moment one starts.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
