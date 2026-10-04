@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { AreaChart, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 'recharts';
-import { TrendingUp, TrendingDown, Wallet, Target, Activity, ShieldAlert, Trophy, Percent, Plug, RefreshCw, Landmark, ArrowRight, LayoutDashboard } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Target, Activity, ShieldAlert, Trophy, Percent, Plug, RefreshCw, Landmark, ArrowRight, LayoutDashboard, ListOrdered, LineChart, Grid2x2, MonitorPlay, PlusCircle } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { fmtMoney } from '@/lib/mockData';
 import { useI18n } from '@/lib/i18n';
@@ -9,22 +9,39 @@ import { useTrades, computeStats } from '@/hooks/useTrades';
 import { useAuth } from '@/hooks/useAuth';
 import DashboardWidgets from '@/components/DashboardWidgets';
 import AccountBalances from '@/components/AccountBalances';
-import { PageHero, Card, StatGrid, EmptyState, GoldButton, SectionHead } from '@/components/ui-kit';
+import { PageHero, Card, StatGrid, EmptyState, GoldButton, GhostButton, SectionHead } from '@/components/ui-kit';
 
 const GOLD = '#d4af37';
 
 function DashStat({ icon: Icon, label, value, delta, positive }) {
   return (
-    <div className="tb-card tb-card-hover p-4 sm:p-5">
+    <div className="tb-card tb-card-hover sheen-panel p-4 sm:p-5">
       <div className="flex items-center justify-between gap-2">
-        <span className="truncate text-[11px] uppercase tracking-wider text-[#8a8577] sm:text-xs">{label}</span>
-        <Icon className="h-4 w-4 shrink-0 text-[#d4af37]" />
+        <span className="truncate text-[11px] font-bold uppercase tracking-wider text-[#8a8577] sm:text-xs">{label}</span>
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#f4e6a8]/25 to-[#c99a25]/10 text-[#d4af37] ring-1 ring-[#d4af37]/25">
+          <Icon className="h-4 w-4" />
+        </span>
       </div>
-      <div className="mt-3 truncate font-mono text-xl font-semibold text-[#f0ecdd] sm:text-2xl">{value}</div>
-      {delta && <div className={`mt-1 flex items-center gap-1 text-xs ${positive ? 'text-emerald-400' : 'text-red-400'}`}>{positive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}{delta}</div>}
+      <div className="mt-3 truncate font-mono text-xl font-bold text-[#f0ecdd] sm:text-2xl">{value}</div>
+      {delta && (
+        <div className="mt-2 w-fit">
+          <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${positive ? 'bg-emerald-400/10 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}>
+            {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}{delta}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
+
+// Command deck: one tap to every desk of the terminal.
+const DESKS = [
+  { to: '/app/terminal', icon: ListOrdered, key: 'nav.terminal', fallback: 'Terminal', blurb: 'Watchlists, groups and live quotes' },
+  { to: '/app/charts', icon: LineChart, key: 'nav.charts', fallback: 'Advanced Charts', blurb: 'Indicators, drawings and templates' },
+  { to: '/app/heatmaps', icon: Grid2x2, key: 'nav.heatmaps', fallback: 'Heatmaps', blurb: '5 markets of living bubbles' },
+  { to: '/app/orderflow', icon: Activity, key: 'nav.orderflow', fallback: 'Order Flow', blurb: 'Depth, tape and footprint' },
+  { to: '/tv', icon: MonitorPlay, key: 'nav.tv', fallback: 'TradingBible TV', blurb: '28 live desks that autoplay' },
+];
 
 const TT = ({ active, payload, label, prefix = '' }) => active && payload?.length ? (
   <div className="rounded-lg border border-[#d4af37]/30 bg-[#0f0f14] px-3 py-2 text-xs">
@@ -69,8 +86,41 @@ export default function DashboardPage() {
           title={t('dash.perfPnl')}
           accent={fmtMoney(stats.balance - 100000)}
           subtitle={t('dash.syncedN', { n: stats.totalTrades })}
+          stats={[
+            { label: t('dash.winRate'), value: `${stats.winRate}%`, color: stats.winRate >= 50 ? '#34d399' : '#fb7185' },
+            { label: t('dash.profitFactor'), value: stats.profitFactor.toFixed(2), color: '#d4af37' },
+            { label: t('dash.traderScore'), value: `${stats.traderScore}/100`, color: '#f0ecdd' },
+          ]}
+          actions={
+            <>
+              <GoldButton to="/app/journal" className="min-h-[40px] px-4 py-2 text-xs"><PlusCircle className="h-4 w-4" /> {t('jou.newTrade', null, 'New trade')}</GoldButton>
+              <GhostButton to="/app/charts" className="min-h-[40px] px-4 py-2 text-xs"><LineChart className="h-4 w-4" /> {t('nav.charts')}</GhostButton>
+              <GhostButton to="/tv" className="min-h-[40px] px-4 py-2 text-xs"><MonitorPlay className="h-4 w-4" /> {t('nav.tv', null, 'TradingBible TV')}</GhostButton>
+            </>
+          }
         />
         <AccountBalances />
+
+        {/* Command deck — every list, widget and desk, one tap away */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:grid-cols-5">
+          {DESKS.map((d) => (
+            <Link
+              key={d.to}
+              to={d.to}
+              className="tb-card tb-card-hover sheen-panel group flex min-w-0 items-center gap-3 p-3.5 sm:p-4"
+            >
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#f4e6a8]/25 to-[#c99a25]/10 text-[#d4af37] ring-1 ring-[#d4af37]/25 transition group-hover:scale-105">
+                <d.icon className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-bold text-[#f0ecdd]">{t(d.key, null, d.fallback)}</span>
+                <span className="block truncate text-[11px] text-[#8a8577]">{d.blurb}</span>
+              </span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-[#6a665a] transition group-hover:translate-x-0.5 group-hover:text-[#d4af37]" />
+            </Link>
+          ))}
+        </div>
+
         <StatGrid cols={4}>
           <DashStat icon={Wallet} label={t('dash.perfPnl')} value={fmtMoney(stats.balance - 100000)} delta={t('dash.syncedN', { n: stats.totalTrades })} positive={stats.balance >= 100000} />
           <DashStat icon={Activity} label={t('dash.daily')} value={fmtMoney(stats.dailyPnl)} delta={t('dash.today')} positive={stats.dailyPnl >= 0} />
