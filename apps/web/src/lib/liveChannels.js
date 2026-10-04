@@ -52,7 +52,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Live trader talk — options, futures and market strategy.',
 		isNew: true,
 		plan: 'professional',
-		hours: 'Mon–Fri · 8a–4p CT',
+		hours: 'Mon–Fri · 7a–8p CT',
 	},
 	{
 		id: 'kitco-news-live',
@@ -63,7 +63,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Gold, silver and macro interviews — live event coverage.',
 		isNew: true,
 		plan: 'elite',
-		hours: 'Event-driven · US daytime ET',
+		hours: 'Breaking coverage + daily roundups ET',
 	},
 	{
 		id: 'cnbc-live',
@@ -74,7 +74,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Wall Street daytime coverage — Squawk Box to Closing Bell.',
 		isNew: true,
 		plan: 'elite',
-		hours: 'Mon–Fri · 5a–7p ET',
+		hours: 'Weekdays · live from Squawk Box 6a ET',
 	},
 	{
 		id: 'fox-business-live',
@@ -85,7 +85,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Mornings with Maria to Kudlow — markets and money.',
 		isNew: true,
 		plan: 'elite',
-		hours: 'Mon–Fri · 6a–5p ET',
+		hours: 'Weekdays · 6a–5p ET from Mornings',
 	},
 	{
 		id: 'ig-live-trading',
@@ -96,7 +96,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Daily live shows — Morning Markets, Trade Live US Open.',
 		isNew: true,
 		plan: 'pro',
-		hours: 'Weekdays · London mornings',
+		hours: 'Weekdays · Trade Live 7:30–10:30a UK + US open',
 	},
 	{
 		id: 'tastytrade-live',
@@ -107,7 +107,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Live options and futures shows from the trade desk.',
 		isNew: true,
 		plan: 'professional',
-		hours: 'Mon–Fri · 7a–4p CT',
+		hours: 'Mon–Thu 7a–5p · Fri 7a–3p CT',
 	},
 	{
 		id: 'tradertv-live',
@@ -118,7 +118,7 @@ export const LIVE_CHANNELS = [
 		blurb: 'Live day-trading sessions and market opens.',
 		isNew: true,
 		plan: 'pro',
-		hours: 'Mon–Fri · US market hours ET',
+		hours: 'Weekdays · 8a–4p ET Toronto floor',
 	},
 	{
 		id: 'aje-live',
@@ -162,7 +162,8 @@ export const LIVE_CHANNELS = [
 		blurb: 'Headline news, business and interviews from Berlin.',
 		isNew: true,
 		plan: 'pro',
-		roundTheClock: true,
+		roundTheClock: false,
+		hours: 'Daily live blocks CET',
 	},
 	{
 		id: 'trt-world-live',
@@ -173,7 +174,8 @@ export const LIVE_CHANNELS = [
 		blurb: 'Breaking news and business from Istanbul around the clock.',
 		isNew: true,
 		plan: 'pro',
-		roundTheClock: true,
+		roundTheClock: false,
+		hours: 'Daily live blocks',
 	},
 	{
 		id: 'cna-live',
