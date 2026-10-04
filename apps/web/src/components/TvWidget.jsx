@@ -638,19 +638,21 @@ export default function TvWidget() {
                   {(() => {
                     const q = guideQuery.trim().toLowerCase();
                     const matches = (c) => !q || `${c.title || ''} ${c.desk || ''}`.toLowerCase().includes(q);
-                    // Off-air desks never display — only live or
-                    // not-yet-checked desks are listed.
-                    const withIdx = ordered.map((c, i) => ({ c, ci: i })).filter(({ c }) => matches(c) && liveOf(c) !== false);
+                    // Every desk always lists — confirmed off-air ones sit in
+                    // their own dimmed section, so visible rows always add
+                    // up to the channel count.
+                    const withIdx = ordered.map((c, i) => ({ c, ci: i })).filter(({ c }) => matches(c));
                     const sections = [
                       { id: 'live', label: `Live now${liveCount > 0 ? ` · ${liveCount}` : ''}`, dot: 'bg-[#e50914]', items: withIdx.filter(({ c }) => liveOf(c) === true) },
-                      { id: 'live247', label: 'On air 24/7', dot: 'bg-emerald-400', items: withIdx.filter(({ c }) => c.roundTheClock && c.desk !== 'Music' && liveOf(c) !== true) },
-                      { id: 'music', label: 'Music', dot: 'bg-violet-400', items: withIdx.filter(({ c }) => c.desk === 'Music' && liveOf(c) !== true) },
-                      { id: 'scheduled', label: 'Scheduled live shows', dot: 'bg-[#d4af37]', items: withIdx.filter(({ c }) => !c.roundTheClock && c.desk !== 'Music' && liveOf(c) !== true) },
+                      { id: 'live247', label: 'On air 24/7', dot: 'bg-emerald-400', items: withIdx.filter(({ c }) => c.roundTheClock && c.desk !== 'Music' && liveOf(c) !== true && liveOf(c) !== false) },
+                      { id: 'music', label: 'Music', dot: 'bg-violet-400', items: withIdx.filter(({ c }) => c.desk === 'Music' && liveOf(c) !== true && liveOf(c) !== false) },
+                      { id: 'scheduled', label: 'Scheduled live shows', dot: 'bg-[#d4af37]', items: withIdx.filter(({ c }) => !c.roundTheClock && c.desk !== 'Music' && liveOf(c) !== true && liveOf(c) !== false) },
+                      { id: 'offair', label: 'Currently off-air', dot: 'bg-[#6a665a]', items: withIdx.filter(({ c }) => liveOf(c) === false) },
                     ].filter((s) => s.items.length).map((s) => (s.id === 'live' ? s : { ...s, label: `${s.label} · ${s.items.length}` }));
                     if (!sections.length) {
                       return (
                         <div className="px-1 py-6 text-center">
-                          <p className="text-xs text-[#8a8577]">{guideQuery ? `No desks match “${guideQuery}”.` : 'No desks are live right now.'}</p>
+                          <p className="text-xs text-[#8a8577]">{guideQuery ? `No desks match “${guideQuery}”.` : 'No desks to show.'}</p>
                           {!guideQuery && (
                             <p className="mt-1 text-[11px] text-[#6a665a]">Turn on the bell above — we'll ping you the moment one starts.</p>
                           )}
@@ -675,7 +677,7 @@ export default function TvWidget() {
                       <button
                         key={c.id}
                         onClick={() => watchChannel(ci)}
-                        className={`group flex w-full items-center gap-2.5 rounded-xl border p-2.5 text-left transition ${st === true ? 'border-[#e50914]/40 bg-[#e50914]/[0.06] shadow-[0_0_18px_rgba(229,9,20,0.12)] hover:border-[#e50914]/70' : locked ? 'border-[#d4af37]/10 opacity-80 hover:border-[#d4af37]/40' : 'border-[#d4af37]/10 bg-white/[0.02] hover:border-[#d4af37]/40 hover:bg-[#d4af37]/[0.05]'}`}
+                        className={`group flex w-full items-center gap-2.5 rounded-xl border p-2.5 text-left transition ${st === true ? 'border-[#e50914]/40 bg-[#e50914]/[0.06] shadow-[0_0_18px_rgba(229,9,20,0.12)] hover:border-[#e50914]/70' : locked ? 'border-[#d4af37]/10 opacity-80 hover:border-[#d4af37]/40' : 'border-[#d4af37]/10 bg-white/[0.02] hover:border-[#d4af37]/40 hover:bg-[#d4af37]/[0.05]'} ${st === false ? 'opacity-60' : ''}`}
                       >
                         <span className={`relative grid h-9 w-9 shrink-0 place-items-center rounded-lg ${st === true ? 'bg-[#e50914]/15 text-[#ff5a62]' : 'bg-[#d4af37]/12 text-[#d4af37]'}`}>
                           {locked ? <Lock className="h-3.5 w-3.5" /> : <Radio className="h-3.5 w-3.5" />}
@@ -685,12 +687,13 @@ export default function TvWidget() {
                           <span className="flex items-center gap-1.5">
                             <span className="block truncate text-[13px] font-semibold text-[#f0ecdd]">{c.title}</span>
                             {st === true && <span className="shrink-0 rounded-full bg-[#e50914] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-white">Live</span>}
+                            {st === false && <span className="shrink-0 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#8a8577]">Off-air</span>}
                             {watching && <span className="shrink-0 rounded-full bg-[#d4af37]/20 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#d4af37]">Watching</span>}
                             {c.isNew && <span className="shrink-0 rounded-full bg-[#d4af37] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#0a0a0f]">New</span>}
                             {c.roundTheClock && st !== true && <span className="shrink-0 rounded-full bg-emerald-400/15 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-emerald-400">24/7</span>}
                             {locked && <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#d4af37]"><Crown className="h-2.5 w-2.5" />{c.plan}</span>}
                           </span>
-                          <span className="block truncate text-[11px] text-[#8a8577]" title={liveTitle || undefined}>{locked ? `${c.desk} · tap to upgrade` : liveTitle || `${c.desk} · tap to watch`}</span>
+                          <span className="block truncate text-[11px] text-[#8a8577]" title={liveTitle || undefined}>{locked ? `${c.desk} · tap to upgrade` : liveTitle || (st === false ? `${c.desk} · tap to retry` : `${c.desk} · tap to watch`)}</span>
                           {!c.roundTheClock && c.hours && st !== true && (
                             <span className="mt-0.5 flex items-center gap-1 text-[10px] text-[#6a665a]"><Clock className="h-2.5 w-2.5 shrink-0" /> Typically live: {c.hours}</span>
                           )}
@@ -764,8 +767,16 @@ export default function TvWidget() {
                 <button onClick={openChannels} className={iconBtn} aria-label="Back to channels">
                   <ChevronLeft className="h-4 w-4" />
                 </button>
-                <span className="min-w-0 flex-1 truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
-                  {ordered[playing]?.desk} · {playing + 1}/{ordered.length}
+                <span className="flex min-w-0 flex-1 flex-col items-center gap-1">
+                  {isYoutube && ytApi ? (
+                    <button onClick={toggleYtSound} className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] px-5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#0a0a0f] shadow-[0_4px_16px_rgba(212,175,55,0.35)] transition hover:opacity-95 active:scale-95" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
+                      {ytMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                      {ytMuted ? 'Tap for sound' : 'Sound on'}
+                    </button>
+                  ) : null}
+                  <span className="truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
+                    {ordered[playing]?.desk} · {playing + 1}/{ordered.length}
+                  </span>
                 </span>
                 <button onClick={() => zapChannel(1)} className={iconBtn} aria-label="Next channel" title="Next channel">
                   <ChevronRight className="h-4 w-4" />

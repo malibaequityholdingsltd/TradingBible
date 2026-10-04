@@ -551,9 +551,6 @@ export default function TvPage() {
             )}
             <div className="no-scrollbar mt-5 grid flex-1 content-start gap-2 overflow-y-auto pb-4 sm:grid-cols-2">
               {liveChannels.map((c, ci) => {
-                // Off-air desks never display — only live or
-                // not-yet-checked desks are listed.
-                if (liveOf(c) === false) return null;
                 const locked = !canWatch(c);
                 const st = liveOf(c);
                 const liveTitle = st === true ? tvStates[c.id]?.title || null : null;
@@ -563,7 +560,7 @@ export default function TvPage() {
                   data-chidx={ci}
                   onClick={() => playLiveChannel(ci)}
                   onMouseEnter={() => setActiveChannel(ci)}
-                  className={`group flex items-center gap-3 rounded-xl border p-3.5 text-left backdrop-blur-md transition ${st === true ? 'border-[#e50914]/40 bg-[#e50914]/[0.06] shadow-[0_0_18px_rgba(229,9,20,0.12)]' : ci === activeChannel ? 'border-[#d4af37]/60 bg-[#d4af37]/[0.08]' : 'border-[#d4af37]/15 bg-white/[0.03] hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.06]'}`}
+                  className={`group flex items-center gap-3 rounded-xl border p-3.5 text-left backdrop-blur-md transition ${st === true ? 'border-[#e50914]/40 bg-[#e50914]/[0.06] shadow-[0_0_18px_rgba(229,9,20,0.12)]' : ci === activeChannel ? 'border-[#d4af37]/60 bg-[#d4af37]/[0.08]' : 'border-[#d4af37]/15 bg-white/[0.03] hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.06]'} ${st === false ? 'opacity-60' : ''}`}
                 >
                   <span className={`relative grid h-10 w-10 shrink-0 place-items-center rounded-xl ${st === true ? 'bg-[#e50914]/15 text-[#ff5a62]' : 'bg-[#d4af37]/12 text-[#d4af37]'}`}>
                     {locked ? <Lock className="h-4 w-4" /> : <Radio className="h-4 w-4" />}
@@ -573,11 +570,12 @@ export default function TvPage() {
                     <span className="flex items-center gap-1.5">
                       <span className="block truncate text-sm font-semibold text-[#f0ecdd]">{c.title}</span>
                       {st === true && <span className="shrink-0 rounded-full bg-[#e50914] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-white">Live</span>}
+                      {st === false && <span className="shrink-0 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#8a8577]">Off-air</span>}
                       {c.isNew && <span className="shrink-0 rounded-full bg-[#d4af37] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#0a0a0f]">New</span>}
                       {c.roundTheClock && st !== true && <span className="shrink-0 rounded-full bg-emerald-400/15 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-emerald-400">24/7</span>}
                       {locked && <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#d4af37]"><Crown className="h-2.5 w-2.5" />{c.plan}</span>}
                     </span>
-                    <span className="mt-0.5 block truncate text-xs text-[#8a8577]" title={liveTitle || undefined}>{locked ? (isAuthed ? 'Upgrade to unlock this desk' : 'Sign in to unlock this desk') : liveTitle || c.blurb}</span>
+                    <span className="mt-0.5 block truncate text-xs text-[#8a8577]" title={liveTitle || undefined}>{locked ? (isAuthed ? 'Upgrade to unlock this desk' : 'Sign in to unlock this desk') : liveTitle || (st === false ? 'Off-air — tap to retry' : c.blurb)}</span>
                     {!c.roundTheClock && c.hours && st !== true && (
                       <span className="mt-0.5 flex items-center gap-1 text-[11px] text-[#6a665a]"><Clock className="h-3 w-3 shrink-0" /> Typically live: {c.hours}</span>
                     )}
@@ -589,12 +587,6 @@ export default function TvPage() {
                 </button>
                 );
               })}
-              {liveChannels.length > 0 && liveChannels.every((c) => liveOf(c) === false) && (
-                <div className="col-span-full px-1 py-8 text-center">
-                  <p className="text-sm text-[#8a8577]">No desks are live right now.</p>
-                  <p className="mt-1 text-xs text-[#6a665a]">Turn on the bell above — we'll ping you the moment one starts.</p>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -610,8 +602,8 @@ export default function TvPage() {
             </span>
             <button onClick={() => setChannelsOpen(true)} className="shrink-0 rounded-md bg-black/50 px-2 py-1 font-mono text-[10px] tracking-widest text-[#d4af37] backdrop-blur-sm">ALL CHANNELS</button>
             {playIsYoutube && ytApi && (
-              <button onClick={toggleYtSound} className="flex shrink-0 items-center gap-1.5 rounded-md bg-black/50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#d4af37] backdrop-blur-sm" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
-                {ytMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+              <button onClick={toggleYtSound} className="flex shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2 text-[11px] font-bold uppercase tracking-wider text-[#0a0a0f] shadow-[0_4px_16px_rgba(212,175,55,0.35)] backdrop-blur-sm transition hover:opacity-95 active:scale-95" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
+                {ytMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
                 {ytMuted ? 'Tap for sound' : 'Sound on'}
               </button>
             )}
