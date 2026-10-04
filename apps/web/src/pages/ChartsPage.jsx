@@ -46,7 +46,9 @@ export default function ChartsPage() {
 
         {layout === 'single' && (
           <>
-            <WatchlistStrip active={symbol} onSelect={setSymbol} />
+            <div className="tb-card p-3 sm:p-4">
+              <WatchlistStrip bare active={symbol} onSelect={setSymbol} />
+            </div>
             <LiveChart key={symbol} initialSymbol={symbol} initialTimeframe="1h"
               onSymbolChange={setSymbol}
               initialIndicators={[{ id: 'sma-1', type: 'sma', params: { period: 20 }, color: '#d4af37' }, { id: 'rsi-1', type: 'rsi', params: { period: 14 }, color: '#d4af37' }]} />
