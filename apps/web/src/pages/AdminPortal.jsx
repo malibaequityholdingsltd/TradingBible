@@ -2450,18 +2450,27 @@ export function AdminTvAds() {
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({ title: '', headline: '', imageUrl: '', logoUrl: '', linkUrl: '', cta: 'Learn more', accent: '#d4af37', durationSeconds: 12, snippet: '', enabled: true });
 
+  // ── Live channels (manual channel guide for the TV widget + TV page) ──
+  const [channels, setChannels] = useState([]);
+  const [chEditing, setChEditing] = useState(null);
+  const [chBusy, setChBusy] = useState(false);
+  const [chForm, setChForm] = useState({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true });
+
   const load = useCallback(async () => {
     const token = pb.authStore.token;
     try {
-      const [adsRes, setRes] = await Promise.all([
+      const [adsRes, setRes, chRes] = await Promise.all([
         fetch(`${API_SERVER_URL}/ads/admin/list`, { headers: { Authorization: `Bearer ${token}` } }),
         fetch(`${API_SERVER_URL}/ads`),
+        fetch(`${API_SERVER_URL}/ads/admin/channels/list`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      const [adsData, feedData] = await Promise.all([adsRes.json(), setRes.json()]);
+      const [adsData, feedData, chData] = await Promise.all([adsRes.json(), setRes.json(), chRes.json().catch(() => ({}))]);
       setAds(adsRes.ok ? adsData.ads || [] : []);
       if (feedData?.settings) setSettings((s) => ({ ...s, ...feedData.settings }));
+      setChannels(chRes.ok ? chData.channels || [] : []);
     } catch {
       setAds([]);
+      setChannels([]);
     } finally {
       setLoading(false);
     }
@@ -2523,6 +2532,45 @@ export function AdminTvAds() {
       toast({ title: 'Delete failed', description: String(err.message || err) });
     }
   };
+
+  const saveChannel = async (e) => {
+    e.preventDefault();
+    setChBusy(true);
+    try {
+      if (chEditing) {
+        await api(`/admin/channels/${chEditing.id}`, { method: 'PATCH', body: { config: chForm, enabled: chForm.enabled } });
+        toast({ title: 'Channel updated' });
+      } else {
+        await api('/admin/channels', { method: 'POST', body: { title: chForm.title, config: chForm, enabled: chForm.enabled } });
+        toast({ title: 'Channel added' });
+      }
+      setChEditing(null);
+      setChForm({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true });
+      await load();
+    } catch (err) {
+      toast({ title: 'Save failed', description: String(err.message || err) });
+    } finally {
+      setChBusy(false);
+    }
+  };
+
+  const removeChannel = async (id) => {
+    if (!window.confirm('Remove this channel from the live TV guide?')) return;
+    try {
+      await api(`/admin/channels/${id}`, { method: 'DELETE' });
+      await load();
+      toast({ title: 'Channel removed' });
+    } catch (err) {
+      toast({ title: 'Delete failed', description: String(err.message || err) });
+    }
+  };
+
+  const startChannelEdit = (ch) => {
+    setChEditing(ch);
+    setChForm({ ...(ch.config || {}), title: ch.config?.title || '', enabled: ch.enabled !== false });
+  };
+
+  const setCF = (k) => (e) => setChForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
 
   const startEdit = (ad) => {
     setEditing(ad);
@@ -2633,6 +2681,73 @@ export function AdminTvAds() {
                       <div className="flex justify-end gap-2">
                         <button onClick={() => startEdit(ad)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
                         <button onClick={() => removeAd(ad.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/20 text-red-400 hover:border-red-500/60" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Live channels — manual channel guide for TV widget + TV page */}
+      <div className="glass mt-6 rounded-2xl p-5">
+        <h3 className="mb-1 font-semibold text-[#f0ecdd]">{chEditing ? `Edit channel — ${chEditing.config?.title || chEditing.key}` : 'New live channel'}</h3>
+        <p className="mb-4 text-xs text-[#8a8577]">Channels appear in the floating TV widget and on the TV page after the built-in Bloomberg entry. Use an embed URL (e.g. a YouTube <span className="font-mono">/embed/live_stream</span>) for instant in-player playback, otherwise the channel page loads in the player.</p>
+        <form onSubmit={saveChannel} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div><label className={label}>Title *</label><input required className={input} value={chForm.title} onChange={setCF('title')} placeholder="e.g. Bloomberg Europe" /></div>
+          <div><label className={label}>Desk badge</label><input className={input} value={chForm.desk} onChange={setCF('desk')} placeholder="Europe" /></div>
+          <div><label className={label}>Stream page URL *</label><input required className={input} value={chForm.url} onChange={setCF('url')} placeholder="https://…" /></div>
+          <div><label className={label}>Embed URL (optional)</label><input className={input} value={chForm.embedUrl} onChange={setCF('embedUrl')} placeholder="https://…/embed/…" /></div>
+          <div className="sm:col-span-2"><label className={label}>Blurb</label><input className={input} value={chForm.blurb} onChange={setCF('blurb')} placeholder="One-line description shown in the guide…" /></div>
+          <label className="flex items-center gap-3 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
+            <input type="checkbox" checked={chForm.isNew} onChange={setCF('isNew')} className="h-5 w-5 accent-[#d4af37]" />
+            <span className="text-sm text-[#c9c4b4]">Mark as NEW badge</span>
+          </label>
+          <label className="flex items-center gap-3 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
+            <input type="checkbox" checked={chForm.enabled} onChange={setCF('enabled')} className="h-5 w-5 accent-[#d4af37]" />
+            <span className="text-sm text-[#c9c4b4]">Live now</span>
+          </label>
+          <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-3">
+            <button type="submit" disabled={chBusy} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90 disabled:opacity-50">
+              <Save className="h-4 w-4" /> {chEditing ? 'Update channel' : 'Add channel'}
+            </button>
+            {chEditing && <button type="button" onClick={() => { setChEditing(null); setChForm({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true }); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
+          </div>
+        </form>
+      </div>
+
+      <div className="glass mt-6 overflow-hidden rounded-2xl">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
+                <th className="px-5 py-3">Channel</th>
+                <th className="px-5 py-3">URL</th>
+                <th className="px-5 py-3">Status</th>
+                <th className="px-5 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan="4" className="px-5 py-10 text-center text-[#8a8577]">Loading channels…</td></tr>
+              ) : channels.length === 0 ? (
+                <tr><td colSpan="4" className="px-5 py-10 text-center text-[#8a8577]">No manual channels yet — the built-in Bloomberg entry always shows. Add one above.</td></tr>
+              ) : channels.map((ch) => {
+                const c = ch.config || {};
+                return (
+                  <tr key={ch.id} className="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
+                    <td className="px-5 py-4">
+                      <div className="font-medium text-[#f0ecdd]">{c.title || ch.key}</div>
+                      <div className="text-xs text-[#6a665a]">{c.desk || 'Live'}{c.isNew ? ' · NEW' : ''}{c.blurb ? ` — ${c.blurb}` : ''}</div>
+                    </td>
+                    <td className="max-w-[220px] truncate px-5 py-4 font-mono text-xs text-[#8a8577]">{c.embedUrl || c.url}</td>
+                    <td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-xs ${ch.enabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[#8a8577]'}`}>{ch.enabled ? 'Live' : 'Paused'}</span></td>
+                    <td className="px-5 py-4">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => startChannelEdit(ch)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
+                        <button onClick={() => removeChannel(ch.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/20 text-red-400 hover:border-red-500/60" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
                       </div>
                     </td>
                   </tr>

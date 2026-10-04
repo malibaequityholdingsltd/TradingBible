@@ -3,7 +3,7 @@ import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, Chev
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
-import { LIVE_CHANNELS } from '@/lib/liveChannels';
+import { useLiveChannels } from '@/lib/liveChannels';
 
 const POS_KEY = 'tb:tv-btn-pos';
 const BTN = 56;
@@ -66,6 +66,7 @@ export default function TvWidget() {
   const videoRef = useRef(null);
 
   const playing = view === 'player' ? channelIndex : null;
+  const liveChannels = useLiveChannels();
 
   // ── Data ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -134,23 +135,23 @@ export default function TvWidget() {
 
   const zapChannel = useCallback((dir) => {
     setChannelIndex((cur) => {
-      const next = (cur + dir + LIVE_CHANNELS.length) % LIVE_CHANNELS.length;
+      const next = (cur + dir + liveChannels.length) % liveChannels.length;
       setFrameLoaded(false);
       return next;
     });
     setView('player');
-  }, []);
+  }, [liveChannels.length]);
 
   const shuffleChannel = useCallback(() => {
     setChannelIndex((cur) => {
-      if (LIVE_CHANNELS.length < 2) return cur;
-      let next = Math.floor(Math.random() * (LIVE_CHANNELS.length - 1));
+      if (liveChannels.length < 2) return cur;
+      let next = Math.floor(Math.random() * (liveChannels.length - 1));
       if (next >= cur) next += 1;
       return next;
     });
     setFrameLoaded(false);
     setView('player');
-  }, []);
+  }, [liveChannels.length]);
 
   const openChannels = useCallback(() => setView('channels'), []);
   const closePanel = useCallback(() => { setOpen(false); setView('ads'); }, []);
@@ -249,7 +250,7 @@ export default function TvWidget() {
                   <button onClick={openChannels} className={iconBtn} aria-label="Back to channels">
                     <ChevronLeft className="h-4 w-4" />
                   </button>
-                  <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-[#f0ecdd]">{LIVE_CHANNELS[playing].title}</span>
+                  <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-[#f0ecdd]">{liveChannels[playing].title}</span>
                   <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#ff5a62]">
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e50914]" /> Live
                   </span>
@@ -267,9 +268,9 @@ export default function TvWidget() {
                     </div>
                   )}
                   <iframe
-                    key={LIVE_CHANNELS[playing].id}
-                    src={LIVE_CHANNELS[playing].embedUrl || LIVE_CHANNELS[playing].url}
-                    title={LIVE_CHANNELS[playing].title}
+                    key={liveChannels[playing].id}
+                    src={liveChannels[playing].embedUrl || liveChannels[playing].url}
+                    title={liveChannels[playing].title}
                     className="absolute inset-0 h-full w-full border-0"
                     allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                     allowFullScreen
@@ -277,7 +278,7 @@ export default function TvWidget() {
                   />
                 </div>
                 <div className="flex items-center justify-between gap-2 border-t border-[#d4af37]/10 px-3 py-1.5">
-                  <span className="truncate text-[10px] text-[#6a665a]">{LIVE_CHANNELS[playing].desk} · live in player</span>
+                  <span className="truncate text-[10px] text-[#6a665a]">{liveChannels[playing].desk} · live in player</span>
                   <button onClick={openChannels} className="shrink-0 text-[11px] font-semibold text-[#d4af37] hover:underline">
                     All channels
                   </button>
@@ -292,8 +293,8 @@ export default function TvWidget() {
                     <ChevronLeft className="h-4 w-4" />
                   </button>
                   <button onClick={() => watchChannel(channelIndex)} className="min-w-0 flex-1 rounded-lg px-1 py-1 text-center transition hover:bg-white/5">
-                    <span className="block truncate text-[13px] font-bold text-[#f0ecdd]">{LIVE_CHANNELS[channelIndex].title}</span>
-                    <span className="block text-[10px] uppercase tracking-wider text-[#d4af37]">{LIVE_CHANNELS[channelIndex].desk} · tap to watch</span>
+                    <span className="block truncate text-[13px] font-bold text-[#f0ecdd]">{liveChannels[channelIndex].title}</span>
+                    <span className="block text-[10px] uppercase tracking-wider text-[#d4af37]">{liveChannels[channelIndex].desk} · tap to watch</span>
                   </button>
                   <button onClick={() => zapChannel(1)} className={iconBtn} aria-label="Next channel">
                     <ChevronRight className="h-4 w-4" />
@@ -303,7 +304,7 @@ export default function TvWidget() {
                   </button>
                 </div>
                 <div className="no-scrollbar flex-1 space-y-1.5 overflow-y-auto p-2">
-                  {LIVE_CHANNELS.map((c, ci) => (
+                  {liveChannels.map((c, ci) => (
                     <button
                       key={c.id}
                       onClick={() => watchChannel(ci)}
@@ -384,7 +385,7 @@ export default function TvWidget() {
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <span className="min-w-0 flex-1 truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
-                  {LIVE_CHANNELS[playing]?.desk} · {playing + 1}/{LIVE_CHANNELS.length}
+                  {liveChannels[playing]?.desk} · {playing + 1}/{liveChannels.length}
                 </span>
                 <button onClick={shuffleChannel} className={iconBtn} aria-label="Random channel" title="Play a random channel">
                   <Shuffle className="h-4 w-4" />
@@ -396,7 +397,7 @@ export default function TvWidget() {
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <span className="min-w-0 flex-1 truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
-                  {LIVE_CHANNELS.length} live channels
+                  {liveChannels.length} live channels
                 </span>
                 <button onClick={shuffleChannel} className={iconBtn} aria-label="Random channel" title="Play a random channel">
                   <Shuffle className="h-4 w-4" />
