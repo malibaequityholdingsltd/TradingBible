@@ -1,8 +1,12 @@
-// TradingBible TV — curated live channel guide (Bloomberg live desks).
-// Every channel plays inside our own player (widget + TV page) — no login,
-// no popups, no new tabs. Page URLs load Bloomberg's own player in-frame;
-// entries with an `embedUrl` (official YouTube live embed) play instantly.
-// We do not hotlink or rebroadcast streams; framing shows their player.
+import { useEffect, useState } from 'react';
+import { API_SERVER_URL } from '@/lib/apiServerClient';
+
+// TradingBible TV — live channel guide.
+// Built-in catalog holds only Bloomberg TV (official YouTube live embed,
+// plays instantly with no login). Everything else is admin-managed: the API
+// serves enabled channels on GET /ads (`channels`), and useLiveChannels
+// merges them after the built-in entry. We do not hotlink or rebroadcast
+// streams; framing shows each provider's own player.
 
 export const LIVE_CHANNELS = [
 	{
@@ -11,92 +15,51 @@ export const LIVE_CHANNELS = [
 		desk: 'Global',
 		url: 'https://www.youtube.com/@markets/live',
 		embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCIALMKvObZNtJ6AmdCLP7Lg&autoplay=1',
-		blurb: 'Official 24/7 stream — plays instantly in the widget, no login.',
-		isNew: true,
-	},
-	{
-		id: 'bloomberg-europe',
-		title: 'Bloomberg Europe',
-		desk: 'Europe',
-		url: 'https://www.bloomberg.com/live/europe',
-		blurb: 'Live European market coverage — London open, ECB, EU movers.',
-	},
-	{
-		id: 'bloomberg-us',
-		title: 'Bloomberg US',
-		desk: 'Americas',
-		url: 'https://www.bloomberg.com/live/us',
-		blurb: 'Live US market coverage — Wall Street open, Fed, earnings.',
-	},
-	{
-		id: 'bloomberg-us-btv',
-		title: 'Bloomberg TV US',
-		desk: 'Americas',
-		url: 'https://www.bloomberg.com/live/us-btv',
-		blurb: 'Bloomberg Television US broadcast stream.',
-	},
-	{
-		id: 'bloomberg-asia',
-		title: 'Bloomberg Asia',
-		desk: 'Asia',
-		url: 'https://www.bloomberg.com/live/asia',
-		blurb: 'Live Asian market coverage — Tokyo, Hong Kong, Shanghai.',
-	},
-	{
-		id: 'bloomberg-asia-stream',
-		title: 'Bloomberg Asia Stream',
-		desk: 'Asia',
-		url: 'https://www.bloomberg.com/live/asia_stream',
-		blurb: 'Second Asia live stream — overnight markets and analysis.',
-	},
-	{
-		id: 'bloomberg-australia',
-		title: 'Bloomberg Australia',
-		desk: 'Asia Pacific',
-		url: 'https://www.bloomberg.com/live/australia',
-		blurb: 'Australian market coverage — ASX open, RBA, Pacific news.',
-	},
-	{
-		id: 'bloomberg-emea',
-		title: 'Bloomberg EMEA',
-		desk: 'EMEA',
-		url: 'https://www.bloomberg.com/live/emea',
-		blurb: 'Europe, Middle East & Africa — Gulf markets, commodities.',
-	},
-	{
-		id: 'bloomberg-stream',
-		title: 'Bloomberg Live Stream',
-		desk: 'Global',
-		url: 'https://www.bloomberg.com/live/stream',
-		blurb: 'Main global live stream — rolling business news 24/7.',
-	},
-	{
-		id: 'bloomberg-originals',
-		title: 'Bloomberg Originals',
-		desk: 'Originals',
-		url: 'https://www.bloomberg.com/live/originals',
-		blurb: 'Originals channel — documentaries, interviews, features.',
-	},
-	{
-		id: 'bloomberg-politics',
-		title: 'Bloomberg Politics',
-		desk: 'Politics',
-		url: 'https://www.bloomberg.com/live/politics',
-		blurb: 'Policy and politics driving markets — elections, regulation.',
-	},
-	{
-		id: 'bloomberg-radio',
-		title: 'Bloomberg Radio',
-		desk: 'Audio',
-		url: 'https://www.bloomberg.com/live/radio',
-		blurb: 'Audio stream — markets and analysis, listen anywhere.',
-	},
-	{
-		id: 'bloomberg-subscriber-event',
-		title: 'Bloomberg Subscriber Event',
-		desk: 'Events',
-		url: 'https://www.bloomberg.com/live/subscriber-event',
-		blurb: 'Live subscriber events — summits, interviews, specials.',
+		blurb: 'Official 24/7 stream — plays instantly in the player, no login.',
 		isNew: true,
 	},
 ];
+
+function sanitizeRemote(row, i) {
+	const url = String(row?.url || '').trim();
+	if (!/^https:\/\//.test(url)) return null;
+	return {
+		id: String(row?.id || row?.key || `admin-${i}`),
+		title: String(row?.title || 'Live channel').slice(0, 80),
+		desk: String(row?.desk || 'Live').slice(0, 24),
+		url,
+		embedUrl: /^https:\/\//.test(String(row?.embedUrl || '')) ? String(row.embedUrl) : '',
+		blurb: String(row?.blurb || '').slice(0, 160),
+		isNew: Boolean(row?.isNew),
+	};
+}
+
+// Live channel list: built-in entry first, then admin-added channels.
+// Falls back to built-in only when the feed is unreachable.
+export function useLiveChannels() {
+	const [channels, setChannels] = useState(LIVE_CHANNELS);
+	useEffect(() => {
+		let cancelled = false;
+		(async () => {
+			try {
+				const res = await fetch(`${API_SERVER_URL}/ads`);
+				if (!res.ok) return;
+				const data = await res.json();
+				const remote = Array.isArray(data.channels) ? data.channels : [];
+				if (cancelled || !remote.length) return;
+				const seen = new Set(LIVE_CHANNELS.map((c) => c.url));
+				const merged = [...LIVE_CHANNELS];
+				remote.forEach((r, i) => {
+					const c = sanitizeRemote(r, i);
+					if (c && !seen.has(c.url)) {
+						seen.add(c.url);
+						merged.push(c);
+					}
+				});
+				if (!cancelled) setChannels(merged);
+			} catch { /* built-in list stands alone */ }
+		})();
+		return () => { cancelled = true; };
+	}, []);
+	return channels;
+}

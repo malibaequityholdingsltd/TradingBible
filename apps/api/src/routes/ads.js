@@ -4,10 +4,11 @@ import { supabase, getSupabaseUser, supabaseRest } from '../utils/supabaseClient
 
 const router = Router();
 
-// TradingBible TV ad system.
-// Ads live in `admin_integrations` (key = "ad:<slug>") with the campaign in the
-// jsonb `config` column; `enabled` is the publish toggle. TV behaviour lives in
-// `branding_settings` under key "tv_ads". No schema changes needed.
+// TradingBible TV ad system + live channel guide.
+// Ads AND live channels live in `admin_integrations` (key = "ad:<slug>" or
+// "channel:<slug>") with the payload in the jsonb `config` column; `enabled`
+// is the publish toggle. TV behaviour lives in `branding_settings` under key
+// "tv_ads". No schema changes needed.
 
 function slugify(raw) {
 	return String(raw || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'ad';
@@ -17,6 +18,32 @@ function cleanUrl(raw) {
 	const value = String(raw || '').trim();
 	if (!value) return '';
 	return value.startsWith('http://') || value.startsWith('https://') ? value : '';
+}
+
+function sanitizeChannel(raw) {
+	const c = raw && typeof raw === 'object' ? raw : {};
+	return {
+		title: String(c.title || '').trim().slice(0, 80),
+		desk: String(c.desk || 'Live').trim().slice(0, 24),
+		url: cleanUrl(c.url),
+		embedUrl: cleanUrl(c.embedUrl),
+		blurb: String(c.blurb || '').trim().slice(0, 160),
+		isNew: c.isNew === true,
+	};
+}
+
+function publicChannel(row) {
+	const c = sanitizeChannel(row?.config);
+	return {
+		id: row.id,
+		key: row.key,
+		title: c.title || 'Live channel',
+		desk: c.desk,
+		url: c.url,
+		embedUrl: c.embedUrl,
+		blurb: c.blurb,
+		isNew: c.isNew,
+	};
 }
 
 function sanitizeConfig(raw) {
@@ -97,9 +124,14 @@ async function isAdmin(req) {
 // ── Public: feed for the TV widget (no auth required) ────────────
 router.get('/', async (req, res) => {
 	try {
-		const rows = await supabaseRest('/rest/v1/admin_integrations', {
-			query: { select: '*', 'key': 'like.ad:%', enabled: 'eq.true', order: 'created.asc', limit: 100 },
-		});
+		const [adRows, channelRows] = await Promise.all([
+			supabaseRest('/rest/v1/admin_integrations', {
+				query: { select: '*', 'key': 'like.ad:%', enabled: 'eq.true', order: 'created.asc', limit: 100 },
+			}),
+			supabaseRest('/rest/v1/admin_integrations', {
+				query: { select: '*', 'key': 'like.channel:%', enabled: 'eq.true', order: 'created.asc', limit: 100 },
+			}).catch(() => []),
+		]);
 		const settingsRow = await supabaseRest('/rest/v1/branding_settings?key=eq.tv_ads', { query: { select: '*', limit: 1 } })
 			.then((r) => r?.[0] || null).catch(() => null);
 
@@ -112,8 +144,11 @@ router.get('/', async (req, res) => {
 			advertiserEmail: String(stored.advertiserEmail || 'ads@tradingbible.app').slice(0, 120),
 		};
 
-		const ads = Array.isArray(rows) ? rows.filter((r) => String(r.key || '').startsWith('ad:')).map(publicAd) : [];
-		return res.json({ settings, ads });
+		const ads = Array.isArray(adRows) ? adRows.filter((r) => String(r.key || '').startsWith('ad:')).map(publicAd) : [];
+		const channels = Array.isArray(channelRows)
+			? channelRows.filter((r) => String(r.key || '').startsWith('channel:')).map(publicChannel).filter((c) => c.url)
+			: [];
+		return res.json({ settings, ads, channels });
 	} catch (err) {
 		logger.error('ads list failed', String(err));
 		return res.status(500).json({ error: 'failed to load ads' });
@@ -222,9 +257,81 @@ router.delete('/admin/:id', async (req, res) => {
 	}
 });
 
-// ── Admin: TV settings ───────────────────────────────────────────
-router.put('/admin/settings', async (req, res) => {
+// ── Admin: live channels list ────────────────────────────────────
+router.get('/admin/channels/list', async (req, res) => {
 	if (!(await isAdmin(req))) return res.status(403).json({ error: 'forbidden' });
+	try {
+		const rows = await supabaseRest('/rest/v1/admin_integrations', {
+			query: { select: '*', 'key': 'like.channel:%', order: 'created.desc', limit: 200 },
+		});
+		const channels = (Array.isArray(rows) ? rows : []).map((r) => ({
+			id: r.id, key: r.key, provider: r.provider, enabled: r.enabled, created: r.created,
+			config: sanitizeChannel(r.config),
+		}));
+		return res.json({ channels });
+	} catch (err) {
+		logger.error('admin channels list failed', String(err));
+		return res.status(500).json({ error: 'failed to list channels' });
+	}
+});
+
+// ── Admin: live channel create ───────────────────────────────────
+router.post('/admin/channels', async (req, res) => {
+	if (!(await isAdmin(req))) return res.status(403).json({ error: 'forbidden' });
+	try {
+		const body = req.body || {};
+		const slug = slugify(body.slug || body.title);
+		const config = sanitizeChannel(body.config || {});
+		if (!config.url) return res.status(422).json({ error: 'A valid https URL is required' });
+		const row = await supabaseRest('/rest/v1/admin_integrations', {
+			method: 'POST',
+			body: { key: `channel:${slug}`, provider: String(body.provider || 'custom').slice(0, 20), config, enabled: body.enabled !== false },
+			prefer: 'return=representation',
+		});
+		return res.json({ channel: { ...row?.[0], config } });
+	} catch (err) {
+		logger.error('admin channel create failed', String(err));
+		return res.status(500).json({ error: 'failed to create channel' });
+	}
+});
+
+// ── Admin: live channel update ───────────────────────────────────
+router.patch('/admin/channels/:id', async (req, res) => {
+	if (!(await isAdmin(req))) return res.status(403).json({ error: 'forbidden' });
+	try {
+		const rows = await supabaseRest(`/rest/v1/admin_integrations?id=eq.${encodeURIComponent(req.params.id)}`, { query: { select: '*', limit: 1 } });
+		const existing = rows?.[0];
+		if (!existing || !String(existing.key || '').startsWith('channel:')) {
+			return res.status(404).json({ error: 'channel not found' });
+		}
+		const patch = {};
+		const body = req.body || {};
+		if (body.config !== undefined) patch.config = sanitizeChannel({ ...(existing.config || {}), ...body.config });
+		if (body.enabled !== undefined) patch.enabled = body.enabled !== false;
+		const updated = await supabaseRest(`/rest/v1/admin_integrations?id=eq.${encodeURIComponent(req.params.id)}`, {
+			method: 'PATCH', body: patch, prefer: 'return=representation',
+		});
+		return res.json({ channel: { ...updated?.[0], config: patch.config || existing.config } });
+	} catch (err) {
+		logger.error('admin channel update failed', String(err));
+		return res.status(500).json({ error: 'failed to update channel' });
+	}
+});
+
+// ── Admin: live channel delete ───────────────────────────────────
+router.delete('/admin/channels/:id', async (req, res) => {
+	if (!(await isAdmin(req))) return res.status(403).json({ error: 'forbidden' });
+	try {
+		await supabaseRest(`/rest/v1/admin_integrations?id=eq.${encodeURIComponent(req.params.id)}`, { method: 'DELETE' });
+		return res.json({ ok: true });
+	} catch (err) {
+		logger.error('admin channel delete failed', String(err));
+		return res.status(500).json({ error: 'failed to delete channel' });
+	}
+});
+
+// ── Admin: TV settings ───────────────────────────────────────────
+router.put('/admin/settings', async (req, res) => {	if (!(await isAdmin(req))) return res.status(403).json({ error: 'forbidden' });
 	try {
 		const body = req.body || {};
 		const value = {

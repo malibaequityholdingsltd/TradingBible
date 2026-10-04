@@ -3,7 +3,7 @@ import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, Externa
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
-import { LIVE_CHANNELS } from '@/lib/liveChannels';
+import { useLiveChannels } from '@/lib/liveChannels';
 import { EmptyState, GhostButton } from '@/components/ui-kit';
 
 const DEFAULT_SETTINGS = {
@@ -29,8 +29,9 @@ export default function TvPage() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [channelsOpen, setChannelsOpen] = useState(false);
   const [activeChannel, setActiveChannel] = useState(0);
-  const [playChannel, setPlayChannel] = useState(null); // index into LIVE_CHANNELS, or null for ads rotation
+  const [playChannel, setPlayChannel] = useState(null); // index into live channels, or null for ads rotation
   const [frameLoaded, setFrameLoaded] = useState(false);
+  const liveChannels = useLiveChannels();
 
   // Play a live channel full-stage inside the TV (no new tab, no login).
   const playLiveChannel = useCallback((i) => {
@@ -100,16 +101,16 @@ export default function TvPage() {
     if (!channelsOpen) return undefined;
     const cols = window.innerWidth >= 640 ? 2 : 1;
     const onKey = (e) => {
-      if (e.key === 'ArrowDown') { e.preventDefault(); setActiveChannel((a) => Math.min(a + cols, LIVE_CHANNELS.length - 1)); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); setActiveChannel((a) => Math.min(a + cols, liveChannels.length - 1)); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveChannel((a) => Math.max(a - cols, 0)); }
-      else if (e.key === 'ArrowRight') { e.preventDefault(); setActiveChannel((a) => Math.min(a + 1, LIVE_CHANNELS.length - 1)); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); setActiveChannel((a) => Math.min(a + 1, liveChannels.length - 1)); }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); setActiveChannel((a) => Math.max(a - 1, 0)); }
       else if (e.key === 'Enter') { e.preventDefault(); playLiveChannel(activeChannel); }
       else if (e.key === 'Escape') { setChannelsOpen(false); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [channelsOpen, activeChannel, playLiveChannel]);
+  }, [channelsOpen, activeChannel, playLiveChannel, liveChannels.length]);
 
   // Keep the keyboard-selected channel visible.
   useEffect(() => {
@@ -119,11 +120,11 @@ export default function TvPage() {
   }, [channelsOpen, activeChannel]);
 
   const shuffleTvChannel = useCallback(() => {
-    if (LIVE_CHANNELS.length < 2) { playLiveChannel(0); return; }
-    let next = Math.floor(Math.random() * (LIVE_CHANNELS.length - 1));
+    if (liveChannels.length < 2) { playLiveChannel(0); return; }
+    let next = Math.floor(Math.random() * (liveChannels.length - 1));
     if (next >= activeChannel) next += 1;
     playLiveChannel(next);
-  }, [activeChannel, playLiveChannel]);
+  }, [activeChannel, playLiveChannel, liveChannels.length]);
   const wakeUi = useCallback(() => {
     setUiHidden(false);
     clearTimeout(hideTimerRef.current);
@@ -188,7 +189,7 @@ export default function TvPage() {
     <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#0a0a0f] text-[#f0ecdd]" onClick={wakeUi}>
       {/* ── Full-bleed stage: live channel or ads rotation ────────── */}
       {playChannel !== null ? (
-        <div key={LIVE_CHANNELS[playChannel].id} className="absolute inset-0 bg-black">
+        <div key={liveChannels[playChannel].id} className="absolute inset-0 bg-black">
           {!frameLoaded && (
             <div className="absolute inset-0 grid place-items-center">
               <div className="flex flex-col items-center gap-3">
@@ -198,8 +199,8 @@ export default function TvPage() {
             </div>
           )}
           <iframe
-            src={LIVE_CHANNELS[playChannel].embedUrl || LIVE_CHANNELS[playChannel].url}
-            title={LIVE_CHANNELS[playChannel].title}
+            src={liveChannels[playChannel].embedUrl || liveChannels[playChannel].url}
+            title={liveChannels[playChannel].title}
             className="absolute inset-0 h-full w-full border-0"
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
             allowFullScreen
@@ -324,7 +325,7 @@ export default function TvPage() {
                   <Radio className="h-4 w-4" /> Live TV
                 </div>
                 <h2 className="mt-1 text-xl font-bold text-[#f0ecdd] sm:text-2xl">Bloomberg live desks</h2>
-                <p className="mt-1 text-xs text-[#8a8577]">Plays right here on TradingBible TV · {LIVE_CHANNELS.length} channels · <span className="font-mono">↑↓←→</span> browse · <span className="font-mono">Enter</span> watch</p>
+                <p className="mt-1 text-xs text-[#8a8577]">Plays right here on TradingBible TV · {liveChannels.length} channels · <span className="font-mono">↑↓←→</span> browse · <span className="font-mono">Enter</span> watch</p>
               </div>
               <button onClick={() => setChannelsOpen(false)} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="Close">
                 <X className="h-4 w-4" />
@@ -336,7 +337,7 @@ export default function TvPage() {
               </GhostButton>
             </div>
             <div className="no-scrollbar mt-5 grid flex-1 content-start gap-2 overflow-y-auto pb-4 sm:grid-cols-2">
-              {LIVE_CHANNELS.map((c, ci) => (
+              {liveChannels.map((c, ci) => (
                 <button
                   key={c.id}
                   data-chidx={ci}
@@ -371,7 +372,7 @@ export default function TvPage() {
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
             <span className="flex min-w-0 items-center gap-2 truncate text-[11px] text-[#e9e7df]">
               <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-[#e50914]" />
-              <span className="truncate">LIVE TV · {LIVE_CHANNELS[playChannel].title}</span>
+              <span className="truncate">LIVE TV · {liveChannels[playChannel].title}</span>
             </span>
             <button onClick={() => setChannelsOpen(true)} className="shrink-0 rounded-md bg-black/50 px-2 py-1 font-mono text-[10px] tracking-widest text-[#d4af37] backdrop-blur-sm">ALL CHANNELS</button>
           </div>
