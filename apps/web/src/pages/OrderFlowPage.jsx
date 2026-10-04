@@ -7,7 +7,7 @@ import AppLayout from '@/components/AppLayout';
 import { useI18n } from '@/lib/i18n';
 import OrderflowChart from '@/components/OrderflowChart';
 import FlowTapePane from '@/components/FlowTapePane';
-import { ALL_SYMBOLS } from '@/lib/orderflowFeed';
+import { ALL_SYMBOLS, isFlowSymbol } from '@/lib/orderflowFeed';
 import { SYMBOL_GROUPS } from '@/lib/symbols';
 
 const MARKET_TABS = [
@@ -193,7 +193,7 @@ export default function OrderFlowPage() {
 					))}
 				</div>
 
-				{(market === 'crypto' || market === 'all') && (
+				{(market === 'crypto') && (
 				<>
 				{/* Add-pane picker — all crypto pairs */}
 				<div className="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -220,7 +220,18 @@ export default function OrderFlowPage() {
 				</>
 				)}
 
-				{market !== 'crypto' && (
+				{(market === 'all') && (
+				<UnifiedPicker
+					pickerQ={pickerQ}
+					setPickerQ={setPickerQ}
+					panes={panes}
+					tapePanes={tapePanes}
+					onAdd={(s) => { if (isFlowSymbol(s)) addPane(s); else addTape(s); }}
+					atCap={panes.length >= MAX_PANES && tapePanes.length >= MAX_PANES}
+				/>
+				)}
+
+				{(market !== 'crypto' && market !== 'all') && (
 				<TapePicker
 					market={market}
 					tapePanes={tapePanes}
@@ -334,6 +345,42 @@ export default function OrderFlowPage() {
 				<p>Live depth + executed prints stream from Binance public market data (no account needed) — up to {MAX_PANES} pairs on one screen. Blue = resting bid liquidity, orange = resting ask liquidity, dots = executed trades sized by notional, cyan = session VWAP. Candles + bottom volume bars are built live from prints (15s/1m/5m) with a docked DOM on the right — Bookmap Web style. Click a pane to focus its ladder + tape. Crypto only — forex and stocks have no public order book. Not financial advice. Bookmap® is a trademark of its owner; this is an original TradingBible implementation.</p>
 			</div>
 		</AppLayout>
+	);
+}
+
+function UnifiedPicker({ pickerQ, setPickerQ, panes, tapePanes, onAdd, atCap }) {
+	const q = pickerQ.trim().toLowerCase();
+	const cryptoPool = ALL_SYMBOLS.filter((s) => !panes.includes(s));
+	const tapePool = ['Forex', 'Commodities', 'Sectors', 'Stocks']
+		.flatMap((l) => groupSymbols(l))
+		.filter((s) => !tapePanes.includes(s.symbol));
+	const pool = [
+		...cryptoPool.map((s) => ({ symbol: s, name: s.replace('USD', '') + ' · depth', depth: true })),
+		...tapePool.map((s) => ({ symbol: s.symbol, name: `${s.name} · tape`, depth: false })),
+	].filter((s) => `${s.symbol} ${s.name}`.toLowerCase().includes(q));
+	return (
+		<div className="mt-3 flex flex-col gap-2 sm:flex-row">
+			<input
+				value={pickerQ}
+				onChange={(e) => setPickerQ(e.target.value)}
+				placeholder="Add anything — BTC, EURUSD, Gold, AAPL…"
+				className="min-h-[42px] w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3.5 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none focus:border-[#d4af37]/50 sm:max-w-xs"
+			/>
+			<div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1">
+				{pool.slice(0, 30).map((s) => (
+					<button
+						key={s.symbol}
+						onClick={() => onAdd(s.symbol)}
+						disabled={atCap}
+						className={`flex shrink-0 items-center gap-1 rounded-lg border px-3 py-1.5 font-mono text-xs font-semibold text-[#8a8577] transition disabled:opacity-40 ${s.depth ? 'border-[#d4af37]/20 hover:text-[#d4af37]' : 'border-[#38bdf8]/25 hover:text-[#38bdf8]'}`}
+						title={s.name}
+					>
+						<Plus className="h-3 w-3" />{s.symbol}
+					</button>
+				))}
+				{pool.length === 0 && <span className="px-2 py-1.5 text-xs text-[#5f5b50]">{atCap ? 'Max panes — remove one to add another.' : 'Everything on screen.'}</span>}
+			</div>
+		</div>
 	);
 }
 
