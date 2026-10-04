@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Square, Columns2, Grid2x2, CandlestickChart } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import AddToWatchlist from '@/components/AddToWatchlist';
 import WatchlistStrip from '@/components/WatchlistStrip';
 import { PageHero, Tabs } from '@/components/ui-kit';
 import LiveChart from '@/components/LiveChart';
@@ -35,7 +34,6 @@ export default function ChartsPage() {
           kickerIcon={CandlestickChart}
           title={t('mkt.liveCharts')}
           subtitle={t('mkt.chartsSub')}
-          actions={layout === 'single' ? <AddToWatchlist symbol={symbol} /> : null}
         />
 
         <Tabs
