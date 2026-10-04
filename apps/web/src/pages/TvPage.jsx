@@ -45,6 +45,8 @@ export default function TvPage() {
   const [ytBlocked, setYtBlocked] = useState(false);
   const [ytRetry, setYtRetry] = useState(0);
   const [ytApi, setYtApi] = useState(false);
+  const liveChannels = useLiveChannels();
+  const ytRef = useRef(null);
   // Direct-first playback + dead-desk memory (same chain as the widget:
   // confirmed-live video direct → endpoint fallback → auto-advance →
   // slate only when exhausted).
@@ -68,8 +70,6 @@ export default function TvPage() {
       setYtRetry((n) => n + 1);
     }, 30000);
   }, [liveChannels]);
-  const liveChannels = useLiveChannels();
-  const ytRef = useRef(null);
   // Shared broadcast state (read-only here — the widget owns notifications).
   const { states: tvStates, liveOf, liveCount, bell, toggleBell, markConfirmed } = useLiveStatus(liveChannels);
   const playIsYoutube = playChannel !== null && /(youtube\.com|youtube-nocookie\.com)\/embed\//.test(liveChannels[playChannel]?.embedUrl || '');

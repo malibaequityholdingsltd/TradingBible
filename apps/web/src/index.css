@@ -372,8 +372,11 @@ body {
   background: radial-gradient(circle, rgba(120,80,200,0.08), rgba(120,80,200,0) 65%);
   animation: ambient-drift-b 40s ease-in-out infinite alternate;
 }
-html.light .ambient-a { background: radial-gradient(circle, rgba(161,98,7,0.10), rgba(161,98,7,0) 65%); }
-html.light .ambient-b { background: radial-gradient(circle, rgba(120,80,200,0.06), rgba(120,80,200,0) 65%); }
+html.light .ambient-a { background: radial-gradient(circle, rgba(166,124,30,0.22), rgba(166,124,30,0) 65%); }
+html.light .ambient-b { background: radial-gradient(circle, rgba(190,120,60,0.14), rgba(190,120,60,0) 65%); }
+/* Light 4D shade: warm top-light glow with a soft golden depth falloff. */
+.ambient-shade { background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0,0,0,0.38) 100%); }
+html.light .ambient-shade { background: radial-gradient(ellipse at 50% 30%, rgba(255,252,240,0.5) 0%, transparent 50%), radial-gradient(ellipse at 50% 60%, transparent 55%, rgba(166,124,30,0.16) 100%); }
 @keyframes ambient-drift-a { from { transform: translate(0, 0) scale(1); } to { transform: translate(6vw, 5vh) scale(1.12); } }
 @keyframes ambient-drift-b { from { transform: translate(0, 0) scale(1.05); } to { transform: translate(-5vw, -4vh) scale(1); } }
 
