@@ -8,12 +8,13 @@ import { API_SERVER_URL } from '@/lib/apiServerClient';
 // merges them after the built-in entries. We do not hotlink or rebroadcast
 // streams; framing shows each provider's own player.
 
-// YouTube player lockdown: autoplay on select, no related-video wall
-// (rel=0 keeps any leftovers same-channel), no annotations, minimal
-// branding, inline play. Applied to every YouTube embed so viewers can't
-// click away to other suggestions. Note: end screens baked in by the channel
-// owner can't be suppressed by any parameter.
-const YOUTUBE_LOCKDOWN = 'autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1';
+// YouTube player lockdown: autoplay muted (browsers block unmuted autoplay —
+// the app unmutes via the IFrame API on first sound tap), JS API enabled, no
+// related-video wall (rel=0 keeps any leftovers same-channel), no
+// annotations, minimal branding, inline play. Applied to every YouTube embed
+// so viewers can't click away to other suggestions. Note: end screens baked
+// in by the channel owner can't be suppressed by any parameter.
+const YOUTUBE_LOCKDOWN = 'autoplay=1&mute=1&enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1';
 
 function ytLive(channelId) {
 	return `https://www.youtube.com/embed/live_stream?channel=${channelId}&${YOUTUBE_LOCKDOWN}`;

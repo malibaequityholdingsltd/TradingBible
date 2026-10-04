@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { hardenEmbed, useLiveChannels } from '@/lib/liveChannels';
 import { meetsPlan } from '@/lib/entitlements';
+import YoutubePlayer from '@/components/YoutubePlayer';
 import { EmptyState, GhostButton } from '@/components/ui-kit';
 
 const DEFAULT_SETTINGS = {
@@ -36,7 +37,22 @@ export default function TvPage() {
   const [activeChannel, setActiveChannel] = useState(0);
   const [playChannel, setPlayChannel] = useState(null); // index into live channels, or null for ads rotation
   const [frameLoaded, setFrameLoaded] = useState(false);
+  const [ytMuted, setYtMuted] = useState(true);
+  const [ytStarted, setYtStarted] = useState(false);
   const liveChannels = useLiveChannels();
+  const ytRef = useRef(null);
+  const playIsYoutube = playChannel !== null && /youtube\.com\/embed\//.test(liveChannels[playChannel]?.embedUrl || '');
+
+  const toggleYtSound = useCallback(() => {
+    try {
+      const p = ytRef.current;
+      if (!p) return;
+      if (p.isMuted()) { p.unMute(); p.setVolume(100); setYtMuted(false); }
+      else { p.mute(); setYtMuted(true); }
+    } catch { /* noop */ }
+  }, []);
+
+  useEffect(() => { setYtMuted(true); setYtStarted(false); }, [playChannel]);
 
   // Channel entitlements: the Bloomberg desk plays for everyone (top of
   // funnel, even logged out); higher desks need their plan, and logged-out
@@ -219,17 +235,26 @@ export default function TvPage() {
               </div>
             </div>
           )}
-          <iframe
-            src={hardenEmbed(liveChannels[playChannel].embedUrl || liveChannels[playChannel].url)}
-            title={liveChannels[playChannel].title}
-            className="absolute inset-0 h-full w-full border-0"
-            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-            allowFullScreen
-            onLoad={() => setFrameLoaded(true)}
-          />
-          {/* No-touch shield: autoplay on select, no tap can pause the
+          {playIsYoutube ? (
+            <YoutubePlayer
+              src={hardenEmbed(liveChannels[playChannel].embedUrl || liveChannels[playChannel].url)}
+              title={liveChannels[playChannel].title}
+              ref={ytRef}
+              onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); } }}
+            />
+          ) : (
+            <iframe
+              src={hardenEmbed(liveChannels[playChannel].embedUrl || liveChannels[playChannel].url)}
+              title={liveChannels[playChannel].title}
+              className="absolute inset-0 h-full w-full border-0"
+              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+              allowFullScreen
+              onLoad={() => setFrameLoaded(true)}
+            />
+          )}
+          {/* No-touch shield (engages once playing): no tap can pause the
               stream or open suggestions. Channel controls live above. */}
-          <div className="absolute inset-0 bg-transparent" />
+          {(!playIsYoutube || ytStarted) && <div className="absolute inset-0 bg-transparent" />}
         </div>
       ) : error ? (
         <div className="flex flex-1 flex-col items-center justify-center px-6">
@@ -403,6 +428,12 @@ export default function TvPage() {
               <span className="truncate">LIVE TV · {liveChannels[playChannel].title}</span>
             </span>
             <button onClick={() => setChannelsOpen(true)} className="shrink-0 rounded-md bg-black/50 px-2 py-1 font-mono text-[10px] tracking-widest text-[#d4af37] backdrop-blur-sm">ALL CHANNELS</button>
+            {playIsYoutube && frameLoaded && (
+              <button onClick={toggleYtSound} className="flex shrink-0 items-center gap-1.5 rounded-md bg-black/50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#d4af37] backdrop-blur-sm" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
+                {ytMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                {ytMuted ? 'Tap for sound' : 'Sound on'}
+              </button>
+            )}
           </div>
         ) : (
           <div className="mx-auto flex max-w-7xl flex-col gap-3">
