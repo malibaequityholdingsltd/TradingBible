@@ -60,15 +60,20 @@ export default function IndicatorsPage() {
         <PageHero
           kicker={t('ind.title')}
           title={t('ind.pick')}
-          actions={<AddToWatchlist symbol={symbol} />}
+          actions={<button onClick={() => setPickerOpen(true)} className="flex min-h-[44px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90"><Plus className="h-4 w-4" /> {t('ind.configure')}</button>}
         />
 
-        <WatchlistStrip active={symbol} onSelect={setSymbol} />
-
-        <div className="flex flex-wrap items-center gap-2">
-          <SymbolSearchPicker value={symbol} onChange={setSymbol} buttonClassName="px-3 py-1.5 text-sm" />
-          <button onClick={() => setPickerOpen(true)} className="flex min-h-[42px] items-center gap-1 rounded-lg border border-[#d4af37]/15 px-3 py-1.5 text-sm text-[#d4af37] transition hover:border-[#d4af37]/40"><Plus className="h-4 w-4" /> {t('ind.configure')}</button>
-        </div>
+        {/* One control deck: symbol + watchlist + strip */}
+        <Card className="p-3 sm:p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <SymbolSearchPicker value={symbol} onChange={setSymbol} buttonClassName="px-3 py-1.5 text-sm" />
+            <AddToWatchlist symbol={symbol} />
+            <span className="ml-auto hidden text-[10px] uppercase tracking-wider text-[#5f5b50] sm:inline">{symbol} · synced</span>
+          </div>
+          <div className="mt-3 border-t border-[#d4af37]/10 pt-3">
+            <WatchlistStrip bare active={symbol} onSelect={setSymbol} />
+          </div>
+        </Card>
 
         <div className="grid gap-4 xl:grid-cols-3">
           <Card className="p-3 sm:p-4 xl:col-span-2">

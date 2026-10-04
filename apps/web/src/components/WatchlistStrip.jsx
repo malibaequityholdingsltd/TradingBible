@@ -6,7 +6,8 @@ import { useI18n } from '@/lib/i18n';
 
 // Horizontal watchlist strip with live prices. Selecting a symbol drives the
 // connected chart (two-way synced via active/onSelect). Used on Charts.
-export default function WatchlistStrip({ active, onSelect }) {
+// `bare` renders content without the outer card for embedding in a deck.
+export default function WatchlistStrip({ active, onSelect, bare }) {
   const { lists, loading, createList } = useWatchlists();
   const { t } = useI18n();
   const [listId, setListId] = useState(null);
@@ -20,8 +21,8 @@ export default function WatchlistStrip({ active, onSelect }) {
     if (rec) setListId(rec.id);
   };
 
-  return (
-    <div className="glass rounded-2xl p-3 sm:p-4">
+  const body = (
+    <>
       <div className="mb-2.5 flex flex-wrap items-center gap-2">
         <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#8a8577]">
           <Star className="h-3.5 w-3.5 text-[#d4af37]" /> {t('nav.watchlists')}
@@ -71,6 +72,13 @@ export default function WatchlistStrip({ active, onSelect }) {
           })}
         </div>
       )}
+    </>
+  );
+
+  if (bare) return <>{body}</>;
+  return (
+    <div className="glass rounded-2xl p-3 sm:p-4">
+      {body}
     </div>
   );
 }
