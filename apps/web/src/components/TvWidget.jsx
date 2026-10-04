@@ -45,7 +45,11 @@ function loadPos() {
     const raw = JSON.parse(localStorage.getItem(POS_KEY) || 'null');
     if (raw && typeof raw.x === 'number' && typeof raw.y === 'number') return snapToEdge(raw.x, raw.y);
   } catch { /* ignore */ }
-  return { x: MARGIN, y: MARGIN };
+  // New users start bottom-right — clear of headers, heatmaps and content.
+  return snapToEdge(
+    Math.max(MARGIN, window.innerWidth - BTN - MARGIN),
+    Math.max(MARGIN, window.innerHeight - BTN - MARGIN),
+  );
 }
 
 const iconBtn = 'grid h-7 w-7 place-items-center rounded-lg bg-[#d4af37]/15 text-[#d4af37] transition-colors hover:bg-[#d4af37]/25 hover:text-[#f0d675]';
@@ -465,7 +469,7 @@ export default function TvWidget() {
   const live = view === 'player' || view === 'channels';
 
   return (
-    <div className="tv-widget-root">
+    <div className="tv-widget-root" style={{ display: 'contents' }}>
       {open && (
         <div
           className={`tv-pop tv-widget-panel sheen-panel fixed flex max-h-[calc(100dvh-1rem)] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/30 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.7),0_0_40px_rgba(212,175,55,0.12)] backdrop-blur-xl ${expanded ? 'z-[90]' : 'z-[70]'}`}
