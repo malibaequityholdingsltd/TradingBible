@@ -17,7 +17,7 @@ export default function MarketHeatmap({ type, setType, period, setPeriod, onSele
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
         {showCategoryTabs && (
           <div className="flex flex-wrap gap-1.5">
             {CATEGORIES.map((c) => (

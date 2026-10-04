@@ -196,11 +196,11 @@ export default function AppLayout({ children, title }) {
 
   return (
     <div className="min-h-screen bg-transparent pt-[var(--header-h)]">
-      <aside className="fixed bottom-0 left-0 top-[var(--header-h)] z-30 hidden w-[268px] flex-col border-r border-white/5 bg-[#0a0a0f]/80 backdrop-blur-xl lg:block">{SideContent}</aside>
+      <aside className="fixed bottom-0 left-0 top-[var(--header-h)] z-30 hidden w-[220px] flex-col border-r border-white/5 bg-[#0a0a0f]/80 backdrop-blur-xl lg:block">{SideContent}</aside>
       {open && <div className="fixed inset-x-0 bottom-0 top-[var(--header-h)] z-40 bg-black/70 backdrop-blur-sm lg:hidden" onClick={() => setOpen(false)} />}
-      <aside className={`fixed bottom-0 left-0 top-[var(--header-h)] z-40 flex w-[268px] flex-col border-r border-white/5 bg-[#0a0a0f]/95 backdrop-blur-xl transition-transform lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}>{SideContent}</aside>
-      <div className="lg:pl-[268px]">
-        <header className="fixed inset-x-0 top-[var(--header-h)] z-20 flex items-center justify-between border-b border-white/5 bg-[#0a0a0f]/70 px-3 py-3 backdrop-blur-xl sm:px-5 sm:py-4 lg:left-[268px] lg:px-7 xl:px-8">
+      <aside className={`fixed bottom-0 left-0 top-[var(--header-h)] z-40 flex w-[220px] flex-col border-r border-white/5 bg-[#0a0a0f]/95 backdrop-blur-xl transition-transform lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}>{SideContent}</aside>
+      <div className="lg:pl-[220px]">
+        <header className="fixed inset-x-0 top-[var(--header-h)] z-20 flex items-center justify-between border-b border-white/5 bg-[#0a0a0f]/70 px-3 py-2 backdrop-blur-xl sm:px-5 sm:py-2.5 lg:left-[220px] lg:px-7 xl:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <button className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-[#d4af37]/25 text-[#d4af37] lg:hidden" aria-label={t('app.openNav')} onClick={() => setOpen(true)}><Menu className="h-5 w-5" /></button>
             <div className="min-w-0">
@@ -254,7 +254,7 @@ export default function AppLayout({ children, title }) {
             </DropdownMenu>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[96rem] px-4 pb-4 pt-[84px] sm:px-5 sm:pb-5 sm:pt-[96px] lg:px-7 lg:pt-[104px] xl:px-8 xl:pt-[108px] 2xl:px-12">
+        <main className="mx-auto w-full max-w-[96rem] px-4 pb-4 pt-[76px] sm:px-5 sm:pb-5 sm:pt-[84px] lg:px-7 lg:pt-[92px] xl:px-8 xl:pt-[96px] 2xl:px-12">
           {isAdmin && isAdminPreview() && (
             <div className="admin-frost mb-2 flex items-center justify-between gap-3 rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/[0.07] px-4 py-2">
               <span className="text-xs text-[#d4af37]">{t('misc.adminPreview')}</span>
