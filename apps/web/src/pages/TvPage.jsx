@@ -331,7 +331,7 @@ export default function TvPage() {
   }
 
   return (
-    <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#0a0a0f] text-[#f0ecdd]" onClick={wakeUi}>
+    <div className="tb-enter relative flex h-[100dvh] flex-col overflow-hidden bg-[#0a0a0f] text-[#f0ecdd]" onClick={wakeUi}>
       {/* ── Full-bleed stage: live channel or ads rotation ────────── */}
       {playChannel !== null ? (
         <ErrorBoundary
