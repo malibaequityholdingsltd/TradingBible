@@ -494,6 +494,11 @@ export default function TvWidget() {
   // Panel anchoring side (SI arrangement): bottom to the launcher's side.
   const vw = typeof window !== 'undefined' ? window.innerWidth : 1024;
   const onLeft = pos.x < vw / 2;
+  // Zoomed theater top: measured below the live price ticker (which can wrap
+  // taller on small screens) — never covering the prices.
+  const tickerTop = typeof document !== 'undefined'
+    ? Math.round(document.getElementById('tb-ticker')?.getBoundingClientRect().height || 64) + 12
+    : 76;
 
   // Guide sections with live counts. Every desk always lists — confirmed
   // off-air ones sit dimmed in their own section, so visible rows always
@@ -523,7 +528,9 @@ export default function TvWidget() {
           style={expanded
             // Zoomed theater: fits inside all four screen sides with a gap,
             // starting below the price ticker header — never covering it.
-            ? { left: 12, right: 12, top: 'calc(var(--header-h, 64px) + 12px)', bottom: 12, height: 'auto', maxWidth: 'none' }
+            // Width/height auto neutralizes the mini size classes so the
+            // insets truly stretch edge to edge.
+            ? { left: 12, right: 12, top: tickerTop, bottom: 12, width: 'auto', height: 'auto', maxWidth: 'none' }
             : { bottom: '0.75rem', [onLeft ? 'left' : 'right']: '0.75rem' }}
         >
           {/* Gold top-edge accent + ambient glow + terminal scanlines */}
