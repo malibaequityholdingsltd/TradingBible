@@ -17,6 +17,7 @@ import GlobalTicker from './components/GlobalTicker';
 import AlertMonitor from './components/AlertMonitor';
 import LiveChatWidget from './components/LiveChatWidget';
 import TvWidget from './components/TvWidget';
+import AmbientDepth from './components/AmbientDepth';
 import PwaStatus from './components/PwaStatus';
 import ErrorBoundary from './components/ErrorBoundary';
 import LandingPage from './pages/LandingPage';
@@ -209,6 +210,7 @@ function AppChrome() {
 
     return (
         <>
+            <AmbientDepth />
             {!hideTicker && <GlobalTicker />}
             <AlertMonitor />
             <ScrollToTop />
