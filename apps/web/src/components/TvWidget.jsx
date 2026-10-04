@@ -359,6 +359,9 @@ export default function TvWidget() {
                       <button onClick={() => { setYtBlocked(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="mt-1 min-h-[40px] rounded-xl border border-[#d4af37]/30 px-5 text-xs font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
                         Try again
                       </button>
+                      <a href={liveChannels[playing]?.url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-semibold text-[#8a8577] hover:text-[#d4af37] hover:underline">
+                        Open on YouTube instead
+                      </a>
                     </div>
                   )}
                   {/* Off-air slate: this desk isn't broadcasting right now. */}
