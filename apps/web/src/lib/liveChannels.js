@@ -212,17 +212,6 @@ export const LIVE_CHANNELS = [
 		roundTheClock: true,
 	},
 	{
-		id: 'schwab-network-live',
-		title: 'Schwab Network Live',
-		desk: 'Markets',
-		url: 'https://www.youtube.com/@SchwabNetwork/live',
-		embedUrl: ytLive('UCqoSrYgusd8ZddtMoWhjHYA'),
-		blurb: 'Live trader talk — options, futures and market strategy.',
-		isNew: true,
-		plan: 'professional',
-		hours: 'Mon–Fri · 7a–8p CT',
-	},
-	{
 		id: 'kitco-news-live',
 		title: 'Kitco NEWS Live',
 		desk: 'Gold',
