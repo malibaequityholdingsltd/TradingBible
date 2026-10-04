@@ -45,9 +45,10 @@ export default function TvPage() {
   const [ytBlocked, setYtBlocked] = useState(false);
   const [ytRetry, setYtRetry] = useState(0);
   const [ytApi, setYtApi] = useState(false);
-  // Direct-video fallback + dead-desk memory (same chain as the widget:
-  // confirmed-live video direct → auto-advance → slate only when exhausted).
-  const [fallbackVid, setFallbackVid] = useState(null);
+  // Direct-first playback + dead-desk memory (same chain as the widget:
+  // confirmed-live video direct → endpoint fallback → auto-advance →
+  // slate only when exhausted).
+  const [useEndpoint, setUseEndpoint] = useState(false);
   const attemptsRef = useRef(new Set());
   const advanceTimer = useRef(null);
   // Self-retry: exhausted slates silently reset and remount every 30s.
@@ -63,7 +64,7 @@ export default function TvPage() {
     retryTimerTv.current = setTimeout(() => {
       if (String(liveChannels[playChannelRef.current]?.id || '') !== retryIdTv.current) return;
       attemptsRef.current.clear();
-      setFallbackVid(null); setYtError(false); setYtBlocked(false); setFrameLoaded(false);
+      setUseEndpoint(false); setYtError(false); setYtBlocked(false); setFrameLoaded(false);
       setYtRetry((n) => n + 1);
     }, 30000);
   }, [liveChannels]);
@@ -97,7 +98,7 @@ export default function TvPage() {
     } catch { /* stays muted */ }
   }, []);
 
-  useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); setYtRetry(0); setYtApi(false); setFallbackVid(null); return () => { clearTimeout(advanceTimer.current); clearTimeout(retryTimerTv.current); }; }, [playChannel]);
+  useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); setYtRetry(0); setYtApi(false); setUseEndpoint(false); return () => { clearTimeout(advanceTimer.current); clearTimeout(retryTimerTv.current); }; }, [playChannel]);
 
   // Channel entitlements: the Bloomberg desk plays for everyone (top of
   // funnel, even logged out); higher desks need their plan, and logged-out
@@ -151,8 +152,8 @@ export default function TvPage() {
     const cc = playChannel !== null ? liveChannels[playChannel] : null;
     const id = cc ? String(cc.id) : '';
     const probeVid = (id && tvStates[id]?.videoId) || null;
-    if (probeVid && !fallbackVid) {
-      setFallbackVid(probeVid);
+    if (probeVid && !useEndpoint) {
+      setUseEndpoint(true);
       setYtError(false); setYtBlocked(false); setFrameLoaded(false);
       return;
     }
@@ -168,7 +169,7 @@ export default function TvPage() {
       setYtError(true);
       scheduleAutoRetryTv();
     }
-  }, [playChannel, liveChannels, fallbackVid, tvStates, findNextPlayableTv, playLiveChannel, scheduleAutoRetryTv]);
+  }, [playChannel, liveChannels, useEndpoint, tvStates, findNextPlayableTv, playLiveChannel, scheduleAutoRetryTv]);
 
   // Autoplay on load: /tv opens straight into the best desk
   // (live → 24/7 → first unlocked) — motion with zero taps.
@@ -354,11 +355,11 @@ export default function TvPage() {
           )}
           {playIsYoutube ? (
             <YoutubePlayer
-              key={`yt-${playChannel}-${fallbackVid || 'live'}-${ytRetry}`}
-              src={fallbackVid ? ytVideoEmbed(fallbackVid) : hardenEmbed(liveChannels[playChannel].embedUrl || liveChannels[playChannel].url)}
+              key={`yt-${playChannel}-${tvStates[liveChannels[playChannel]?.id]?.videoId || 'live'}-${useEndpoint ? 'ep' : 'd'}-${ytRetry}`}
+              src={(tvStates[liveChannels[playChannel]?.id]?.videoId && !useEndpoint) ? ytVideoEmbed(tvStates[liveChannels[playChannel].id].videoId) : hardenEmbed(liveChannels[playChannel].embedUrl || liveChannels[playChannel].url)}
               title={liveChannels[playChannel].title}
               ref={ytRef}
-              onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); markConfirmed(liveChannels[playChannel]?.id); } else { handleStreamErrorTv(false); } }}
+              onPlaying={(ok, proven) => { if (ok) { setFrameLoaded(true); setYtStarted(true); if (proven) markConfirmed(liveChannels[playChannel]?.id); } else { handleStreamErrorTv(false); } }}
               onBlocked={() => handleStreamErrorTv(true)}
               onApiReady={(ready) => { setYtApi(!!ready); if (ready) tryAutoTvSound(); }}
               onLoaded={() => setFrameLoaded(true)}
@@ -379,7 +380,7 @@ export default function TvPage() {
               <p className="font-semibold text-[#f0ecdd]">Can't reach YouTube</p>
               <p className="max-w-sm text-sm leading-relaxed text-[#8a8577]">Your network is blocking youtube.com — check connection, VPN, ad-blocker or region restrictions, then try again.</p>
               <p className="text-[10px] uppercase tracking-wider text-[#6a665a]">Retrying automatically…</p>
-              <button onClick={() => { attemptsRef.current.clear(); setFallbackVid(null); setYtBlocked(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="mt-1 min-h-[44px] rounded-xl border border-[#d4af37]/30 px-6 text-sm font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
+              <button onClick={() => { attemptsRef.current.clear(); setUseEndpoint(false); setYtBlocked(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="mt-1 min-h-[44px] rounded-xl border border-[#d4af37]/30 px-6 text-sm font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
                 Try again
               </button>
               <a href={liveChannels[playChannel]?.url} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-[#8a8577] hover:text-[#d4af37] hover:underline">
@@ -393,7 +394,7 @@ export default function TvPage() {
               <p className="font-semibold text-[#f0ecdd]">This desk is off-air right now</p>
               <p className="max-w-sm text-sm text-[#8a8577]">Live shows run at set hours — pick a desk with a LIVE badge in the guide.</p>
               <div className="mt-1 flex items-center gap-2">
-                <button onClick={() => { attemptsRef.current.clear(); setFallbackVid(null); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="min-h-[44px] rounded-xl border border-[#d4af37]/30 px-6 text-sm font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
+                <button onClick={() => { attemptsRef.current.clear(); setUseEndpoint(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="min-h-[44px] rounded-xl border border-[#d4af37]/30 px-6 text-sm font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
                   Try again
                 </button>
                 <button onClick={() => setChannelsOpen(true)} className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90">
@@ -555,6 +556,7 @@ export default function TvPage() {
                 if (liveOf(c) === false) return null;
                 const locked = !canWatch(c);
                 const st = liveOf(c);
+                const liveTitle = st === true ? tvStates[c.id]?.title || null : null;
                 return (
                 <button
                   key={c.id}
@@ -575,7 +577,7 @@ export default function TvPage() {
                       {c.roundTheClock && st !== true && <span className="shrink-0 rounded-full bg-emerald-400/15 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-emerald-400">24/7</span>}
                       {locked && <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#d4af37]"><Crown className="h-2.5 w-2.5" />{c.plan}</span>}
                     </span>
-                    <span className="mt-0.5 block truncate text-xs text-[#8a8577]">{locked ? (isAuthed ? 'Upgrade to unlock this desk' : 'Sign in to unlock this desk') : c.blurb}</span>
+                    <span className="mt-0.5 block truncate text-xs text-[#8a8577]" title={liveTitle || undefined}>{locked ? (isAuthed ? 'Upgrade to unlock this desk' : 'Sign in to unlock this desk') : liveTitle || c.blurb}</span>
                     {!c.roundTheClock && c.hours && st !== true && (
                       <span className="mt-0.5 flex items-center gap-1 text-[11px] text-[#6a665a]"><Clock className="h-3 w-3 shrink-0" /> Typically live: {c.hours}</span>
                     )}

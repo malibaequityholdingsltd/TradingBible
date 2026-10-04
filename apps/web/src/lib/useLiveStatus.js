@@ -103,7 +103,7 @@ export function useLiveStatus(channels, { notify = false } = {}) {
 		const list = Array.isArray(channelsRef.current) ? channelsRef.current : [];
 		const ch = list.find((c) => String(c.id || c.url) === String(id));
 		const title = ch?.title || 'A channel';
-		window.dispatchEvent(new CustomEvent('tb:tv-golive', { detail: { id, title, videoId: st?.videoId } }));
+		window.dispatchEvent(new CustomEvent('tb:tv-golive', { detail: { id, title, videoId: st?.videoId, liveTitle: st?.title || null } }));
 		if (isNotifyEnabled() && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
 			try { new Notification(`🔴 ${title} is live`, { body: 'Tap to watch on TradingBible TV', tag: `tb-live-${id}` }); } catch { /* noop */ }
 		}
