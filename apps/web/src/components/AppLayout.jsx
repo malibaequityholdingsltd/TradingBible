@@ -6,8 +6,6 @@ import { avatarUrl } from '@/lib/avatar';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useI18n } from '@/lib/i18n';
 import OnboardingTutorial from '@/components/OnboardingTutorial';
-import LiveChatWidget from '@/components/LiveChatWidget';
-import TvWidget from '@/components/TvWidget';
 import GlobalSearch from '@/components/GlobalSearch';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
@@ -264,8 +262,6 @@ export default function AppLayout({ children, title }) {
         </main>
       </div>
       {tutorial && <OnboardingTutorial onClose={() => setTutorial(false)} onComplete={completeTutorial} />}
-      {features.aiCoach !== false && <LiveChatWidget />}
-      <TvWidget />
     </div>
   );
 }
