@@ -43,6 +43,7 @@ export default function TvPage() {
   const [ytError, setYtError] = useState(false);
   const [ytBlocked, setYtBlocked] = useState(false);
   const [ytRetry, setYtRetry] = useState(0);
+  const [ytApi, setYtApi] = useState(false);
   const liveChannels = useLiveChannels();
   const ytRef = useRef(null);
   const playIsYoutube = playChannel !== null && /youtube\.com\/embed\//.test(liveChannels[playChannel]?.embedUrl || '');
@@ -56,7 +57,7 @@ export default function TvPage() {
     } catch { /* noop */ }
   }, []);
 
-  useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); setYtRetry(0); }, [playChannel]);
+  useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); setYtRetry(0); setYtApi(false); }, [playChannel]);
 
   // Channel entitlements: the Bloomberg desk plays for everyone (top of
   // funnel, even logged out); higher desks need their plan, and logged-out
@@ -271,6 +272,7 @@ export default function TvPage() {
               ref={ytRef}
               onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); } else { setYtError(true); } }}
               onBlocked={() => setYtBlocked(true)}
+              onApiReady={(ready) => setYtApi(!!ready)}
             />
           ) : (
             <iframe
@@ -489,7 +491,7 @@ export default function TvPage() {
               <span className="truncate">LIVE TV · {liveChannels[playChannel].title}</span>
             </span>
             <button onClick={() => setChannelsOpen(true)} className="shrink-0 rounded-md bg-black/50 px-2 py-1 font-mono text-[10px] tracking-widest text-[#d4af37] backdrop-blur-sm">ALL CHANNELS</button>
-            {playIsYoutube && frameLoaded && (
+            {playIsYoutube && ytApi && (
               <button onClick={toggleYtSound} className="flex shrink-0 items-center gap-1.5 rounded-md bg-black/50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#d4af37] backdrop-blur-sm" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
                 {ytMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
                 {ytMuted ? 'Tap for sound' : 'Sound on'}
