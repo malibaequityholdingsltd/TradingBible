@@ -8,7 +8,7 @@ export default function AmbientDepth() {
     <div aria-hidden className="ambient-4d pointer-events-none fixed inset-0 -z-[5] overflow-hidden">
       <div className="ambient-blob ambient-a absolute -top-[12vh] left-[8vw] h-[46vmax] w-[46vmax] rounded-full" />
       <div className="ambient-blob ambient-b absolute bottom-[-16vh] right-[4vw] h-[40vmax] w-[40vmax] rounded-full" />
-      <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0,0,0,0.38) 100%)' }} />
+      <div className="ambient-shade absolute inset-0" />
     </div>
   );
 }
