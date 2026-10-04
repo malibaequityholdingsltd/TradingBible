@@ -1,9 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, Shuffle, ListVideo } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, Shuffle, ListVideo, Lock, Crown } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
+import { useAuth } from '@/hooks/useAuth';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { hardenEmbed, useLiveChannels } from '@/lib/liveChannels';
+import { meetsPlan } from '@/lib/entitlements';
 
 const POS_KEY = 'tb:tv-btn-pos';
 const BTN = 56;
@@ -50,6 +53,8 @@ const iconBtnActive = 'grid h-7 w-7 place-items-center rounded-lg bg-[#d4af37]/1
 // in-widget live player. Everything plays inside the panel — no new tabs.
 export default function TvWidget() {
   const { t, lang } = useI18n();
+  const { user } = useAuth();
+  const nav = useNavigate();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [ads, setAds] = useState([]);
   const [index, setIndex] = useState(0);
@@ -127,31 +132,40 @@ export default function TvWidget() {
   }, [paused, muted, ad]);
 
   // ── Live TV controls ───────────────────────────────────────────
+  // Channel entitlements: widgets show for every plan, but individual
+  // channels unlock per tier (null/pro = any paid plan). Locked channels
+  // route to pricing instead of playing.
+  const canWatch = useCallback((c) => !c?.plan || meetsPlan(user, c.plan || 'pro'), [user]);
+
+  const goUpgrade = useCallback(() => nav('/pricing'), [nav]);
+
   const watchChannel = useCallback((i) => {
+    const c = liveChannels[i];
+    if (c && !canWatch(c)) { goUpgrade(); return; }
     setChannelIndex(i);
     setView('player');
     setFrameLoaded(false);
-  }, []);
+  }, [canWatch, goUpgrade, liveChannels]);
+
+  const unlockedIdx = liveChannels.map((c, i) => (canWatch(c) ? i : -1)).filter((i) => i >= 0);
 
   const zapChannel = useCallback((dir) => {
-    setChannelIndex((cur) => {
-      const next = (cur + dir + liveChannels.length) % liveChannels.length;
-      setFrameLoaded(false);
-      return next;
-    });
-    setView('player');
-  }, [liveChannels.length]);
-
-  const shuffleChannel = useCallback(() => {
-    setChannelIndex((cur) => {
-      if (liveChannels.length < 2) return cur;
-      let next = Math.floor(Math.random() * (liveChannels.length - 1));
-      if (next >= cur) next += 1;
-      return next;
-    });
+    if (!unlockedIdx.length) { goUpgrade(); return; }
+    const pos = unlockedIdx.indexOf(channelIndex);
+    const next = unlockedIdx[(pos < 0 ? 0 : pos + dir + unlockedIdx.length) % unlockedIdx.length];
+    setChannelIndex(next);
     setFrameLoaded(false);
     setView('player');
-  }, [liveChannels.length]);
+  }, [channelIndex, goUpgrade, liveChannels, unlockedIdx]);
+
+  const shuffleChannel = useCallback(() => {
+    if (!unlockedIdx.length) { goUpgrade(); return; }
+    const pool = unlockedIdx.filter((i) => i !== channelIndex);
+    const next = (pool.length ? pool : unlockedIdx)[Math.floor(Math.random() * (pool.length ? pool.length : unlockedIdx.length))];
+    setChannelIndex(next);
+    setFrameLoaded(false);
+    setView('player');
+  }, [channelIndex, goUpgrade, unlockedIdx]);
 
   const openChannels = useCallback(() => setView('channels'), []);
   const closePanel = useCallback(() => { setOpen(false); setView('ads'); }, []);
@@ -276,6 +290,10 @@ export default function TvWidget() {
                     allowFullScreen
                     onLoad={() => setFrameLoaded(true)}
                   />
+                  {/* No-touch shield: the stream autoplays on select and no tap
+                      on the video can pause it or open suggestions. All control
+                      lives in the header/zap bar above. */}
+                  <div className="absolute inset-0 bg-transparent" />
                 </div>
                 <div className="flex items-center justify-between gap-2 border-t border-[#d4af37]/10 px-3 py-1.5">
                   <span className="truncate text-[10px] text-[#6a665a]">{liveChannels[playing].desk} · live in player</span>
@@ -304,25 +322,29 @@ export default function TvWidget() {
                   </button>
                 </div>
                 <div className="no-scrollbar flex-1 space-y-1.5 overflow-y-auto p-2">
-                  {liveChannels.map((c, ci) => (
+                  {liveChannels.map((c, ci) => {
+                    const locked = !canWatch(c);
+                    return (
                     <button
                       key={c.id}
                       onClick={() => watchChannel(ci)}
-                      className="group flex w-full items-center gap-2.5 rounded-xl border border-[#d4af37]/10 bg-white/[0.02] p-2.5 text-left transition hover:border-[#d4af37]/40 hover:bg-[#d4af37]/[0.05]"
+                      className={`group flex w-full items-center gap-2.5 rounded-xl border p-2.5 text-left transition ${locked ? 'border-[#d4af37]/10 opacity-80 hover:border-[#d4af37]/40' : 'border-[#d4af37]/10 bg-white/[0.02] hover:border-[#d4af37]/40 hover:bg-[#d4af37]/[0.05]'}`}
                     >
                       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#d4af37]/12 text-[#d4af37]">
-                        <Radio className="h-3.5 w-3.5" />
+                        {locked ? <Lock className="h-3.5 w-3.5" /> : <Radio className="h-3.5 w-3.5" />}
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-1.5">
                           <span className="block truncate text-[13px] font-semibold text-[#f0ecdd]">{c.title}</span>
                           {c.isNew && <span className="shrink-0 rounded-full bg-[#d4af37] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#0a0a0f]">New</span>}
+                          {locked && <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#d4af37]"><Crown className="h-2.5 w-2.5" />{c.plan}</span>}
                         </span>
-                        <span className="block truncate text-[11px] text-[#8a8577]">{c.desk} · tap to watch</span>
+                        <span className="block truncate text-[11px] text-[#8a8577]">{c.desk} · {locked ? 'tap to upgrade' : 'tap to watch'}</span>
                       </span>
                       <Play className="h-3.5 w-3.5 shrink-0 text-[#6a665a] transition group-hover:text-[#d4af37]" />
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

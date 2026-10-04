@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { X, Send, Sparkles, BarChart3, Cable, Wallet, Target, Info, Wrench, MessageSquare, MessageCircle, Eraser, ExternalLink } from 'lucide-react';
+import { X, Send, Sparkles, BarChart3, Cable, Wallet, Target, Info, Wrench, MessageSquare, MessageCircle, Eraser, ExternalLink, Crown } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { meetsPlan } from '@/lib/entitlements';
 import { useI18n } from '@/lib/i18n';
 import { useIntegratedAi } from '@/hooks/use-integrated-ai';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
@@ -84,7 +85,10 @@ function MessageBubble({ from, text, images, tag, t }) {
 // Draggable, edge-snapping SI assistant launcher + chat panel.
 // Mounted once at app root, so chats survive page navigation.
 export default function LiveChatWidget() {
-  const { isAuthed } = useAuth();
+  const { isAuthed, user } = useAuth();
+  // The bubble shows on every plan; only Elite+ may actually chat.
+  // Below-Elite users get an upgrade panel instead (the API enforces too).
+  const coachLocked = isAuthed && !meetsPlan(user, 'elite');
   const { t } = useI18n();
   const nav = useNavigate();
   const { messages, isStreaming, sendMessage, clearMessages } = useIntegratedAi();
@@ -181,6 +185,7 @@ export default function LiveChatWidget() {
       nav('/login');
       return;
     }
+    if (coachLocked) return; // upsell panel handles the CTA
     setText('');
     setTab('coach');
     sendMessage(body);
@@ -238,8 +243,8 @@ export default function LiveChatWidget() {
           {/* Tab bar */}
           <div className="relative flex items-center gap-1 px-3 pt-2">
             {TABS.map(({ id, key, icon: Icon }) => (
-              <button key={id} onClick={() => setTab(id)} aria-pressed={tab === id}
-                className={`flex min-h-[30px] items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold transition-colors ${tab === id
+              <button key={id} onClick={() => setTab(id)} aria-pressed={tab === id} disabled={coachLocked && id !== 'about'}
+                className={`flex min-h-[30px] items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold transition-colors disabled:opacity-40 ${tab === id
                   ? 'bg-[#d4af37]/12 text-[#d4af37] shadow-[inset_0_0_0_1px_rgba(212,175,55,0.25)]'
                   : 'text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd]'}`}>
                 <Icon className="h-3 w-3" />
@@ -248,6 +253,24 @@ export default function LiveChatWidget() {
             ))}
           </div>
 
+          {coachLocked ? (
+            <div className="relative flex flex-1 flex-col items-center justify-center gap-3 overflow-y-auto p-6 text-center">
+              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
+                <Crown className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="font-semibold text-[#f0ecdd]">SI Coach is an Elite feature</p>
+                <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">Upgrade to Elite SI for 24/7 trade reviews, mistake detection and reports.</p>
+              </div>
+              <button
+                onClick={() => { setOpen(false); nav('/pricing'); }}
+                className="flex min-h-[44px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90"
+              >
+                <Crown className="h-4 w-4" /> Upgrade to Elite
+              </button>
+            </div>
+          ) : (
+          <>
           {tab === 'coach' && (
             <div ref={scrollRef} className="relative flex-1 space-y-3.5 overflow-y-auto px-3.5 py-3">
               {!isAuthed && (
@@ -356,6 +379,8 @@ export default function LiveChatWidget() {
                 {t('aiw.enterSend')} <span className="animate-pulse text-[#d4af37]/70">▊</span>
               </div>
             </div>
+          )}
+          </>
           )}
         </div>
       )}
