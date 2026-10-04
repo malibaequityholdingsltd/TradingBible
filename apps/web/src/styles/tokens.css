@@ -73,8 +73,10 @@ html.light .tb-kicker { color: #8a6714; }
   .btn-sheen::after { display: none; }
 }
 
-/* ── Scroll system: smooth anchors, contained nested scroll, styled bars. */
-html { scroll-behavior: smooth; }
+/* ── Scroll system: one uniform pace everywhere. Programmatic jumps stay
+   instant so wheel, keyboard and API scrolling all move at the same rate;
+   components that want a glide opt in explicitly per call. ──────────── */
+html { scroll-behavior: auto; }
 /* Nested overlay lists never chain-scroll the page behind them. */
 .scroll-contain { overscroll-behavior: contain; }
 /* Thin premium scrollbars for overlay + list surfaces. */
@@ -88,7 +90,6 @@ html.light .nice-scroll::-webkit-scrollbar-thumb { background: rgba(166, 124, 30
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
-
 /* ── Stagger: cascading entrances for grids, decks and lists. ────────── */
 .tb-stagger > * { animation: tb-rise 0.4s var(--tb-ease) both; }
 .tb-stagger > *:nth-child(2) { animation-delay: 0.05s; }
