@@ -16,6 +16,7 @@ import AdminLayout from '@/components/AdminLayout';
 import pb from '@/lib/pocketbaseClient';
 import { notifyPlatformSettingsChanged } from '@/lib/platformSettings';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
+import { LIVE_CHANNELS } from '@/lib/liveChannels';
 import { useToast } from '@/hooks/use-toast';
 
 const GOLD = '#d4af37';
@@ -2467,22 +2468,15 @@ export function AdminTvAds() {
       const [adsData, feedData, chData] = await Promise.all([adsRes.json(), setRes.json(), chRes.json().catch(() => ({}))]);
       setAds(adsRes.ok ? adsData.ads || [] : []);
       if (feedData?.settings) setSettings((s) => ({ ...s, ...feedData.settings }));
-      // Built-in entry first (locked row — it ships in code, not the DB).
-      const builtin = {
-        id: 'builtin-yt-live',
-        key: 'builtin:bloomberg-yt-live',
+      // Built-ins first (locked rows — they ship in code, not the DB).
+      const builtins = LIVE_CHANNELS.map((c) => ({
+        id: `builtin-${c.id}`,
+        key: `builtin:${c.id}`,
         enabled: true,
         builtin: true,
-        config: {
-          title: 'Bloomberg TV — YouTube Live',
-          desk: 'Global',
-          url: 'https://www.youtube.com/@markets/live',
-          embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCIALMKvObZNtJ6AmdCLP7Lg&autoplay=1',
-          blurb: 'Built-in entry — always shown first in the guide.',
-          isNew: true,
-        },
-      };
-      setChannels(chRes.ok ? [builtin, ...(chData.channels || [])] : [builtin]);
+        config: { title: c.title, desk: c.desk, url: c.url, embedUrl: c.embedUrl, blurb: `${c.blurb} (Built-in — always shown.)`, isNew: c.isNew, plan: c.plan },
+      }));
+      setChannels(chRes.ok ? [...builtins, ...(chData.channels || [])] : builtins);
     } catch {
       setAds([]);
       setChannels([]);
@@ -2709,7 +2703,7 @@ export function AdminTvAds() {
       {/* Live channels — manual channel guide for TV widget + TV page */}
       <div className="glass mt-6 rounded-2xl p-5">
         <h3 className="mb-1 font-semibold text-[#f0ecdd]">{chEditing ? `Edit channel — ${chEditing.config?.title || chEditing.key}` : 'New live channel'}</h3>
-        <p className="mb-4 text-xs text-[#8a8577]">Channels appear in the floating TV widget and on the TV page after the built-in Bloomberg entry. Use an embed URL (e.g. a YouTube <span className="font-mono">/embed/live_stream</span>) for instant in-player playback, otherwise the channel page loads in the player.</p>
+        <p className="mb-4 text-xs text-[#8a8577]">Channels appear in the floating TV widget and on the TV page after the 10 built-in desks. Use an embed URL (e.g. a YouTube <span className="font-mono">/embed/live_stream</span>) for instant in-player playback, otherwise the channel page loads in the player.</p>
         <form onSubmit={saveChannel} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div><label className={label}>Title *</label><input required className={input} value={chForm.title} onChange={setCF('title')} placeholder="e.g. Bloomberg Europe" /></div>
           <div><label className={label}>Desk badge</label><input className={input} value={chForm.desk} onChange={setCF('desk')} placeholder="Europe" /></div>
@@ -2755,7 +2749,7 @@ export function AdminTvAds() {
               {loading ? (
                 <tr><td colSpan="4" className="px-5 py-10 text-center text-[#8a8577]">Loading channels…</td></tr>
               ) : channels.length === 0 ? (
-                <tr><td colSpan="4" className="px-5 py-10 text-center text-[#8a8577]">No manual channels yet — the built-in Bloomberg entry always shows. Add one above.</td></tr>
+                <tr><td colSpan="4" className="px-5 py-10 text-center text-[#8a8577]">No manual channels yet — the 10 built-in desks always show. Add one above.</td></tr>
               ) : channels.map((ch) => {
                 const c = ch.config || {};
                 return (
