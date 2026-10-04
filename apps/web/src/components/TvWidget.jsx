@@ -519,10 +519,11 @@ export default function TvWidget() {
     <div className="tv-widget-root" style={{ display: 'contents' }}>
       {open && (
         <div
-          className={`tv-pop tv-widget-panel sheen-panel fixed flex h-[34rem] max-h-[calc(100dvh-2rem)] w-[min(25rem,calc(100vw-1rem))] flex-col overflow-hidden ${expanded ? 'rounded-none' : 'rounded-[1.6rem]'} border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl ${expanded ? 'z-[90]' : 'z-[70]'}`}
+          className={`tv-pop tv-widget-panel sheen-panel fixed flex h-[34rem] max-h-[calc(100dvh-2rem)] w-[min(25rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl ${expanded ? 'z-[90]' : 'z-[70]'}`}
           style={expanded
-            // True full-screen mode: edge to edge, no margins.
-            ? { left: 0, right: 0, top: 0, bottom: 0, height: 'auto', maxWidth: 'none' }
+            // Zoomed theater: fits inside all four screen sides with a gap,
+            // starting below the price ticker header — never covering it.
+            ? { left: 12, right: 12, top: 'calc(var(--header-h, 64px) + 12px)', bottom: 12, height: 'auto', maxWidth: 'none' }
             : { bottom: '0.75rem', [onLeft ? 'left' : 'right']: '0.75rem' }}
         >
           {/* Gold top-edge accent + ambient glow + terminal scanlines */}
