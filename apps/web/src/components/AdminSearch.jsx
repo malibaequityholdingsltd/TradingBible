@@ -107,7 +107,7 @@ export default function AdminSearch() {
         onClick={() => setOpen(true)}
         aria-label="Search admin console"
         title="Search admin console (⌘K)"
-        className="flex h-9 w-full max-w-md items-center gap-2 rounded-xl border border-[#d4af37]/25 px-3 text-[#8a8577] transition hover:border-[#d4af37]/60 hover:text-[#d4af37]"
+        className="flex h-9 w-[min(440px,36vw)] min-w-0 items-center gap-2 rounded-xl border border-[#d4af37]/25 px-3 text-[#8a8577] transition hover:border-[#d4af37]/60 hover:text-[#d4af37]"
       >
         <Search className="h-4 w-4 shrink-0" />
         <span className="hidden truncate text-xs sm:inline">Search pages, users, actions…</span>
