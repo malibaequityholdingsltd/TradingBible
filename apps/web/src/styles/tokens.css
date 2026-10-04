@@ -129,8 +129,10 @@ html.light .tb-shimmer::after {
 
 /* ── Shared layout primitives ─────────────────────────────── */
 /* ── Living overlays: every modal, picker, spotlight and sheet shares the
-   same slow light sweep + soft pop enter, dark and light. ─────────────── */
-.sheen-panel { position: relative; }
+   same slow light sweep + soft pop enter, dark and light.
+   NOTE: this deliberately sets NO position — several hosts are
+   fixed/absolute via utilities, and an unlayered `position` here would beat
+   them and wreck placement. Static hosts add Tailwind `relative` themselves. */
 .sheen-panel::after {
   content: '';
   position: absolute;

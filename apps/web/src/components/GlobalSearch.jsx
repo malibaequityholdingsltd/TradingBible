@@ -172,7 +172,7 @@ export default function GlobalSearch() {
 
       {open && (
         <div className="fixed inset-0 z-[70] flex items-start justify-center bg-black/70 p-4 pt-[12vh] backdrop-blur-sm" onClick={() => setOpen(false)}>
-          <div className="glass sheen-panel overlay-pop w-full max-w-2xl overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="glass sheen-panel overlay-pop relative w-full max-w-2xl overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2 border-b border-[#d4af37]/10 px-4">
               <Search className="h-4 w-4 shrink-0 text-[#d4af37]" />
               <input
@@ -184,7 +184,7 @@ export default function GlobalSearch() {
               />
               <button onClick={() => setOpen(false)} className="text-[#8a8577] hover:text-[#e9e7df]" aria-label="Close"><X className="h-4 w-4" /></button>
             </div>
-            <div ref={listRef} className="max-h-[50vh] overflow-y-auto p-2 no-scrollbar">
+            <div ref={listRef} className="max-h-[50vh] overflow-y-auto p-2 no-scrollbar scroll-contain">
               {results.length === 0 && (
                 <p className="px-3 py-8 text-center text-sm text-[#8a8577]">{t('c.noResults', null, 'Nothing found. Try different words.')}</p>
               )}
