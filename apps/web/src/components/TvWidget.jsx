@@ -48,8 +48,8 @@ function loadPos() {
   return { x: MARGIN, y: MARGIN };
 }
 
-const iconBtn = 'grid h-7 w-7 place-items-center rounded-lg text-[#d4af37] transition-colors hover:bg-[#d4af37]/10 hover:text-[#f0d675]';
-const iconBtnActive = 'grid h-7 w-7 place-items-center rounded-lg bg-[#d4af37]/15 text-[#d4af37] transition-colors';
+const iconBtn = 'grid h-7 w-7 place-items-center rounded-lg bg-[#d4af37]/15 text-[#d4af37] transition-colors hover:bg-[#d4af37]/25 hover:text-[#f0d675]';
+const iconBtnActive = 'grid h-7 w-7 place-items-center rounded-lg bg-[#d4af37] text-[#0a0a0f] transition-colors hover:opacity-90';
 
 // Draggable, edge-snapping TradingBible TV launcher + mini broadcast player.
 // Three stage views: rotating house ads, the live-TV channel guide, and the
