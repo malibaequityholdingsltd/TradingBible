@@ -9,7 +9,7 @@ import { useTrades, computeStats } from '@/hooks/useTrades';
 import { useAuth } from '@/hooks/useAuth';
 import DashboardWidgets from '@/components/DashboardWidgets';
 import AccountBalances from '@/components/AccountBalances';
-import { PageHero, Card, StatGrid, EmptyState, GoldButton, GhostButton, SectionHead } from '@/components/ui-kit';
+import { PageHero, Card, StatGrid, EmptyState, GoldButton, GhostButton, SectionHead, Skeleton, CardSkeleton } from '@/components/ui-kit';
 
 const GOLD = '#d4af37';
 
@@ -58,7 +58,7 @@ export default function DashboardPage() {
   const isSubscriber = user?.role === 'admin' || ['pro', 'elite', 'professional'].includes((user?.plan || '').toLowerCase());
 
   if (loading) {
-    return <AppLayout title={t('nav.dashboard')}><div className="tb-page"><div className="tb-card flex items-center justify-center gap-2 py-20 text-sm text-[#8a8577]"><RefreshCw className="h-4 w-4 animate-spin" /> {t('dash.loading')}</div></div></AppLayout>;
+    return <AppLayout title={t('nav.dashboard')}><div className="tb-page"><Skeleton className="h-36" /><div className="grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-2 xl:grid-cols-4">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}</div><CardSkeleton rows={4} /></div></AppLayout>;
   }
 
   if (!stats) {

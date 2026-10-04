@@ -6,7 +6,7 @@ import {
   ListOrdered,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { PageHero, Card, GoldButton, GhostButton, EmptyState } from '@/components/ui-kit';
+import { PageHero, Card, GoldButton, GhostButton, EmptyState, Skeleton, CardSkeleton } from '@/components/ui-kit';
 import { useTerminal } from '@/hooks/useTerminal';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useI18n } from '@/lib/i18n';
@@ -47,7 +47,7 @@ function SymbolPicker({ existing, groups, onAdd, onClose }) {
           <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr('term.searchPh')}
             className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] py-2 pl-9 pr-3 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
         </div>
-        <div className="layered-list max-h-72 space-y-4 overflow-y-auto no-scrollbar">
+        <div className="layered-list no-scrollbar scroll-contain max-h-72 space-y-4 overflow-y-auto">
           {SYMBOL_GROUPS.map((g) => {
             const items = g.symbols.filter((s) => `${s.symbol} ${s.name}`.toLowerCase().includes(q.toLowerCase()) && !existing.includes(s.symbol));
             if (!items.length) return null;
@@ -139,7 +139,7 @@ export default function TerminalPage() {
   }, [t.symbols, t.groups]);
 
   if (!t.loaded) {
-    return <AppLayout title={tr('nav.terminal')}><div className="tb-page"><Card><div className="grid place-items-center py-24 text-[#8a8577]"><Loader2 className="h-6 w-6 animate-spin" /></div></Card></div></AppLayout>;
+    return <AppLayout title={tr('nav.terminal')}><div className="tb-page"><Skeleton className="h-14" /><CardSkeleton rows={6} /></div></AppLayout>;
   }
 
   const renderRows = (items) => items.map((item) => (

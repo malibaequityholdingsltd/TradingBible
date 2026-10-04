@@ -177,8 +177,13 @@ const planBadge = (plan) => {
 
 function Spinner() {
   return (
-    <div className="glass flex items-center justify-center gap-2 rounded-2xl py-20 text-sm text-[#8a8577]">
-      <RefreshCw className="h-4 w-4 animate-spin text-[#d4af37]" /> Loading…
+    <div className="glass rounded-2xl p-5" aria-hidden>
+      <div className="tb-shimmer h-5 w-1/4 rounded-lg" />
+      <div className="mt-3 space-y-2">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="tb-shimmer h-9 rounded-xl" />
+        ))}
+      </div>
     </div>
   );
 }

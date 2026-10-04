@@ -73,6 +73,59 @@ html.light .tb-kicker { color: #8a6714; }
   .btn-sheen::after { display: none; }
 }
 
+/* ── Scroll system: smooth anchors, contained nested scroll, styled bars. */
+html { scroll-behavior: smooth; }
+/* Nested overlay lists never chain-scroll the page behind them. */
+.scroll-contain { overscroll-behavior: contain; }
+/* Thin premium scrollbars for overlay + list surfaces. */
+.nice-scroll { scrollbar-width: thin; scrollbar-color: rgba(212, 175, 55, 0.35) transparent; }
+.nice-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.nice-scroll::-webkit-scrollbar-track { background: transparent; }
+.nice-scroll::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.35); border-radius: 999px; }
+.nice-scroll::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.6); }
+html.light .nice-scroll { scrollbar-color: rgba(166, 124, 30, 0.4) transparent; }
+html.light .nice-scroll::-webkit-scrollbar-thumb { background: rgba(166, 124, 30, 0.4); }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* ── Stagger: cascading entrances for grids, decks and lists. ────────── */
+.tb-stagger > * { animation: tb-rise 0.4s var(--tb-ease) both; }
+.tb-stagger > *:nth-child(2) { animation-delay: 0.05s; }
+.tb-stagger > *:nth-child(3) { animation-delay: 0.1s; }
+.tb-stagger > *:nth-child(4) { animation-delay: 0.15s; }
+.tb-stagger > *:nth-child(5) { animation-delay: 0.2s; }
+.tb-stagger > *:nth-child(6) { animation-delay: 0.24s; }
+.tb-stagger > *:nth-child(7) { animation-delay: 0.28s; }
+.tb-stagger > *:nth-child(n+8) { animation-delay: 0.32s; }
+
+/* ── Shimmer skeletons: premium loading states, both modes. ─────────── */
+.tb-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+html.light .tb-shimmer { background: rgba(45, 52, 64, 0.07); }
+.tb-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(212, 175, 55, 0.16) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: tb-shimmer-sweep 1.6s ease-in-out infinite;
+}
+html.light .tb-shimmer::after {
+  background: linear-gradient(100deg, transparent 30%, rgba(166, 124, 30, 0.20) 50%, transparent 70%);
+}
+@keyframes tb-shimmer-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tb-stagger > *, .tb-shimmer::after { animation: none; }
+  .tb-shimmer::after { display: none; }
+}
+
 /* ── Shared layout primitives ─────────────────────────────── */
 /* ── Living overlays: every modal, picker, spotlight and sheet shares the
    same slow light sweep + soft pop enter, dark and light. ─────────────── */
