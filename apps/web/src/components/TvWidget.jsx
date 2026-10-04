@@ -471,9 +471,11 @@ export default function TvWidget() {
             : { left: px, top: py, width: panelW, height: panelH, maxWidth: 'calc(100vw - 1rem)' }}
         >
           {/* Header */}
-          <div className="tv-widget-header flex items-center gap-2 border-b border-[#d4af37]/12 bg-[#0a0a0f]/80 backdrop-blur-md px-3 py-2">
-            <img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
-            <span className="gold-text min-w-0 flex-1 truncate text-sm font-bold tracking-wide">{settings.headerText || 'TradingBible TV'}</span>
+          <div className="tv-widget-header relative flex items-center gap-2 border-b border-[#d4af37]/12 bg-[#0a0a0f]/80 backdrop-blur-md px-3 py-2">
+            <span className={expanded ? 'pointer-events-none absolute left-1/2 flex max-w-[46vw] -translate-x-1/2 items-center gap-2' : 'flex min-w-0 flex-1 items-center gap-2'}>
+              <img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 shrink-0 rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
+              <span className="gold-text truncate text-sm font-bold tracking-wide">{settings.headerText || 'TradingBible TV'}</span>
+            </span>
             {liveCount > 0 ? (
               <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#ff5a62]">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e50914] shadow-[0_0_6px_rgba(229,9,20,0.9)]" />
