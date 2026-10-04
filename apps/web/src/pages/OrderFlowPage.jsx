@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
 	Activity, Pause, Play, Timer, Filter, Layers, Droplets,
-	Plus, GitCompareArrows,
+	Plus, GitCompareArrows, CandlestickChart,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useI18n } from '@/lib/i18n';
@@ -42,6 +42,12 @@ function nameFor(symbol) {
 const COL_SECS = [1, 2, 5];
 const ROW_OPTS = [41, 61, 81];
 const TRADE_FILTERS = [1000, 10000, 25000, 100000];
+const CANDLE_TFS = [
+	{ label: 'Off', secs: 0 },
+	{ label: '15s', secs: 15 },
+	{ label: '1m', secs: 60 },
+	{ label: '5m', secs: 300 },
+];
 const MAX_PANES = 4;
 const HIST_CAP = 240;
 
@@ -80,6 +86,7 @@ export default function OrderFlowPage() {
 	const [rows, setRows] = useState(61);
 	const [minTrade, setMinTrade] = useState(10000);
 	const [intensity, setIntensity] = useState(1);
+	const [candleSecs, setCandleSecs] = useState(60);
 	const [paused, setPaused] = useState(false);
 	const [pickerQ, setPickerQ] = useState('');
 	const [corr, setCorr] = useState([]);
@@ -248,6 +255,12 @@ export default function OrderFlowPage() {
 						<Droplets className="h-3.5 w-3.5" />
 						<input type="range" min={0.4} max={2.5} step={0.1} value={intensity} onChange={(e) => setIntensity(Number(e.target.value))} className="h-1 w-20 accent-[#d4af37]" />
 					</label>
+					<span className="flex items-center gap-1.5">
+						<CandlestickChart className="h-3.5 w-3.5" />
+						{CANDLE_TFS.map((c) => (
+							<button key={c.label} onClick={() => setCandleSecs(c.secs)} className={`rounded-md px-2 py-1 font-mono transition ${candleSecs === c.secs ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'hover:text-[#e9e7df]'}`}>{c.label}</button>
+						))}
+					</span>
 				</div>
 				)}
 			</div>
@@ -263,6 +276,7 @@ export default function OrderFlowPage() {
 						rows={rows}
 						minTrade={minTrade}
 						intensity={intensity}
+						candleSecs={candleSecs}
 						paused={paused}
 						expanded={panes.length === 1 || focus === s}
 						focused={focus === s}
@@ -317,7 +331,7 @@ export default function OrderFlowPage() {
 
 			<div className="mt-4 flex items-start gap-2 rounded-2xl border border-[#d4af37]/15 bg-[#d4af37]/[0.04] p-4 text-xs leading-relaxed text-[#8a8577] backdrop-blur-md">
 				<Activity className="mt-0.5 h-4 w-4 shrink-0 text-[#d4af37]" />
-				<p>Live depth + executed prints stream from Binance public market data (no account needed) — up to {MAX_PANES} pairs on one screen. Blue = resting bid liquidity, orange = resting ask liquidity, dots = executed trades sized by notional, cyan = session VWAP. Click a pane to focus its ladder + tape. Crypto only — forex and stocks have no public order book. Not financial advice. Bookmap® is a trademark of its owner; this is an original TradingBible implementation.</p>
+				<p>Live depth + executed prints stream from Binance public market data (no account needed) — up to {MAX_PANES} pairs on one screen. Blue = resting bid liquidity, orange = resting ask liquidity, dots = executed trades sized by notional, cyan = session VWAP. Candles + bottom volume bars are built live from prints (15s/1m/5m) with a docked DOM on the right — Bookmap Web style. Click a pane to focus its ladder + tape. Crypto only — forex and stocks have no public order book. Not financial advice. Bookmap® is a trademark of its owner; this is an original TradingBible implementation.</p>
 			</div>
 		</AppLayout>
 	);
