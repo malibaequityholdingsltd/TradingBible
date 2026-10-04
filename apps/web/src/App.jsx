@@ -69,7 +69,6 @@ const AcademyInfoPage = lazy(() => import('./pages/PublicInfoPages').then((m) =>
 const BlogPage = lazy(() => import('./pages/PublicInfoPages').then((m) => ({ default: m.BlogPage })));
 const CareersPage = lazy(() => import('./pages/PublicInfoPages').then((m) => ({ default: m.CareersPage })));
 const ContactPage = lazy(() => import('./pages/PublicInfoPages').then((m) => ({ default: m.ContactPage })));
-const TeacherDashboardPage = lazy(() => import('./pages/TeacherDashboardPage').then((m) => ({ default: () => <m.TeacherGuard><m.default /></m.TeacherGuard> })));
 const StudentDashboardPage = lazy(() => import('./pages/StudentDashboardPage').then((m) => ({ default: () => <m.StudentGuard><m.default /></m.StudentGuard> })));
 const TermsPage = lazy(() => import('./pages/LegalPages').then((m) => ({ default: m.TermsPage })));
 const PolicyPage = lazy(() => import('./pages/LegalPages').then((m) => ({ default: m.PolicyPage })));
@@ -117,17 +116,6 @@ function AdminProtected({ children }) {
     if (!isAuthed) return <Navigate to="/login" replace />;
     // Subscribers cannot access the admin portal.
     if (user?.role !== 'admin') return <Navigate to="/app" replace />;
-    return children;
-}
-
-function TeacherProtected({ children }) {
-    const { isAuthed, isAuthReady, user } = useAuth();
-    if (!isAuthReady) return <PageFallback />;
-    if (!isAuthed) return <Navigate to="/login" replace />;
-    if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
-    // Admins may inspect the teacher portal (same as the trader preview);
-    // the inner TeacherGuard enforces teacher-or-admin as well.
-    if (user?.accountType !== 'teacher' && user?.role !== 'admin') return <Navigate to="/app" replace />;
     return children;
 }
 
@@ -266,7 +254,7 @@ function RoutesWithBoundary() {
                     <Route path="/app/wallet" element={<SubscriberProtected><FeatureGate feature="wallet"><WalletPage /></FeatureGate></SubscriberProtected>} />
                     <Route path="/app/profile" element={<Protected><ProfilePage /></Protected>} />
                     <Route path="/app/api-keys" element={<PaidProtected><UserApiKeysPage /></PaidProtected>} />
-                    <Route path="/teacher" element={<TeacherProtected><TeacherDashboardPage /></TeacherProtected>} />
+                    <Route path="/teacher" element={<Navigate to="/app" replace />} />
                     <Route path="/student" element={<Protected><StudentDashboardPage /></Protected>} />
                     <Route path="/admin" element={<AdminProtected><AdminDashboard /></AdminProtected>} />
                     <Route path="/admin/users" element={<AdminProtected><AdminUsers /></AdminProtected>} />

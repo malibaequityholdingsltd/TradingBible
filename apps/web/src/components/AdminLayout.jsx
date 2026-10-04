@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Settings, FileText, CreditCard, LibraryBig, BarChart3,
-  LogOut, Menu, Shield, X, ChevronRight, Plug, Key, Package, User, ChevronDown, MonitorPlay, Briefcase, GraduationCap
+  LogOut, Menu, Shield, X, ChevronRight, Plug, Key, Package, User, ChevronDown, MonitorPlay, Briefcase
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import AdminSearch from '@/components/AdminSearch';
@@ -53,7 +53,6 @@ function Brand({ homeTo }) {
 
 export default function AdminLayout({ children, title }) {
   const [open, setOpen] = useState(false);
-  const [chooserOpen, setChooserOpen] = useState(false);
   const nav = useNavigate();
   const { user, logout } = useAuth();
   const initial = (user?.username || user?.email || 'A').charAt(0).toUpperCase();
@@ -144,7 +143,7 @@ export default function AdminLayout({ children, title }) {
             <AdminSearch />
           </div>
           <div className="ml-2 flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <button onClick={() => setChooserOpen(true)} className="hidden sm:flex items-center gap-1.5 rounded-lg border border-[#d4af37]/15 px-3 py-1.5 text-xs text-[#8a8577] hover:border-[#d4af37]/30 hover:text-[#c9c4b4]">
+            <button onClick={() => { enterAdminPreview(); nav('/app'); }} className="hidden sm:flex items-center gap-1.5 rounded-lg border border-[#d4af37]/15 px-3 py-1.5 text-xs text-[#8a8577] hover:border-[#d4af37]/30 hover:text-[#c9c4b4]">
               View App
             </button>
             <DropdownMenu>
@@ -168,7 +167,7 @@ export default function AdminLayout({ children, title }) {
                 <DropdownMenuItem onClick={() => nav('/admin/settings')} className="cursor-pointer gap-2.5">
                   <Settings className="h-4 w-4 text-[#d4af37]" /> Settings
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setChooserOpen(true)} className="cursor-pointer gap-2.5">
+                <DropdownMenuItem onClick={() => { enterAdminPreview(); nav('/app'); }} className="cursor-pointer gap-2.5">
                   <LayoutDashboard className="h-4 w-4 text-[#d4af37]" /> View app
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-white/5" />
@@ -185,49 +184,6 @@ export default function AdminLayout({ children, title }) {
           {children}
         </div>
       </main>
-
-      {/* View-app chooser: trader or teacher portal */}
-      {chooserOpen && (
-        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4" onClick={() => setChooserOpen(false)}>
-          <div className="glass w-full max-w-md overflow-hidden rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-[#d4af37]/12 px-5 py-4">
-              <div>
-                <h3 className="font-semibold text-[#f0ecdd]">View app as</h3>
-                <p className="mt-0.5 text-xs text-[#8a8577]">Preview the portals exactly as users see them.</p>
-              </div>
-              <button onClick={() => setChooserOpen(false)} className="rounded-lg p-1.5 text-[#8a8577] hover:bg-white/5" aria-label="Close">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="grid gap-2 p-4 sm:grid-cols-2">
-              <button
-                onClick={() => { setChooserOpen(false); enterAdminPreview(); nav('/app'); }}
-                className="group flex items-center gap-3 rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/[0.05] p-4 text-left transition hover:border-[#d4af37]/50 hover:bg-[#d4af37]/[0.1]"
-              >
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#d4af37]/15 text-[#d4af37]">
-                  <LayoutDashboard className="h-5 w-5" />
-                </span>
-                <span>
-                  <span className="block text-sm font-semibold text-[#f0ecdd]">Trader</span>
-                  <span className="block text-xs text-[#8a8577]">Dashboard, charts, journal</span>
-                </span>
-              </button>
-              <button
-                onClick={() => { setChooserOpen(false); enterAdminPreview(); nav('/teacher'); }}
-                className="group flex items-center gap-3 rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/[0.05] p-4 text-left transition hover:border-[#d4af37]/50 hover:bg-[#d4af37]/[0.1]"
-              >
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#d4af37]/15 text-[#d4af37]">
-                  <GraduationCap className="h-5 w-5" />
-                </span>
-                <span>
-                  <span className="block text-sm font-semibold text-[#f0ecdd]">Teacher</span>
-                  <span className="block text-xs text-[#8a8577]">Classes, students, exams</span>
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

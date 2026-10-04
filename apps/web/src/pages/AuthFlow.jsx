@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { Mail, ArrowRight, User, GraduationCap, KeyRound, BookOpen, ShieldCheck, LineChart, Bot, Sparkles } from 'lucide-react';
+import { Mail, ArrowRight, User, KeyRound, BookOpen, ShieldCheck, LineChart, Bot, Sparkles } from 'lucide-react';
 import { MARKETS, EXPERIENCE, GOALS } from '@/lib/mockData';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
@@ -623,9 +623,6 @@ export function SignupPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
-  const [accountType, setAccountType] = useState('trader');
-  const [teacherSubject, setTeacherSubject] = useState('');
-  const [teacherBio, setTeacherBio] = useState('');
   const [busy, setBusy] = useState(false);
   const [oauthBusy, setOauthBusy] = useState('');
   const [sent, setSent] = useState(false);
@@ -679,9 +676,7 @@ export function SignupPage() {
           shouldCreateUser: true,
           username: username.trim() || email.split('@')[0],
           role: 'user',
-          accountType,
-          teacherSubject: teacherSubject.trim(),
-          teacherBio: teacherBio.trim(),
+          accountType: 'trader',
         });
         const until = Date.now() + OTP_COOLDOWN_SECONDS * 1000;
         writeOtpCooldownUntil(email, until);
@@ -736,10 +731,8 @@ export function SignupPage() {
       await requestOTP({
         email: email.trim(),
         shouldCreateUser: true,
-        username: username.trim() || email.split('@')[0],
-        accountType,
-        teacherSubject: teacherSubject.trim(),
-        teacherBio: teacherBio.trim(),
+          username: username.trim() || email.split('@')[0],
+          accountType: 'trader',
       });
       const until = Date.now() + OTP_COOLDOWN_SECONDS * 1000;
       writeOtpCooldownUntil(email, until);
@@ -795,29 +788,7 @@ export function SignupPage() {
         <form className="space-y-2.5 sm:space-y-3" onSubmit={submit}>
           {!sent && (
             <>
-              <div className="grid grid-cols-2 gap-2 rounded-xl border border-[#d4af37]/15 p-1">
-                {[
-                  { id: 'trader', label: t('auth.trader'), icon: User },
-                  { id: 'teacher', label: t('auth.teacher'), icon: GraduationCap },
-                ].map(({ id, label, icon: Icon }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setAccountType(id)}
-                    className={`flex min-h-[40px] items-center justify-center gap-2 rounded-lg px-2.5 text-sm transition sm:min-h-[42px] sm:px-3 ${accountType === id ? 'bg-[#d4af37]/14 text-[#f0ecdd]' : 'text-[#8a8577] hover:bg-white/5'}`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {label}
-                  </button>
-                ))}
-              </div>
               <Field icon={User} type="text" placeholder={t('auth.usernamePh')} value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" />
-              {accountType === 'teacher' && (
-                <>
-                  <Field icon={GraduationCap} type="text" placeholder={t('auth.subjectPh')} value={teacherSubject} onChange={(e) => setTeacherSubject(e.target.value)} required />
-                  <Field icon={BookOpen} type="text" placeholder={t('auth.bioPh')} value={teacherBio} onChange={(e) => setTeacherBio(e.target.value)} />
-                </>
-              )}
               <Field icon={Mail} type="email" placeholder={t('auth.emailPh')} value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
               <p className="text-center text-xs text-[#8a8577]">{t('auth.codeHint')}</p>
             </>
