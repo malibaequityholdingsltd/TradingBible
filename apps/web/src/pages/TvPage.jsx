@@ -447,6 +447,7 @@ export default function TvPage() {
                     <span className="flex items-center gap-1.5">
                       <span className="block truncate text-sm font-semibold text-[#f0ecdd]">{c.title}</span>
                       {c.isNew && <span className="shrink-0 rounded-full bg-[#d4af37] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#0a0a0f]">New</span>}
+                      {c.roundTheClock && <span className="shrink-0 rounded-full bg-emerald-400/15 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-emerald-400">24/7</span>}
                       {locked && <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#d4af37]"><Crown className="h-2.5 w-2.5" />{c.plan}</span>}
                     </span>
                     <span className="mt-0.5 block truncate text-xs text-[#8a8577]">{locked ? (isAuthed ? 'Upgrade to unlock this desk' : 'Sign in to unlock this desk') : c.blurb}</span>

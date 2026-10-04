@@ -430,6 +430,7 @@ export default function TvWidget() {
                         <span className="flex items-center gap-1.5">
                           <span className="block truncate text-[13px] font-semibold text-[#f0ecdd]">{c.title}</span>
                           {c.isNew && <span className="shrink-0 rounded-full bg-[#d4af37] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#0a0a0f]">New</span>}
+                          {c.roundTheClock && <span className="shrink-0 rounded-full bg-emerald-400/15 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-emerald-400">24/7</span>}
                           {locked && <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#d4af37]"><Crown className="h-2.5 w-2.5" />{c.plan}</span>}
                         </span>
                         <span className="block truncate text-[11px] text-[#8a8577]">{c.desk} · {locked ? 'tap to upgrade' : 'tap to watch'}</span>
