@@ -138,6 +138,25 @@ export default function TvWidget() {
   // so playback never sits on a slate asking for a tap.
   const attemptsRef = useRef(new Set());
   const advanceTimer = useRef(null);
+  // Scroll guard: opening / switching / closing TV must never move page
+  // scroll (focus shifts, iframe focus, anchoring). Snapshot around every
+  // tap path and restore unless the user scrolled themselves meanwhile.
+  const lastUserScroll = useRef(0);
+  useEffect(() => {
+    const onScroll = () => { lastUserScroll.current = Date.now(); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  const guardScroll = useCallback(() => {
+    const y = typeof window !== 'undefined' ? window.scrollY : 0;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      try {
+        if (Date.now() - lastUserScroll.current > 400 && Math.abs(window.scrollY - y) > 2) {
+          window.scrollTo(0, y);
+        }
+      } catch { /* ignore */ }
+    }));
+  }, []);
   // Self-retry: when every desk is exhausted the slate keeps a 30s timer
   // that silently clears the dead-desk memory and remounts — playback
   // recovers with zero taps the moment anything becomes playable.
@@ -250,7 +269,7 @@ export default function TvWidget() {
     if (next >= 0) {
       clearTimeout(advanceTimer.current);
       advanceTimer.current = setTimeout(() => {
-        setChannelIndex(next); setView('player'); setFrameLoaded(false); setYtError(false); setYtBlocked(false);
+        setChannelIndex(next); setView('player'); setFrameLoaded(false); setYtError(false); setYtBlocked(false); guardScroll();
       }, 1200);
     } else if (blocked) {
       setYtBlocked(true);
@@ -263,20 +282,22 @@ export default function TvWidget() {
 
   // Instant live on open: the launcher jumps straight into the best desk
   // (live → 24/7 → first unlocked) — motion starts with zero extra taps.
+  // Page scroll is snapshotted and restored: opening TV never moves it.
   const openTv = useCallback(() => {
+    guardScroll();
     let idx = (channelIndex >= 0 && channelIndex < ordered.length && canWatch(ordered[channelIndex])) ? channelIndex : -1;
     if (idx < 0) {
       const live = ordered.findIndex((cc) => liveOf(cc) === true && canWatch(cc));
       const clock = live >= 0 ? live : ordered.findIndex((cc) => cc.roundTheClock && canWatch(cc));
       idx = clock >= 0 ? clock : ordered.findIndex((cc) => canWatch(cc));
     }
-    if (idx < 0) { setOpen(true); setView('ads'); return; }
+    if (idx < 0) { setOpen(true); setView('ads'); guardScroll(); return; }
     attemptsRef.current.delete(String(ordered[idx]?.id));
     setChannelIndex(idx);
     setView('player');
     setFrameLoaded(false);
     setOpen(true);
-  }, [channelIndex, ordered, canWatch, liveStates]);
+  }, [channelIndex, ordered, canWatch, liveStates, guardScroll]);
 
   // Minimized handoff from the full TV page (/tv "minimize" button):
   // resume the same channel in the floating mini player (id-based, so
@@ -378,7 +399,8 @@ export default function TvWidget() {
     setChannelIndex(i);
     setView('player');
     setFrameLoaded(false);
-  }, [canWatch, goUpgrade, ordered]);
+    guardScroll();
+  }, [canWatch, goUpgrade, ordered, guardScroll]);
 
   const unlockedIdx = ordered.map((c, i) => (canWatch(c) ? i : -1)).filter((i) => i >= 0);
 
@@ -386,24 +408,26 @@ export default function TvWidget() {
     if (!unlockedIdx.length) { goUpgrade(); return; }
     const pos = unlockedIdx.indexOf(channelIndex);
     const next = unlockedIdx[(pos < 0 ? 0 : pos + dir + unlockedIdx.length) % unlockedIdx.length];
+    guardScroll();
     setChannelIndex(next);
     setFrameLoaded(false);
     setView('player');
-  }, [channelIndex, goUpgrade, liveChannels, unlockedIdx]);
+  }, [channelIndex, goUpgrade, liveChannels, unlockedIdx, guardScroll]);
 
-  const openChannels = useCallback(() => setView('channels'), []);
-  const closePanel = useCallback(() => { setOpen(false); setView('ads'); }, []);
+  const openChannels = useCallback(() => { setView('channels'); guardScroll(); }, [guardScroll]);
+  const closePanel = useCallback(() => { setOpen(false); setView('ads'); guardScroll(); }, [guardScroll]);
 
   const watchToastChannel = useCallback((channelId) => {
     const idx = ordered.findIndex((c) => String(c.id) === String(channelId));
     if (idx < 0) return;
     setToasts([]);
     attemptsRef.current.clear();
+    guardScroll();
     setChannelIndex(idx);
     setView('player');
     setFrameLoaded(false);
     setOpen(true);
-  }, [ordered]);
+  }, [ordered, guardScroll]);
 
   const openAd = () => {
     if (!ad?.linkUrl) return;
@@ -497,7 +521,7 @@ export default function TvWidget() {
             <button onClick={toggleExpanded} className={`${expanded ? 'ml-auto ' : ''}${expanded ? iconBtnActive : iconBtn}`} aria-label={expanded ? 'Zoom out TV' : 'Zoom TV big'} title={expanded ? 'Zoom out' : 'Zoom big (keeps header visible)'}>
               {expanded ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
             </button>
-            <button onClick={() => setView((v) => (v === 'channels' ? (playing !== null ? 'player' : 'ads') : 'channels'))} className={view === 'channels' ? iconBtnActive : iconBtn} aria-label="Live TV channels" title="Live TV channels">
+            <button onClick={() => { setView((v) => (v === 'channels' ? (playing !== null ? 'player' : 'ads') : 'channels')); guardScroll(); }} className={view === 'channels' ? iconBtnActive : iconBtn} aria-label="Live TV channels" title="Live TV channels">
               <ListVideo className="h-4 w-4" />
             </button>
             <button onClick={closePanel} aria-label={t('tv.closeTv')} className={iconBtn}>
@@ -581,7 +605,7 @@ export default function TvWidget() {
                         <button onClick={() => { attemptsRef.current.clear(); setUseEndpoint(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="min-h-[40px] rounded-xl border border-[#d4af37]/30 px-5 text-xs font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
                           Try again
                         </button>
-                        <button onClick={openChannels} className="min-h-[40px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 text-xs font-bold text-[#0a0a0f] transition hover:opacity-90">
+                        <button onClick={() => { openChannels(); }} className="min-h-[40px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 text-xs font-bold text-[#0a0a0f] transition hover:opacity-90">
                           All channels
                         </button>
                       </div>
@@ -627,7 +651,7 @@ export default function TvWidget() {
                     <p className="mt-1 px-1 text-[10px] leading-snug text-[#8a8577]">Alerts on — a toast (and a system ping, if allowed) the moment a desk goes live.</p>
                   )}
                 </div>
-                <div className="no-scrollbar flex-1 space-y-3 overflow-y-auto p-2">
+                <div className="no-scrollbar scroll-contain flex-1 space-y-3 overflow-y-auto p-2">
                   {(() => {
                     const q = guideQuery.trim().toLowerCase();
                     const matches = (c) => !q || `${c.title || ''} ${c.desk || ''}`.toLowerCase().includes(q);
@@ -777,7 +801,7 @@ export default function TvWidget() {
               </>
             ) : view === 'channels' ? (
               <>
-                <button onClick={() => setView('ads')} className={iconBtn} aria-label="Back to broadcasts">
+                <button onClick={() => { setView('ads'); guardScroll(); }} className={iconBtn} aria-label="Back to broadcasts">
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <span className="min-w-0 flex-1 truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
