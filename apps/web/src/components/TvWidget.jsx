@@ -588,7 +588,13 @@ export default function TvWidget() {
                   {!ytBlocked && !ytError && <div aria-hidden className="absolute inset-0 bg-transparent" />}
                 </div>
                 <div className="flex items-center justify-between gap-2 border-t border-[#d4af37]/10 px-3 py-1.5">
-                  <span className="truncate text-[10px] text-[#6a665a]">{ordered[playing].desk} · live in player</span>
+                  <span className="truncate text-[10px] font-bold uppercase tracking-wider text-[#8a8577]">{ordered[playing]?.desk} · {playing + 1}/{ordered.length}</span>
+                  {isYoutube && ytApi && !onTvPage && (
+                    <button onClick={toggleYtSound} className="flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0f] shadow-[0_2px_10px_rgba(212,175,55,0.3)] transition hover:opacity-95 active:scale-95" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
+                      {ytMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                      {ytMuted ? 'Tap for sound' : 'Sound on'}
+                    </button>
+                  )}
                 </div>
               </div>
               </ErrorBoundary>
@@ -754,16 +760,8 @@ export default function TvWidget() {
                 <button onClick={() => zapChannel(-1)} className={iconBtn} aria-label="Previous channel" title="Previous channel">
                   <ChevronLeft className="h-4 w-4" />
                 </button>
-                <span className="flex min-w-0 flex-1 flex-col items-center gap-1">
-                  {isYoutube && ytApi && !onTvPage ? (
-                    <button onClick={toggleYtSound} className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] px-5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#0a0a0f] shadow-[0_4px_16px_rgba(212,175,55,0.35)] transition hover:opacity-95 active:scale-95" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
-                      {ytMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-                      {ytMuted ? 'Tap for sound' : 'Sound on'}
-                    </button>
-                  ) : null}
-                  <span className="truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
-                    {ordered[playing]?.desk} · {playing + 1}/{ordered.length}
-                  </span>
+                <span className="min-w-0 flex-1 truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
+                  {liveStates[ordered[playing]?.id]?.title || `${ordered[playing]?.desk} · live`}
                 </span>
                 <button onClick={() => zapChannel(1)} className={iconBtn} aria-label="Next channel" title="Next channel">
                   <ChevronRight className="h-4 w-4" />
