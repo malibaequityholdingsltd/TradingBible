@@ -23,6 +23,8 @@ const TABS = [
   { id: 'about', key: 'aiw.about', icon: Info },
 ];
 
+const iconBtn = 'grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/12 text-[#8a8577] transition-colors hover:border-[#d4af37]/35 hover:bg-white/5 hover:text-[#f0ecdd]';
+
 // Clamp a raw {x,y} to the viewport, then snap to the nearest screen edge.
 function snapToEdge(x, y) {
   const w = window.innerWidth;
@@ -49,7 +51,38 @@ function loadPos() {
   return { x: window.innerWidth - BTN - MARGIN, y: window.innerHeight - BTN - MARGIN };
 }
 
-// Draggable, edge-snapping AI assistant launcher.
+function MessageBubble({ from, text, images, tag, t }) {
+  const you = from === 'you';
+  return (
+    <div className={`flex ${you ? 'justify-end' : 'justify-start'}`}>
+      {(text || images?.length) ? (
+        <div className={`flex max-w-[88%] items-end gap-1.5 ${you ? 'flex-row-reverse' : ''}`}>
+          {!you && (
+            <div className="mb-px grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] shadow-[0_0_10px_rgba(212,175,55,0.35)]">
+              <img src={TRADINGBIBLE_LOGO} alt="" className="h-[15px] w-[15px] rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
+            </div>
+          )}
+          <div className="min-w-0">
+            {!you && tag && (
+              <div className="mb-1 ml-1 flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#d4af37]/80">
+                <Sparkles className="h-2.5 w-2.5" /> {tag}
+              </div>
+            )}
+            <div className={`break-words rounded-2xl px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap ${you
+              ? 'rounded-br-md bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_3px_14px_rgba(212,175,55,0.3)]'
+              : 'glass rounded-bl-md border border-[#d4af37]/10 text-[#e9e7df] shadow-[0_2px_12px_rgba(0,0,0,0.35)]'}`}>
+              {images && images.length > 0 && images.map((img, i) => (img ? <img key={i} src={img} alt="Generated" className="mb-2 max-h-36 rounded-lg" /> : null))}
+              {text}
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+// Draggable, edge-snapping SI assistant launcher + chat panel.
+// Mounted once at app root, so chats survive page navigation.
 export default function LiveChatWidget() {
   const { isAuthed } = useAuth();
   const { t } = useI18n();
@@ -61,6 +94,7 @@ export default function LiveChatWidget() {
   const [pos, setPos] = useState(() => (typeof window !== 'undefined' ? loadPos() : { x: 0, y: 0 }));
   const [dragging, setDragging] = useState(false);
   const [text, setText] = useState('');
+  const [unread, setUnread] = useState(false);
   const scrollRef = useRef(null);
 
   const dragState = useRef({ active: false, moved: false, offX: 0, offY: 0 });
@@ -88,6 +122,13 @@ export default function LiveChatWidget() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isStreaming, open, tab]);
+
+  // Unread badge: agent replied while the panel was closed.
+  const lastRole = messages.length ? messages[messages.length - 1]?.role : null;
+  useEffect(() => {
+    if (!open && lastRole === 'assistant' && !isStreaming) setUnread(true);
+    if (open) setUnread(false);
+  }, [open, lastRole, isStreaming]);
 
   const onPointerDown = useCallback((e) => {
     const p = e.touches ? e.touches[0] : e;
@@ -133,8 +174,8 @@ export default function LiveChatWidget() {
   }, [pos.x, pos.y]);
 
   const send = (override) => {
-    const t = (override !== undefined ? String(override) : text).trim();
-    if (!t || isStreaming) return;
+    const body = (override !== undefined ? String(override) : text).trim();
+    if (!body || isStreaming) return;
     if (!isAuthed) {
       setOpen(false);
       nav('/login');
@@ -142,13 +183,14 @@ export default function LiveChatWidget() {
     }
     setText('');
     setTab('coach');
-    sendMessage(t);
+    sendMessage(body);
   };
 
   // Anchor the chat window to the side the button currently rests on.
   const onLeft = pos.x < window.innerWidth / 2;
   const visibleMessages = [{ from: 'agent', text: WELCOME }, ...messages.map((m) => ({ from: m.role === 'user' ? 'you' : 'agent', text: m.content, images: m.images }))];
   const isFirstRun = visibleMessages.length <= 1;
+  const coachTag = `${t('aiw.coach')} · Muse Spark`;
 
   return (
     <div className="tv-widget-root">
@@ -170,7 +212,7 @@ export default function LiveChatWidget() {
               </div>
               <span className="absolute -bottom-px -right-px h-2.5 w-2.5 rounded-full border-2 border-[#0c0c11] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
             </div>
-            <div className="leading-tight">
+            <div className="min-w-0 flex-1 leading-tight">
               <div className="gold-text text-[13px] font-bold tracking-wide">TradingBible SI</div>
               <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/25 bg-gradient-to-r from-[#d4af37]/[0.10] to-transparent px-2 py-[3px] font-mono text-[8.5px] uppercase tracking-[0.12em]">
                 <span className="relative flex h-1.5 w-1.5">
@@ -184,11 +226,11 @@ export default function LiveChatWidget() {
               </div>
             </div>
             {messages.length > 0 && (
-              <button onClick={clearMessages} aria-label={t('aiw.clearChat')} className="ml-auto grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/12 text-[#8a8577] hover:border-[#d4af37]/35 hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
+              <button onClick={clearMessages} aria-label={t('aiw.clearChat')} className={`${iconBtn} ml-auto`}>
                 <Eraser className="h-3.5 w-3.5" />
               </button>
             )}
-            <button onClick={() => setOpen(false)} aria-label={t('aiw.closeChat')} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/12 text-[#8a8577] hover:border-[#d4af37]/35 hover:bg-white/5 hover:text-[#f0ecdd] transition-colors">
+            <button onClick={() => setOpen(false)} aria-label={t('aiw.closeChat')} className={iconBtn}>
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -207,79 +249,53 @@ export default function LiveChatWidget() {
           </div>
 
           {tab === 'coach' && (
-            <>
-              {/* Messages */}
-              <div ref={scrollRef} className="relative flex-1 space-y-3.5 overflow-y-auto px-3.5 py-3">
-                {!isAuthed && (
-                  <div className="rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/[0.06] p-3 text-xs text-[#c9c4b4]">
-                    {t('aiw.signin')}
-                    <Link to="/login" className="mt-2 block font-semibold text-[#d4af37] hover:underline">{t('aiw.signinBtn')}</Link>
-                  </div>
-                )}
-                {isFirstRun && isAuthed && (
-                  <div className="tint-soft rounded-2xl border border-[#d4af37]/12 p-3.5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] text-[#0a0a0f] shadow-[0_0_18px_rgba(212,175,55,0.4)]">
-                        <Sparkles className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-[#f0ecdd]">{t('aiw.heroT')}</div>
-                        <div className="text-[10px] text-[#8a8577]">{t('aiw.heroS')}</div>
-                      </div>
+            <div ref={scrollRef} className="relative flex-1 space-y-3.5 overflow-y-auto px-3.5 py-3">
+              {!isAuthed && (
+                <div className="rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/[0.06] p-3 text-xs text-[#c9c4b4]">
+                  {t('aiw.signin')}
+                  <Link to="/login" className="mt-2 block font-semibold text-[#d4af37] hover:underline">{t('aiw.signinBtn')}</Link>
+                </div>
+              )}
+              {isFirstRun && isAuthed && (
+                <div className="tint-soft rounded-2xl border border-[#d4af37]/12 p-3.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] text-[#0a0a0f] shadow-[0_0_18px_rgba(212,175,55,0.4)]">
+                      <Sparkles className="h-4 w-4" />
                     </div>
-                    <div className="mt-3 grid grid-cols-2 gap-1.5">
-                      {QUICK_PROMPTS.map(({ key, icon: Icon }) => (
-                        <button key={key} onClick={() => send(t(key))} disabled={isStreaming}
-                          className="flex min-h-[36px] items-center gap-2 rounded-lg border border-[#d4af37]/15 bg-[#d4af37]/[0.05] px-2.5 text-left text-[11px] text-[#c9c4b4] transition hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.1] hover:text-[#f0ecdd] disabled:opacity-50">
-                          <Icon className="h-3.5 w-3.5 shrink-0 text-[#d4af37]" />
-                          {t(key)}
-                        </button>
-                      ))}
+                    <div>
+                      <div className="text-sm font-semibold text-[#f0ecdd]">{t('aiw.heroT')}</div>
+                      <div className="text-[10px] text-[#8a8577]">{t('aiw.heroS')}</div>
                     </div>
                   </div>
-                )}
-                {visibleMessages.map((m, idx) => (
-                  <div key={idx} className={`flex ${m.from === 'you' ? 'justify-end' : 'justify-start'}`}>
-                    {m.text || m.images?.length ? (
-                      <div className={`flex max-w-[88%] items-end gap-1.5 ${m.from === 'you' ? 'flex-row-reverse' : ''}`}>
-                        {m.from === 'agent' && (
-                          <div className="mb-px grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] shadow-[0_0_10px_rgba(212,175,55,0.35)]">
-                            <img src={TRADINGBIBLE_LOGO} alt="" className="h-[15px] w-[15px] rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          {m.from === 'agent' && idx > 0 && (
-                            <div className="mb-1 ml-1 flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#d4af37]/80">
-                              <Sparkles className="h-2.5 w-2.5" /> {t('aiw.coach')} · Muse Spark
-                            </div>
-                          )}
-                          <div className={`break-words rounded-2xl px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap ${m.from === 'you'
-                            ? 'rounded-br-md bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_3px_14px_rgba(212,175,55,0.3)]'
-                            : 'glass rounded-bl-md border border-[#d4af37]/10 text-[#e9e7df] shadow-[0_2px_12px_rgba(0,0,0,0.35)]'}`}>
-                            {m.images && m.images.length > 0 && m.images.map((img, i) => (img ? <img key={i} src={img} alt="Generated" className="mb-2 max-h-36 rounded-lg" /> : null))}
-                            {m.text}
-                          </div>
-                        </div>
-                      </div>
-                    ) : null}
+                  <div className="mt-3 grid grid-cols-2 gap-1.5">
+                    {QUICK_PROMPTS.map(({ key, icon: Icon }) => (
+                      <button key={key} onClick={() => send(t(key))} disabled={isStreaming}
+                        className="flex min-h-[36px] items-center gap-2 rounded-lg border border-[#d4af37]/15 bg-[#d4af37]/[0.05] px-2.5 text-left text-[11px] text-[#c9c4b4] transition hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.1] hover:text-[#f0ecdd] disabled:opacity-50">
+                        <Icon className="h-3.5 w-3.5 shrink-0 text-[#d4af37]" />
+                        {t(key)}
+                      </button>
+                    ))}
                   </div>
-                ))}
-                {isStreaming && (
-                  <div className="flex justify-start">
-                    <div className="flex items-end gap-1.5">
-                      <div className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e]">
-                        <img src={TRADINGBIBLE_LOGO} alt="" className="h-[15px] w-[15px] rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                      </div>
-                      <div className="glass flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-[#d4af37]/10 px-3 py-2.5">
-                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#d4af37]" />
-                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#d4af37] [animation-delay:0.15s]" />
-                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#d4af37] [animation-delay:0.3s]" />
-                      </div>
+                </div>
+              )}
+              {visibleMessages.map((m, idx) => (
+                <MessageBubble key={idx} from={m.from} text={m.text} images={m.images} tag={m.from === 'agent' && idx > 0 ? coachTag : null} t={t} />
+              ))}
+              {isStreaming && (
+                <div className="flex justify-start">
+                  <div className="flex items-end gap-1.5">
+                    <div className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e]">
+                      <img src={TRADINGBIBLE_LOGO} alt="" className="h-[15px] w-[15px] rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
+                    </div>
+                    <div className="glass flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-[#d4af37]/10 px-3 py-2.5">
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#d4af37]" />
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#d4af37] [animation-delay:0.15s]" />
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#d4af37] [animation-delay:0.3s]" />
                     </div>
                   </div>
-                )}
-              </div>
-            </>
+                </div>
+              )}
+            </div>
           )}
 
           {tab === 'tools' && (
@@ -313,25 +329,16 @@ export default function LiveChatWidget() {
 
           {tab === 'about' && (
             <div className="relative flex-1 space-y-3 overflow-y-auto p-3.5">
-              <div className="rounded-xl border border-[#d4af37]/12 bg-[#0a0a0f]/60 p-3.5 backdrop-blur-md">
-                <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">{t('aiw.model')}</div>
-                <div className="font-mono mt-1 text-[11px] leading-relaxed text-[#c9c4b4]">
-                  muse-spark-1.3-contributor-free<br />
-                  <span className="text-[#8a8577]">{t('aiw.via')}</span>
+              {[
+                { h: t('aiw.model'), body: (<div className="font-mono mt-1 text-[11px] leading-relaxed text-[#c9c4b4]">muse-spark-1.3-contributor-free<br /><span className="text-[#8a8577]">{t('aiw.via')}</span></div>) },
+                { h: t('aiw.privacy'), body: (<p className="mt-1 text-[11px] leading-relaxed text-[#c9c4b4]">{t('aiw.privacyB')}</p>) },
+                { h: t('aiw.help'), body: (<a href="mailto:support@tradingbible.app" className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline">support@tradingbible.app <ExternalLink className="h-3 w-3" /></a>) },
+              ].map((s) => (
+                <div key={s.h} className="rounded-xl border border-[#d4af37]/12 bg-[#0a0a0f]/60 p-3.5 backdrop-blur-md">
+                  <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">{s.h}</div>
+                  {s.body}
                 </div>
-              </div>
-              <div className="rounded-xl border border-[#d4af37]/12 bg-[#0a0a0f]/60 p-3.5 backdrop-blur-md">
-                <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">{t('aiw.privacy')}</div>
-                <p className="mt-1 text-[11px] leading-relaxed text-[#c9c4b4]">
-                  {t('aiw.privacyB')}
-                </p>
-              </div>
-              <div className="rounded-xl border border-[#d4af37]/12 bg-[#0a0a0f]/60 p-3.5 backdrop-blur-md">
-                <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">{t('aiw.help')}</div>
-                <a href="mailto:support@tradingbible.app" className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline">
-                  support@tradingbible.app <ExternalLink className="h-3 w-3" />
-                </a>
-              </div>
+              ))}
             </div>
           )}
 
@@ -365,6 +372,9 @@ export default function LiveChatWidget() {
           <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-[#d4af37]/25 [animation-duration:2.2s]" />
           <MessageCircle className="relative h-6 w-6 text-[#0a0a0f]" strokeWidth={2.2} />
           <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#0c0c11] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
+          {unread && (
+            <span className="absolute -left-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full border-2 border-[#0c0c11] bg-[#e50914] px-0.5 text-[9px] font-bold text-white animate-pulse">!</span>
+          )}
         </button>
       )}
     </div>
