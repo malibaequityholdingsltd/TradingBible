@@ -304,10 +304,16 @@ export default function TvPage() {
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#07070a] p-6 text-center">
               <Radio className="h-8 w-8 text-[#6a665a]" />
               <p className="font-semibold text-[#f0ecdd]">This desk is off-air right now</p>
-              <p className="max-w-sm text-sm text-[#8a8577]">Live shows run at set hours — Bloomberg runs 24/7.</p>
-              <button onClick={() => { const bi = liveChannels.findIndex((c) => /bloomberg/i.test(`${c.id || ''} ${c.title || ''}`)); playLiveChannel(bi >= 0 ? bi : 0); }} className="mt-1 min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90">
-                Watch Bloomberg 24/7
-              </button>
+              <p className="max-w-sm text-sm text-[#8a8577]">Live shows run at set hours — pick a desk with a LIVE badge in the guide.</p>
+              <div className="mt-1 flex items-center gap-2">
+                <button onClick={() => { setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="min-h-[44px] rounded-xl border border-[#d4af37]/30 px-6 text-sm font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
+                  Try again
+                </button>
+                <button onClick={() => setChannelsOpen(true)} className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90">
+                  All channels
+                </button>
+              </div>
+              <p className="max-w-sm text-xs text-[#6a665a]">Tip: tap the bell in the guide — we'll ping you the moment a desk goes live.</p>
             </div>
           )}
           {/* No-touch shield (engages once playing): no tap can pause the
