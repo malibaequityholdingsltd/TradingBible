@@ -487,7 +487,7 @@ export default function TvWidget() {
                 {t('tv.onAir')}
               </span>
             )}
-            <button onClick={toggleExpanded} className={expanded ? iconBtnActive : iconBtn} aria-label={expanded ? 'Zoom out TV' : 'Zoom TV big'} title={expanded ? 'Zoom out' : 'Zoom big (keeps header visible)'}>
+            <button onClick={toggleExpanded} className={`${expanded ? 'ml-auto ' : ''}${expanded ? iconBtnActive : iconBtn}`} aria-label={expanded ? 'Zoom out TV' : 'Zoom TV big'} title={expanded ? 'Zoom out' : 'Zoom big (keeps header visible)'}>
               {expanded ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
             </button>
             <button onClick={() => setView((v) => (v === 'channels' ? (playing !== null ? 'player' : 'ads') : 'channels'))} className={view === 'channels' ? iconBtnActive : iconBtn} aria-label="Live TV channels" title="Live TV channels">
