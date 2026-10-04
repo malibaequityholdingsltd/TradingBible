@@ -26,7 +26,7 @@ export default function GlobalTicker() {
   });
 
   return (
-    <div className="fixed inset-x-0 top-0 z-50 h-[var(--header-h)] border-b border-[#d4af37]/10 bg-[#0a0a0f]/95 backdrop-blur-sm" style={{ paddingTop: 'var(--safe-top)' }}>
+    <div id="tb-ticker" className="fixed inset-x-0 top-0 z-50 h-[var(--header-h)] border-b border-[#d4af37]/10 bg-[#0a0a0f]/95 backdrop-blur-sm" style={{ paddingTop: 'var(--safe-top)' }}>
       <div className="flex h-full items-center overflow-hidden">
         <div className="flex h-full w-max animate-marquee items-center gap-8 whitespace-nowrap px-4 font-mono text-xs sm:gap-10 sm:px-6 sm:text-sm">
           {[...rows, ...rows].map((t, i) => (

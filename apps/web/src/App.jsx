@@ -251,6 +251,7 @@ function RoutesWithBoundary() {
                     <Route path="/refund" element={<RefundPage />} />
                     <Route path="/faq" element={<FaqPage />} />
                     <Route path="/tv" element={<TvPage />} />
+                    {import.meta.env.DEV && <Route path="/__tvtest" element={<div style={{ minHeight: "200dvh", background: "#0a0a0f" }}><TvWidget /></div>} />}
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />
                     <Route path="/reset" element={<ResetPage />} />

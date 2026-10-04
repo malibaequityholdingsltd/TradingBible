@@ -39,6 +39,7 @@ const STRINGS = {
     'nav.charts': 'Advanced Charts',
     'nav.indicators': 'Indicators',
     'nav.heatmaps': 'Heatmaps',
+    'nav.tv': 'TradingBible TV',
     'nav.watchlists': 'Watchlists',
     'nav.orderflow': 'Order Flow',
     'of.title': 'Order Flow',
