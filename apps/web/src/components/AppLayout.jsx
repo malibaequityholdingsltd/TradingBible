@@ -10,6 +10,7 @@ import GlobalSearch from '@/components/GlobalSearch';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { homeRouteForUser } from '@/lib/homeRoute';
+import { meetsPlan } from '@/lib/entitlements';
 import { isAdminPreview, exitAdminPreview } from '@/lib/adminPreview';
 import { usePlatformSettings, featureForRoute } from '@/lib/platformSettings';
 import {
@@ -30,15 +31,14 @@ const NAV_GROUPS = [
       { to: '/app/journal', labelKey: 'nav.journal', icon: BookOpen },
       { to: '/app/brokers', labelKey: 'nav.brokers', icon: Plug },
       { to: '/app/prop-firms', labelKey: 'nav.propfirms', icon: Trophy },
-      { to: '/app/wallet', labelKey: 'nav.wallet', icon: Landmark, requiresSubscriber: true },
-    ],
+      { to: '/app/wallet', labelKey: 'nav.wallet', icon: Landmark, requiresSubscriber: true },    ],
   },
   {
     labelKey: 'nav.analyze',
     items: [
       { to: '/app/analytics', labelKey: 'nav.analytics', icon: BarChart3 },
-      { to: '/app/reports', labelKey: 'nav.reports', icon: FileText },
-      { to: '/app/coach', labelKey: 'nav.coach', icon: Bot, requiresSubscriber: true },
+      { to: '/app/reports', labelKey: 'nav.reports', icon: FileText, requiresSubscriber: true, requiredPlan: 'elite' },
+      { to: '/app/coach', labelKey: 'nav.coach', icon: Bot, requiresSubscriber: true, requiredPlan: 'elite' },
       { to: '/app/tools', labelKey: 'nav.tools', icon: Calculator, requiresSubscriber: true },
     ],
   },
@@ -59,19 +59,19 @@ const NAV_GROUPS = [
     items: [
       { to: '/app/community', labelKey: 'nav.community', icon: Users },
       { to: '/app/academy', labelKey: 'nav.academy', icon: GraduationCap },
-      { to: '/app/api-docs', labelKey: 'nav.apidocs', icon: Code2, requiresSubscriber: true },
-      { to: '/app/integrations', labelKey: 'nav.integrations', icon: Settings, requiresSubscriber: true },
+      { to: '/app/api-docs', labelKey: 'nav.apidocs', icon: Code2, requiresSubscriber: true, requiredPlan: 'professional' },
+      { to: '/app/integrations', labelKey: 'nav.integrations', icon: Settings, requiresSubscriber: true, requiredPlan: 'professional' },
     ],
   },
   {
     labelKey: 'nav.account',
     items: [
       { to: '/app/profile', labelKey: 'nav.profile', icon: User },
-      { to: '/app/api-keys', labelKey: 'nav.apikeys', icon: KeyRound },
+      { to: '/app/api-keys', labelKey: 'nav.apikeys', icon: KeyRound, requiresSubscriber: true, requiredPlan: 'professional' },
       { to: '/app/billing', labelKey: 'nav.billing', icon: CreditCard },
       { to: '/app/affiliate', labelKey: 'nav.affiliate', icon: Share2 },
       { to: '/app/security', labelKey: 'nav.security', icon: Lock },
-      { to: '/app/branding', labelKey: 'nav.branding', icon: Palette, requiresSubscriber: true },
+      { to: '/app/branding', labelKey: 'nav.branding', icon: Palette, requiresSubscriber: true, requiredPlan: 'professional' },
     ],
   },
 ];
@@ -162,18 +162,21 @@ export default function AppLayout({ children, title }) {
           return (
             <div key={group.labelKey} className="space-y-1">
               <div className="px-3 pb-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-[#5f5b50]">{t(group.labelKey)}</div>
-              {items.map((it) => (
-                <NavItem
-                  key={it.to}
-                  to={it.to}
-                  labelKey={it.labelKey}
-                  icon={it.icon}
-                  end={it.end}
-                  locked={it.requiresSubscriber && !isSubscriber}
-                  t={t}
-                  onNav={it.requiresSubscriber && !isSubscriber ? goPricing : closeDrawer}
-                />
-              ))}
+              {items.map((it) => {
+                const locked = (it.requiresSubscriber && !isSubscriber) || (it.requiredPlan && !meetsPlan(user, it.requiredPlan));
+                return (
+                  <NavItem
+                    key={it.to}
+                    to={it.to}
+                    labelKey={it.labelKey}
+                    icon={it.icon}
+                    end={it.end}
+                    locked={locked}
+                    t={t}
+                    onNav={locked ? goPricing : closeDrawer}
+                  />
+                );
+              })}
             </div>
           );
         })}
