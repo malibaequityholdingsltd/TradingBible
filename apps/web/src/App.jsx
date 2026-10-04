@@ -202,7 +202,8 @@ function AppChrome() {
     // videos, chats, drag positions or panel state. App routes only —
     // public pages and auth flows stay clean. Both bubbles show on every
     // plan; the SI panel itself upsells below Elite, and per-channel TV
-    // locks live inside the guide.
+    // locks live inside the guide. Each widget gets its own error boundary
+    // so a widget crash can never blank the whole app again.
     const { features } = usePlatformSettings();
     const inApp = pathname.startsWith('/app') || pathname.startsWith('/student');
 
@@ -211,8 +212,8 @@ function AppChrome() {
             {!hideTicker && <GlobalTicker />}
             <AlertMonitor />
             <ScrollToTop />
-            {inApp && features.aiCoach !== false && <LiveChatWidget />}
-            {inApp && <TvWidget />}
+            {inApp && features.aiCoach !== false && <ErrorBoundary fallback={null}><LiveChatWidget /></ErrorBoundary>}
+            {inApp && <ErrorBoundary fallback={null}><TvWidget /></ErrorBoundary>}
         </>
     );
 }
