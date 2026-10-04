@@ -1,14 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Shuffle, Loader2, ChevronLeft, Lock, Crown, WifiOff, Clock } from 'lucide-react';
+import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Shuffle, Loader2, ChevronLeft, Lock, Crown, WifiOff, Clock, Bell, BellRing } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { hardenEmbed, useLiveChannels } from '@/lib/liveChannels';
+import { useLiveStatus } from '@/lib/useLiveStatus';
 import { meetsPlan } from '@/lib/entitlements';
 import YoutubePlayer from '@/components/YoutubePlayer';
-import { EmptyState, GhostButton } from '@/components/ui-kit';
+import { EmptyState } from '@/components/ui-kit';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 const DEFAULT_SETTINGS = {
@@ -46,6 +47,8 @@ export default function TvPage() {
   const [ytApi, setYtApi] = useState(false);
   const liveChannels = useLiveChannels();
   const ytRef = useRef(null);
+  // Shared broadcast state (read-only here — the widget owns notifications).
+  const { liveOf, liveCount, bell, toggleBell, markConfirmed } = useLiveStatus(liveChannels);
   const playIsYoutube = playChannel !== null && /youtube\.com\/embed\//.test(liveChannels[playChannel]?.embedUrl || '');
 
   const toggleYtSound = useCallback(() => {
@@ -206,16 +209,16 @@ export default function TvPage() {
 
   // Minimize: hand the live channel to the floating widget and leave the
   // full-screen page — the stream keeps playing in the mini player while
-  // the user browses the app. The widget picks the handoff up on mount.
+  // the user browses the app. Id-based so guide reorders never retarget it.
   const minimizeTv = useCallback(() => {
     try {
       if (playChannel !== null) {
-        localStorage.setItem('tb:tv-minimized', JSON.stringify({ i: playChannel, at: Date.now() }));
+        localStorage.setItem('tb:tv-minimized', JSON.stringify({ id: liveChannels[playChannel]?.id, at: Date.now() }));
       }
     } catch { /* ignore */ }
     if (window.history.length > 1) nav(-1);
     else nav(isAuthed ? '/app' : '/');
-  }, [playChannel, nav, isAuthed]);
+  }, [playChannel, liveChannels, nav, isAuthed]);
 
   const toggleFullscreen = () => {
     if (document.fullscreenElement) {
@@ -270,7 +273,7 @@ export default function TvPage() {
               src={hardenEmbed(liveChannels[playChannel].embedUrl || liveChannels[playChannel].url)}
               title={liveChannels[playChannel].title}
               ref={ytRef}
-              onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); } else { setYtError(true); } }}
+              onPlaying={(ok) => { if (ok) { setFrameLoaded(true); setYtStarted(true); markConfirmed(liveChannels[playChannel]?.id); } else { setYtError(true); } }}
               onBlocked={() => setYtBlocked(true)}
               onApiReady={(ready) => setYtApi(!!ready)}
             />
@@ -302,7 +305,7 @@ export default function TvPage() {
               <Radio className="h-8 w-8 text-[#6a665a]" />
               <p className="font-semibold text-[#f0ecdd]">This desk is off-air right now</p>
               <p className="max-w-sm text-sm text-[#8a8577]">Live shows run at set hours — Bloomberg runs 24/7.</p>
-              <button onClick={() => playLiveChannel(0)} className="mt-1 min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90">
+              <button onClick={() => { const bi = liveChannels.findIndex((c) => /bloomberg/i.test(`${c.id || ''} ${c.title || ''}`)); playLiveChannel(bi >= 0 ? bi : 0); }} className="mt-1 min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90">
                 Watch Bloomberg 24/7
               </button>
             </div>
@@ -352,7 +355,7 @@ export default function TvPage() {
             <span className="tb-gold-text text-lg font-bold tracking-wide">{settings.headerText || 'TradingBible TV'}</span>
             <span className="flex items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ff5a62]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#e50914] shadow-[0_0_6px_rgba(229,9,20,0.9)] animate-pulse" />
-              {t('tv.onAir')}
+              {liveCount > 0 ? `${liveCount} live` : t('tv.onAir')}
             </span>
           </div>
         </div>
@@ -433,40 +436,51 @@ export default function TvPage() {
                   <Radio className="h-4 w-4" /> Live TV
                 </div>
                 <h2 className="mt-1 text-xl font-bold text-[#f0ecdd] sm:text-2xl">Bloomberg live desks</h2>
-                <p className="mt-1 text-xs text-[#8a8577]">Plays right here on TradingBible TV · {liveChannels.length} channels · <span className="font-mono">↑↓←→</span> browse · <span className="font-mono">Enter</span> watch</p>
+                <p className="mt-1 text-xs text-[#8a8577]">
+                  Plays right here on TradingBible TV · {liveCount > 0 ? <span className="font-bold text-[#ff5a62]">{liveCount} live now</span> : `${liveChannels.length} channels`} · <span className="font-mono">↑↓←→</span> browse · <span className="font-mono">Enter</span> watch
+                </p>
               </div>
-              <button onClick={() => setChannelsOpen(false)} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="Close">
-                <X className="h-4 w-4" />
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                <button onClick={toggleBell} title={bell ? 'Live alerts on — tap to mute' : 'Notify me when a desk goes live'} aria-label="Toggle go-live alerts" className={`grid h-10 w-10 place-items-center rounded-xl backdrop-blur-sm transition-colors ${bell ? 'bg-[#d4af37] text-[#0a0a0f]' : 'bg-black/50 text-[#e9e7df] hover:bg-black/70'}`}>
+                  {bell ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+                </button>
+                <button onClick={() => setChannelsOpen(false)} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="Close">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
             <div className="mt-3 flex items-center gap-2">
-              <GhostButton onClick={shuffleTvChannel}>
-                <Shuffle className="h-4 w-4" /> Surprise me — random channel
-              </GhostButton>
+              <button onClick={shuffleTvChannel} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] px-4 py-2.5 text-sm font-bold text-[#0a0a0f] shadow-[0_4px_20px_rgba(212,175,55,0.25)] transition hover:opacity-95 active:scale-[0.99]">
+                <Shuffle className="h-4 w-4" /> Shuffle play{liveCount > 0 ? ` — ${liveCount} live now` : ' — random channel'}
+              </button>
             </div>
             <div className="no-scrollbar mt-5 grid flex-1 content-start gap-2 overflow-y-auto pb-4 sm:grid-cols-2">
               {liveChannels.map((c, ci) => {
                 const locked = !canWatch(c);
+                const st = liveOf(c);
                 return (
                 <button
                   key={c.id}
                   data-chidx={ci}
                   onClick={() => playLiveChannel(ci)}
                   onMouseEnter={() => setActiveChannel(ci)}
-                  className={`group flex items-center gap-3 rounded-xl border p-3.5 text-left backdrop-blur-md transition ${ci === activeChannel ? 'border-[#d4af37]/60 bg-[#d4af37]/[0.08]' : 'border-[#d4af37]/15 bg-white/[0.03] hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.06]'}`}
+                  className={`group flex items-center gap-3 rounded-xl border p-3.5 text-left backdrop-blur-md transition ${st === true ? 'border-[#e50914]/40 bg-[#e50914]/[0.06] shadow-[0_0_18px_rgba(229,9,20,0.12)]' : ci === activeChannel ? 'border-[#d4af37]/60 bg-[#d4af37]/[0.08]' : 'border-[#d4af37]/15 bg-white/[0.03] hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.06]'} ${st === false ? 'opacity-60' : ''}`}
                 >
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]">
+                  <span className={`relative grid h-10 w-10 shrink-0 place-items-center rounded-xl ${st === true ? 'bg-[#e50914]/15 text-[#ff5a62]' : 'bg-[#d4af37]/12 text-[#d4af37]'}`}>
                     {locked ? <Lock className="h-4 w-4" /> : <Radio className="h-4 w-4" />}
+                    {st === true && <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-pulse rounded-full border-2 border-[#07070a] bg-[#e50914]" />}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5">
                       <span className="block truncate text-sm font-semibold text-[#f0ecdd]">{c.title}</span>
+                      {st === true && <span className="shrink-0 rounded-full bg-[#e50914] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-white">Live</span>}
+                      {st === false && <span className="shrink-0 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#8a8577]">Off-air</span>}
                       {c.isNew && <span className="shrink-0 rounded-full bg-[#d4af37] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#0a0a0f]">New</span>}
-                      {c.roundTheClock && <span className="shrink-0 rounded-full bg-emerald-400/15 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-emerald-400">24/7</span>}
+                      {c.roundTheClock && st !== true && <span className="shrink-0 rounded-full bg-emerald-400/15 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-emerald-400">24/7</span>}
                       {locked && <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#d4af37]"><Crown className="h-2.5 w-2.5" />{c.plan}</span>}
                     </span>
-                    <span className="mt-0.5 block truncate text-xs text-[#8a8577]">{locked ? (isAuthed ? 'Upgrade to unlock this desk' : 'Sign in to unlock this desk') : c.blurb}</span>
-                    {!c.roundTheClock && c.hours && (
+                    <span className="mt-0.5 block truncate text-xs text-[#8a8577]">{locked ? (isAuthed ? 'Upgrade to unlock this desk' : 'Sign in to unlock this desk') : st === false ? 'Off-air — tap to retry' : c.blurb}</span>
+                    {!c.roundTheClock && c.hours && st !== true && (
                       <span className="mt-0.5 flex items-center gap-1 text-[11px] text-[#6a665a]"><Clock className="h-3 w-3 shrink-0" /> Typically live: {c.hours}</span>
                     )}
                   </span>
