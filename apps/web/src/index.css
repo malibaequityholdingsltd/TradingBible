@@ -9,6 +9,9 @@ body {
   color: #f2f2f2;
   overflow-x: clip;
   transition: background-color .3s ease, color .3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 html.light body {
   background-color: #f2efe7;
@@ -354,7 +357,25 @@ body {
 .tv-pop { animation: tv-pop .3s cubic-bezier(.2,.9,.28,1.15) both; }
 @keyframes tv-progress { from { width: 0%; } to { width: 100%; } }
 .tv-progress { animation-name: tv-progress; animation-timing-function: linear; animation-fill-mode: forwards; }
-@media (prefers-reduced-motion: reduce) { .animate-marquee, .animate-floaty, .tv-pop { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .animate-marquee, .animate-floaty, .tv-pop, .ambient-blob { animation: none; } }
+
+/* AmbientDepth — app-wide 4D atmosphere (gold aurora drift + depth). */
+.ambient-blob {
+  filter: blur(90px);
+  will-change: transform;
+}
+.ambient-a {
+  background: radial-gradient(circle, rgba(212,175,55,0.10), rgba(212,175,55,0) 65%);
+  animation: ambient-drift-a 32s ease-in-out infinite alternate;
+}
+.ambient-b {
+  background: radial-gradient(circle, rgba(120,80,200,0.08), rgba(120,80,200,0) 65%);
+  animation: ambient-drift-b 40s ease-in-out infinite alternate;
+}
+html.light .ambient-a { background: radial-gradient(circle, rgba(161,98,7,0.10), rgba(161,98,7,0) 65%); }
+html.light .ambient-b { background: radial-gradient(circle, rgba(120,80,200,0.06), rgba(120,80,200,0) 65%); }
+@keyframes ambient-drift-a { from { transform: translate(0, 0) scale(1); } to { transform: translate(6vw, 5vh) scale(1.12); } }
+@keyframes ambient-drift-b { from { transform: translate(0, 0) scale(1.05); } to { transform: translate(-5vw, -4vh) scale(1); } }
 
 /* TradingBible TV — chrome (panel, bars, launcher) adapts to the active
    theme; only the media stage keeps a dark "screen" look for readability. */
