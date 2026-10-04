@@ -56,7 +56,7 @@ function AlertsWidget() {
     <WidgetShell icon={Bell} title={t('wdg.activeAlerts')} to="/app/alerts">
       {active.length === 0 ? <p className="py-6 text-center text-xs text-[#8a8577]">{t('wdg.noAlerts')}</p> : (
         <div className="space-y-1.5">
-          {active.map((a) => { const isPct = a.alertType.startsWith('pct'); const up = a.alertType.includes('up') || a.alertType === 'above'; return (
+          {active.map((a) => { const at = String(a.alertType || 'above'); const isPct = at.startsWith('pct'); const up = at.includes('up') || at === 'above'; return (
             <div key={a.id} className="flex items-center justify-between text-sm">
               <span className="font-mono text-[#e9e7df]">{a.symbol}</span>
               <span className={`text-xs ${up ? 'text-emerald-400' : 'text-red-400'}`}>{up ? '≥' : '≤'} {isPct ? `${a.target}%` : a.target}</span>
@@ -73,7 +73,7 @@ function MiniSignal({ symbol }) {
   const { candles } = useCandles(symbol, '1h', { limit: 120, refreshMs: 60000 });
   const sig = useMemo(() => analyzeSignal(candles), [candles]);
   const meta = sig ? SIGNAL_META[sig.signalType] : null;
-  const Icon = sig?.signalType.includes('buy') ? ArrowUpRight : sig?.signalType.includes('sell') ? ArrowDownRight : Minus;
+  const Icon = String(sig?.signalType || '').includes('buy') ? ArrowUpRight : String(sig?.signalType || '').includes('sell') ? ArrowDownRight : Minus;
   return (
     <div className="flex items-center justify-between text-sm">
       <span className="font-mono text-[#e9e7df]">{symbol}</span>
