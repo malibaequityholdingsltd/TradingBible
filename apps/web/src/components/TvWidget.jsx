@@ -508,7 +508,7 @@ export default function TvWidget() {
         <div
           className={`tv-pop tv-widget-panel sheen-panel fixed flex max-h-[calc(100dvh-1rem)] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/30 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.7),0_0_40px_rgba(212,175,55,0.12)] backdrop-blur-xl ${expanded ? 'z-[90]' : 'z-[70]'}`}
           style={expanded
-            ? { left: 8, top: 64, width: 'calc(100vw - 16px)', height: 'calc(100dvh - 72px)', maxWidth: 'none' }
+            ? { left: '50%', top: 76, transform: 'translateX(-50%)', width: 'min(1060px, calc(100vw - 32px))', height: 'calc(100dvh - 168px)', maxWidth: 'none' }
             : { left: px, top: py, width: panelW, height: panelH, maxWidth: 'calc(100vw - 1rem)' }}
         >
           {/* Header */}
