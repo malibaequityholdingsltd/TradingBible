@@ -23,7 +23,9 @@ function loadApi() {
       tag.onerror = () => { apiPromise = null; reject(new Error('yt api failed')); };
       window.onYouTubeIframeAPIReady = () => resolve(window.YT);
       document.head.appendChild(tag);
-      setTimeout(() => reject(new Error('yt api timeout')), 15000);
+      // A stale rejected promise must never poison later channel changes —
+      // reset so the next mount retries the script fresh.
+      setTimeout(() => { apiPromise = null; reject(new Error('yt api timeout')); }, 15000);
     });
   }
   return apiPromise;
@@ -93,9 +95,12 @@ const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPl
           playerRef.current = player;
         })
         // API failure is never a playback failure: the muted-autoplay URL
-        // runs without any script. Only report dead if nothing played yet —
-        // otherwise a blocked API script would slate over a live picture.
-        .catch(() => { if (!played) playingRef.current?.(false); });
+        // runs with zero script dependencies, so a blocked/slow API script
+        // must never report the stream dead (that false negative is what
+        // broke autoplay on channel change). The 9s watchdog assumes
+        // playback; genuine player errors still arrive via onError, and a
+        // truly unreachable YouTube is caught by the reachability probe.
+        .catch(() => {});
     });
     return () => {
       cancelled = true;

@@ -186,17 +186,19 @@ export default function TvWidget() {
 
   const goUpgrade = useCallback(() => nav('/pricing'), [nav]);
 
-  // Next playable desk from `from`: live + unlocked + untried first, then
-  // any unlocked + untried. Dead desks auto-skip — no tap-to-retry slates
-  // while anything else can play.
+  // Next playable desk from `from`, in three passes: confirmed-live first,
+  // then not-yet-checked, then known off-air as a last resort. Dead desks
+  // auto-skip — no tap-to-retry slates while anything else can play.
   const findNextPlayable = useCallback((from) => {
     const tried = attemptsRef.current;
-    for (let pass = 0; pass < 2; pass++) {
+    for (let pass = 0; pass < 3; pass++) {
       for (let k = 1; k <= ordered.length; k++) {
         const i = (from + k) % ordered.length;
         const c = ordered[i];
         if (!c || !canWatch(c) || tried.has(String(c.id))) continue;
-        if (pass === 0 && liveOf(c) !== true) continue;
+        const st = liveOf(c);
+        if (pass === 0 && st !== true) continue;
+        if (pass === 1 && st === false) continue;
         return i;
       }
     }
