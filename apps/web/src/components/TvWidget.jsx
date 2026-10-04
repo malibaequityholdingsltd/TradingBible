@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, ListVideo, Lock, Crown, WifiOff, Clock, Bell, BellRing, Search, Maximize, Minimize, PanelRight } from 'lucide-react';
+import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, ListVideo, Lock, Crown, WifiOff, Clock, Bell, BellRing, Search, Maximize, Minimize } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useI18n, localizeAd } from '@/lib/i18n';
@@ -65,26 +65,23 @@ export default function TvWidget() {
   const [muted, setMuted] = useState(false);
   const [open, setOpen] = useState(false);
   const [view, setView] = useState('ads'); // ads | channels | player
-  // Zoom modes (tap the header button to cycle):
-  // mini — floating mini panel; full — fills the device screen above
-  // everything; dock — full-height side panel tucked under the app header
-  // so headings and top bars stay visible and uncovered.
-  const [zoom, setZoom] = useState(() => {
+  // Zoom: mini floating panel, or full TV filling the screen below the app
+  // header — headings, search bar and top bars stay visible, never covered.
+  const [expanded, setExpanded] = useState(() => {
     try {
-      const z = localStorage.getItem('tb:tv-zoom');
-      if (z === 'full' || z === 'dock' || z === 'mini') return z;
-      return localStorage.getItem('tb:tv-expanded') === '1' ? 'full' : 'mini';
-    } catch { return 'mini'; }
+      if (localStorage.getItem('tb:tv-expanded') === '1') return true;
+      return localStorage.getItem('tb:tv-zoom') === 'full';
+    } catch { return false; }
   });
-  const cycleZoom = useCallback(() => {
-    setZoom((z) => {
-      const n = z === 'mini' ? 'full' : z === 'full' ? 'dock' : 'mini';
-      try { localStorage.setItem('tb:tv-zoom', n); } catch { /* ignore */ }
-      return n;
+  const toggleExpanded = useCallback(() => {
+    setExpanded((e) => {
+      try {
+        localStorage.setItem('tb:tv-expanded', e ? '0' : '1');
+        localStorage.setItem('tb:tv-zoom', e ? 'mini' : 'full');
+      } catch { /* ignore */ }
+      return !e;
     });
   }, []);
-  const isFull = zoom === 'full';
-  const isDock = zoom === 'dock';
   const [channelIndex, setChannelIndex] = useState(0);
   const [frameLoaded, setFrameLoaded] = useState(false);
   const [pos, setPos] = useState(() => (typeof window !== 'undefined' ? loadPos() : { x: 0, y: 0 }));
@@ -464,12 +461,10 @@ export default function TvWidget() {
     <div className="tv-widget-root">
       {open && (
         <div
-          className={`tv-pop tv-widget-panel fixed flex max-h-[calc(100dvh-1rem)] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/30 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.7),0_0_40px_rgba(212,175,55,0.12)] backdrop-blur-xl ${isFull ? 'z-[90]' : 'z-[70]'}`}
-          style={isFull
-            ? { left: 8, top: 8, width: 'calc(100vw - 16px)', height: 'calc(100dvh - 16px)', maxWidth: 'none' }
-            : isDock
-              ? { right: 8, top: 64, bottom: 8, width: Math.min(440, (typeof window !== 'undefined' ? window.innerWidth : 1024) - 16) }
-              : { left: px, top: py, width: panelW, height: panelH, maxWidth: 'calc(100vw - 1rem)' }}
+          className={`tv-pop tv-widget-panel fixed flex max-h-[calc(100dvh-1rem)] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/30 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.7),0_0_40px_rgba(212,175,55,0.12)] backdrop-blur-xl ${expanded ? 'z-[90]' : 'z-[70]'}`}
+          style={expanded
+            ? { left: 8, top: 64, width: 'calc(100vw - 16px)', height: 'calc(100dvh - 72px)', maxWidth: 'none' }
+            : { left: px, top: py, width: panelW, height: panelH, maxWidth: 'calc(100vw - 1rem)' }}
         >
           {/* Header */}
           <div className="tv-widget-header flex items-center gap-2 border-b border-[#d4af37]/12 bg-[#0a0a0f]/80 backdrop-blur-md px-3 py-2">
@@ -486,8 +481,8 @@ export default function TvWidget() {
                 {t('tv.onAir')}
               </span>
             )}
-            <button onClick={cycleZoom} className={zoom !== 'mini' ? iconBtnActive : iconBtn} aria-label={`TV zoom: ${zoom} — tap to change`} title={`Zoom: ${zoom} (tap to change)`}>
-              {zoom === 'full' ? <Minimize className="h-4 w-4" /> : zoom === 'dock' ? <PanelRight className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+            <button onClick={toggleExpanded} className={expanded ? iconBtnActive : iconBtn} aria-label={expanded ? 'Zoom out TV' : 'Zoom TV big'} title={expanded ? 'Zoom out' : 'Zoom big (keeps header visible)'}>
+              {expanded ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
             </button>
             <button onClick={() => setView((v) => (v === 'channels' ? (playing !== null ? 'player' : 'ads') : 'channels'))} className={view === 'channels' ? iconBtnActive : iconBtn} aria-label="Live TV channels" title="Live TV channels">
               <ListVideo className="h-4 w-4" />
