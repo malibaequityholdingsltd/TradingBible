@@ -14,6 +14,8 @@ import { NotificationsProvider } from '@/hooks/useNotifications';
 import ScrollToTop from './components/ScrollToTop';
 import GlobalTicker from './components/GlobalTicker';
 import AlertMonitor from './components/AlertMonitor';
+import LiveChatWidget from './components/LiveChatWidget';
+import TvWidget from './components/TvWidget';
 import PwaStatus from './components/PwaStatus';
 import ErrorBoundary from './components/ErrorBoundary';
 import LandingPage from './pages/LandingPage';
@@ -181,12 +183,20 @@ function MaintenanceGate({ children }) {
 function AppChrome() {
     const { pathname } = useLocation();
     const hideTicker = ['/login', '/signup', '/reset', '/onboarding'].includes(pathname);
+    // SI coach + TV widgets live here (above the per-route error boundary)
+    // so they mount ONCE and survive page navigation without reloading
+    // videos, chats, drag positions or panel state. App routes only —
+    // public pages and auth flows stay clean.
+    const { features } = usePlatformSettings();
+    const inApp = pathname.startsWith('/app') || pathname.startsWith('/student');
 
     return (
         <>
             {!hideTicker && <GlobalTicker />}
             <AlertMonitor />
             <ScrollToTop />
+            {inApp && features.aiCoach !== false && <LiveChatWidget />}
+            {inApp && <TvWidget />}
         </>
     );
 }
