@@ -389,7 +389,10 @@ async function fetchText(url, timeoutMs = 8000) {
 //  1. fetch the channel /live page, collect candidate video ids
 //  2. confirm via each candidate's watch page until one shows isLiveNow
 // Anything inconclusive returns live:null — never a false off-air.
-function candidateVideoIds(html, max = 2) {
+// The live broadcast is usually the FIRST video on the /live page, but
+// premieres/trailers can precede it — check up to 5 candidates so a live
+// desk is never misreported off-air.
+function candidateVideoIds(html, max = 5) {
 	const out = [];
 	const re = /"videoId":"([A-Za-z0-9_-]{11})"/g;
 	let m;

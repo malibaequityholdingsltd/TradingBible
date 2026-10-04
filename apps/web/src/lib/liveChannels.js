@@ -20,6 +20,13 @@ function ytLive(channelId) {
 	return `https://www.youtube.com/embed/live_stream?channel=${channelId}&${YOUTUBE_LOCKDOWN}`;
 }
 
+// Direct video embed with the same lockdown — fallback when a channel's
+// live_stream endpoint errors but the probe confirmed a live video id
+// (owner-restricted live endpoints sometimes still play direct).
+export function ytVideoEmbed(videoId) {
+	return `https://www.youtube.com/embed/${videoId}?${YOUTUBE_LOCKDOWN}`;
+}
+
 export const LIVE_CHANNELS = [
 	{
 		id: 'bloomberg-news-live',
