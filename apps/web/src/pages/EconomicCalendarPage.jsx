@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, Clock, Filter, Globe, AlertTriangle, RefreshCw } from 'lucide-react';
+import { CalendarDays, Clock, Filter, Globe, AlertTriangle, RefreshCw, CalendarClock } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import { PageHero, Card, Tabs, EmptyState, GhostButton } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
 import apiServerClient from '@/lib/apiServerClient';
 
@@ -115,82 +116,85 @@ export default function EconomicCalendarPage() {
   const viewLabel = { day: t('cal.day'), week: t('cal.week'), month: t('cal.month') };
   return (
     <AppLayout title={t('nav.economic')}>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-xs text-[#6a665a]">
-        <span className="flex items-center gap-1.5">
-          <span className={`h-1.5 w-1.5 rounded-full ${status === 'ok' ? 'bg-emerald-400' : status === 'loading' ? 'bg-amber-400' : 'bg-red-400'}`} />
-          {t('cal.from')}{updatedAt ? ` · ${t('cal.updated')} ${new Date(updatedAt).toLocaleTimeString()}` : ''}
-        </span>
-        <button onClick={fetchEvents} className="flex items-center gap-1.5 rounded-lg border border-[#d4af37]/20 px-2.5 py-1.5 text-[#d4af37] transition hover:border-[#d4af37]/50"><RefreshCw className="h-3.5 w-3.5" /> {t('c.refresh')}</button>
-      </div>
+      <div className="tb-page">
+        <PageHero
+          kicker={t('nav.economic')}
+          kickerIcon={CalendarClock}
+          title={t('nav.economic')}
+          actions={<GhostButton onClick={fetchEvents} className="min-h-[36px] px-2.5 py-1.5 text-xs"><RefreshCw className="h-3.5 w-3.5" /> {t('c.refresh')}</GhostButton>}
+        />
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#6a665a]">
+          <span className="flex items-center gap-1.5">
+            <span className={`h-1.5 w-1.5 rounded-full ${status === 'ok' ? 'bg-emerald-400' : status === 'loading' ? 'bg-amber-400' : 'bg-red-400'}`} />
+            {t('cal.from')}{updatedAt ? ` · ${t('cal.updated')} ${new Date(updatedAt).toLocaleTimeString()}` : ''}
+          </span>
+        </div>
 
-      {nextHigh && (
-        <div className="glass mb-4 flex flex-wrap items-center gap-3 rounded-2xl p-4">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-red-500/12 text-red-400"><Clock className="h-5 w-5" /></div>
-          <div className="mr-auto">
-            <div className="text-xs text-[#8a8577]">{t('cal.nextHigh')}</div>
-            <div className="text-sm font-semibold text-[#f0ecdd]">{nextHigh.country} — {nextHigh.name}</div>
-          </div>
-          <div className="text-right"><div className="text-[10px] uppercase tracking-wider text-[#8a8577]">{t('cal.countdown')}</div><div className="text-lg"><Countdown target={nextHigh.time} /></div></div>
-        </div>
-      )}
-
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="flex overflow-hidden rounded-lg border border-[#d4af37]/15">
-          {['day', 'week', 'month'].map((v) => (
-            <button key={v} onClick={() => setView(v)} className={`px-3.5 py-2 text-sm capitalize ${view === v ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577]'}`}>{viewLabel[v]}</button>
-          ))}
-        </div>
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2"><Globe className="h-3.5 w-3.5 text-[#8a8577]" /><select value={tz} onChange={(e) => setTz(e.target.value)} className="bg-transparent py-2 text-xs text-[#e9e7df] outline-none">{TIMEZONES.map((z) => <option key={z.id} value={z.id}>{z.key ? t(z.key) : z.label}</option>)}</select></div>
-          <select value={country} onChange={(e) => setCountry(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none"><option value="all">{t('cal.allCountries')}</option>{countries.map((c) => <option key={c} value={c}>{c}</option>)}</select>
-          <select value={impact} onChange={(e) => setImpact(e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none"><option value="all">{t('cal.anyImpact')}</option><option value="high">{t('cal.high')}</option><option value="medium">{t('cal.medium')}</option><option value="low">{t('cal.low')}</option></select>
-        </div>
-      </div>
-
-      {status === 'loading' ? (
-        <div className="glass rounded-2xl py-16 text-center text-sm text-[#8a8577]">{t('cal.loadingEv')}</div>
-      ) : status !== 'ok' ? (
-        <div className="glass rounded-2xl py-16 text-center">
-          <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-[#d4af37]/70" />
-          <p className="text-sm font-medium text-[#e9e7df]">{t('cal.unavailable')}</p>
-          <p className="mx-auto mt-1 max-w-md text-xs text-[#8a8577]">{reason}</p>
-        </div>
-      ) : groups.length === 0 ? (
-        <div className="glass rounded-2xl py-16 text-center"><Filter className="mx-auto mb-3 h-8 w-8 text-[#d4af37]/60" /><p className="text-sm text-[#8a8577]">{t('cal.noMatch')}</p></div>
-      ) : (
-        <div className="space-y-5">
-          {groups.map(([day, evs]) => (
-            <div key={day}>
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#d4af37]"><CalendarDays className="h-4 w-4" /> {day}</div>
-              <div className="glass overflow-x-auto rounded-2xl no-scrollbar">
-                <table className="w-full min-w-[640px] text-sm">
-                  <thead><tr className="text-left text-[10px] uppercase tracking-wider text-[#8a8577]"><th className="p-3">{t('cal.thTime')}</th><th className="p-3">{t('cal.thCountry')}</th><th className="p-3">{t('cal.thEvent')}</th><th className="p-3 text-center">{t('cal.thImpact')}</th><th className="p-3 text-right">{t('cal.thPrev')}</th><th className="p-3 text-right">{t('cal.thForecast')}</th><th className="p-3 text-right">{t('cal.thActual')}</th></tr></thead>
-                  <tbody>
-                    {evs.map((e) => {
-                      const im = IMPACT_META[e.impact] || IMPACT_META.low;
-                      const imLabel = t(im.key);
-                      const numA = e.actual == null ? NaN : parseFloat(String(e.actual).replace(/[^0-9.-]/g, ''));
-                      const numF = e.forecast == null ? NaN : parseFloat(String(e.forecast).replace(/[^0-9.-]/g, ''));
-                      const beat = !Number.isNaN(numA) && !Number.isNaN(numF) && numA >= numF;
-                      return (
-                        <tr key={e.id} className={`border-t border-white/5 ${e.time > now ? '' : 'opacity-90'}`}>
-                          <td className="p-3 font-mono text-[#c9c4b4]">{tzFormat(e.time, tz, { hour: '2-digit', minute: '2-digit' })}</td>
-                          <td className="p-3"><span className="text-[#e9e7df]">{e.country}</span></td>
-                          <td className="p-3 text-[#e9e7df]">{e.name}</td>
-                          <td className="p-3 text-center"><span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px]" style={{ color: im.color, background: `${im.color}1e` }}><span className={`h-1.5 w-1.5 rounded-full ${im.dot}`} />{imLabel}</span></td>
-                          <td className="p-3 text-right font-mono text-[#8a8577]">{fmtValue(e.previous, e.unit)}</td>
-                          <td className="p-3 text-right font-mono text-[#c9c4b4]">{fmtValue(e.forecast, e.unit)}</td>
-                          <td className={`p-3 text-right font-mono ${e.actual == null ? 'text-[#5f5b50]' : beat ? 'text-emerald-400' : 'text-red-400'}`}>{fmtValue(e.actual, e.unit)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+        {nextHigh && (
+          <Card>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-red-500/12 text-red-400"><Clock className="h-5 w-5" /></div>
+              <div className="mr-auto min-w-0">
+                <div className="text-xs text-[#8a8577]">{t('cal.nextHigh')}</div>
+                <div className="truncate text-sm font-semibold text-[#f0ecdd]">{nextHigh.country} — {nextHigh.name}</div>
               </div>
+              <div className="text-right"><div className="text-[10px] uppercase tracking-wider text-[#8a8577]">{t('cal.countdown')}</div><div className="text-lg"><Countdown target={nextHigh.time} /></div></div>
             </div>
-          ))}
+          </Card>
+        )}
+
+        <Tabs
+          tabs={['day', 'week', 'month'].map((v) => ({ id: v, label: viewLabel[v] }))}
+          active={view}
+          onChange={setView}
+        />
+        <div className="tb-scroll-row">
+          <div className="flex items-center gap-1 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-2"><Globe className="h-3.5 w-3.5 text-[#8a8577]" /><select value={tz} onChange={(e) => setTz(e.target.value)} className="bg-transparent py-2 text-xs text-[#e9e7df] outline-none">{TIMEZONES.map((z) => <option key={z.id} value={z.id}>{z.key ? t(z.key) : z.label}</option>)}</select></div>
+          <select value={country} onChange={(e) => setCountry(e.target.value)} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none"><option value="all">{t('cal.allCountries')}</option>{countries.map((c) => <option key={c} value={c}>{c}</option>)}</select>
+          <select value={impact} onChange={(e) => setImpact(e.target.value)} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none"><option value="all">{t('cal.anyImpact')}</option><option value="high">{t('cal.high')}</option><option value="medium">{t('cal.medium')}</option><option value="low">{t('cal.low')}</option></select>
         </div>
-      )}
+
+        {status === 'loading' ? (
+          <Card><div className="py-16 text-center text-sm text-[#8a8577]">{t('cal.loadingEv')}</div></Card>
+        ) : status !== 'ok' ? (
+          <EmptyState icon={AlertTriangle} title={t('cal.unavailable')} sub={reason} />
+        ) : groups.length === 0 ? (
+          <EmptyState icon={Filter} title={t('cal.noMatch')} />
+        ) : (
+          <div className="space-y-5">
+            {groups.map(([day, evs]) => (
+              <div key={day}>
+                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#d4af37]"><CalendarDays className="h-4 w-4" /> {day}</div>
+                <Card className="overflow-x-auto p-0">
+                  <table className="w-full min-w-[640px] text-sm">
+                    <thead><tr className="text-left text-[10px] uppercase tracking-wider text-[#8a8577]"><th className="p-3">{t('cal.thTime')}</th><th className="p-3">{t('cal.thCountry')}</th><th className="p-3">{t('cal.thEvent')}</th><th className="p-3 text-center">{t('cal.thImpact')}</th><th className="p-3 text-right">{t('cal.thPrev')}</th><th className="p-3 text-right">{t('cal.thForecast')}</th><th className="p-3 text-right">{t('cal.thActual')}</th></tr></thead>
+                    <tbody>
+                      {evs.map((e) => {
+                        const im = IMPACT_META[e.impact] || IMPACT_META.low;
+                        const imLabel = t(im.key);
+                        const numA = e.actual == null ? NaN : parseFloat(String(e.actual).replace(/[^0-9.-]/g, ''));
+                        const numF = e.forecast == null ? NaN : parseFloat(String(e.forecast).replace(/[^0-9.-]/g, ''));
+                        const beat = !Number.isNaN(numA) && !Number.isNaN(numF) && numA >= numF;
+                        return (
+                          <tr key={e.id} className={`border-t border-white/5 ${e.time > now ? '' : 'opacity-90'}`}>
+                            <td className="p-3 font-mono text-[#c9c4b4]">{tzFormat(e.time, tz, { hour: '2-digit', minute: '2-digit' })}</td>
+                            <td className="p-3"><span className="text-[#e9e7df]">{e.country}</span></td>
+                            <td className="p-3 text-[#e9e7df]">{e.name}</td>
+                            <td className="p-3 text-center"><span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px]" style={{ color: im.color, background: `${im.color}1e` }}><span className={`h-1.5 w-1.5 rounded-full ${im.dot}`} />{imLabel}</span></td>
+                            <td className="p-3 text-right font-mono text-[#8a8577]">{fmtValue(e.previous, e.unit)}</td>
+                            <td className="p-3 text-right font-mono text-[#c9c4b4]">{fmtValue(e.forecast, e.unit)}</td>
+                            <td className={`p-3 text-right font-mono ${e.actual == null ? 'text-[#5f5b50]' : beat ? 'text-emerald-400' : 'text-red-400'}`}>{fmtValue(e.actual, e.unit)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </Card>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </AppLayout>
   );
 }

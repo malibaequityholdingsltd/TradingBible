@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Code2, Copy, Check, Terminal, KeyRound, Webhook, ChevronDown } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import { PageHero } from '@/components/ui-kit';
 
 function Code({ children }) {
   const [copied, setCopied] = useState(false);
@@ -18,13 +19,13 @@ function Code({ children }) {
 function Section({ icon: Icon, title, children, defaultOpen = true }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="glass rounded-2xl">
-      <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-2 p-4 text-left sm:p-6">
+    <div className="tb-card">
+      <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-2 text-left">
         <Icon className="h-4 w-4 shrink-0 text-[#d4af37]" />
         <h3 className="flex-1 font-semibold text-[#f0ecdd]">{title}</h3>
         <ChevronDown className={`h-4 w-4 shrink-0 text-[#8a8577] transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && <div className="px-4 pb-4 sm:px-6 sm:pb-6">{children}</div>}
+      {open && <div className="mt-3">{children}</div>}
     </div>
   );
 }
@@ -43,12 +44,17 @@ const MCOLOR = { GET: '#34d399', POST: '#d4af37', DELETE: '#e06666' };
 export default function ApiDocsPage() {
   return (
     <AppLayout title="API Documentation">
-      <div className="mb-5 glass rounded-2xl p-4 sm:p-6">
-        <div className="flex items-center gap-3"><div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Code2 className="h-5 w-5" /></div><div className="min-w-0"><h3 className="font-semibold text-[#f0ecdd]">TradingBible REST API v1</h3><p className="truncate text-xs text-[#8a8577]">Base URL: <span className="font-mono text-[#d4af37]">https://api.tradingbible.app</span></p></div></div>
-        <p className="mt-4 max-w-3xl text-sm text-[#c9c4b4]">Integrate your trade data, analytics and broker connections into third-party tools, dashboards and bots. All requests are authenticated with a bearer API key and return JSON.</p>
-      </div>
+      <div className="tb-page">
+      <PageHero
+        kicker="Developer API"
+        kickerIcon={Code2}
+        title="TradingBible REST API"
+        accent="v1"
+        subtitle="Integrate your trade data, analytics and broker connections into third-party tools, dashboards and bots. All requests are authenticated with a bearer API key and return JSON."
+        stats={[{ label: 'Base URL', value: 'https://api.tradingbible.app' }]}
+      />
 
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <Section icon={KeyRound} title="Authentication">
             <p className="mb-3 text-sm text-[#8a8577]">Generate an API key in Settings → API. Pass it in the <span className="font-mono text-[#d4af37]">Authorization</span> header on every request.</p>
@@ -106,6 +112,7 @@ requests.post(
             <div className="mt-4 rounded-xl border border-[#d4af37]/15 bg-[#d4af37]/[0.05] p-3 text-xs text-[#c9c4b4]">Rate limit: 600 req/min per key. Responses are paginated at 100 records.</div>
           </Section>
         </div>
+      </div>
       </div>
     </AppLayout>
   );

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AppLayout from '@/components/AppLayout';
+import { Card, EmptyState, PageHero, SectionHead, Stat, StatGrid } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
 import {
   Search, CheckCircle2, AlertCircle, CircleDashed, Copy, Check,
@@ -201,33 +202,33 @@ export default function IntegrationsPage() {
 
   return (
     <AppLayout title={t('int.pageTitle')}>
-      <div className="mx-auto max-w-[96rem]">
-        <p className="mb-6 max-w-3xl text-sm leading-relaxed text-[#b3ae9e]">
-          {t('int.introA')} <span className="font-mono text-[#d4af37]">apps/api/.env</span> {t('int.introB')} <span className="font-mono text-[#d4af37]">apps/web/.env</span>.
-        </p>
-        <div className="mb-5 flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-emerald-300">{t('int.legendImpl')}</span>
-          <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-amber-300">{t('int.legendNeed')}</span>
-          <span className="rounded-full border border-[#8a8577]/30 bg-[#8a8577]/10 px-2.5 py-1 text-[#c9c4b4]">{t('int.legendOpt')}</span>
-        </div>
+      <div className="tb-page">
+        <PageHero
+          kicker={t('int.pageTitle')}
+          kickerIcon={Plug}
+          subtitle={(
+            <>
+              {t('int.introA')} <span className="font-mono text-[#d4af37]">apps/api/.env</span> {t('int.introB')} <span className="font-mono text-[#d4af37]">apps/web/.env</span>.
+            </>
+          )}
+        >
+          <div className="mt-4 flex flex-wrap gap-2 text-xs">
+            <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-emerald-300">{t('int.legendImpl')}</span>
+            <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-amber-300">{t('int.legendNeed')}</span>
+            <span className="rounded-full border border-[#8a8577]/30 bg-[#8a8577]/10 px-2.5 py-1 text-[#c9c4b4]">{t('int.legendOpt')}</span>
+          </div>
+        </PageHero>
 
-        {/* Summary + legend */}
-        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { k: 'total', label: t('int.sumTotal'), val: counts.total, cls: 'text-[#e9e7df]' },
-            { k: 'implemented', label: t('int.sumImpl'), val: counts.implemented, cls: 'text-emerald-400' },
-            { k: 'needed', label: t('int.sumNeed'), val: counts.needed, cls: 'text-amber-400' },
-            { k: 'optional', label: t('int.sumOpt'), val: counts.optional, cls: 'text-[#8a8577]' },
-          ].map((s) => (
-            <div key={s.k} className="glass rounded-xl p-4">
-              <div className={`text-2xl font-bold ${s.cls}`}>{s.val}</div>
-              <div className="text-[11px] uppercase tracking-wide text-[#8a8577]">{s.label}</div>
-            </div>
-          ))}
-        </div>
+        {/* Summary */}
+        <StatGrid cols={4}>
+          <Stat label={t('int.sumTotal')} value={counts.total} />
+          <Stat label={t('int.sumImpl')} value={counts.implemented} tone="text-emerald-400" />
+          <Stat label={t('int.sumNeed')} value={counts.needed} tone="text-amber-400" />
+          <Stat label={t('int.sumOpt')} value={counts.optional} tone="text-[#8a8577]" />
+        </StatGrid>
 
         {/* Controls */}
-        <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8a8577]" />
             <input
@@ -236,10 +237,10 @@ export default function IntegrationsPage() {
               className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] py-2.5 pl-10 pr-3 text-sm text-[#e9e7df] placeholder:text-[#5f5b50] focus:border-[#d4af37]/40 focus:outline-none"
             />
           </div>
-          <div className="flex overflow-x-auto rounded-xl border border-[#d4af37]/15">
+          <div className="tb-scroll-row rounded-xl border border-[#d4af37]/15">
             {['all', 'implemented', 'needed', 'optional'].map((f) => (
               <button key={f} onClick={() => setFilter(f)}
-                className={`whitespace-nowrap px-3 py-2.5 text-xs capitalize transition ${filter === f ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
+                className={`whitespace-nowrap rounded-lg px-3 py-2.5 text-xs capitalize transition ${filter === f ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
                 {f === 'all' ? t('int.f_all') : t('int.st_' + f, null, f)}
               </button>
             ))}
@@ -247,19 +248,17 @@ export default function IntegrationsPage() {
         </div>
 
         {/* Categories */}
-        <div className="space-y-10">
+        <div className="space-y-8 sm:space-y-10">
           {categories.map((cat) => (
             <section key={cat.id}>
-              <div className="mb-4 flex items-center gap-2.5">
-                <div className="grid h-9 w-9 place-items-center rounded-lg bg-[#d4af37]/10 text-[#d4af37]">
-                  <cat.icon className="h-4.5 w-4.5" />
-                </div>
-                <h2 className="text-lg font-semibold text-[#f0ecdd]">{t('int.cat_' + cat.id, null, cat.label)}</h2>
-                <span className="text-xs text-[#5f5b50]">({cat.items.length})</span>
-              </div>
-              <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              <SectionHead
+                icon={cat.icon}
+                title={t('int.cat_' + cat.id, null, cat.label)}
+                right={<span className="text-xs text-[#5f5b50]">({cat.items.length})</span>}
+              />
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                 {cat.items.map((it) => (
-                  <div key={it.name} className="glass glass-hover rounded-2xl p-5">
+                  <Card hover key={it.name}>
                     <div className="mb-2 flex items-start justify-between gap-3">
                       <div>
                         <h3 className="font-semibold text-[#f0ecdd]">{it.name}</h3>
@@ -285,13 +284,13 @@ export default function IntegrationsPage() {
                         <dd className="leading-relaxed text-[#b3ae9e]">{it.setup}</dd>
                       </div>
                     </dl>
-                  </div>
+                  </Card>
                 ))}
               </div>
             </section>
           ))}
           {!categories.length && (
-            <div className="grid h-40 place-items-center text-sm text-[#8a8577]">{t('int.noMatch')}</div>
+            <EmptyState title={t('int.noMatch')} />
           )}
         </div>
       </div>

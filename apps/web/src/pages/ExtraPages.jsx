@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plug, Check, RefreshCw, Users, DollarSign, CreditCard, Activity, Crown, ArrowRight, Bot, ExternalLink, Building2 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import PageHeader from '@/components/PageHeader';
+import { PageHero, GoldButton, GhostButton } from '@/components/ui-kit';
 import { BROKERS, PROP_FIRMS, PLANS, fmtMoney, translatePlan } from '@/lib/mockData';
 import pb from '@/lib/pocketbaseClient';
 import { connectBroker, disconnectBroker, resyncBrokerAccount } from '@/lib/brokerSync';
@@ -27,7 +27,7 @@ function ConnectedList({ items }) {
   return (
     <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((c) => (
-        <div key={c.id} className="glass glass-hover rounded-2xl p-4 sm:p-5">
+        <div key={c.id} className="tb-card tb-card-hover p-4 sm:p-5">
           <div className="flex items-center justify-between gap-1"><span className="min-w-0 truncate font-semibold text-[#f0ecdd]">{c.broker}</span><span className={`flex shrink-0 items-center gap-1.5 text-xs ${c.status === 'synced' ? 'text-emerald-400' : 'text-[#d4af37]'}`}><span className={`h-1.5 w-1.5 rounded-full ${c.status === 'synced' ? 'bg-emerald-400' : 'bg-[#d4af37] animate-pulse'}`} />{c.status === 'synced' ? 'Synced' : 'Syncing'}</span></div>
           <div className="mt-1 truncate font-mono text-xs text-[#8a8577]">{c.accountRef}</div>
           <div className="mt-2 truncate font-mono text-xl font-semibold text-[#f0ecdd]">{fmtMoney(c.balance || 0)}</div>
@@ -107,7 +107,7 @@ export function BrokersPage() {
         const syncingAcct = acct && acct.status === 'syncing';
         const isBusy = busy === kind + b.name;
         return (
-          <div key={b.name} className="glass glass-hover rounded-2xl p-4 sm:p-5">
+          <div key={b.name} className="tb-card tb-card-hover p-4 sm:p-5">
             <div className="flex items-center gap-3"><div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl font-mono text-xs font-bold" style={{ background: `${b.color}22`, color: b.color }}>{b.tag}</div><div className="min-w-0"><div className="truncate font-semibold text-[#f0ecdd]">{b.name}</div><div className="truncate text-xs text-[#8a8577]">{b.kind}</div></div></div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ${on ? 'bg-emerald-500/15 text-emerald-400' : syncingAcct ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'bg-red-500/15 text-red-400'}`}>
@@ -116,19 +116,25 @@ export function BrokersPage() {
               </span>
               <span className="inline-flex items-center gap-1 rounded-full border border-[#d4af37]/20 px-2 py-0.5 text-[11px] text-[#c9c4b4]">{kind === 'live' ? t('bro.liveOnly') : t('bro.funded')}</span>
             </div>
-            <button disabled={on || isBusy || loading || syncingAcct} onClick={() => connect(b, kind)}
-              className={`mt-3 flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-medium transition disabled:opacity-70 ${on ? 'border border-emerald-500/30 text-emerald-400' : 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] hover:opacity-90'}`}>
-            {on ? <><Check className="h-4 w-4" /> {t('bro.connected')}</> : isBusy ? <><RefreshCw className="h-4 w-4 animate-spin" /> {t('bro.opening')}</> : <><Plug className="h-4 w-4" /> {t('bro.connect')}</>}
-            </button>
+            {on ? (
+              <button disabled={on || isBusy || loading || syncingAcct} onClick={() => connect(b, kind)}
+                className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg border border-emerald-500/30 py-2.5 text-sm font-medium text-emerald-400 transition disabled:opacity-70">
+                <><Check className="h-4 w-4" /> {t('bro.connected')}</>
+              </button>
+            ) : (
+              <GoldButton disabled={isBusy || loading || syncingAcct} onClick={() => connect(b, kind)} className="mt-3 w-full !rounded-lg !py-2.5 !text-sm !font-medium disabled:opacity-70">
+                {isBusy ? <><RefreshCw className="h-4 w-4 animate-spin" /> {t('bro.opening')}</> : <><Plug className="h-4 w-4" /> {t('bro.connect')}</>}
+              </GoldButton>
+            )}
             {on && acct && (
               <div className="mt-2 grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
-                <button
+                <GhostButton
                   disabled={busy === `resync:${acct.id}`}
                   onClick={() => resync(acct)}
-                  className="inline-flex min-h-[44px] items-center justify-center gap-1 rounded-lg border border-[#d4af37]/25 px-2 py-2 text-xs text-[#d4af37] transition hover:border-[#d4af37]/50 disabled:opacity-60"
+                  className="!min-h-[44px] !px-2 !py-2 !text-xs disabled:opacity-60"
                 >
                   {busy === `resync:${acct.id}` ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />} {t('bro.resync')}
-                </button>
+                </GhostButton>
                 <button
                   disabled={busy === `disconnect:${acct.id}`}
                   onClick={() => disconnect(acct)}
@@ -148,19 +154,22 @@ export function BrokersPage() {
 
   return (
     <AppLayout title={t('nav.brokers')}>
-      <PageHeader
-        icon={Plug}
-        kicker={t('bro.kicker')}
-        description={t('bro.syncDesc')}
-      />
+      <div className="tb-page">
+        <PageHero
+          kickerIcon={Plug}
+          kicker={t('bro.kicker')}
+          title={t('nav.brokers')}
+          subtitle={t('bro.syncDesc')}
+        />
 
-      <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-[#8a8577]">{t('bro.liveAccts')}</h3>
-      <ConnectedList items={liveAccts} />
-      <Grid list={BROKERS} kind="live" />
+        <h3 className="text-sm font-medium uppercase tracking-wider text-[#8a8577]">{t('bro.liveAccts')}</h3>
+        <ConnectedList items={liveAccts} />
+        <Grid list={BROKERS} kind="live" />
 
-      <h3 className="mb-3 mt-8 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-[#8a8577]"><Building2 className="h-4 w-4 text-[#d4af37]" /> {t('bro.propAccts')}</h3>
-      <ConnectedList items={propAccts} />
-      <Grid list={PROP_FIRMS} kind="prop" />
+        <h3 className="mt-8 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-[#8a8577]"><Building2 className="h-4 w-4 text-[#d4af37]" /> {t('bro.propAccts')}</h3>
+        <ConnectedList items={propAccts} />
+        <Grid list={PROP_FIRMS} kind="prop" />
+      </div>
     </AppLayout>
   );
 }

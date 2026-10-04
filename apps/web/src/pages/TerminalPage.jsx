@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   Plus, Search, X, ChevronDown, ChevronRight, ArrowUp, ArrowDown, Trash2,
   Settings2, FolderPlus, Save, LineChart, TrendingUp, TrendingDown, Loader2, Pencil,
+  ListOrdered,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import { PageHero, Card, GoldButton, GhostButton, EmptyState } from '@/components/ui-kit';
 import { useTerminal } from '@/hooks/useTerminal';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useI18n } from '@/lib/i18n';
@@ -28,7 +30,7 @@ function SymbolPicker({ existing, groups, onAdd, onClose }) {
   const { t: tr } = useI18n();
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 pt-24" onClick={onClose}>
-      <div className="shell-panel w-full max-w-lg rounded-3xl p-5" onClick={(e) => e.stopPropagation()}>
+      <div className="tb-card w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between">
           <h3 className="font-semibold text-[#f0ecdd]">{tr('term.addSymbols')}</h3>
           <button onClick={onClose} className="text-[#8a8577] hover:text-[#e9e7df]"><X className="h-5 w-5" /></button>
@@ -52,7 +54,7 @@ function SymbolPicker({ existing, groups, onAdd, onClose }) {
             return (
               <div key={g.label}>
                 <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#5f5b50]">{g.label}</div>
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                   {items.map((s) => (
                     <button key={s.symbol} onClick={() => onAdd(s.symbol, group || null)}
                       className="flex items-center justify-between rounded-xl border border-[#d4af37]/10 bg-white/5 px-2.5 py-2 text-left text-xs transition hover:border-[#d4af37]/40">
@@ -137,7 +139,7 @@ export default function TerminalPage() {
   }, [t.symbols, t.groups]);
 
   if (!t.loaded) {
-    return <AppLayout title={tr('nav.terminal')}><div className="grid place-items-center py-24 text-[#8a8577]"><Loader2 className="h-6 w-6 animate-spin" /></div></AppLayout>;
+    return <AppLayout title={tr('nav.terminal')}><div className="tb-page"><Card><div className="grid place-items-center py-24 text-[#8a8577]"><Loader2 className="h-6 w-6 animate-spin" /></div></Card></div></AppLayout>;
   }
 
   const renderRows = (items) => items.map((item) => (
@@ -148,95 +150,105 @@ export default function TerminalPage() {
 
   return (
     <AppLayout title={tr('nav.terminal')}>
-      {/* Toolbar */}
-      <div className="shell-panel mb-4 flex flex-wrap items-center gap-2 rounded-2xl p-3">
-        <select value={t.activeId || ''} onChange={(e) => t.selectLayout(e.target.value)}
-          className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-1.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50">
-          {t.layouts.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-        </select>
-        <button onClick={() => { const n = window.prompt(tr('term.renameLayout'), t.active?.name); if (n && t.active) t.renameLayout(t.active.id, n); }}
-          title={tr('term.renameLayout')} className="rounded-xl border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]"><Pencil className="h-3.5 w-3.5" /></button>
-        <button onClick={() => { const n = window.prompt(tr('term.newLayout')); if (n) t.saveLayout(n); }}
-          className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#c9c4b4] hover:text-[#e9e7df]"><Save className="h-3.5 w-3.5" /> {tr('term.saveAs')}</button>
-        <button onClick={() => { if (t.active && t.layouts.length > 1 && window.confirm(tr('term.delLayout'))) t.deleteLayout(t.active.id); }}
-          disabled={t.layouts.length <= 1} title={tr('term.delLayout')} className="rounded-xl border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-red-400 disabled:opacity-30"><Trash2 className="h-3.5 w-3.5" /></button>
+      <div className="tb-page">
+        <PageHero
+          kicker={tr('nav.terminal')}
+          kickerIcon={ListOrdered}
+          title={tr('nav.terminal')}
+        />
+        {/* Toolbar */}
+        <Card className="p-3">
+          <div className="tb-scroll-row items-center">
+            <select value={t.activeId || ''} onChange={(e) => t.selectLayout(e.target.value)}
+              className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-1.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50">
+              {t.layouts.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+            </select>
+            <button onClick={() => { const n = window.prompt(tr('term.renameLayout'), t.active?.name); if (n && t.active) t.renameLayout(t.active.id, n); }}
+              title={tr('term.renameLayout')} className="rounded-xl border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]"><Pencil className="h-3.5 w-3.5" /></button>
+            <GhostButton onClick={() => { const n = window.prompt(tr('term.newLayout')); if (n) t.saveLayout(n); }}
+              className="min-h-[36px] px-2.5 py-1.5 text-xs"><Save className="h-3.5 w-3.5" /> {tr('term.saveAs')}</GhostButton>
+            <button onClick={() => { if (t.active && t.layouts.length > 1 && window.confirm(tr('term.delLayout'))) t.deleteLayout(t.active.id); }}
+              disabled={t.layouts.length <= 1} title={tr('term.delLayout')} className="rounded-xl border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-red-400 disabled:opacity-30"><Trash2 className="h-3.5 w-3.5" /></button>
 
-        <div className="ml-auto flex items-center gap-2">
-          <span className={`flex items-center gap-1.5 text-[11px] ${status === 'live' ? 'text-emerald-400' : 'text-[#8a8577]'}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${status === 'live' ? 'animate-pulse bg-emerald-400' : 'bg-[#8a8577]'}`} />{status === 'live' ? tr('term.live') : status}
-          </span>
-          <button onClick={() => { const n = window.prompt(tr('term.newGroup')); if (n) t.createGroup(n); }}
-            className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#c9c4b4] hover:text-[#e9e7df]"><FolderPlus className="h-3.5 w-3.5" /> {tr('term.group')}</button>
-          <button onClick={() => setPrefsOpen((o) => !o)} className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#c9c4b4] hover:text-[#e9e7df]"><Settings2 className="h-3.5 w-3.5" /> {tr('term.display')}</button>
-          <button onClick={() => setPickerOpen(true)} className="flex items-center gap-1.5 rounded-xl bg-[#d4af37] px-3 py-1.5 text-xs font-semibold text-[#0f0f14] hover:bg-[#e6c04a]"><Plus className="h-3.5 w-3.5" /> {tr('term.symbol')}</button>
-        </div>
-      </div>
+            <span className={`flex items-center gap-1.5 text-[11px] ${status === 'live' ? 'text-emerald-400' : 'text-[#8a8577]'}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${status === 'live' ? 'animate-pulse bg-emerald-400' : 'bg-[#8a8577]'}`} />{status === 'live' ? tr('term.live') : status}
+            </span>
+            <GhostButton onClick={() => { const n = window.prompt(tr('term.newGroup')); if (n) t.createGroup(n); }}
+              className="min-h-[36px] px-2.5 py-1.5 text-xs"><FolderPlus className="h-3.5 w-3.5" /> {tr('term.group')}</GhostButton>
+            <GhostButton onClick={() => setPrefsOpen((o) => !o)} className="min-h-[36px] px-2.5 py-1.5 text-xs"><Settings2 className="h-3.5 w-3.5" /> {tr('term.display')}</GhostButton>
+            <GoldButton onClick={() => setPickerOpen(true)} className="min-h-[36px] px-3 py-1.5 text-xs"><Plus className="h-3.5 w-3.5" /> {tr('term.symbol')}</GoldButton>
+          </div>
+        </Card>
 
-      {/* Display preferences */}
-      {prefsOpen && (
-        <div className="shell-panel mb-4 flex flex-wrap items-center gap-4 rounded-2xl p-4">
-          {DISPLAY_OPTS.map((o) => (
-            <label key={o.key} className="flex cursor-pointer items-center gap-2 text-xs text-[#c9c4b4]">
-              <input type="checkbox" checked={!!t.display[o.key]} onChange={(e) => t.setDisplay(o.key, e.target.checked)}
-                className="h-4 w-4 accent-[#d4af37]" />{tr(o.labelKey)}
-            </label>
-          ))}
-        </div>
-      )}
-
-      {t.symbols.length === 0 ? (
-        <div className="shell-panel grid place-items-center rounded-3xl py-20 text-center">
-          <p className="mb-3 text-sm text-[#8a8577]">{tr('term.empty')}</p>
-          <button onClick={() => setPickerOpen(true)} className="rounded-xl bg-[#d4af37] px-4 py-2 text-sm font-semibold text-[#0f0f14]">{tr('term.addSymbols')}</button>
-        </div>
-      ) : (
-        <div className="layered-list">
-          {/* Grouped sections */}
-          {t.groups.map((g) => {
-            const items = buckets[g.id] || [];
-            return (
-              <div key={g.id}>
-                <div className="layered-list__section">
-                  <button onClick={() => t.toggleGroup(g.id)} className="text-[#d4af37]">{g.collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</button>
-                  <button onClick={() => { const n = window.prompt(tr('term.renameGroup'), g.name); if (n) t.renameGroup(g.id, n); }} className="text-xs font-semibold uppercase tracking-wider text-[#c9c4b4] hover:text-[#e9e7df]">{g.name}</button>
-                  <span className="text-[10px] text-[#5f5b50]">({items.length})</span>
-                  <button onClick={() => { if (window.confirm(tr('term.delGroup', { name: g.name }))) t.deleteGroup(g.id); }} className="ml-auto text-[#5f5b50] hover:text-red-400"><X className="h-3.5 w-3.5" /></button>
-                </div>
-                {!g.collapsed && (items.length ? renderRows(items) : <p className="px-4 py-3 text-[11px] text-[#5f5b50]">{tr('term.noGroupSym')}</p>)}
-                {g.collapsed && items.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 px-4 py-2.5">
-                    {items.map((item) => {
-                      const q = quotes[item.symbol];
-                      const up = (q?.changePercent ?? 0) >= 0;
-                      return (
-                        <button key={item.symbol} onClick={() => openChart(item.symbol)} title={nameOf(item.symbol)}
-                          className="flex items-center gap-1.5 rounded-full border border-white/5 bg-black/15 py-1 pl-2.5 pr-2 text-xs transition hover:border-[#d4af37]/40 hover:bg-white/5">
-                          <span className="font-mono font-semibold text-[#e9e7df]">{item.symbol}</span>
-                          {q && t.display.showPrice && (
-                            <span className={`font-mono text-[11px] ${up ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(q.price)}</span>
-                          )}
-                          {q && t.display.showChangePercent && (
-                            <span className={`font-mono text-[10px] ${up ? 'text-emerald-400/80' : 'text-red-400/80'}`}>{up ? '+' : ''}{(q.changePercent ?? 0).toFixed(2)}%</span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-          {/* Ungrouped */}
-          {buckets.__none.length > 0 && (
-            <div>
-              {t.groups.length > 0 && <div className="layered-list__section text-xs font-semibold uppercase tracking-wider text-[#5f5b50]">{tr('term.ungrouped')}</div>}
-              {renderRows(buckets.__none)}
+        {/* Display preferences */}
+        {prefsOpen && (
+          <Card>
+            <div className="tb-scroll-row items-center">
+              {DISPLAY_OPTS.map((o) => (
+                <label key={o.key} className="flex cursor-pointer items-center gap-2 text-xs text-[#c9c4b4]">
+                  <input type="checkbox" checked={!!t.display[o.key]} onChange={(e) => t.setDisplay(o.key, e.target.checked)}
+                    className="h-4 w-4 accent-[#d4af37]" />{tr(o.labelKey)}
+                </label>
+              ))}
             </div>
-          )}
-        </div>
-      )}
+          </Card>
+        )}
 
-      {pickerOpen && <SymbolPicker existing={symbolStrings} groups={t.groups} onAdd={(s, grp) => t.addSymbol(s, grp)} onClose={() => setPickerOpen(false)} />}
+        {t.symbols.length === 0 ? (
+          <EmptyState
+            icon={Plus}
+            title={tr('term.empty')}
+            action={<GoldButton onClick={() => setPickerOpen(true)}>{tr('term.addSymbols')}</GoldButton>}
+          />
+        ) : (
+          <div className="layered-list">
+            {/* Grouped sections */}
+            {t.groups.map((g) => {
+              const items = buckets[g.id] || [];
+              return (
+                <div key={g.id}>
+                  <div className="layered-list__section">
+                    <button onClick={() => t.toggleGroup(g.id)} className="text-[#d4af37]">{g.collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</button>
+                    <button onClick={() => { const n = window.prompt(tr('term.renameGroup'), g.name); if (n) t.renameGroup(g.id, n); }} className="text-xs font-semibold uppercase tracking-wider text-[#c9c4b4] hover:text-[#e9e7df]">{g.name}</button>
+                    <span className="text-[10px] text-[#5f5b50]">({items.length})</span>
+                    <button onClick={() => { if (window.confirm(tr('term.delGroup', { name: g.name }))) t.deleteGroup(g.id); }} className="ml-auto text-[#5f5b50] hover:text-red-400"><X className="h-3.5 w-3.5" /></button>
+                  </div>
+                  {!g.collapsed && (items.length ? renderRows(items) : <p className="px-4 py-3 text-[11px] text-[#5f5b50]">{tr('term.noGroupSym')}</p>)}
+                  {g.collapsed && items.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 px-4 py-2.5">
+                      {items.map((item) => {
+                        const q = quotes[item.symbol];
+                        const up = (q?.changePercent ?? 0) >= 0;
+                        return (
+                          <button key={item.symbol} onClick={() => openChart(item.symbol)} title={nameOf(item.symbol)}
+                            className="flex items-center gap-1.5 rounded-full border border-white/5 bg-black/15 py-1 pl-2.5 pr-2 text-xs transition hover:border-[#d4af37]/40 hover:bg-white/5">
+                            <span className="font-mono font-semibold text-[#e9e7df]">{item.symbol}</span>
+                            {q && t.display.showPrice && (
+                              <span className={`font-mono text-[11px] ${up ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(q.price)}</span>
+                            )}
+                            {q && t.display.showChangePercent && (
+                              <span className={`font-mono text-[10px] ${up ? 'text-emerald-400/80' : 'text-red-400/80'}`}>{up ? '+' : ''}{(q.changePercent ?? 0).toFixed(2)}%</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {/* Ungrouped */}
+            {buckets.__none.length > 0 && (
+              <div>
+                {t.groups.length > 0 && <div className="layered-list__section text-xs font-semibold uppercase tracking-wider text-[#5f5b50]">{tr('term.ungrouped')}</div>}
+                {renderRows(buckets.__none)}
+              </div>
+            )}
+          </div>
+        )}
+
+        {pickerOpen && <SymbolPicker existing={symbolStrings} groups={t.groups} onAdd={(s, grp) => t.addSymbol(s, grp)} onClose={() => setPickerOpen(false)} />}
+      </div>
     </AppLayout>
   );
 }

@@ -4,6 +4,7 @@ import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { LIVE_CHANNELS, openLiveChannel } from '@/lib/liveChannels';
+import { EmptyState, GhostButton } from '@/components/ui-kit';
 
 const DEFAULT_SETTINGS = {
   rotationSeconds: 12,
@@ -174,17 +175,12 @@ export default function TvPage() {
     <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#0a0a0f] text-[#f0ecdd]" onClick={wakeUi}>
       {/* ── Full-bleed stage ─────────────────────────────────────── */}
       {error ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-          <MonitorPlay className="h-10 w-10 text-[#6a665a]" />
-          <p className="text-sm text-[#8a8577]">{error}</p>
+        <div className="flex flex-1 flex-col items-center justify-center px-6">
+          <EmptyState icon={MonitorPlay} title={error} />
         </div>
       ) : !ad ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-          <div className="grid h-16 w-16 place-items-center rounded-2xl border border-[#d4af37]/20 bg-[#d4af37]/5">
-            <MonitorPlay className="h-7 w-7 text-[#d4af37]" />
-          </div>
-          <p className="text-lg font-semibold">{t('tv.noLive')}</p>
-          <p className="text-sm text-[#8a8577]">{t('tv.checkBack')}</p>
+        <div className="flex flex-1 flex-col items-center justify-center px-6">
+          <EmptyState icon={MonitorPlay} title={t('tv.noLive')} sub={t('tv.checkBack')} />
         </div>
       ) : (
         <div key={ad.id} className="absolute inset-0">
@@ -215,7 +211,7 @@ export default function TvPage() {
         <div className="flex items-center gap-3">
           <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-10 w-10 rounded-xl object-contain ring-1 ring-[#d4af37]/30" onError={e => { e.currentTarget.style.display = 'none'; }} />
           <div className="flex items-center gap-2.5">
-            <span className="gold-text text-lg font-bold tracking-wide">{settings.headerText || 'TradingBible TV'}</span>
+            <span className="tb-gold-text text-lg font-bold tracking-wide">{settings.headerText || 'TradingBible TV'}</span>
             <span className="flex items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ff5a62]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#e50914] shadow-[0_0_6px_rgba(229,9,20,0.9)] animate-pulse" />
               {t('tv.onAir')}
@@ -290,9 +286,9 @@ export default function TvPage() {
               </button>
             </div>
             <div className="mt-3 flex items-center gap-2">
-              <button onClick={shuffleTvChannel} className="flex min-h-[42px] items-center gap-2 rounded-xl border border-[#d4af37]/30 px-4 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10">
+              <GhostButton onClick={shuffleTvChannel}>
                 <Shuffle className="h-4 w-4" /> Surprise me — random channel
-              </button>
+              </GhostButton>
             </div>
             <div className="no-scrollbar mt-5 grid flex-1 content-start gap-2 overflow-y-auto pb-4 sm:grid-cols-2">
               {LIVE_CHANNELS.map((c, ci) => (

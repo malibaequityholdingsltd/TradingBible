@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { MessageSquare, Trophy, Plus, Send, X } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import PageHeader from '@/components/PageHeader';
+import { Card, EmptyState, GoldButton, PageHero, Tabs } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
 import pb from '@/lib/pocketbaseClient';
 import { useAuth } from '@/hooks/useAuth';
@@ -58,7 +58,7 @@ function ThreadModal({ thread, onClose, onReplied }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4" onClick={onClose}>
-      <div className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl border border-[#d4af37]/20 bg-[#0c0c11] p-5 sm:rounded-2xl sm:p-6" onClick={(e) => e.stopPropagation()}>
+      <div className="tb-card max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-3">
           <div><span className="rounded-full bg-[#d4af37]/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-[#d4af37]">{t(`com.cat_${(thread.category || 'General').toLowerCase()}`, null, thread.category || 'General')}</span><h3 className="mt-2 text-lg font-semibold text-[#f0ecdd]">{thread.title}</h3></div>
           <button onClick={onClose} className="text-[#8a8577] hover:text-[#e9e7df]"><X className="h-5 w-5" /></button>
@@ -81,7 +81,7 @@ function ThreadModal({ thread, onClose, onReplied }) {
 
         <form onSubmit={submit} className="mt-4 flex gap-2">
           <input className={input} value={body} onChange={(e) => setBody(e.target.value)} placeholder={t('com.replyPh')} />
-          <button disabled={busy} className="flex shrink-0 items-center gap-1 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 text-sm font-semibold text-[#0a0a0f] disabled:opacity-60"><Send className="h-4 w-4" /></button>
+          <GoldButton disabled={busy} className="shrink-0 px-4"><Send className="h-4 w-4" /></GoldButton>
         </form>
       </div>
     </div>
@@ -120,32 +120,34 @@ function Forum() {
 
   return (
     <div>
-      <PageHeader
-        icon={MessageSquare}
+      <PageHero
         kicker={t('com.kicker')}
-        description={t('com.desc')}
-        actions={<button onClick={() => setCreating(!creating)} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f]"><Plus className="h-4 w-4" /> {t('com.newThread')}</button>}
+        kickerIcon={MessageSquare}
+        subtitle={t('com.desc')}
+        actions={(
+          <GoldButton onClick={() => setCreating(!creating)}><Plus className="h-4 w-4" /> {t('com.newThread')}</GoldButton>
+        )}
       />
 
       {creating && (
-        <form onSubmit={create} className="mb-5 glass rounded-2xl p-5">
-          <div className="grid gap-3">
+        <form onSubmit={create} className="tb-card mb-5">
+          <div className="grid grid-cols-1 gap-3">
             <input className={input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={t('com.threadTitlePh')} />
             <textarea className={`${input} min-h-[90px] resize-y`} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder={t('com.thoughtsPh')} />
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <select className={`${input} w-auto`} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>{CATS.map((c) => <option key={c} value={c} className="bg-[#0f0f14]">{t(`com.cat_${c.toLowerCase()}`)}</option>)}</select>
-              <button disabled={busy} className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] disabled:opacity-60">{t('com.postThread')}</button>
+              <GoldButton disabled={busy}>{t('com.postThread')}</GoldButton>
             </div>
           </div>
         </form>
       )}
 
-      {loading ? <div className="glass rounded-2xl py-16 text-center text-sm text-[#8a8577]">{t('com.loadingDisc')}</div> : threads.length === 0 ? (
-        <div className="glass rounded-2xl px-6 py-14 text-center"><MessageSquare className="mx-auto mb-3 h-8 w-8 text-[#d4af37]" /><p className="text-sm text-[#8a8577]">{t('com.noThreads')}</p></div>
+      {loading ? <Card><p className="py-10 text-center text-sm text-[#8a8577]">{t('com.loadingDisc')}</p></Card> : threads.length === 0 ? (
+        <EmptyState icon={MessageSquare} title={t('com.noThreads')} />
       ) : (
         <div className="space-y-3">
           {threads.map((th) => (
-            <button key={th.id} onClick={() => setActive(th)} className="glass glass-hover flex w-full items-center gap-4 rounded-2xl p-4 text-left">
+            <button key={th.id} onClick={() => setActive(th)} className="tb-card tb-card-hover flex w-full items-center gap-4 text-left">
               <Avatar src={th.authorAvatar} letter={th.authorName} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2"><span className="rounded-full bg-[#d4af37]/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-[#d4af37]">{t(`com.cat_${(th.category || 'General').toLowerCase()}`, null, th.category || 'General')}</span></div>
@@ -194,19 +196,16 @@ function Leaderboard() {
     })();
   }, []);
 
-  if (loading) return <div className="glass rounded-2xl py-16 text-center text-sm text-[#8a8577]">{t('com.loadingLb')}</div>;
+  if (loading) return <Card><p className="py-10 text-center text-sm text-[#8a8577]">{t('com.loadingLb')}</p></Card>;
   if (rows.length === 0) {
     return (
-      <div className="glass rounded-2xl px-6 py-14 text-center">
-        <Trophy className="mx-auto mb-3 h-8 w-8 text-[#d4af37]" />
-        <p className="text-sm text-[#8a8577]">{t('com.lbEmpty')}</p>
-      </div>
+      <EmptyState icon={Trophy} title={t('com.lbEmpty')} />
     );
   }
   return (
     <div>
       <p className="mb-4 text-xs text-[#6a665a]">{t('com.lbRanked')}</p>
-      <div className="glass no-scrollbar overflow-x-auto rounded-2xl p-2 sm:p-4">
+      <div className="tb-card no-scrollbar overflow-x-auto">
         <table className="w-full min-w-[420px] text-sm">
           <thead><tr className="text-left text-xs uppercase tracking-wider text-[#8a8577]"><th className="p-3">#</th><th className="p-3">{t('com.thTrader')}</th><th className="p-3 text-right">{t('com.thThreads')}</th><th className="p-3 text-right">{t('com.thReplies')}</th><th className="p-3 text-right">{t('com.thContrib')}</th></tr></thead>
           <tbody>
@@ -231,12 +230,17 @@ export default function CommunityPage() {
   const [tab, setTab] = useState('forum');
   return (
     <AppLayout title={t('com.pageTitle')}>
-      <div className="mb-5 inline-flex rounded-xl border border-[#d4af37]/15 bg-[#0c0c11] p-1">
-        {[{ k: 'forum', l: t('com.forum'), icon: MessageSquare }, { k: 'leaders', l: t('com.leaders'), icon: Trophy }].map((tb) => (
-          <button key={tb.k} onClick={() => setTab(tb.k)} className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition ${tab === tb.k ? 'bg-[#d4af37]/12 text-[#f0ecdd]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}><tb.icon className="h-4 w-4" /> {tb.l}</button>
-        ))}
+      <div className="tb-page">
+        <Tabs
+          tabs={[
+            { id: 'forum', label: t('com.forum'), icon: MessageSquare },
+            { id: 'leaders', label: t('com.leaders'), icon: Trophy },
+          ]}
+          active={tab}
+          onChange={setTab}
+        />
+        {tab === 'forum' ? <Forum /> : <Leaderboard />}
       </div>
-      {tab === 'forum' ? <Forum /> : <Leaderboard />}
     </AppLayout>
   );
 }

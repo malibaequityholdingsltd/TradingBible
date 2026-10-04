@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Copy, KeyRound, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import { Card, EmptyState, GoldButton, SectionHead } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
 import pb from '@/lib/pocketbaseClient';
 import { useToast } from '@/hooks/use-toast';
@@ -82,9 +83,10 @@ export default function UserApiKeysPage() {
 
   return (
     <AppLayout title={t('uak.pageTitle')}>
-      <div className="glass rounded-2xl p-5">
-        <h2 className="text-lg font-semibold text-[#f0ecdd]">{t('uak.createTitle')}</h2>
-        <p className="mt-1 text-sm text-[#8a8577]">{t('uak.createSub')}</p>
+      <div className="tb-page">
+      <Card>
+        <SectionHead icon={KeyRound} title={t('uak.createTitle')} />
+        <p className="text-sm text-[#8a8577]">{t('uak.createSub')}</p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <input
             value={name}
@@ -92,15 +94,15 @@ export default function UserApiKeysPage() {
             placeholder={t('uak.namePh')}
             className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40"
           />
-          <button
+          <GoldButton
             type="button"
             onClick={createKey}
             disabled={creating}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-semibold text-[#0a0a0f] disabled:opacity-60"
+            className="shrink-0"
           >
             <Plus className="h-4 w-4" />
             {creating ? t('uak.creating') : t('uak.create')}
-          </button>
+          </GoldButton>
         </div>
         {newKey && (
           <div className="mt-4 rounded-xl border border-[#d4af37]/20 bg-[#0f0f14] p-3">
@@ -117,20 +119,22 @@ export default function UserApiKeysPage() {
             </div>
           </div>
         )}
-      </div>
+      </Card>
 
-      <div className="mt-5 glass rounded-2xl p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-semibold text-[#f0ecdd]">{t('uak.yourKeys')}</h3>
-          <button type="button" onClick={load} className="inline-flex items-center gap-2 rounded-lg border border-[#d4af37]/15 px-3 py-2 text-xs text-[#d4af37]">
-            <RefreshCw className="h-3.5 w-3.5" />
-            {t('uak.refresh')}
-          </button>
-        </div>
+      <Card>
+        <SectionHead
+          title={t('uak.yourKeys')}
+          right={(
+            <button type="button" onClick={load} className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-[#d4af37]/15 px-3 py-2 text-xs text-[#d4af37] transition hover:border-[#d4af37]/40">
+              <RefreshCw className="h-3.5 w-3.5" />
+              {t('uak.refresh')}
+            </button>
+          )}
+        />
         {loading ? (
           <div className="text-sm text-[#8a8577]">{t('uak.loading')}</div>
         ) : keys.length === 0 ? (
-          <div className="flex items-center gap-2 text-sm text-[#8a8577]"><KeyRound className="h-4 w-4" /> {t('uak.noKeys')}</div>
+          <EmptyState icon={KeyRound} title={t('uak.noKeys')} />
         ) : (
           <div className="space-y-3">
             {keys.map((k) => (
@@ -156,6 +160,7 @@ export default function UserApiKeysPage() {
             ))}
           </div>
         )}
+      </Card>
       </div>
     </AppLayout>
   );

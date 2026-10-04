@@ -1,21 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { BadgeDollarSign, Copy, Check, Link2, RefreshCw, Share2, Users, MousePointerClick, Banknote } from 'lucide-react';
+import { Banknote, Copy, Check, Link2, RefreshCw, Share2 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import PageHeader from '@/components/PageHeader';
+import { Card, EmptyState, GhostButton, GoldButton, PageHero, SectionHead, Stat, StatGrid } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 import { affiliateStats, registerAffiliate, claimAffiliatePayout } from '@/lib/affiliate';
 
 const money = (n) => (n || n === 0) ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n) : '$0.00';
-
-function statCard(icon, label, value) {
-  return (
-    <div className="rounded-2xl glass p-5">
-      <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]">{icon}{label}</div>
-      <div className="mt-2 text-2xl font-bold gold-text">{value}</div>
-    </div>
-  );
-}
 
 const STATUS_STYLE = {
   signed_up: 'bg-white/10 text-[#c9c4b4]',
@@ -75,23 +66,20 @@ export default function AffiliatePage() {
 
   return (
     <AppLayout title={t('afl.pageTitle')}>
-      <PageHeader
-        icon={Share2}
+      <div className="tb-page">
+      <PageHero
         kicker={t('afl.kicker')}
-        description={t('afl.desc', { pct: (data?.rate || 15) * 100 })}
+        kickerIcon={Share2}
+        subtitle={t('afl.desc', { pct: (data?.rate || 15) * 100 })}
       />
 
       {loading ? (
-        <div className="grid place-items-center py-16 text-sm text-[#8a8577]">{t('afl.loading')}</div>
+        <Card><p className="py-10 text-center text-sm text-[#8a8577]">{t('afl.loading')}</p></Card>
       ) : !data?.code ? (
-        <div className="rounded-2xl glass p-10 text-center">
-          <Share2 className="mx-auto h-10 w-10 text-[#d4af37]/60" />
-          <h3 className="mt-3 text-base font-semibold text-[#f0ecdd]">{t('afl.noCode')}</h3>
-          <p className="mx-auto mt-1 max-w-md text-sm text-[#8a8577]">{t('afl.noCodeSub')}</p>
-        </div>
+        <EmptyState icon={Share2} title={t('afl.noCode')} sub={t('afl.noCodeSub')} />
       ) : (
         <>
-          <div className="mb-6 overflow-hidden rounded-2xl border border-[#d4af37]/15 bg-gradient-to-r from-[#d4af37]/[0.08] via-transparent to-transparent p-5">
+          <Card>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><Link2 className="h-4 w-4 text-[#d4af37]" /> {t('afl.refLink')}</div>
@@ -100,27 +88,30 @@ export default function AffiliatePage() {
                   <span className="rounded-full border border-[#d4af37]/25 bg-[#d4af37]/10 px-2 py-0.5 text-[11px] font-bold tracking-wide text-[#d4af37]">REF:{refCode.toUpperCase()}</span>
                 </div>
               </div>
-              <button onClick={copy} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">
+              <GoldButton onClick={copy} className="shrink-0">
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} {copied ? t('afl.copied') : t('afl.copyLink')}
-              </button>
+              </GoldButton>
             </div>
-          </div>
+          </Card>
 
-          <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {statCard(<MousePointerClick className="h-4 w-4" />, t('afl.clicks'), data?.clicks ?? 0)}
-            {statCard(<Users className="h-4 w-4" />, t('afl.signups'), data?.signups ?? 0)}
-            {statCard(<BadgeDollarSign className="h-4 w-4" />, t('afl.pendingEarn'), money(pending))}
-            {statCard(<Banknote className="h-4 w-4" />, t('afl.paid'), money(paid))}
-          </div>
+          <StatGrid cols={4}>
+            <Stat label={t('afl.clicks')} value={data?.clicks ?? 0} />
+            <Stat label={t('afl.signups')} value={data?.signups ?? 0} />
+            <Stat label={t('afl.pendingEarn')} value={money(pending)} />
+            <Stat label={t('afl.paid')} value={money(paid)} />
+          </StatGrid>
 
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <h3 className="text-sm font-medium uppercase tracking-wider text-[#8a8577]">{t('afl.refHistory')}</h3>
-            <button onClick={claim} disabled={claiming || pending <= 0} className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/25 px-4 py-2 text-sm font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60 disabled:cursor-not-allowed disabled:opacity-50">
-              {claiming ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Banknote className="h-4 w-4" />} {t('afl.requestPayout')}
-            </button>
-          </div>
+          <SectionHead
+            title={t('afl.refHistory')}
+            right={(
+              <GhostButton onClick={claim} disabled={claiming || pending <= 0}>
+                {claiming ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Banknote className="h-4 w-4" />} {t('afl.requestPayout')}
+              </GhostButton>
+            )}
+          />
 
-          <div className="glass no-scrollbar overflow-x-auto rounded-2xl">
+          <Card>
+            <div className="no-scrollbar overflow-x-auto">
             <table className="w-full min-w-[560px] text-sm">
               <thead><tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">{[t('afl.thEmail'), t('afl.thDate'), t('afl.thPlan'), t('afl.thCommission'), t('afl.thStatus')].map((h) => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
               <tbody>
@@ -137,9 +128,11 @@ export default function AffiliatePage() {
                 ))}
               </tbody>
             </table>
-          </div>
+            </div>
+          </Card>
         </>
       )}
+      </div>
     </AppLayout>
   );
 }

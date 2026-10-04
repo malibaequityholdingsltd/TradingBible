@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { User, Mail, Phone, Crown, Check, Camera, Trash2, KeyRound } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import { Card, GoldButton, SectionHead } from '@/components/ui-kit';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
 import { avatarUrl } from '@/lib/avatar';
@@ -107,20 +108,21 @@ export default function ProfilePage() {
 
   return (
     <AppLayout title={t('nav.profile')}>
-      <div className="mb-5">
-        <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-[#8a8577]">{t('prof.balances')}</h3>
+      <div className="tb-page">
+      <div className="mb-1">
+        <SectionHead title={t('prof.balances')} />
         <AccountBalances />
       </div>
-      <div className="grid gap-5 lg:grid-cols-3">
-        <form onSubmit={saveProfile} className="glass rounded-2xl p-6 lg:col-span-2">
-          <h3 className="mb-5 font-semibold text-[#f0ecdd]">{t('prof.details')}</h3>
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3">
+        <form onSubmit={saveProfile} className="tb-card lg:col-span-2">
+          <SectionHead title={t('prof.details')} />
           <div className="mb-4 text-xs text-[#8a8577]">
             {autosaveState === 'saving' && t('prof.saving')}
             {autosaveState === 'saved' && t('prof.saved')}
             {autosaveState === 'error' && t('prof.saveErr')}
             {autosaveState === 'idle' && t('prof.idleSave')}
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Row icon={User} label={t('auth.username')}><input className={input} value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder={t('prof.yourName')} /></Row>
             <Row icon={Mail} label={t('auth.emailAddress')}><input className={input} type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Row>
             <Row icon={Phone} label={t('auth.phone')}><input className={input} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder={t('prof.phonePh')} /></Row>
@@ -128,11 +130,11 @@ export default function ProfilePage() {
             <Row icon={Crown} label={t('auth.experience')}><Select value={form.experience} onChange={(e) => setForm({ ...form, experience: e.target.value })} options={EXPERIENCE} /></Row>
             <Row icon={Crown} label={t('auth.mainGoal')}><Select value={form.goal} onChange={(e) => setForm({ ...form, goal: e.target.value })} options={GOALS} /></Row>
           </div>
-          <button disabled={busy} className="mt-5 flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60"><Check className="h-4 w-4" /> {t('c.save')}</button>
+          <GoldButton disabled={busy} className="mt-5"><Check className="h-4 w-4" /> {t('c.save')}</GoldButton>
         </form>
 
-        <div className="space-y-5">
-          <div className="glass rounded-2xl p-6">
+        <div className="space-y-4 sm:space-y-5">
+          <Card>
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="grid h-14 w-14 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] text-lg font-bold text-[#0a0a0f]">{avatar ? <img src={avatar} alt="avatar" className="h-full w-full object-cover" /> : (form.username || form.email || 'A').charAt(0).toUpperCase()}</div>
@@ -142,13 +144,14 @@ export default function ProfilePage() {
               <div className="min-w-0"><div className="font-semibold text-[#f0ecdd]">{form.username || t('prof.trader')}</div><div className="truncate text-xs text-[#8a8577]">{form.email}</div>{avatar && <button type="button" onClick={removeAvatar} disabled={avatarBusy} className="mt-1 inline-flex items-center gap-1 text-[11px] text-[#8a8577] transition hover:text-red-400"><Trash2 className="h-3 w-3" /> {t('prof.removePhoto')}</button>}</div>
             </div>
             <div className="mt-4 flex items-center gap-2 rounded-lg bg-[#d4af37]/8 px-3 py-2 text-sm text-[#d4af37]"><Crown className="h-4 w-4" /> {user?.plan ? user.plan.charAt(0).toUpperCase() + user.plan.slice(1) : t('bill.noPlan', null, 'No plan')} {user?.plan ? 'plan' : ''}</div>
-          </div>
+          </Card>
 
-          <div className="glass rounded-2xl p-6">
-            <h3 className="mb-4 flex items-center gap-2 font-semibold text-[#f0ecdd]"><KeyRound className="h-4 w-4 text-[#d4af37]" /> {t('prof.pwdless')}</h3>
+          <Card>
+            <SectionHead icon={KeyRound} title={t('prof.pwdless')} />
             <p className="text-sm text-[#8a8577]">{t('prof.pwdlessBody')}</p>
-          </div>
+          </Card>
         </div>
+      </div>
       </div>
     </AppLayout>
   );

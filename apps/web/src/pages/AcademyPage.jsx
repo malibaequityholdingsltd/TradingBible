@@ -6,6 +6,7 @@ import {
 	Sprout, Zap, Briefcase, Layers, Filter, Timer, Library,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import { Card, EmptyState, GhostButton, GoldButton, Kicker, Note, PageHero, Tabs } from '@/components/ui-kit';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
@@ -260,40 +261,36 @@ function Paywall({ onPurchased }) {
 	];
 
 	return (
-		<div className="tint-hero rounded-2xl border border-[#d4af37]/15 p-6 sm:p-10">
+		<PageHero
+			kicker={t('aca.badge')}
+			kickerIcon={GraduationCap}
+			title={t('aca.titleA')}
+			accent={`${t('aca.titleB')} ${t('aca.titleC')}`}
+			subtitle={t('aca.sub')}
+		>
 			<div className="flex flex-col items-center text-center">
-				<div className="flex items-center gap-2 text-[#d4af37]">
-					<GraduationCap className="h-6 w-6" />
-					<span className="rounded-full bg-[#d4af37]/12 px-3 py-1 text-xs font-semibold uppercase tracking-wider">{t('aca.badge')}</span>
-				</div>
-				<h2 className="mt-4 max-w-2xl text-3xl font-bold text-[#f0ecdd] sm:text-4xl">
-					{t('aca.titleA')} <span className="gold-text">{t('aca.titleB')}</span> {t('aca.titleC')}
-				</h2>
-				<p className="mt-3 max-w-xl text-sm leading-relaxed text-[#8a8577]">
-					{t('aca.sub')}
-				</p>
 				<div className="mt-4 flex flex-wrap justify-center gap-2">
 					{['Forex: pairs → prop firms', 'Crypto: wallets → perps → on-chain', 'Risk, psychology & playbooks'].map((s) => (
-						<span key={s} className="rounded-full border border-[#d4af37]/20 px-3 py-1 text-xs text-[#c9c4b4]">{s}</span>
+						<span key={s} className="rounded-full border border-[#d4af37]/20 px-3 py-1 text-xs text-[#c9c4b4] backdrop-blur-md">{s}</span>
 					))}
 				</div>
 
 				<div className="mt-6 flex items-end gap-1.5">
-					<span className="text-5xl font-bold gold-text">$150</span>
+					<span className="tb-gold-text text-5xl font-bold">$150</span>
 					<span className="mb-1.5 text-sm text-[#8a8577]">{t('aca.priceNote')}</span>
 				</div>
 
 				<div className="mt-6 flex flex-col items-center gap-3">
-					<button
+					<GoldButton
 						onClick={buy}
 						disabled={busy || (checked && !configured)}
-						className="flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-8 text-base font-bold text-[#0a0a0f] shadow-[0_0_30px_rgba(212,175,55,0.35)] transition hover:opacity-90 disabled:opacity-60"
+						className="min-h-[52px] px-8 text-base disabled:opacity-60"
 					>
 						{busy ? <><Loader2 className="h-5 w-5 animate-spin" /> {t('aca.opening')}</> : <><CircleDollarSign className="h-5 w-5" /> {t('aca.cta')}</>}
-					</button>
-					<button onClick={buyWithWallet} disabled={busy || walletBalance < 150} className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#d4af37]/20 px-6 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 disabled:opacity-40">
+					</GoldButton>
+					<GhostButton onClick={buyWithWallet} disabled={busy || walletBalance < 150} className="disabled:opacity-40">
 						<Wallet className="h-4 w-4" /> {t('aca.walletPay')} ({walletBalance >= 150 ? t('aca.available') : t('aca.needMore', { amt: `$${(150 - walletBalance).toFixed(2)}` })})
-					</button>
+					</GhostButton>
 					<div className="text-xs text-[#8a8577]">${walletBalance.toFixed(2)} · <a href="/app/wallet" className="text-[#d4af37] hover:underline">{t('bill.fundWallet')}</a></div>
 				</div>
 			<p className="mt-3 text-xs text-[#6a665a]">{t('aca.guarantee')}</p>
@@ -301,13 +298,13 @@ function Paywall({ onPurchased }) {
 
 			<div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 				{features.map((f) => (
-					<div key={f.text} className="glass flex items-start gap-3 rounded-xl p-4">
+					<Card key={f.text} className="flex items-start gap-3 rounded-xl p-4">
 						<f.icon className="mt-0.5 h-5 w-5 shrink-0 text-[#d4af37]" />
 						<span className="text-sm text-[#c9c4b4]">{f.text}</span>
-					</div>
+					</Card>
 				))}
 			</div>
-		</div>
+		</PageHero>
 	);
 }
 
@@ -363,20 +360,20 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 
 	if (state.status === 'loading') {
 		return (
-			<div className="glass flex flex-col items-center rounded-2xl p-10 text-center">
+			<Card className="flex flex-col items-center p-10 text-center">
 				<Loader2 className="h-8 w-8 animate-spin text-[#d4af37]" />
 				<p className="mt-4 text-sm text-[#c9c4b4]">{t('aca.writing')}</p>
 				<p className="mt-1 text-xs text-[#6a665a]">{t('aca.writingSub')}</p>
-			</div>
+			</Card>
 		);
 	}
 
 	if (state.status === 'error') {
 		return (
-			<div className="glass flex flex-col items-center rounded-2xl p-10 text-center">
+			<Card className="flex flex-col items-center p-10 text-center">
 				<p className="text-sm text-[#e9e7df]">{state.error}</p>
-				<button onClick={load} className="mt-4 flex items-center gap-2 rounded-xl border border-[#d4af37]/20 px-4 py-2 text-sm text-[#d4af37] hover:bg-[#d4af37]/10"><RotateCcw className="h-4 w-4" /> {t('aca.tryAgain')}</button>
-			</div>
+				<GhostButton onClick={load} className="mt-4 px-4 py-2"><RotateCcw className="h-4 w-4" /> {t('aca.tryAgain')}</GhostButton>
+			</Card>
 		);
 	}
 
@@ -386,29 +383,30 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 		<div className="space-y-4">
 			<button onClick={onBack} className="flex items-center gap-1.5 text-sm text-[#8a8577] transition hover:text-[#d4af37]"><ArrowLeft className="h-4 w-4" /> {t('aca.backTo', { path: curriculum.pathName })}</button>
 
-			<div className="tint-hero rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
-				<div className="flex flex-wrap items-center gap-2 text-xs">
-					<span className="rounded-full bg-[#d4af37]/12 px-2.5 py-0.5 text-[#d4af37]">{course.title}</span>
+			<PageHero
+				kicker={course.title}
+				title={content.title}
+				subtitle={content.summary}
+			>
+				<div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
 					<span className="flex items-center gap-1 text-[#8a8577]"><Clock className="h-3 w-3" /> {t('aca.minutes', { n: lesson.minutes })}</span>
-					{done && <span className="ml-auto flex items-center gap-1 rounded-full bg-emerald-400/10 px-2.5 py-0.5 text-emerald-400"><CheckCircle2 className="h-3 w-3" /> {t('aca.completed')}</span>}
+					{done && <span className="flex items-center gap-1 rounded-full bg-emerald-400/10 px-2.5 py-0.5 text-emerald-400"><CheckCircle2 className="h-3 w-3" /> {t('aca.completed')}</span>}
 				</div>
-				<h2 className="mt-3 text-2xl font-bold text-[#f0ecdd]">{content.title}</h2>
-				<p className="mt-2 text-sm text-[#c9c4b4]">{content.summary}</p>
 				{content.keyPoints?.length > 0 && (
 					<div className="mt-4 flex flex-wrap gap-2">
 						{content.keyPoints.map((k, i) => (
-							<span key={i} className="rounded-full border border-[#d4af37]/20 px-2.5 py-1 text-xs text-[#c9c4b4]">{k}</span>
+							<span key={i} className="rounded-full border border-[#d4af37]/20 px-2.5 py-1 text-xs text-[#c9c4b4] backdrop-blur-md">{k}</span>
 						))}
 					</div>
 				)}
-			</div>
+			</PageHero>
 
-			<div className="glass mx-auto w-full max-w-4xl rounded-2xl p-5 sm:p-6">
+			<Card className="mx-auto w-full max-w-4xl p-5 sm:p-6">
 				<Markdown text={content.content} />
-			</div>
+			</Card>
 
 			{content.quiz?.length > 0 && (
-				<div className="glass mx-auto w-full max-w-4xl rounded-2xl p-5 sm:p-6">
+				<Card className="mx-auto w-full max-w-4xl p-5 sm:p-6">
 					<h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><Award className="h-5 w-5 text-[#d4af37]" /> {t('aca.quizTitle')}</h3>
 					{grade ? (
 						<div className="mt-4">
@@ -448,19 +446,19 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 									</div>
 								</div>
 							))}
-							<button onClick={submitQuiz} disabled={grading} className="flex min-h-[46px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60">
+							<GoldButton onClick={submitQuiz} disabled={grading} className="disabled:opacity-60">
 								{grading ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('aca.grading')}</> : <>{t('aca.submitGrading')}</>}
-							</button>
+							</GoldButton>
 						</div>
 					)}
-				</div>
+				</Card>
 			)}
 
 			{!done && (
 				<div className="flex justify-end">
-					<button onClick={markDone} className="flex min-h-[46px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">
+					<GoldButton onClick={markDone}>
 						<CheckCircle2 className="h-4 w-4" /> {t('aca.markDone')}
-					</button>
+					</GoldButton>
 				</div>
 			)}
 
@@ -486,16 +484,18 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 
 	return (
 		<div className="space-y-4">
-			<div className="tint-hero rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
+			<PageHero
+				kicker={curriculum.pathName}
+				kickerIcon={Route}
+				subtitle={curriculum.focus}
+			>
 				<div className="flex flex-wrap items-start justify-between gap-3">
 					<div>
-						<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#d4af37]"><Route className="h-4 w-4" /> {curriculum.pathName}</div>
-						<p className="mt-1 max-w-xl text-sm text-[#c9c4b4]">{curriculum.focus}</p>
 						{isPreview && (
 							<p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#38bdf8]/10 px-2.5 py-1 text-[11px] text-[#38bdf8]"><Loader2 className="h-3 w-3 animate-spin" /> AI is personalizing this path — full topic map below.</p>
 						)}
 					</div>
-					<button onClick={onLeave} className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/20 px-3.5 py-2 text-xs text-[#8a8577] hover:text-[#d4af37]"><ArrowLeft className="h-3.5 w-3.5" /> {t('aca.allPaths')}</button>
+					<GhostButton onClick={onLeave} className="px-3.5 py-2 text-xs text-[#8a8577]"><ArrowLeft className="h-3.5 w-3.5" /> {t('aca.allPaths')}</GhostButton>
 				</div>
 				<div className="mt-4">
 					<div className="flex items-center justify-between text-xs text-[#8a8577]">
@@ -506,10 +506,10 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 						<div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] transition-all" style={{ width: `${pct}%` }} />
 					</div>
 				</div>
-			</div>
+			</PageHero>
 
 			{certificate?.certificateCode && (
-				<div className="rounded-2xl border border-[#d4af37]/25 bg-gradient-to-br from-[#d4af37]/[0.1] via-[#d4af37]/[0.04] to-transparent p-5 backdrop-blur-xl sm:p-6">
+				<Card className="border-[#d4af37]/25 p-5 sm:p-6">
 					<div className="flex flex-wrap items-center gap-3">
 						<Trophy className="h-8 w-8 text-[#d4af37]" />
 						<div className="min-w-0 flex-1">
@@ -519,7 +519,7 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 						</div>
 						<BadgeCheck className="h-10 w-10 shrink-0 text-[#d4af37]" />
 					</div>
-				</div>
+				</Card>
 			)}
 
 			<div className="mb-3 flex gap-2 overflow-x-auto no-scrollbar pb-1 sm:flex-wrap">
@@ -531,7 +531,7 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 				))}
 			</div>
 
-			<div className="glass rounded-2xl p-5">
+			<Card className="p-5">
 				{courseIndex < curriculum.courses.length && (() => {
 					const course = curriculum.courses[courseIndex];
 					const done = course.lessons.filter((l) => progressMap[`${course.courseKey}:${l.lessonKey}`]?.completed).length;
@@ -567,7 +567,7 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 						</>
 					);
 				})()}
-			</div>
+			</Card>
 		</div>
 	);
 }
@@ -598,32 +598,34 @@ function TopicExplorer({ onStartPath }) {
 
 	return (
 		<div className="space-y-4">
-			<div className="tint-hero rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
-				<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#d4af37]"><Library className="h-4 w-4" /> Topic library — every Forex & Crypto lesson</div>
-				<h2 className="mt-1.5 text-xl font-bold text-[#f0ecdd] sm:text-2xl">Search {topics.length}+ topics</h2>
-				<p className="mt-1 max-w-2xl text-sm text-[#8a8577]">Pips, lots & leverage · sessions & killzones · CPI/NFP news · SMC/ICT · carry & breakouts · wallets & custody · perps, funding & OI · on-chain · DeFi · volatility sizing and more. Pick a topic to jump into its path.</p>
+			<PageHero
+				kicker="Topic library — every Forex & Crypto lesson"
+				kickerIcon={Library}
+				title={`Search ${topics.length}+ topics`}
+				subtitle="Pips, lots & leverage · sessions & killzones · CPI/NFP news · SMC/ICT · carry & breakouts · wallets & custody · perps, funding & OI · on-chain · DeFi · volatility sizing and more. Pick a topic to jump into its path."
+			>
 				<div className="mt-4 flex flex-col gap-2 sm:flex-row">
 					<div className="relative flex-1">
 						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6a665a]" />
 						<input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search pips, funding, NFP, wallets, SMC, carry…" className="min-h-[44px] w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] pl-9 pr-3 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none focus:border-[#d4af37]/50" />
 					</div>
-					<div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 sm:flex-wrap">
+					<div className="tb-scroll-row">
 						{TRACKS.map((tr) => (
-							<button key={tr.key} onClick={() => setTrack(tr.key)} className={`min-h-[44px] shrink-0 rounded-xl px-4 text-xs font-semibold transition ${track === tr.key ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>{tr.name}</button>
+							<button key={tr.key} onClick={() => setTrack(tr.key)} className={`min-h-[44px] rounded-xl px-4 text-xs font-semibold transition ${track === tr.key ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>{tr.name}</button>
 						))}
 					</div>
 				</div>
 				<p className="mt-2 text-xs text-[#6a665a]">{filtered.length} topics {track !== 'all' ? `in ${track}` : 'across all paths'}{q ? ` matching “${q}”` : ''}</p>
-			</div>
+			</PageHero>
 
 			{grouped.length === 0 && (
-				<div className="glass rounded-2xl p-8 text-center text-sm text-[#8a8577]">No topics match. Try “leverage”, “funding”, “NFP” or “wallet”.</div>
+				<EmptyState title="No topics match." sub="Try “leverage”, “funding”, “NFP” or “wallet”." />
 			)}
 
 			{grouped.map((g) => {
 				const path = PATHS.find((p) => p.key === g.pathKey);
 				return (
-					<div key={`${g.pathKey}-${g.courseKey}`} className="glass rounded-2xl p-5">
+					<Card key={`${g.pathKey}-${g.courseKey}`} className="p-5">
 						<div className="flex flex-wrap items-center justify-between gap-2">
 							<div>
 								<div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide" style={{ color: path?.color || '#d4af37' }}>
@@ -644,7 +646,7 @@ function TopicExplorer({ onStartPath }) {
 								</button>
 							))}
 						</div>
-					</div>
+					</Card>
 				);
 			})}
 		</div>
@@ -799,9 +801,11 @@ export default function AcademyPage() {
 	if (access === false && !isAdmin) {
 		return (
 			<AppLayout title={t('aca.page')}>
+				<div className="tb-page">
 				<Paywall onPurchased={() => { toast({ title: t('aca.welcome'), description: t('aca.welcomeSub') }); refreshAccess(); }} />
 				<div className="mt-6">
 					<TopicExplorer onStartPath={() => { toast({ title: t('aca.badge'), description: 'Get lifetime access to unlock all paths and lessons.' }); }} />
+				</div>
 				</div>
 			</AppLayout>
 		);
@@ -811,14 +815,12 @@ export default function AcademyPage() {
 	if (loadError) {
 		return (
 			<AppLayout title={t('aca.page')}>
-				<div className="glass flex flex-col items-center rounded-2xl p-10 text-center">
-					<p className="text-sm text-[#c9c4b4]">{t('aca.loadFailRetry', null, 'Could not load your Academy. Check your connection, then try again.')}</p>
-					<button
-						onClick={() => { setLoadError(null); setAccess(null); setData(null); refreshAccess(); }}
-						className="mt-5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90"
-					>
-						{t('c.retry', null, 'Retry')}
-					</button>
+				<div className="tb-page">
+				<EmptyState
+					icon={GraduationCap}
+					title={t('aca.loadFailRetry', null, 'Could not load your Academy. Check your connection, then try again.')}
+					action={<GoldButton onClick={() => { setLoadError(null); setAccess(null); setData(null); refreshAccess(); }}>{t('c.retry', null, 'Retry')}</GoldButton>}
+				/>
 				</div>
 			</AppLayout>
 		);
@@ -827,9 +829,11 @@ export default function AcademyPage() {
 	if (access === null || !data) {
 		return (
 			<AppLayout title={t('aca.page')}>
-				<div className="glass flex flex-col items-center rounded-2xl p-10 text-center">
+				<div className="tb-page">
+				<Card className="flex flex-col items-center p-10 text-center">
 					<Loader2 className="h-8 w-8 animate-spin text-[#d4af37]" />
 					<p className="mt-4 text-sm text-[#c9c4b4]">{t('aca.loading')}</p>
+				</Card>
 				</div>
 			</AppLayout>
 		);
@@ -841,6 +845,7 @@ export default function AcademyPage() {
 	if (view === 'lesson' && activePath && activeCourse && activeLesson) {
 		return (
 			<AppLayout title={t('aca.page')}>
+				<div className="tb-page">
 				<LessonView
 					pathKey={activePath.key}
 					curriculum={curriculumFor(activePath.key) || STATIC_CURRICULA[activePath.key] || { pathName: activePath.name, courses: [] }}
@@ -850,6 +855,7 @@ export default function AcademyPage() {
 					onBack={() => { setView('curriculum'); setActiveCourse(null); setActiveLesson(null); }}
 					onLessonDone={refreshProgress}
 				/>
+				</div>
 			</AppLayout>
 		);
 	}
@@ -863,15 +869,16 @@ export default function AcademyPage() {
 		const certificate = enrollmentFor(activePath.key);
 		return (
 			<AppLayout title={t('aca.page')}>
+				<div className="tb-page">
 				{!curriculum || generating === activePath.key && !curriculum ? (
-					<div className="glass flex flex-col items-center rounded-2xl p-10 text-center">
+					<Card className="flex flex-col items-center p-10 text-center">
 						<div className="relative">
 							<Route className="h-10 w-10 animate-pulse text-[#d4af37]" />
 							<Loader2 className="absolute -bottom-1 -right-1 h-4 w-4 animate-spin text-[#d4af37]" />
 						</div>
 						<p className="mt-4 font-semibold text-[#f0ecdd]">{t('aca.designing', { path: activePath.name })}</p>
 						<p className="mt-1 max-w-md text-xs leading-relaxed text-[#6a665a]">{t('aca.designingSub')}</p>
-					</div>
+					</Card>
 				) : (
 					<CurriculumView
 						pathKey={activePath.key}
@@ -883,6 +890,7 @@ export default function AcademyPage() {
 						onLeave={() => { setView('paths'); setActivePath(null); }}
 					/>
 				)}
+				</div>
 			</AppLayout>
 		);
 	}
@@ -890,22 +898,24 @@ export default function AcademyPage() {
 	// ── Dashboard / portal ──
 	return (
 		<AppLayout title={t('aca.page')}>
+			<div className="tb-page">
 			{/* Portal hero */}
-			<div className="tint-hero mb-5 rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
+			<PageHero
+				kicker="AI-driven Forex + Crypto Academy"
+				kickerIcon={Sparkles}
+				title="Pick a desk, master every topic"
+				subtitle="Your AI builds each path around you, writes every lesson, grades every quiz and tutors you 1-on-1 — from first pip and first satoshi to funded-desk execution."
+				stats={[
+					{ label: 'paths', value: totals.paths, color: '#d4af37' },
+					{ label: 'Forex', value: forexCount, color: '#38bdf8' },
+					{ label: 'Crypto', value: cryptoCount, color: '#f472b6' },
+					{ label: 'content', value: `${Math.round(totals.minutes / 60)}h+`, color: '#34d399' },
+					{ label: 'live / week', value: 8, color: '#34d399' },
+				]}
+			>
 				<div className="flex flex-wrap items-center justify-between gap-4">
 					<div>
-						<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#d4af37]"><Sparkles className="h-4 w-4" /> AI-driven Forex + Crypto Academy</div>
-						<h2 className="mt-1.5 text-xl font-bold text-[#f0ecdd] sm:text-2xl">Pick a desk, master every topic</h2>
-						<p className="mt-1 max-w-2xl text-sm text-[#8a8577]">Your AI builds each path around you, writes every lesson, grades every quiz and tutors you 1-on-1 — from first pip and first satoshi to funded-desk execution.</p>
-						<div className="mt-3 flex flex-wrap gap-2 text-xs">
-							<span className="rounded-full bg-[#d4af37]/12 px-2.5 py-1 text-[#d4af37]">{totals.paths} paths</span>
-							<span className="rounded-full bg-[#38bdf8]/10 px-2.5 py-1 text-[#38bdf8]">{forexCount} Forex topics</span>
-							<span className="rounded-full bg-[#f472b6]/10 px-2.5 py-1 text-[#f472b6]">{cryptoCount} Crypto topics</span>
-							<span className="rounded-full bg-[#34d399]/10 px-2.5 py-1 text-[#34d399]">{Math.round(totals.minutes / 60)}h+ content</span>
-							<span className="rounded-full bg-emerald-400/10 px-2.5 py-1 text-emerald-400">8 live sessions / week</span>
-						</div>
-					</div>
-					{enrolled.length > 0 && (
+						{enrolled.length > 0 && (
 						<div className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14]/40 px-4 py-3 text-right backdrop-blur-xl">
 							<p className="text-xs text-[#8a8577]">{t('aca.overall')}</p>
 							<p className="mt-0.5 font-bold text-[#d4af37]">{(() => {
@@ -919,33 +929,33 @@ export default function AcademyPage() {
 								return total ? `${Math.round((done / total) * 100)}%` : '0%';
 							})()}</p>
 						</div>
-					)}
+						)}
+					</div>
 				</div>
 				{/* Track filter */}
-				<div className="mt-4 flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:flex-wrap">
+				<div className="tb-scroll-row mt-4 items-center">
 					<Filter className="h-3.5 w-3.5 shrink-0 text-[#6a665a]" />
 					{[{ key: 'all', name: 'All' }, ...TRACKS.filter((x) => x.key !== 'all')].map((tr) => (
 						<button key={tr.key} onClick={() => setTrackFilter(tr.key)}
-							className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${trackFilter === tr.key ? 'bg-[#d4af37] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
+							className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${trackFilter === tr.key ? 'bg-[#d4af37] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
 							{tr.name}
 						</button>
 					))}
 				</div>
-			</div>
+			</PageHero>
 
 			{/* Tabs */}
-			<div className="mb-5 flex gap-2 overflow-x-auto no-scrollbar pb-1 sm:flex-wrap">
-				{[
+			<div className="mb-5">
+			<Tabs
+				active={tab}
+				onChange={setTab}
+				tabs={[
 					{ id: 'learn', icon: GraduationCap, label: t('aca.tabLearn') },
 					{ id: 'topics', icon: Library, label: 'Topics' },
 					{ id: 'webinars', icon: Video, label: t('aca.tabWeb') },
 					{ id: 'certificates', icon: Award, label: t('aca.tabCert') },
-				].map((tb) => (
-					<button key={tb.id} onClick={() => setTab(tb.id)}
-						className={`frost-tab flex min-h-[42px] shrink-0 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition ${tab === tb.id ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
-						<tb.icon className="h-4 w-4" /> {tb.label}
-					</button>
-				))}
+				]}
+			/>
 			</div>
 
 			{tab === 'learn' && (
@@ -961,7 +971,7 @@ export default function AcademyPage() {
 							const pct = lessons ? Math.round((done / lessons) * 100) : 0;
 							const trackColor = TRACK_COLORS[p.track] || p.color;
 							return (
-								<div key={p.key} className="glass glass-hover relative flex h-full flex-col rounded-2xl p-5">
+								<Card hover key={p.key} className="relative flex h-full flex-col p-5">
 									<div className="flex items-center gap-2">
 										<PathIcon icon={p.icon} color={p.color} />
 										<span className="text-xs font-semibold uppercase tracking-wide" style={{ color: p.color }}>{p.level} path</span>
@@ -983,39 +993,38 @@ export default function AcademyPage() {
 									)}
 									<div className="mt-4 flex items-center gap-2">
 										{isEnrolled ? (
-											<button onClick={() => { setActivePath(p); setView('curriculum'); }} className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">
+											<GoldButton onClick={() => { setActivePath(p); setView('curriculum'); }} className="flex-1 px-4">
 												{cert?.certificateCode ? <><BadgeCheck className="h-4 w-4" /> Certified</> : pct === 100 ? <><Award className="h-4 w-4" /> {t('aca.claimCert')}</> : <><PlayCircle className="h-4 w-4" /> {t('aca.continue')}</>}
-											</button>
+											</GoldButton>
 										) : (
-											<button onClick={() => enroll(p)} disabled={generating === p.key}
-												className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-[#d4af37]/30 px-4 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 disabled:opacity-50">
+											<GhostButton onClick={() => enroll(p)} disabled={generating === p.key} className="flex-1 px-4 disabled:opacity-50">
 												{generating === p.key ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('aca.enrolling')}</> : <><Rocket className="h-4 w-4" /> {t('aca.enroll')}</>}
-											</button>
+											</GhostButton>
 										)}
 									</div>
 									{isEnrolled && !cert?.certificateCode && pct === 100 && (
-										<button onClick={() => doClaimCertificate(p.key)} className="mt-2 min-h-[44px] w-full rounded-xl border border-[#d4af37]/25 px-4 text-sm font-semibold text-[#f4e6a8] transition hover:bg-[#d4af37]/10">{t('aca.claimAiCert')}</button>
+										<GhostButton onClick={() => doClaimCertificate(p.key)} className="mt-2 w-full px-4 text-[#f4e6a8]">{t('aca.claimAiCert')}</GhostButton>
 									)}
-								</div>
+								</Card>
 							);
 						})}
 					</div>
 					{filteredPaths.length === 0 && (
-						<div className="glass mt-4 rounded-2xl p-8 text-center text-sm text-[#8a8577]">No paths in this track. Switch the filter above.</div>
+						<EmptyState title="No paths in this track." sub="Switch the filter above." />
 					)}
 
 					{/* Forex vs Crypto quick jump */}
 					<div className="mt-6 grid gap-4 md:grid-cols-2">
-						<div className="rounded-2xl border border-[#38bdf8]/25 bg-gradient-to-br from-[#38bdf8]/[0.1] to-transparent p-5 backdrop-blur-xl">
+						<Card className="border-[#38bdf8]/25 p-5">
 							<div className="flex items-center gap-2 text-[#38bdf8]"><Globe className="h-5 w-5" /><span className="text-xs font-bold uppercase tracking-wide">Forex desk</span></div>
 							<p className="mt-2 text-sm leading-relaxed text-[#c9c4b4]">Majors → exotics, London & NY killzones, CPI/NFP news, SMC liquidity, carry & prop-firm funding. {forexCount} lessons.</p>
 							<button onClick={() => startPathByKey('forex')} className="mt-3 min-h-[44px] rounded-xl bg-[#38bdf8] px-5 text-sm font-bold text-[#06222f] transition hover:opacity-90">Open Forex Mastery</button>
-						</div>
-						<div className="rounded-2xl border border-[#f472b6]/25 bg-gradient-to-br from-[#f472b6]/[0.1] to-transparent p-5 backdrop-blur-xl">
+						</Card>
+						<Card className="border-[#f472b6]/25 p-5">
 							<div className="flex items-center gap-2 text-[#f472b6]"><Bitcoin className="h-5 w-5" /><span className="text-xs font-bold uppercase tracking-wide">Crypto desk</span></div>
 							<p className="mt-2 text-sm leading-relaxed text-[#c9c4b4]">Wallets → spot → perps & funding → on-chain → DeFi → custody. Volatility sizing for 10% days. {cryptoCount} lessons.</p>
 							<button onClick={() => startPathByKey('crypto')} className="mt-3 min-h-[44px] rounded-xl bg-[#f472b6] px-5 text-sm font-bold text-[#2f0618] transition hover:opacity-90">Open Crypto Mastery</button>
-						</div>
+						</Card>
 					</div>
 				</>
 			)}
@@ -1026,23 +1035,25 @@ export default function AcademyPage() {
 
 			{tab === 'webinars' && (
 				<div className="space-y-5">
-					<div className="tint-hero rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
-						<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#d4af37]"><Radio className="h-4 w-4" /> {t('aca.liveInteractive')}</div>
-						<h2 className="mt-1.5 text-xl font-bold text-[#f0ecdd] sm:text-2xl">{t('aca.webTitle')}</h2>
-						<p className="mt-1 max-w-xl text-sm text-[#8a8577]">{t('aca.webSub')} Now with dedicated Forex and Crypto desks.</p>
-						<div className="mt-3 flex flex-wrap gap-2">
+					<PageHero
+						kicker={t('aca.liveInteractive')}
+						kickerIcon={Radio}
+						title={t('aca.webTitle')}
+						subtitle={`${t('aca.webSub')} Now with dedicated Forex and Crypto desks.`}
+					>
+						<div className="tb-scroll-row mt-3">
 							{[{ key: 'all', name: 'All desks' }, { key: 'forex', name: 'Forex' }, { key: 'crypto', name: 'Crypto' }, { key: 'general', name: 'General' }, { key: 'pro', name: 'Pro' }].map((tr) => (
 								<button key={tr.key} onClick={() => setTrackFilter(tr.key)} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${trackFilter === tr.key ? 'bg-[#d4af37] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577]'}`}>{tr.name}</button>
 							))}
 						</div>
-					</div>
+					</PageHero>
 					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 						{filteredWebinars.map((w) => {
 							const { live, start } = w.state;
 							const rsvped = rsvps.includes(w.id);
 							const wColor = TRACK_COLORS[w.track] || '#d4af37';
 							return (
-								<div key={w.id} className={`glass h-full rounded-2xl p-5 ${live ? 'border border-[#34d399]/30' : ''}`}>
+								<Card key={w.id} hover className={`h-full p-5 ${live ? 'border-[#34d399]/30' : ''}`}>
 									<div className="flex flex-wrap items-center gap-2">
 										{live
 											? <span className="flex items-center gap-1.5 rounded-full bg-emerald-400/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-400"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> {t('aca.liveNow')}</span>
@@ -1061,7 +1072,7 @@ export default function AcademyPage() {
 										className={`mt-4 min-h-[42px] w-full rounded-xl border px-4 text-sm font-semibold transition ${rsvped ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-400' : 'border-[#d4af37]/25 text-[#d4af37] hover:bg-[#d4af37]/10'}`}>
 										{rsvped ? <><CheckCircle2 className="mr-1.5 inline h-4 w-4" /> {t('aca.onList')}</> : t('aca.rsvp')}
 									</button>
-								</div>
+								</Card>
 							);
 						})}
 					</div>
@@ -1082,25 +1093,23 @@ export default function AcademyPage() {
 							/>
 						</div>
 					) : (
-						<div className="glass flex items-center gap-3 rounded-2xl p-5">
+						<Card className="flex items-center gap-3 p-5">
 							<Calendar className="h-6 w-6 text-[#d4af37]" />
 							<p className="text-sm text-[#c9c4b4]">{t('aca.nextSession', { cd: fmtCountdown(filteredWebinars.reduce((a, w) => (w.state.start.getTime() < a.state.start.getTime() ? w : a)).state.start, t) })}</p>
-						</div>
+						</Card>
 					)}
 				</div>
 			)}
 
 			{tab === 'certificates' && (
 				<div className="space-y-4">
-					<div className="tint-hero rounded-2xl border border-[#d4af37]/15 p-5 sm:p-6">
-						<h2 className="text-xl font-bold text-[#f0ecdd] sm:text-2xl"><Award className="mr-2 inline h-6 w-6 text-[#d4af37]" />{t('aca.yourCerts')}</h2>
-						<p className="mt-1 max-w-xl text-sm text-[#8a8577]">{t('aca.yourCertsSub')} Earn one per path — including Forex Mastery and Crypto Mastery.</p>
-					</div>
+					<PageHero
+						kicker={t('aca.yourCerts')}
+						kickerIcon={Award}
+						subtitle={`${t('aca.yourCertsSub')} Earn one per path — including Forex Mastery and Crypto Mastery.`}
+					/>
 					{enrolled.length === 0 ? (
-						<div className="glass flex flex-col items-center rounded-2xl p-10 text-center">
-							<Award className="h-10 w-10 text-[#6a665a]" />
-							<p className="mt-3 text-sm text-[#c9c4b4]">{t('aca.enrollSub')}</p>
-						</div>
+						<EmptyState icon={Award} title={t('aca.enrollSub')} />
 					) : enrolled.map((e) => {
 						const p = PATHS.find((x) => x.key === e.pathKey);
 						const curriculum = curriculumFor(e.pathKey) || STATIC_CURRICULA[e.pathKey];
@@ -1108,7 +1117,7 @@ export default function AcademyPage() {
 						const done = curriculum ? curriculum.courses.reduce((a, c) => a + c.lessons.filter((l) => progressMap[`${c.courseKey}:${l.lessonKey}`]?.completed).length, 0) : 0;
 						const pct = lessons ? Math.round((done / lessons) * 100) : 0;
 						return (
-							<div key={e.pathKey} className="glass flex flex-wrap items-center justify-between gap-4 rounded-2xl p-5">
+							<Card key={e.pathKey} className="flex flex-wrap items-center justify-between gap-4 p-5">
 								<div className="flex items-center gap-3">
 									<div className="grid h-11 w-11 place-items-center rounded-full bg-[#d4af37]/12 text-[#d4af37]">{e.certificateCode ? <Trophy className="h-5 w-5" /> : <Lock className="h-5 w-5" />}</div>
 									<div>
@@ -1118,17 +1127,16 @@ export default function AcademyPage() {
 								</div>
 								{e.certificateCode
 									? <span className="flex items-center gap-1.5 rounded-full bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-400"><BadgeCheck className="h-4 w-4" /> Certified</span>
-									: <button onClick={() => doClaimCertificate(e.pathKey)} disabled={pct < 100}
-										className="min-h-[42px] rounded-xl border border-[#d4af37]/25 px-4 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-40">
+									: <GhostButton onClick={() => doClaimCertificate(e.pathKey)} disabled={pct < 100} className="disabled:cursor-not-allowed disabled:opacity-40">
 										{pct < 100 ? t('aca.completeMore', { p: 100 - pct }) : t('aca.claimCert')}
-									</button>}
-							</div>
+									</GhostButton>}
+							</Card>
 						);
 					})}
 				</div>
 			)}
 
-			<div className="tint-hero mt-8 flex flex-col items-center rounded-2xl border border-[#d4af37]/15 p-6 text-center sm:flex-row sm:justify-between sm:p-8 sm:text-left">
+			<Card className="mt-8 flex flex-col items-center p-6 text-center sm:flex-row sm:justify-between sm:p-8 sm:text-left">
 				<div className="flex items-center gap-4">
 					<Bot className="h-10 w-10 shrink-0 text-[#d4af37]" />
 					<div>
@@ -1136,7 +1144,8 @@ export default function AcademyPage() {
 						<p className="text-sm text-[#8a8577]">{t('aca.aiRunsSub')}</p>
 					</div>
 				</div>
-				<button onClick={() => setTab('learn')} className="mt-4 flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-3 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 sm:mt-0"><MessageSquare className="h-4 w-4" /> {t('aca.startLearning')}</button>
+				<GoldButton onClick={() => setTab('learn')} className="mt-4 sm:mt-0"><MessageSquare className="h-4 w-4" /> {t('aca.startLearning')}</GoldButton>
+			</Card>
 			</div>
 		</AppLayout>
 	);

@@ -1,10 +1,10 @@
 import React, { useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowUpRight, X } from 'lucide-react';
+import { ArrowUpRight, Grid2x2, X } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import MarketHeatmap from '@/components/MarketHeatmap';
 import ChartPanel from '@/components/ChartPanel';
 import AddToWatchlist from '@/components/AddToWatchlist';
+import { PageHero, Card, GoldButton } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
 
 export default function HeatmapsPage() {
@@ -24,30 +24,36 @@ export default function HeatmapsPage() {
 
   return (
     <AppLayout title={t('nav.heatmaps')}>
-      <div className="glass rounded-2xl p-4 sm:p-6">
-        <div className="mb-4">
-          <h3 className="font-semibold text-[#f0ecdd]">{t('mkt.liveHeat')}</h3>
-          <p className="mt-0.5 text-xs text-[#8a8577]">{t('mkt.heatSub')}</p>
-        </div>
-        <MarketHeatmap type={type} setType={setType} period={period} setPeriod={setPeriod} onSelect={select} />
-      </div>
+      <div className="tb-page">
+        <PageHero
+          kicker={t('nav.heatmaps')}
+          kickerIcon={Grid2x2}
+          title={t('mkt.liveHeat')}
+          subtitle={t('mkt.heatSub')}
+        />
+        <Card>
+          <MarketHeatmap type={type} setType={setType} period={period} setPeriod={setPeriod} onSelect={select} />
+        </Card>
 
-      {selected && (
-        <div ref={chartRef} className="mt-5 glass scroll-mt-24 rounded-2xl p-4 sm:p-6">
-          <div className="mb-3 flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-[#f0ecdd]">{selected.name} <span className="font-mono text-[#8a8577]">({selected.symbol})</span></h3>
-              <p className={`text-xs ${selected.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{selected.changePercent >= 0 ? '+' : ''}{selected.changePercent}% · {period}</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <AddToWatchlist symbol={selected.symbol} />
-              <Link to={`/app/charts?symbol=${encodeURIComponent(selected.symbol)}`} className="flex items-center gap-1 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1.5 text-xs font-semibold text-[#0a0a0f] transition hover:opacity-90">{t('mkt.openFull')} <ArrowUpRight className="h-3.5 w-3.5" /></Link>
-              <button onClick={() => setSelected(null)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><X className="h-4 w-4" /></button>
-            </div>
+        {selected && (
+          <div ref={chartRef} className="scroll-mt-24">
+            <Card>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-[#f0ecdd]">{selected.name} <span className="font-mono text-[#8a8577]">({selected.symbol})</span></h3>
+                  <p className={`text-xs ${selected.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{selected.changePercent >= 0 ? '+' : ''}{selected.changePercent}% · {period}</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <AddToWatchlist symbol={selected.symbol} />
+                  <GoldButton to={`/app/charts?symbol=${encodeURIComponent(selected.symbol)}`} className="min-h-[36px] px-3 py-1.5 text-xs">{t('mkt.openFull')} <ArrowUpRight className="h-3.5 w-3.5" /></GoldButton>
+                  <button onClick={() => setSelected(null)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><X className="h-4 w-4" /></button>
+                </div>
+              </div>
+              <ChartPanel key={selected.symbol} initialSymbol={selected.symbol} initialTimeframe="1h" compact />
+            </Card>
           </div>
-          <ChartPanel key={selected.symbol} initialSymbol={selected.symbol} initialTimeframe="1h" compact />
-        </div>
-      )}
+        )}
+      </div>
     </AppLayout>
   );
 }
