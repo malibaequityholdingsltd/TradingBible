@@ -81,6 +81,10 @@ const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPl
                   if (ref) ref.current = e.target;
                   try { apiRef.current?.(true); } catch { /* noop */ }
                   markPlaying();
+                } else if (e?.data === window.YT?.PlayerState?.ENDED) {
+                  // Stream/VOD ended — hand back to the auto-advance chain
+                  // so the next desk starts with no tap.
+                  playingRef.current?.(false);
                 }
               },
               onError: () => playingRef.current?.(false),

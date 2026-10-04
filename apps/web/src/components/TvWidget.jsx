@@ -557,10 +557,12 @@ export default function TvWidget() {
                       <p className="text-[10px] uppercase tracking-wider text-[#6a665a]">Retrying automatically…</p>
                     </div>
                   )}
-                  {/* No-touch shield (engages once playing): no tap on the
-                      video can pause it or open suggestions. Sound and
-                      channel controls live outside the frame. */}
-                  {(!isYoutube || ytStarted) && <div className="absolute inset-0 bg-transparent" />}
+                  {/* No-touch shield — always on from the first frame: no tap
+                      on the video can pause it, start it, or open
+                      suggestions. Playback is fully automatic; sound and
+                      channel controls live outside the frame. Slates stay
+                      tappable because the shield hides while one shows. */}
+                  {!ytBlocked && !ytError && <div aria-hidden className="absolute inset-0 bg-transparent" />}
                 </div>
                 <div className="flex items-center justify-between gap-2 border-t border-[#d4af37]/10 px-3 py-1.5">
                   <span className="truncate text-[10px] text-[#6a665a]">{ordered[playing].desk} · live in player</span>
