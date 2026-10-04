@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Bot, Plug, BookOpen, ArrowRight, Check, BarChart3, Menu, X,
-  CircleDot, GraduationCap, Wallet, Radar, LineChart, Sparkles,
+  CircleDot, GraduationCap, Wallet, Radar, Sparkles,
 } from 'lucide-react';
 import { PLANS, translatePlan } from '@/lib/mockData';
 import Footer from '@/components/Footer';
@@ -13,22 +13,23 @@ import { useTheme } from '@/hooks/useTheme';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { useI18n } from '@/lib/i18n';
 import { usePlatformSettings } from '@/lib/platformSettings';
+import { Card, GhostButton, GoldButton, Kicker, StatGrid, Stat } from '@/components/ui-kit';
 
 const LOGO = TRADINGBIBLE_LOGO;
 
 const STATS = [
-  { value: '240', label: 'Tradeable pairs across 5 markets' },
-  { value: '60', label: 'Live crypto streams, tick-by-tick' },
-  { value: '14', label: 'Built-in technical indicators' },
-  { value: '8', label: 'Languages supported' },
+  { value: '8+', label: 'Broker integrations' },
+  { value: '60+', label: 'Technical indicators' },
+  { value: '99.9%', label: 'Platform uptime' },
+  { value: '24/7', label: 'SI coaching' },
 ];
 
 const FEATURES = [
-  { icon: LineChart, title: 'Live multi-market terminal', body: 'Crypto, forex, commodities, sectors and stocks — live charts with drawings, 14 indicators, watchlists, alerts and an economic calendar in one Bloomberg-grade terminal.' },
-  { icon: CircleDot, title: '3D bubble heatmaps', body: 'The whole market as living bubbles across 5 markets plus an All view — size by move or volume, drag them, search any pair, switch color themes.' },
+  { icon: BarChart3, title: 'Institutional analytics', body: 'Equity curve, profit factor, drawdown and a proprietary Trader Score — computed live from synced trades.' },
   { icon: Bot, title: 'SI trading coach', body: 'Your personal SI reviews every trade, grades discipline, spots recurring mistakes and answers questions grounded in your real history.' },
   { icon: BookOpen, title: 'Journal that syncs itself', body: 'Connect a broker or prop firm once — trades land in your journal automatically with analytics, reports and a trading calendar.' },
   { icon: Plug, title: 'Brokers, prop firms & wallet', body: 'MT4, MT5, cTrader, Interactive Brokers, Binance, Bybit and top prop firms, plus self-custody wallet tracking with live balances.' },
+  { icon: CircleDot, title: '3D bubble heatmaps', body: 'The whole market as living bubbles across 5 markets plus an All view — size by move or volume, drag them, search any pair, switch color themes.' },
   { icon: GraduationCap, title: 'SI-run academy', body: 'A full trading school where the SI writes every lesson, grades every quiz, hosts live webinars and tutors you one-on-one. Lifetime access, one payment.' },
 ];
 
@@ -42,7 +43,7 @@ const FAQS = [
   { q: 'Do you offer a free trial?', a: 'No — TradingBible is paid-only: your card is charged at checkout before you enter the terminal. Instead of a trial, every first payment carries a 14-day money-back guarantee, so you can test broker sync, analytics, the SI Coach and signals risk-free.' },
   { q: 'Which brokers and platforms are supported?', a: 'MetaTrader 4 and 5, cTrader, DXtrade, Interactive Brokers, Binance, Bybit and Coinbase (live accounts only), plus prop firms like FTMO and FundedNext — with self-custody wallet tracking for BTC, ETH, USDC and Solana. Trades and balances sync automatically, nothing is typed by hand.' },
   { q: 'What does the SI Coach actually do?', a: 'Your 24/7 SI mentor: it reviews every synced trade for quality, risk and discipline, detects recurring mistakes (widened stops, revenge trading, overtrading), grades your discipline and answers questions grounded in your real history — try “What is my biggest mistake?”.' },
-  { q: 'How does the Academy work?', a: 'One $150 lifetime payment unlocks the full school: 5 paths including Forex Mastery A–Z and Crypto Mastery A–Z (110+ topics from pips and wallets to funding rates and prop-firm challenges), an SI that writes every lesson and grades every quiz, a 1-on-1 tutor inside each lesson, 8 live webinars a week and a certificate per path. Admins enter free.' },
+  { q: 'How does the Academy work?', a: 'One $150 lifetime payment unlocks the full school: 6 paths including Forex Mastery A–Z, Crypto Mastery A–Z and Order Flow Mastery (146 topics from pips and wallets to funding rates and prop-firm challenges), an SI that writes every lesson and grades every quiz, a 1-on-1 tutor inside each lesson, 8 live webinars a week and a certificate per path. Admins enter free.' },
 ];
 
 function Nav({ homeTo, isAuthed, platformName }) {
@@ -68,10 +69,10 @@ function Nav({ homeTo, isAuthed, platformName }) {
       <div className="mx-auto flex w-full max-w-[96rem] items-center justify-between gap-4 px-4 py-3 sm:px-6 sm:py-4">
         <Link to={homeTo} className="flex shrink-0 items-center gap-2.5">
           <img src={LOGO} alt={`${brand} logo`} className="h-9 w-9 shrink-0 rounded-xl object-contain gold-glow sm:h-10 sm:w-10" />
-          <span className="text-xl font-extrabold tracking-tight text-[#e9e7df] sm:text-2xl">{first ? `${first} ` : ''}<span className="gold-text">{last}</span></span>
+          <span className="text-xl font-extrabold tracking-tight text-[#e9e7df] sm:text-2xl">{first ? `${first} ` : ''}<span className="tb-gold-text">{last}</span></span>
         </Link>
 
-        <nav className="hidden items-center gap-1 rounded-full border border-white/5 bg-white/[0.03] p-1.5 md:flex">
+        <nav className="hidden items-center gap-1 rounded-full border border-white/5 bg-white/[0.03] p-1.5 backdrop-blur-md md:flex">
           <a href="#features" className={navLink}>{t('land.features')}</a>
           <a href="#academy" className={navLink}>{t('nav.academy')}</a>
           <Link to="/pricing" className={navLink}>{t('land.pricing')}</Link>
@@ -80,15 +81,11 @@ function Nav({ homeTo, isAuthed, platformName }) {
 
         <div className="flex items-center gap-2 sm:gap-3">
           {isAuthed ? (
-            <Link to={homeTo} className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] shadow-[0_4px_20px_rgba(212,175,55,0.3)] transition hover:opacity-90 hover:shadow-[0_4px_28px_rgba(212,175,55,0.45)]">
-              <span>{t('land.openDash')}</span>
-            </Link>
+            <GoldButton to={homeTo}><span>{t('land.openDash')}</span></GoldButton>
           ) : (
             <>
               <Link to="/login" className="hidden rounded-full px-4 py-2 text-sm font-medium text-[#c9c4b4] transition-colors hover:bg-white/5 hover:text-[#e9e7df] sm:block">{t('land.login')}</Link>
-              <Link to="/pricing" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] shadow-[0_4px_20px_rgba(212,175,55,0.3)] transition hover:opacity-90 hover:shadow-[0_4px_28px_rgba(212,175,55,0.45)]">
-                <span>{t('land.viewPricing')}</span>
-              </Link>
+              <GoldButton to="/pricing"><span>{t('land.viewPricing')}</span></GoldButton>
               <button onClick={() => setMenuOpen((o) => !o)} className="grid h-10 w-10 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60 md:hidden" aria-label={t('nav.menu')} aria-expanded={menuOpen}>
                 {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
@@ -103,7 +100,7 @@ function Nav({ homeTo, isAuthed, platformName }) {
             <a href="#features" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]">{t('land.features')}</a>
             <a href="#academy" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]">{t('nav.academy')}</a>
             <Link to="/pricing" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]">{t('land.pricing')}</Link>
-            <Link to="/about" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]">{t('land.about')}</Link>
+            <Link to="/about" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#c9c4b4] transition-colors hover:bg-white/5 hover:text-[#e9e7df]">{t('land.about')}</Link>
             <Link to="/login" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#c9c4b4] transition-colors hover:bg-white/5 hover:text-[#e9e7df]">{t('land.login')}</Link>
           </nav>
         </div>
@@ -135,35 +132,35 @@ export default function LandingPage() {
 
         <div className="relative mx-auto flex w-full max-w-[72rem] flex-col items-center px-6 text-center">
           <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium tracking-wide text-[#d4af37] ${isLight ? 'border-[#d4af37]/45 bg-[#d4af37]/[0.12]' : 'border-[#d4af37]/30 bg-[#d4af37]/[0.07]'}`}>
-              <span className="h-1.5 w-1.5 rounded-full bg-[#d4af37]" />
+            <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium tracking-wide text-[#d4af37] backdrop-blur-md ${isLight ? 'border-[#d4af37]/45 bg-[#d4af37]/[0.12]' : 'border-[#d4af37]/30 bg-[#d4af37]/[0.07]'}`}>
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#d4af37]" />
               {t('land.heroKick')}
             </div>
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.08 }} className="mt-7 text-5xl font-extrabold leading-[0.98] tracking-tight sm:text-6xl lg:text-[5.5rem]">
-            {t('land.heroA')} <span className="gold-text">{t('land.heroB')}</span><br />
-            {t('land.heroC')} <span className="gold-text">{t('land.heroD')}</span>
+            {t('land.heroA')} <span className="tb-gold-text">{t('land.heroB')}</span><br />
+            {t('land.heroC')} <span className="tb-gold-text">{t('land.heroD')}</span>
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.16 }} className="mt-7 max-w-2xl text-base leading-relaxed text-[#b8b3a3] sm:text-lg">
             {settings.tagline || t('land.heroSub')}
           </motion.p>
 
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.24 }} className="mt-10 flex flex-col gap-3.5 sm:flex-row sm:items-center sm:gap-4">
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.24 }} className="mt-10 flex w-full flex-col gap-3.5 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
             {signupsOpen ? (
-              <Link to="/pricing" className="btn-neon inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f7ecb6] via-[#e2bd4f] to-[#c99a25] px-8 py-4 text-base font-bold text-[#0a0a0f] transition hover:opacity-90">{t('land.choosePlan', null, 'Choose your plan')} <ArrowRight className="h-4 w-4" /></Link>
+              <GoldButton to="/pricing" className="px-8 py-4 text-base">{t('land.choosePlan', null, 'Choose your plan')} <ArrowRight className="h-4 w-4" /></GoldButton>
             ) : (
-              <span className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#d4af37]/35 bg-white/[0.03] px-8 py-4 text-base font-semibold text-[#8a8577]">{t('land.signupsPaused')}</span>
+              <span className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#d4af37]/35 bg-white/[0.03] px-8 py-4 text-base font-semibold text-[#8a8577] backdrop-blur-md">{t('land.signupsPaused')}</span>
             )}
-            <Link to="/tv" className="btn-glass inline-flex items-center justify-center rounded-xl border border-[#d4af37]/35 bg-white/[0.02] px-8 py-4 text-base font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60 hover:text-[#e9e7df]">{t('land.watchTv', null, 'Watch TradingBible TV')}</Link>
+            <GhostButton to="/tv" className="border px-8 py-4 text-base text-[#e9e7df]">{t('land.watchTv', null, 'Watch TradingBible TV')}</GhostButton>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.34 }} className="mt-14 w-full max-w-3xl border-t border-[#d4af37]/12 pt-8">
             <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
               {STATS.map((s) => (
                 <div key={s.label}>
-                  <div className="font-mono text-3xl font-bold gold-text">{s.value}</div>
+                  <div className="tb-gold-text font-mono text-3xl font-bold">{s.value}</div>
                   <div className="mt-1 text-xs uppercase tracking-[0.18em] text-[#8a8577]">{s.label}</div>
                 </div>
               ))}
@@ -173,35 +170,39 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="mx-auto max-w-[96rem] px-6 py-24">
-        <div className="mb-14 max-w-2xl">
-          <p className="mb-3 flex items-center gap-2 text-sm font-medium uppercase tracking-[0.2em] text-[#d4af37]"><Sparkles className="h-4 w-4" />{t('land.featKick')}</p>
-          <h2 className="text-4xl font-bold sm:text-5xl">{t('land.featTitleA')} <span className="gold-text">{t('land.featTitleB')}</span></h2>
+      <section id="features" className="mx-auto w-full max-w-[96rem] scroll-mt-24 px-4 py-16 sm:px-6 sm:py-24">
+        <div className="mb-10 max-w-2xl sm:mb-14">
+          <Kicker icon={Sparkles}>{t('land.featKick')}</Kicker>
+          <h2 className="tb-h2 text-4xl sm:text-5xl">{t('land.featTitleA')} <span className="tb-gold-text">{t('land.featTitleB')}</span></h2>
         </div>
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="tb-grid-auto">
           {FEATURES.map((f, i) => (
-            <motion.div key={f.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }} className="portfolio-card glass rounded-2xl p-6">
-              <div className="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><f.icon className="h-5 w-5" /></div>
-              <h3 className="portfolio-card__title mb-2 text-lg font-semibold">{f.title}</h3>
-              <p className="text-sm leading-relaxed text-[#8a8577]">{f.body}</p>
+            <motion.div key={f.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: Math.min(i, 5) * 0.06 }}>
+              <Card hover className="h-full p-6">
+                <div className="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><f.icon className="h-5 w-5" /></div>
+                <h3 className="mb-2 text-lg font-semibold text-[#f0ecdd]">{f.title}</h3>
+                <p className="text-sm leading-relaxed text-[#8a8577]">{f.body}</p>
+              </Card>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* How it works */}
-      <section className={`border-y border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/60' : 'bg-[#0a0a0f]/60'}`}>
-        <div className="mx-auto max-w-[96rem] px-6 py-24">
-          <div className="mb-12 max-w-2xl">
-            <p className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-[#d4af37]">{t('land.howKick', null, 'How it works')}</p>
-            <h2 className="text-4xl font-bold sm:text-5xl">{t('land.howTitle', null, 'Live in three steps')}</h2>
+      <section className={`border-y border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/60' : 'bg-[#0a0a0f]/60'} backdrop-blur-sm`}>
+        <div className="mx-auto w-full max-w-[96rem] px-4 py-16 sm:px-6 sm:py-24">
+          <div className="mb-10 max-w-2xl sm:mb-12">
+            <Kicker>{t('land.howKick', null, 'How it works')}</Kicker>
+            <h2 className="tb-h2 text-4xl sm:text-5xl">{t('land.howTitle', null, 'Live in three steps')}</h2>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
             {STEPS.map((s, i) => (
-              <motion.div key={s.n} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="glass rounded-2xl p-6">
-                <div className="font-mono text-4xl font-bold gold-text">{s.n}</div>
-                <h3 className="mt-3 text-lg font-semibold">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">{s.body}</p>
+              <motion.div key={s.n} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                <Card className="h-full p-6">
+                  <div className="tb-gold-text font-mono text-4xl font-bold">{s.n}</div>
+                  <h3 className="mt-3 text-lg font-semibold text-[#f0ecdd]">{s.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">{s.body}</p>
+                </Card>
               </motion.div>
             ))}
           </div>
@@ -209,19 +210,19 @@ export default function LandingPage() {
       </section>
 
       {/* SI coach band */}
-      <section id="ai" className="mx-auto max-w-[96rem] px-6 py-24">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
+      <section id="ai" className="mx-auto w-full max-w-[96rem] scroll-mt-24 px-4 py-16 sm:px-6 sm:py-24">
+        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
           <div>
-            <p className="mb-3 text-sm font-medium uppercase tracking-[0.2em] text-[#d4af37]">{t('land.aiKick')}</p>
-            <h2 className="text-4xl font-bold sm:text-5xl">{t('land.aiTitleA')} <span className="gold-text">{t('land.aiTitleB')}</span>{t('land.aiTitleC')}</h2>
-            <p className="mt-5 max-w-md text-[#b3ae9e]">{t('land.aiSub')}</p>
+            <Kicker>{t('land.aiKick')}</Kicker>
+            <h2 className="tb-h2 text-4xl sm:text-5xl">{t('land.aiTitleA')} <span className="tb-gold-text">{t('land.aiTitleB')}</span>{t('land.aiTitleC')}</h2>
+            <p className="tb-sub">{t('land.aiSub')}</p>
             <div className="mt-8 space-y-3">
               {[t('land.q1'), t('land.q2'), t('land.q3'), t('land.q4')].map((q) => (
-                <div key={q} className="glass rounded-xl px-4 py-3 text-sm text-[#e9e7df]"><span className="mr-2 text-[#d4af37]">›</span>{q}</div>
+                <div key={q} className="tb-card px-4 py-3 text-sm text-[#e9e7df]"><span className="mr-2 text-[#d4af37]">›</span>{q}</div>
               ))}
             </div>
           </div>
-          <div className="glass rounded-2xl p-6 gold-glow">
+          <Card className="p-6">
             <div className="mb-4 flex items-center gap-2 text-[#d4af37]"><Bot className="h-5 w-5" /><span className="font-semibold">{t('land.revTitle')}</span></div>
             {[[t('land.m1'), 92], [t('land.m2'), 78], [t('land.m3'), 85]].map(([l, v]) => (
               <div key={l} className="mb-4">
@@ -230,78 +231,78 @@ export default function LandingPage() {
               </div>
             ))}
             <p className="mt-4 rounded-lg bg-[#d4af37]/8 p-3 text-sm text-[#c9c4b4]"><span className="font-semibold text-[#d4af37]">{t('land.coachTag')}</span>{t('land.coachNote')}</p>
-          </div>
+          </Card>
         </div>
       </section>
 
       {/* Academy band */}
-      <section id="academy" className={`border-y border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/60' : 'bg-[#0a0a0f]/60'}`}>
-        <div className="mx-auto grid max-w-[96rem] items-center gap-12 px-6 py-24 lg:grid-cols-2">
+      <section id="academy" className={`scroll-mt-24 border-y border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/60' : 'bg-[#0a0a0f]/60'} backdrop-blur-sm`}>
+        <div className="mx-auto grid w-full max-w-[96rem] items-center gap-8 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-2 lg:gap-12">
           <div>
-            <p className="mb-3 flex items-center gap-2 text-sm font-medium uppercase tracking-[0.2em] text-[#d4af37]"><GraduationCap className="h-4 w-4" />{t('land.acadKick', null, 'TradingBible Academy')}</p>
-            <h2 className="text-4xl font-bold sm:text-5xl">{t('land.acadTitle', null, 'A school run by SI')}</h2>
-            <p className="mt-5 max-w-md leading-relaxed text-[#b3ae9e]">{t('land.acadSub', null, 'Personal learning paths, SI-written lessons, graded quizzes, live webinars and one-on-one tutoring — from your first candle to the professional desk. One $150 lifetime payment, yours forever.')}</p>
+            <Kicker icon={GraduationCap}>{t('land.acadKick', null, 'TradingBible Academy')}</Kicker>
+            <h2 className="tb-h2 text-4xl sm:text-5xl">{t('land.acadTitle', null, 'A school run by SI')}</h2>
+            <p className="tb-sub">{t('land.acadSub', null, 'Personal learning paths, SI-written lessons, graded quizzes, live webinars and one-on-one tutoring — from your first candle to the professional desk. One $150 lifetime payment, yours forever.')}</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link to="/academy" className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 py-3.5 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90">{t('land.acadCta', null, 'Explore the Academy')} <ArrowRight className="h-4 w-4" /></Link>
-              <Link to="/pricing" className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#d4af37]/35 px-6 py-3.5 text-sm font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60">{t('land.viewPricing')}</Link>
+              <GoldButton to="/academy" className="px-6 py-3.5">{t('land.acadCta', null, 'Explore the Academy')} <ArrowRight className="h-4 w-4" /></GoldButton>
+              <GhostButton to="/pricing" className="px-6 py-3.5 text-[#e9e7df]">{t('land.viewPricing')}</GhostButton>
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {[
-              { icon: BookOpen, title: '3 learning paths', body: 'Beginner to Professional, curated around you.' },
-              { icon: Radar, title: 'Live webinars', body: 'Weekly SI-hosted sessions with real Q&A.' },
-              { icon: BarChart3, title: 'Graded & certified', body: 'SI-graded quizzes and shareable certificates.' },
+              { icon: BookOpen, title: '6 learning paths', body: 'Beginner, Forex, Crypto, Order Flow to Professional, curated around you.' },
+              { icon: Radar, title: '8 live sessions / week', body: 'SI-hosted webinars with real Q&A across every desk.' },
+              { icon: BarChart3, title: 'Graded & certified', body: 'SI-graded quizzes and shareable certificates per path.' },
               { icon: Wallet, title: '$150 once', body: 'Lifetime access. No subscription, no trial games.' },
             ].map((c) => (
-              <div key={c.title} className="glass rounded-2xl p-5">
+              <Card key={c.title} className="p-5">
                 <c.icon className="mb-3 h-5 w-5 text-[#d4af37]" />
-                <h3 className="font-semibold">{c.title}</h3>
+                <h3 className="font-semibold text-[#f0ecdd]">{c.title}</h3>
                 <p className="mt-1 text-sm text-[#8a8577]">{c.body}</p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="mx-auto max-w-[96rem] px-6 py-24">
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold sm:text-4xl">{t('land.trustedBy')}</h2>
-          <p className="mt-2 text-[#8a8577]">{t('land.trustedSub')}</p>
+      <section className="mx-auto w-full max-w-[96rem] px-4 py-16 sm:px-6 sm:py-24">
+        <div className="mb-10 text-center sm:mb-12">
+          <h2 className="tb-h2 mx-auto max-w-2xl text-3xl sm:text-4xl">{t('land.trustedBy')}</h2>
+          <p className="tb-sub mx-auto">{t('land.trustedSub')}</p>
         </div>
         <div className="grid gap-5 md:grid-cols-3">
           {TESTIMONIALS.map((tm) => (
-            <div key={tm.name} className="portfolio-card glass rounded-2xl p-5">
+            <Card key={tm.name} hover className="p-5">
               <p className="text-sm leading-relaxed text-[#c9c4b4]">“{t(tm.qk, null, tm.quote)}”</p>
               <div className="mt-4 border-t border-[#d4af37]/15 pt-3">
-                <div className="portfolio-card__title text-sm font-semibold text-[#f0ecdd]">{tm.name}</div>
+                <div className="text-sm font-semibold text-[#f0ecdd]">{tm.name}</div>
                 <div className="text-xs text-[#8a8577]">{t(tm.rk, null, tm.role)}</div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       </section>
 
       {/* Pricing preview */}
-      <section id="pricing" className={`border-t border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/60' : 'bg-[#0a0a0f]/60'}`}>
-        <div className="mx-auto max-w-[96rem] px-6 py-24">
-          <div className="mb-12 text-center">
-            <h2 className="text-4xl font-bold sm:text-5xl">{t('price.chooseEdge')}</h2>
-            <p className="mt-3 text-[#8a8577]">{t('price.sub')}</p>
+      <section id="pricing" className={`scroll-mt-24 border-t border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/60' : 'bg-[#0a0a0f]/60'} backdrop-blur-sm`}>
+        <div className="mx-auto w-full max-w-[96rem] px-4 py-16 sm:px-6 sm:py-24">
+          <div className="mb-10 text-center sm:mb-12">
+            <h2 className="tb-h2 text-4xl sm:text-5xl">{t('price.chooseEdge')}</h2>
+            <p className="tb-sub mx-auto">{t('price.sub')}</p>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
             {PLANS.map((raw) => {
               const p = translatePlan(t, raw);
               return (
-                <div key={p.id} className={`portfolio-card relative flex flex-col rounded-2xl p-6 ${p.highlight ? 'glass gold-glow' : 'glass'}`}>
-                  {p.highlight && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-0.5 text-[11px] font-bold text-[#0a0a0f]">{t('misc.popular')}</div>}
+                <Card key={p.id} hover className={`relative flex flex-col p-6 ${p.highlight ? 'gold-glow' : ''}`}>
+                  {p.highlight && <div className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-0.5 text-[11px] font-bold text-[#0a0a0f]">{t('misc.popular')}</div>}
                   <img src={p.logo} alt={p.name} className="mb-3 h-12 w-12 rounded-xl object-contain" />
-                  <h3 className="portfolio-card__title text-lg font-semibold">{p.name}</h3>
+                  <h3 className="text-lg font-semibold text-[#f0ecdd]">{p.name}</h3>
                   <p className="mt-1 text-xs text-[#8a8577]">{p.tagline}</p>
-                  <div className="mt-4 flex items-end gap-1"><span className="text-3xl font-bold gold-text">${p.price}</span><span className="mb-1 text-sm text-[#8a8577]">/{p.period}</span></div>
+                  <div className="mt-4 flex items-end gap-1"><span className="tb-gold-text text-3xl font-bold">${p.price}</span><span className="mb-1 text-sm text-[#8a8577]">/{p.period}</span></div>
                   <ul className="mt-5 flex-1 space-y-2 text-sm text-[#b3ae9e]">{p.features.slice(0, 4).map((f) => <li key={f} className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-[#d4af37]" />{f}</li>)}</ul>
-                  <Link to="/pricing" className={`mt-6 flex items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-semibold transition ${p.highlight ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] hover:opacity-90' : 'border border-[#d4af37]/25 text-[#e9e7df] hover:border-[#d4af37]/60'}`}>{p.cta} <ArrowRight className="h-4 w-4" /></Link>
-                </div>
+                  <Link to="/pricing" className={`mt-6 flex min-h-[44px] items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-semibold transition ${p.highlight ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] hover:opacity-90' : 'border border-[#d4af37]/25 text-[#e9e7df] hover:border-[#d4af37]/60'}`}>{p.cta} <ArrowRight className="h-4 w-4" /></Link>
+                </Card>
               );
             })}
           </div>
@@ -309,16 +310,16 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="mx-auto max-w-3xl px-6 py-24">
+      <section className="mx-auto w-full max-w-3xl px-4 py-16 sm:px-6 sm:py-24">
         <div className="mb-10 text-center">
-          <h2 className="text-3xl font-bold sm:text-4xl">{t('land.faqTitle', null, 'Questions, answered')}</h2>
+          <h2 className="tb-h2 text-3xl sm:text-4xl">{t('land.faqTitle', null, 'Questions, answered')}</h2>
         </div>
-        <div className="divide-y divide-[#d4af37]/10 rounded-2xl border border-[#d4af37]/10">
+        <div className="divide-y divide-[#d4af37]/10 rounded-2xl border border-[#d4af37]/10 backdrop-blur-md">
           {FAQS.map((f, i) => {
             const isOpen = openFaq === i;
             return (
               <div key={f.q}>
-                <button onClick={() => setOpenFaq(isOpen ? -1 : i)} className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left">
+                <button onClick={() => setOpenFaq(isOpen ? -1 : i)} className="flex min-h-[52px] w-full items-center justify-between gap-4 px-5 py-4 text-left">
                   <span className="font-medium text-[#f0ecdd]">{f.q}</span>
                   <span className={`shrink-0 text-[#d4af37] transition-transform ${isOpen ? 'rotate-45' : ''}`}>＋</span>
                 </button>
