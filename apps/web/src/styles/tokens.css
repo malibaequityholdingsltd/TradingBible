@@ -48,6 +48,11 @@ html.light .tb-hero {
     radial-gradient(120% 140% at 100% 0%, rgba(212, 175, 55, 0.2), transparent 55%),
     linear-gradient(135deg, rgba(255, 254, 249, 0.92), rgba(242, 239, 231, 0.86) 60%, rgba(242, 239, 231, 0.78));
   border-color: #e4ded0;
+  box-shadow: 0 24px 60px -40px rgba(166, 124, 30, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+/* Light hero sheen runs deeper gold so the sweep reads on ivory. */
+html.light .tb-hero::after {
+  background: linear-gradient(105deg, transparent 42%, rgba(166, 124, 30, 0.20) 50%, transparent 58%);
 }
 
 html.light .tb-kicker { color: #8a6714; }
