@@ -72,8 +72,12 @@ html.light .tb-kicker { color: #8a6714; }
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* Pages without .tb-page still enter with motion — their root mounts fresh
+   inside main on every navigation. Standalone full-screen pages (TV) use
+   .tb-enter on their root instead. */
+main > *, .tb-enter { animation: tb-rise 0.45s var(--tb-ease) both; }
 @media (prefers-reduced-motion: reduce) {
-  .tb-page > *, .tb-hero::after { animation: none; }
+  .tb-page > *, main > *, .tb-enter, .tb-hero::after { animation: none; }
 }
 
 .tb-hero {
@@ -148,7 +152,6 @@ html.light .tb-card {
   letter-spacing: -0.02em;
   text-wrap: balance;
   color: var(--tb-ink);
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
 }
 @media (min-width: 640px) {
   .tb-h2 { font-size: 1.75rem; }
@@ -189,7 +192,6 @@ html.light .tb-card {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 2px 10px rgba(212, 175, 55, 0.25));
 }
 
 /* HD focus visibility everywhere. */
