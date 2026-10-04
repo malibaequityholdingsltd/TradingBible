@@ -92,14 +92,14 @@ export function Tabs({ tabs, active, onChange }) {
 }
 
 export function GoldButton({ to, href, onClick, className = '', children, ...rest }) {
-	const cls = `inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] px-5 text-sm font-bold text-[#0a0a0f] shadow-[0_10px_30px_-10px_rgba(212,175,55,0.7),inset_0_1px_0_rgba(255,255,255,0.5)] transition hover:brightness-105 active:scale-[0.98] ${className}`;
+	const cls = `btn-sheen inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] px-5 text-sm font-bold text-[#0a0a0f] shadow-[0_10px_30px_-10px_rgba(212,175,55,0.7),inset_0_1px_0_rgba(255,255,255,0.5)] transition hover:brightness-105 active:scale-[0.98] ${className}`;
 	if (to) return <Link to={to} className={cls} {...rest}>{children}</Link>;
 	if (href) return <a href={href} className={cls} {...rest}>{children}</a>;
 	return <button onClick={onClick} className={cls} {...rest}>{children}</button>;
 }
 
 export function GhostButton({ to, href, onClick, className = '', children, ...rest }) {
-	const cls = `inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#d4af37]/30 bg-white/[0.03] px-5 text-sm font-semibold text-[#d4af37] backdrop-blur-md transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 hover:shadow-[0_0_24px_-8px_rgba(212,175,55,0.5)] active:scale-[0.98] ${className}`;
+	const cls = `btn-sheen inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#d4af37]/30 bg-white/[0.03] px-5 text-sm font-semibold text-[#d4af37] backdrop-blur-md transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 hover:shadow-[0_0_24px_-8px_rgba(212,175,55,0.5)] active:scale-[0.98] ${className}`;
 	if (to) return <Link to={to} className={cls} {...rest}>{children}</Link>;
 	if (href) return <a href={href} className={cls} {...rest}>{children}</a>;
 	return <button onClick={onClick} className={cls} {...rest}>{children}</button>;

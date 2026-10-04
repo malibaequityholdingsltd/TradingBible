@@ -602,7 +602,7 @@ export default function TvPage() {
             </span>
             <button onClick={() => setChannelsOpen(true)} className="shrink-0 rounded-md bg-black/50 px-2 py-1 font-mono text-[10px] tracking-widest text-[#d4af37] backdrop-blur-sm">ALL CHANNELS</button>
             {playIsYoutube && ytApi && (
-              <button onClick={toggleYtSound} className="flex shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2 text-[11px] font-bold uppercase tracking-wider text-[#0a0a0f] shadow-[0_4px_16px_rgba(212,175,55,0.35)] backdrop-blur-sm transition hover:opacity-95 active:scale-95" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
+              <button onClick={toggleYtSound} className="btn-sheen flex shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2 text-[11px] font-bold uppercase tracking-wider text-[#0a0a0f] shadow-[0_4px_16px_rgba(212,175,55,0.35)] backdrop-blur-sm transition hover:opacity-95 active:scale-95" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
                 {ytMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
                 {ytMuted ? 'Tap for sound' : 'Tap to play'}
               </button>

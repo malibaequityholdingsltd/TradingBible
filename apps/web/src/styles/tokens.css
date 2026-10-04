@@ -57,6 +57,22 @@ html.light .tb-hero::after {
 
 html.light .tb-kicker { color: #8a6714; }
 
+/* ── Living buttons: a light glide sweeps across on hover, both modes. ── */
+.btn-sheen { position: relative; overflow: hidden; isolation: isolate; }
+.btn-sheen::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.35) 50%, transparent 60%);
+  transform: translateX(-130%);
+  transition: transform 0.7s ease;
+  pointer-events: none;
+}
+.btn-sheen:hover::after { transform: translateX(130%); }
+@media (prefers-reduced-motion: reduce) {
+  .btn-sheen::after { display: none; }
+}
+
 /* ── Shared layout primitives ─────────────────────────────── */
 /* ── Living overlays: every modal, picker, spotlight and sheet shares the
    same slow light sweep + soft pop enter, dark and light. ─────────────── */
