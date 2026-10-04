@@ -86,7 +86,10 @@ const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPl
           });
           playerRef.current = player;
         })
-        .catch(() => playingRef.current?.(false));
+        // API failure is never a playback failure: the muted-autoplay URL
+        // runs without any script. Only report dead if nothing played yet —
+        // otherwise a blocked API script would slate over a live picture.
+        .catch(() => { if (!played) playingRef.current?.(false); });
     });
     return () => {
       cancelled = true;

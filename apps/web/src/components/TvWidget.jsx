@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, Shuffle, ListVideo, Lock, Crown, WifiOff, Clock, Bell, BellRing, Search, Dices } from 'lucide-react';
+import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, ListVideo, Lock, Crown, WifiOff, Clock, Bell, BellRing, Search } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useI18n, localizeAd } from '@/lib/i18n';
@@ -251,15 +251,6 @@ export default function TvWidget() {
     setView('player');
   }, [channelIndex, goUpgrade, liveChannels, unlockedIdx]);
 
-  const shuffleChannel = useCallback(() => {
-    if (!unlockedIdx.length) { goUpgrade(); return; }
-    const pool = unlockedIdx.filter((i) => i !== channelIndex);
-    const next = (pool.length ? pool : unlockedIdx)[Math.floor(Math.random() * (pool.length ? pool.length : unlockedIdx.length))];
-    setChannelIndex(next);
-    setFrameLoaded(false);
-    setView('player');
-  }, [channelIndex, goUpgrade, unlockedIdx]);
-
   const openChannels = useCallback(() => setView('channels'), []);
   const closePanel = useCallback(() => { setOpen(false); setView('ads'); }, []);
 
@@ -478,21 +469,9 @@ export default function TvWidget() {
 
             {view === 'channels' && (
               <div className="no-scrollbar flex h-full flex-col overflow-hidden">
-                {/* Shuffle hero + search + alerts */}
+                {/* Search + live alerts */}
                 <div className="border-b border-[#d4af37]/10 px-2 pb-2 pt-2">
-                  <button onClick={shuffleChannel} className="group flex w-full items-center gap-2.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] p-2.5 text-left shadow-[0_4px_20px_rgba(212,175,55,0.25)] transition hover:opacity-95 active:scale-[0.99]">
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-black/25 text-[#0a0a0f]">
-                      <Dices className="h-5 w-5" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-[13px] font-bold leading-tight text-[#0a0a0f]">Shuffle play</span>
-                      <span className="block truncate text-[11px] font-medium text-[#0a0a0f]/70">
-                        {liveCount > 0 ? `Random desk · ${liveCount} live now` : `Random desk · ${ordered.length} channels`}
-                      </span>
-                    </span>
-                    <Shuffle className="h-4 w-4 shrink-0 text-[#0a0a0f]/60 transition-transform duration-500 group-hover:rotate-180" />
-                  </button>
-                  <div className="mt-2 flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5">
                     <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-lg border border-[#d4af37]/15 bg-white/[0.03] px-2 py-1.5">
                       <Search className="h-3.5 w-3.5 shrink-0 text-[#6a665a]" />
                       <input
@@ -519,15 +498,23 @@ export default function TvWidget() {
                   {(() => {
                     const q = guideQuery.trim().toLowerCase();
                     const matches = (c) => !q || `${c.title || ''} ${c.desk || ''}`.toLowerCase().includes(q);
-                    const withIdx = ordered.map((c, i) => ({ c, ci: i })).filter(({ c }) => matches(c));
+                    // Off-air desks never display — only live or
+                    // not-yet-checked desks are listed.
+                    const withIdx = ordered.map((c, i) => ({ c, ci: i })).filter(({ c }) => matches(c) && liveOf(c) !== false);
                     const sections = [
                       { id: 'live', label: `Live now${liveCount > 0 ? ` · ${liveCount}` : ''}`, dot: 'bg-[#e50914]', items: withIdx.filter(({ c }) => liveOf(c) === true) },
-                      { id: 'live247', label: 'On air 24/7', dot: 'bg-emerald-400', items: withIdx.filter(({ c }) => c.roundTheClock && liveOf(c) !== true && liveOf(c) !== false) },
-                      { id: 'scheduled', label: 'Scheduled live shows', dot: 'bg-[#d4af37]', items: withIdx.filter(({ c }) => !c.roundTheClock && liveOf(c) !== true && liveOf(c) !== false) },
-                      { id: 'offair', label: 'Currently off-air', dot: 'bg-[#6a665a]', items: withIdx.filter(({ c }) => liveOf(c) === false) },
+                      { id: 'live247', label: 'On air 24/7', dot: 'bg-emerald-400', items: withIdx.filter(({ c }) => c.roundTheClock && liveOf(c) !== true) },
+                      { id: 'scheduled', label: 'Scheduled live shows', dot: 'bg-[#d4af37]', items: withIdx.filter(({ c }) => !c.roundTheClock && liveOf(c) !== true) },
                     ].filter((s) => s.items.length);
                     if (!sections.length) {
-                      return <p className="px-1 py-6 text-center text-xs text-[#8a8577]">No desks match “{guideQuery}”.</p>;
+                      return (
+                        <div className="px-1 py-6 text-center">
+                          <p className="text-xs text-[#8a8577]">{guideQuery ? `No desks match “${guideQuery}”.` : 'No desks are live right now.'}</p>
+                          {!guideQuery && (
+                            <p className="mt-1 text-[11px] text-[#6a665a]">Turn on the bell above — we'll ping you the moment one starts.</p>
+                          )}
+                        </div>
+                      );
                     }
                     return sections.map((section) => (
                       <div key={section.id}>
@@ -544,7 +531,7 @@ export default function TvWidget() {
                       <button
                         key={c.id}
                         onClick={() => watchChannel(ci)}
-                        className={`group flex w-full items-center gap-2.5 rounded-xl border p-2.5 text-left transition ${st === true ? 'border-[#e50914]/40 bg-[#e50914]/[0.06] shadow-[0_0_18px_rgba(229,9,20,0.12)] hover:border-[#e50914]/70' : locked ? 'border-[#d4af37]/10 opacity-80 hover:border-[#d4af37]/40' : 'border-[#d4af37]/10 bg-white/[0.02] hover:border-[#d4af37]/40 hover:bg-[#d4af37]/[0.05]'} ${st === false ? 'opacity-60' : ''}`}
+                        className={`group flex w-full items-center gap-2.5 rounded-xl border p-2.5 text-left transition ${st === true ? 'border-[#e50914]/40 bg-[#e50914]/[0.06] shadow-[0_0_18px_rgba(229,9,20,0.12)] hover:border-[#e50914]/70' : locked ? 'border-[#d4af37]/10 opacity-80 hover:border-[#d4af37]/40' : 'border-[#d4af37]/10 bg-white/[0.02] hover:border-[#d4af37]/40 hover:bg-[#d4af37]/[0.05]'}`}
                       >
                         <span className={`relative grid h-9 w-9 shrink-0 place-items-center rounded-lg ${st === true ? 'bg-[#e50914]/15 text-[#ff5a62]' : 'bg-[#d4af37]/12 text-[#d4af37]'}`}>
                           {locked ? <Lock className="h-3.5 w-3.5" /> : <Radio className="h-3.5 w-3.5" />}
@@ -554,13 +541,12 @@ export default function TvWidget() {
                           <span className="flex items-center gap-1.5">
                             <span className="block truncate text-[13px] font-semibold text-[#f0ecdd]">{c.title}</span>
                             {st === true && <span className="shrink-0 rounded-full bg-[#e50914] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-white">Live</span>}
-                            {st === false && <span className="shrink-0 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#8a8577]">Off-air</span>}
                             {watching && <span className="shrink-0 rounded-full bg-[#d4af37]/20 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#d4af37]">Watching</span>}
                             {c.isNew && <span className="shrink-0 rounded-full bg-[#d4af37] px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#0a0a0f]">New</span>}
                             {c.roundTheClock && st !== true && <span className="shrink-0 rounded-full bg-emerald-400/15 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-emerald-400">24/7</span>}
                             {locked && <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/8 px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-[#d4af37]"><Crown className="h-2.5 w-2.5" />{c.plan}</span>}
                           </span>
-                          <span className="block truncate text-[11px] text-[#8a8577]">{c.desk} · {locked ? 'tap to upgrade' : st === false ? 'tap to retry' : 'tap to watch'}</span>
+                          <span className="block truncate text-[11px] text-[#8a8577]">{c.desk} · {locked ? 'tap to upgrade' : 'tap to watch'}</span>
                           {!c.roundTheClock && c.hours && st !== true && (
                             <span className="mt-0.5 flex items-center gap-1 text-[10px] text-[#6a665a]"><Clock className="h-2.5 w-2.5 shrink-0" /> Typically live: {c.hours}</span>
                           )}
@@ -637,8 +623,8 @@ export default function TvWidget() {
                 <span className="min-w-0 flex-1 truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
                   {ordered[playing]?.desk} · {playing + 1}/{ordered.length}
                 </span>
-                <button onClick={shuffleChannel} className={iconBtn} aria-label="Random channel" title="Play a random channel">
-                  <Shuffle className="h-4 w-4" />
+                <button onClick={() => zapChannel(1)} className={iconBtn} aria-label="Next channel" title="Next channel">
+                  <ChevronRight className="h-4 w-4" />
                 </button>
               </>
             ) : view === 'channels' ? (
@@ -649,8 +635,8 @@ export default function TvWidget() {
                 <span className="min-w-0 flex-1 truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
                   {liveCount > 0 ? `${liveCount} live · ${ordered.length} channels` : `${ordered.length} live channels`}
                 </span>
-                <button onClick={shuffleChannel} className={iconBtn} aria-label="Random channel" title="Play a random channel">
-                  <Shuffle className="h-4 w-4" />
+                <button onClick={toggleBell} aria-label="Toggle go-live alerts" title={bell ? 'Live alerts on — tap to mute' : 'Notify me when a desk goes live'} className={bell ? iconBtnActive : iconBtn}>
+                  {bell ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
                 </button>
               </>
             ) : (
