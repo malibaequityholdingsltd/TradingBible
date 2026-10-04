@@ -245,6 +245,11 @@ export default function AppLayout({ children, title }) {
                     <Building2 className="h-4 w-4 text-[#d4af37]" /> {t('app.admin')}
                   </DropdownMenuItem>
                 )}
+                {isAdmin && (
+                  <DropdownMenuItem onClick={() => nav('/teacher')} className="min-h-[44px] cursor-pointer gap-2.5">
+                    <GraduationCap className="h-4 w-4 text-[#d4af37]" /> Teacher portal
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator className="bg-white/5" />
                 <DropdownMenuItem onClick={signOut} className="min-h-[44px] cursor-pointer gap-2.5 text-red-400 focus:text-red-300">
                   <LogOut className="h-4 w-4" /> {t('app.signout')}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Settings, FileText, CreditCard, LibraryBig, BarChart3,
-  LogOut, Menu, Shield, X, ChevronRight, Plug, Key, Package, User, ChevronDown, MonitorPlay, Briefcase
+  LogOut, Menu, Shield, X, ChevronRight, Plug, Key, Package, User, ChevronDown, MonitorPlay, Briefcase, GraduationCap
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import AdminSearch from '@/components/AdminSearch';
@@ -169,6 +169,9 @@ export default function AdminLayout({ children, title }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { enterAdminPreview(); nav('/app'); }} className="cursor-pointer gap-2.5">
                   <LayoutDashboard className="h-4 w-4 text-[#d4af37]" /> View app
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => { enterAdminPreview(); nav('/teacher'); }} className="cursor-pointer gap-2.5">
+                  <GraduationCap className="h-4 w-4 text-[#d4af37]" /> Teacher portal
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-white/5" />
                 <DropdownMenuItem onClick={signOut} className="cursor-pointer gap-2.5 text-red-400 focus:text-red-300">

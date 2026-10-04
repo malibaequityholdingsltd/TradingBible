@@ -125,7 +125,9 @@ function TeacherProtected({ children }) {
     if (!isAuthReady) return <PageFallback />;
     if (!isAuthed) return <Navigate to="/login" replace />;
     if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
-    if (user?.accountType !== 'teacher') return <Navigate to="/app" replace />;
+    // Admins may inspect the teacher portal (same as the trader preview);
+    // the inner TeacherGuard enforces teacher-or-admin as well.
+    if (user?.accountType !== 'teacher' && user?.role !== 'admin') return <Navigate to="/app" replace />;
     return children;
 }
 
