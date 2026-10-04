@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, ListVideo, Lock, Crown, WifiOff, Clock, Bell, BellRing, Search, Maximize, Minimize } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -58,6 +58,10 @@ export default function TvWidget() {
   const { t, lang } = useI18n();
   const { user } = useAuth();
   const nav = useNavigate();
+  // On the full /tv page the page's own bottom bar carries the sound pill —
+  // the floating widget hides its duplicate there.
+  const { pathname } = useLocation();
+  const onTvPage = pathname === '/tv';
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [ads, setAds] = useState([]);
   const [index, setIndex] = useState(0);
@@ -768,7 +772,7 @@ export default function TvWidget() {
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <span className="flex min-w-0 flex-1 flex-col items-center gap-1">
-                  {isYoutube && ytApi ? (
+                  {isYoutube && ytApi && !onTvPage ? (
                     <button onClick={toggleYtSound} className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] px-5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#0a0a0f] shadow-[0_4px_16px_rgba(212,175,55,0.35)] transition hover:opacity-95 active:scale-95" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
                       {ytMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
                       {ytMuted ? 'Tap for sound' : 'Sound on'}
