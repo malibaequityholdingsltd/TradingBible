@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Square, Columns2, Grid2x2, CandlestickChart } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import AddToWatchlist from '@/components/AddToWatchlist';
+import WatchlistStrip from '@/components/WatchlistStrip';
 import { PageHero, Tabs } from '@/components/ui-kit';
 import LiveChart from '@/components/LiveChart';
 import { useI18n } from '@/lib/i18n';
@@ -24,7 +25,7 @@ export default function ChartsPage() {
   const { t } = useI18n();
   const [layout, setLayout] = useState('single');
   const [params] = useSearchParams();
-  const qsSymbol = (params.get('symbol') || 'BTCUSD').toUpperCase();
+  const [symbol, setSymbol] = useState(() => ((params.get('symbol') || 'BTCUSD').toUpperCase()));
 
   return (
     <AppLayout title={t('nav.charts')}>
@@ -34,7 +35,7 @@ export default function ChartsPage() {
           kickerIcon={CandlestickChart}
           title={t('mkt.liveCharts')}
           subtitle={t('mkt.chartsSub')}
-          actions={layout === 'single' ? <AddToWatchlist symbol={qsSymbol} /> : null}
+          actions={layout === 'single' ? <AddToWatchlist symbol={symbol} /> : null}
         />
 
         <Tabs
@@ -44,8 +45,12 @@ export default function ChartsPage() {
         />
 
         {layout === 'single' && (
-          <LiveChart key={qsSymbol} initialSymbol={qsSymbol} initialTimeframe="1h"
-            initialIndicators={[{ id: 'sma-1', type: 'sma', params: { period: 20 }, color: '#d4af37' }, { id: 'rsi-1', type: 'rsi', params: { period: 14 }, color: '#d4af37' }]} />
+          <>
+            <WatchlistStrip active={symbol} onSelect={setSymbol} />
+            <LiveChart key={symbol} initialSymbol={symbol} initialTimeframe="1h"
+              onSymbolChange={setSymbol}
+              initialIndicators={[{ id: 'sma-1', type: 'sma', params: { period: 20 }, color: '#d4af37' }, { id: 'rsi-1', type: 'rsi', params: { period: 14 }, color: '#d4af37' }]} />
+          </>
         )}
 
         {layout === 'split' && (
