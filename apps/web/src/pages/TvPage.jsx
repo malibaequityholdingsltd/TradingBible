@@ -130,14 +130,17 @@ export default function TvPage() {
 
   // Dead-desk chain (mirrors the widget): confirmed-live video direct →
   // auto-advance to the next playable desk → slate only when exhausted.
+  // Advance priority: confirmed-live, then unchecked, then off-air last.
   const findNextPlayableTv = useCallback((from) => {
     const tried = attemptsRef.current;
-    for (let pass = 0; pass < 2; pass++) {
+    for (let pass = 0; pass < 3; pass++) {
       for (let k = 1; k <= liveChannels.length; k++) {
         const i = (from + k) % liveChannels.length;
         const cc = liveChannels[i];
         if (!cc || !canWatch(cc) || tried.has(String(cc.id))) continue;
-        if (pass === 0 && liveOf(cc) !== true) continue;
+        const st = liveOf(cc);
+        if (pass === 0 && st !== true) continue;
+        if (pass === 1 && st === false) continue;
         return i;
       }
     }
