@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { TRADINGBIBLE_LOGO } from '@/lib/branding';
 import { hardenEmbed, useLiveChannels, ytVideoEmbed } from '@/lib/liveChannels';
 import { useLiveStatus } from '@/lib/useLiveStatus';
+import { useLockBody } from '@/hooks/useLockBody';
 import { meetsPlan } from '@/lib/entitlements';
 import YoutubePlayer from '@/components/YoutubePlayer';
 
@@ -90,6 +91,8 @@ export default function TvWidget() {
       return !e;
     });
   }, []);
+  // Zoomed theater locks the page behind it — no background scrolling.
+  useLockBody(expanded);
   const [channelIndex, setChannelIndex] = useState(0);
   const [frameLoaded, setFrameLoaded] = useState(false);
   const [pos, setPos] = useState(() => (typeof window !== 'undefined' ? loadPos() : { x: 0, y: 0 }));
