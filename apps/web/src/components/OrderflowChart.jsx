@@ -11,6 +11,10 @@ const BUY = '#34d399';
 const SELL = '#fb7185';
 const GOLD = '#d4af37';
 const VWAP = '#22d3ee';
+const LAD_W = 104; // docked DOM column width (Bookmap Web style)
+const VOL_H = 34;  // bottom volume-bars strip height
+const MAX_CANDLES = 240;
+const SHOW_CANDLES = 48;
 
 function niceTick(raw) {
 	if (!Number.isFinite(raw) || raw <= 0) return 1;
@@ -60,7 +64,7 @@ function emptyCol(rows) {
 // One self-contained order-flow pane: own buffers, own feed subscription,
 // canvas heatmap + VWAP + stats + (when expanded) ladder + tape.
 export default function OrderflowChart({
-	symbol, colSecs, rows, minTrade, intensity, paused,
+	symbol, colSecs, rows, minTrade, intensity, paused, candleSecs,
 	expanded, focused, onFocus, onRemove, canRemove, onSample,
 }) {
 	const [status, setStatus] = useState('idle');
@@ -72,9 +76,9 @@ export default function OrderflowChart({
 	const canvasRef = useRef(null);
 	const wrapRef = useRef(null);
 	const pausedRef = useRef(paused);
-	const settingsRef = useRef({ colSecs, rows, minTrade, intensity });
+	const settingsRef = useRef({ colSecs, rows, minTrade, intensity, candleSecs });
 	pausedRef.current = paused;
-	settingsRef.current = { colSecs, rows, minTrade, intensity };
+	settingsRef.current = { colSecs, rows, minTrade, intensity, candleSecs };
 	const sampleRef = useRef(onSample);
 	sampleRef.current = onSample;
 
@@ -87,6 +91,7 @@ export default function OrderflowChart({
 			liveBuys: new Float32Array(rowsN), liveSells: new Float32Array(rowsN),
 			liveBids: new Float32Array(rowsN), liveAsks: new Float32Array(rowsN),
 			vNum: 0, vDen: 0,
+			candles: [], curCandle: null, candlePeriod: 0,
 			ts: { high: 0, low: 0, vol: 0, buyVol: 0, sellVol: 0, count: 0, biggest: 0, spread: 0 },
 			tape: [],
 		};
@@ -173,6 +178,22 @@ export default function OrderflowChart({
 				if (tr.price > st.high) st.high = tr.price;
 				if (tr.price < st.low || !st.low) st.low = tr.price;
 				if (notional > st.biggest) st.biggest = notional;
+				// Trade-built candles (all prints, independent of the dot filter).
+				const period = settingsRef.current.candleSecs;
+				if (period > 0) {
+					if (b.candlePeriod !== period) { b.candlePeriod = period; b.candles = []; b.curCandle = null; }
+					const bucket = Math.floor(tr.ts / (period * 1000));
+					if (!b.curCandle || b.curCandle.t0 !== bucket) {
+						if (b.curCandle) {
+							b.candles.push(b.curCandle);
+							if (b.candles.length > MAX_CANDLES) b.candles.shift();
+						}
+						b.curCandle = { t0: bucket, t: bucket * period * 1000, o: tr.price, h: tr.price, l: tr.price, c: tr.price, bv: 0, sv: 0 };
+					}
+					const cc = b.curCandle;
+					cc.h = Math.max(cc.h, tr.price); cc.l = Math.min(cc.l, tr.price); cc.c = tr.price;
+					if (tr.side === 'buy') cc.bv += notional; else cc.sv += notional;
+				}
 				const r = Math.round(b.anchor / b.tick - tr.price / b.tick + (rowsN - 1) / 2);
 				if (r < 0 || r >= rowsN || notional < mt) return;
 				if (tr.side === 'buy') b.liveBuys[r] += notional; else b.liveSells[r] += notional;
@@ -244,11 +265,12 @@ export default function OrderflowChart({
 		}
 		const ctx = canvas.getContext('2d');
 		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-		const { rows: rowsN, intensity: inten } = settingsRef.current;
+		const { rows: rowsN, intensity: inten, candleSecs: cs } = settingsRef.current;
 		const AX_W = 64;
 		const AX_H = 20;
-		const plotW = Math.max(50, W - AX_W);
-		const plotH = Math.max(50, H - AX_H);
+		const volH = cs > 0 ? VOL_H : 0;
+		const plotW = Math.max(50, W - AX_W - LAD_W);
+		const plotH = Math.max(50, H - AX_H - volH);
 		const cellW = plotW / COLS;
 		const cellH = plotH / rowsN;
 
@@ -349,6 +371,50 @@ export default function OrderflowChart({
 			ctx.fillText(`VWAP ${fmtPrice(vwap)}`, 4, Math.min(plotH - 8, Math.max(8, y - 10)));
 		}
 
+		// Trade-built candles overlay + bottom volume bars.
+		if (cs > 0) {
+			const all = b.curCandle ? [...b.candles, b.curCandle] : b.candles;
+			const shown = all.slice(-SHOW_CANDLES);
+			const cw = plotW / SHOW_CANDLES;
+			let maxVol = 1e-9;
+			shown.forEach((c) => { maxVol = Math.max(maxVol, c.bv + c.sv); });
+			shown.forEach((c, i) => {
+				const cx = AX_W + plotW - (shown.length - i) * cw;
+				const up = c.c >= c.o;
+				const col = up ? BUY : SELL;
+				const cy = (v) => Math.max(0, Math.min(plotH, rowY(v)));
+				const yO = cy(c.o);
+				const yC = cy(c.c);
+				const yH = cy(c.h);
+				const yL = cy(c.l);
+				ctx.strokeStyle = col;
+				ctx.globalAlpha = 0.9;
+				ctx.lineWidth = 1;
+				ctx.beginPath();
+				ctx.moveTo(cx + cw / 2, yH);
+				ctx.lineTo(cx + cw / 2, yL);
+				ctx.stroke();
+				ctx.fillStyle = col;
+				const top = Math.min(yO, yC);
+				const hgt = Math.max(1.5, Math.abs(yC - yO));
+				ctx.fillRect(cx + 1, top, Math.max(1.5, cw - 2), hgt);
+				ctx.globalAlpha = 1;
+				// Volume bar (buy share green at base, sell share red on top).
+				const tot = c.bv + c.sv;
+				if (tot > 0) {
+					const bh = Math.max(1, ((tot / maxVol) * (volH - 8)));
+					const base = plotH + AX_H + volH - 3;
+					const buyH = bh * (c.bv / tot);
+					ctx.fillStyle = BUY;
+					ctx.globalAlpha = 0.85;
+					ctx.fillRect(cx + 1, base - buyH, Math.max(1.5, cw - 2), buyH);
+					ctx.fillStyle = SELL;
+					ctx.fillRect(cx + 1, base - bh, Math.max(1.5, cw - 2), Math.max(0, bh - buyH));
+					ctx.globalAlpha = 1;
+				}
+			});
+		}
+
 		// Last-price line (gold).
 		if (b.lastPrice && b.anchor) {
 			const y = Math.max(0, Math.min(plotH, rowY(b.lastPrice)));
@@ -422,16 +488,35 @@ export default function OrderflowChart({
 			{/* Heatmap */}
 			<div ref={wrapRef} onMouseMove={onMouseMove} onMouseLeave={() => setCross(null)} className="relative h-[44vh] min-h-[340px] w-full cursor-crosshair touch-none select-none">
 				<canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-				{cross && (
-					<div className="pointer-events-none absolute inset-0">
-						<div className="absolute inset-y-0 w-px bg-white/25" style={{ left: cross.x }} />
-						<div className="absolute inset-x-0 h-px bg-white/25" style={{ top: cross.y }} />
-						<div className="absolute rounded-md border border-[#d4af37]/40 bg-[#0a0a0f]/90 px-2 py-1 font-mono text-[10px] text-[#f0ecdd] backdrop-blur-md" style={{ left: Math.min(cross.x + 12, 180), top: Math.max(cross.y - 40, 4) }}>
-							<div>{fmtPrice(cross.price)}</div>
-							{cross.t && <div className="text-[#8a8577]">{fmtClock(cross.t)}</div>}
-						</div>
-					</div>
-				)}
+							{cross && (
+								<div className="pointer-events-none absolute inset-0">
+									<div className="absolute inset-y-0 w-px bg-white/25" style={{ left: cross.x }} />
+									<div className="absolute inset-x-0 h-px bg-white/25" style={{ top: cross.y }} />
+									<div className="absolute rounded-md border border-[#d4af37]/40 bg-[#0a0a0f]/90 px-2 py-1 font-mono text-[10px] text-[#f0ecdd] backdrop-blur-md" style={{ left: Math.min(cross.x + 12, 180), top: Math.max(cross.y - 40, 4) }}>
+										<div>{fmtPrice(cross.price)}</div>
+										{cross.t && <div className="text-[#8a8577]">{fmtClock(cross.t)}</div>}
+									</div>
+								</div>
+							)}
+							{/* Docked DOM — current book, Bookmap Web style */}
+							<div className="absolute bottom-0 right-0 top-0 flex w-[104px] flex-col border-l border-[#d4af37]/15 bg-black/55 py-1 backdrop-blur-sm">
+								<div className="px-1.5 pb-1 text-center text-[8px] font-bold uppercase tracking-widest text-[#8a8577]">DOM</div>
+								<div className="no-scrollbar min-h-0 flex-1 space-y-px overflow-hidden px-1 font-mono text-[10px] leading-[1.55]">
+									{[...ladder.asks].reverse().map((a, i) => (
+										<div key={`da-${i}`} className="relative overflow-hidden rounded-sm bg-white/[0.03] px-1">
+											<div className="absolute inset-y-0 left-0 bg-[#fb923c]/25" style={{ width: `${Math.max(2, (a.cum / Math.max(1e-9, ...ladder.asks.map((x) => x.cum), ...ladder.bids.map((x) => x.cum))) * 100)}%` }} />
+											<div className="relative flex justify-between"><span className="text-[#fdba74]">{fmtPrice(a.p)}</span><span className="text-[#c9c4b4]">{fmtQty(a.q)}</span></div>
+										</div>
+									))}
+									<div className="rounded-sm bg-[#d4af37]/15 px-1 text-center font-bold text-[#d4af37]">{ladder.spread ? fmtPrice(ladder.spread) : '—'}</div>
+									{ladder.bids.map((b, i) => (
+										<div key={`db-${i}`} className="relative overflow-hidden rounded-sm bg-white/[0.03] px-1">
+											<div className="absolute inset-y-0 left-0 bg-[#38bdf8]/25" style={{ width: `${Math.max(2, (b.cum / Math.max(1e-9, ...ladder.asks.map((x) => x.cum), ...ladder.bids.map((x) => x.cum))) * 100)}%` }} />
+											<div className="relative flex justify-between"><span className="text-[#7dd3fc]">{fmtPrice(b.p)}</span><span className="text-[#c9c4b4]">{fmtQty(b.q)}</span></div>
+										</div>
+									))}
+								</div>
+							</div>
 			</div>
 
 			{/* Stat strip */}
