@@ -39,7 +39,7 @@ const CommunityPage = lazy(() => import('./pages/CommunityPage'));
 const AcademyPage = lazy(() => import('./pages/AcademyPage'));
 const SecurityPage = lazy(() => import('./pages/SecurityPage'));
 const ApiDocsPage = lazy(() => import('./pages/ApiDocsPage'));
-const IntegrationsPage = lazy(() => import('./pages/IntegrationsPage'));
+
 const BrandingPage = lazy(() => import('./pages/BrandingPage'));
 const BillingPage = lazy(() => import('./pages/BillingPage'));
 const WalletPage = lazy(() => import('./pages/WalletPage'));
@@ -275,7 +275,7 @@ function RoutesWithBoundary() {
                     <Route path="/app/academy" element={<Protected><FeatureGate feature="academy"><AcademyPage /></FeatureGate></Protected>} />
                     <Route path="/app/security" element={<PaidProtected><SecurityPage /></PaidProtected>} />
                     <Route path="/app/api-docs" element={<PlanProtected plan="professional"><ApiDocsPage /></PlanProtected>} />
-                    <Route path="/app/integrations" element={<PlanProtected plan="professional"><IntegrationsPage /></PlanProtected>} />
+                    <Route path="/app/integrations" element={<Navigate to="/admin/integrations" replace />} />
                     <Route path="/app/branding" element={<PlanProtected plan="professional"><BrandingPage /></PlanProtected>} />
                     <Route path="/app/brokers" element={<PaidProtected><BrokersPage /></PaidProtected>} />
                     <Route path="/app/prop-firms" element={<PaidProtected><PropFirmsPage /></PaidProtected>} />

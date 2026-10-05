@@ -36,7 +36,7 @@ function getMailCopy(emailData = {}) {
       title: 'Confirm your email address',
       body: `
         <p>Welcome to TradingBible. Confirm your email to activate your account.</p>
-        ${token ? `<p style="margin:18px 0 8px;font-weight:600">Use this 6-digit code:</p>${tokenBlock(token)}` : ''}
+        ${token ? `<p style="margin:18px 0 8px;font-weight:600">Use this sign-in code:</p>${tokenBlock(token)}` : ''}
         ${confirmationUrl ? `<p style="margin:22px 0 10px">${buttonLink(confirmationUrl, 'Confirm email')}</p>` : ''}
         ${confirmationUrl ? `<p style="margin:0;color:#64748b;font-size:13px">Prefer clicking a link? Use the button above.</p>` : ''}
         <p style="color:#8a8577;font-size:13px">If you did not create this account, ignore this email.</p>`,
@@ -48,8 +48,8 @@ function getMailCopy(emailData = {}) {
       subject: 'Your TradingBible sign-in code',
       title: 'Sign in to TradingBible',
       body: `
-        <p>Use this one-time code to finish signing in. It expires shortly and can only be used once.</p>
-        ${token ? `<p style="margin:18px 0 8px;font-weight:600">Your 6-digit sign-in code:</p>${tokenBlock(token)}` : ''}
+        <p>Use this one-time code to finish signing in. It expires shortly and can only be used once. You can type the code or paste the whole sign-in link in the app.</p>
+        ${token ? `<p style="margin:18px 0 8px;font-weight:600">Your sign-in code:</p>${tokenBlock(token)}` : ''}
         ${confirmationUrl ? `<p style="margin:22px 0 10px">${buttonLink(confirmationUrl, 'Sign in with link')}</p>` : ''}
         ${confirmationUrl ? `<p style="margin:0;color:#64748b;font-size:13px">You can either paste the code in the app or tap the sign-in link.</p>` : ''}
         <p style="color:#8a8577;font-size:13px">If you did not request this code, ignore this email.</p>`,

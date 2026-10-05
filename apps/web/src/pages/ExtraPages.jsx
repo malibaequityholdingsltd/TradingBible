@@ -184,45 +184,6 @@ export function BrokersPage() {
   );
 }
 
-function AdminStat({ icon: Icon, label, value, sub }) {
-  return <div className="glass rounded-2xl p-5"><div className="flex items-center justify-between"><span className="text-xs uppercase tracking-wider text-[#8a8577]">{label}</span><Icon className="h-4 w-4 text-[#d4af37]" /></div><div className="mt-3 font-mono text-2xl font-semibold text-[#f0ecdd]">{value}</div><div className="mt-1 text-xs text-emerald-400">{sub}</div></div>;
-}
-
-export function AdminPage() {
-  const users = [
-    { email: 'marcus@fund.io', plan: 'Professional', status: 'Active', mrr: 99 },
-    { email: 'sofia.trades@gmail.com', plan: 'Elite SI', status: 'Active', mrr: 49.99 },
-    { email: 'dan.k@proton.me', plan: 'Pro', status: 'Pending', mrr: 0 },
-    { email: 'aisha@desk.co', plan: 'Elite SI', status: 'Past due', mrr: 49.99 },
-    { email: 'leo.fx@outlook.com', plan: 'Pro', status: 'Cancelled', mrr: 0 },
-  ];
-  return (
-    <AppLayout title="Admin Panel">
-      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <AdminStat icon={Users} label="Total Users" value="12,480" sub="+312 this week" />
-        <AdminStat icon={CreditCard} label="Active Subs" value="4,921" sub="+8.4% MoM" />
-        <AdminStat icon={DollarSign} label="MRR" value="$182,540" sub="+11.2% MoM" />
-        <AdminStat icon={Activity} label="New → Paid" value="34.8%" sub="Above benchmark" />
-      </div>
-      <h3 className="mb-3 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Users className="h-5 w-5 text-[#d4af37]" /> Users & Subscriptions</h3>
-      <div className="glass no-scrollbar overflow-x-auto rounded-2xl">
-        <table className="w-full min-w-[640px] text-sm">
-          <thead><tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">{['User', 'Plan', 'Status', 'MRR', 'Sub ID'].map(h => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
-          <tbody>{users.map((u) => (
-            <tr key={u.email} className="border-b border-white/5 hover:bg-white/[0.03]">
-              <td className="px-4 py-3 text-[#f0ecdd]">{u.email}</td>
-              <td className="px-4 py-3 text-[#c9c4b4]">{u.plan}</td>
-              <td className="px-4 py-3"><span className={`rounded-full px-2 py-0.5 text-xs ${u.status === 'Active' ? 'bg-emerald-500/15 text-emerald-400' : u.status === 'Pending' ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'bg-red-500/15 text-red-400'}`}>{u.status}</span></td>
-              <td className="px-4 py-3 font-mono text-[#c9c4b4]">${u.mrr}</td>
-              <td className="px-4 py-3 font-mono text-xs text-[#6a665a]">sub_{Math.random().toString(36).slice(2, 10)}</td>
-            </tr>
-          ))}</tbody>
-        </table>
-      </div>
-    </AppLayout>
-  );
-}
-
 export function PricingPage() {
   const { user, isAuthed } = useAuth();
   const { t } = useI18n();
@@ -230,29 +191,44 @@ export function PricingPage() {
 
   return (
     <div className="min-h-screen bg-[#07070a] px-6 pt-24 pb-16 sm:pt-28">
-      <div className="mx-auto max-w-[96rem]">
+      <div className="pointer-events-none absolute left-1/2 top-0 h-[28rem] w-[60rem] max-w-none -translate-x-1/2 rounded-full bg-[#d4af37]/[0.07] blur-[140px]" />
+      <div className="relative mx-auto max-w-[96rem]">
         <Link to={homeTo} className="mb-10 flex items-center gap-2.5"><img src={TRADINGBIBLE_LOGO} alt="TradingBible logo" className="h-9 w-9 rounded-lg object-contain" /><span className="font-semibold">Trading<span className="gold-text">Bible</span></span></Link>
-        <div className="mb-12 text-center">
-          <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/30 px-3 py-1 text-xs text-[#d4af37]"><Crown className="h-3.5 w-3.5" /> {t('price.billedStripe')}</div>
-          <h1 className="text-4xl font-bold sm:text-5xl">{t('price.chooseEdge')}</h1>
-          <p className="mt-3 text-[#8a8577]">{t('price.sub')}</p>
+        <div className="mx-auto mb-12 max-w-3xl text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/[0.06] px-4 py-1.5 text-xs font-medium text-[#d4af37]"><Crown className="h-3.5 w-3.5" /> {t('price.billedStripe')}</div>
+          <h1 className="text-balance text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl">{t('price.chooseEdge')}</h1>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[#8a8577]">{t('price.sub')}</p>
         </div>
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto grid max-w-6xl items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3">
           {PLANS.map((raw) => {
             const p = translatePlan(t, raw);
             return (
-              <div key={p.id} className={`relative flex flex-col rounded-2xl p-6 ${p.highlight ? 'glass gold-glow' : 'glass'}`}>
-                {p.highlight && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-0.5 text-[11px] font-bold text-[#0a0a0f]">{t('misc.popular')}</div>}
-                <img src={p.logo} alt={`${p.name} plan logo`} className="mb-3 h-14 w-14 rounded-xl object-contain" />
-                <h3 className="text-lg font-semibold">{p.name}</h3>
-                <p className="mt-1 text-xs text-[#8a8577]">{p.tagline}</p>
-                <div className="mt-4 flex items-end gap-1"><span className="text-3xl font-bold gold-text">{p.price === 0 ? 'Free' : `$${p.price}`}</span><span className="mb-1 text-sm text-[#8a8577]">/{p.period}</span></div>
-                <ul className="mt-5 flex-1 space-y-2 text-sm text-[#b3ae9e]">{p.features.map(f => <li key={f} className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-[#d4af37]" />{f}</li>)}</ul>
-                <Link to="/signup" className={`mt-6 flex items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-semibold transition ${p.highlight ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] hover:opacity-90' : 'border border-[#d4af37]/25 text-[#e9e7df] hover:border-[#d4af37]/60'}`}>{p.cta} <ArrowRight className="h-4 w-4" /></Link>
+              <div key={p.id} className={`price-card relative flex flex-col overflow-hidden rounded-3xl border p-6 transition-transform duration-300 hover:-translate-y-1 sm:p-7 ${p.highlight ? 'price-card-pop border-[#d4af37]/60 bg-gradient-to-b from-[#d4af37]/[0.12] to-[#0f0f14] shadow-[0_24px_80px_-24px_rgba(212,175,55,0.45)] lg:scale-[1.04]' : 'border-white/[0.07] bg-white/[0.02] backdrop-blur-md'}`}>
+                {p.highlight && (
+                  <>
+                    <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
+                    <div className="absolute right-5 top-5 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0f]">{t('misc.popular')}</div>
+                  </>
+                )}
+                <div className="flex items-center gap-3">
+                  <img src={p.logo} alt={`${p.name} plan logo`} className="h-12 w-12 rounded-2xl object-contain ring-1 ring-[#d4af37]/25" />
+                  <div>
+                    <h3 className="text-lg font-bold text-[#f0ecdd]">{p.name}</h3>
+                    <p className="text-xs text-[#8a8577]">{p.tagline}</p>
+                  </div>
+                </div>
+                <div className="mt-5 flex items-end gap-1.5">
+                  <span className="font-mono text-[2.6rem] font-bold leading-none tb-gold-text">{p.price === 0 ? 'Free' : `$${p.price}`}</span>
+                  <span className="mb-1.5 text-sm text-[#8a8577]">/{p.period}</span>
+                </div>
+                <div className="my-5 h-px bg-gradient-to-r from-[#d4af37]/25 to-transparent" />
+                <ul className="flex-1 space-y-2.5 text-sm text-[#c9c4b4]">{p.features.map(f => <li key={f} className="flex gap-2.5"><span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#d4af37]/12"><Check className="h-3 w-3 text-[#d4af37]" /></span><span className="leading-snug">{f}</span></li>)}</ul>
+                <Link to="/signup" className={`mt-7 flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl text-sm font-bold transition active:scale-[0.98] ${p.highlight ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_8px_28px_-8px_rgba(212,175,55,0.6)] hover:opacity-90' : 'border border-[#d4af37]/25 text-[#e9e7df] hover:border-[#d4af37]/60 hover:bg-[#d4af37]/[0.06]'}`}>{p.cta} <ArrowRight className="h-4 w-4" /></Link>
               </div>
             );
           })}
         </div>
+        <p className="mx-auto mt-10 max-w-xl text-center text-xs leading-relaxed text-[#6a665a]">{t('price.guarantee', null, 'Every first payment is covered by a 14-day money-back guarantee. Cancel anytime from your profile — you keep access until the end of your billing period.')}</p>
       </div>
       <Footer />
     </div>

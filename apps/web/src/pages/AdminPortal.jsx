@@ -6,7 +6,8 @@ import {
   ToggleLeft, ToggleRight, Key, Server, Database, Globe, Mail, X, UserCheck,
   Crown, TrendingDown, Clock, Zap, Settings2, Lock, Bell, Cpu, HardDrive,
   Wifi, Package, Plus, Copy, RotateCcw, Plug, TestTube, AlertCircle, Check,
-  Upload,   ChevronDown, MoreVertical, Power, Code, Layers, MonitorPlay, Target
+  Upload,   ChevronDown, MoreVertical, Power, Code, Layers, MonitorPlay, Target,
+  GraduationCap, LayoutDashboard
 } from 'lucide-react';
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar,
@@ -22,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 const GOLD = '#d4af37';
 const PLAN_COLORS = { none: '#6a665a', pro: '#3b82f6', elite: GOLD, professional: '#a855f7' };
 const PLAN_PRICES = { pro: 19.99, elite: 49.99, professional: 99.00 };
+const ACADEMY_PRICE = 150; // one-time lifetime fee
 // No free trial: paid plans only. Helpers treat legacy 'trial' rows as no plan.
 const PAID_PLANS = ['pro', 'elite', 'professional'];
 const planKey = (p) => (!p || p === 'trial' ? null : p);
@@ -365,7 +367,9 @@ export function AdminDashboard() {
     const paid = users.filter(u => isPaidPlan(u.plan));
     const mrr = paid.reduce((s, u) => s + (PLAN_PRICES[u.plan] || 0), 0);
     const verified = users.filter(u => u.verified).length;
-    return { total: users.length, paid: paid.length, mrr, verified, trades: trades.length };
+    const academyBuyers = users.filter(u => u.academyAccess).length;
+    const academyRevenue = academyBuyers * ACADEMY_PRICE;
+    return { total: users.length, paid: paid.length, mrr, verified, trades: trades.length, academyBuyers, academyRevenue };
   }, [users, trades]);
 
   const growth = useMemo(() => {
@@ -432,6 +436,18 @@ export function AdminDashboard() {
 
   return (
     <AdminLayout title="Admin Dashboard">
+      <section className="tb-hero mb-5 overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
+        <div className="relative flex min-w-0 items-center gap-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
+            <LayoutDashboard className="h-6 w-6" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Admin Dashboard</h2>
+            <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Live business snapshot — users, revenue, growth and system health.</p>
+          </div>
+        </div>
+      </section>
       {loading ? <Spinner /> : (
         <>
           <div className="mb-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
@@ -439,6 +455,8 @@ export function AdminDashboard() {
             <Stat icon={CreditCard} label="Paid Subscribers" value={stats.paid.toLocaleString()} sub={`${stats.total - stats.paid} without a plan`} color="#3b82f6" />
             <Stat icon={DollarSign} label="Est. MRR" value={`$${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="Monthly recurring" trend="up" color="#10b981" />
             <Stat icon={Activity} label="Total Trades" value={stats.trades.toLocaleString()} sub="Across all users" color="#a855f7" />
+            <Stat icon={GraduationCap} label="Academy Students" value={stats.academyBuyers.toLocaleString()} sub="Lifetime access" color="#38bdf8" />
+            <Stat icon={DollarSign} label="Academy Revenue" value={`$${stats.academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="One-time, lifetime" color="#f472b6" />
           </div>
 
           <div className="mb-5 grid gap-4 lg:grid-cols-2">
@@ -665,6 +683,18 @@ export function AdminUsers() {
 
   return (
     <AdminLayout title="User Management">
+      <section className="tb-hero mb-5 overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
+        <div className="relative flex min-w-0 items-center gap-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
+            <Users className="h-6 w-6" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">User Management</h2>
+            <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">{users.length.toLocaleString()} accounts · search, filter, edit roles, export or moderate.</p>
+          </div>
+        </div>
+      </section>
       {editing && <EditUserModal user={editing} userSource={source} onClose={() => setEditing(null)} onSaved={onSaved} />}
       {viewing && <UserDetailModal user={viewing} onClose={() => setViewing(null)} />}
 
@@ -806,6 +836,8 @@ export function AdminAnalytics() {
 
   const paid = users.filter(u => isPaidPlan(u.plan));
   const mrr = paid.reduce((s, u) => s + (PLAN_PRICES[u.plan] || 0), 0);
+  const academyBuyers = users.filter(u => u.academyAccess).length;
+  const academyRevenue = academyBuyers * ACADEMY_PRICE;
 
   const churn = useMemo(() => {
     const everPaid = users.filter(u => isPaidPlan(u.plan) || u.subscriptionStatus);
@@ -857,6 +889,18 @@ export function AdminAnalytics() {
 
   return (
     <AdminLayout title="Analytics">
+      <section className="tb-hero mb-5 overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
+        <div className="relative flex min-w-0 items-center gap-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
+            <BarChart3 className="h-6 w-6" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Analytics</h2>
+            <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Growth, conversion, revenue — subscriptions plus one-time academy sales.</p>
+          </div>
+        </div>
+      </section>
       {loading ? <Spinner /> : (
         <>
           <div className="mb-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
@@ -867,6 +911,8 @@ export function AdminAnalytics() {
           </div>
 
           <div className="mb-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
+            <Stat icon={GraduationCap} label="Academy Students" value={academyBuyers.toLocaleString()} sub="Lifetime access" color="#38bdf8" />
+            <Stat icon={DollarSign} label="Academy Revenue" value={`$${academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="One-time, lifetime" color="#f472b6" />
             <Stat icon={UserCheck} label="Est. Churn" value={`${(churn * 100).toFixed(1)}%`} sub="Canceled / ever subscribed" color={churn > 0.3 ? '#ef4444' : '#10b981'} />
             <Stat icon={DollarSign} label="ARPU" value={`$${arpu.toFixed(2)}`} sub="MRR per paid user" color="#3b82f6" />
             <Stat icon={Crown} label="LTV : CAC" value={ltvCac != null ? `${ltvCac.toFixed(1)}x` : '—'} sub={`LTV $${(ltv ?? 0).toFixed(0)} / CAC $${CAC}`} color={ltvCac >= 3 ? '#10b981' : '#ef4444'} />
@@ -1062,6 +1108,8 @@ export function AdminBilling() {
   const noPlan = users.filter(u => !planKey(u.plan));
   const mrr = paid.reduce((s, u) => s + (PLAN_PRICES[u.plan] || 0), 0);
   const arr = mrr * 12;
+  const academyBuyers = users.filter(u => u.academyAccess).length;
+  const academyRevenue = academyBuyers * ACADEMY_PRICE;
 
   const planBreakdown = useMemo(() => {
     const counts = {};
@@ -1071,11 +1119,25 @@ export function AdminBilling() {
 
   return (
     <AdminLayout title="Billing & Revenue">
+      <section className="tb-hero mb-5 overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
+        <div className="relative flex min-w-0 items-center gap-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
+            <CreditCard className="h-6 w-6" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Billing & Revenue</h2>
+            <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Subscriptions, one-time academy sales, refunds and payouts.</p>
+          </div>
+        </div>
+      </section>
       <div className="mb-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
         <Stat icon={DollarSign} label={live?.configured ? 'Live MRR' : 'Est. MRR'} value={`$${(live?.configured ? live.mrr : mrr).toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub={live?.configured ? `Stripe live · ${live.activeCount} active` : 'Monthly recurring (est)'} trend="up" color="#10b981" />
         <Stat icon={TrendingUp} label="Est. ARR" value={`$${arr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="Annual recurring" trend="up" color={GOLD} />
         <Stat icon={CreditCard} label="Paid Subscribers" value={paid.length} sub={`$${paid.length ? (mrr / paid.length).toFixed(2) : 0} ARPU`} color="#3b82f6" />
         <Stat icon={Users} label="No Plan" value={noPlan.length} sub={`${users.length ? Math.round(noPlan.length / users.length * 100) : 0}% of total`} color="#a855f7" />
+        <Stat icon={GraduationCap} label="Academy Sales" value={academyBuyers.toLocaleString()} sub="Lifetime access" color="#38bdf8" />
+        <Stat icon={DollarSign} label="Academy Revenue" value={`$${academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="One-time, lifetime" color="#f472b6" />
       </div>
 
       {planBreakdown.length > 0 && (
@@ -1534,6 +1596,18 @@ export function AdminContent() {
   const [tab, setTab] = useState('signals');
   return (
     <AdminLayout title="Content Management">
+      <section className="tb-hero mb-5 overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
+        <div className="relative flex min-w-0 items-center gap-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
+            <LibraryBig className="h-6 w-6" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Content Management</h2>
+            <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Signals, forum, academy courses, webinars and certificates.</p>
+          </div>
+        </div>
+      </section>
       <div className="mb-6 flex flex-wrap gap-1 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] p-1 w-fit">
         {CONTENT_TABS.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}
@@ -2055,11 +2129,18 @@ export function AdminApiKeys() {
 
       {/* Create modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="glass w-full max-w-lg rounded-2xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto">
-            <div className="mb-5 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-[#f0ecdd]">Generate API Key</h3>
-              <button onClick={() => setShowModal(false)}><X className="h-5 w-5 text-[#8a8577]" /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md" onClick={() => setShowModal(false)}>
+          <div className="overlay-pop relative w-full max-w-lg overflow-hidden rounded-3xl border border-[#d4af37]/25 bg-[#0c0c11]/95 p-5 shadow-[0_32px_100px_rgba(0,0,0,0.8)] backdrop-blur-2xl sm:p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
+            <div className="mb-5 flex items-center gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]">
+                <Key className="h-5 w-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-lg font-bold text-[#f0ecdd]">Generate API Key</h3>
+                <p className="text-xs text-[#8a8577]">Scoped, expirable, revocable</p>
+              </div>
+              <button onClick={() => setShowModal(false)} aria-label="Close" className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[#8a8577] transition hover:bg-white/5 hover:text-[#e9e7df]"><X className="h-4 w-4" /></button>
             </div>
             <div className="space-y-4">
               <div>
@@ -2100,52 +2181,61 @@ export function AdminApiKeys() {
       )}
 
       {loading ? <Spinner /> : (
-        <div className="glass overflow-x-auto rounded-2xl">
+        <div className="glass overflow-hidden rounded-2xl">
+          <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-sm">
             <thead>
-              <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Key Prefix</th>
-                <th className="px-4 py-3 font-medium hidden sm:table-cell">Assigned To</th>
-                <th className="px-4 py-3 font-medium hidden md:table-cell">Status</th>
-                <th className="px-4 py-3 font-medium hidden lg:table-cell">Created</th>
-                <th className="px-4 py-3 font-medium text-right">Actions</th>
+              <tr className="border-b border-[#d4af37]/12 bg-white/[0.02] text-left text-[11px] font-bold uppercase tracking-[0.14em] text-[#8a8577]">
+                <th className="px-5 py-3.5">Name</th>
+                <th className="px-4 py-3.5">Key Prefix</th>
+                <th className="px-4 py-3.5 hidden sm:table-cell">Assigned To</th>
+                <th className="px-4 py-3.5 hidden md:table-cell">Status</th>
+                <th className="px-4 py-3.5 hidden lg:table-cell">Created</th>
+                <th className="px-4 py-3.5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {keys.map(k => (
-                <tr key={k.id} className="border-b border-white/5 hover:bg-white/[0.03]">
-                  <td className="px-4 py-3">
-                    <div className="text-[#f0ecdd]">{k.name}</div>
-                    <div className="text-xs text-[#8a8577]">{(k.permissions || []).slice(0, 2).join(', ')}{(k.permissions || []).length > 2 ? `+${k.permissions.length - 2}` : ''}</div>
+                <tr key={k.id} className="group border-b border-white/5 transition last:border-0 hover:bg-[#d4af37]/[0.04]">
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${k.status === 'active' ? 'bg-[#d4af37]/12 text-[#d4af37]' : 'bg-white/[0.04] text-[#6a665a]'}`}>
+                        <Key className="h-3.5 w-3.5" />
+                      </span>
+                      <div className="min-w-0">
+                        <div className="truncate font-semibold text-[#f0ecdd]">{k.name}</div>
+                        <div className="truncate text-xs text-[#8a8577]">{(k.permissions || []).slice(0, 2).join(', ')}{(k.permissions || []).length > 2 ? `+${k.permissions.length - 2}` : ''}</div>
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-[#c9c4b4]">{k.keyPrefix}•••••••••••••</td>
-                  <td className="px-4 py-3 text-xs text-[#8a8577] hidden sm:table-cell">{k.assignedTo || '—'}</td>
-                  <td className="px-4 py-3 hidden md:table-cell">
+                  <td className="px-4 py-3.5"><code className="rounded-md bg-black/30 px-2 py-1 font-mono text-xs text-[#c9c4b4]">{k.keyPrefix}•••••</code></td>
+                  <td className="px-4 py-3.5 text-xs text-[#8a8577] hidden sm:table-cell">{k.assignedTo || '—'}</td>
+                  <td className="px-4 py-3.5 hidden md:table-cell">
                     <Badge color={k.status === 'active' ? 'green' : 'red'}>{k.status}</Badge>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-[#8a8577] hidden lg:table-cell">{(k.created || '').slice(0, 10)}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1">
+                  <td className="px-4 py-3.5 font-mono text-xs text-[#8a8577] hidden lg:table-cell">{(k.created || '').slice(0, 10)}</td>
+                  <td className="px-4 py-3.5">
+                    <div className="flex items-center justify-end gap-1.5">
                       {k.status === 'active' ? (
-                        <button onClick={() => revoke(k.id)} title="Revoke" className="rounded-lg p-1.5 text-[#8a8577] hover:bg-orange-500/10 hover:text-orange-400">
+                        <button onClick={() => revoke(k.id)} title="Revoke" className="grid h-8 w-8 place-items-center rounded-lg text-[#8a8577] transition hover:bg-orange-500/10 hover:text-orange-400">
                           <Power className="h-4 w-4" />
                         </button>
                       ) : (
-                        <button onClick={() => setEnabled(k.id, true)} title="Re-enable" className="rounded-lg p-1.5 text-[#8a8577] hover:bg-emerald-500/10 hover:text-emerald-400">
+                        <button onClick={() => setEnabled(k.id, true)} title="Re-enable" className="grid h-8 w-8 place-items-center rounded-lg text-[#8a8577] transition hover:bg-emerald-500/10 hover:text-emerald-400">
                           <RotateCcw className="h-4 w-4" />
                         </button>
                       )}
-                      <button onClick={() => remove(k.id)} title="Delete" className="rounded-lg p-1.5 text-red-400/60 hover:bg-red-500/10 hover:text-red-400">
+                      <button onClick={() => remove(k.id)} title="Delete" className="grid h-8 w-8 place-items-center rounded-lg text-red-400/60 transition hover:bg-red-500/10 hover:text-red-400">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </td>
                 </tr>
               ))}
-              {!keys.length && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-[#8a8577]">No API keys yet. Generate your first key above.</td></tr>}
+              {!keys.length && <tr><td colSpan={6} className="px-4 py-12 text-center"><div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-white/[0.04] text-[#6a665a]"><Key className="h-5 w-5" /></div><p className="mt-3 text-sm text-[#8a8577]">No API keys yet. Generate your first key above.</p></td></tr>}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </AdminLayout>
@@ -2958,6 +3048,24 @@ export function AdminSettings() {
 
   return (
     <AdminLayout title="System Settings">
+      <section className="tb-hero mb-5 overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
+              <Settings2 className="h-6 w-6" />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">System Settings</h2>
+              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Platform, features, billing and security — changes save automatically.</p>
+            </div>
+          </div>
+          <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${saveState === 'error' ? 'border-red-500/40 text-red-400' : saveState === 'saving' ? 'border-[#d4af37]/40 text-[#d4af37]' : 'border-emerald-500/30 text-emerald-300'}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${saveState === 'error' ? 'bg-red-400' : saveState === 'saving' ? 'bg-[#d4af37] animate-pulse' : 'bg-emerald-400'}`} />
+            {saveState === 'saving' ? 'Saving…' : saveState === 'error' ? 'Save failed' : saveState === 'idle' ? 'Autosave on' : 'All changes saved'}
+          </span>
+        </div>
+      </section>
       <div className="flex flex-wrap gap-1 mb-6 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] p-1 w-fit">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}

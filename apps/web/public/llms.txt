@@ -34,7 +34,6 @@
 - [Guides](/guides): TradingBible application page.
 - [Heatmaps](/app/heatmaps): TradingBible application page.
 - [Indicators](/app/indicators): TradingBible application page.
-- [Integrations](/app/integrations): TradingBible application page.
 - [Journal](/app/journal): TradingBible application page.
 - [Landing](/): TradingBible application page.
 - [Login](/login): TradingBible application page.

@@ -1,5 +1,5 @@
 // TradingBible service worker — offline app-shell caching + update flow.
-const CACHE = 'tb-shell-v4';
+const CACHE = 'tb-shell-v5';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {

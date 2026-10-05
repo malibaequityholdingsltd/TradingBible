@@ -62,7 +62,6 @@ const NAV_GROUPS = [
       { to: '/app/community', labelKey: 'nav.community', icon: Users },
       { to: '/app/academy', labelKey: 'nav.academy', icon: GraduationCap },
       { to: '/app/api-docs', labelKey: 'nav.apidocs', icon: Code2, requiresSubscriber: true, requiredPlan: 'professional' },
-      { to: '/app/integrations', labelKey: 'nav.integrations', icon: Settings, requiresSubscriber: true, requiredPlan: 'professional' },
     ],
   },
   {

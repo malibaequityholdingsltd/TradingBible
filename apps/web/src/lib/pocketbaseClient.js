@@ -396,12 +396,18 @@ function createSupabaseCompatClient() {
 
       async authWithOTP(otpId, code) {
         const email = String(otpId || '').trim();
-        const token = String(code || '').trim();
+        let token = String(code || '').trim();
         if (!email || !token) throw new Error('Email and code are required.');
+        // Accept a pasted magic link too: pull the token out of the URL.
+        const m = token.match(/[?&]token=([^&#\s]+)/);
+        if (m) { try { token = decodeURIComponent(m[1]); } catch { token = m[1]; } }
+        token = token.replace(/\s+/g, '');
+        // Short numeric codes verify as email OTP; long link-tokens verify as magiclink.
+        const type = token.length > 10 ? 'magiclink' : 'email';
         const { data, error } = await supabase.auth.verifyOtp({
           email,
           token,
-          type: 'email',
+          type,
         });
         if (error) throw error;
         await syncAuthFromSession(data?.session);
