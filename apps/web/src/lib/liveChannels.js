@@ -14,7 +14,7 @@ import { API_SERVER_URL } from '@/lib/apiServerClient';
 // annotations, minimal branding, inline play. Applied to every YouTube embed
 // so viewers can't click away to other suggestions. Note: end screens baked
 // in by the channel owner can't be suppressed by any parameter.
-const YOUTUBE_LOCKDOWN = 'autoplay=1&mute=1&enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1';
+const YOUTUBE_LOCKDOWN = 'autoplay=1&mute=1&enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&cc_load_policy=1';
 
 // Privacy-enhanced embeds: youtube-nocookie.com serves the identical
 // player/API with NO consent wall — youtube.com embeds in consent regions

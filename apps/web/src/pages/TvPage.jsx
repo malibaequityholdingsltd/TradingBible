@@ -45,6 +45,7 @@ export default function TvPage() {
   const [ytBlocked, setYtBlocked] = useState(false);
   const [ytRetry, setYtRetry] = useState(0);
   const [ytApi, setYtApi] = useState(false);
+
   const liveChannels = useLiveChannels();
   const ytRef = useRef(null);
   // Direct-first playback + dead-desk memory (same chain as the widget:
@@ -428,7 +429,7 @@ export default function TvPage() {
               <ChevronLeft className="h-5 w-5" />
             </button>
             {playIsYoutube && ytApi && (
-              <button onClick={toggleYtSound} className="btn-sheen pointer-events-auto flex shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2 text-[11px] font-bold uppercase tracking-wider text-[#0a0a0f] shadow-[0_4px_16px_rgba(212,175,55,0.35)] backdrop-blur-sm transition hover:opacity-95 active:scale-95" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
+              <button onClick={toggleYtSound} className="btn-sheen tb-attn pointer-events-auto flex shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2 text-[11px] font-bold uppercase tracking-wider text-[#0a0a0f] shadow-[0_4px_16px_rgba(212,175,55,0.35)] backdrop-blur-sm transition hover:opacity-95 active:scale-95" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
                 {ytMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
                 {ytMuted ? 'Tap for sound' : 'Tap to play'}
               </button>
@@ -644,6 +645,36 @@ export default function TvPage() {
           </div>
         </div>
       )}
+
+      {/* ── Widget shortcut (bottom-left): leave the page, continue in the floating TV */}
+      <div className="fixed bottom-4 left-4 z-30 flex items-center gap-2">
+        <button
+          onClick={() => {
+            try {
+              const id = playChannel !== null ? liveChannels[playChannel]?.id : undefined;
+              localStorage.setItem('tb:tv-minimized', JSON.stringify({ id, expanded: true, at: Date.now() }));
+            } catch { /* ignore */ }
+            nav('/app');
+          }}
+          aria-label="Continue in TV widget zoomed big" title="TV widget — zoom big"
+          className="grid h-12 w-12 place-items-center rounded-full border border-[#d4af37]/30 bg-black/60 text-[#e9e7df] backdrop-blur-md transition hover:border-[#d4af37]/60 hover:text-[#d4af37]"
+        >
+          <Maximize className="h-5 w-5" />
+        </button>
+        <button
+          onClick={() => {
+            try {
+              const id = playChannel !== null ? liveChannels[playChannel]?.id : undefined;
+              localStorage.setItem('tb:tv-minimized', JSON.stringify({ id, expanded: false, at: Date.now() }));
+            } catch { /* ignore */ }
+            nav('/app');
+          }}
+          aria-label="Continue in TV widget zoomed small" title="TV widget — zoom small"
+          className="grid h-12 w-12 place-items-center rounded-full border border-[#d4af37]/30 bg-black/60 text-[#e9e7df] backdrop-blur-md transition hover:border-[#d4af37]/60 hover:text-[#d4af37]"
+        >
+          <Minimize className="h-5 w-5" />
+        </button>
+      </div>
 
       {/* ── Bottom bar ───────────────────────────────────────────── */}
       <footer

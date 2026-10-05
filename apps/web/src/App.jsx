@@ -206,7 +206,7 @@ function AppChrome() {
     // locks live inside the guide. Each widget gets its own error boundary
     // so a widget crash can never blank the whole app again.
     const { features } = usePlatformSettings();
-    const inApp = pathname.startsWith('/app') || pathname.startsWith('/student');
+    const inApp = pathname.startsWith('/app') || pathname.startsWith('/student') || pathname === '/tv';
 
     return (
         <>

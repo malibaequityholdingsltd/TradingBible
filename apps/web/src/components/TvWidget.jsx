@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, ListVideo, Lock, Crown, WifiOff, Clock, Bell, BellRing, Search, Maximize, Minimize, Megaphone } from 'lucide-react';
+import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, ListVideo, Lock, Crown, WifiOff, Clock, Bell, BellRing, Search, Maximize, Minimize, Megaphone, ExternalLink } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useI18n, localizeAd } from '@/lib/i18n';
@@ -135,9 +135,11 @@ export default function TvWidget() {
   const [useEndpoint, setUseEndpoint] = useState(false);
   const [guideQuery, setGuideQuery] = useState('');
   const [toasts, setToasts] = useState([]);
+  const [ctlsHidden, setCtlsHidden] = useState(false);
 
   // ── Refs ──
   const timerRef = useRef(null);
+  const ctlsTimer = useRef(null);
   const dragState = useRef({ active: false, moved: false, offX: 0, offY: 0 });
   const videoRef = useRef(null);
   const ytRef = useRef(null);
@@ -313,6 +315,17 @@ export default function TvWidget() {
   const openChannels = useCallback(() => { setView('channels'); guardScroll(); }, [guardScroll]);
   const closePanel = useCallback(() => { setOpen(false); setView('ads'); guardScroll(); }, [guardScroll]);
 
+  // Floating transport auto-hide: reveal on activity, fade after 4s idle.
+  const pokeCtls = useCallback(() => {
+    setCtlsHidden(false);
+    clearTimeout(ctlsTimer.current);
+    ctlsTimer.current = setTimeout(() => setCtlsHidden(true), 4000);
+  }, []);
+  useEffect(() => {
+    pokeCtls();
+    return () => clearTimeout(ctlsTimer.current);
+  }, [playing, pokeCtls]);
+
   // Tab bar (SI arrangement): Watch | Guide | Ads.
   const switchTab = useCallback((id) => {
     if (id === 'player') {
@@ -396,14 +409,24 @@ export default function TvWidget() {
   }, []);
 
   // Minimized handoff from /tv: resume the same channel (id-based, so guide
-  // reorders can never retarget it; legacy numeric index accepted).
+  // reorders can never retarget it; legacy numeric index accepted). Runs on
+  // every in-app navigation so handoffs land even though one widget instance
+  // lives across routes. Honors a requested expanded/mini size.
   useEffect(() => {
     try {
       const raw = localStorage.getItem('tb:tv-minimized');
       if (!raw) return;
+      const { i, id, at, expanded: exp } = JSON.parse(raw);
+      if (Date.now() - Number(at || 0) > 60000) { localStorage.removeItem('tb:tv-minimized'); return; }
       localStorage.removeItem('tb:tv-minimized');
-      const { i, id, at } = JSON.parse(raw);
-      if (Date.now() - Number(at || 0) > 60000) return;
+      if (typeof exp === 'boolean') {
+        try {
+          localStorage.setItem('tb:tv-expanded', exp ? '1' : '0');
+          localStorage.setItem('tb:tv-zoom', exp ? 'full' : 'mini');
+        } catch { /* ignore */ }
+        setExpanded(exp);
+      }
+      if (typeof id === 'undefined' && typeof i !== 'number') { setOpen(true); return; }
       let idx = typeof id !== 'undefined' ? ordered.findIndex((c) => String(c.id) === String(id)) : -1;
       if (idx < 0 && typeof i === 'number') idx = (i >= 0 && i < ordered.length) ? i : -1;
       if (idx < 0) return;
@@ -415,13 +438,43 @@ export default function TvWidget() {
       setOpen(true);
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
-    const handler = () => openTv();
+    const handler = (e) => {
+      if (e && typeof e.detail?.expanded === 'boolean' && e.detail.expanded !== expanded) {
+        try {
+          localStorage.setItem('tb:tv-expanded', e.detail.expanded ? '1' : '0');
+          localStorage.setItem('tb:tv-zoom', e.detail.expanded ? 'full' : 'mini');
+        } catch { /* ignore */ }
+        setExpanded(e.detail.expanded);
+      }
+      // Same-channel continuity: a fresh handoff (e.g. from the full TV
+      // page) resumes that exact desk instead of auto-picking one.
+      try {
+        const raw = localStorage.getItem('tb:tv-minimized');
+        if (raw) {
+          const { id, at } = JSON.parse(raw);
+          if (Date.now() - Number(at || 0) < 60000 && typeof id !== 'undefined') {
+            const idx = ordered.findIndex((c) => String(c.id) === String(id));
+            const c = ordered[idx];
+            if (idx >= 0 && c && canWatch(c)) {
+              localStorage.removeItem('tb:tv-minimized');
+              attemptsRef.current.clear();
+              setChannelIndex(idx);
+              setView('player');
+              setFrameLoaded(false);
+              setOpen(true);
+              return;
+            }
+          }
+        }
+      } catch { /* ignore */ }
+      openTv();
+    };
     window.addEventListener('tb:open-tv', handler);
     return () => window.removeEventListener('tb:open-tv', handler);
-  }, [openTv]);
+  }, [openTv, expanded, ordered, canWatch]);
 
   useEffect(() => {
     const onResize = () => setPos((p) => snapToEdge(p.x, p.y));
@@ -502,8 +555,8 @@ export default function TvWidget() {
         });
       } else {
         // Mini panel - move the panel position (clamp to panel size)
-        const panelW = 400; // 25rem
-        const panelH = 544; // 34rem
+        const panelW = 416; // 26rem
+        const panelH = 448; // 28rem
         setMiniPos((cur) => {
           const base = cur || { x: pos.x, y: pos.y };
           let nx = base.x;
@@ -621,8 +674,8 @@ export default function TvWidget() {
       const ny = p.clientY - miniDragState.current.offY;
       if (Math.abs(nx - miniPos.x) > 3 || Math.abs(ny - miniPos.y) > 3) miniDragState.current.moved = true;
       const w = window.innerWidth; const h = window.innerHeight;
-      const panelW = 400;
-      const panelH = 544;
+      const panelW = 416;
+      const panelH = 448;
       setMiniPos({
         x: Math.min(Math.max(nx, 12), w - panelW - 12),
         y: Math.min(Math.max(ny, tickerFloor()), h - panelH - 12),
@@ -683,11 +736,11 @@ export default function TvWidget() {
     <div className="tv-widget-root" style={{ display: 'contents' }}>
       {open && (
         <div
-          className={`tv-pop tv-widget-panel sheen-panel fixed flex h-[34rem] max-h-[calc(100dvh-2rem)] w-[min(25rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl ${expanded ? 'z-[90]' : 'z-[70]'}`}
+          className={`tv-pop tv-widget-panel sheen-panel fixed flex h-auto max-h-[calc(100dvh-2rem)] w-[min(26rem,94vw)] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl ${expanded ? 'z-[90]' : 'z-[70]'}`}
           style={expanded
             ? { left: expandedPos.x, top: expandedPos.y, right: 'auto', bottom: 'auto', width: '900px', height: '600px', maxWidth: 'calc(100vw - 24px)', maxHeight: 'calc(100vh - 24px)' }
             : (miniPos
-              ? { left: miniPos.x, top: miniPos.y, right: 'auto', bottom: 'auto', width: '25rem', maxWidth: 'calc(100vw - 2rem)', height: '34rem', maxHeight: 'calc(100dvh - 2rem)' }
+              ? { left: miniPos.x, top: miniPos.y, right: 'auto', bottom: 'auto', width: '26rem', maxWidth: '94vw', height: 'auto', maxHeight: '64dvh' }
               : { bottom: '0.75rem', [pos.x < (typeof window !== 'undefined' ? window.innerWidth : 1024) / 2 ? 'left' : 'right']: '0.75rem' })}
         >
           {/* Gold top-edge accent + ambient glow + terminal scanlines */}
@@ -728,7 +781,7 @@ export default function TvWidget() {
               <span className="relative shrink-0">
                 <img src={TRADINGBIBLE_LOGO} alt="TradingBible" draggable={false} className="h-10 w-10 select-none rounded-2xl border border-[#d4af37]/40 bg-[#0c0c11] object-contain p-0.5" onError={e => { e.currentTarget.style.display = 'none'; }} />
               </span>
-              <span className="gold-text truncate text-base font-black uppercase tracking-[0.08em]" style={{ fontFamily: "'Arial Black','Archivo Black',Impact,'Segoe UI',sans-serif" }}>{settings.headerText || 'TradingBible TV'}</span>
+              <span className="gold-text font-display truncate text-base">{settings.headerText || 'TradingBible TV'}</span>
             </div>
             <div className="flex w-14 shrink-0 items-center justify-end">
               <button onClick={closePanel} aria-label={t('tv.closeTv')} className={`${iconBtn} shrink-0`}>
@@ -754,8 +807,8 @@ export default function TvWidget() {
             })}
           </div>
 
-          {/* Stage */}
-          <div className="relative min-h-0 flex-1 overflow-hidden">
+          {/* Stage — mini player view wraps the 16:9 video exactly */}
+          <div className={expanded ? 'relative min-h-0 flex-1 overflow-hidden' : view === 'player' ? 'relative aspect-video w-full flex-none overflow-hidden' : 'relative h-[22rem] max-h-[52dvh] w-full flex-none overflow-hidden'}>
             {view === 'player' && playing !== null && (
               <ErrorBoundary
                 fallback={
@@ -768,16 +821,7 @@ export default function TvWidget() {
                 }
               >
               <div className="tb-panel-swap flex h-full flex-col">
-                <div className="flex items-center gap-1 border-b border-[#d4af37]/10 px-2 py-1.5">
-                  <button onClick={openChannels} className={iconBtn} aria-label="Back to channels">
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-[#f0ecdd]">{ordered[playing].title}</span>
-                  <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#e50914]/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#ff5a62]">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e50914]" /> Live
-                  </span>
-                </div>
-                <div className="relative min-h-0 flex-1 bg-black">
+                <div className="relative min-h-0 flex-1 bg-black" onMouseMove={pokeCtls} onTouchStart={pokeCtls}>
                   {!frameLoaded && (
                     <div className="absolute inset-0 grid place-items-center">
                       <Loader2 className="h-6 w-6 animate-spin text-[#d4af37]" />
@@ -844,6 +888,25 @@ export default function TvWidget() {
                       channel controls live outside the frame. Slates stay
                       tappable because the shield hides while one shows. */}
                   {!ytBlocked && !ytError && <div aria-hidden className="absolute inset-0 bg-transparent" />}
+                  {/* Floating transport — auto-hides when idle, returns on activity */}
+                  <div className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-center justify-center gap-2 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-3 pb-2.5 pt-8 transition-all duration-500 ${ctlsHidden ? 'translate-y-3 opacity-0 [&_button]:pointer-events-none' : 'translate-y-0 opacity-100'}`}>
+                    <button onClick={() => zapChannel(-1)} className="pointer-events-auto grid h-8 w-8 shrink-0 place-items-center rounded-full bg-black/60 text-[#e9e7df] backdrop-blur-md transition hover:text-[#d4af37]" aria-label="Previous channel" title="Previous channel">
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    {isYoutube && ytApi && !onTvPage && (
+                      <button onClick={toggleYtSound} className="btn-sheen tb-attn pointer-events-auto flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0f] shadow-[0_2px_10px_rgba(212,175,55,0.3)] transition hover:opacity-95 active:scale-95" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
+                        {ytMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                        {ytMuted ? 'Tap for sound' : 'Tap to play'}
+                      </button>
+                    )}
+                    <button onClick={() => zapChannel(1)} className="pointer-events-auto grid h-8 w-8 shrink-0 place-items-center rounded-full bg-black/60 text-[#e9e7df] backdrop-blur-md transition hover:text-[#d4af37]" aria-label="Next channel" title="Next channel">
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => { const id = ordered[playing]?.id; setOpen(false); nav(id ? `/tv?channel=${encodeURIComponent(id)}` : '/tv'); }} className="pointer-events-auto flex shrink-0 items-center gap-1 rounded-full border border-[#d4af37]/40 bg-black/60 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-[#d4af37] backdrop-blur-md transition hover:bg-[#d4af37]/15" aria-label="Open full TV page" title="Open full TV page">
+                      <MonitorPlay className="h-3 w-3" />
+                      Full page
+                    </button>
+                  </div>
                 </div>
               </div>
               </ErrorBoundary>
@@ -983,29 +1046,10 @@ export default function TvWidget() {
             )}
           </div>
 
-          {/* Footer — one function per control */}
+          {/* Footer — channels + ads views only (player uses the floating transport) */}
+          {view !== 'player' && (
           <div className="tv-widget-footer flex items-center justify-between gap-1 border-t border-[#d4af37]/12 bg-[#0a0a0f] px-3 py-2">
-            {view === 'player' ? (
-              <>
-                <button onClick={() => zapChannel(-1)} className={iconBtn} aria-label="Previous channel" title="Previous channel">
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <span className="flex min-w-0 flex-1 items-center justify-center gap-2">
-                  <span className="truncate text-[10px] font-bold uppercase tracking-wider text-[#8a8577]">
-                    {ordered[playing]?.desk} · {playing + 1}/{ordered.length}
-                  </span>
-                  {isYoutube && ytApi && !onTvPage && (
-                    <button onClick={toggleYtSound} className="btn-sheen flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0f] shadow-[0_2px_10px_rgba(212,175,55,0.3)] transition hover:opacity-95 active:scale-95" aria-label={ytMuted ? 'Unmute' : 'Mute'}>
-                      {ytMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-                      {ytMuted ? 'Tap for sound' : 'Tap to play'}
-                    </button>
-                  )}
-                </span>
-                <button onClick={() => zapChannel(1)} className={iconBtn} aria-label="Next channel" title="Next channel">
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </>
-            ) : view === 'channels' ? (
+            {view === 'channels' ? (
               <>
                 <button onClick={() => { setView('ads'); guardScroll(); }} className={iconBtn} aria-label="Back to broadcasts">
                   <ChevronLeft className="h-4 w-4" />
@@ -1034,10 +1078,13 @@ export default function TvWidget() {
               </>
             )}
           </div>
+          )}
         </div>
       )}
 
-      {!open && (
+      {/* No launcher bubble on the full TV page itself — the page's own
+          bottom-left buttons open the panel instead. */}
+      {!open && !onTvPage && (
         <button
           onMouseDown={onPointerDown}
           onTouchStart={onPointerDown}
