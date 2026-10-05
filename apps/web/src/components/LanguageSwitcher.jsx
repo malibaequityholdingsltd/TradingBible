@@ -20,11 +20,10 @@ export default function LanguageSwitcher({ className = '' }) {
       <DropdownMenuTrigger asChild>
         <button
           aria-label={t('lang.switcher')}
-          title={t('lang.switcher')}
-          className={`flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-full border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60 ${className}`}
+          title={`${t('lang.switcher')} · ${lang.toUpperCase()}`}
+          className={`grid h-9 w-9 place-items-center rounded-full text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] ${className}`}
         >
           <Languages className="h-4 w-4" />
-          <span className="hidden text-xs font-medium uppercase sm:inline">{lang}</span>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="z-[80] max-h-[70vh] w-44 overflow-y-auto border-[#d4af37]/15 bg-[#111113] text-[#e9e7df]">

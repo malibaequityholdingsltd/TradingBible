@@ -1887,15 +1887,23 @@ export function AdminIntegrations() {
 
   return (
     <AdminLayout title="Integrations">
-      <div className="mb-5 flex items-center justify-between">
-        <div>
-          <h2 className="font-semibold text-[#f0ecdd]">Third-Party Integrations</h2>
-          <p className="text-sm text-[#8a8577] mt-0.5">Configure API keys and connections to external services.</p>
+      <section className="tb-hero mb-5 overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
+              <Plug className="h-6 w-6" />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Third-Party Integrations</h2>
+              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Configure API keys and connections to external services.</p>
+            </div>
+          </div>
+          <button onClick={load} className="flex shrink-0 items-center gap-2 rounded-xl border border-[#d4af37]/15 px-3 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/40">
+            <RefreshCw className="h-4 w-4" /> Refresh
+          </button>
         </div>
-        <button onClick={load} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/15 px-3 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/40">
-          <RefreshCw className="h-4 w-4" /> Refresh
-        </button>
-      </div>
+      </section>
 
       {loading ? <Spinner /> : (
         <div className="space-y-3">
@@ -2026,16 +2034,24 @@ export function AdminApiKeys() {
         </div>
       )}
 
-      <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h2 className="font-semibold text-[#f0ecdd]">API Key Management</h2>
-          <p className="text-sm text-[#8a8577] mt-0.5">{keys.length} key{keys.length !== 1 ? 's' : ''} total</p>
+      <section className="tb-hero mb-5 overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
+              <Key className="h-6 w-6" />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">API Key Management</h2>
+              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">{keys.length} key{keys.length !== 1 ? 's' : ''} total</p>
+            </div>
+          </div>
+          <button onClick={() => setShowModal(true)}
+            className="flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90">
+            <Plus className="h-4 w-4" /> Generate Key
+          </button>
         </div>
-        <button onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90">
-          <Plus className="h-4 w-4" /> Generate Key
-        </button>
-      </div>
+      </section>
 
       {/* Create modal */}
       {showModal && (
@@ -2139,7 +2155,7 @@ export function AdminApiKeys() {
 /* ─── ADMIN PLUGINS ──────────────────────────────────────────────── */
 const BUILTIN_PLUGINS = [
   { slug: 'market-data', name: 'Market Data Engine', version: '2.1.0', description: 'Real-time quotes, candles, and order book from Alpha Vantage, Binance, Polygon.', author: 'TradingBible Core', enabled: true, status: 'installed' },
-  { slug: 'ai-coach', name: 'AI Trade Coach', version: '1.4.0', description: 'GPT-powered trade analysis, emotion scoring, and improvement suggestions.', author: 'TradingBible Core', enabled: true, status: 'installed' },
+  { slug: 'ai-coach', name: 'SI Trade Coach', version: '1.4.0', description: 'GPT-powered trade analysis, emotion scoring, and improvement suggestions.', author: 'TradingBible Core', enabled: true, status: 'installed' },
   { slug: 'economic-calendar', name: 'Economic Calendar', version: '1.2.0', description: 'Forex Factory event feed with impact levels and real-time countdowns.', author: 'TradingBible Core', enabled: true, status: 'installed' },
   { slug: 'chart-drawings', name: 'Chart Drawing Tools', version: '1.0.3', description: 'Persistent trendlines, fibonacci, annotations and templates per user.', author: 'TradingBible Core', enabled: true, status: 'installed' },
   { slug: 'academy', name: 'Academy Module', version: '1.1.0', description: 'Course catalog, lesson tracking, quizzes and certificate generation.', author: 'TradingBible Core', enabled: true, status: 'installed' },
@@ -2249,17 +2265,25 @@ export function AdminPlugins() {
 
   return (
     <AdminLayout title="Plugins">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="font-semibold text-[#f0ecdd]">Plugin Management</h2>
-          <p className="text-sm text-[#8a8577] mt-0.5">{plugins.filter(p => p.enabled).length} of {plugins.length} plugins active</p>
+      <section className="tb-hero mb-5 overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
+              <Package className="h-6 w-6" />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Plugin Management</h2>
+              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">{plugins.filter(p => p.enabled).length} of {plugins.length} plugins active</p>
+            </div>
+          </div>
+          <button onClick={handleUpload} disabled={uploading}
+            className="flex shrink-0 items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2.5 text-sm text-[#d4af37] hover:border-[#d4af37]/50">
+            {uploading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Upload Plugin
+          </button>
         </div>
-        <button onClick={handleUpload} disabled={uploading}
-          className="flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2.5 text-sm text-[#d4af37] hover:border-[#d4af37]/50">
-          {uploading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Upload Plugin
-        </button>
         <input ref={fileRef} type="file" accept=".json,application/json" onChange={handleManifestFile} className="hidden" />
-      </div>
+      </section>
 
       {loading ? <Spinner /> : (
         <div className="space-y-2">
@@ -2402,7 +2426,10 @@ export function AdminJobs() {
               {editingId && <button onClick={resetForm} className="rounded-xl border border-white/10 px-4 py-2 text-sm text-[#8a8577]">Cancel</button>}
             </div>
           </div>
-          <h3 className="mb-3 mt-6 font-semibold text-[#f0ecdd]">Postings ({postings.length})</h3>
+          <div className="mb-3 mt-6 flex items-center gap-3">
+            <h3 className="text-sm font-bold text-[#f0ecdd]">Postings ({postings.length})</h3>
+            <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+          </div>
           <div className="space-y-2">
             {postings.map((p) => (
               <div key={p.id} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
@@ -2598,12 +2625,18 @@ export function AdminTvAds() {
 
   return (
     <AdminLayout title="TradingBible TV">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold text-[#f0ecdd]">TV Broadcasts</h2>
-          <p className="mt-1 text-xs text-[#8a8577]">Rotating ad feed shown in the floating TradingBible TV widget (bottom-left bubble).</p>
+      <section className="tb-hero mb-5 overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
+        <div className="relative flex flex-wrap items-center gap-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
+            <MonitorPlay className="h-6 w-6" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">TV Broadcasts</h2>
+            <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Rotating ad feed shown in the floating TradingBible TV widget (bottom-left bubble).</p>
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* TV settings */}
       <div className="glass mb-6 rounded-2xl p-5">
@@ -2849,7 +2882,7 @@ export function AdminSettings() {
   const [saveState, setSaveState] = useState('idle');
   const [settings, setSettings] = useState({
     platformName: 'TradingBible',
-    tagline: 'Trade like the 1%. Journal like a fund.',
+    tagline: 'maliba-admin',
     supportEmail: 'support@tradingbible.app',
     trialDays: 0,
     signupsOpen: true,
@@ -2968,7 +3001,7 @@ export function AdminSettings() {
         <div className="glass max-w-xl rounded-2xl p-5 sm:p-6 space-y-3">
           <h3 className="font-semibold text-[#f0ecdd] mb-4">Feature Toggles</h3>
           {Object.entries(features).map(([k, v]) => {
-            const labels = { aiCoach: 'AI Coach', academy: 'Academy', community: 'Community', economicCalendar: 'Economic Calendar', riskTools: 'Risk Tools', chartBuilder: 'Chart Builder', signals: 'Trading Signals', wallet: 'Wallet & Banking' };
+            const labels = { aiCoach: 'SI Coach', academy: 'Academy', community: 'Community', economicCalendar: 'Economic Calendar', riskTools: 'Risk Tools', chartBuilder: 'Chart Builder', signals: 'Trading Signals', wallet: 'Wallet & Banking' };
             return (
               <label key={k} className="flex items-center justify-between rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer hover:border-[#d4af37]/25 transition-colors">
                 <div>

@@ -55,7 +55,7 @@ html.light #app-bg {
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  filter: brightness(0.88) saturate(1.0) contrast(1.03);
+  filter: brightness(1.04) saturate(0.82) contrast(0.96);
 }
 @media (min-width: 768px) {
   html.light #app-bg {
@@ -66,7 +66,7 @@ html.light #app-bg {
   }
 }
 html.light #app-bg::after {
-  background: radial-gradient(120% 90% at 50% 0%, rgba(242,239,231,0.18) 0%, rgba(242,239,231,0.42) 55%, rgba(238,234,223,0.68) 100%);
+  background: radial-gradient(120% 90% at 50% 0%, rgba(242,239,231,0.45) 0%, rgba(242,239,231,0.68) 55%, rgba(238,234,223,0.86) 100%);
 }
 
 /* Mobile optimization */
@@ -354,7 +354,7 @@ body {
 @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 .animate-floaty { animation: floaty 6s ease-in-out infinite; }
 @keyframes tv-pop { from { opacity: 0; transform: translateY(14px) scale(0.94); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.tv-pop { animation: tv-pop .3s cubic-bezier(.2,.9,.28,1.15) both; }
+.tv-pop { animation: tv-pop .3s cubic-bezier(.2,.9,.28,1.15) backwards; }
 @keyframes tv-progress { from { width: 0%; } to { width: 100%; } }
 .tv-progress { animation-name: tv-progress; animation-timing-function: linear; animation-fill-mode: forwards; }
 @media (prefers-reduced-motion: reduce) { .animate-marquee, .animate-floaty, .tv-pop, .ambient-blob { animation: none; } }
@@ -399,6 +399,11 @@ html.light .tv-live-row {
   background: rgba(229, 9, 20, 0.045) !important;
   box-shadow: inset 3px 0 0 rgba(229, 9, 20, 0.55) !important;
 }
+/* TV guide — light-mode surfaces (dark veil/card/row utilities have no generic remap) */
+html.light .tv-guide-overlay { background-color: rgba(242, 239, 231, 0.88) !important; }
+html.light .tv-guide-card { background-color: rgba(251, 249, 243, 0.97) !important; border-color: rgba(166, 124, 30, 0.35) !important; }
+html.light .tv-guide-row { background-color: rgba(255, 255, 255, 0.7) !important; border-color: rgba(45, 52, 64, 0.12) !important; }
+html.light .tv-guide-row-active { background-color: rgba(212, 175, 55, 0.14) !important; border-color: rgba(166, 124, 30, 0.55) !important; }
 html.light .tv-live-chip { background-color: rgba(0, 0, 0, 0.5) !important; }
 
 /* ─── DARK THEME READABILITY ──────────────────────────────────────── */
@@ -507,6 +512,150 @@ html.light .bg-\[\#0c0c11\]\/85 { background-color: rgba(251, 249, 243, 0.88) !i
 html.light .bg-\[\#0a0a0f\]\/70 { background-color: rgba(251, 249, 243, 0.75) !important; }
 html.light .bg-\[\#0a0a0f\]\/60 { background-color: rgba(251, 249, 243, 0.7) !important; }
 html.light .bg-\[\#0f0f14\]\/90 { background-color: rgba(251, 249, 243, 0.92) !important; }
+
+/* App header — light-mode surface (its /90 + white-tint utilities have no generic remap) */
+html.light .app-header { background-color: rgba(251, 249, 243, 0.92) !important; border-bottom-color: rgba(166, 124, 30, 0.3) !important; }
+html.light .app-header-pill { background-color: rgba(45, 52, 64, 0.05) !important; border-color: rgba(45, 52, 64, 0.12) !important; }
+html.light .app-search-trigger { background-color: rgba(255, 255, 255, 0.7) !important; border-color: rgba(45, 52, 64, 0.14) !important; }
+
+/* App header motion — drifting hairline glow + slow light sweep (both modes) */
+.app-header-hairline {
+  background: linear-gradient(90deg, transparent 0%, rgba(212,175,55,0.12) 20%, rgba(212,175,55,0.55) 50%, rgba(212,175,55,0.12) 80%, transparent 100%);
+  background-size: 200% 100%;
+  animation: tb-hairline-drift 7s linear infinite;
+}
+@keyframes tb-hairline-drift {
+  0% { background-position: 0% 0; }
+  100% { background-position: -200% 0; }
+}
+.app-header-sheen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 42%, rgba(244, 230, 168, 0.07) 50%, transparent 58%);
+  transform: translateX(-100%);
+  animation: tb-header-sheen 9s ease-in-out infinite;
+}
+@keyframes tb-header-sheen {
+  0% { transform: translateX(-100%); }
+  55%, 100% { transform: translateX(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-header-hairline, .app-header-sheen::before { animation: none; }
+}
+/* Light mode needs deeper gold for the motion to read on ivory */
+html.light .app-header-hairline {
+  background: linear-gradient(90deg, transparent 0%, rgba(166,124,30,0.25) 20%, rgba(166,124,30,0.75) 50%, rgba(166,124,30,0.25) 80%, transparent 100%);
+  background-size: 200% 100%;
+}
+html.light .app-header-sheen::before {
+  background: linear-gradient(105deg, transparent 42%, rgba(166,124,30,0.12) 50%, transparent 58%);
+}
+
+/* Terminal list motion — breathing active rail, cascade entrance, hover nudge */
+.tbl-row { position: relative; }
+.tbl-row--active::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #f4e6a8, #d4af37 55%, #a67c1e);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.8);
+  animation: tbl-breathe 2.8s ease-in-out infinite;
+}
+@keyframes tbl-breathe {
+  0%, 100% { opacity: 0.5; transform: scaleY(0.92); }
+  50% { opacity: 1; transform: scaleY(1); }
+}
+.tbl-row--active > span:first-child {
+  animation: tbl-icon-glow 2.8s ease-in-out infinite;
+}
+@keyframes tbl-icon-glow {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 14px rgba(212, 175, 55, 0.45); }
+}
+.tbl-row--active { overflow: hidden; }
+.tbl-row--active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 40%, rgba(244, 230, 168, 0.16) 50%, transparent 60%);
+  transform: translateX(-100%);
+  animation: tbl-active-sweep 4s ease-in-out infinite;
+}
+@keyframes tbl-active-sweep {
+  0% { transform: translateX(-100%); }
+  60%, 100% { transform: translateX(100%); }
+}
+.tbl-row:hover { transform: translateX(3px); }
+.tbl-row:hover > span:first-child { transform: translateX(2px) scale(1.1); }
+.tbl-cascade > div { animation: tbl-row-in 0.5s cubic-bezier(0.22, 0.8, 0.3, 1) both; }
+.tbl-cascade > div:nth-child(2) { animation-delay: 0.06s; }
+.tbl-cascade > div:nth-child(3) { animation-delay: 0.12s; }
+.tbl-cascade > div:nth-child(4) { animation-delay: 0.18s; }
+.tbl-cascade > div:nth-child(5) { animation-delay: 0.24s; }
+.tbl-cascade > div:nth-child(n+6) { animation-delay: 0.3s; }
+@keyframes tbl-row-in {
+  from { opacity: 0; transform: translateX(-14px); }
+  to { opacity: 1; transform: none; }
+}
+html.light .tbl-row--active::before {
+  background: linear-gradient(180deg, #c99a25, #a67c1e 60%, #8a6714);
+  box-shadow: 0 0 10px rgba(166, 124, 30, 0.6);
+}
+html.light .tbl-row--active::after {
+  background: linear-gradient(105deg, transparent 40%, rgba(166, 124, 30, 0.18) 50%, transparent 60%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tbl-row--active::before,
+  .tbl-row--active::after,
+  .tbl-row--active > span:first-child,
+  .tbl-cascade > div { animation: none; }
+}
+
+/* Onboarding tutorial — light-mode surface */
+html.light .tut-modal { background-color: rgba(251, 249, 243, 0.97) !important; border-color: rgba(166, 124, 30, 0.35) !important; }
+html.light .tut-modal .bg-white\/15 { background-color: rgba(45, 52, 64, 0.2) !important; }
+
+/* Tabs + panel swaps — active tab breathes, entering panels rise in */
+.tb-tabs .tab-active { animation: tbl-tab-breathe 3s ease-in-out infinite; }
+@keyframes tbl-tab-breathe {
+  0%, 100% { box-shadow: 0 8px 24px -10px rgba(212, 175, 55, 0.5); }
+  50% { box-shadow: 0 8px 32px -6px rgba(212, 175, 55, 0.8); }
+}
+.tb-panel-swap { animation: tbl-panel-in 0.35s cubic-bezier(0.22, 0.8, 0.3, 1) both; }
+@keyframes tbl-panel-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+html.light .tb-tabs .tab-active { animation-name: tbl-tab-breathe-light; }
+@keyframes tbl-tab-breathe-light {
+  0%, 100% { box-shadow: 0 8px 24px -10px rgba(166, 124, 30, 0.4); }
+  50% { box-shadow: 0 8px 32px -6px rgba(166, 124, 30, 0.65); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tb-tabs .tab-active, .tb-panel-swap { animation: none; }
+}
+
+/* While a TV surface is being dragged, never select page text */
+.tb-noselect, .tb-noselect * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* TV widget text is display-only — never highlightable or copyable (inputs exempt) */
+.tv-widget-panel *:not(input):not(textarea),
+.tv-tv-btn {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+
 html.light .tv-chat-panel {
   box-shadow: 0 24px 80px -40px rgba(60, 55, 40, 0.5), 0 0 40px rgba(166, 124, 30, 0.18) !important;
 }

@@ -94,12 +94,12 @@ export function CardSkeleton({ rows = 3 }) {
 
 export function Tabs({ tabs, active, onChange }) {
 	return (
-		<div className="tb-scroll-row">
+		<div className="tb-tabs tb-scroll-row">
 			{tabs.map((tb) => (
 				<button
 					key={tb.id}
 					onClick={() => onChange(tb.id)}
-					className={`flex min-h-[42px] items-center gap-2 rounded-xl px-4 text-sm font-semibold transition ${active === tb.id ? 'bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] text-[#0a0a0f] shadow-[0_8px_24px_-10px_rgba(212,175,55,0.7)]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}
+					className={`flex min-h-[42px] items-center gap-2 rounded-xl px-4 text-sm font-semibold transition active:scale-95 ${active === tb.id ? 'tab-active bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] text-[#0a0a0f] shadow-[0_8px_24px_-10px_rgba(212,175,55,0.7)]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}
 				>
 					{tb.icon && <tb.icon className="h-4 w-4" />}
 					{tb.label}

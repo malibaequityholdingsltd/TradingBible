@@ -395,6 +395,97 @@ export function checkYoutubeReachable(timeoutMs = 8000) {
 	})();
 }
 
+// ── Local-time schedules ─────────────────────────────────────────────
+// Channel `hours` are written in their home zone (ET / UK / IST).
+// These helpers detect the viewer's timezone and rewrite the times into it,
+// so "6a–5p ET" reads correctly whether the viewer is in London or Lagos.
+
+const SOURCE_ZONES = [
+  { token: 'ET', zone: 'America/New_York' },
+  { token: 'UK', zone: 'Europe/London' },
+  { token: 'IST', zone: 'Asia/Kolkata' },
+];
+
+function zoneOffsetMinutes(zone, date) {
+  try {
+    const dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone: zone, hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+    });
+    const parts = {};
+    for (const p of dtf.formatToParts(date)) parts[p.type] = p.value;
+    const asUTC = Date.UTC(+parts.year, +parts.month - 1, +parts.day, (+parts.hour % 24), +parts.minute, +parts.second);
+    return Math.round((asUTC - date.getTime()) / 60000);
+  } catch {
+    return 0;
+  }
+}
+
+export function getUserTimeZone() {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+  } catch {
+    return null;
+  }
+}
+
+function localZoneAbbr() {
+  try {
+    const p = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' })
+      .formatToParts(new Date())
+      .find((x) => x.type === 'timeZoneName');
+    return (p && p.value) || '';
+  } catch {
+    return '';
+  }
+}
+
+function to24(h, m, mer) {
+  let out = (+h % 12) + (mer === 'p' ? 12 : 0);
+  if (+h === 12) out = mer === 'p' ? 12 : 0;
+  return out * 60 + (+m || 0);
+}
+
+function fmtLocal(totalMin) {
+  const t = ((totalMin % 1440) + 1440) % 1440;
+  const h = Math.floor(t / 60);
+  const mm = t % 60;
+  const mer = h < 12 ? 'a' : 'p';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return mm ? `${h12}:${String(mm).padStart(2, '0')}${mer}` : `${h12}${mer}`;
+}
+
+// Rewrites a channel's `hours` string into the viewer's local timezone.
+// Strings without convertible times come back untouched.
+export function localizeChannelHours(channel) {
+  const raw = String(channel?.hours || '');
+  if (!raw) return raw;
+  const src = SOURCE_ZONES.find((s) => new RegExp(`\\b${s.token}\\b`).test(raw));
+  if (!src) return raw;
+  try {
+    const now = new Date();
+    const delta = -now.getTimezoneOffset() - zoneOffsetMinutes(src.zone, now);
+    if (!delta) return raw; // viewer is already in the schedule's zone
+    const abbr = localZoneAbbr();
+    const suffix = abbr ? ` ${abbr}` : '';
+    const token = src.token;
+    const rangeRe = new RegExp(`(\\d{1,2})(?::(\\d{2}))?\\s*([ap])?\\s*[–—-]\\s*(\\d{1,2})(?::(\\d{2}))?\\s*([ap])(\\s*${token})?`, 'gi');
+    let out = raw.replace(rangeRe, (m, h1, m1, mer1, h2, m2, mer2, z) => {
+      const sMer = (mer1 || mer2 || 'a').toLowerCase();
+      const eMer = (mer2 || mer1 || 'a').toLowerCase();
+      const s = fmtLocal(to24(h1, m1, sMer) + delta);
+      const e = fmtLocal(to24(h2, m2, eMer) + delta);
+      return `${s}–${e}${z ? suffix : ''}`;
+    });
+    const singleRe = new RegExp(`(\\d{1,2})(?::(\\d{2}))?\\s*([ap])\\s*${token}`, 'gi');
+    out = out.replace(singleRe, (m, h, mm, mer) => `${fmtLocal(to24(h, mm, mer.toLowerCase()) + delta)}${suffix}`);
+    return out;
+  } catch {
+    return raw;
+  }
+}
+
 // Falls back to built-in only when the feed is unreachable.
 export function useLiveChannels() {
 	const [channels, setChannels] = useState(LIVE_CHANNELS);

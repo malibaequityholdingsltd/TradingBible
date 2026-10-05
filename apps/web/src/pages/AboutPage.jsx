@@ -7,9 +7,7 @@ import {
 import Footer from '@/components/Footer';
 import { Card, EmptyState, GoldButton } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
-
-const LOGO = 'https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/f18f53c1fa5ec4181c7033589080fd00.png';
-const MALIBA_LOGO = 'https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/5c8275966b855914cc3eec21e6f6ed03.png';
+import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 
 const PROVIDES = [
   { icon: BarChart3, tk: 'abt.p1t', bk: 'abt.p1b' },
@@ -91,7 +89,7 @@ export default function AboutPage() {
       <section className="relative mx-auto max-w-[96rem] px-6 pt-28 pb-16 text-center sm:pt-32">
         <div className="absolute inset-0 grain opacity-30" />
         <div className="relative">
-          <img src={LOGO} alt="TradingBible" className="mx-auto mb-6 h-16 w-16 rounded-2xl object-contain gold-glow" />
+          <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="mx-auto mb-6 h-16 w-16 rounded-2xl object-contain gold-glow" />
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/30 px-3 py-1 text-xs uppercase tracking-[0.18em] text-[#d4af37]"><Globe className="h-3.5 w-3.5" /> {t('abt.heroKick')}</span>
           <h1 className="mx-auto mt-5 max-w-3xl text-4xl font-bold sm:text-5xl">{t('abt.aboutTitle')} <span className="tb-gold-text">TradingBible</span></h1>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-[#8a8577] sm:text-lg">
@@ -117,7 +115,7 @@ export default function AboutPage() {
       {/* Ownership */}
       <section className="mx-auto max-w-[96rem] px-6 py-6">
         <Card className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-          <img src={MALIBA_LOGO} alt="TradingBible LLC" className="h-16 w-16 shrink-0 rounded-2xl object-contain" />
+          <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-16 w-16 shrink-0 rounded-2xl object-contain" />
           <div>
             <h2 className="text-xl font-semibold text-[#f0ecdd]">{t('abt.ownership')}</h2>
           <p className="mt-2 leading-relaxed text-[#8a8577]">{t('abt.ownershipB')}</p>

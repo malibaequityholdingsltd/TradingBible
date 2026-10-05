@@ -57,7 +57,7 @@ router.get('/access', async (req, res) => {
 // Everything below requires a purchased Academy membership.
 router.use(requireAccess);
 
-// ── Enroll in a learning path (starts AI curriculum generation) ─────
+// ── Enroll in a learning path (starts SI curriculum generation) ─────
 router.post('/enroll', academyAiRateLimit, async (req, res) => {
 	const { pathKey } = req.body ?? {};
 	if (!pathKey) return res.status(422).json({ error: { message: 'pathKey is required' } });
@@ -97,11 +97,11 @@ router.get('/curriculum', async (req, res) => {
 		res.json(result);
 	} catch (err) {
 		logger.error('academy curriculum failed', String(err?.message || err));
-		res.status(500).json({ error: { message: 'The AI could not build your curriculum right now. Please try again.' } });
+		res.status(500).json({ error: { message: 'The SI could not build your curriculum right now. Please try again.' } });
 	}
 });
 
-// ── Lesson content (AI-generated, cached) ───────────────────────────
+// ── Lesson content (SI-generated, cached) ───────────────────────────
 router.post('/lesson', academyAiRateLimit, async (req, res) => {
 	const { pathKey, courseKey, lessonKey } = req.body ?? {};
 	if (!pathKey || !courseKey || !lessonKey) {
@@ -124,11 +124,11 @@ router.post('/lesson', academyAiRateLimit, async (req, res) => {
 		res.json({ status: 'ready', content });
 	} catch (err) {
 		logger.error('academy lesson failed', String(err?.message || err));
-		res.status(500).json({ error: { message: 'The AI could not write this lesson right now. Please try again.' } });
+		res.status(500).json({ error: { message: 'The SI could not write this lesson right now. Please try again.' } });
 	}
 });
 
-// ── AI-graded quiz ──────────────────────────────────────────────────
+// ── SI-graded quiz ──────────────────────────────────────────────────
 router.post('/quiz/grade', academyAiRateLimit, async (req, res) => {
 	const { pathKey, courseKey, lessonKey, answers } = req.body ?? {};
 	if (!pathKey || !courseKey || !lessonKey) {
@@ -151,7 +151,7 @@ router.post('/quiz/grade', academyAiRateLimit, async (req, res) => {
 		res.json({ status: 'ready', score: result.score, total, feedback: result.feedback });
 	} catch (err) {
 		logger.error('academy quiz grade failed', String(err?.message || err));
-		res.status(500).json({ error: { message: 'The AI grader could not grade your quiz right now. Please try again.' } });
+		res.status(500).json({ error: { message: 'The SI grader could not grade your quiz right now. Please try again.' } });
 	}
 });
 
@@ -270,7 +270,7 @@ router.delete('/webinar/rsvp', async (req, res) => {
 	}
 });
 
-// ── Webinar attendance — mark when the member enters the live AI room
+// ── Webinar attendance — mark when the member enters the live SI room
 router.post('/webinar/attend', async (req, res) => {
 	const { webinarId } = req.body ?? {};
 	if (!webinarId) return res.status(422).json({ error: { message: 'webinarId is required' } });
@@ -283,7 +283,7 @@ router.post('/webinar/attend', async (req, res) => {
 	}
 });
 
-// ── AI Tutor (SSE, lesson-context) ──────────────────────────────────
+// ── SI Tutor (SSE, lesson-context) ──────────────────────────────────
 router.post('/tutor/stream', academyAiRateLimit, async (req, res) => {
 	const { pathKey, courseKey, lessonKey, history, question } = req.body ?? {};
 	if (!pathKey || !courseKey || !lessonKey || typeof question !== 'string' || !question.trim()) {
@@ -307,11 +307,11 @@ router.post('/tutor/stream', academyAiRateLimit, async (req, res) => {
 		res.on('close', () => sse.destroy());
 	} catch (err) {
 		logger.error('academy tutor failed', String(err?.message || err));
-		res.status(500).json({ error: { message: 'The AI tutor is unavailable right now. Please try again.' } });
+		res.status(500).json({ error: { message: 'The SI tutor is unavailable right now. Please try again.' } });
 	}
 });
 
-// ── Live Webinar AI host (SSE) ──────────────────────────────────────
+// ── Live Webinar SI host (SSE) ──────────────────────────────────────
 router.post('/webinar/stream', academyAiRateLimit, async (req, res) => {
 	const { webinar, scheduleNote, history, question } = req.body ?? {};
 	if (!webinar?.title) return res.status(422).json({ error: { message: 'Webinar details are required.' } });
@@ -331,7 +331,7 @@ router.post('/webinar/stream', academyAiRateLimit, async (req, res) => {
 		res.on('close', () => sse.destroy());
 	} catch (err) {
 		logger.error('academy webinar failed', String(err?.message || err));
-		res.status(500).json({ error: { message: 'The live AI host is unavailable right now. Please try again.' } });
+		res.status(500).json({ error: { message: 'The live SI host is unavailable right now. Please try again.' } });
 	}
 });
 

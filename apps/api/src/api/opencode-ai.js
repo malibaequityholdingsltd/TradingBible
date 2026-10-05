@@ -45,7 +45,7 @@ async function ensureSession(userId) {
 	const existing = sessions.get(userId);
 	if (existing) return existing;
 
-	const res = await request('/session', { method: 'POST', body: { title: 'TradingBible AI' } });
+	const res = await request('/session', { method: 'POST', body: { title: 'TradingBible SI' } });
 	if (!res.ok) {
 		throw new Error(`opencode: failed to create session (${res.status})`);
 	}
@@ -90,7 +90,7 @@ export async function streamOpencode({ userId, systemPrompt, userMessage }) {
 	const agentName = `${providerID}/${modelID}`;
 	const timeoutMs = Number(process.env.OPENCODE_TIMEOUT_MS || 180000);
 	const timeout = setTimeout(() => {
-		passThrough.push(`data: ${JSON.stringify({ type: SSEEventType.Error, data: { content: 'The AI assistant took too long to respond. Please try again.' } })}\n\n`);
+		passThrough.push(`data: ${JSON.stringify({ type: SSEEventType.Error, data: { content: 'The SI assistant took too long to respond. Please try again.' } })}\n\n`);
 		passThrough.end(`data: ${JSON.stringify({ type: SSEEventType.Completed, data: { content: '[COMPLETED]' } })}\n\n`);
 	}, timeoutMs);
 
@@ -152,7 +152,7 @@ export async function streamOpencode({ userId, systemPrompt, userMessage }) {
  * collect the deltas from the shared /event SSE stream until the session
  * goes idle — mirroring streamOpencode, but returning one string.
  *
- * Used by the Academy for AI-generated curriculum, lessons, quizzes,
+ * Used by the Academy for SI-generated curriculum, lessons, quizzes,
  * grading and certificates.
  *
  * @param {{ userId: string, systemPrompt: string, userMessage: { type: 'text', text: string }[] }} params
@@ -188,7 +188,7 @@ export async function completeOpencode({ userId, systemPrompt, userMessage }) {
 	let out = '';
 	await new Promise((resolve, reject) => {
 		const timeout = setTimeout(() => {
-			reject(new Error('The AI took too long to respond. Please try again.'));
+			reject(new Error('The SI took too long to respond. Please try again.'));
 		}, timeoutMs);
 		(async () => {
 			try {

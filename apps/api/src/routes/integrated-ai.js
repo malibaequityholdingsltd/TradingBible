@@ -50,13 +50,13 @@ router.post('/stream', integratedAiRateLimit, uploadFiles({
 		});
 	} catch (err) {
 		const message = String(err?.message || '');
-		let friendly = 'The AI assistant is temporarily unavailable. Please try again shortly.';
+		let friendly = 'The SI assistant is temporarily unavailable. Please try again shortly.';
 		if (/insufficient balance/i.test(message)) {
-			friendly = 'The AI assistant is currently unavailable (the AI provider account needs a balance top-up). Please contact support.';
+			friendly = 'The SI assistant is currently unavailable (the SI provider account needs a balance top-up). Please contact support.';
 		} else if (/not configured/i.test(message)) {
 			friendly = message;
 		}
-		logger.error('AI stream setup failed:', message);
+		logger.error('SI stream setup failed:', message);
 		return res.status(502).json({ error: { message: friendly } });
 	}
 

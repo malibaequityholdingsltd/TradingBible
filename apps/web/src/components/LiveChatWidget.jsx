@@ -1,13 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X, Send, Sparkles, BarChart3, Cable, Wallet, Target, Info, Wrench, MessageSquare, MessageCircle, Eraser, ExternalLink, Crown } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { meetsPlan } from '@/lib/entitlements';
 import { useI18n } from '@/lib/i18n';
 import { useIntegratedAi } from '@/hooks/use-integrated-ai';
-import { TRADINGBIBLE_LOGO } from '@/lib/branding';
+import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 
-const POS_KEY = 'tb:chat-btn-pos';
 const BTN = 56; // button size in px
 const MARGIN = 12;
 
@@ -26,32 +25,6 @@ const TABS = [
 
 const iconBtn = 'grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/12 text-[#8a8577] transition-colors hover:border-[#d4af37]/35 hover:bg-white/5 hover:text-[#f0ecdd]';
 
-// Clamp a raw {x,y} to the viewport, then snap to the nearest screen edge.
-function snapToEdge(x, y) {
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  let cx = Math.min(Math.max(x, MARGIN), w - BTN - MARGIN);
-  let cy = Math.min(Math.max(y, MARGIN), h - BTN - MARGIN);
-  const dl = cx - MARGIN;
-  const dr = w - BTN - MARGIN - cx;
-  const dt = cy - MARGIN;
-  const db = h - BTN - MARGIN - cy;
-  const min = Math.min(dl, dr, dt, db);
-  if (min === dl) cx = MARGIN;
-  else if (min === dr) cx = w - BTN - MARGIN;
-  else if (min === dt) cy = MARGIN;
-  else cy = h - BTN - MARGIN;
-  return { x: cx, y: cy };
-}
-
-function loadPos() {
-  try {
-    const raw = JSON.parse(localStorage.getItem(POS_KEY) || 'null');
-    if (raw && typeof raw.x === 'number' && typeof raw.y === 'number') return snapToEdge(raw.x, raw.y);
-  } catch { /* ignore */ }
-  return { x: window.innerWidth - BTN - MARGIN, y: window.innerHeight - BTN - MARGIN };
-}
-
 function MessageBubble({ from, text, images, tag, t }) {
   const you = from === 'you';
   return (
@@ -59,7 +32,7 @@ function MessageBubble({ from, text, images, tag, t }) {
       {(text || images?.length) ? (
         <div className={`flex max-w-[88%] items-end gap-1.5 ${you ? 'flex-row-reverse' : ''}`}>
           {!you && (
-            <div className="mb-px grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] shadow-[0_0_10px_rgba(212,175,55,0.35)]">
+            <div className="mb-px grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#0c0c11]/80 border border-[#d4af37]/30">
               <img src={TRADINGBIBLE_LOGO} alt="" className="h-[15px] w-[15px] rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
             </div>
           )}
@@ -95,29 +68,14 @@ export default function LiveChatWidget() {
   const WELCOME = t('aiw.welcome');
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState('coach');
-  const [pos, setPos] = useState(() => (typeof window !== 'undefined' ? loadPos() : { x: 0, y: 0 }));
-  const [dragging, setDragging] = useState(false);
   const [text, setText] = useState('');
   const [unread, setUnread] = useState(false);
   const scrollRef = useRef(null);
-
-  const dragState = useRef({ active: false, moved: false, offX: 0, offY: 0 });
 
   useEffect(() => {
     const handler = () => setOpen(true);
     window.addEventListener('tb:open-live-chat', handler);
     return () => window.removeEventListener('tb:open-live-chat', handler);
-  }, []);
-
-  // Keep the button on-screen when the viewport resizes / rotates.
-  useEffect(() => {
-    const onResize = () => setPos((p) => snapToEdge(p.x, p.y));
-    window.addEventListener('resize', onResize);
-    window.addEventListener('orientationchange', onResize);
-    return () => {
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('orientationchange', onResize);
-    };
   }, []);
 
   // Auto-scroll the transcript while streaming.
@@ -134,49 +92,6 @@ export default function LiveChatWidget() {
     if (open) setUnread(false);
   }, [open, lastRole, isStreaming]);
 
-  const onPointerDown = useCallback((e) => {
-    const p = e.touches ? e.touches[0] : e;
-    dragState.current = { active: true, moved: false, offX: p.clientX - pos.x, offY: p.clientY - pos.y };
-    setDragging(true);
-  }, [pos.x, pos.y]);
-
-  useEffect(() => {
-    const move = (e) => {
-      if (!dragState.current.active) return;
-      const p = e.touches ? e.touches[0] : e;
-      const nx = p.clientX - dragState.current.offX;
-      const ny = p.clientY - dragState.current.offY;
-      if (Math.abs(nx - pos.x) > 3 || Math.abs(ny - pos.y) > 3) dragState.current.moved = true;
-      const w = window.innerWidth; const h = window.innerHeight;
-      setPos({
-        x: Math.min(Math.max(nx, MARGIN), w - BTN - MARGIN),
-        y: Math.min(Math.max(ny, MARGIN), h - BTN - MARGIN),
-      });
-      if (e.cancelable) e.preventDefault();
-    };
-    const up = () => {
-      if (!dragState.current.active) return;
-      dragState.current.active = false;
-      setDragging(false);
-      setPos((cur) => {
-        const snapped = snapToEdge(cur.x, cur.y);
-        try { localStorage.setItem(POS_KEY, JSON.stringify(snapped)); } catch { /* ignore */ }
-        return snapped;
-      });
-      if (!dragState.current.moved) setOpen(true);
-    };
-    window.addEventListener('mousemove', move);
-    window.addEventListener('mouseup', up);
-    window.addEventListener('touchmove', move, { passive: false });
-    window.addEventListener('touchend', up);
-    return () => {
-      window.removeEventListener('mousemove', move);
-      window.removeEventListener('mouseup', up);
-      window.removeEventListener('touchmove', move);
-      window.removeEventListener('touchend', up);
-    };
-  }, [pos.x, pos.y]);
-
   const send = (override) => {
     const body = (override !== undefined ? String(override) : text).trim();
     if (!body || isStreaming) return;
@@ -191,8 +106,7 @@ export default function LiveChatWidget() {
     sendMessage(body);
   };
 
-  // Anchor the chat window to the side the button currently rests on.
-  const onLeft = pos.x < window.innerWidth / 2;
+  // Launcher + panel are pinned bottom-right.
   const visibleMessages = [{ from: 'agent', text: WELCOME }, ...messages.map((m) => ({ from: m.role === 'user' ? 'you' : 'agent', text: m.content, images: m.images }))];
   const isFirstRun = visibleMessages.length <= 1;
   const coachTag = `${t('aiw.coach')} · Muse Spark`;
@@ -202,7 +116,7 @@ export default function LiveChatWidget() {
       {open && (
         <div
           className="tv-chat-panel tv-pop fixed z-[70] flex h-[34rem] max-h-[calc(100dvh-2rem)] w-[min(25rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl"
-          style={{ bottom: '0.75rem', [onLeft ? 'left' : 'right']: '0.75rem' }}
+          style={{ bottom: '0.75rem', right: '0.75rem' }}
         >
           {/* Gold top-edge accent + ambient glow + terminal scanlines */}
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
@@ -212,23 +126,11 @@ export default function LiveChatWidget() {
           {/* Frosted header */}
           <div className="relative flex items-center gap-2.5 border-b border-[#d4af37]/12 bg-[#0a0a0f]/70 px-3.5 py-2.5 backdrop-blur-md">
             <div className="relative">
-              <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] shadow-[0_0_16px_rgba(212,175,55,0.35)]">
-                <img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
-              </div>
-              <span className="absolute -bottom-px -right-px h-2.5 w-2.5 rounded-full border-2 border-[#0c0c11] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
+              <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-10 w-10 object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0a0a0f] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
             </div>
             <div className="min-w-0 flex-1 leading-tight">
-              <div className="gold-text text-[13px] font-bold tracking-wide">TradingBible SI</div>
-              <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/25 bg-gradient-to-r from-[#d4af37]/[0.10] to-transparent px-2 py-[3px] font-mono text-[8.5px] uppercase tracking-[0.12em]">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
-                </span>
-                <span className="text-emerald-400">{t('aiw.live')}</span>
-                <span className="text-[#5a564a]">·</span>
-                <Sparkles className="h-2.5 w-2.5 text-[#d4af37]" />
-                <span className="text-[#d4af37]">Muse Spark 1.3</span>
-              </div>
+              <div className="gold-text truncate text-base font-black uppercase tracking-[0.08em]" style={{ fontFamily: "'Arial Black','Archivo Black',Impact,'Segoe UI',sans-serif" }}>TradingBible SI</div>
             </div>
             {messages.length > 0 && (
               <button onClick={clearMessages} aria-label={t('aiw.clearChat')} className={`${iconBtn} ml-auto`}>
@@ -240,17 +142,19 @@ export default function LiveChatWidget() {
             </button>
           </div>
 
-          {/* Tab bar */}
-          <div className="relative flex items-center gap-1 px-3 pt-2">
-            {TABS.map(({ id, key, icon: Icon }) => (
-              <button key={id} onClick={() => setTab(id)} aria-pressed={tab === id} disabled={coachLocked && id !== 'about'}
-                className={`flex min-h-[30px] items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold transition-colors disabled:opacity-40 ${tab === id
-                  ? 'bg-[#d4af37]/12 text-[#d4af37] shadow-[inset_0_0_0_1px_rgba(212,175,55,0.25)]'
-                  : 'text-[#8a8577] hover:bg-white/5 hover:text-[#f0ecdd]'}`}>
-                <Icon className="h-3 w-3" />
-                {t(key)}
-              </button>
-            ))}
+          {/* Tab bar — segmented control */}
+          <div className="px-3 pt-2">
+            <div className="flex items-center gap-1 rounded-full border border-white/[0.07] bg-black/30 p-1">
+              {TABS.map(({ id, key, icon: Icon }) => (
+                <button key={id} onClick={() => setTab(id)} aria-pressed={tab === id} disabled={coachLocked && id !== 'about'}
+                  className={`flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full text-[11px] font-bold transition-all disabled:opacity-40 ${tab === id
+                    ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]'
+                    : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
+                  <Icon className="h-3.5 w-3.5" />
+                  {t(key)}
+                </button>
+              ))}
+            </div>
           </div>
 
           {coachLocked ? (
@@ -307,7 +211,7 @@ export default function LiveChatWidget() {
               {isStreaming && (
                 <div className="flex justify-start">
                   <div className="flex items-end gap-1.5">
-                    <div className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e]">
+                    <div className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#0c0c11]/80 border border-[#d4af37]/30">
                       <img src={TRADINGBIBLE_LOGO} alt="" className="h-[15px] w-[15px] rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
                     </div>
                     <div className="glass flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-[#d4af37]/10 px-3 py-2.5">
@@ -387,18 +291,31 @@ export default function LiveChatWidget() {
 
       {!open && (
         <button
-          onMouseDown={onPointerDown}
-          onTouchStart={onPointerDown}
+          onClick={() => setOpen(true)}
           aria-label={t('aiw.openLabel')}
           title={t('aiw.openTitle')}
-          className={`tv-chat-btn fixed z-[70] grid place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#f4e6a8] via-[#e2bd4f] to-[#c99a25] shadow-[0_8px_28px_rgba(212,175,55,0.35),0_0_0_1px_rgba(212,175,55,0.4)] ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]'}`}
-          style={{ left: pos.x, top: pos.y, height: BTN, width: BTN, touchAction: 'none' }}
+          className="tv-chat-btn fixed bottom-3 right-3 z-[70] grid place-items-center overflow-hidden rounded-full border border-[#d4af37]/30 bg-[#0c0c11] shadow-[0_8px_28px_rgba(0,0,0,0.5),0_0_0_1px_rgba(212,175,55,0.4)] transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]"
+          style={{ height: BTN, width: BTN }}
         >
-          <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-[#d4af37]/25 [animation-duration:2.2s]" />
-          <MessageCircle className="relative h-6 w-6 text-[#0a0a0f]" strokeWidth={2.2} />
-          <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#0c0c11] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
+          <span className="relative grid h-10 w-10 place-items-center">
+            <svg viewBox="0 0 24 24" className="h-8 w-8" aria-hidden="true">
+              <defs>
+                <linearGradient id="si-chat-4d" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#f4e6a8" />
+                  <stop offset="55%" stopColor="#e2bd4f" />
+                  <stop offset="100%" stopColor="#a67c1e" />
+                </linearGradient>
+              </defs>
+              <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" fill="url(#si-chat-4d)" stroke="#0a0a0f" strokeWidth="1" strokeLinejoin="round" />
+              <ellipse cx="10" cy="8.6" rx="4.6" ry="2.4" fill="#ffffff" opacity="0.35" />
+              <circle cx="8.6" cy="12" r="1.1" fill="#0a0a0f" />
+              <circle cx="12" cy="12" r="1.1" fill="#0a0a0f" />
+              <circle cx="15.4" cy="12" r="1.1" fill="#0a0a0f" />
+            </svg>
+          </span>
+          <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#0a0a0f] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
           {unread && (
-            <span className="absolute -left-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full border-2 border-[#0c0c11] bg-[#e50914] px-0.5 text-[9px] font-bold text-white animate-pulse">!</span>
+            <span className="absolute -left-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full border-2 border-[#0a0a0f] bg-[#e50914] px-0.5 text-[9px] font-bold text-white animate-pulse">!</span>
           )}
         </button>
       )}

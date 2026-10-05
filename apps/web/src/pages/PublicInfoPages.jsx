@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Footer from '@/components/Footer';
 import { Card, EmptyState, GhostButton, GoldButton, PageHero } from '@/components/ui-kit';
-import { TRADINGBIBLE_LOGO } from '@/lib/branding';
+import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
 import { homeRouteForUser } from '@/lib/homeRoute';

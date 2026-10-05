@@ -2,9 +2,22 @@ import React from 'react';
 import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 
-export default function ThemeSwitcher({ className = '' }) {
+export default function ThemeSwitcher({ className = '', inline = false }) {
     const { theme, toggleTheme } = useTheme();
     const isDark = theme === 'light' ? false : true;
+    if (inline) {
+        return (
+            <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+                title={isDark ? 'Light mode' : 'Dark mode'}
+                className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] ${className}`}
+            >
+                {isDark ? <Sun className="h-4 w-4" strokeWidth={1.8} /> : <Moon className="h-4 w-4" strokeWidth={1.8} />}
+            </button>
+        );
+    }
     return (
         <button
             type="button"

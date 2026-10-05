@@ -1,7 +1,7 @@
-// TradingBible Academy — AI orchestration + data access.
-// The AI is in charge of everything: it designs the learning path, writes
+// TradingBible Academy — SI orchestration + data access.
+// The SI is in charge of everything: it designs the learning path, writes
 // every lesson, builds and grades quizzes, hosts live webinars and tutors
-// students. Generated content is cached per user so the AI only runs once
+// students. Generated content is cached per user so the SI only runs once
 // per piece of content.
 
 import { Transform } from 'node:stream';
@@ -34,7 +34,7 @@ function extractJson(raw) {
 	}
 }
 
-// ── Default curricula (fallback if the AI is unavailable) ───────────
+// ── Default curricula (fallback if the SI is unavailable) ───────────
 // Mirrors apps/web/src/lib/academyCatalog.js STATIC_CURRICULA — keep in sync.
 // Keys: beginner | forex | crypto | intermediate | professional
 const DEFAULT_CURRICULA = {
@@ -222,7 +222,7 @@ const DEFAULT_CURRICULA = {
 					{ lessonKey: 'whitepaper-diligence', title: 'Whitepapers & due diligence in 20 minutes', minutes: 17 },
 					{ lessonKey: 'onchain-basics', title: 'On-chain basics: active addresses, exchange flows', minutes: 19 },
 					{ lessonKey: 'onchain-advanced', title: 'NVT, MVRV, SOPR & realized cap signals', minutes: 20 },
-					{ lessonKey: 'narratives', title: 'Narratives: memecoins, AI, RWA, L2s & cycles', minutes: 18 },
+					{ lessonKey: 'narratives', title: 'Narratives: memecoins, SI, RWA, L2s & cycles', minutes: 18 },
 					{ lessonKey: 'airdrops-defi', title: 'Airdrops, staking & DeFi yield without getting rekt', minutes: 19 },
 				],
 			},
@@ -510,14 +510,14 @@ export const academyDb = {
 		supabaseRest('/rest/v1/academy_purchases', { method: 'POST', body: row, prefer: 'return=representation' }),
 };
 
-// ── AI generation ────────────────────────────────────────────────────
+// ── SI generation ────────────────────────────────────────────────────
 
 async function aiJson({ systemPrompt, userMessage, fallback, label }) {
 	try {
 		const raw = await generateText({ systemPrompt, userMessage });
 		const parsed = extractJson(raw);
 		if (!parsed) {
-			logger.warn(`academy ${label}: AI returned non-JSON, using fallback`);
+			logger.warn(`academy ${label}: SI returned non-JSON, using fallback`);
 			return fallback;
 		}
 		return parsed;
@@ -564,9 +564,9 @@ export async function generateLessonContent({ curriculum, course, lesson }) {
 		userMessage: [textBlock(`Write this lesson.`)],
 		fallback: {
 			title: lesson.title,
-			summary: `AI generated this lesson's content for you.`,
+			summary: `SI generated this lesson's content for you.`,
 			keyPoints: ['Trade with a plan', 'Manage risk first', 'Review every trade'],
-			content: `## ${lesson.title}\n\nThis lesson is part of ${course.title} in the ${curriculum.pathName} path.\n\nYour AI instructor is preparing the full lesson. Try again in a moment to load the complete content.`,
+			content: `## ${lesson.title}\n\nThis lesson is part of ${course.title} in the ${curriculum.pathName} path.\n\nYour SI instructor is preparing the full lesson. Try again in a moment to load the complete content.`,
 			quiz: [
 				{
 					question: `What is the most important rule of trading?`,
@@ -593,7 +593,7 @@ export async function generateLessonContent({ curriculum, course, lesson }) {
 			: [],
 	};
 	// Verification pass: the generator occasionally mislabels the correct
-	// option index. Have the AI audit the quiz and replace the answer keys
+	// option index. Have the SI audit the quiz and replace the answer keys
 	// so grading stays consistent. Falls back to the generated keys.
 	if (result.quiz.length) {
 		try {

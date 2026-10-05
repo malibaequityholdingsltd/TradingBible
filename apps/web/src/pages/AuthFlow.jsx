@@ -5,7 +5,7 @@ import { MARKETS, EXPERIENCE, GOALS } from '@/lib/mockData';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
-import { TRADINGBIBLE_LOGO } from '@/lib/branding';
+import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { usePlatformSettings } from '@/lib/platformSettings';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { readRefFromUrl, trackAffiliateSignup } from '@/lib/affiliate';
@@ -172,8 +172,8 @@ function HeroPanel() {
         SI-POWERED TRADING TERMINAL
       </p>
       <h1 className="text-5xl font-extrabold leading-[0.98] tracking-tight">
-        Trade like the <span className="gold-text">1%.</span><br />
-        Journal like a <span className="gold-text">fund.</span>
+        Your Trading <span className="gold-text">Terminal.</span><br />
+        Track. Analyze. <span className="gold-text">Win.</span>
       </h1>
       <div className="relative mt-6 h-10 max-w-md" aria-hidden="true">
         {HERO_LINES.map((line) => (

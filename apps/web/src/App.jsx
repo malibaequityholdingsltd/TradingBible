@@ -10,7 +10,7 @@ import { homeRouteForUser } from '@/lib/homeRoute';
 import { meetsPlan } from '@/lib/entitlements';
 import { isAdminPreview } from '@/lib/adminPreview';
 import { usePlatformSettings } from '@/lib/platformSettings';
-import { TRADINGBIBLE_LOGO } from '@/lib/branding';
+import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { NotificationsProvider } from '@/hooks/useNotifications';
 import ScrollToTop from './components/ScrollToTop';
 import GlobalTicker from './components/GlobalTicker';

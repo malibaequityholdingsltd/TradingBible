@@ -63,5 +63,5 @@ npm run start               # serves the API (web is served statically by nginx)
 
 ## Repository
 
-- **Owner:** Maliba Equity Holdings Ltd.
+- **Owner:** TradingBible LLC
 - This repository is managed with [opencode](https://opencode.ai) — an AI-native CLI — see `AGENTS.md` for workspace conventions.

@@ -3,18 +3,17 @@ import { Save, RotateCcw, Building2, Eye } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Card, GhostButton, GoldButton, Note, SectionHead } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
-import pb from '@/lib/pocketbaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-
-const MALIBA_LOGO = 'https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/5c8275966b855914cc3eec21e6f6ed03.png';
+import pb from '@/lib/pocketbaseClient';
+import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 
 const DEFAULTS = {
   companyName: 'TradingBible',
   primaryColor: '#0a0a0f',
   accentColor: '#d4af37',
-  logoUrl: 'https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/f18f53c1fa5ec4181c7033589080fd00.png',
-  tagline: 'Trade like the 1%. Journal like a fund.',
+  logoUrl: TRADINGBIBLE_LOGO,
+  tagline: 'maliba-admin',
 };
 
 const input = 'w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none focus:border-[#d4af37]/50';
@@ -65,7 +64,7 @@ export default function BrandingPage() {
       <div className="tb-page">
       <Note icon={Building2}>
         <div className="flex items-start gap-3">
-          <img src={MALIBA_LOGO} alt="TradingBible LLC" className="h-11 w-11 shrink-0 rounded-lg object-contain" />
+          <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-11 w-11 shrink-0 rounded-lg object-contain" />
           <p className="text-sm leading-relaxed text-[#c9c4b4]">{t('brd.intro', { brand: 'TradingBible LLC' })}</p>
         </div>
       </Note>

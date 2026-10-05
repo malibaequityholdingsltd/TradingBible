@@ -5,6 +5,6 @@ export const integratedAiRateLimit = rateLimit({
 	max: 10,
 	standardHeaders: true,
 	legacyHeaders: false,
-	message: { error: 'Too many AI requests, please try again later' },
+	message: { error: 'Too many SI requests, please try again later' },
 	validate: { trustProxy: false },
 });

@@ -248,7 +248,7 @@ function signImageReference(reference) {
 }
 
 /**
- * Sends a message to the AI proxy and pipes SSE events to the client.
+ * Sends a message to the SI proxy and pipes SSE events to the client.
  * Assistant message is saved to Supabase when the stream ends.
  * This method should be used for text/text, image/text, image/image, text/image combinations.
  *
@@ -265,13 +265,13 @@ const apiUrl = process.env.INTEGRATED_AI_API_URL;
 	const openAiKey = process.env.OPENAI_API_KEY;
 
 	if ((!apiUrl || !apiKey || !websiteId) && !opencodeUrl && !deepSeekKey && (!openAiBaseUrl || !openAiKey)) {
-		throw new Error('The AI assistant is not configured yet (missing INTEGRATED_AI_API_URL / INTEGRATED_AI_API_KEY / WEBSITE_ID or OPENCODE_SERVER_URL or DEEPSEEK_API_KEY or OPENAI_BASE_URL / OPENAI_API_KEY). Please contact support.');
+		throw new Error('The SI assistant is not configured yet (missing INTEGRATED_AI_API_URL / INTEGRATED_AI_API_KEY / WEBSITE_ID or OPENCODE_SERVER_URL or DEEPSEEK_API_KEY or OPENAI_BASE_URL / OPENAI_API_KEY). Please contact support.');
 	}
 
 	const history = await getHistory({ userId });
 
 	// Provider resolution priority:
-	//   1. Integrated AI proxy (INTEGRATED_AI_*) — full agent/tool pipeline.
+	//   1. Integrated SI proxy (INTEGRATED_AI_*) — full agent/tool pipeline.
 	//   2. Local opencode gateway (OPENCODE_SERVER_URL) — free chat-only model
 	//      (e.g. opencode/muse-spark-1.3-contributor-free), requires `opencode serve`.
 	//   3. DeepSeek (DEEPSEEK_*) — OpenAI-compatible /chat/completions, V4 Flash by default.
@@ -315,7 +315,7 @@ const apiUrl = process.env.INTEGRATED_AI_API_URL;
 
 	if (!response.ok) {
 		const errorBody = await response.text().catch(() => 'Unknown error');
-		throw new Error(`AI proxy request failed with status ${response.status}: ${errorBody}`);
+		throw new Error(`SI proxy request failed with status ${response.status}: ${errorBody}`);
 	}
 
 	const [clientStream, historyStream] = response.body.tee();
@@ -335,7 +335,7 @@ const apiUrl = process.env.INTEGRATED_AI_API_URL;
 
 /**
  * Non-streaming text completion with the same provider resolution as stream().
- * Used by the Academy for AI-generated content (curriculum, lessons, quizzes,
+ * Used by the Academy for SI-generated content (curriculum, lessons, quizzes,
  * grading, certificates).
  *
  * @param {{ systemPrompt: string, userMessage: ContentBlock[] }} params
@@ -351,7 +351,7 @@ export async function generateText({ systemPrompt, userMessage }) {
 	const openAiKey = process.env.OPENAI_API_KEY;
 
 	if ((!apiUrl || !apiKey || !websiteId) && !opencodeUrl && !deepSeekKey && (!openAiBaseUrl || !openAiKey)) {
-		throw new Error('The AI assistant is not configured yet. Please contact support.');
+		throw new Error('The SI assistant is not configured yet. Please contact support.');
 	}
 
 	const text = userMessage
@@ -396,12 +396,12 @@ export async function generateText({ systemPrompt, userMessage }) {
 	});
 	if (!response.ok) {
 		const errorBody = await response.text().catch(() => 'Unknown error');
-		throw new Error(`AI proxy request failed with status ${response.status}: ${errorBody}`);
+		throw new Error(`SI proxy request failed with status ${response.status}: ${errorBody}`);
 	}
 	const data = await response.json();
 	const content = data?.content ?? data?.data?.content ?? data?.output ?? data?.response;
 	if (typeof content !== 'string' || !content.trim()) {
-		throw new Error('The AI provider returned an unexpected response. Please try again.');
+		throw new Error('The SI provider returned an unexpected response. Please try again.');
 	}
 	return content;
 }
@@ -434,12 +434,12 @@ async function completeOpenAiCompatibleText({ systemPrompt, userMessage, baseUrl
 	});
 	if (!response.ok) {
 		const errorBody = await response.text().catch(() => 'Unknown error');
-		throw new Error(`AI provider request failed with status ${response.status}: ${errorBody}`);
+		throw new Error(`SI provider request failed with status ${response.status}: ${errorBody}`);
 	}
 	const data = await response.json();
 	const content = data?.choices?.[0]?.message?.content;
 	if (typeof content !== 'string' || !content.trim()) {
-		throw new Error('The AI provider returned an empty response. Please try again.');
+		throw new Error('The SI provider returned an empty response. Please try again.');
 	}
 	return content;
 }
@@ -550,7 +550,7 @@ async function streamOpenAiCompatible({ systemPrompt, userMessage, baseUrl, apiK
 
 	if (!response.ok) {
 		const errorBody = await response.text().catch(() => 'Unknown error');
-		throw new Error(`AI provider request failed with status ${response.status}: ${errorBody}`);
+		throw new Error(`SI provider request failed with status ${response.status}: ${errorBody}`);
 	}
 
 	// Some providers return error JSON with HTTP 200 — surface it instead of an empty bubble.
@@ -558,7 +558,7 @@ async function streamOpenAiCompatible({ systemPrompt, userMessage, baseUrl, apiK
 	if (contentType.includes('application/json') || contentType.includes('text/plain')) {
 		const errorBody = await response.text().catch(() => '');
 		if (errorBody && !contentType.includes('text/event-stream')) {
-			throw new Error(`AI provider error: ${errorBody.slice(0, 400)}`);
+			throw new Error(`SI provider error: ${errorBody.slice(0, 400)}`);
 		}
 	}
 
@@ -589,7 +589,7 @@ async function streamOpenAiCompatible({ systemPrompt, userMessage, baseUrl, apiK
 				}
 			}
 		} catch (error) {
-			logger.error('AI provider stream failed', String(error?.message || error));
+			logger.error('SI provider stream failed', String(error?.message || error));
 			passThrough.push(`data: ${JSON.stringify({ type: SSEEventType.Error, data: { content: error.message } })}\n\n`);
 		} finally {
 			passThrough.end(`data: ${JSON.stringify({ type: SSEEventType.Completed, data: { content: '[COMPLETED]' } })}\n\n`);
@@ -614,7 +614,7 @@ async function saveMessages({ userId, messages }) {
 			},
 		})));
 	} catch (error) {
-		logger.warn('AI history not persisted (storage backend not ready):', String(error?.message || error));
+		logger.warn('SI history not persisted (storage backend not ready):', String(error?.message || error));
 	}
 }
 
@@ -650,7 +650,7 @@ export async function getHistory({ userId }) {
 
 	return historyMessages;
 	} catch (error) {
-		logger.warn('AI history unavailable (storage backend not ready):', String(error?.message || error));
+		logger.warn('SI history unavailable (storage backend not ready):', String(error?.message || error));
 		return [];
 	}
 }

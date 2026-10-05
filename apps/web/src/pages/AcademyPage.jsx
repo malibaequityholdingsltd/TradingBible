@@ -100,7 +100,7 @@ function Markdown({ text }) {
 	return <div>{blocks}</div>;
 }
 
-// ── Generic SSE chat (AI Tutor + Webinar AI host) ────────────────────
+// ── Generic SSE chat (SI Tutor + Webinar SI host) ────────────────────
 function AIChat({ endpoint, buildBody, placeholder, accent = '#d4af37' }) {
 	const { t } = useI18n();
 	const [messages, setMessages] = useState([]);
@@ -133,7 +133,7 @@ function AIChat({ endpoint, buildBody, placeholder, accent = '#d4af37' }) {
 			});
 			if (!res.ok) {
 				const body = await res.json().catch(() => ({}));
-				throw new Error(body?.error?.message || 'The AI could not respond right now.');
+				throw new Error(body?.error?.message || 'The SI could not respond right now.');
 			}
 			const reader = res.body.getReader();
 			const decoder = new TextDecoder();
@@ -254,9 +254,9 @@ function Paywall({ onPurchased }) {
 	const features = [
 		{ icon: Route, text: '5 learning paths — Beginner, Forex Mastery, Crypto Mastery, Intermediate, Professional' },
 		{ icon: Library, text: '100+ Forex & Crypto topics: pairs, sessions, perps, funding, on-chain, SMC, news, DeFi' },
-		{ icon: Video, text: '8 live webinars / week with an AI host — FX London lab, crypto on-chain lab, news reactions' },
-		{ icon: Bot, text: 'One-on-one AI tutor inside every lesson' },
-		{ icon: Trophy, text: 'AI-graded quizzes and shareable certificates per path' },
+		{ icon: Video, text: '8 live webinars / week with an SI host — FX London lab, crypto on-chain lab, news reactions' },
+		{ icon: Bot, text: 'One-on-one SI tutor inside every lesson' },
+		{ icon: Trophy, text: 'SI-graded quizzes and shareable certificates per path' },
 		{ icon: Award, text: 'Lifetime access — one payment, forever' },
 	];
 
@@ -463,7 +463,11 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 			)}
 
 			<div>
-				<h3 className="mb-3 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Bot className="h-5 w-5 text-[#d4af37]" /> {t('aca.tutorTitle')}</h3>
+				<div className="mb-3 flex items-center gap-3">
+					<span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Bot className="h-4 w-4" /></span>
+					<h3 className="text-sm font-bold text-[#f0ecdd]">{t('aca.tutorTitle')}</h3>
+					<span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+				</div>
 				<AIChat
 					endpoint="/academy/tutor/stream"
 					placeholder={t('aca.tutorPh')}
@@ -492,7 +496,7 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 				<div className="flex flex-wrap items-start justify-between gap-3">
 					<div>
 						{isPreview && (
-							<p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#38bdf8]/10 px-2.5 py-1 text-[11px] text-[#38bdf8]"><Loader2 className="h-3 w-3 animate-spin" /> AI is personalizing this path — full topic map below.</p>
+							<p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#38bdf8]/10 px-2.5 py-1 text-[11px] text-[#38bdf8]"><Loader2 className="h-3 w-3 animate-spin" /> SI is personalizing this path — full topic map below.</p>
 						)}
 					</div>
 					<GhostButton onClick={onLeave} className="px-3.5 py-2 text-xs text-[#8a8577]"><ArrowLeft className="h-3.5 w-3.5" /> {t('aca.allPaths')}</GhostButton>
@@ -899,50 +903,78 @@ export default function AcademyPage() {
 	return (
 		<AppLayout title={t('aca.page')}>
 			<div className="tb-page">
-			{/* Portal hero */}
-			<PageHero
-				kicker="AI-driven Forex + Crypto Academy"
-				kickerIcon={Sparkles}
-				title="Pick a desk, master every topic"
-				subtitle="Your AI builds each path around you, writes every lesson, grades every quiz and tutors you 1-on-1 — from first pip and first satoshi to funded-desk execution."
-				stats={[
-					{ label: 'paths', value: totals.paths, color: '#d4af37' },
-					{ label: 'Forex', value: forexCount, color: '#38bdf8' },
-					{ label: 'Crypto', value: cryptoCount, color: '#f472b6' },
-					{ label: 'content', value: `${Math.round(totals.minutes / 60)}h+`, color: '#34d399' },
-					{ label: 'live / week', value: 8, color: '#34d399' },
-				]}
-			>
-				<div className="flex flex-wrap items-center justify-between gap-4">
-					<div>
-						{enrolled.length > 0 && (
-						<div className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14]/40 px-4 py-3 text-right backdrop-blur-xl">
-							<p className="text-xs text-[#8a8577]">{t('aca.overall')}</p>
-							<p className="mt-0.5 font-bold text-[#d4af37]">{(() => {
-								let done = 0, total = 0;
-								enrolled.forEach((e) => {
-									const c = curriculumFor(e.pathKey) || STATIC_CURRICULA[e.pathKey];
-									if (!c) return;
-									total += c.courses.reduce((a, co) => a + co.lessons.length, 0);
-									done += c.courses.reduce((a, co) => a + co.lessons.filter((l) => progressMap[`${co.courseKey}:${l.lessonKey}`]?.completed).length, 0);
-								});
-								return total ? `${Math.round((done / total) * 100)}%` : '0%';
-							})()}</p>
+		{/* Portal hero — redesigned */}
+		<section className="tb-hero overflow-hidden">
+			<div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#d4af37]/15 blur-[100px]" />
+			<div aria-hidden className="pointer-events-none absolute -bottom-28 -left-16 h-64 w-64 rounded-full bg-[#38bdf8]/10 blur-[100px]" />
+			<div className="relative">
+				<p className="inline-flex items-center gap-2 rounded-full border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#d4af37]">
+					<Sparkles className="h-3.5 w-3.5" />
+					SI-driven Forex + Crypto Academy
+				</p>
+				<h2 className="mt-4 max-w-3xl text-3xl font-extrabold leading-[1.05] tracking-tight text-[#f0ecdd] sm:text-4xl lg:text-[2.75rem]">
+					Pick a desk, <span className="tb-gold-text">master every topic</span>
+				</h2>
+				<p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#b8b3a3] sm:text-[15px]">
+					Your SI builds each path around you, writes every lesson, grades every quiz and tutors you 1-on-1 — from first pip and first satoshi to funded-desk execution.
+				</p>
+
+				{/* Stat tiles */}
+				<div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-2.5 lg:grid-cols-5">
+					{[
+						{ label: 'paths', value: totals.paths, color: '#d4af37' },
+						{ label: 'Forex', value: forexCount, color: '#38bdf8' },
+						{ label: 'Crypto', value: cryptoCount, color: '#f472b6' },
+						{ label: 'content', value: `${Math.round(totals.minutes / 60)}h+`, color: '#34d399' },
+						{ label: 'live / week', value: 8, color: '#34d399' },
+					].map((s) => (
+						<div key={s.label} className="rounded-2xl border border-white/[0.07] bg-black/25 px-4 py-3.5 backdrop-blur-md">
+							<div className="flex items-center gap-1.5">
+								<span className="h-1.5 w-1.5 rounded-full" style={{ background: s.color, boxShadow: `0 0 8px ${s.color}` }} />
+								<span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8a8577]">{s.label}</span>
+							</div>
+							<div className="mt-1.5 font-mono text-[26px] font-bold leading-none" style={{ color: s.color }}>{s.value}</div>
 						</div>
-						)}
-					</div>
-				</div>
-				{/* Track filter */}
-				<div className="tb-scroll-row mt-4 items-center">
-					<Filter className="h-3.5 w-3.5 shrink-0 text-[#6a665a]" />
-					{[{ key: 'all', name: 'All' }, ...TRACKS.filter((x) => x.key !== 'all')].map((tr) => (
-						<button key={tr.key} onClick={() => setTrackFilter(tr.key)}
-							className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${trackFilter === tr.key ? 'bg-[#d4af37] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}>
-							{tr.name}
-						</button>
 					))}
 				</div>
-			</PageHero>
+
+				{/* Progress + track filter */}
+				<div className="mt-6 flex flex-col gap-4 border-t border-white/[0.06] pt-5 lg:flex-row lg:items-end lg:justify-between">
+					<div className="min-w-0 flex-1 lg:max-w-md">
+						{enrolled.length > 0 && (() => {
+							let done = 0, total = 0;
+							enrolled.forEach((e) => {
+								const c = curriculumFor(e.pathKey) || STATIC_CURRICULA[e.pathKey];
+								if (!c) return;
+								total += c.courses.reduce((a, co) => a + co.lessons.length, 0);
+								done += c.courses.reduce((a, co) => a + co.lessons.filter((l) => progressMap[`${co.courseKey}:${l.lessonKey}`]?.completed).length, 0);
+							});
+							const pct = total ? Math.round((done / total) * 100) : 0;
+							return (
+								<>
+									<div className="flex items-baseline justify-between gap-3">
+										<span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#8a8577]">{t('aca.overall')}</span>
+										<span className="font-mono text-xl font-bold text-[#d4af37]">{pct}%</span>
+									</div>
+									<div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+										<div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] transition-all duration-700" style={{ width: `${pct}%` }} />
+									</div>
+								</>
+							);
+						})()}
+					</div>
+					<div className="tb-scroll-row items-center">
+						<Filter className="h-3.5 w-3.5 shrink-0 text-[#6a665a]" />
+						{[{ key: 'all', name: 'All' }, ...TRACKS.filter((x) => x.key !== 'all')].map((tr) => (
+							<button key={tr.key} onClick={() => setTrackFilter(tr.key)}
+								className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${trackFilter === tr.key ? 'bg-[#d4af37] text-[#0a0a0f] shadow-[0_2px_14px_rgba(212,175,55,0.4)]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:border-[#d4af37]/45 hover:text-[#e9e7df]'}`}>
+								{tr.name}
+							</button>
+						))}
+					</div>
+				</div>
+			</div>
+		</section>
 
 			{/* Tabs */}
 			<div className="mb-5">
@@ -959,7 +991,7 @@ export default function AcademyPage() {
 			</div>
 
 			{tab === 'learn' && (
-				<>
+				<div key="panel-learn" className="tb-panel-swap contents">
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
 						{filteredPaths.map((p) => {
 							const isEnrolled = enrolled.some((e) => e.pathKey === p.key);
@@ -1026,15 +1058,17 @@ export default function AcademyPage() {
 							<button onClick={() => startPathByKey('crypto')} className="mt-3 min-h-[44px] rounded-xl bg-[#f472b6] px-5 text-sm font-bold text-[#2f0618] transition hover:opacity-90">Open Crypto Mastery</button>
 						</Card>
 					</div>
-				</>
+				</div>
 			)}
 
 			{tab === 'topics' && (
-				<TopicExplorer onStartPath={startPathByKey} />
+				<div key="panel-topics" className="tb-panel-swap contents">
+					<TopicExplorer onStartPath={startPathByKey} />
+				</div>
 			)}
 
 			{tab === 'webinars' && (
-				<div className="space-y-5">
+				<div key="panel-webinars" className="tb-panel-swap space-y-5">
 					<PageHero
 						kicker={t('aca.liveInteractive')}
 						kickerIcon={Radio}
@@ -1079,7 +1113,11 @@ export default function AcademyPage() {
 
 					{filteredWebinars.find((w) => w.state.live) ? (
 						<div>
-							<h3 className="mb-3 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Radio className="h-5 w-5 text-emerald-400" /> {t('aca.liveRoom')}</h3>
+							<div className="mb-3 flex items-center gap-3">
+								<span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-emerald-400/12 text-emerald-400"><Radio className="h-4 w-4" /></span>
+								<h3 className="text-sm font-bold text-[#f0ecdd]">{t('aca.liveRoom')}</h3>
+								<span className="h-px flex-1 bg-gradient-to-r from-emerald-400/40 to-transparent" />
+							</div>
 							<AIChat
 								endpoint="/academy/webinar/stream"
 								placeholder={t('aca.hostPh')}
@@ -1102,7 +1140,7 @@ export default function AcademyPage() {
 			)}
 
 			{tab === 'certificates' && (
-				<div className="space-y-4">
+				<div key="panel-certificates" className="tb-panel-swap space-y-4">
 					<PageHero
 						kicker={t('aca.yourCerts')}
 						kickerIcon={Award}

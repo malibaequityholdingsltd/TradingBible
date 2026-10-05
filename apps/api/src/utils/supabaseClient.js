@@ -68,7 +68,7 @@ export async function getSupabaseUser(token) {
 }
 
 // Low-level service-role access, used by modules that need raw REST calls
-// (e.g. the AI chat history/image persistence).
+// (e.g. the SI chat history/image persistence).
 export function supabaseRest(path, { method = 'GET', body, prefer, query } = {}) {
 	return request(path, { service: true, method, body, prefer, query });
 }
