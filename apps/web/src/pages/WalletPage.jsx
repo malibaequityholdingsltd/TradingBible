@@ -192,7 +192,12 @@ export default function WalletPage() {
 
 				{/* Ledger history */}
 				<div>
-					<h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[#8a8577]"><Clock className="h-4 w-4" /> {t('wal.history')}</h3>
+					<div className="mb-3 flex items-center gap-3">
+						<span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Clock className="h-4 w-4" /></span>
+						<h3 className="text-sm font-bold uppercase tracking-wide text-[#f0ecdd]">{t('wal.history')}</h3>
+						<span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+						<span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{(ledger?.transactions || []).length}</span>
+					</div>
 					<Card className="!p-0 overflow-hidden">
 						{(ledger?.transactions || []).length === 0 ? (
 							<div className="px-4 py-10 text-center text-sm text-[#8a8577]">{t('wal.noLedger')}</div>

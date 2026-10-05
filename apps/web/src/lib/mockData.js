@@ -3,12 +3,13 @@
 // formatters). Contains NO market, account, or trade data — all live data
 // comes from Supabase and the live Binance/Finnhub/Alpha Vantage feeds.
 
+import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+
 // Brand logo variants supplied for the pricing tiers.
-const OFFICIAL_LOGO = 'https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/f18f53c1fa5ec4181c7033589080fd00.png';
 export const LOGOS = {
-  goldWhite: OFFICIAL_LOGO,
-  goldBlack: OFFICIAL_LOGO,
-  whiteBlack: OFFICIAL_LOGO,
+  goldWhite: TRADINGBIBLE_LOGO,
+  goldBlack: TRADINGBIBLE_LOGO,
+  whiteBlack: TRADINGBIBLE_LOGO,
 };
 
 export const PLANS = [

@@ -5,8 +5,8 @@ import { API_SERVER_URL } from '@/lib/apiServerClient';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { useAuth } from '@/hooks/useAuth';
-import { TRADINGBIBLE_LOGO } from '@/lib/branding';
-import { hardenEmbed, useLiveChannels, ytVideoEmbed } from '@/lib/liveChannels';
+import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { hardenEmbed, useLiveChannels, ytVideoEmbed, localizeChannelHours } from '@/lib/liveChannels';
 import { useLiveStatus } from '@/lib/useLiveStatus';
 import { useLockBody } from '@/hooks/useLockBody';
 import { meetsPlan } from '@/lib/entitlements';
@@ -32,19 +32,28 @@ const TABS = [
   { id: 'ads', icon: Megaphone },
 ];
 
+// Lowest y any TV surface may occupy: just below the live price ticker,
+// so the widget can never be dragged (or restored) over the market prices.
+function tickerFloor() {
+  if (typeof document === 'undefined' || typeof window === 'undefined') return 64;
+  const h = document.getElementById('tb-ticker')?.getBoundingClientRect().height || 64;
+  return Math.round(h);
+}
+
 function snapToEdge(x, y) {
   const w = window.innerWidth;
   const h = window.innerHeight;
+  const top = tickerFloor();
   let cx = Math.min(Math.max(x, MARGIN), w - BTN - MARGIN);
-  let cy = Math.min(Math.max(y, MARGIN), h - BTN - MARGIN);
+  let cy = Math.min(Math.max(y, top), h - BTN - MARGIN);
   const dl = cx - MARGIN;
   const dr = w - BTN - MARGIN - cx;
-  const dt = cy - MARGIN;
+  const dt = cy - top;
   const db = h - BTN - MARGIN - cy;
   const min = Math.min(dl, dr, dt, db);
   if (min === dl) cx = MARGIN;
   else if (min === dr) cx = w - BTN - MARGIN;
-  else if (min === dt) cy = MARGIN;
+  else if (min === dt) cy = top;
   else cy = h - BTN - MARGIN;
   return { x: cx, y: cy };
 }
@@ -93,6 +102,30 @@ export default function TvWidget() {
   const [frameLoaded, setFrameLoaded] = useState(false);
   const [pos, setPos] = useState(() => (typeof window !== 'undefined' ? loadPos() : { x: 0, y: 0 }));
   const [dragging, setDragging] = useState(false);
+  const [miniPos, setMiniPos] = useState(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem('tb:tv-mini-pos') || 'null');
+      if (raw && typeof raw.x === 'number' && typeof raw.y === 'number') return { x: raw.x, y: Math.max(raw.y, tickerFloor()) };
+    } catch { /* ignore */ }
+    // Default to center of screen for free-move from the start (never over the ticker)
+    if (typeof window !== 'undefined') {
+      return {
+        x: window.innerWidth / 2 - 200,
+        y: Math.max(tickerFloor(), window.innerHeight / 2 - 272),
+      };
+    }
+    return { x: 0, y: 76 };
+  });
+  const [expandedPos, setExpandedPos] = useState(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem('tb:tv-expanded-pos') || 'null');
+      if (raw && typeof raw.x === 'number' && typeof raw.y === 'number') return { x: raw.x, y: Math.max(raw.y, tickerFloor()) };
+    } catch { /* ignore */ }
+    return { x: 12, y: tickerFloor() };
+  });
+  const [expandedDragging, setExpandedDragging] = useState(false);
+  const expandedDragState = useRef({ active: false, moved: false, offX: 0, offY: 0 });
+  const miniDragState = useRef({ active: false, moved: false, offX: 0, offY: 0 });
   const [ytMuted, setYtMuted] = useState(true);
   const [ytStarted, setYtStarted] = useState(false);
   const [ytError, setYtError] = useState(false);
@@ -445,6 +478,51 @@ export default function TvWidget() {
     return () => { clearTimeout(advanceTimer.current); clearTimeout(retryTimer.current); };
   }, [channelIndex]);
 
+  // Expanded panel keyboard movement (arrow keys)
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e) => {
+      if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+      const step = 20;
+      const w = window.innerWidth; const h = window.innerHeight;
+      if (expanded) {
+        const panelW = 900;
+        const panelH = 600;
+        setExpandedPos((cur) => {
+          let nx = cur.x;
+          let ny = cur.y;
+          switch (e.key) {
+            case 'ArrowLeft': nx = Math.max(12, cur.x - step); break;
+            case 'ArrowRight': nx = Math.min(w - panelW - 12, cur.x + step); break;
+            case 'ArrowUp': ny = Math.max(tickerFloor(), cur.y - step); break;
+            case 'ArrowDown': ny = Math.min(h - panelH - 12, cur.y + step); break;
+          }
+          e.preventDefault();
+          return { x: nx, y: ny };
+        });
+      } else {
+        // Mini panel - move the panel position (clamp to panel size)
+        const panelW = 400; // 25rem
+        const panelH = 544; // 34rem
+        setMiniPos((cur) => {
+          const base = cur || { x: pos.x, y: pos.y };
+          let nx = base.x;
+          let ny = base.y;
+          switch (e.key) {
+            case 'ArrowLeft': nx = Math.max(MARGIN, base.x - step); break;
+            case 'ArrowRight': nx = Math.min(w - panelW - MARGIN, base.x + step); break;
+            case 'ArrowUp': ny = Math.max(tickerFloor(), base.y - step); break;
+            case 'ArrowDown': ny = Math.min(h - panelH - MARGIN, base.y + step); break;
+          }
+          e.preventDefault();
+          return { x: nx, y: ny };
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, expanded]);
+
   // ── Launcher drag ──
   const onPointerDown = useCallback((e) => {
     const p = e.touches ? e.touches[0] : e;
@@ -462,7 +540,7 @@ export default function TvWidget() {
       const w = window.innerWidth; const h = window.innerHeight;
       setPos({
         x: Math.min(Math.max(nx, MARGIN), w - BTN - MARGIN),
-        y: Math.min(Math.max(ny, MARGIN), h - BTN - MARGIN),
+        y: Math.min(Math.max(ny, tickerFloor()), h - BTN - MARGIN),
       });
       if (e.cancelable) e.preventDefault();
     };
@@ -489,6 +567,87 @@ export default function TvWidget() {
     };
   }, [pos.x, pos.y, openTv]);
 
+  // No text selection while any TV drag is active (launcher or zoomed panel)
+  useEffect(() => {
+    document.body.classList.toggle('tb-noselect', dragging || expandedDragging);
+    return () => { document.body.classList.remove('tb-noselect'); };
+  }, [dragging, expandedDragging]);
+
+  // Expanded panel drag handlers
+  useEffect(() => {
+    if (!expanded) return;
+    const move = (e) => {
+      if (!expandedDragState.current.active) return;
+      const p = e.touches ? e.touches[0] : e;
+      const nx = p.clientX - expandedDragState.current.offX;
+      const ny = p.clientY - expandedDragState.current.offY;
+      if (Math.abs(nx - expandedPos.x) > 3 || Math.abs(ny - expandedPos.y) > 3) expandedDragState.current.moved = true;
+      const w = window.innerWidth; const h = window.innerHeight;
+      // Keep panel on screen with some margin
+      const panelW = Math.min(900, w - 24);
+      const panelH = Math.min(600, h - 24);
+      setExpandedPos({
+        x: Math.min(Math.max(nx, 12), w - panelW - 12),
+        y: Math.min(Math.max(ny, tickerFloor()), h - panelH - 12),
+      });
+      if (e.cancelable) e.preventDefault();
+    };
+    const up = () => {
+      if (!expandedDragState.current.active) return;
+      expandedDragState.current.active = false;
+      setExpandedDragging(false);
+      try { localStorage.setItem('tb:tv-expanded-pos', JSON.stringify(expandedPos)); } catch { /* ignore */ }
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+    window.addEventListener('touchmove', move, { passive: false });
+    window.addEventListener('touchend', up);
+    return () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+      window.removeEventListener('touchmove', move);
+      window.removeEventListener('touchend', up);
+    };
+  }, [expanded, expandedPos.x, expandedPos.y]);
+
+  // Mini panel drag handlers (when free-move mode is active)
+  useEffect(() => {
+    if (expanded || !miniPos) return;
+    const move = (e) => {
+      if (!miniDragState.current.active) return;
+      document.body.classList.add('tb-noselect');
+      const p = e.touches ? e.touches[0] : e;
+      const nx = p.clientX - miniDragState.current.offX;
+      const ny = p.clientY - miniDragState.current.offY;
+      if (Math.abs(nx - miniPos.x) > 3 || Math.abs(ny - miniPos.y) > 3) miniDragState.current.moved = true;
+      const w = window.innerWidth; const h = window.innerHeight;
+      const panelW = 400;
+      const panelH = 544;
+      setMiniPos({
+        x: Math.min(Math.max(nx, 12), w - panelW - 12),
+        y: Math.min(Math.max(ny, tickerFloor()), h - panelH - 12),
+      });
+      if (e.cancelable) e.preventDefault();
+    };
+    const up = () => {
+      if (!miniDragState.current.active) return;
+      miniDragState.current.active = false;
+      document.body.classList.remove('tb-noselect');
+      try { localStorage.setItem('tb:tv-mini-pos', JSON.stringify(miniPos)); } catch { /* ignore */ }
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+    window.addEventListener('touchmove', move, { passive: false });
+    window.addEventListener('touchend', up);
+    return () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+      window.removeEventListener('touchmove', move);
+      window.removeEventListener('touchend', up);
+      document.body.classList.remove('tb-noselect');
+    };
+  }, [miniPos]);
+
   const seconds = Math.max(4, Math.min(60, Number(settings.rotationSeconds) || 12));
 
   // Panel anchoring side (SI arrangement): bottom to the launcher's side.
@@ -508,7 +667,7 @@ export default function TvWidget() {
     const matches = (c) => !q || `${c.title || ''} ${c.desk || ''}`.toLowerCase().includes(q);
     const withIdx = ordered.map((c, i) => ({ c, ci: i })).filter(({ c }) => matches(c));
     return [
-      { id: 'live', label: `Live now${liveCount > 0 ? ` · ${liveCount}` : ''}`, dot: 'bg-[#e50914]', items: withIdx.filter(({ c }) => liveOf(c) === true) },
+      { id: 'live', label: `Live now`, dot: 'bg-[#e50914]', items: withIdx.filter(({ c }) => liveOf(c) === true) },
       { id: 'live247', label: 'On air 24/7', dot: 'bg-emerald-400', items: withIdx.filter(({ c }) => c.roundTheClock && c.desk !== 'Music' && liveOf(c) !== true && liveOf(c) !== false) },
       { id: 'music', label: 'Music', dot: 'bg-violet-400', items: withIdx.filter(({ c }) => c.desk === 'Music' && liveOf(c) !== true && liveOf(c) !== false) },
       { id: 'scheduled', label: 'Scheduled live shows', dot: 'bg-[#d4af37]', items: withIdx.filter(({ c }) => !c.roundTheClock && c.desk !== 'Music' && liveOf(c) !== true && liveOf(c) !== false) },
@@ -526,12 +685,10 @@ export default function TvWidget() {
         <div
           className={`tv-pop tv-widget-panel sheen-panel fixed flex h-[34rem] max-h-[calc(100dvh-2rem)] w-[min(25rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl ${expanded ? 'z-[90]' : 'z-[70]'}`}
           style={expanded
-            // Zoomed theater: fits inside all four screen sides with a gap,
-            // starting below the price ticker header — never covering it.
-            // Width/height auto neutralizes the mini size classes so the
-            // insets truly stretch edge to edge.
-            ? { left: 12, right: 12, top: tickerTop, bottom: 12, width: 'auto', height: 'auto', maxWidth: 'none' }
-            : { bottom: '0.75rem', [onLeft ? 'left' : 'right']: '0.75rem' }}
+            ? { left: expandedPos.x, top: expandedPos.y, right: 'auto', bottom: 'auto', width: '900px', height: '600px', maxWidth: 'calc(100vw - 24px)', maxHeight: 'calc(100vh - 24px)' }
+            : (miniPos
+              ? { left: miniPos.x, top: miniPos.y, right: 'auto', bottom: 'auto', width: '25rem', maxWidth: 'calc(100vw - 2rem)', height: '34rem', maxHeight: 'calc(100dvh - 2rem)' }
+              : { bottom: '0.75rem', [pos.x < (typeof window !== 'undefined' ? window.innerWidth : 1024) / 2 ? 'left' : 'right']: '0.75rem' })}
         >
           {/* Gold top-edge accent + ambient glow + terminal scanlines */}
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
@@ -539,37 +696,51 @@ export default function TvWidget() {
           <div aria-hidden className="pointer-events-none absolute inset-0 z-0 bg-[repeating-linear-gradient(0deg,rgba(212,175,55,0.022)_0px,rgba(212,175,55,0.022)_1px,transparent_1px,transparent_3px)]" />
 
           {/* Header: avatar + title block + actions */}
-          <div className="tv-widget-header relative flex items-center gap-2.5 border-b border-[#d4af37]/12 bg-[#0a0a0f]/70 px-3.5 py-2.5 backdrop-blur-md">
-            <div className="relative shrink-0">
-              <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] shadow-[0_0_16px_rgba(212,175,55,0.35)]">
-                <img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 rounded-full object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
-              </div>
-              <span className={`absolute -bottom-px -right-px h-2.5 w-2.5 rounded-full border-2 border-[#0c0c11] ${liveCount > 0 ? 'bg-[#e50914] shadow-[0_0_8px_rgba(229,9,20,0.9)] animate-pulse' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]'}`} />
+          <div
+            className="tv-widget-header relative flex items-center gap-2.5 border-b border-[#d4af37]/12 bg-[#0a0a0f]/70 px-3.5 py-2.5 backdrop-blur-md"
+            style={{ cursor: (expanded || miniPos) ? 'grab' : 'default' }}
+            onMouseDown={(expanded || miniPos) ? (e) => {
+              if (expanded) {
+                const p = e.touches ? e.touches[0] : e;
+                expandedDragState.current = { active: true, moved: false, offX: p.clientX - expandedPos.x, offY: p.clientY - expandedPos.y };
+                setExpandedDragging(true);
+              } else if (miniPos) {
+                const p = e.touches ? e.touches[0] : e;
+                miniDragState.current = { active: true, moved: false, offX: p.clientX - miniPos.x, offY: p.clientY - miniPos.y };
+              }
+            } : undefined}
+            onTouchStart={(expanded || miniPos) ? (e) => {
+              const p = e.touches ? e.touches[0] : e;
+              if (expanded) {
+                expandedDragState.current = { active: true, moved: false, offX: p.clientX - expandedPos.x, offY: p.clientY - expandedPos.y };
+                setExpandedDragging(true);
+              } else if (miniPos) {
+                miniDragState.current = { active: true, moved: false, offX: p.clientX - miniPos.x, offY: p.clientY - miniPos.y };
+              }
+            } : undefined}
+          >
+            <div className="flex w-14 shrink-0 items-center">
+              <button onClick={toggleExpanded} className={`${expanded ? iconBtnActive : iconBtn} shrink-0`} aria-label={expanded ? 'Zoom out TV' : 'Zoom TV big'} title={expanded ? 'Zoom out' : 'Zoom big'}>
+                {expanded ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+              </button>
             </div>
-            <div className="min-w-0 flex-1 leading-tight">
-              <div className="gold-text truncate text-[13px] font-bold tracking-wide">{settings.headerText || 'TradingBible TV'}</div>
-              <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-[#d4af37]/25 bg-gradient-to-r from-[#d4af37]/[0.10] to-transparent px-2 py-[3px] font-mono text-[8.5px] uppercase tracking-[0.12em]">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#e50914] opacity-60" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#e50914] shadow-[0_0_6px_rgba(229,9,20,0.9)]" />
-                </span>
-                <span className="text-[#ff5a62]">{liveCount > 0 ? `${liveCount} live` : t('tv.onAir')}</span>
-                <span className="text-[#5a564a]">·</span>
-                <span className="text-[#d4af37]">{ordered.length} desks</span>
-              </div>
+            <div className="flex min-w-0 flex-1 items-center justify-center gap-2.5 leading-tight">
+              <span className="relative shrink-0">
+                <img src={TRADINGBIBLE_LOGO} alt="TradingBible" draggable={false} className="h-10 w-10 select-none rounded-2xl border border-[#d4af37]/40 bg-[#0c0c11] object-contain p-0.5" onError={e => { e.currentTarget.style.display = 'none'; }} />
+              </span>
+              <span className="gold-text truncate text-base font-black uppercase tracking-[0.08em]" style={{ fontFamily: "'Arial Black','Archivo Black',Impact,'Segoe UI',sans-serif" }}>{settings.headerText || 'TradingBible TV'}</span>
             </div>
-            <button onClick={toggleExpanded} className={`${expanded ? iconBtnActive : iconBtn} ml-auto shrink-0`} aria-label={expanded ? 'Zoom out TV' : 'Zoom TV big'} title={expanded ? 'Zoom out' : 'Zoom big'}>
-              {expanded ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-            </button>
-            <button onClick={closePanel} aria-label={t('tv.closeTv')} className={`${iconBtn} shrink-0`}>
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex w-14 shrink-0 items-center justify-end">
+              <button onClick={closePanel} aria-label={t('tv.closeTv')} className={`${iconBtn} shrink-0`}>
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {/* Tab bar: Watch | Guide | Ads */}
           <div className="relative flex items-center gap-1 px-3 pt-2">
             {TABS.map(({ id, icon: Icon }) => {
-              const label = id === 'player' ? 'Watch' : id === 'channels' ? 'Guide' : 'Ads';
+              const label = id === 'player' ? 'Watch' : id === 'channels' ? 'Channels' : 'Ads';
               const isActive = view === id;
               return (
                 <button key={id} onClick={() => switchTab(id)} aria-pressed={isActive}
@@ -596,7 +767,7 @@ export default function TvWidget() {
                   </div>
                 }
               >
-              <div className="flex h-full flex-col">
+              <div className="tb-panel-swap flex h-full flex-col">
                 <div className="flex items-center gap-1 border-b border-[#d4af37]/10 px-2 py-1.5">
                   <button onClick={openChannels} className={iconBtn} aria-label="Back to channels">
                     <ChevronLeft className="h-4 w-4" />
@@ -679,7 +850,7 @@ export default function TvWidget() {
             )}
 
             {view === 'channels' && (
-              <div className="no-scrollbar flex h-full flex-col overflow-hidden">
+              <div className="tb-panel-swap no-scrollbar flex h-full flex-col overflow-hidden">
                 {/* Search + live alerts */}
                 <div className="border-b border-[#d4af37]/10 px-2 pb-2 pt-2">
                   <div className="flex items-center gap-1.5">
@@ -748,7 +919,7 @@ export default function TvWidget() {
                         </span>
                         <span className="block truncate text-[11px] text-[#8a8577]" title={rowTitle || undefined}>{locked ? `${c.desk} · tap to upgrade` : rowTitle || (st === false ? `${c.desk} · tap to retry` : `${c.desk} · tap to watch`)}</span>
                         {!c.roundTheClock && c.hours && st !== true && (
-                          <span className="mt-0.5 flex items-center gap-1 text-[10px] text-[#6a665a]"><Clock className="h-2.5 w-2.5 shrink-0" /> Typically live: {c.hours}</span>
+                          <span className="mt-0.5 flex items-center gap-1 text-[10px] text-[#6a665a]"><Clock className="h-2.5 w-2.5 shrink-0" /> Typically live: {localizeChannelHours(c)}</span>
                         )}
                       </span>
                       <Play className="h-3.5 w-3.5 shrink-0 text-[#d4af37] transition group-hover:scale-110" />
@@ -840,7 +1011,7 @@ export default function TvWidget() {
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <span className="min-w-0 flex-1 truncate text-center text-[10px] uppercase tracking-wider text-[#8a8577]">
-                  {liveCount > 0 ? `${liveCount} live · ${ordered.length} channels` : `${ordered.length} live channels`}
+                  Live channels
                 </span>
                 <button onClick={() => watchChannel(channelIndex)} className={iconBtn} aria-label="Resume watching" title="Resume watching">
                   <Play className="h-4 w-4" />
@@ -872,17 +1043,11 @@ export default function TvWidget() {
           onTouchStart={onPointerDown}
           aria-label={t('aiw.openLabel')}
           title={t('tv.openTv')}
-          className={`tv-tv-btn fixed z-[70] grid place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#f4e6a8] via-[#e2bd4f] to-[#c99a25] shadow-[0_8px_28px_rgba(212,175,55,0.35),0_0_0_1px_rgba(212,175,55,0.4)] ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]'}`}
+          className={`tv-tv-btn fixed z-[70] grid place-items-center overflow-hidden rounded-full border border-[#d4af37]/30 bg-[#0c0c11]/80 shadow-[0_8px_28px_rgba(0,0,0,0.5),0_0_0_1px_rgba(212,175,55,0.4)] ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]'}`}
           style={{ left: pos.x, top: pos.y, height: BTN, width: BTN, touchAction: 'none' }}
         >
-          <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-[#d4af37]/25 [animation-duration:2.2s]" />
-          <MonitorPlay className="relative h-6 w-6 text-[#0a0a0f]" strokeWidth={2.2} />
-          <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#0c0c11] ${liveCount > 0 ? 'bg-[#e50914] shadow-[0_0_8px_rgba(229,9,20,0.9)] animate-pulse' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]'}`} />
-          {liveCount > 0 ? (
-            <span className="absolute -left-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full border-2 border-[#0c0c11] bg-[#e50914] px-0.5 text-[9px] font-bold text-white">{liveCount > 9 ? '9+' : liveCount}</span>
-          ) : ads.length > 0 && (
-            <span className="absolute -bottom-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full border-2 border-[#0c0c11] bg-[#d4af37] px-0.5 text-[9px] font-bold text-[#0a0a0f]">{ads.length > 9 ? '9+' : ads.length}</span>
-          )}
+          <img src={TRADINGBIBLE_LOGO} alt="TradingBible" draggable={false} className="relative h-10 w-10 select-none object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
+          <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#0a0a0f] ${liveCount > 0 ? 'bg-[#e50914] shadow-[0_0_8px_rgba(229,9,20,0.9)] animate-pulse' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]'}`} />
         </button>
       )}
 

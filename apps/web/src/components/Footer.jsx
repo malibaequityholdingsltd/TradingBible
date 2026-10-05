@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Twitter, Facebook, Linkedin, Instagram, Youtube, LineChart } from 'lucide-react';
-import { MALIBA_LOGO, TRADINGBIBLE_LOGO } from '@/lib/branding';
+import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { useI18n } from '@/lib/i18n';
@@ -126,7 +126,7 @@ export default function Footer() {
               {t('fot.blurb')}
             </p>
             <div className="mt-4 flex items-start gap-3">
-              <img src={MALIBA_LOGO} alt="TradingBible LLC" className="h-12 w-12 shrink-0 rounded-lg object-contain" />
+              <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-12 w-12 shrink-0 rounded-lg object-contain" />
               <p className="text-xs leading-relaxed text-[#6a665a]">
                 TradingBible is owned and operated by <span className="text-[#c9c4b4]">TradingBible LLC</span>.
                 <br />Registered in Delaware, USA. c/o Delaware Registered Agent, Inc.
@@ -181,7 +181,7 @@ export default function Footer() {
 
         {/* Copyright row */}
         <div className="flex flex-col items-center justify-between gap-4 border-t border-[#d4af37]/10 pt-8 text-sm text-[#8a8577] sm:flex-row">
-          <div className="flex items-center gap-2"><img src={MALIBA_LOGO} alt="" className="h-5 w-5 rounded object-contain" /> TradingBible LLC</div>
+          <div className="flex items-center gap-2"><img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 rounded object-contain" /> TradingBible</div>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             <Link to="/terms" className="hover:text-[#e9e7df]">{t('fot.terms')}</Link>
             <Link to="/policy" className="hover:text-[#e9e7df]">{t('fot.privacy')}</Link>

@@ -164,7 +164,12 @@ export default function EconomicCalendarPage() {
           <div className="space-y-5">
             {groups.map(([day, evs]) => (
               <div key={day}>
-                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#d4af37]"><CalendarDays className="h-4 w-4" /> {day}</div>
+                <div className="mb-2 flex items-center gap-3">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><CalendarDays className="h-4 w-4" /></span>
+                  <span className="text-sm font-bold text-[#f0ecdd]">{day}</span>
+                  <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+                  <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{evs.length}</span>
+                </div>
                 <Card className="overflow-x-auto p-0">
                   <table className="w-full min-w-[640px] text-sm">
                     <thead><tr className="text-left text-[10px] uppercase tracking-wider text-[#8a8577]"><th className="p-3">{t('cal.thTime')}</th><th className="p-3">{t('cal.thCountry')}</th><th className="p-3">{t('cal.thEvent')}</th><th className="p-3 text-center">{t('cal.thImpact')}</th><th className="p-3 text-right">{t('cal.thPrev')}</th><th className="p-3 text-right">{t('cal.thForecast')}</th><th className="p-3 text-right">{t('cal.thActual')}</th></tr></thead>

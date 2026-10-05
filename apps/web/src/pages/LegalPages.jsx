@@ -5,9 +5,9 @@ import Footer from '@/components/Footer';
 import { Card, PageHero } from '@/components/ui-kit';
 import { useAuth } from '@/hooks/useAuth';
 import { homeRouteForUser } from '@/lib/homeRoute';
+import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 
 const UPDATED = 'August 2025';
-const MALIBA_LOGO = 'https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/5c8275966b855914cc3eec21e6f6ed03.png';
 
 function LegalShell({ title, subtitle, children }) {
   const { user, isAuthed } = useAuth();
@@ -30,7 +30,7 @@ function LegalShell({ title, subtitle, children }) {
         <div className="mt-10 space-y-8">{children}</div>
 
         <div className="mt-16 flex items-center gap-3 border-t border-[#d4af37]/10 pt-8">
-          <img src={MALIBA_LOGO} alt="TradingBible LLC" className="h-11 w-11 rounded-lg object-contain" />
+          <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-11 w-11 rounded-lg object-contain" />
           <p className="text-xs leading-relaxed text-[#6a665a]">These terms are published by <span className="text-[#c9c4b4]">TradingBible LLC</span>, owner and operator of TradingBible.</p>
         </div>
         <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 border-t border-[#d4af37]/10 pt-8 text-sm text-[#8a8577]">
@@ -64,7 +64,7 @@ export function TermsPage() {
         <p>You confirm that you are at least 18 years old and legally capable of entering into a binding contract in your jurisdiction. If you use the Service on behalf of an entity, you represent that you are authorised to bind that entity. The Service is not offered where prohibited by law, and you are responsible for compliance with all laws applicable to you.</p>
       </Section>
       <Section heading="2. Nature of the Service — not financial advice">
-        <p>TradingBible is a trading journal, analytics, education, and account-aggregation tool. Nothing produced by the platform — including AI-generated reviews, coaching messages, scores, signals, heatmaps, economic-calendar data, watchlists, or statistics — constitutes financial, investment, tax, accounting, or legal advice, a solicitation, or a recommendation to buy, sell, or hold any instrument. We are not a broker-dealer, investment adviser, or fiduciary. You make all trading decisions independently and at your own risk.</p>
+        <p>TradingBible is a trading journal, analytics, education, and account-aggregation tool. Nothing produced by the platform — including SI-generated reviews, coaching messages, scores, signals, heatmaps, economic-calendar data, watchlists, or statistics — constitutes financial, investment, tax, accounting, or legal advice, a solicitation, or a recommendation to buy, sell, or hold any instrument. We are not a broker-dealer, investment adviser, or fiduciary. You make all trading decisions independently and at your own risk.</p>
       </Section>
       <Section heading="3. Risk disclosure">
         <p>Trading foreign exchange, CFDs, futures, equities, options, and crypto assets involves substantial risk and is not suitable for every investor. Leverage magnifies both gains and losses and you may lose more than your initial deposit. Markets are volatile and prices may move rapidly against you. Past performance, back-tests, hypothetical results, and any figures displayed in the Service are not indicative of future results. We do not guarantee any profit or protection against loss. You should not trade with money you cannot afford to lose and should seek independent professional advice where appropriate.</p>
@@ -116,13 +116,13 @@ export function PolicyPage() {
         <p>We process personal data on the bases of: performance of our contract with you (providing the Service); our legitimate interests (securing, improving, and analysing the Service); compliance with legal obligations; and your consent where required (e.g. certain communications). You may withdraw consent at any time.</p>
       </Section>
       <Section heading="3. How we use your data">
-        <p>To operate the journal, compute analytics, power AI reviews and coaching, process billing through Stripe, prevent fraud and abuse, comply with law, and send service notifications such as reports and security alerts. AI processing generates insights for you and is not used to train third-party public models.</p>
+        <p>To operate the journal, compute analytics, power SI reviews and coaching, process billing through Stripe, prevent fraud and abuse, comply with law, and send service notifications such as reports and security alerts. SI processing generates insights for you and is not used to train third-party public models.</p>
       </Section>
       <Section heading="4. Broker and prop-firm connections">
         <p>Credentials and API keys are encrypted in transit and at rest, scoped to the minimum permissions required to read trade history and balances, and are never used to place orders or move funds. You can disconnect an account and delete its data at any time.</p>
       </Section>
       <Section heading="5. Sharing and international transfers">
-        <p>We do not sell your personal data. We share limited data with processors strictly to run the Service — for example our payment processor (Stripe), infrastructure and hosting providers, and the AI provider used to generate your reports — each bound by confidentiality and data-processing obligations. Where data is transferred internationally, we rely on appropriate safeguards such as Standard Contractual Clauses.</p>
+        <p>We do not sell your personal data. We share limited data with processors strictly to run the Service — for example our payment processor (Stripe), infrastructure and hosting providers, and the SI provider used to generate your reports — each bound by confidentiality and data-processing obligations. Where data is transferred internationally, we rely on appropriate safeguards such as Standard Contractual Clauses.</p>
       </Section>
       <Section heading="6. Data retention">
         <p>We keep personal data only as long as needed for the purposes described or as required by law. Trading and account data are retained while your account is active. When you delete your account, associated trade and broker records are removed, subject to records we must retain for legal or fraud-prevention purposes.</p>
@@ -175,8 +175,8 @@ export function RefundPage() {
 }
 
 export const FAQS = [
-  { q: 'Is TradingBible financial advice?', a: 'No. TradingBible is a journaling and analytics tool. Our AI reviews and scores are educational and reflect your own historical data — they are never buy/sell recommendations.' },
-  { q: 'How does broker sync work?', a: 'You connect a broker using read-oriented API keys or OAuth. We import your historical and ongoing trades automatically into your journal, dashboard, and AI reports. Credentials are encrypted and never used to place trades or withdraw funds.' },
+  { q: 'Is TradingBible financial advice?', a: 'No. TradingBible is a journaling and analytics tool. Our SI reviews and scores are educational and reflect your own historical data — they are never buy/sell recommendations.' },
+  { q: 'How does broker sync work?', a: 'You connect a broker using read-oriented API keys or OAuth. We import your historical and ongoing trades automatically into your journal, dashboard, and SI reports. Credentials are encrypted and never used to place trades or withdraw funds.' },
   { q: 'Which brokers and platforms are supported?', a: 'MetaTrader 4 and 5, cTrader, DXtrade, Interactive Brokers, Binance, Bybit and Coinbase (live accounts only — demo accounts are not supported), plus prop firms like FTMO and FundedNext. You can also track self-custody wallets (BTC, ETH, USDC, Solana) with live on-chain balances. More integrations are added regularly.' },
   { q: 'Do you offer a free trial?', a: 'No. TradingBible is paid-only — your card is charged at checkout before you enter the terminal. Instead of a trial, every first payment is covered by our 14-day money-back guarantee.' },
   { q: 'Can I cancel anytime?', a: 'Yes. Cancel from your profile settings in a couple of clicks. You keep access until the end of your current billing period, and no further charges are made.' },
@@ -189,7 +189,7 @@ export const FAQS = [
 export function FaqPage() {
   const [open, setOpen] = React.useState(0);
   return (
-    <LegalShell title="Frequently asked questions" subtitle="Everything you need to know about TradingBible, broker sync, billing, and the AI coach. Still stuck? Email support@tradingbible.app.">
+    <LegalShell title="Frequently asked questions" subtitle="Everything you need to know about TradingBible, broker sync, billing, and the SI coach. Still stuck? Email support@tradingbible.app.">
       <Card className="divide-y divide-[#d4af37]/10">
         {FAQS.map((f, i) => {
           const isOpen = open === i;

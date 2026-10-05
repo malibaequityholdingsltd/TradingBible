@@ -188,7 +188,7 @@ function mapAssistantMessages({ message }) {
 }
 
 /**
- * Hook for streaming AI chat responses using fetch-based SSE.
+ * Hook for streaming SI chat responses using fetch-based SSE.
  *
  * @example
  * const { messages, isStreaming, sendMessage } = useIntegratedAi();

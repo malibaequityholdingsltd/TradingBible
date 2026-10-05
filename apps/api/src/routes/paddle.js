@@ -37,7 +37,7 @@ const PRICE_MAP = {
 	pro: process.env.PADDLE_PRICE_PRO,
 	elite: process.env.PADDLE_PRICE_ELITE,
 	professional: process.env.PADDLE_PRICE_PROFESSIONAL,
-	// One-time lifetime price for the AI Academy (configured in apps/api/.env).
+	// One-time lifetime price for the SI Academy (configured in apps/api/.env).
 	academy: process.env.PADDLE_PRICE_ACADEMY,
 };
 const PLAN_BY_PRICE = () => {

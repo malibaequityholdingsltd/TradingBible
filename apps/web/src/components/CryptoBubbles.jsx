@@ -15,34 +15,36 @@ import { useI18n } from '@/lib/i18n';
 // back to Gold Glass).
 const THEMES = {
   goldglass: {
-    label: 'Gold Glass', up: '16,185,129', down: '239,68,68',
-    dark: true, label: '#ffffff', bubbleOutline: 'rgba(0,0,0,0.35)',
+    name: 'Gold Design', up: '16,185,129', down: '239,68,68',
+    dark: true, label: '#fffbe8', bubbleOutline: 'rgba(0,0,0,0.35)',
     accent: '#d4af37', activeBg: 'linear-gradient(to right, #f4e6a8, #c99a25)', activeText: '#0a0a0f',
-    medalBg: 'rgba(212,175,55,0.12)', fieldBg: null, vignette: true,
+    medalBg: 'rgba(212,175,55,0.12)', fieldBg: 'radial-gradient(ellipse at 50% 32%, rgba(212,175,55,0.12), rgba(0,0,0,0) 62%), radial-gradient(ellipse at 85% 95%, rgba(212,175,55,0.05), rgba(0,0,0,0) 55%)', vignette: true,
   },
   amber: {
-    label: 'Terminal Amber', up: '255,180,0', down: '255,106,0',
-    dark: true, label: '#ffe9c4', bubbleOutline: 'rgba(0,0,0,0.45)',
+    name: 'Amber Design', up: '255,180,0', down: '255,106,0',
+    dark: true, label: '#fff4e2', bubbleOutline: 'rgba(0,0,0,0.45)',
     accent: '#ffb000', activeBg: 'linear-gradient(to right, #ffd54d, #ff9e00)', activeText: '#140d00',
-    medalBg: 'rgba(255,176,0,0.12)', fieldBg: 'radial-gradient(ellipse at 50% 40%, rgba(255,176,0,0.06), rgba(0,0,0,0) 65%)', vignette: true,
+    medalBg: 'rgba(255,176,0,0.12)', fieldBg: 'radial-gradient(ellipse at 50% 40%, rgba(255,176,0,0.08), rgba(0,0,0,0) 65%), radial-gradient(ellipse at 12% 88%, rgba(255,106,0,0.07), rgba(0,0,0,0) 55%)', vignette: true,
   },
   neon: {
-    label: 'Neon Cyber', up: '34,211,238', down: '244,114,182',
-    dark: true, label: '#ffffff', bubbleOutline: 'rgba(0,0,0,0.45)',
+    name: 'Neon Design', up: '34,211,238', down: '244,114,182',
+    dark: true, label: '#eafcff', bubbleOutline: 'rgba(0,0,0,0.45)',
     accent: '#22d3ee', activeBg: 'linear-gradient(to right, #67e8f9, #e879f9)', activeText: '#05010f',
-    medalBg: 'rgba(34,211,238,0.12)', fieldBg: 'radial-gradient(ellipse at 50% 40%, rgba(88,28,135,0.25), rgba(0,0,0,0) 65%)', vignette: true,
+    medalBg: 'rgba(34,211,238,0.12)', fieldBg: 'radial-gradient(ellipse at 50% 40%, rgba(88,28,135,0.28), rgba(0,0,0,0) 65%), linear-gradient(to bottom, rgba(8,47,73,0.35), rgba(0,0,0,0) 55%)', vignette: true,
   },
   mono: {
-    label: 'Mono Minimal', up: '235,235,238', down: '120,120,128',
-    dark: true, label: '#f4f4f5', bubbleOutline: 'rgba(0,0,0,0.5)',
-    accent: '#d4af37', activeBg: 'linear-gradient(to right, #e4e4e7, #a1a1aa)', activeText: '#09090b',
-    medalBg: 'rgba(255,255,255,0.08)', fieldBg: null, vignette: true,
+    name: 'Silver Design', up: '226,232,240', down: '71,85,105',
+    dark: true, label: '#f1f5f9', bubbleOutline: 'rgba(0,0,0,0.55)',
+    accent: '#cbd5e1', activeBg: 'linear-gradient(to right, #f1f5f9, #94a3b8)', activeText: '#0b0f16',
+    medalBg: 'rgba(203,213,225,0.10)', fieldBg: 'radial-gradient(ellipse at 50% 28%, rgba(148,163,184,0.16), rgba(0,0,0,0) 60%), radial-gradient(ellipse at 88% 92%, rgba(71,85,105,0.20), rgba(0,0,0,0) 55%), linear-gradient(to bottom, #1b2430 0%, #0d1219 60%, #070b10 100%)', vignette: true,
   },
-  ivory: {
-    label: 'Light Luxury', up: '16,122,87', down: '185,28,28',
-    dark: false, label: '#1c1917', bubbleOutline: 'rgba(255,255,255,0.6)',
-    accent: '#a16207', activeBg: 'linear-gradient(to right, #f4e6a8, #b8860b)', activeText: '#1c1917',
-    medalBg: 'rgba(161,98,7,0.10)', fieldBg: 'linear-gradient(to bottom, #f7f1e2, #e9dfc9)', vignette: false,
+  meadow: {
+    name: 'Grass Design', up: '255,236,180', down: '235,70,55',
+    dark: true, label: '#fafff2', bubbleOutline: 'rgba(0,0,0,0.4)',
+    accent: '#a5d6a7', activeBg: 'linear-gradient(to right, #f4e6a8, #c99a25)', activeText: '#0a0a0f',
+    medalBg: 'rgba(255,255,255,0.12)',
+    fieldBg: 'repeating-linear-gradient(115deg, rgba(255,255,255,0.035) 0 2px, rgba(0,0,0,0) 2px 7px), radial-gradient(ellipse at 50% 28%, rgba(200,235,150,0.28), rgba(0,0,0,0) 60%), radial-gradient(ellipse at 18% 92%, rgba(0,0,0,0.28), rgba(0,0,0,0) 55%), linear-gradient(to bottom, #3f8038 0%, #2c5f29 55%, #1d421c 100%)',
+    vignette: true,
   },
 };
 const SCHEME_KEY = 'tb-bubbles-scheme';
@@ -137,10 +139,10 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   const { cells, status, retry } = useHeatmap(type, period, 15000);
   const [mode, setMode] = useState('move'); // 'move' | 'volume'
   const [schemeId, setSchemeId] = useState(() => {
-    try { return THEMES[localStorage.getItem(SCHEME_KEY)] ? localStorage.getItem(SCHEME_KEY) : 'goldglass'; }
-    catch { return 'goldglass'; }
+    try { return THEMES[localStorage.getItem(SCHEME_KEY)] ? localStorage.getItem(SCHEME_KEY) : 'meadow'; }
+    catch { return 'meadow'; }
   });
-  const scheme = THEMES[schemeId] || THEMES.goldglass;
+  const scheme = THEMES[schemeId] || THEMES.meadow;
   const pickScheme = (id) => {
     setSchemeId(id);
     try { localStorage.setItem(SCHEME_KEY, id); } catch { /* ignore */ }
@@ -214,9 +216,9 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
       const n = map.get(c.symbol);
       if (n) { n.cell = c; n.r = r; }
       else {
-        // Random spread position + steady cruising velocity (never settles).
+        // Random spread position + slow cruising velocity (never settles).
         const ang = Math.random() * Math.PI * 2;
-        const spd = 0.5 + Math.random() * 0.7;
+        const spd = 0.15 + Math.random() * 0.25;
         map.set(c.symbol, {
           cell: c, r,
           x: r + Math.random() * Math.max(size.w - r * 2, 1),
@@ -238,7 +240,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   useEffect(() => {
     let raf;
     const t0 = Date.now();
-    const MIN_SPD = 0.45, MAX_SPD = 2.0;
+    const MIN_SPD = 0.15, MAX_SPD = 0.7;
     const PAD = compact ? 14 : 6;
     const step = () => {
       const map = nodesRef.current;
@@ -250,8 +252,8 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
         const a = nodes[i];
         if (a.drag) continue;
         // Gentle flowing current so paths curve instead of going straight.
-        a.vx += Math.sin(t * 0.5 + a.phase + a.y / 220) * 0.012;
-        a.vy += Math.cos(t * 0.4 + a.phase + a.x / 260) * 0.012;
+        a.vx += Math.sin(t * 0.5 + a.phase + a.y / 220) * 0.005;
+        a.vy += Math.cos(t * 0.4 + a.phase + a.x / 260) * 0.005;
         for (let j = i + 1; j < nodes.length; j++) {
           const b = nodes[j];
           if (b.drag) continue;
@@ -329,7 +331,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
   }, [cells]);
 
   const nodes = [...nodesRef.current.values()];
-  // Labels follow the theme (dark text on the ivory stage, white elsewhere).
+  // Labels follow each theme's text color.
   const labelColor = scheme.label;
 
   return (
@@ -376,7 +378,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
           <button
             key={id}
             onClick={() => pickScheme(id)}
-            title={sc.label}
+            title={sc.name}
             style={schemeId === id ? { borderColor: sc.accent } : undefined}
             className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition ${schemeId === id ? 'bg-white/[0.04] text-[#e9e7df]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'}`}
           >
@@ -384,7 +386,7 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
               <span className="h-3 w-3" style={{ background: `rgb(${sc.up})` }} />
               <span className="h-3 w-3" style={{ background: `rgb(${sc.down})` }} />
             </span>
-            {sc.label}
+            {sc.name}
           </button>
         ))}
       </div>
@@ -586,15 +588,16 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                         const s = Math.min(max, (n.r * 1.6) / (Math.max(text.length, 1) * 0.6));
                         return s >= min ? s : 0;
                       };
-                      const F = "'Space Grotesk', Sora, sans-serif";
-                      const outline = { pointerEvents: 'none', stroke: scheme.bubbleOutline, strokeWidth: 1.25, paintOrder: 'stroke' };
+                      const FS = "Sora, 'Space Grotesk', sans-serif";
+                      const FN = "'JetBrains Mono', ui-monospace, SFMono-Regular, monospace";
+                      const outline = { pointerEvents: 'none', stroke: scheme.bubbleOutline, strokeWidth: 2, paintOrder: 'stroke' };
                       if (singleLine) {
                         const full = `${sym} ${pctStr}`;
                         let oneText = full, oneSize = fit(full, 11.5);
                         if (!oneSize) { oneText = pctStr; oneSize = fit(pctStr, 11); }
                         if (!oneSize) return null;
                         return (
-                          <text textAnchor="middle" dy={3.5} fill={labelColor} fontSize={oneSize} fontWeight="700" fontFamily={F} letterSpacing="0.3" style={outline}>
+                          <text textAnchor="middle" dy={3.5} fill={labelColor} fontSize={oneSize} fontWeight="800" fontFamily={FS} letterSpacing="0.3" style={outline}>
                             {oneText}
                           </text>
                         );
@@ -605,11 +608,11 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                       return (
                         <>
                           {symSize > 0 && (
-                          <text textAnchor="middle" dy={-5} fill={labelColor} fontSize={symSize} fontWeight="700" fontFamily={F} letterSpacing="0.5" style={outline}>
+                          <text textAnchor="middle" dy={-5} fill={labelColor} fontSize={symSize} fontWeight="800" fontFamily={FS} letterSpacing="0.3" style={outline}>
                             {sym}
                           </text>
                           )}
-                          <text textAnchor="middle" dy={symSize > 0 ? symSize + 6 : 3.5} fill={labelColor} fontSize={pctSizeF} fontWeight="600" fontFamily={F} letterSpacing="0.5" opacity="0.92" style={outline}>
+                          <text textAnchor="middle" dy={symSize > 0 ? symSize + 6 : 3.5} fill={labelColor} fontSize={pctSizeF} fontWeight="700" fontFamily={FN} letterSpacing="0" opacity="0.95" style={outline}>
                             {pctStr}
                           </text>
                         </>

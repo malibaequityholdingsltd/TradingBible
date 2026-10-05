@@ -74,7 +74,7 @@ export const PATHS = [
 	},
 ];
 
-// ── Static curricula: instant topic map shown before / without AI ─────
+// ── Static curricula: instant topic map shown before / without SI ─────
 // Each course: { courseKey, title, minutes, description, lessons: [{lessonKey,title,minutes,tags}] }
 export const STATIC_CURRICULA = {
 	'beginner': {
@@ -265,7 +265,7 @@ export const STATIC_CURRICULA = {
 					{ lessonKey: 'whitepaper-diligence', title: 'Whitepapers & due diligence in 20 minutes', minutes: 17, tags: ['crypto'] },
 					{ lessonKey: 'onchain-basics', title: 'On-chain basics: active addresses, exchange flows', minutes: 19, tags: ['crypto'] },
 					{ lessonKey: 'onchain-advanced', title: 'NVT, MVRV, SOPR & realized cap signals', minutes: 20, tags: ['crypto'] },
-					{ lessonKey: 'narratives', title: 'Narratives: memecoins, AI, RWA, L2s & cycles', minutes: 18, tags: ['crypto'] },
+					{ lessonKey: 'narratives', title: 'Narratives: memecoins, SI, RWA, L2s & cycles', minutes: 18, tags: ['crypto'] },
 					{ lessonKey: 'airdrops-defi', title: 'Airdrops, staking & DeFi yield without getting rekt', minutes: 19, tags: ['crypto'] },
 				],
 			},
@@ -496,42 +496,42 @@ export const STATIC_CURRICULA = {
 export const WEBINAR_CATALOG = [
 	{
 		id: 'market-open-breakdown', title: 'Live Market Open Breakdown', day: 1, hour: 8, duration: 60,
-		host: 'AI Host · TradingBible Desk', track: 'general',
+		host: 'SI Host · TradingBible Desk', track: 'general',
 		description: 'A live walkthrough of the market open — key levels, liquidity zones and the trades the day is offering.',
 	},
 	{
 		id: 'forex-london-lab', title: 'Forex Lab: London Killzone Live', day: 2, hour: 3, duration: 60,
-		host: 'AI Host · FX Desk', track: 'forex',
+		host: 'SI Host · FX Desk', track: 'forex',
 		description: 'Live London sweep: DXY, EUR/USD & GBP/USD levels, liquidity targets and the breakout vs fakeout read.',
 	},
 	{
 		id: 'journal-review', title: 'Journal Review: Fixing Your Worst Trades', day: 3, hour: 17, duration: 60,
-		host: 'AI Host · TradingBible Coaches', track: 'general',
+		host: 'SI Host · TradingBible Coaches', track: 'general',
 		description: 'Bring your worst trade of the week. The room breaks down the mistake and rebuilds the entry.',
 	},
 	{
 		id: 'crypto-onchain-lab', title: 'Crypto Lab: On-chain + Perps Live', day: 4, hour: 16, duration: 60,
-		host: 'AI Host · Crypto Desk', track: 'crypto',
+		host: 'SI Host · Crypto Desk', track: 'crypto',
 		description: 'BTC/ETH live: funding, open interest, dominance and exchange flows — where positioning is trapped.',
 	},
 	{
 		id: 'risk-qa', title: 'Risk & Position Sizing Q&A', day: 5, hour: 14, duration: 45,
-		host: 'AI Host · TradingBible Research', track: 'general',
+		host: 'SI Host · TradingBible Research', track: 'general',
 		description: 'Open floor on risk: lot sizing, ATR stops, crypto volatility sizing, drawdown control and portfolio heat.',
 	},
 	{
-		id: 'ai-trading-lab', title: 'AI Trading Lab: Strategy Build', day: 6, hour: 11, duration: 75,
-		host: 'AI Host · TradingBible Systems', track: 'pro',
-		description: 'A live strategy workshop — the AI host designs a systematic FX + crypto setup with the room, end to end.',
+		id: 'ai-trading-lab', title: 'SI Trading Lab: Strategy Build', day: 6, hour: 11, duration: 75,
+		host: 'SI Host · TradingBible Systems', track: 'pro',
+		description: 'A live strategy workshop — the SI host designs a systematic FX + crypto setup with the room, end to end.',
 	},
 	{
 		id: 'forex-news-live', title: 'Forex Live: CPI / NFP Reaction', day: 3, hour: 8, duration: 45,
-		host: 'AI Host · FX Macro Desk', track: 'forex',
+		host: 'SI Host · FX Macro Desk', track: 'forex',
 		description: 'High-impact news morning: pre-release levels, spike tactics and post-release drift on USD pairs.',
 	},
 	{
 		id: 'crypto-defi-yield', title: 'Crypto Deep-Dive: DeFi & Narratives', day: 0, hour: 15, duration: 60,
-		host: 'AI Host · Crypto Research', track: 'crypto',
+		host: 'SI Host · Crypto Research', track: 'crypto',
 		description: 'Weekly narrative scan: L1/L2 flows, memecoins vs utility, airdrops and staking yields worth attention.',
 	},
 ];

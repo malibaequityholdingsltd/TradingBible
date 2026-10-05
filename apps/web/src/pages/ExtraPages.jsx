@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plug, Check, RefreshCw, Users, DollarSign, CreditCard, Activity, Crown, ArrowRight, Bot, ExternalLink, Building2 } from 'lucide-react';
+import { Plug, Check, RefreshCw, Users, DollarSign, CreditCard, Activity, Crown, ArrowRight, Bot, ExternalLink, Building2, Wallet } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { PageHero, GoldButton, GhostButton } from '@/components/ui-kit';
 import { BROKERS, PROP_FIRMS, PLANS, fmtMoney, translatePlan } from '@/lib/mockData';
@@ -10,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 import Footer from '@/components/Footer';
-import { TRADINGBIBLE_LOGO } from '@/lib/branding';
+import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { homeRouteForUser } from '@/lib/homeRoute';
 
 function timeAgo(iso, t) {
@@ -162,11 +162,21 @@ export function BrokersPage() {
           subtitle={t('bro.syncDesc')}
         />
 
-        <h3 className="text-sm font-medium uppercase tracking-wider text-[#8a8577]">{t('bro.liveAccts')}</h3>
+        <div className="mb-3 flex items-center gap-3">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Wallet className="h-4 w-4" /></span>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">{t('bro.liveAccts')}</h3>
+          <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+          <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{liveAccts.length}</span>
+        </div>
         <ConnectedList items={liveAccts} />
         <Grid list={BROKERS} kind="live" />
 
-        <h3 className="mt-8 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-[#8a8577]"><Building2 className="h-4 w-4 text-[#d4af37]" /> {t('bro.propAccts')}</h3>
+        <div className="mb-3 mt-8 flex items-center gap-3">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Building2 className="h-4 w-4" /></span>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">{t('bro.propAccts')}</h3>
+          <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+          <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{propAccts.length}</span>
+        </div>
         <ConnectedList items={propAccts} />
         <Grid list={PROP_FIRMS} kind="prop" />
       </div>
@@ -181,9 +191,9 @@ function AdminStat({ icon: Icon, label, value, sub }) {
 export function AdminPage() {
   const users = [
     { email: 'marcus@fund.io', plan: 'Professional', status: 'Active', mrr: 99 },
-    { email: 'sofia.trades@gmail.com', plan: 'Elite AI', status: 'Active', mrr: 49.99 },
+    { email: 'sofia.trades@gmail.com', plan: 'Elite SI', status: 'Active', mrr: 49.99 },
     { email: 'dan.k@proton.me', plan: 'Pro', status: 'Pending', mrr: 0 },
-    { email: 'aisha@desk.co', plan: 'Elite AI', status: 'Past due', mrr: 49.99 },
+    { email: 'aisha@desk.co', plan: 'Elite SI', status: 'Past due', mrr: 49.99 },
     { email: 'leo.fx@outlook.com', plan: 'Pro', status: 'Cancelled', mrr: 0 },
   ];
   return (

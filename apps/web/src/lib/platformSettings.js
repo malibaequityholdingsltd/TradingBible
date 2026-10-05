@@ -3,7 +3,7 @@ import pb from '@/lib/pocketbaseClient';
 
 export const PLATFORM_SETTINGS_DEFAULTS = {
   platformName: 'TradingBible',
-  tagline: 'Trade like the 1%. Journal like a fund.',
+  tagline: 'maliba-admin',
   supportEmail: 'support@tradingbible.app',
   // trialDays is legacy (no free trial). Kept at 0 so old cached settings
   // never re-enable a trial anywhere.
@@ -29,7 +29,7 @@ export const PLATFORM_FEATURES_DEFAULTS = {
   wallet: true,
 };
 
-const CACHE_KEY = 'tb:platform-settings';
+const CACHE_KEY = 'tb:platform-settings-v2';
 const CACHE_TTL = 30 * 60 * 1000;
 const CHANGE_EVENT = 'tb:platform-settings:changed';
 

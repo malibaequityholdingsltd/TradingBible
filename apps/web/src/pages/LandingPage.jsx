@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { PLANS, translatePlan } from '@/lib/mockData';
 import Footer from '@/components/Footer';
-import { TESTIMONIALS, TRADINGBIBLE_LOGO } from '@/lib/branding';
+import { TESTIMONIALS, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { homeRouteForUser } from '@/lib/homeRoute';
@@ -148,7 +148,7 @@ export default function LandingPage() {
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.16 }} className="mt-7 max-w-2xl text-base leading-relaxed text-[#b8b3a3] sm:text-lg">
-            {settings.tagline || t('land.heroSub')}
+            {t('land.heroSub')}
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.24 }} className="mt-10 flex w-full flex-col gap-3.5 sm:w-auto sm:flex-row sm:items-center sm:gap-4">

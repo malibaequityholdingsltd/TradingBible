@@ -66,7 +66,7 @@ function impactRank(i) {
 	return i === 'high' ? 0 : i === 'medium' ? 1 : 2;
 }
 
-// AI-written desk summary with a deterministic template fallback so the
+// SI-written desk summary with a deterministic template fallback so the
 // digest always goes out even when the model is unavailable.
 async function summarizeWeek(events) {
 	const lines = events.map((e) => {
@@ -84,7 +84,7 @@ async function summarizeWeek(events) {
 		});
 		if (summary && summary.trim()) return summary.trim();
 	} catch (err) {
-		logger.warn('digest AI summary failed, using template', String(err?.message || err));
+		logger.warn('digest SI summary failed, using template', String(err?.message || err));
 	}
 
 	if (!events.length) return 'A quiet week on the scheduled calendar — no major releases expected. Use the calm to review your journal and plan risk for the week ahead.';

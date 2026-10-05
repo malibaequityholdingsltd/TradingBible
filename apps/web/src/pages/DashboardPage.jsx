@@ -40,7 +40,6 @@ const DESKS = [
   { to: '/app/charts', icon: LineChart, key: 'nav.charts', fallback: 'Advanced Charts', blurb: 'Indicators, drawings and templates' },
   { to: '/app/heatmaps', icon: Grid2x2, key: 'nav.heatmaps', fallback: 'Heatmaps', blurb: '5 markets of living bubbles' },
   { to: '/app/orderflow', icon: Activity, key: 'nav.orderflow', fallback: 'Order Flow', blurb: 'Depth, tape and footprint' },
-  { to: '/tv', icon: MonitorPlay, key: 'nav.tv', fallback: 'TradingBible TV', blurb: '28 live desks that autoplay' },
 ];
 
 const TT = ({ active, payload, label, prefix = '' }) => active && payload?.length ? (
@@ -112,7 +111,7 @@ export default function DashboardPage() {
         </StatGrid>
 
         {/* Command deck — every list, widget and desk, one tap away */}
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:grid-cols-4">
           {DESKS.map((d) => (
             <Link
               key={d.to}

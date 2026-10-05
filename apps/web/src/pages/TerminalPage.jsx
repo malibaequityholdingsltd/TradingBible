@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus, Search, X, ChevronDown, ChevronRight, ArrowUp, ArrowDown, Trash2,
@@ -125,7 +125,11 @@ export default function TerminalPage() {
   const symbolStrings = useMemo(() => t.symbols.map((s) => s.symbol), [t.symbols]);
   const { quotes, status } = useQuotes(symbolStrings);
 
-  const openChart = (sym) => { setCurrent(sym); nav(`/app/charts?symbol=${encodeURIComponent(sym)}`); };
+  const openChart = (sym) => {
+    try { sessionStorage.setItem('tb:terminal-scroll', String(window.scrollY)); } catch { /* ignore */ }
+    setCurrent(sym);
+    nav(`/app/charts?symbol=${encodeURIComponent(sym)}`);
+  };
 
   // Partition symbols into ordered group buckets + ungrouped.
   const buckets = useMemo(() => {
@@ -137,6 +141,19 @@ export default function TerminalPage() {
     });
     return map;
   }, [t.symbols, t.groups]);
+
+  // Restore list scroll when coming back from a chart (route changes reset scroll to top)
+  useEffect(() => {
+    if (!t.loaded) return undefined;
+    let y = 0;
+    try {
+      y = parseInt(sessionStorage.getItem('tb:terminal-scroll') || '0', 10) || 0;
+      sessionStorage.removeItem('tb:terminal-scroll');
+    } catch { /* ignore */ }
+    if (y <= 0) return undefined;
+    const id = requestAnimationFrame(() => window.scrollTo(0, y));
+    return () => cancelAnimationFrame(id);
+  }, [t.loaded]);
 
   if (!t.loaded) {
     return <AppLayout title={tr('nav.terminal')}><div className="tb-page"><Skeleton className="h-14" /><CardSkeleton rows={6} /></div></AppLayout>;

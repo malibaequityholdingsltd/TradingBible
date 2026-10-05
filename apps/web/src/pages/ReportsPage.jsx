@@ -97,7 +97,7 @@ export default function ReportsPage() {
                 </StatGrid>
               </div>
 
-              <h3 className="mt-8 mb-3 font-semibold text-[#f0ecdd]">{t('rep.monthlyAnalysis')}</h3>
+              <div className="mt-8 mb-3"><SectionHead icon={CalendarClock} title={t('rep.monthlyAnalysis')} /></div>
               <div className="overflow-x-auto -mx-1 px-1">
                 <table className="w-full min-w-[480px] text-sm">
                   <thead><tr className="whitespace-nowrap text-left text-xs uppercase tracking-wider text-[#8a8577]"><th className="py-2">{t('rep.thMonth')}</th><th className="py-2 text-right">{t('rep.thNetPnl')}</th><th className="py-2 text-right">{t('rep.thReturn')}</th></tr></thead>
@@ -109,7 +109,7 @@ export default function ReportsPage() {
                 </table>
               </div>
 
-              <h3 className="mt-8 mb-3 font-semibold text-[#f0ecdd]">{t('rep.stratPerf')}</h3>
+              <div className="mt-8 mb-3"><SectionHead icon={Target} title={t('rep.stratPerf')} /></div>
               <div className="overflow-x-auto -mx-1 px-1">
                 <table className="w-full min-w-[520px] text-sm">
                   <thead><tr className="whitespace-nowrap text-left text-xs uppercase tracking-wider text-[#8a8577]"><th className="py-2">{t('rep.thStrategy')}</th><th className="py-2 text-right">{t('rep.thTrades')}</th><th className="py-2 text-right">{t('rep.thWinRate')}</th><th className="py-2 text-right">{t('rep.thNetPnl')}</th></tr></thead>

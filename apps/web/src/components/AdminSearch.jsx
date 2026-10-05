@@ -18,6 +18,7 @@ export default function AdminSearch() {
   const [active, setActive] = useState(0);
   const inputRef = useRef(null);
   const listRef = useRef(null);
+  const rootRef = useRef(null);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -30,9 +31,26 @@ export default function AdminSearch() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  const [history, setHistory] = useState(() => {
+    try { const h = JSON.parse(localStorage.getItem('tb:admin-search-history') || '[]'); return Array.isArray(h) ? h.slice(0, 6) : []; }
+    catch { return []; }
+  });
+  const remember = (term) => {
+    const clean = String(term || '').trim();
+    if (!clean) return;
+    setHistory((h) => {
+      const next = [clean, ...h.filter((x) => x !== clean)].slice(0, 6);
+      try { localStorage.setItem('tb:admin-search-history', JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  };
+  const clearHistory = () => {
+    setHistory([]);
+    try { localStorage.removeItem('tb:admin-search-history'); } catch { /* ignore */ }
+  };
+
   useEffect(() => {
     if (open) {
-      setQ('');
       setActive(0);
       const id = requestAnimationFrame(() => inputRef.current?.focus());
       return () => cancelAnimationFrame(id);
@@ -67,18 +85,26 @@ export default function AdminSearch() {
   }, []);
 
   const query = q.trim().toLowerCase();
+  const recents = !query ? history.map((term) => ({
+    kind: 'recent', group: 'Recent', icon: Search, title: term, term, keys: '',
+  })) : [];
   const results = useMemo(() => {
-    if (!query) return items.slice(0, 8);
+    if (!query) return [...recents, ...items].slice(0, 9);
     const toks = query.split(/\s+/);
     return items.filter((it) => {
       const hay = `${it.title} ${it.keys}`.toLowerCase();
       return toks.every((tk) => hay.includes(tk));
     }).slice(0, 12);
-  }, [items, query]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, query, history]);
 
   useEffect(() => { setActive(0); }, [query]);
+  useEffect(() => { setActive((a) => Math.min(Math.max(a, 0), Math.max(results.length - 1, 0))); }, [results.length]);
 
   const run = (it) => {
+    if (!it) return;
+    if (it.kind === 'recent') { setQ(it.term); return; }
+    remember(q);
     if (it.kind === 'action') it.run();
     else go(it.to);
   };
@@ -101,69 +127,96 @@ export default function AdminSearch() {
 
   let lastGroup = null;
 
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => {
+      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+    };
+    window.addEventListener('mousedown', onDown);
+    window.addEventListener('touchstart', onDown, { passive: true });
+    return () => {
+      window.removeEventListener('mousedown', onDown);
+      window.removeEventListener('touchstart', onDown);
+    };
+  }, [open]);
+
   return (
-    <>
-      <button
-        onClick={() => setOpen(true)}
-        aria-label="Search admin console"
-        title="Search admin console (⌘K)"
-        className="flex h-9 w-[min(440px,36vw)] min-w-0 items-center gap-2 rounded-xl border border-[#d4af37]/25 px-3 text-[#8a8577] transition hover:border-[#d4af37]/60 hover:text-[#d4af37]"
+    <div ref={rootRef} className="relative mx-auto w-full max-w-md">
+      <div
+        className="app-search-trigger flex h-9 w-full min-w-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3.5 text-[#8a8577] transition focus-within:border-[#d4af37]/60 hover:border-[#d4af37]/40 hover:text-[#d4af37]"
       >
-        <Search className="h-4 w-4 shrink-0" />
-        <span className="hidden truncate text-xs sm:inline">Search pages, users, actions…</span>
-        <kbd className="ml-auto hidden rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-[#8a8577] lg:inline">⌘K</kbd>
-      </button>
+        <Search className="h-3.5 w-3.5 shrink-0" />
+        <input
+          ref={inputRef}
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onFocus={() => setOpen(true)}
+          onKeyDown={(e) => { if (e.key === 'Escape') { setOpen(false); e.currentTarget.blur(); } }}
+          placeholder="Search pages, users, actions…"
+          aria-label="Search admin console"
+          className="w-full min-w-0 bg-transparent text-xs text-[#e9e7df] outline-none placeholder:text-[#8a8577]"
+        />
+        {!q && <kbd className="ml-auto hidden shrink-0 rounded-md border border-white/10 bg-white/5 px-1.5 py-px font-mono text-[10px] text-[#8a8577] lg:inline">⌘K</kbd>}
+        {!!q && <button onClick={() => setQ('')} className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/5 text-[#8a8577] hover:text-[#e9e7df]" aria-label="Clear"><X className="h-3 w-3" /></button>}
+      </div>
 
       {open && (
-        <div className="fixed inset-0 z-[80] flex items-start justify-center bg-black/70 p-4 pt-[12vh] backdrop-blur-sm" onClick={() => setOpen(false)}>
-          <div className="glass sheen-panel overlay-pop relative w-full max-w-xl overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-2 border-b border-[#d4af37]/10 px-4">
-              <Search className="h-4 w-4 shrink-0 text-[#d4af37]" />
-              <input
-                ref={inputRef}
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search admin pages, users, actions…"
-                className="h-12 w-full bg-transparent py-4 text-sm text-[#e9e7df] outline-none placeholder:text-[#5f5b50]"
-              />
-              <button onClick={() => setOpen(false)} className="text-[#8a8577] hover:text-[#e9e7df]" aria-label="Close"><X className="h-4 w-4" /></button>
-            </div>
-            <div ref={listRef} className="no-scrollbar scroll-contain max-h-[50vh] overflow-y-auto p-2">
+        <div className="overlay-pop absolute left-0 right-0 top-[calc(100%+8px)] z-[80] overflow-hidden rounded-[1.75rem] border border-[#d4af37]/30 bg-[#0c0c11]/95 shadow-[0_40px_120px_rgba(0,0,0,0.8),0_0_80px_rgba(212,175,55,0.12)] backdrop-blur-2xl">
+            <div ref={listRef} className="relative max-h-[48vh] overflow-y-auto p-3 no-scrollbar scroll-contain sm:p-4">
               {results.length === 0 && (
-                <p className="px-3 py-8 text-center text-sm text-[#8a8577]">Nothing found. Try “users”, “billing”, “TV” or “settings”.</p>
+                <div className="flex flex-col items-center px-3 py-12 text-center">
+                  <span className="grid h-14 w-14 place-items-center rounded-3xl border border-dashed border-[#d4af37]/25 bg-[#d4af37]/[0.04] text-[#6a665a]">
+                    <Search className="h-6 w-6" />
+                  </span>
+                  <p className="mt-4 text-[15px] font-semibold text-[#e9e7df]">Nothing found. Try “users”, “billing”, “TV” or “settings”.</p>
+                </div>
               )}
               {results.map((it, i) => {
                 const header = it.group !== lastGroup ? it.group : null;
                 lastGroup = it.group;
+                const groupCount = results.filter((r) => r.group === it.group).length;
                 return (
                   <React.Fragment key={`${it.group}-${it.title}`}>
-                    {header && <div className="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#5f5b50]">{header}</div>}
+                    {header && (
+                      <div className="flex items-center gap-2.5 px-2 pb-2 pt-4 first:pt-1">
+                        <span className="rounded-md bg-[#d4af37]/12 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#d4af37]">{header}</span>
+                        <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/25 to-transparent" />
+                        <span className="font-mono text-[10px] text-[#5f5b50]">{groupCount}</span>
+                      </div>
+                    )}
                     <button
                       data-idx={i}
                       onClick={() => run(it)}
                       onMouseEnter={() => setActive(i)}
-                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${i === active ? 'bg-[#d4af37]/12 text-[#f0ecdd]' : 'text-[#c9c4b4]'}`}
+                      className={`group relative flex w-full items-center gap-3.5 overflow-hidden rounded-2xl border p-3 text-left transition-all duration-150 ${i === active ? 'border-[#d4af37]/50 bg-gradient-to-r from-[#d4af37]/[0.14] to-[#d4af37]/[0.03] text-[#f0ecdd] shadow-[0_8px_32px_-12px_rgba(212,175,55,0.5)]' : 'border-transparent text-[#c9c4b4] hover:bg-white/[0.03]'}`}
                     >
-                      <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${i === active ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'bg-white/[0.04] text-[#8a8577]'}`}>
-                        <it.icon className="h-4 w-4" strokeWidth={1.9} />
+                      {i === active && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-gradient-to-b from-[#f4e6a8] to-[#c99a25]" />}
+                      <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-colors ${i === active ? 'bg-[#d4af37]/20 text-[#f0d675]' : 'bg-white/[0.04] text-[#8a8577]'}`}>
+                        <it.icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium">{it.title}</span>
-                        {it.kind !== 'action' && it.to && <span className="block truncate font-mono text-[10px] text-[#5f5b50]">{it.to}</span>}
+                        <span className="block truncate text-[15px] font-semibold">{it.title}</span>
+                        {it.kind !== 'action' && it.to && <span className="mt-0.5 block truncate font-mono text-[11px] text-[#6a665a]">{it.to}</span>}
+                      </span>
+                      <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full transition-all ${i === active ? 'bg-[#d4af37] text-[#0a0a0f]' : 'bg-white/[0.04] text-[#5f5b50]'}`}>
+                        <span className="font-mono text-[11px]">↵</span>
                       </span>
                     </button>
                   </React.Fragment>
                 );
               })}
             </div>
-            <div className="flex items-center gap-4 border-t border-[#d4af37]/10 px-4 py-2 text-[10px] text-[#5f5b50]">
-              <span><kbd className="rounded border border-white/10 bg-white/5 px-1 font-mono">↑↓</kbd> navigate</span>
-              <span><kbd className="rounded border border-white/10 bg-white/5 px-1 font-mono">↵</kbd> open</span>
-              <span><kbd className="rounded border border-white/10 bg-white/5 px-1 font-mono">esc</kbd> close</span>
+            <div className="relative flex items-center gap-5 border-t border-white/[0.07] bg-black/30 px-5 py-3 text-[11px] text-[#6a665a] sm:px-6">
+              <span className="flex items-center gap-1.5"><kbd className="rounded-md border border-white/10 bg-white/[0.05] px-1.5 py-0.5 font-mono">↑↓</kbd> navigate</span>
+              <span className="flex items-center gap-1.5"><kbd className="rounded-md border border-white/10 bg-white/[0.05] px-1.5 py-0.5 font-mono">↵</kbd> open</span>
+              {!query && history.length > 0 ? (
+                <button onClick={clearHistory} className="ml-auto hidden items-center gap-1.5 rounded-md border border-white/10 px-2 py-0.5 text-[10px] text-[#8a8577] transition hover:border-red-400/40 hover:text-red-400 sm:flex">Clear history</button>
+              ) : (
+                <span className="ml-auto hidden items-center gap-1.5 sm:flex"><span className="h-1.5 w-1.5 rounded-full bg-[#d4af37]" />{results.length} results</span>
+              )}
             </div>
           </div>
-        </div>
       )}
-    </>
+    </div>
   );
 }

@@ -28,6 +28,7 @@
 - [Community](/app/community): TradingBible application page.
 - [Contact](/contact): TradingBible application page.
 - [Dashboard](/app): TradingBible application page.
+- [Div](/__tvtest): TradingBible application page.
 - [Economic Calendar](/app/economic-calendar): TradingBible application page.
 - [Faq](/faq): TradingBible application page.
 - [Guides](/guides): TradingBible application page.
