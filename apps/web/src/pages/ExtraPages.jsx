@@ -9,6 +9,8 @@ import { connectBroker, disconnectBroker, resyncBrokerAccount } from '@/lib/brok
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
+import { useWallet } from '@/hooks/useWallet';
+import { openCheckout, getSubscription, switchPlan } from '@/lib/stripe';
 import Footer from '@/components/Footer';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { homeRouteForUser } from '@/lib/homeRoute';
@@ -185,9 +187,40 @@ export function BrokersPage() {
 }
 
 export function PricingPage() {
-  const { user, isAuthed } = useAuth();
+  const { user, isAuthed, updateProfile } = useAuth();
   const { t } = useI18n();
+  const { toast } = useToast();
   const homeTo = homeRouteForUser(isAuthed ? user : null);
+  const [busy, setBusy] = useState(null);
+  const [hasSub, setHasSub] = useState(false);
+  const { ledger, payWithWallet } = useWallet();
+  const walletBalance = ledger?.balances?.USD || 0;
+  const currentPlan = user?.plan || null;
+
+  useEffect(() => {
+    if (!isAuthed) return;
+    getSubscription().then((s) => setHasSub(Boolean(s?.id))).catch(() => setHasSub(false));
+  }, [isAuthed]);
+
+  const planAction = async (kind, plan) => {
+    const key = kind === 'wallet' ? `wallet-${plan.id}` : plan.id;
+    setBusy(key);
+    try {
+      if (kind === 'wallet') {
+        await payWithWallet(plan.id);
+        await updateProfile({ plan: plan.id });
+        toast({ title: t('bill.payWallet'), description: plan.name });
+      } else if (hasSub) {
+        await switchPlan(plan.id);
+        await updateProfile({ plan: plan.id });
+        toast({ title: t('c.done'), description: t('bill.switchTo', { name: plan.name }) });
+      } else {
+        await openCheckout(plan.id);
+      }
+    } catch (err) {
+      toast({ variant: 'destructive', title: t('c.error'), description: err?.message || t('c.retry') });
+    } finally { setBusy(null); }
+  };
 
   return (
     <div className="min-h-screen bg-[#07070a] px-6 pt-24 pb-16 sm:pt-28">
@@ -198,6 +231,9 @@ export function PricingPage() {
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/[0.06] px-4 py-1.5 text-xs font-medium text-[#d4af37]"><Crown className="h-3.5 w-3.5" /> {t('price.billedStripe')}</div>
           <h1 className="text-balance text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl">{t('price.chooseEdge')}</h1>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[#8a8577]">{t('price.sub')}</p>
+          {isAuthed && (
+            <p className="mt-3 text-sm text-[#8a8577]">{t('bill.walletBalance')} <span className="font-mono font-bold text-[#f0ecdd]">${walletBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></p>
+          )}
         </div>
         <div className="mx-auto grid max-w-6xl items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3">
           {PLANS.map((raw) => {
@@ -223,7 +259,26 @@ export function PricingPage() {
                 </div>
                 <div className="my-5 h-px bg-gradient-to-r from-[#d4af37]/25 to-transparent" />
                 <ul className="flex-1 space-y-2.5 text-sm text-[#c9c4b4]">{p.features.map(f => <li key={f} className="flex gap-2.5"><span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#d4af37]/12"><Check className="h-3 w-3 text-[#d4af37]" /></span><span className="leading-snug">{f}</span></li>)}</ul>
-                <Link to="/signup" className={`mt-7 flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl text-sm font-bold transition active:scale-[0.98] ${p.highlight ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_8px_28px_-8px_rgba(212,175,55,0.6)] hover:opacity-90' : 'border border-[#d4af37]/25 text-[#e9e7df] hover:border-[#d4af37]/60 hover:bg-[#d4af37]/[0.06]'}`}>{p.cta} <ArrowRight className="h-4 w-4" /></Link>
+                {(() => {
+                  const isCurrent = isAuthed && currentPlan === p.id;
+                  const canSwitch = isAuthed && hasSub && !isCurrent;
+                  if (isCurrent) {
+                    return <div className="mt-7 flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 text-sm font-bold text-emerald-400"><Check className="h-4 w-4" /> {t('bill.currentPlanBadge', null, 'Current plan')}</div>;
+                  }
+                  if (!isAuthed) {
+                    return <Link to="/signup" className={`mt-7 flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl text-sm font-bold transition active:scale-[0.98] ${p.highlight ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_8px_28px_-8px_rgba(212,175,55,0.6)] hover:opacity-90' : 'border border-[#d4af37]/25 text-[#e9e7df] hover:border-[#d4af37]/60 hover:bg-[#d4af37]/[0.06]'}`}>{p.cta} <ArrowRight className="h-4 w-4" /></Link>;
+                  }
+                  return (
+                    <div className="mt-7 grid gap-2">
+                      {canSwitch ? (
+                        <button disabled={!!busy} onClick={() => planAction('switch', p)} className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-[#d4af37]/30 text-sm font-bold text-[#e9e7df] transition hover:border-[#d4af37]/60 disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />} {t('bill.switchTo', { name: p.name })}</button>
+                      ) : (
+                        <button disabled={!!busy} onClick={() => planAction('checkout', p)} className={`flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl text-sm font-bold transition active:scale-[0.98] disabled:opacity-60 ${p.highlight ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_8px_28px_-8px_rgba(212,175,55,0.6)] hover:opacity-90' : 'border border-[#d4af37]/25 text-[#e9e7df] hover:border-[#d4af37]/60 hover:bg-[#d4af37]/[0.06]'}`}>{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />} {t('bill.subscribe', null, 'Subscribe')}</button>
+                      )}
+                      <button disabled={!!busy || walletBalance < p.price} onClick={() => planAction('wallet', p)} title={walletBalance < p.price ? t('bill.lowBalance', null, 'Insufficient wallet balance') : ''} className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-white/10 text-xs font-semibold text-[#c9c4b4] transition hover:border-[#d4af37]/40 hover:text-[#e9e7df] disabled:opacity-40">{busy === `wallet-${p.id}` ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Wallet className="h-3.5 w-3.5" />} {t('bill.payWallet', null, 'Pay with wallet')}</button>
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}

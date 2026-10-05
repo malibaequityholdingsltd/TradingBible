@@ -130,7 +130,7 @@ export default function LiveChatWidget() {
               <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0a0a0f] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
             </div>
             <div className="min-w-0 flex-1 leading-tight">
-              <div className="gold-text truncate text-base font-black uppercase tracking-[0.08em]" style={{ fontFamily: "'Arial Black','Archivo Black',Impact,'Segoe UI',sans-serif" }}>TradingBible SI</div>
+              <div className="gold-text font-display truncate text-base">TradingBible SI</div>
             </div>
             {messages.length > 0 && (
               <button onClick={clearMessages} aria-label={t('aiw.clearChat')} className={`${iconBtn} ml-auto`}>
