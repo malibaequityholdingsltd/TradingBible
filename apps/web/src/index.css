@@ -622,6 +622,10 @@ html.light .tbl-row--active::after {
 html.light .tut-modal { background-color: rgba(251, 249, 243, 0.97) !important; border-color: rgba(166, 124, 30, 0.35) !important; }
 html.light .tut-modal .bg-white\/15 { background-color: rgba(45, 52, 64, 0.2) !important; }
 
+/* Pricing cards — light-mode surfaces */
+html.light .price-card { background: rgba(255, 255, 255, 0.75) !important; border-color: rgba(45, 52, 64, 0.12) !important; }
+html.light .price-card-pop { background: linear-gradient(to bottom, rgba(212, 175, 55, 0.16), rgba(255, 255, 255, 0.85)) !important; border-color: rgba(166, 124, 30, 0.5) !important; }
+
 /* Tabs + panel swaps — active tab breathes, entering panels rise in */
 .tb-tabs .tab-active { animation: tbl-tab-breathe 3s ease-in-out infinite; }
 @keyframes tbl-tab-breathe {

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { Mail, ArrowRight, User, KeyRound, BookOpen, ShieldCheck, LineChart, Bot, Sparkles } from 'lucide-react';
+import { Mail, ArrowRight, User, KeyRound, BookOpen, ShieldCheck, LineChart, Bot, Sparkles, Loader2, Link2 } from 'lucide-react';
 import { MARKETS, EXPERIENCE, GOALS } from '@/lib/mockData';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
@@ -60,14 +60,17 @@ function writeGlobalOtpCooldownUntil(untilTs) {
 }
 
 function parseRetryAfterSeconds(err) {
+  // Every resend wait is fixed at 60s flat — longer server lockouts still
+  // surface in the error toast itself, but the app never stacks extra waiting.
+  const cap = (v) => Math.min(Math.max(0, Number(v) || 0), OTP_COOLDOWN_SECONDS);
   const message = String(err?.message || '');
   const secondsMatch = message.match(/after\s+(\d+)\s+seconds?/i);
-  if (secondsMatch) return Number(secondsMatch[1]);
+  if (secondsMatch) return cap(secondsMatch[1]);
   const minutesMatch = message.match(/after\s+(\d+)\s+minutes?/i);
-  if (minutesMatch) return Number(minutesMatch[1]) * 60;
+  if (minutesMatch) return cap(Number(minutesMatch[1]) * 60);
   const hoursMatch = message.match(/after\s+(\d+)\s+hours?/i);
-  if (hoursMatch) return Number(hoursMatch[1]) * 60 * 60;
-  if (/email rate limit exceeded/i.test(message)) return OTP_RATE_LIMIT_FALLBACK_SECONDS;
+  if (hoursMatch) return cap(Number(hoursMatch[1]) * 60 * 60);
+  if (/email rate limit exceeded/i.test(message)) return cap(OTP_RATE_LIMIT_FALLBACK_SECONDS);
   return OTP_COOLDOWN_SECONDS;
 }
 
@@ -387,6 +390,21 @@ export function LoginPage() {
   const [pendingAuth, setPendingAuth] = useState(null);
   const [cooldownUntil, setCooldownUntil] = useState(0);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  // Email-link return: Supabase redirects back here with ?code= (PKCE) or
+  // ?error=. The client exchanges the code automatically; show status meanwhile.
+  const [linkState] = useState(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const hash = new URLSearchParams(String(window.location.hash || '').replace(/^#/, ''));
+      const err = sp.get('error') || sp.get('error_code') || hash.get('error') || hash.get('error_code');
+      if (err) {
+        const raw = hash.get('error_description') || sp.get('error_description') || err;
+        return { status: 'error', message: String(raw).replace(/\+/g, ' ') };
+      }
+      if (sp.get('code') || hash.get('access_token')) return { status: 'pending' };
+      return null;
+    } catch { return null; }
+  });
 
   const finishLogin = (auth) => {
     notifyLogin();
@@ -452,6 +470,30 @@ export function LoginPage() {
     } finally { setBusy(false); }
   };
 
+  const [linkMode, setLinkMode] = useState(false);
+  const [magicLink, setMagicLink] = useState('');
+
+  const completeEmailLogin = async (auth) => {
+    const account = auth?.record?.user_settings?.account;
+    if (account?.status === 'closed') {
+      await logout?.();
+      toast({ variant: 'destructive', title: t('auth.e.closed'), description: t('auth.e.closedDesc') });
+      return;
+    }
+    if (account?.status === 'deactivated') {
+      await accountReactivate();
+    }
+    const totp = auth?.record?.user_settings?.totp;
+    if (totp?.enabled) {
+      setPendingAuth(auth);
+      setSent(false);
+      setNeedTotp(true);
+      toast({ title: t('auth.e.totpNeed'), description: t('auth.e.totpDesc') });
+      return;
+    }
+    finishLogin(auth);
+  };
+
   const verifyCode = async (e) => {
     e?.preventDefault?.();
     if (busy) return;
@@ -463,24 +505,23 @@ export function LoginPage() {
     setBusy(true);
     try {
       const auth = await loginWithCode(email.trim(), token);
-      const account = auth?.record?.user_settings?.account;
-      if (account?.status === 'closed') {
-        await logout?.();
-        toast({ variant: 'destructive', title: t('auth.e.closed'), description: t('auth.e.closedDesc') });
-        return;
-      }
-      if (account?.status === 'deactivated') {
-        await accountReactivate();
-      }
-      const totp = auth?.record?.user_settings?.totp;
-      if (totp?.enabled) {
-        setPendingAuth(auth);
-        setSent(false);
-        setNeedTotp(true);
-        toast({ title: t('auth.e.totpNeed'), description: t('auth.e.totpDesc') });
-        return;
-      }
-      finishLogin(auth);
+      await completeEmailLogin(auth);
+    } catch (err) {
+      toast({ variant: 'destructive', title: t('auth.e.invalidCode'), description: describeAuthError(err, t) });
+    } finally { setBusy(false); }
+  };
+
+  const verifyLink = async (e) => {
+    e?.preventDefault?.();
+    if (busy) return;
+    if (!email.trim() || !magicLink.trim()) {
+      toast({ variant: 'destructive', title: t('auth.e.enterLink', null, 'Paste your sign-in link'), description: t('auth.e.enterLinkDesc', null, 'Copy the button link from your email and paste it here.') });
+      return;
+    }
+    setBusy(true);
+    try {
+      const auth = await loginWithCode(email.trim(), magicLink.trim());
+      await completeEmailLogin(auth);
     } catch (err) {
       toast({ variant: 'destructive', title: t('auth.e.invalidCode'), description: describeAuthError(err, t) });
     } finally { setBusy(false); }
@@ -562,9 +603,21 @@ export function LoginPage() {
           </p>
         }
       >
-        <form className="space-y-3 sm:space-y-3.5" onSubmit={needTotp ? verifyTotpStep : (sent ? verifyCode : sendCode)}>
+        {linkState?.status === 'pending' && (
+          <div className="mb-3 flex items-center gap-2.5 rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/[0.06] px-4 py-3 text-sm text-[#e9e7df]">
+            <Loader2 className="h-4 w-4 animate-spin text-[#d4af37]" />
+            {t('auth.linkSigningIn', null, 'Signing you in from your email link…')}
+          </div>
+        )}
+        {linkState?.status === 'error' && (
+          <div className="mb-3 rounded-xl border border-red-500/30 bg-red-500/[0.07] px-4 py-3 text-sm">
+            <p className="font-semibold text-red-400">{t('auth.linkFailed', null, 'That sign-in link didn’t work.')}</p>
+            <p className="mt-1 text-xs leading-relaxed text-[#c9c4b4]">{linkState.message}</p>
+          </div>
+        )}
+        <form className="space-y-3 sm:space-y-3.5" onSubmit={needTotp ? verifyTotpStep : (sent ? (linkMode ? verifyLink : verifyCode) : sendCode)}>
           {!needTotp && <Field icon={Mail} type="email" placeholder={t('auth.emailPh')} value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />}
-          {!needTotp && sent && (
+          {!needTotp && sent && !linkMode && (
             <div className="space-y-2.5">
               <OtpInput
                 value={code}
@@ -573,6 +626,13 @@ export function LoginPage() {
                 onComplete={() => verifyCode()}
               />
               <p className="text-center text-[11px] text-[#8a8577]">{t('auth.e.noMail')}</p>
+              <p className="text-center text-[11px]"><button type="button" onClick={() => setLinkMode(true)} className="font-medium text-[#d4af37] hover:underline">{t('auth.e.haveLink', null, 'No code? Paste the sign-in link instead')}</button></p>
+            </div>
+          )}
+          {!needTotp && sent && linkMode && (
+            <div className="space-y-2.5">
+              <Field icon={Link2} type="text" placeholder={t('auth.e.linkPh', null, 'Paste the sign-in link from your email')} value={magicLink} onChange={(e) => setMagicLink(e.target.value)} autoComplete="off" />
+              <p className="text-center text-[11px]"><button type="button" onClick={() => { setLinkMode(false); setMagicLink(''); }} className="font-medium text-[#d4af37] hover:underline">{t('auth.e.haveCode', null, 'Have a 6-digit code instead?')}</button></p>
             </div>
           )}
           {needTotp && (

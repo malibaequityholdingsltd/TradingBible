@@ -26,7 +26,7 @@ const STEPS = [
   { icon: Landmark, titleKey: 'nav.wallet', to: '/app/wallet', bodyKey: 'tour.b.wallet' },
   { icon: CreditCard, titleKey: 'nav.billing', to: '/app/billing', bodyKey: 'tour.b.billing' },
   { icon: KeyRound, titleKey: 'nav.apikeys', to: '/app/api-keys', bodyKey: 'tour.b.apikeys' },
-  { icon: Building2, titleKey: 'nav.company', to: '/company', bodyKey: 'tour.b.company' },
+  { icon: Building2, titleKey: 'nav.company', to: '/student', bodyKey: 'tour.b.company' },
 ];
 
 export default function OnboardingTutorial({ onClose, onComplete }) {

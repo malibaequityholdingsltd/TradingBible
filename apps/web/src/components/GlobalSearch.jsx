@@ -115,7 +115,7 @@ export default function GlobalSearch() {
       P(t('nav.learn', null, 'Learn & Connect'), GraduationCap, t('nav.academy', null, 'Academy'), 'academy school courses lessons quizzes webinar certificate tutor student teacher', '/app/academy'),
       P(t('fot.h_education', null, 'Education'), GraduationCap, t('fot.l_academy', null, 'Academy (public)'), 'academy public school forex crypto learn courses', '/academy'),
       P(t('nav.learn', null, 'Learn & Connect'), Code2, t('nav.apidocs', null, 'API Docs'), 'api docs developers keys webhook integration', '/app/api-docs'),
-      P(t('nav.learn', null, 'Learn & Connect'), Settings, t('nav.integrations', null, 'API & Integrations'), 'integrations stripe paddle broker setup status', '/app/integrations'),
+
       P(t('nav.account', null, 'Account'), User, t('nav.profile', null, 'Profile'), 'profile username avatar account settings personal', '/app/profile'),
       P(t('nav.account', null, 'Account'), KeyRound, t('nav.apikeys', null, 'API Keys'), 'api keys tokens create revoke', '/app/api-keys'),
       P(t('nav.account', null, 'Account'), CreditCard, t('nav.billing', null, 'Billing'), 'billing subscription plan pro elite professional pay invoice cancel upgrade price', '/app/billing'),
