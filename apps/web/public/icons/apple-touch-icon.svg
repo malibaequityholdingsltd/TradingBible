@@ -1,39 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
-  <defs>
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#d4af37;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#f0b90b;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#d4af37;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="darkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0a0a0f;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#1a1a1f;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  
-  <circle cx="90" cy="90" r="88" fill="url(#darkGrad)" stroke="url(#goldGrad)" stroke-width="4"/>
-  
-  <g transform="translate(40, 30)">
-    <path d="M0 0 h80 v140 h-80 z" fill="#0a0a0f" stroke="url(#goldGrad)" stroke-width="2"/>
-    <path d="M40 30 v35 M25 47.5 h30" stroke="url(#goldGrad)" stroke-width="5" stroke-linecap="round"/>
-    <path d="M80 0 v140" fill="none" stroke="#d4af37" stroke-width="1.5" opacity="0.5"/>
-    <path d="M81 1 v138" fill="none" stroke="#d4af37" stroke-width="0.8" opacity="0.3"/>
-    <path d="M82 2 v136" fill="none" stroke="#d4af37" stroke-width="0.8" opacity="0.2"/>
-  </g>
-  
-  <g transform="translate(50, 90)">
-    <rect x="0" y="25" width="12" height="25" fill="#34d399"/>
-    <rect x="4" y="15" width="2.5" height="35" fill="#34d399"/>
-    <rect x="20" y="20" width="12" height="30" fill="#34d399"/>
-    <rect x="24" y="10" width="2.5" height="40" fill="#34d399"/>
-    <rect x="40" y="35" width="12" height="15" fill="#f472b6"/>
-    <rect x="44" y="30" width="2.5" height="25" fill="#f472b6"/>
-    <rect x="60" y="20" width="12" height="35" fill="#34d399"/>
-    <rect x="64" y="8" width="2.5" height="45" fill="#34d399"/>
-    <rect x="80" y="30" width="12" height="25" fill="#34d399"/>
-    <rect x="84" y="15" width="2.5" height="40" fill="#34d399"/>
-  </g>
-  
-  <path d="M50 150 h50" stroke="url(#goldGrad)" stroke-width="1.5" opacity="0.6"/>
-  <path d="M100 160 h25" stroke="url(#goldGrad)" stroke-width="1" opacity="0.4"/>
+  <rect width="180" height="180" rx="36" fill="#0f0f14"/>
+  <image href="data:image/png;base64," width="180" height="180"/>
 </svg>
