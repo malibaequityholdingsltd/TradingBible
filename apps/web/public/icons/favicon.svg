@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#d4af37;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#f0b90b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d4af37;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="darkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0f;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a1a1f;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="250" fill="url(#darkGrad)" stroke="url(#goldGrad)" stroke-width="4"/>
+  
+  <!-- Bible book shape -->
+  <g transform="translate(140, 120)">
+    <!-- Book cover -->
+    <path d="M0 0 h160 v240 h-160 z" fill="#0a0a0f" stroke="url(#goldGrad)" stroke-width="2"/>
+    <!-- Gold cross on cover -->
+    <path d="M80 50 v60 M50 80 h60" stroke="url(#goldGrad)" stroke-width="8" stroke-linecap="round"/>
+    <!-- Book pages edge -->
+    <path d="M160 0 v240" fill="none" stroke="#d4af37" stroke-width="2" opacity="0.5"/>
+    <path d="M162 2 v236" fill="none" stroke="#d4af37" stroke-width="1" opacity="0.3"/>
+    <path d="M164 4 v232" fill="none" stroke="#d4af37" stroke-width="1" opacity="0.2"/>
+  </g>
+  
+  <!-- Trading chart/candlesticks on book -->
+  <g transform="translate(180, 180)">
+    <!-- Candlestick 1 (green/up) -->
+    <rect x="0" y="40" width="20" height="35" fill="#34d399"/>
+    <rect x="8" y="20" width="4" height="55" fill="#34d399"/>
+    
+    <!-- Candlestick 2 (green/up) -->
+    <rect x="30" y="30" width="20" height="45" fill="#34d399"/>
+    <rect x="38" y="15" width="4" height="60" fill="#34d399"/>
+    
+    <!-- Candlestick 3 (red/down) -->
+    <rect x="60" y="55" width="20" height="20" fill="#f472b6"/>
+    <rect x="68" y="45" width="4" height="30" fill="#f472b6"/>
+    
+    <!-- Candlestick 4 (green/up) -->
+    <rect x="90" y="25" width="20" height="50" fill="#34d399"/>
+    <rect x="98" y="10" width="4" height="65" fill="#34d399"/>
+    
+    <!-- Candlestick 5 (green/up) -->
+    <rect x="120" y="35" width="20" height="40" fill="#34d399"/>
+    <rect x="128" y="20" width="4" height="55" fill="#34d399"/>
+  </g>
+  
+  <!-- Small gold accent lines -->
+  <path d="M100 400 h80" stroke="url(#goldGrad)" stroke-width="2" opacity="0.6"/>
+  <path d="M110 420 h40" stroke="url(#goldGrad)" stroke-width="1" opacity="0.4"/>
+</svg>
