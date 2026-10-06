@@ -6925,3 +6925,132 @@
 ## 2026-10-06 13:21:23.427Z console.error
 - text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
 
+## 2026-10-06 14:41:22.391Z load
+- url: http://localhost:3000/about
+- title: TradingBible — Trade like the 1%. Journal like a fund.
+
+## 2026-10-06 14:41:24.906Z load
+- url: http://localhost:3000/app/billing
+- title: TradingBible — Trade like the 1%. Journal like a fund.
+
+## 2026-10-06 14:41:27.148Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+- durationMs: 754
+
+## 2026-10-06 14:41:27.148Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+
+## 2026-10-06 14:41:55.576Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 375
+
+## 2026-10-06 14:41:55.576Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
+## 2026-10-06 14:42:23.432Z click
+- element: {"tag":"button","role":null,"ariaLabel":"Switch to light theme","name":null,"type":"button","id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":""}
+
+## 2026-10-06 14:42:25.568Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 367
+
+## 2026-10-06 14:42:25.568Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
+## 2026-10-06 14:45:03.331Z load
+- url: http://localhost:3000/
+- title: TradingBible — Trade like the 1%. Journal like a fund.
+
+## 2026-10-06 14:45:03.913Z navigate
+- url: http://localhost:3000/
+- via: replaceState
+
+## 2026-10-06 14:45:04.634Z navigate
+- url: http://localhost:3000/admin
+- via: replaceState
+
+## 2026-10-06 14:45:08.108Z window.error
+- message: TypeError: Importing a module script failed.
+- source: http://localhost:3000/node_modules/.vite/deps/chunk-I4Y4FDLF.js?v=4639bef5
+- line: 903
+- col: 34
+
+## 2026-10-06 14:45:08.113Z window.error
+- message: TypeError: Importing a module script failed.
+- source: http://localhost:3000/node_modules/.vite/deps/chunk-I4Y4FDLF.js?v=4639bef5
+- line: 903
+- col: 34
+
+## 2026-10-06 14:45:08.114Z console.error
+- text: 
+    The above error occurred in one of your React components:
+    
+    Lazy
+    AdminProtected@http://localhost:3000/src/App.jsx:322:6
+    RenderedRoute@http://localhost:3000/node_modules/.vite/deps/react-router-dom.js:6648:33
+    Routes@http://localhost:3000/node_modules/.vite/deps/react-router-dom.js:7575:19
+    Suspense
+    ErrorBoundary@http://localhost:3000/src/components/ErrorBoundary.jsx:16:10
+    RoutesWithBoundary@http://localhost:3000/src/App.jsx:604:18
+    MaintenanceGate@http://localhost:3000/src/App.jsx:471:6
+    Router@http://localhost:3000/node_modules/.vite/deps/react-router-dom.js:7514:17
+    BrowserRouter@http://localhost:3000/node_modules/.vite/deps/react-router-dom.js:10818:17
+    NotificationsProvider@http://localhost:3000/src/hooks/useNotifications.jsx:50:5
+    AuthProvider@http://localhost:3000/src/hooks/useAuth.jsx:7:5
+    ThemeProvider@http://localhost:3000/src/hooks/useTheme.jsx:26:5
+    I18nProvider@http://localhost:3000/src/lib/i18n.jsx:13365:5
+    App
+    
+    React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+
+## 2026-10-06 14:45:08.114Z console.error
+- text: Page crashed: Importing a module script failed. {"componentStack":"\nLazy\nAdminProtected@http://localhost:3000/src/App.jsx:322:6\nRenderedRoute@http://localhost:3000/node_modules/.vite/deps/react-router-dom.js:6648:33\nRoutes@http://localhost:3000/node_modules/.vite/deps/react-router-dom.js:7575:19\nSuspense\nErrorBoundary@http://localhost:3000/src/components/ErrorBoundary.jsx:16:10\nRoutesWithBoundary@http://localhost:3000/src/App.jsx:604:18\nMaintenanceGate@http://localhost:3000/src/App.jsx:471:6\nRouter@http://localhost:3000/node_modules/.vite/deps/react-router-dom.js:7514:17\nBrowserRouter@http://localhost:3000/node_modules/.vite/deps/react-router-dom.js:10818:17\nNotificationsProvider@http://localhost:3000/src/hooks/useNotifications.jsx:50:5\nAuthProvider@http://localhost:3000/src/hooks/useAuth.jsx:7:5\nThemeProvider@http://localhost:3000/src/hooks/useTheme.jsx:26:5\nI18nProvider@http://localhost:3000/src/lib/i18n.jsx:13365:5\nApp"}
+
+## 2026-10-06 14:45:13.464Z click
+- element: {"tag":"button","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":" Reload page"}
+
+## 2026-10-06 14:45:15.291Z click
+- element: {"tag":"button","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":" Reload page"}
+
+## 2026-10-06 14:45:15.294Z click
+- element: {"tag":"button","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":" Reload page"}
+
+## 2026-10-06 14:45:15.297Z click
+- element: {"tag":"button","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":" Reload page"}
+
+## 2026-10-06 14:45:15.307Z click
+- element: {"tag":"button","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":" Reload page"}
+
+## 2026-10-06 14:45:15.692Z load
+- url: http://localhost:3000/admin
+- title: TradingBible — Trade like the 1%. Journal like a fund.
+
+## 2026-10-06 14:45:27.952Z click
+- element: {"tag":"button","role":null,"ariaLabel":"Open navigation","name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":""}
+
+## 2026-10-06 14:45:30.882Z click
+- element: {"tag":"a","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":"User Management"}
+
+## 2026-10-06 14:45:30.884Z navigate
+- url: http://localhost:3000/admin/users
+- via: pushState
+
+## 2026-10-06 14:45:46.422Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 408
+
+## 2026-10-06 14:45:46.422Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
