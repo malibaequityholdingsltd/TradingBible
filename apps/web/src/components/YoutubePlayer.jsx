@@ -112,6 +112,9 @@ const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPl
                   e.target.mute();
                   e.target.playVideo();
                 } catch { /* enforcer retries */ }
+                // Captions stay off: clear any track and unload the module.
+                try { e.target.setOption('captions', 'track', {}); } catch { /* noop */ }
+                try { e.target.unloadModule('captions'); } catch { /* noop */ }
                 if (ref) ref.current = e.target;
                 try { apiRef.current?.(true); } catch { /* noop */ }
               },
@@ -120,6 +123,7 @@ const YoutubePlayer = React.forwardRef(function YoutubePlayer({ src, title, onPl
                 if (e?.data === PS?.PLAYING) {
                   if (ref) ref.current = e.target;
                   try { apiRef.current?.(true); } catch { /* noop */ }
+                  try { e.target.setOption('captions', 'track', {}); } catch { /* noop */ }
                   markPlaying(true);
                 } else if (e?.data === PS?.ENDED) {
                   // Stream/VOD ended — hand back to the auto-advance chain

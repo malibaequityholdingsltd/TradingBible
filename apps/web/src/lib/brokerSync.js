@@ -1,82 +1,161 @@
 import pb from '@/lib/pocketbaseClient';
+import { API_SERVER_URL } from '@/lib/apiServerClient';
+import { PROVIDERS } from '@/lib/brokerProviders';
 
 const STRATEGIES = ['Breakout', 'Mean Reversion', 'Trend Follow', 'Scalping'];
 const EMOTIONS = ['Confident', 'Calm', 'Disciplined', 'FOMO', 'Impatient'];
 
-// PRODUCTION: no fabricated trades. A newly connected account starts empty and
-// only reflects real trade data once a live broker feed delivers it.
+// No fabricated trades. Accounts start empty; balances and fills arrive
+// only from a live, authenticated provider feed.
 export function generateTrades() {
   return [];
 }
 
-// Connect a LIVE broker or PROP FIRM account. The account is created with a
-// $0.00 balance and no trades — real balances and trades arrive only from an
-// authenticated broker feed, never fabricated locally.
-// kind is 'live' (real broker) or 'prop' (funded / prop-firm account).
+async function api(path, opts = {}) {
+  const token = pb.authStore?.token;
+  const res = await fetch(`${API_SERVER_URL}/brokers${path}`, {
+    method: opts.method || 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error || `Broker request failed (${res.status})`);
+  return data;
+}
+
+export function providerIdForBroker(broker) {
+  const name = String(broker?.id || broker?.name || '').toLowerCase();
+  // Longest ids first; short ids (<=3 chars like xm/ig/cmc) require exact or
+  // word-boundary match to avoid false positives ('ig' in 'signal').
+  const ids = Object.keys(PROVIDERS).sort((a, b) => b.length - a.length);
+  for (const id of ids) {
+    if (id.length <= 3) {
+      if (name === id || new RegExp(`(^|[^a-z])${id}([^a-z]|$)`).test(name)) return id;
+    } else if (name === id || name.includes(id)) return id;
+  }
+  if (/oanda/.test(name)) return 'oanda';
+  if (/coinbase/.test(name)) return 'coinbase';
+  if (/ibkr|interactive/.test(name)) return 'ibkr';
+  if (/alpaca/.test(name)) return 'alpaca';
+  // Generic platform entries (MT4/MT5, cTrader) were removed from the registry —
+  // only named brokers / prop firms are connectable. Unknown platform names
+  // resolve to null (honest "unknown provider") instead of a fake bridge entry.
+  if (/ctrader|ctid/.test(name)) return null;
+  if (/exness|hfm|pepperstone|ic markets|ftmo|topstep|5ers|funded|apex/.test(name)) return null;
+  if (/(^|[^a-z])xm([^a-z]|$)/.test(name)) return null;
+  if (/(^|[^a-z])e8([^a-z]|$)/.test(name)) return null;
+  if (/mt\s?5|mt5|mt\s?4|metatrader|dxtrade/.test(name)) return null;
+  return null;
+}
+
+// Connect a broker or prop account. api_key providers with pasted credentials
+// go through the encrypted vault + live test; everything else creates a
+// PENDING account row (never fake-synced) until its real flow completes.
 export async function connectBroker(broker, ownerId, kind = 'live', options = {}) {
-  const accountRef = String(options.accountRef || '').trim() || (/crypto/i.test(broker.kind) ? 'API ••••••••' : 'Pending sync');
   const now = new Date().toISOString();
+  const providerId = providerIdForBroker(broker);
+  const def = (providerId && PROVIDERS[providerId]) || null;
+  const { apiKey, apiSecret, passphrase, label } = options || {};
+
+  if (def?.method === 'api_key' && apiKey && apiSecret) {
+    const out = await api('/connect', {
+      method: 'POST',
+      body: { provider: def.id, label: label || broker.name, apiKey, apiSecret, passphrase, permissions: ['read:account'] },
+    });
+    return out;
+  }
+
+  const accountRef = String(options.accountRef || '').trim()
+    || (/crypto/i.test(broker.kind || '') ? 'API key required' : 'Bridge required');
   const existing = await pb.collection('broker_accounts').getFullList({
     filter: `owner = "${ownerId}" && broker = "${broker.name}" && accountKind = "${kind}"`,
     sort: '-created',
   });
+  const row = {
+    accountRef,
+    status: 'pending',
+    lastSync: now,
+  };
   if (existing.length > 0) {
-    const patched = await pb.collection('broker_accounts').update(existing[0].id, {
-      accountRef,
-      status: 'syncing',
-      lastSync: now,
-    });
-    const synced = await pb.collection('broker_accounts').update(patched.id, {
-      status: 'synced',
-      lastSync: new Date().toISOString(),
-    });
-    return synced;
+    return pb.collection('broker_accounts').update(existing[0].id, row);
   }
-
-  const syncing = await pb.collection('broker_accounts').create({
+  return pb.collection('broker_accounts').create({
     broker: broker.name,
     tag: broker.tag,
     accountKind: kind,
-    accountRef,
-    status: 'syncing',
     balance: 0,
-    lastSync: now,
     owner: ownerId,
+    ...row,
   });
-  const synced = await pb.collection('broker_accounts').update(syncing.id, {
-    status: 'synced',
-    lastSync: new Date().toISOString(),
-  });
-  return synced;
 }
 
+// Re-sync one account through its live provider (no-op honest result when
+// the provider has no stored credentials yet).
 export async function resyncBrokerAccount(id) {
-  const start = await pb.collection('broker_accounts').update(id, {
-    status: 'syncing',
-    lastSync: new Date().toISOString(),
-  });
-  const done = await pb.collection('broker_accounts').update(start.id, {
-    status: 'synced',
-    lastSync: new Date().toISOString(),
-  });
-  return done;
+  const acct = await pb.collection('broker_accounts').getOne(id).catch(() => null);
+  const providerId = acct ? providerIdForBroker({ name: acct.broker }) : null;
+  if (!providerId) {
+    await pb.collection('broker_accounts').update(id, { status: 'pending', lastSync: new Date().toISOString() }).catch(() => {});
+    return { ok: false, error: 'Unknown provider for this account.' };
+  }
+  const out = await api('/sync', { method: 'POST', body: { provider: providerId } });
+  const r = (out.results || []).find((x) => x.provider === providerId);
+  if (!r?.ok) {
+    await pb.collection('broker_accounts').update(id, { status: 'error', lastSync: new Date().toISOString() }).catch(() => {});
+    return { ok: false, error: r?.error || 'Sync failed.' };
+  }
+  return { ok: true, ...r };
 }
 
 export async function disconnectBroker(id) {
-  await pb.collection('broker_accounts').delete(id);
+  try {
+    await pb.collection('broker_accounts').getOne(id).then(async (acct) => {
+      const providerId = providerIdForBroker({ name: acct?.broker });
+      if (providerId) {
+        const creds = await api(`/connections`).catch(() => ({ connections: [] }));
+        const match = (creds.connections || []).find((c) => c.provider === providerId);
+        if (match) await api(`/connections/${match.id}`, { method: 'DELETE' }).catch(() => {});
+      }
+    }).catch(() => {});
+  } finally {
+    await pb.collection('broker_accounts').delete(id);
+  }
 }
 
-// Re-sync all connected brokers. Without a live upstream broker feed there are
-// no new trades to pull, so nothing is fabricated.
+// Sync every connected provider; returns live per-provider results.
 export async function syncAllBrokers(ownerId) {
-  const accounts = await pb.collection('broker_accounts').getFullList({ filter: `owner = "${ownerId}"` });
-  if (!accounts.length) return { accounts: 0, added: 0 };
-  for (const account of accounts) {
-    await pb.collection('broker_accounts').update(account.id, {
-      status: 'synced', lastSync: new Date().toISOString(),
-    }).catch(() => {});
-  }
-  return { accounts: accounts.length, added: 0 };
+  void ownerId;
+  const out = await api('/sync', { method: 'POST', body: {} }).catch((err) => ({ results: [], error: err?.message }));
+  const results = out.results || [];
+  const added = results.reduce((s, r) => s + (r.added || 0), 0);
+  return { accounts: results.length, added, results, error: out.error };
+}
+
+export async function getBrokerProviders() {
+  const local = Object.values(PROVIDERS);
+  try {
+    const out = await api('/providers');
+    if (Array.isArray(out.providers) && out.providers.length) {
+      // Merge: backend is source of truth for availability (methods/status),
+      // but it carries no display fields (method/kind/website/blurb/setup).
+      // Never replace the local registry wholesale — that blanks display fields
+      // (method/kind/website/blurb/setup) and breaks the connect modal.
+      const byId = new Map(out.providers.map((p) => [p.id, p]));
+      return local.map((def) => {
+        const remote = byId.get(def.id);
+        if (!remote) return def;
+        return { ...def, backendStatus: remote.status || null };
+      });
+    }
+  } catch { /* fall through to static registry */ }
+  return local;
+}
+
+export async function getBrokerHealth() {
+  return api('/health').catch(() => ({ vault: false, binance: { ok: false } }));
 }
 
 export { STRATEGIES, EMOTIONS };
