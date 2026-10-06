@@ -6567,3 +6567,253 @@
 ## 2026-10-06 10:44:29.416Z console.error
 - text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
 
+## 2026-10-06 10:52:41.704Z load
+- url: http://localhost:3000/
+- title: TradingBible — Trade like the 1%. Journal like a fund.
+
+## 2026-10-06 10:52:41.858Z navigate
+- url: http://localhost:3000/
+- via: replaceState
+
+## 2026-10-06 10:52:43.288Z navigate
+- url: http://localhost:3000/admin
+- via: replaceState
+
+## 2026-10-06 10:52:48.941Z click
+- element: {"tag":"button","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":"View App"}
+
+## 2026-10-06 10:52:48.942Z navigate
+- url: http://localhost:3000/app
+- via: pushState
+
+## 2026-10-06 10:52:49.864Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+- durationMs: 622
+
+## 2026-10-06 10:52:49.864Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+- durationMs: 622
+
+## 2026-10-06 10:52:49.864Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+
+## 2026-10-06 10:52:49.865Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+
+## 2026-10-06 10:52:54.321Z click
+- element: {"tag":"a","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":"Prop Firms"}
+
+## 2026-10-06 10:52:54.322Z navigate
+- url: http://localhost:3000/app/prop-firms
+- via: pushState
+
+## 2026-10-06 10:52:55.286Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+- durationMs: 851
+
+## 2026-10-06 10:52:55.286Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+
+## 2026-10-06 10:52:58.648Z click
+- element: {"tag":"a","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":"Brokers"}
+
+## 2026-10-06 10:52:58.649Z navigate
+- url: http://localhost:3000/app/brokers
+- via: pushState
+
+## 2026-10-06 10:52:59.256Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+- durationMs: 483
+
+## 2026-10-06 10:52:59.257Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+
+## 2026-10-06 10:53:12.262Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 360
+
+## 2026-10-06 10:53:12.262Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
+## 2026-10-06 10:53:42.959Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 1058
+
+## 2026-10-06 10:53:42.959Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
+## 2026-10-06 10:54:12.270Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 369
+
+## 2026-10-06 10:54:12.270Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
+## 2026-10-06 10:56:00.883Z load
+- url: http://localhost:3000/app/brokers
+- title: TradingBible — Trade like the 1%. Journal like a fund.
+
+## 2026-10-06 10:56:02.645Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+- durationMs: 814
+
+## 2026-10-06 10:56:02.645Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+
+## 2026-10-06 10:56:31.757Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 584
+
+## 2026-10-06 10:56:31.757Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
+## 2026-10-06 10:56:39.617Z click
+- element: {"tag":"div","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":"ExnessForex / CFD • API keyLive sync available. ConnectHFMForex / CFD • MT5 BridgeLive sync available. ConnectPepperstoneForex / CFD • MT5 BridgeLive sync available. ConnectIC MarketsForex / CFD • MT5 BridgeLive sync available. ConnectXMForex / CFD • MT5 BridgeLive sync available. ConnectAvaTradeForex / CFD • MT5 BridgeLive sync available. ConnectOANDAForex / CFD • OAuthLive sync available. ConnectFOREX.comForex / CFD • API keyLive sync available. ConnectIGForex / CFD • OAuthLive sync available. ConnectCMC MarketsForex / CFD • OAuthLive sync available. ConnectSaxo BankMulti-asset • OAuthLive sync available. ConnecteasyMarketsForex / CFD • MT5 BridgeLive sync available. Connect"}
+
+## 2026-10-06 10:56:42.562Z click
+- element: {"tag":"div","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":"Live sync • read-only by defaultConnect account Connect a broker to sync balances and trades automatically. More brokers coming soon — your keys stay encrypted and are never used for trading. Sync allForex & CFD12ExnessForex / CFD • API keyLive sync available. ConnectHFMForex / CFD • MT5 BridgeLive sync available. ConnectPepperstoneForex / CFD • MT5 BridgeLive sync available. ConnectIC MarketsForex / CFD • MT5 BridgeLive sync available. ConnectXMForex / CFD • MT5 BridgeLive sync available. ConnectAvaTradeForex / CFD • MT5 BridgeLive sync available. ConnectOANDAForex / CFD • OAuthLive sync available. ConnectFOREX.comForex / CFD • API keyLive sync available. ConnectIGForex / CFD • OAuthLive sync available. ConnectCMC MarketsForex / CFD • OAuthLive sync available. ConnectSaxo BankMulti-asset • OAuthLive sync available. ConnecteasyMarketsForex / CFD • MT5 BridgeLive sync available. ConnectStocks8Interactive BrokersStocks / Futures • OAuthLive sync available. ConnectTradierStocks / Futures • OAuthLive sync available. ConnecttastytradeStocks / Futures • OAuthLive sync available. ConnectTradeStationStocks / Futures • OAuthLive sync available. ConnectCharles SchwabStocks / Futures • OAuthLive sync available. ConnectAlpacaStocks / Futures • OAuthLive sync available. ConnectTopstepFutures funded • Account loginLive sync available. ConnectGoat Funded TraderFutures funded • Account loginLive sync available. ConnectCrypto6BinanceCrypto • API keyLive sync available. ConnectBybitCrypto • API keyLive sync available. ConnectOKXCrypto • API keyLive sync available. ConnectCoinbaseCrypto • OAuthLive sync available. ConnectKrakenCrypto • API keyLive sync available. ConnectKuCoinCrypto • API keyLive sync available. ConnectYour keys are encrypted and stored securely. Read-only by default — the app never places trades or withdraws funds."}
+
+## 2026-10-06 10:57:02.419Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 1148
+
+## 2026-10-06 10:57:02.419Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
+## 2026-10-06 10:57:31.795Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 426
+
+## 2026-10-06 10:57:31.795Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
+## 2026-10-06 10:58:25.222Z load
+- url: http://localhost:3000/app/brokers
+- title: TradingBible — Trade like the 1%. Journal like a fund.
+
+## 2026-10-06 10:58:27.046Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+- durationMs: 440
+
+## 2026-10-06 10:58:27.046Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+
+## 2026-10-06 10:58:45.100Z click
+- element: {"tag":"button","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":" Connect"}
+
+## 2026-10-06 10:58:52.861Z click
+- element: {"tag":"button","role":null,"ariaLabel":"Close","name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":""}
+
+## 2026-10-06 10:58:57.095Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 1327
+
+## 2026-10-06 10:58:57.095Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
+## 2026-10-06 10:59:26.183Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 415
+
+## 2026-10-06 10:59:26.183Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
+## 2026-10-06 10:59:56.180Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 412
+
+## 2026-10-06 10:59:56.180Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
+## 2026-10-06 11:01:05.706Z load
+- url: http://localhost:3000/app/brokers
+- title: TradingBible — Trade like the 1%. Journal like a fund.
+
+## 2026-10-06 11:01:06.867Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+- durationMs: 339
+
+## 2026-10-06 11:01:06.868Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+
+## 2026-10-06 11:01:36.296Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 395
+
+## 2026-10-06 11:01:36.296Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
+## 2026-10-06 11:02:06.759Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 859
+
+## 2026-10-06 11:02:06.759Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
+## 2026-10-06 11:02:25.820Z click
+- element: {"tag":"div","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":"Live sync • read-only by defaultConnect account Connect a broker to sync balances and trades automatically. More brokers coming soon — your keys stay encrypted and are never used for trading. Sync allForex & CFD12ExnessForex / CFD • API keyLive sync available. ConnectHFMForex / CFD • MT5 BridgeLive sync available. ConnectPepperstoneForex / CFD • MT5 BridgeLive sync available. ConnectIC MarketsForex / CFD • MT5 BridgeLive sync available. ConnectXMForex / CFD • MT5 BridgeLive sync available. ConnectAvaTradeForex / CFD • MT5 BridgeLive sync available. ConnectOANDAForex / CFD • OAuthLive sync available. ConnectFOREX.comForex / CFD • API keyLive sync available. ConnectIGForex / CFD • OAuthLive sync available. ConnectCMC MarketsForex / CFD • OAuthLive sync available. ConnectSaxo BankMulti-asset • OAuthLive sync available. ConnecteasyMarketsForex / CFD • MT5 BridgeLive sync available. ConnectStocks8Interactive BrokersStocks / Futures • OAuthLive sync available. ConnectTradierStocks / Futures • OAuthLive sync available. ConnecttastytradeStocks / Futures • OAuthLive sync available. ConnectTradeStationStocks / Futures • OAuthLive sync available. ConnectCharles SchwabStocks / Futures • OAuthLive sync available. ConnectAlpacaStocks / Futures • OAuthLive sync available. ConnectTopstepFutures funded • Account loginLive sync available. ConnectGoat Funded TraderFutures funded • Account loginLive sync available. ConnectCrypto6BinanceCrypto • API keyLive sync available. ConnectBybitCrypto • API keyLive sync available. ConnectOKXCrypto • API keyLive sync available. ConnectCoinbaseCrypto • OAuthLive sync available. ConnectKrakenCrypto • API keyLive sync available. ConnectKuCoinCrypto • API keyLive sync available. ConnectYour keys are encrypted and stored securely. Read-only by default — the app never places trades or withdraws funds."}
+
+## 2026-10-06 11:02:36.880Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+- durationMs: 979
+
+## 2026-10-06 11:02:36.880Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
+
