@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plug, Check, RefreshCw, Users, DollarSign, CreditCard, Activity, Crown, ArrowRight, Bot, ExternalLink, Building2, Wallet } from 'lucide-react';
+import { Plug, Check, RefreshCw, CreditCard, Crown, ArrowRight, Building2, Wallet, Search, KeyRound, X, Trophy } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { PageHero, GoldButton, GhostButton } from '@/components/ui-kit';
-import { BROKERS, PROP_FIRMS, PLANS, fmtMoney, translatePlan } from '@/lib/mockData';
+import { PLANS, fmtMoney, translatePlan, BROKER_REGISTRY, PROP_FIRM_REGISTRY, CONNECTION_TYPES, getProviderById } from '@/lib/mockData';
 import pb from '@/lib/pocketbaseClient';
-import { connectBroker, disconnectBroker, resyncBrokerAccount } from '@/lib/brokerSync';
+import { connectBroker, disconnectBroker, resyncBrokerAccount, syncAllBrokers } from '@/lib/brokerSync';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
@@ -23,165 +23,296 @@ function timeAgo(iso, t) {
   return t ? t('bro.hrAgo', { n: Math.round(diff / 60) }) : `${Math.round(diff / 60)}h ago`;
 }
 
-function ConnectedList({ items }) {
-  const { t } = useI18n();
-  if (!items.length) return null;
-  return (
-    <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {items.map((c) => (
-        <div key={c.id} className="tb-card tb-card-hover p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-1"><span className="min-w-0 truncate font-semibold text-[#f0ecdd]">{c.broker}</span><span className={`flex shrink-0 items-center gap-1.5 text-xs ${c.status === 'synced' ? 'text-emerald-400' : 'text-[#d4af37]'}`}><span className={`h-1.5 w-1.5 rounded-full ${c.status === 'synced' ? 'bg-emerald-400' : 'bg-[#d4af37] animate-pulse'}`} />{c.status === 'synced' ? 'Synced' : 'Syncing'}</span></div>
-          <div className="mt-1 truncate font-mono text-xs text-[#8a8577]">{c.accountRef}</div>
-          <div className="mt-2 truncate font-mono text-xl font-semibold text-[#f0ecdd]">{fmtMoney(c.balance || 0)}</div>
-          <div className="mt-1 text-[11px] text-[#8a8577]">{t('bro.lastSync')}: {timeAgo(c.lastSync, t)}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
+// User-facing connection label. Internal method names (oauth/bridge/adapter)
+  // are never shown in the portal — users see what they can do, nothing else.
+  function connectionLabel(connectionType) {
+    if (connectionType === 'api_key') return 'API key';
+    if (connectionType === 'oauth') return 'OAuth';
+    if (connectionType === 'mt5_bridge') return 'MT5 Bridge';
+    if (connectionType === 'account_login') return 'Account login';
+    return 'Coming soon';
+  }
 
-export function BrokersPage() {
-  const { user } = useAuth();
-  const { t } = useI18n();
-  const { toast } = useToast();
-  const [connected, setConnected] = useState([]);
-  const [busy, setBusy] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // ── Connect Broker page: only providers with a live backend adapter sync.
+  // Never asks for broker passwords, never scrapes login pages, no external
+  // login links or faked pending flows — unavailable providers say so honestly.
+  export function BrokersPage() {
+    const { user } = useAuth();
+    const { t } = useI18n();
+    const { toast } = useToast();
+    const [connected, setConnected] = useState([]);
+    const [providers, setProviders] = useState([]);
+    const [busy, setBusy] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [query, setQuery] = useState('');
+    const [selected, setSelected] = useState(null);
+    const [apiKey, setApiKey] = useState('');
+    const [apiSecret, setApiSecret] = useState('');
+    const [passphrase, setPassphrase] = useState('');
+    const [label, setLabel] = useState('');
 
-  const load = async () => {
-    if (!user?.id) { setConnected([]); setLoading(false); return; }
-    try {
-      const items = await pb.collection('broker_accounts').getFullList({
-        filter: `owner = "${user.id}"`,
-        sort: '-created',
-      });
-      setConnected(items);
-    } catch { /* ignore */ } finally { setLoading(false); }
+    const load = async () => {
+      if (!user?.id) { setConnected([]); setLoading(false); return; }
+      try {
+        const items = await pb.collection('broker_accounts').getFullList({
+          filter: `owner = "${user.id}"`,
+          sort: '-created',
+        });
+        setConnected(items);
+      } catch { /* ignore */ } finally { setLoading(false); }
+    };
+    useEffect(() => { load(); }, [user?.id]);
+    useEffect(() => {
+      setProviders([...BROKER_REGISTRY, ...PROP_FIRM_REGISTRY]);
+    }, []);
+
+    const filtered = useMemo(() => {
+      const q = query.trim().toLowerCase();
+      if (!q) return providers;
+      return providers.filter((p) => `${p.name} ${p.kind} ${p.notes || ''}`.toLowerCase().includes(q));
+    }, [providers, query]);
+
+const forex = filtered.filter((p) => p.kind?.toLowerCase().includes('forex') || p.kind?.toLowerCase().includes('cfd') || p.kind?.toLowerCase().includes('multi-asset'));
+  const stocks = filtered.filter((p) => p.kind?.toLowerCase().includes('stock') || p.kind?.toLowerCase().includes('future'));
+  const crypto = filtered.filter((p) => p.kind?.toLowerCase().includes('crypto'));
+  const propFirms = filtered.filter((p) => p.kind?.toLowerCase().includes('funded') || p.kind?.toLowerCase().includes('prop') || p.kind?.toLowerCase().includes('challenge'));
+
+  const totalBalance = connected.reduce((s, c) => s + Number(c.balance || 0), 0);
+
+  const openConnect = (p) => {
+    setSelected(p);
+    setApiKey('');
+    setApiSecret('');
+    setPassphrase('');
+    setLabel(p.name);
   };
-  useEffect(() => { load(); }, [user?.id]);
 
-  const connect = async (b, kind) => {
-    if (!user) return;
-    setBusy(kind + b.name);
+  const submitApiKey = async () => {
+    if (!selected || !user) return;
+    const needsPassphrase = selected.supportsPassphrase || selected.connectionType === 'mt5_bridge';
+    const needsSecret = selected.connectionType !== 'mt5_bridge';
+    
+    if (!apiKey.trim() || (needsSecret && !apiSecret.trim())) {
+      toast({ variant: 'destructive', title: 'Key required', description: needsSecret ? 'Paste a read-only API key + secret. No passwords.' : 'Enter your MT5 account number and password.' });
+      return;
+    }
+    if (needsPassphrase && !passphrase.trim()) {
+      toast({ variant: 'destructive', title: 'Passphrase required', description: selected.connectionType === 'mt5_bridge' ? 'MT5 server is required.' : 'OKX/KuCoin needs the API passphrase too.' });
+      return;
+    }
+    setBusy(`connect:${selected.id}`);
     try {
-      window.open(b.authUrl, '_blank', 'noopener,noreferrer');
-      await connectBroker(b, user.id, kind, { accountRef: `${b.authType} authorization` });
+      await connectBroker({ id: selected.id, name: selected.name }, user.id, 'live', {
+        apiKey: apiKey.trim(), apiSecret: needsSecret ? apiSecret.trim() : undefined,
+        passphrase: needsPassphrase ? passphrase.trim() : undefined,
+        label: label.trim() || selected.name,
+      });
+      setSelected(null);
       await load();
-      toast({ title: `${b.name} — ${t('bro.connected')}`, description: t('bro.syncedOk') });
+      toast({ title: `${selected.name} — connected`, description: 'Live-tested before storing. Balances arrive from the feed only.' });
     } catch (err) {
-      toast({ variant: 'destructive', title: t('bro.syncFail'), description: err?.message || t('bro.tryAgain') });
+      toast({ variant: 'destructive', title: 'Connection test failed', description: err?.message || 'Try again' });
     } finally { setBusy(null); }
   };
 
   const resync = async (acct) => {
     setBusy(`resync:${acct.id}`);
     try {
-      await resyncBrokerAccount(acct.id);
+      const r = await resyncBrokerAccount(acct.id);
       await load();
-      toast({ title: `${acct.broker} — ${t('bro.resync')}`, description: t('bro.resynced') });
+      if (r?.ok) toast({ title: `${acct.broker} — resynced`, description: r.added ? `${r.added} new fills` : 'Balances up to date' });
+      else toast({ variant: 'destructive', title: 'Sync needs attention', description: r?.error || `Couldn't sync ${acct.broker} — coming soon` });
     } catch (err) {
-      toast({ variant: 'destructive', title: t('bro.resyncFail'), description: err?.message || t('bro.tryAgain') });
+      toast({ variant: 'destructive', title: 'Resync failed', description: err?.message || 'Try again' });
+    } finally { setBusy(null); }
+  };
+
+  const syncAll = async () => {
+    setBusy('sync:all');
+    try {
+      const r = await syncAllBrokers(user?.id);
+      await load();
+      toast({ title: 'Sync complete', description: `${r.accounts || 0} providers • ${r.added || 0} new fills` });
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Sync failed', description: err?.message || 'Try again' });
     } finally { setBusy(null); }
   };
 
   const disconnect = async (acct) => {
-    if (!window.confirm(t('bro.confirmDisc', { name: acct.broker }))) return;
+    if (!window.confirm(`Disconnect ${acct.broker}? This removes the connection and deletes its stored keys.`)) return;
     setBusy(`disconnect:${acct.id}`);
     try {
       await disconnectBroker(acct.id);
       await load();
-      toast({ title: `${acct.broker} — ${t('bro.disconnect')}` });
+      toast({ title: `${acct.broker} — disconnected` });
     } catch (err) {
-      toast({ variant: 'destructive', title: t('bro.disconnFail'), description: err?.message || t('bro.tryAgain') });
+      toast({ variant: 'destructive', title: 'Disconnect failed', description: err?.message || 'Try again' });
     } finally { setBusy(null); }
   };
 
-  const liveAccts = connected.filter((c) => (c.accountKind || 'live') === 'live');
-  const propAccts = connected.filter((c) => c.accountKind === 'prop');
-
-  const Grid = ({ list, kind }) => {
-    const { t } = useI18n();
-    return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      {list.map((b) => {
-        const acct = connected.find((c) => c.broker === b.name && (c.accountKind || 'live') === kind);
-        const on = acct && acct.status === 'synced';
-        const syncingAcct = acct && acct.status === 'syncing';
-        const isBusy = busy === kind + b.name;
+  const Grid = ({ list }) => (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {list.map((p) => {
+        const acct = connected.find((c) => String(c.broker || '').toLowerCase() === String(p.name).toLowerCase());
+        const on = acct?.status === 'synced';
+        const pending = acct && acct?.status !== 'synced';
         return (
-          <div key={b.name} className="tb-card tb-card-hover p-4 sm:p-5">
-            <div className="flex items-center gap-3"><div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl font-mono text-xs font-bold" style={{ background: `${b.color}22`, color: b.color }}>{b.tag}</div><div className="min-w-0"><div className="truncate font-semibold text-[#f0ecdd]">{b.name}</div><div className="truncate text-xs text-[#8a8577]">{b.kind}</div></div></div>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ${on ? 'bg-emerald-500/15 text-emerald-400' : syncingAcct ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'bg-red-500/15 text-red-400'}`}>
-                <span className={`h-1.5 w-1.5 rounded-full ${on ? 'bg-emerald-400' : syncingAcct ? 'bg-[#d4af37]' : 'bg-red-400'}`} />
-                {on ? t('bro.connected') : syncingAcct ? t('bro.syncing') : t('bro.disconnected')}
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-[#d4af37]/20 px-2 py-0.5 text-[11px] text-[#c9c4b4]">{kind === 'live' ? t('bro.liveOnly') : t('bro.funded')}</span>
+          <div key={p.id} className="tb-card tb-card-hover flex flex-col p-5">
+            <div className="flex items-center gap-3">
+              <div className="relative shrink-0">
+                {p.logo ? (
+                  <img src={p.logo} alt={p.name} className="h-11 w-11 rounded-xl object-contain" />
+                ) : (
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl font-mono text-xs font-bold" style={{ background: `${p.color}22`, color: p.color }}>{p.tag}</div>
+                )}
+                {acct && (
+                  <span title={on ? 'Connected' : 'Pending'} className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-[#0f0f14] ${on ? 'bg-emerald-400' : 'bg-[#d4af37] animate-pulse'}`} />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-semibold text-[#f0ecdd]">{p.name}</div>
+                <div className="truncate text-xs text-[#8a8577]">{p.kind} • {connectionLabel(p.connectionType)}</div>
+              </div>
+              {acct && (
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${on ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#d4af37]/15 text-[#d4af37]'}`}>
+                  {on ? 'Connected' : (acct.status || 'Pending')}
+                </span>
+              )}
             </div>
-            {on ? (
-              <button disabled={on || isBusy || loading || syncingAcct} onClick={() => connect(b, kind)}
-                className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-lg border border-emerald-500/30 py-2.5 text-sm font-medium text-emerald-400 transition disabled:opacity-70">
-                <><Check className="h-4 w-4" /> {t('bro.connected')}</>
-              </button>
+            <p className="mt-3 line-clamp-2 min-h-[2rem] text-xs leading-relaxed text-[#8a8577]">{p.notes || p.blurb || 'Live sync available.'}</p>
+            {acct ? (
+              <div className="mt-3 space-y-2 border-t border-white/[0.06] pt-3">
+                <div className="flex items-baseline justify-between gap-2">
+                  <div className="truncate font-mono text-lg font-semibold text-[#f0ecdd]">{fmtMoney(acct.balance || 0)}</div>
+                  <div className="shrink-0 text-[11px] text-[#8a8577]">{timeAgo(acct.lastSync, t)}</div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <GhostButton disabled={busy === `resync:${acct.id}`} onClick={() => resync(acct)} className="!min-h-[40px] !px-2 !py-2 !text-xs">
+                    {busy === `resync:${acct.id}` ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />} Resync
+                  </GhostButton>
+                  <button disabled={busy === `disconnect:${acct.id}`} onClick={() => disconnect(acct)} className="inline-flex min-h-[40px] items-center justify-center gap-1 rounded-lg border border-red-500/35 px-2 py-2 text-xs text-red-400 transition hover:bg-red-500/10 disabled:opacity-60">
+                    Disconnect
+                  </button>
+                </div>
+                {pending && <div className="text-[11px] text-[#d4af37]">Pending — coming soon.</div>}
+              </div>
             ) : (
-              <GoldButton disabled={isBusy || loading || syncingAcct} onClick={() => connect(b, kind)} className="mt-3 w-full !rounded-lg !py-2.5 !text-sm !font-medium disabled:opacity-70">
-                {isBusy ? <><RefreshCw className="h-4 w-4 animate-spin" /> {t('bro.opening')}</> : <><Plug className="h-4 w-4" /> {t('bro.connect')}</>}
+              <GoldButton onClick={() => openConnect(p)} className="mt-3 w-full !rounded-lg !py-2.5 !text-sm !font-medium">
+                <Plug className="h-4 w-4" /> Connect
               </GoldButton>
             )}
-            {on && acct && (
-              <div className="mt-2 grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
-                <GhostButton
-                  disabled={busy === `resync:${acct.id}`}
-                  onClick={() => resync(acct)}
-                  className="!min-h-[44px] !px-2 !py-2 !text-xs disabled:opacity-60"
-                >
-                  {busy === `resync:${acct.id}` ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />} {t('bro.resync')}
-                </GhostButton>
-                <button
-                  disabled={busy === `disconnect:${acct.id}`}
-                  onClick={() => disconnect(acct)}
-                  className="inline-flex min-h-[44px] items-center justify-center gap-1 rounded-lg border border-red-500/35 px-2 py-2 text-xs text-red-400 transition hover:bg-red-500/10 disabled:opacity-60"
-                >
-                  {busy === `disconnect:${acct.id}` ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Plug className="h-3.5 w-3.5" />} {t('bro.disconnect')}
-                </button>
-              </div>
-            )}
-            <div className="mt-2 truncate text-[11px] text-[#8a8577]">{b.authType}</div>
           </div>
         );
       })}
     </div>
-    );
-  };
+  );
 
   return (
     <AppLayout title={t('nav.brokers')}>
       <div className="tb-page">
-        <PageHero
-          kickerIcon={Plug}
-          kicker={t('bro.kicker')}
-          title={t('nav.brokers')}
-          subtitle={t('bro.syncDesc')}
-        />
-
-        <div className="mb-3 flex items-center gap-3">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Wallet className="h-4 w-4" /></span>
-          <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">{t('bro.liveAccts')}</h3>
-          <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
-          <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{liveAccts.length}</span>
+        <PageHero kickerIcon={Plug} kicker="Live sync • read-only by default" title="Connect account" subtitle="Connect a broker to sync balances and trades automatically. More brokers coming soon — your keys stay encrypted and are never used for trading." />
+        <div className="tb-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8a8577]" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search broker — Exness, HFM, IBKR, Alpaca, OANDA…" className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-2.5 pl-9 pr-3 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/60" />
+          </div>
+          <div className="flex items-center gap-2 text-xs text-[#8a8577]">
+            <GhostButton onClick={syncAll} disabled={busy === 'sync:all' || !connected.length} className="!min-h-[36px] !px-3 !py-1.5 !text-xs">
+              {busy === 'sync:all' ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />} Sync all
+            </GhostButton>
+          </div>
         </div>
-        <ConnectedList items={liveAccts} />
-        <Grid list={BROKERS} kind="live" />
-
-        <div className="mb-3 mt-8 flex items-center gap-3">
+        {connected.length > 0 && (
+          <div className="tb-card flex flex-wrap items-center gap-4 p-4">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><Wallet className="h-4 w-4 text-[#d4af37]" /> Total portfolio</div>
+            <div className="font-mono text-xl font-bold text-[#f0ecdd]">{fmtMoney(totalBalance)}</div>
+            <div className="text-xs text-[#8a8577]">{connected.length} connected • equity/positions arrive from live feeds only</div>
+          </div>
+        )}
+        <div className="mb-3 mt-6 flex items-center gap-3">
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Building2 className="h-4 w-4" /></span>
-          <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">{t('bro.propAccts')}</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">Forex &amp; CFD</h3>
           <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
-          <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{propAccts.length}</span>
+          <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{forex.length}</span>
         </div>
-        <ConnectedList items={propAccts} />
-        <Grid list={PROP_FIRMS} kind="prop" />
+        <Grid list={forex} />
+        <div className="mb-3 mt-8 flex items-center gap-3">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Wallet className="h-4 w-4" /></span>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">Stocks</h3>
+          <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+          <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{stocks.length}</span>
+        </div>
+        <Grid list={stocks} />
+        <div className="mb-3 mt-8 flex items-center gap-3">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><KeyRound className="h-4 w-4" /></span>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">Crypto</h3>
+          <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+          <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{crypto.length}</span>
+        </div>
+        <Grid list={crypto} />
+        <div className="mb-3 mt-8 flex items-center gap-3">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Trophy className="h-4 w-4" /></span>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">Prop Firms</h3>
+          <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+          <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{propFirms.length}</span>
+        </div>
+        <Grid list={propFirms} />
+        <p className="mt-6 text-xs leading-relaxed text-[#6a665a]">Your keys are encrypted and stored securely. Read-only by default — the app never places trades or withdraws funds.</p>
       </div>
+      {selected && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4" onClick={() => setSelected(null)}>
+          <div className="tb-card w-full max-w-md space-y-4 p-5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-[#f0ecdd]"><Plug className="h-4 w-4 text-[#d4af37]" /> Connect {selected.name}</h3>
+              <button onClick={() => setSelected(null)} className="rounded-full p-1.5 text-[#8a8577] hover:bg-white/5" aria-label="Close"><X className="h-4 w-4" /></button>
+            </div>
+            <p className="text-xs leading-relaxed text-[#8a8577]">{selected.setup}</p>
+            {(selected.connectionType === 'api_key' || selected.connectionType === 'mt5_bridge') ? (
+              <div className="space-y-3">
+                <div className="rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/[0.06] p-3 text-xs leading-relaxed text-[#c9c4b4]">
+                  {selected.connectionType === 'mt5_bridge' ? (
+                    <>MT5 Bridge required. Configure <b>MT_BRIDGE_URL</b> and <b>MT_BRIDGE_TOKEN</b> in your environment. Demo accounts are blocked — only live/funded MT5 accounts can connect.</>
+                  ) : (
+                    <>Create a <b>read-only</b> key in your broker account → API Management (no withdrawals, no futures unless needed). Paste key + secret here — it is tested once, then stored encrypted. We never ask for your broker password.</>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-[#8a8577]">Label</label>
+                  <input value={label} onChange={(e) => setLabel(e.target.value)} className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/60" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-[#8a8577]">API key</label>
+                  <input value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder={selected.connectionType === 'mt5_bridge' ? 'MT5 Account Number' : 'Read-only API key'} className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 font-mono text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/60" />
+                </div>
+                {selected.connectionType !== 'mt5_bridge' && (
+                  <div>
+                    <label className="mb-1 block text-xs text-[#8a8577]">API secret / Password</label>
+                    <input value={apiSecret} onChange={(e) => setApiSecret(e.target.value)} type="password" placeholder={selected.connectionType === 'mt5_bridge' ? 'MT5 Password' : 'API secret (never stored in plaintext)'} className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 font-mono text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/60" />
+                  </div>
+                )}
+                {(selected.supportsPassphrase || selected.connectionType === 'mt5_bridge') && (
+                  <div>
+                    <label className="mb-1 block text-xs text-[#8a8577]">Passphrase / Server</label>
+                    <input value={passphrase} onChange={(e) => setPassphrase(e.target.value)} type="password" placeholder={selected.connectionType === 'mt5_bridge' ? 'MT5 Server' : 'API passphrase (OKX/KuCoin shows it once at creation)'} className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 font-mono text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/60" />
+                  </div>
+                )}
+                <GoldButton disabled={busy === `connect:${selected.id}`} onClick={submitApiKey} className="w-full">
+                  {busy === `connect:${selected.id}` ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Test &amp; connect
+                </GoldButton>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-xs leading-relaxed text-[#c9c4b4]">
+                  <span className="text-[#d4af37]">Coming soon</span> — {selected.name} sync isn't available yet. What it will need: {selected.authType}
+                </div>
+                <GoldButton disabled className="w-full opacity-60">
+                  <Plug className="h-4 w-4" /> Coming soon
+                </GoldButton>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }

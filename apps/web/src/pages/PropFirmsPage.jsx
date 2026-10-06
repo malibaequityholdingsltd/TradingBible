@@ -1,17 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Cable, CheckCircle2, Pencil, RefreshCw, ShieldCheck, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Cable, CheckCircle2, Pencil, RefreshCw, ShieldCheck, Trash2, X, Search } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { usePlatformSettings } from '@/lib/platformSettings';
 import { useI18n } from '@/lib/i18n';
 import pb from '@/lib/pocketbaseClient';
+import ProviderLogo from '@/components/ProviderLogo';
 import { PageHero, Card, Stat, StatGrid, EmptyState, GoldButton } from '@/components/ui-kit';
+import { PROP_FIRMS } from '@/lib/brokerProviders';
 
-const FIRMS = ['FTMO', 'FundedNext', 'Topstep', 'E8 Markets', 'Apex Trader Funding', 'The5ers', 'MyForexFunds', 'Alpha Capital Group', 'Other'];
+const FIRMS = [...PROP_FIRMS.map((f) => f.name), 'Other'];
 
 // Default challenge rules per firm (% of account size). Balances and P&L are
-// never typed in — they arrive from the synced feed only.
+// never typed in — they arrive from the synced feed only (MT5 bridge).
 const FIRM_PRESETS = {
   'FTMO': { dailyPct: 5, maxPct: 10, targetPct: 10 },
   'FundedNext': { dailyPct: 5, maxPct: 10, targetPct: 10 },
@@ -19,8 +21,11 @@ const FIRM_PRESETS = {
   'E8 Markets': { dailyPct: 5, maxPct: 10, targetPct: 8 },
   'Apex Trader Funding': { dailyPct: 5, maxPct: 10, targetPct: 10 },
   'The5ers': { dailyPct: 4, maxPct: 10, targetPct: 12 },
-  'MyForexFunds': { dailyPct: 5, maxPct: 12, targetPct: 10 },
+  'Funding Pips': { dailyPct: 5, maxPct: 10, targetPct: 10 },
+  'FunderPro': { dailyPct: 4, maxPct: 10, targetPct: 10 },
   'Alpha Capital Group': { dailyPct: 5, maxPct: 10, targetPct: 10 },
+  'MyFundedFX (see successor)': { dailyPct: 5, maxPct: 10, targetPct: 10 },
+  'MyForexFunds': { dailyPct: 5, maxPct: 12, targetPct: 10 },
   'Other': { dailyPct: 5, maxPct: 10, targetPct: 10 },
 };
 const money = (n) => (n || n === 0) ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n) : '-';
@@ -30,6 +35,7 @@ const pctOf = (value, limit) => {
 };
 
 function computeStatus(a) {
+  if ((a.syncStatus || 'pending') !== 'synced') return { key: 'pending', label: 'PENDING', cls: 'bg-[#d4af37]/15 text-[#d4af37]' };
   const dailyPct = pctOf(a.currentDailyLoss, a.dailyLossLimit);
   const drawdownPct = pctOf(a.currentDrawdown, a.maxDrawdown);
   const worst = Math.max(dailyPct, drawdownPct);
@@ -58,7 +64,11 @@ function Meter({ label, value, limit }) {
 
 const numCls = 'w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-[#f0ecdd] outline-none transition focus:border-[#d4af37]/60';
 
-function AccountForm({ initial, onSave, onCancel, manualAllowed }) {
+function firmMeta(name) {
+  return PROP_FIRMS.find((f) => f.name === name) || null;
+}
+
+function AccountForm({ initial, onSave, onCancel, manualAllowed, presetFirm }) {
   const { toast } = useToast();
   const { t } = useI18n();
   const [busy, setBusy] = useState(false);
@@ -72,7 +82,7 @@ function AccountForm({ initial, onSave, onCancel, manualAllowed }) {
     };
   };
   const [f, setF] = useState(() => ({
-    firm: initial?.firm || FIRMS[0],
+    firm: initial?.firm || presetFirm || FIRMS[0],
     accountLogin: initial?.accountLogin || '',
     server: initial?.server || '',
     accountSize: initial?.accountSize ?? 100000,
@@ -80,8 +90,8 @@ function AccountForm({ initial, onSave, onCancel, manualAllowed }) {
     maxDrawdown: initial?.maxDrawdown ?? 10000,
     profitTarget: initial?.profitTarget ?? 10000,
     ...(manualAllowed ? {
-      balance: initial?.balance ?? 100000,
-      equity: initial?.equity ?? 100000,
+      balance: initial?.balance ?? 0,
+      equity: initial?.equity ?? 0,
       currentDailyLoss: initial?.currentDailyLoss ?? 0,
       currentDrawdown: initial?.currentDrawdown ?? 0,
       currentProfit: initial?.currentProfit ?? 0,
@@ -98,17 +108,20 @@ function AccountForm({ initial, onSave, onCancel, manualAllowed }) {
     setF((p) => ({ ...p, accountSize: s, ...presetFor(p.firm, s) }));
   };
 
+  const [showCustom, setShowCustom] = useState(false);
+  const meta = firmMeta(f.firm);
+
   const submit = async (e) => {
     e.preventDefault();
     if (!String(f.accountLogin || '').trim()) {
-      toast({ variant: 'destructive', title: t('pf.loginReq'), description: t('pf.linkNote') });
+      toast({ variant: 'destructive', title: t('pf.loginReq'), description: 'Add the MT5 login so the bridge can map fills — never the master password.' });
       return;
     }
     setBusy(true);
     try {
-      // Balances and live P&L are never typed in — they start synced and
-      // update only from the feed (Resync). Manual entry stays disabled unless
-      // an admin explicitly allows it.
+      // Balances and live P&L are never typed in — they start at 0 / pending
+      // and update only from the MT5 bridge feed (Resync). Manual entry stays
+      // disabled unless an admin explicitly allows it.
       const payload = {
         firm: f.firm,
         accountLogin: String(f.accountLogin).trim(),
@@ -119,12 +132,12 @@ function AccountForm({ initial, onSave, onCancel, manualAllowed }) {
         profitTarget: Number(f.profitTarget) || 0,
       };
       if (!initial) {
-        payload.balance = Number(f.accountSize) || 0;
-        payload.equity = Number(f.accountSize) || 0;
+        payload.balance = 0;
+        payload.equity = 0;
         payload.currentDailyLoss = 0;
         payload.currentDrawdown = 0;
         payload.currentProfit = 0;
-        payload.syncStatus = 'syncing';
+        payload.syncStatus = 'pending';
         payload.lastSync = new Date().toISOString();
       } else if (manualAllowed) {
         payload.balance = Number(f.balance) || 0;
@@ -134,7 +147,7 @@ function AccountForm({ initial, onSave, onCancel, manualAllowed }) {
         payload.currentProfit = Number(f.currentProfit) || 0;
       }
       await onSave(payload);
-      toast({ title: initial ? t('pf.editConn') : t('pf.connect'), description: `${f.firm} — ${initial ? t('c.done') : t('pf.syncing')}` });
+      toast({ title: initial ? t('pf.editConn') : t('pf.connect'), description: `${f.firm} saved — sync coming soon` });
     } catch (err) {
       toast({ variant: 'destructive', title: t('c.error'), description: err?.message || t('c.retry') });
     } finally { setBusy(false); }
@@ -143,11 +156,16 @@ function AccountForm({ initial, onSave, onCancel, manualAllowed }) {
   return (
     <form onSubmit={submit} className="tb-card space-y-4 p-5">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="flex min-w-0 items-center gap-2 text-sm font-semibold text-[#f0ecdd]"><Cable className="h-4 w-4 shrink-0 text-[#d4af37]" /> <span className="truncate">{initial ? t('pf.editConn') : t('pf.connectFirst')}</span></h3>
+        <h3 className="flex min-w-0 items-center gap-2 text-sm font-semibold text-[#f0ecdd]"><Cable className="h-4 w-4 shrink-0 text-[#d4af37]" /> <span className="truncate">{initial ? t('pf.editConn') : `Connect ${f.firm}`}</span></h3>
         {onCancel && <button type="button" onClick={onCancel} className="rounded-full p-1.5 text-[#8a8577] transition hover:bg-white/5" aria-label={t('c.close')}><X className="h-4 w-4" /></button>}
       </div>
-      <p className="text-xs leading-relaxed text-[#8a8577]">{t('pf.linkNote')}</p>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+      {meta && (
+        <div className="text-xs text-[#8a8577]">
+          Connection: <span className="text-[#c9c4b4]">MetaTrader 5 bridge</span> <span className="text-[#5f5b50]">({meta.integration || 'MT4_MT5'} via {meta.via})</span>
+        </div>
+      )}
+      <p className="text-xs leading-relaxed text-[#8a8577]">Enter the MT5 login for this challenge — rule limits are set from {f.firm} rules automatically. Balances sync automatically once prop sync goes live — never typed in.</p>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="min-w-0">
           <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.firm')}</label>
           <select value={f.firm} onChange={(e) => applyFirm(e.target.value)} className={numCls}>
@@ -160,51 +178,61 @@ function AccountForm({ initial, onSave, onCancel, manualAllowed }) {
         </div>
         <div className="min-w-0">
           <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.loginReq')}</label>
-          <input type="text" value={f.accountLogin} onChange={setText('accountLogin')} placeholder="e.g. 8124451" className={numCls} />
+          <input type="text" value={f.accountLogin} onChange={setText('accountLogin')} placeholder="e.g. 8124451 (login only, no password)" className={numCls} />
         </div>
         <div className="min-w-0">
           <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.server')}</label>
           <input type="text" value={f.server} onChange={setText('server')} placeholder="e.g. FTMO-Server" className={numCls} />
         </div>
-        <div className="min-w-0">
-          <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.dailyLimit')}</label>
-          <input type="number" min="0" value={f.dailyLossLimit} onChange={set('dailyLossLimit')} className={numCls} />
-        </div>
-        <div className="min-w-0">
-          <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.maxDd')}</label>
-          <input type="number" min="0" value={f.maxDrawdown} onChange={set('maxDrawdown')} className={numCls} />
-        </div>
-        <div className="min-w-0">
-          <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.target')}</label>
-          <input type="number" min="0" value={f.profitTarget} onChange={set('profitTarget')} className={numCls} />
-        </div>
-        {manualAllowed && (
-          <>
-            <div className="min-w-0">
-              <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.balanceManual')}</label>
-              <input type="number" min="0" value={f.balance} onChange={set('balance')} className={numCls} />
-            </div>
-            <div className="min-w-0">
-              <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.equityManual')}</label>
-              <input type="number" min="0" value={f.equity} onChange={set('equity')} className={numCls} />
-            </div>
-            <div className="min-w-0">
-              <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.lossManual')}</label>
-              <input type="number" min="0" value={f.currentDailyLoss} onChange={set('currentDailyLoss')} className={numCls} />
-            </div>
-            <div className="min-w-0">
-              <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.ddManual')}</label>
-              <input type="number" min="0" value={f.currentDrawdown} onChange={set('currentDrawdown')} className={numCls} />
-            </div>
-            <div className="min-w-0">
-              <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.profitManual')}</label>
-              <input type="number" value={f.currentProfit} onChange={set('currentProfit')} className={numCls} />
-            </div>
-          </>
-        )}
       </div>
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11px] text-[#c9c4b4]">Daily loss <span className="font-mono text-[#f0ecdd]">{money(f.dailyLossLimit)}</span></span>
+        <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11px] text-[#c9c4b4]">Max drawdown <span className="font-mono text-[#f0ecdd]">{money(f.maxDrawdown)}</span></span>
+        <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[11px] text-[#c9c4b4]">Target <span className="font-mono text-[#f0ecdd]">{money(f.profitTarget)}</span></span>
+        <button type="button" onClick={() => setShowCustom((s) => !s)} className="text-[11px] text-[#d4af37] hover:underline">{showCustom ? 'Hide custom limits' : 'Customize limits'}</button>
+      </div>
+      {showCustom && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="min-w-0">
+            <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.dailyLimit')}</label>
+            <input type="number" min="0" value={f.dailyLossLimit} onChange={set('dailyLossLimit')} className={numCls} />
+          </div>
+          <div className="min-w-0">
+            <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.maxDd')}</label>
+            <input type="number" min="0" value={f.maxDrawdown} onChange={set('maxDrawdown')} className={numCls} />
+          </div>
+          <div className="min-w-0">
+            <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.target')}</label>
+            <input type="number" min="0" value={f.profitTarget} onChange={set('profitTarget')} className={numCls} />
+          </div>
+        </div>
+      )}
+      {manualAllowed && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="min-w-0">
+            <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.balanceManual')}</label>
+            <input type="number" min="0" value={f.balance} onChange={set('balance')} className={numCls} />
+          </div>
+          <div className="min-w-0">
+            <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.equityManual')}</label>
+            <input type="number" min="0" value={f.equity} onChange={set('equity')} className={numCls} />
+          </div>
+          <div className="min-w-0">
+            <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.lossManual')}</label>
+            <input type="number" min="0" value={f.currentDailyLoss} onChange={set('currentDailyLoss')} className={numCls} />
+          </div>
+          <div className="min-w-0">
+            <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.ddManual')}</label>
+            <input type="number" min="0" value={f.currentDrawdown} onChange={set('currentDrawdown')} className={numCls} />
+          </div>
+          <div className="min-w-0">
+            <label className="mb-1 block text-xs text-[#8a8577]">{t('pf.profitManual')}</label>
+            <input type="number" value={f.currentProfit} onChange={set('currentProfit')} className={numCls} />
+          </div>
+        </div>
+      )}
       <GoldButton disabled={busy}>
-        {busy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} {initial ? t('c.save') : t('pf.connectSync')}
+        {busy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} {initial ? t('c.save') : 'Connect'}
       </GoldButton>
     </form>
   );
@@ -220,7 +248,9 @@ export default function PropFirmsPage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [presetFirm, setPresetFirm] = useState(null);
   const [busyId, setBusyId] = useState(null);
+  const [query, setQuery] = useState('');
 
   const load = useCallback(async () => {
     if (!user?.id) return;
@@ -259,28 +289,24 @@ export default function PropFirmsPage() {
       setAccounts((p) => p.map((a) => (a.id === editing.id ? rec : a)));
       setEditing(null);
     } else {
-      // Connect with syncing status first (same pattern as broker connect),
-      // then mark synced once the feed acknowledges the link.
+      // Honest pending: balances stay 0 until the MT5 bridge feed confirms.
       const rec = await pb.collection('prop_firm_accounts').create({ owner: user.id, ...data });
       setAccounts((p) => [rec, ...p]);
       setAdding(false);
-      await pb.collection('prop_firm_accounts').update(rec.id, {
-        syncStatus: 'synced', lastSync: new Date().toISOString(),
-      }).then((synced) => {
-        setAccounts((p) => p.map((a) => (a.id === rec.id ? synced : a)));
-      }).catch(() => {});
+      setPresetFirm(null);
     }
   };
 
   const resync = async (id) => {
     setBusyId(id);
     try {
-      await pb.collection('prop_firm_accounts').update(id, { syncStatus: 'syncing' });
+      await pb.collection('prop_firm_accounts').update(id, { syncStatus: 'syncing', lastSync: new Date().toISOString() });
+      // No bridge credentials yet → stay pending honestly, never fake 'synced'.
       const rec = await pb.collection('prop_firm_accounts').update(id, {
-        syncStatus: 'synced', lastSync: new Date().toISOString(),
+        syncStatus: 'pending', lastSync: new Date().toISOString(),
       });
       setAccounts((p) => p.map((a) => (a.id === id ? rec : a)));
-      toast({ title: t('pf.synced'), description: t('pf.sub') });
+      toast({ title: 'Saved', description: 'Auto-sync will pick this account up once prop sync goes live.' });
     } catch {
       toast({ variant: 'destructive', title: t('c.error'), description: t('c.retry') });
     } finally { setBusyId(null); }
@@ -297,14 +323,26 @@ export default function PropFirmsPage() {
     } finally { setBusyId(null); }
   };
 
+  const visibleAccounts = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return accounts;
+    return accounts.filter((a) => `${a.firm} ${a.accountLogin} ${a.server}`.toLowerCase().includes(q));
+  }, [accounts, query]);
+
+  const visibleFirms = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return PROP_FIRMS;
+    return PROP_FIRMS.filter((f) => `${f.name} ${f.via} ${f.integration} ${f.blurb}`.toLowerCase().includes(q));
+  }, [query]);
+
   return (
     <AppLayout title={t('nav.propfirms')}>
       <div className="tb-page">
         <PageHero
           kickerIcon={ShieldCheck}
-          kicker="Rule compliance"
+          kicker="MT5 bridge • no password collection"
           title={t('nav.propfirms')}
-          subtitle={t('pf.sub')}
+          subtitle="Track every challenge in one place — limits, drawdown and targets update automatically once prop sync goes live."
         />
 
         {dangerAccounts.length > 0 && (
@@ -324,51 +362,93 @@ export default function PropFirmsPage() {
           <Stat label={t('pf.compliance')} value={accounts.length ? `${Math.round(((accounts.length - dangerAccounts.length) / accounts.length) * 100)}%` : '—'} tone="text-emerald-400" />
         </StatGrid>
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><ShieldCheck className="h-4 w-4 text-[#d4af37]" /> {t('pf.accounts')}</div>
-          {!adding && !editing && <GoldButton onClick={() => setAdding(true)} className="!min-h-[42px]"><Cable className="h-4 w-4" /> {t('pf.connect')}</GoldButton>}
+        <div className="tb-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8a8577]" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search prop firm — FTMO, Topstep, The5ers…" className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-2.5 pl-9 pr-3 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/60" />
+          </div>
+          {!adding && !editing && <GoldButton onClick={() => { setPresetFirm(null); setAdding(true); }} className="!min-h-[42px]"><Cable className="h-4 w-4" /> {t('pf.connect')}</GoldButton>}
+        </div>
+
+        <div>
+          <div className="mb-3 flex items-center gap-3">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><ShieldCheck className="h-4 w-4" /></span>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">Prop directory</h3>
+            <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+            <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{visibleFirms.length}</span>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {visibleFirms.map((f) => (
+              <div key={f.id} className="tb-card tb-card-hover flex flex-col p-4">
+                <div className="flex items-center gap-2.5">
+                  <ProviderLogo domain={f.logoDomain} name={f.name} color={f.color} size={42} />
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-[#f0ecdd]">{f.name}</div>
+                    <div className="truncate text-[11px] text-[#8a8577]">via {f.via}</div>
+                  </div>
+                </div>
+                <p className="mt-2.5 line-clamp-2 min-h-[2rem] text-[11px] leading-relaxed text-[#8a8577]">{f.blurb}</p>
+                <button onClick={() => { setPresetFirm(f.name); setAdding(true); setEditing(null); }} className="mt-3 inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/30 text-xs font-medium text-[#e9e7df] transition hover:bg-[#d4af37]/[0.06]">
+                  <Cable className="h-3.5 w-3.5" /> Connect
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         {(adding || editing) && (
           <div>
-            <AccountForm initial={editing} onSave={save} manualAllowed={manualAllowed} onCancel={() => { setAdding(false); setEditing(null); }} />
+            <AccountForm initial={editing} presetFirm={presetFirm} onSave={save} manualAllowed={manualAllowed} onCancel={() => { setAdding(false); setEditing(null); setPresetFirm(null); }} />
           </div>
         )}
 
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#8a8577]"><ShieldCheck className="h-4 w-4 text-[#d4af37]" /> {t('pf.accounts')} ({visibleAccounts.length})</div>
+        </div>
+
         {loading ? (
           <div className="tb-card grid place-items-center py-16 text-sm text-[#8a8577]">{t('pf.loadingAcc')}</div>
-        ) : accounts.length === 0 ? (
+        ) : visibleAccounts.length === 0 ? (
           <EmptyState
             icon={ShieldCheck}
             title={t('pf.noAccounts')}
-            sub={t('pf.noAccountsSub')}
+            sub="Connect via MT5 bridge above — balances appear only after the first live sync. Nothing is typed in."
             action={<GoldButton onClick={() => setAdding(true)}><Cable className="h-4 w-4" /> {t('pf.connectFirst')}</GoldButton>}
           />
         ) : (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
-            {accounts.map((a) => {
+            {visibleAccounts.map((a) => {
               const st = computeStatus(a);
+              const meta = firmMeta(a.firm);
               return (
                 <Card hover key={a.id} className="p-5">
                   <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="truncate text-base font-semibold text-[#f0ecdd]">{a.firm}</h3>
-                        <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-wide ${st.cls}`}>{st.label}</span>
-                      </div>
-                      <div className="mt-1 truncate text-2xl font-bold gold-text">{money(a.accountSize)}</div>
-                      <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-[#8a8577]">
-                        <span>{t('pf.balance')} <span className="font-mono text-[#e9e7df]">{money(a.balance)}</span></span>
-                        <span>{t('pf.equity')} <span className="font-mono text-[#e9e7df]">{money(a.equity)}</span></span>
-                        {a.syncStatus === 'syncing'
-                          ? <span className="text-[#d4af37]">{t('pf.syncing')}</span>
-                          : <span className="text-emerald-400">{t('pf.synced')}{a.lastSync ? ` · ${new Date(a.lastSync).toLocaleDateString()}` : ''}</span>}
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <ProviderLogo domain={meta?.logoDomain} name={a.firm} color={meta?.color} size={42} />
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="truncate text-base font-semibold text-[#f0ecdd]">{a.firm}</h3>
+                          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-wide ${st.cls}`}>{st.label}</span>
+                        </div>
+                        <div className="mt-0.5 text-[11px] text-[#8a8577]">Login <span className="font-mono text-[#e9e7df]">{a.accountLogin || '—'}</span> • {a.server || 'no server'}</div>
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
                       <button onClick={() => resync(a.id)} disabled={busyId === a.id} className="rounded-full p-2 text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" title={t('pf.resync')}>{busyId === a.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}</button>
                       <button onClick={() => { setEditing(a); setAdding(false); }} className="rounded-full p-2 text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37]" title={t('pf.editConn')}><Pencil className="h-4 w-4" /></button>
                       <button onClick={() => remove(a.id)} disabled={busyId === a.id} className="rounded-full p-2 text-[#8a8577] transition hover:bg-red-500/10 hover:text-red-400" title={t('c.remove')}>{busyId === a.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}</button>
+                    </div>
+                  </div>
+                  <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+                    <div className="truncate text-2xl font-bold gold-text">{money(a.accountSize)}</div>
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#8a8577]">
+                      <span>{t('pf.balance')} <span className="font-mono text-[#e9e7df]">{a.syncStatus === 'synced' ? money(a.balance) : '— pending feed'}</span></span>
+                      <span>{t('pf.equity')} <span className="font-mono text-[#e9e7df]">{a.syncStatus === 'synced' ? money(a.equity) : '— pending feed'}</span></span>
+                      {a.syncStatus === 'syncing'
+                        ? <span className="text-[#d4af37]">{t('pf.syncing')}</span>
+                        : a.syncStatus === 'synced'
+                          ? <span className="text-emerald-400">{t('pf.synced')}{a.lastSync ? ` · ${new Date(a.lastSync).toLocaleDateString()}` : ''}</span>
+                            : <span className="text-[#d4af37]">Pending</span>}
                     </div>
                   </div>
                   <div className="space-y-3">

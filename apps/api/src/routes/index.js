@@ -21,6 +21,7 @@ import digestRouter from './digest.js';
 import dunsRouter from './duns.js';
 import companyRouter from './company.js';
 import jobsRouter from './jobs.js';
+import brokersRouter from './brokers.js';
 
 const router = Router();
 
@@ -50,6 +51,7 @@ export default () => {
     router.use('/duns', dunsRouter);
     router.use('/company', companyRouter);
     router.use('/jobs', jobsRouter);
+    router.use('/brokers', brokersRouter);
 
     return router;
 };

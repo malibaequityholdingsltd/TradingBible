@@ -22,21 +22,35 @@ const SYMBOLS = Object.keys(SYMBOL_MAP);
 
 export default async (req, res) => {
 	const query = encodeURIComponent(JSON.stringify(SYMBOLS));
-	const upstream = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${query}`);
-
-	if (!upstream.ok) {
-		throw new Error(`binance ticker failed: ${upstream.status} ${upstream.statusText}`);
+	// api.binance.com is geo-blocked in some regions — try fallbacks before
+	// giving up. Never 500 the ticker: frontend keeps previous values and
+	// overlays live websocket ticks, so a degraded 200 beats a 500 spam loop.
+	const hosts = [
+		'https://api.binance.com',
+		'https://data-api.binance.vision',
+		'https://api.binance.us',
+	];
+	let lastError = null;
+	for (const host of hosts) {
+		try {
+			const upstream = await fetch(`${host}/api/v3/ticker/24hr?symbols=${query}`);
+			if (!upstream.ok) {
+				lastError = new Error(`binance ticker failed: ${upstream.status} ${upstream.statusText}`);
+				continue;
+			}
+			const data = await upstream.json();
+			const tickers = data.map((t) => ({
+				symbol: SYMBOL_MAP[t.symbol] || t.symbol,
+				price: Number(t.lastPrice),
+				changePercent: Number(t.priceChangePercent),
+				high: Number(t.highPrice),
+				low: Number(t.lowPrice),
+			}));
+			return res.json({ tickers });
+		} catch (err) {
+			lastError = err;
+		}
 	}
-
-	const data = await upstream.json();
-
-	const tickers = data.map((t) => ({
-		symbol: SYMBOL_MAP[t.symbol] || t.symbol,
-		price: Number(t.lastPrice),
-		changePercent: Number(t.priceChangePercent),
-		high: Number(t.highPrice),
-		low: Number(t.lowPrice),
-	}));
-
-	res.json({ tickers });
+	// Degraded but honest: no fake prices — frontend keeps prior values.
+	return res.json({ tickers: [], degraded: true, error: String(lastError?.message || 'feed unavailable') });
 };

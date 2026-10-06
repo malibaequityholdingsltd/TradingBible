@@ -152,7 +152,8 @@ function PaidProtected({ children }) {
 function FeatureGate({ feature, children }) {
     const { features, loaded } = usePlatformSettings();
     const { user } = useAuth();
-    const enabled = !loaded || features[feature] !== false || user?.role === 'admin';
+    const isDev = import.meta.env.DEV;
+    const enabled = !loaded || features[feature] !== false || user?.role === 'admin' || isDev;
     if (enabled) return children;
     return (
         <div className="grid min-h-[60vh] place-items-center px-6">

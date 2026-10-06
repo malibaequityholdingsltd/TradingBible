@@ -145,6 +145,7 @@ export default function TvWidget() {
   const ytRef = useRef(null);
   const frozenRef = useRef([]);
   const attemptsRef = useRef(new Set());
+  const panelRef = useRef(null);
   const advanceTimer = useRef(null);
   const retryTimer = useRef(null);
   const retryId = useRef(null);
@@ -554,9 +555,9 @@ export default function TvWidget() {
           return { x: nx, y: ny };
         });
       } else {
-        // Mini panel - move the panel position (clamp to panel size)
+        // Mini panel - move the panel position (clamp to measured size)
         const panelW = 416; // 26rem
-        const panelH = 448; // 28rem
+        const panelH = panelRef.current?.offsetHeight || 448;
         setMiniPos((cur) => {
           const base = cur || { x: pos.x, y: pos.y };
           let nx = base.x;
@@ -675,10 +676,10 @@ export default function TvWidget() {
       if (Math.abs(nx - miniPos.x) > 3 || Math.abs(ny - miniPos.y) > 3) miniDragState.current.moved = true;
       const w = window.innerWidth; const h = window.innerHeight;
       const panelW = 416;
-      const panelH = 448;
+      const panelH = panelRef.current?.offsetHeight || 448;
       setMiniPos({
         x: Math.min(Math.max(nx, 12), w - panelW - 12),
-        y: Math.min(Math.max(ny, tickerFloor()), h - panelH - 12),
+        y: Math.min(Math.max(ny, tickerFloor()), Math.max(tickerFloor(), h - panelH)),
       });
       if (e.cancelable) e.preventDefault();
     };
@@ -699,7 +700,7 @@ export default function TvWidget() {
       window.removeEventListener('touchend', up);
       document.body.classList.remove('tb-noselect');
     };
-  }, [miniPos]);
+  }, [miniPos, expanded]);
 
   const seconds = Math.max(4, Math.min(60, Number(settings.rotationSeconds) || 12));
 
@@ -736,6 +737,7 @@ export default function TvWidget() {
     <div className="tv-widget-root" style={{ display: 'contents' }}>
       {open && (
         <div
+          ref={panelRef}
           className={`tv-pop tv-widget-panel sheen-panel fixed flex h-auto max-h-[calc(100dvh-2rem)] w-[min(26rem,94vw)] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl ${expanded ? 'z-[90]' : 'z-[70]'}`}
           style={expanded
             ? { left: expandedPos.x, top: expandedPos.y, right: 'auto', bottom: 'auto', width: '900px', height: '600px', maxWidth: 'calc(100vw - 24px)', maxHeight: 'calc(100vh - 24px)' }
@@ -888,6 +890,12 @@ export default function TvWidget() {
                       channel controls live outside the frame. Slates stay
                       tappable because the shield hides while one shows. */}
                   {!ytBlocked && !ytError && <div aria-hidden className="absolute inset-0 bg-transparent" />}
+                  {/* LIVE badge — top-left of the video */}
+                  <div className={`pointer-events-none absolute left-3 top-2.5 z-10 transition-all duration-500 ${ctlsHidden ? '-translate-y-2 opacity-0' : 'translate-y-0 opacity-100'}`}>
+                    <span className="flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-[#ff5a62] backdrop-blur-md">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e50914]" /> Live TV
+                    </span>
+                  </div>
                   {/* Floating transport — auto-hides when idle, returns on activity */}
                   <div className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-center justify-center gap-2 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-3 pb-2.5 pt-8 transition-all duration-500 ${ctlsHidden ? 'translate-y-3 opacity-0 [&_button]:pointer-events-none' : 'translate-y-0 opacity-100'}`}>
                     <button onClick={() => zapChannel(-1)} className="pointer-events-auto grid h-8 w-8 shrink-0 place-items-center rounded-full bg-black/60 text-[#e9e7df] backdrop-blur-md transition hover:text-[#d4af37]" aria-label="Previous channel" title="Previous channel">
