@@ -183,48 +183,83 @@ function createSupabaseCompatClient() {
       return;
     }
 
-    let profile = await loadProfile(session.user.id);
-    if (!profile) {
-      profile = await loadProfileByEmail(session.user.email);
-    }
-    if (!profile) {
-      const fallbackUsername = session.user.user_metadata?.username || (session.user.email || '').split('@')[0] || 'user';
-      const fallbackRole = session.user.user_metadata?.role || (isAdminEmail(session.user.email) ? 'admin' : 'user');
-      const fallbackAccountType = session.user.user_metadata?.accountType === 'company'
-        ? 'teacher'
-        : session.user.user_metadata?.accountType === 'individual'
-          ? 'trader'
-          : session.user.user_metadata?.accountType || 'trader';
-      const fallbackCompanyName = session.user.user_metadata?.companyName || null;
-      const { data: createdProfile, error: profileError } = await supabase.from('users')
-        .upsert({
-          id: session.user.id,
-          email: session.user.email,
-          username: fallbackUsername,
-          name: fallbackUsername,
-          role: fallbackRole,
-          accountType: fallbackAccountType,
-          companyName: fallbackCompanyName,
-          plan: fallbackRole === 'admin' ? 'professional' : null,
-        })
-        .select()
-        .single();
-      if (!profileError && createdProfile) {
-        profile = normalizeProfile(createdProfile, 'users');
-      } else {
-        profile = await loadProfile(session.user.id);
+    // Timeout for profile loading to prevent hanging on DB issues
+    const profileTimeout = setTimeout(() => {
+      console.warn('[Auth] Profile load timed out, using fallback profile');
+    }, 2000);
+
+    try {
+      let profile = await Promise.race([
+        loadProfile(session.user.id),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+      ]).catch(() => null);
+
+      if (!profile) {
+        profile = await Promise.race([
+          loadProfileByEmail(session.user.email),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+        ]).catch(() => null);
       }
+
+      if (!profile) {
+        const fallbackUsername = session.user.user_metadata?.username || (session.user.email || '').split('@')[0] || 'user';
+        const fallbackRole = session.user.user_metadata?.role || (isAdminEmail(session.user.email) ? 'admin' : 'user');
+        const fallbackAccountType = session.user.user_metadata?.accountType === 'company'
+          ? 'teacher'
+          : session.user.user_metadata?.accountType === 'individual'
+            ? 'trader'
+            : session.user.user_metadata?.accountType || 'trader';
+        const fallbackCompanyName = session.user.user_metadata?.companyName || null;
+
+        try {
+          const { data: createdProfile, error: profileError } = await Promise.race([
+            supabase.from('users').upsert({
+              id: session.user.id,
+              email: session.user.email,
+              username: fallbackUsername,
+              name: fallbackUsername,
+              role: fallbackRole,
+              accountType: fallbackAccountType,
+              companyName: fallbackCompanyName,
+              plan: fallbackRole === 'admin' ? 'professional' : null,
+            }).select().single(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+          ]);
+          if (!profileError && createdProfile) {
+            profile = normalizeProfile(createdProfile, 'users');
+          }
+        } catch { /* ignore upsert errors */ }
+      }
+
+      authStore.token = session.access_token;
+      authStore.record = mapRecord(session.user, profile);
+      authStore.isValid = true;
+      localStorage.setItem('tb_auth_provider', 'supabase');
+      localStorage.setItem('tb_auth_token', session.access_token);
+      notifyAuth();
+    } catch (e) {
+      console.warn('[Auth] syncAuthFromSession failed:', e);
+      authStore.token = session.access_token;
+      authStore.record = mapRecord(session.user, null);
+      authStore.isValid = true;
+      notifyAuth();
+    } finally {
+      clearTimeout(profileTimeout);
+      markAuthReady();
     }
-    authStore.token = session.access_token;
-    authStore.record = mapRecord(session.user, profile);
-    authStore.isValid = true;
-    localStorage.setItem('tb_auth_provider', 'supabase');
-    localStorage.setItem('tb_auth_token', session.access_token);
-    notifyAuth();
-    markAuthReady();
   }
 
-  supabase.auth.getSession().then(({ data }) => syncAuthFromSession(data?.session));
+  // Timeout to prevent auth from hanging indefinitely if Supabase is unreachable
+  const authTimeout = setTimeout(() => {
+    console.warn('[Auth] Supabase auth initialization timed out, proceeding without auth');
+    markAuthReady();
+  }, 3000);
+
+  supabase.auth.getSession()
+    .then(({ data }) => syncAuthFromSession(data?.session))
+    .catch((e) => { console.warn('[Auth] getSession failed:', e); })
+    .finally(() => clearTimeout(authTimeout));
+
   supabase.auth.onAuthStateChange((_event, session) => {
     syncAuthFromSession(session);
   });

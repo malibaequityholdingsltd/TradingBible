@@ -14,6 +14,7 @@
 - [Admin Settings](/admin/settings): TradingBible application page.
 - [Admin Tv Ads](/admin/tv): TradingBible application page.
 - [Admin Users](/admin/users): TradingBible application page.
+- [Ads Demo](/__ads-demo): TradingBible application page.
 - [Affiliate](/app/affiliate): TradingBible application page.
 - [Alerts](/app/alerts): TradingBible application page.
 - [Analytics](/app/analytics): TradingBible application page.

@@ -33,9 +33,11 @@ function chunkReloadGuard() {
 }
 chunkReloadGuard();
 
+console.log('[main.jsx] Mounting App to #root');
 ReactDOM.createRoot(document.getElementById('root')).render(
 	<App />
 );
+console.log('[main.jsx] App mounted');
 
 // PWA service worker registration (production only).
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
