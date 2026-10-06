@@ -149,6 +149,18 @@ function PaidProtected({ children }) {
 
 // Platform admins can switch features off from the Admin Portal. FeatureGate
 // blocks the page and shows a friendly notice when one is disabled.
+
+// Pay-once, access forever: allows access if user is a subscriber OR has ever paid (hasEverPaid flag).
+// This is for features that should be permanently unlocked after first successful payment.
+function EverPaidProtected({ children }) {
+    const { isAuthed, isAuthReady, user } = useAuth();
+    if (!isAuthReady) return <PageFallback />;
+    if (!isAuthed) return <Navigate to="/login" replace />;
+    if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
+    // Allow if subscriber OR has ever made a successful payment (hasEverPaid flag)
+    if (!isSubscriber(user) && !user?.hasEverPaid) return <Navigate to="/app/billing" replace />;
+    return children;
+}
 function FeatureGate({ feature, children }) {
     const { features, loaded } = usePlatformSettings();
     const { user } = useAuth();
@@ -251,7 +263,7 @@ function RoutesWithBoundary() {
                     <Route path="/policy" element={<PolicyPage />} />
                     <Route path="/refund" element={<RefundPage />} />
                     <Route path="/faq" element={<FaqPage />} />
-                    <Route path="/tv" element={<TvPage />} />
+                    <Route path="/tv" element={<EverPaidProtected><TvPage /></EverPaidProtected>} />
                     {import.meta.env.DEV && <Route path="/__tvtest" element={<div style={{ minHeight: "200dvh", background: "#0a0a0f" }}><TvWidget /></div>} />}
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />
@@ -264,7 +276,7 @@ function RoutesWithBoundary() {
                     <Route path="/app/terminal" element={<PaidProtected><TerminalPage /></PaidProtected>} />
                     <Route path="/app/alerts" element={<PaidProtected><FeatureGate feature="signals"><AlertsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/signals" element={<PaidProtected><FeatureGate feature="signals"><SignalsPage /></FeatureGate></PaidProtected>} />
-                    <Route path="/app/economic-calendar" element={<PaidProtected><FeatureGate feature="economicCalendar"><EconomicCalendarPage /></FeatureGate></PaidProtected>} />
+                    <Route path="/app/economic-calendar" element={<EverPaidProtected><FeatureGate feature="economicCalendar"><EconomicCalendarPage /></FeatureGate></EverPaidProtected>} />
                     <Route path="/app/charts" element={<PaidProtected><FeatureGate feature="chartBuilder"><ChartsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/heatmaps" element={<PaidProtected><FeatureGate feature="chartBuilder"><HeatmapsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/indicators" element={<PaidProtected><FeatureGate feature="chartBuilder"><IndicatorsPage /></FeatureGate></PaidProtected>} />
@@ -282,7 +294,7 @@ function RoutesWithBoundary() {
                     <Route path="/app/prop-firms" element={<PaidProtected><PropFirmsPage /></PaidProtected>} />
                     <Route path="/app/affiliate" element={<PaidProtected><AffiliatePage /></PaidProtected>} />
                     <Route path="/app/billing" element={<Protected><BillingPage /></Protected>} />
-                    <Route path="/app/wallet" element={<WalletPage />} />
+                    <Route path="/app/wallet" element={<EverPaidProtected><WalletPage /></EverPaidProtected>} />
                     <Route path="/app/profile" element={<Protected><ProfilePage /></Protected>} />
                     <Route path="/app/api-keys" element={<PlanProtected plan="professional"><UserApiKeysPage /></PlanProtected>} />
                     <Route path="/teacher" element={<Navigate to="/app" replace />} />

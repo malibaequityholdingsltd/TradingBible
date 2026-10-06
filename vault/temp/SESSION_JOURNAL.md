@@ -6817,3 +6817,111 @@
 ## 2026-10-06 11:02:36.880Z console.error
 - text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/price_alerts?select=*&status=eq.active: {"code":"42703","details":null,"hint":null,"message":"column price_alerts.status does not exist"}
 
+## 2026-10-06 13:20:08.735Z load
+- url: http://localhost:3000/login
+- title: TradingBible — Trade like the 1%. Journal like a fund.
+
+## 2026-10-06 13:21:03.282Z load
+- url: http://localhost:3000/app/brokers
+- title: TradingBible — Trade like the 1%. Journal like a fund.
+
+## 2026-10-06 13:21:04.329Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+- durationMs: 554
+
+## 2026-10-06 13:21:04.329Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+
+## 2026-10-06 13:21:05.698Z click
+- element: {"tag":"button","role":null,"ariaLabel":"Open navigation menu","name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":""}
+
+## 2026-10-06 13:21:06.992Z click
+- element: {"tag":"a","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":"Prop Firms"}
+
+## 2026-10-06 13:21:06.993Z navigate
+- url: http://localhost:3000/app/prop-firms
+- via: pushState
+
+## 2026-10-06 13:21:07.346Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+- durationMs: 327
+
+## 2026-10-06 13:21:07.346Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+
+## 2026-10-06 13:21:10.249Z network.error
+- method: GET
+- url: http://localhost:3000/hcgi/api/quotes?symbols=BTCUSD%2CETHUSD%2CSOLUSD%2CBNBUSD%2CXRPUSD%2CADAUSD%2CDOGEUSD%2CAVAXUSD
+- message: Load failed
+- durationMs: 6374
+
+## 2026-10-06 13:21:10.249Z console.error
+- text: Load failed
+
+## 2026-10-06 13:21:10.249Z network.error
+- method: GET
+- url: http://localhost:3000/hcgi/api/ads
+- message: Load failed
+- durationMs: 6860
+
+## 2026-10-06 13:21:10.249Z console.error
+- text: Load failed
+
+## 2026-10-06 13:21:10.249Z network.error
+- method: GET
+- url: http://localhost:3000/hcgi/api/market-data
+- message: Load failed
+- durationMs: 6861
+
+## 2026-10-06 13:21:10.249Z console.error
+- text: Load failed
+
+## 2026-10-06 13:21:10.249Z network.error
+- method: GET
+- url: http://localhost:3000/hcgi/api/ads
+- message: Load failed
+- durationMs: 6861
+
+## 2026-10-06 13:21:10.249Z console.error
+- text: Load failed
+
+## 2026-10-06 13:21:10.295Z load
+- url: http://localhost:3000/app/prop-firms
+- title: TradingBible — Trade like the 1%. Journal like a fund.
+
+## 2026-10-06 13:21:11.126Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+- durationMs: 375
+
+## 2026-10-06 13:21:11.126Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+
+## 2026-10-06 13:21:20.890Z click
+- element: {"tag":"button","role":null,"ariaLabel":"Open navigation menu","name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":""}
+
+## 2026-10-06 13:21:22.894Z click
+- element: {"tag":"a","role":null,"ariaLabel":null,"name":null,"type":null,"id":null,"placeholder":null,"label":null,"value":null,"valueLength":0,"text":"Brokers"}
+
+## 2026-10-06 13:21:22.894Z navigate
+- url: http://localhost:3000/app/brokers
+- via: pushState
+
+## 2026-10-06 13:21:23.427Z network.error
+- method: GET
+- url: https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc
+- status: 400
+- response: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+- durationMs: 494
+
+## 2026-10-06 13:21:23.427Z console.error
+- text: Fetch error from https://yxuzrishocchfbofqazt.supabase.co/rest/v1/trades?select=*&order=tradeDate.desc: {"code":"42703","details":null,"hint":null,"message":"column trades.tradeDate does not exist"}
+
