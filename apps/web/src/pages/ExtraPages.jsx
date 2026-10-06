@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plug, Check, RefreshCw, CreditCard, Crown, ArrowRight, Building2, Wallet, Search, KeyRound, X, Trophy } from 'lucide-react';
+import { Plug, Check, RefreshCw, CreditCard, Crown, ArrowRight, Building2, Wallet, Search, KeyRound, X } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { PageHero, GoldButton, GhostButton } from '@/components/ui-kit';
 import { PLANS, fmtMoney, translatePlan, BROKER_REGISTRY, PROP_FIRM_REGISTRY, CONNECTION_TYPES, getProviderById } from '@/lib/mockData';
@@ -75,7 +75,6 @@ function timeAgo(iso, t) {
 const forex = filtered.filter((p) => p.kind?.toLowerCase().includes('forex') || p.kind?.toLowerCase().includes('cfd') || p.kind?.toLowerCase().includes('multi-asset'));
   const stocks = filtered.filter((p) => p.kind?.toLowerCase().includes('stock') || p.kind?.toLowerCase().includes('future'));
   const crypto = filtered.filter((p) => p.kind?.toLowerCase().includes('crypto'));
-  const propFirms = filtered.filter((p) => p.kind?.toLowerCase().includes('funded') || p.kind?.toLowerCase().includes('prop') || p.kind?.toLowerCase().includes('challenge'));
 
   const totalBalance = connected.reduce((s, c) => s + Number(c.balance || 0), 0);
 
@@ -250,13 +249,6 @@ const forex = filtered.filter((p) => p.kind?.toLowerCase().includes('forex') || 
           <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{crypto.length}</span>
         </div>
         <Grid list={crypto} />
-        <div className="mb-3 mt-8 flex items-center gap-3">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Trophy className="h-4 w-4" /></span>
-          <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">Prop Firms</h3>
-          <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
-          <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{propFirms.length}</span>
-        </div>
-        <Grid list={propFirms} />
         <p className="mt-6 text-xs leading-relaxed text-[#6a665a]">Your keys are encrypted and stored securely. Read-only by default — the app never places trades or withdraws funds.</p>
       </div>
       {selected && (

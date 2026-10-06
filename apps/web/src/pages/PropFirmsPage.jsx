@@ -1,16 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Cable, CheckCircle2, Pencil, RefreshCw, ShieldCheck, Trash2, X, Search } from 'lucide-react';
+import { AlertTriangle, Cable, CheckCircle2, Pencil, RefreshCw, ShieldCheck, Trash2, X, Search, Trophy } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { usePlatformSettings } from '@/lib/platformSettings';
 import { useI18n } from '@/lib/i18n';
 import pb from '@/lib/pocketbaseClient';
-import ProviderLogo from '@/components/ProviderLogo';
 import { PageHero, Card, Stat, StatGrid, EmptyState, GoldButton } from '@/components/ui-kit';
-import { PROP_FIRMS } from '@/lib/brokerProviders';
+import { PROP_FIRM_REGISTRY } from '@/lib/mockData';
 
-const FIRMS = [...PROP_FIRMS.map((f) => f.name), 'Other'];
+const FIRMS = [...PROP_FIRM_REGISTRY.map((f) => f.name), 'Other'];
 
 // Default challenge rules per firm (% of account size). Balances and P&L are
 // never typed in — they arrive from the synced feed only (MT5 bridge).
@@ -65,7 +64,7 @@ function Meter({ label, value, limit }) {
 const numCls = 'w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-[#f0ecdd] outline-none transition focus:border-[#d4af37]/60';
 
 function firmMeta(name) {
-  return PROP_FIRMS.find((f) => f.name === name) || null;
+  return PROP_FIRM_REGISTRY.find((f) => f.name === name) || null;
 }
 
 function AccountForm({ initial, onSave, onCancel, manualAllowed, presetFirm }) {
@@ -329,10 +328,10 @@ export default function PropFirmsPage() {
     return accounts.filter((a) => `${a.firm} ${a.accountLogin} ${a.server}`.toLowerCase().includes(q));
   }, [accounts, query]);
 
-  const visibleFirms = useMemo(() => {
+const visibleFirms = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return PROP_FIRMS;
-    return PROP_FIRMS.filter((f) => `${f.name} ${f.via} ${f.integration} ${f.blurb}`.toLowerCase().includes(q));
+    if (!q) return PROP_FIRM_REGISTRY;
+    return PROP_FIRM_REGISTRY.filter((f) => `${f.name} ${f.kind} ${f.notes || ''}`.toLowerCase().includes(q));
   }, [query]);
 
   return (
@@ -372,27 +371,64 @@ export default function PropFirmsPage() {
 
         <div>
           <div className="mb-3 flex items-center gap-3">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><ShieldCheck className="h-4 w-4" /></span>
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Trophy className="h-4 w-4" /></span>
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">Prop directory</h3>
             <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
             <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{visibleFirms.length}</span>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {visibleFirms.map((f) => (
-              <div key={f.id} className="tb-card tb-card-hover flex flex-col p-4">
-                <div className="flex items-center gap-2.5">
-                  <ProviderLogo domain={f.logoDomain} name={f.name} color={f.color} size={42} />
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold text-[#f0ecdd]">{f.name}</div>
-                    <div className="truncate text-[11px] text-[#8a8577]">via {f.via}</div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {visibleFirms.map((f) => {
+              const acct = accounts.find((c) => String(c.firm || '').toLowerCase() === String(f.name).toLowerCase());
+              const on = acct?.syncStatus === 'synced';
+              const pending = acct && acct?.syncStatus !== 'synced';
+              return (
+                <div key={f.id} className="tb-card tb-card-hover flex flex-col p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="relative shrink-0">
+                      {f.logo ? (
+                        <img src={f.logo} alt={f.name} className="h-11 w-11 rounded-xl object-contain" />
+                      ) : (
+                        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl font-mono text-xs font-bold" style={{ background: `${f.color}22`, color: f.color }}>{f.tag}</div>
+                      )}
+                      {acct && (
+                        <span title={on ? 'Connected' : 'Pending'} className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-[#0f0f14] ${on ? 'bg-emerald-400' : 'bg-[#d4af37] animate-pulse'}`} />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-semibold text-[#f0ecdd]">{f.name}</div>
+                      <div className="truncate text-xs text-[#8a8577]">{f.kind} • {f.authType}</div>
+                    </div>
+                    {acct && (
+                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${on ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#d4af37]/15 text-[#d4af37]'}`}>
+                        {on ? 'Connected' : (acct.syncStatus || 'Pending')}
+                      </span>
+                    )}
                   </div>
+                  <p className="mt-3 line-clamp-2 min-h-[2rem] text-xs leading-relaxed text-[#8a8577]">{f.notes || f.blurb || 'Live sync available.'}</p>
+                  {acct ? (
+                    <div className="mt-3 space-y-2 border-t border-white/[0.06] pt-3">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <div className="truncate font-mono text-lg font-semibold text-[#f0ecdd]">{money(acct.balance || 0)}</div>
+                        <div className="shrink-0 text-[11px] text-[#8a8577]">Last sync: {acct.lastSync ? new Date(acct.lastSync).toLocaleString() : '—'}</div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button disabled={busyId === `resync:${acct.id}`} onClick={() => resync(acct.id)} className="inline-flex min-h-[38px] items-center justify-center gap-1 rounded-lg border border-[#d4af37]/30 px-2 py-2 text-xs text-[#e9e7df] transition hover:bg-[#d4af37]/[0.06] disabled:opacity-60">
+                          <RefreshCw className="h-3.5 w-3.5" /> Resync
+                        </button>
+                        <button disabled={busyId === `disconnect:${acct.id}`} onClick={() => remove(acct.id)} className="inline-flex min-h-[38px] items-center justify-center gap-1 rounded-lg border border-red-500/35 px-2 py-2 text-xs text-red-400 transition hover:bg-red-500/10 disabled:opacity-60">
+                          Disconnect
+                        </button>
+                      </div>
+                      {pending && <div className="text-[11px] text-[#d4af37]">Pending — coming soon.</div>}
+                    </div>
+                  ) : (
+                    <GoldButton onClick={() => { setPresetFirm(f.name); setAdding(true); setEditing(null); }} className="mt-3 w-full !rounded-lg !py-2.5 !text-sm !font-medium">
+                      <Cable className="h-4 w-4" /> Connect
+                    </GoldButton>
+                  )}
                 </div>
-                <p className="mt-2.5 line-clamp-2 min-h-[2rem] text-[11px] leading-relaxed text-[#8a8577]">{f.blurb}</p>
-                <button onClick={() => { setPresetFirm(f.name); setAdding(true); setEditing(null); }} className="mt-3 inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/30 text-xs font-medium text-[#e9e7df] transition hover:bg-[#d4af37]/[0.06]">
-                  <Cable className="h-3.5 w-3.5" /> Connect
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -424,7 +460,13 @@ export default function PropFirmsPage() {
                 <Card hover key={a.id} className="p-5">
                   <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                     <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <ProviderLogo domain={meta?.logoDomain} name={a.firm} color={meta?.color} size={42} />
+                      <div className="relative shrink-0">
+                        {meta?.logo ? (
+                          <img src={meta.logo} alt={a.firm} className="h-11 w-11 rounded-xl object-contain" />
+                        ) : (
+                          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl font-mono text-xs font-bold" style={{ background: `${meta?.color || '#d4af37'}22`, color: meta?.color || '#d4af37' }}>{(a.firm || '?').slice(0, 2).toUpperCase()}</div>
+                        )}
+                      </div>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="truncate text-base font-semibold text-[#f0ecdd]">{a.firm}</h3>
