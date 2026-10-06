@@ -5,7 +5,7 @@ export const BRAND = {
   // Core identity
   name: 'TradingBible',
   shortName: 'TB',
-  tagline: 'maliba-admin',
+  tagline: 'TradingBible',
 
   // Legal entity
   legalName: 'TradingBible LLC',

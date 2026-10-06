@@ -27,7 +27,7 @@ const PLAN_I18N_KEY = { pro: 'pro', elite: 'elite', professional: 'prof' };
 // come from the i18n dictionary so pricing renders in the active language.
 // Pass the `t` function from useI18n().
 export function translatePlan(t, plan) {
-  const k = PLAN_I18N_KEY[plan.id] || plan.id;
+  const k = (plan.id === 'trial' ? 'pro' : (PLAN_I18N_KEY[plan.id] || plan.id));
   const features = [];
   for (let i = 1; i <= 6; i += 1) {
     const key = `plan.${k}.f${i}`;

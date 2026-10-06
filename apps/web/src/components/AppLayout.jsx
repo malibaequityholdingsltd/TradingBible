@@ -84,7 +84,7 @@ function Brand({ homeTo, platformName, tagline }) {
   const last = words[words.length - 1] || '';
   return (
     <Link to={homeTo} className="group flex items-center gap-4">
-      <BrandWordmark size={32} showTagline tagline={tagline || 'maliba-admin'} />
+      <BrandWordmark size={32} showTagline tagline={tagline || 'TradingBible'} />
       <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-emerald-400 ring-2 ring-[#0a0a0f]" />
     </Link>
   );

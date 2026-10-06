@@ -58,7 +58,7 @@ export function BrandWordmark({
   size = 28,
   className = '',
   showTagline = false,
-  tagline = 'maliba-admin',
+  tagline = 'TradingBible',
 }) {
   const width = typeof size === 'number' ? `${size}px` : size;
   const height = typeof size === 'number' ? `${size}px` : size;
