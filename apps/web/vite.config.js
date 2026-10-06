@@ -386,6 +386,14 @@ export default defineConfig({
 				changeOrigin: true,
 				rewrite: (p) => p.replace(/^\/hcgi\/api/, ''),
 			},
+			'/api': {
+				target: process.env.API_PROXY_TARGET || 'http://localhost:3001',
+				changeOrigin: true,
+			},
+			'/ads': {
+				target: process.env.API_PROXY_TARGET || 'http://localhost:3001',
+				changeOrigin: true,
+			},
 		},
 		headers: {
 			'Cross-Origin-Embedder-Policy': 'credentialless',

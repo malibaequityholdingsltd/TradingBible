@@ -37,10 +37,16 @@ process.on('SIGTERM', async () => {
 });
 
 app.use(helmet());
+const devOrigins = ['http://127.0.0.1:3000', 'http://localhost:3000', 'http://172.20.10.4:3000'];
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? [process.env.CORS_ORIGIN, ...devOrigins]
+  : devOrigins;
+
 app.use(cors({
-	origin: process.env.CORS_ORIGIN || false, // deny cors when unset (on purpose)
+	origin: allowedOrigins,
 	methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'QUERY'],
 	allowedHeaders: ['Authorization', 'Content-Type'],
+	credentials: true,
 }));
 app.use(morgan('combined'));
 app.use(globalRateLimit);

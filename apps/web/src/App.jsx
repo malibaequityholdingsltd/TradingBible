@@ -78,6 +78,7 @@ const TermsPage = lazy(() => import('./pages/LegalPages').then((m) => ({ default
 const PolicyPage = lazy(() => import('./pages/LegalPages').then((m) => ({ default: m.PolicyPage })));
 const RefundPage = lazy(() => import('./pages/LegalPages').then((m) => ({ default: m.RefundPage })));
 const FaqPage = lazy(() => import('./pages/LegalPages').then((m) => ({ default: m.FaqPage })));
+const AdsDemoPage = lazy(() => import('./pages/AdsDemoPage'));
 
 function PageFallback() {
     return (
@@ -228,7 +229,7 @@ function AppChrome() {
             <AlertMonitor />
             <ScrollToTop />
             {inApp && features.aiCoach !== false && <ErrorBoundary fallback={null}><LiveChatWidget /></ErrorBoundary>}
-            {inApp && <ErrorBoundary fallback={null}><TvWidget /></ErrorBoundary>}
+            {pathname !== '/tv' && inApp && <ErrorBoundary fallback={null}><TvWidget /></ErrorBoundary>}
         </>
     );
 }
@@ -238,7 +239,10 @@ function AppChrome() {
 function RootRedirect() {
     const { isAuthed, isAuthReady, user } = useAuth();
     const { pathname } = useLocation();
-    if (!isAuthReady || !isAuthed || pathname !== '/') return null;
+    // Only redirect if authenticated AND auth is ready AND at root
+    // For unauthenticated users, let them see the landing page immediately
+    if (!isAuthReady) return null;
+    if (!isAuthed || pathname !== '/') return null;
     return <Navigate to={homeRouteForUser(user)} replace />;
 }
 
@@ -265,6 +269,7 @@ function RoutesWithBoundary() {
                     <Route path="/faq" element={<FaqPage />} />
                     <Route path="/tv" element={<EverPaidProtected><TvPage /></EverPaidProtected>} />
                     {import.meta.env.DEV && <Route path="/__tvtest" element={<div style={{ minHeight: "200dvh", background: "#0a0a0f" }}><TvWidget /></div>} />}
+                    {import.meta.env.DEV && <Route path="/__ads-demo" element={<Protected><AdsDemoPage /></Protected>} />}
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />
                     <Route path="/reset" element={<ResetPage />} />

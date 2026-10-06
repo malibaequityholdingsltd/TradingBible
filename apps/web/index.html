@@ -6,7 +6,7 @@
 		<link rel="shortcut icon" href="/icons/favicon-32x32.svg" />
 		<meta name="generator" content="Hostinger Horizons" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-		<style>html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%}</style>
+		<style>html,body{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%}</style>
 		<meta name="theme-color" content="#0a0a0f" />
 		<meta name="description" content="TradingBible is an AI-powered trading journal and terminal for traders, schools, and teams — with broker sync, analytics, coaching, exams, certifications, and performance tracking." />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
@@ -15,15 +15,115 @@
 		<link rel="manifest" href="/manifest.webmanifest" />
 		<link rel="apple-touch-icon" href="/icons/apple-touch-icon.svg" />
 		<title>TradingBible — Trade like the 1%. Journal like a fund.</title>
+
+		<!-- Additional favicon sizes -->
+		<link rel="icon" type="image/svg+xml" sizes="16x16" href="/icons/favicon-16x16.svg" />
+		<link rel="icon" type="image/svg+xml" sizes="32x32" href="/icons/favicon-32x32.svg" />
+		<link rel="icon" type="image/svg+xml" sizes="180x180" href="/icons/apple-touch-icon.svg" />
+		<link rel="icon" type="image/png" sizes="192x192" href="/icons/favicon-192.png" />
+		<link rel="icon" type="image/png" sizes="512x512" href="/icons/favicon-512.png" />
+		<link rel="mask-icon" href="/icons/favicon.svg" color="#d4af37" />
+
+		<!-- PWA Meta Tags -->
+		<meta name="theme-color" content="#0a0a0f" media="(prefers-color-scheme: dark)" />
+		<meta name="theme-color" content="#0a0a0f" media="(prefers-color-scheme: light)" />
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="application-name" content="TradingBible" />
+		<meta name="msapplication-TileColor" content="#d4af37" />
+		<meta name="msapplication-TileImage" content="/icons/favicon-144.png" />
+
+		<!-- PWA Install Prompt Styles -->
+		<style>
+			@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+			@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+			#pwa-install-banner {
+				position: fixed;
+				bottom: 24px;
+				left: 50%;
+				transform: translateX(-50%);
+				z-index: 9999;
+				background: linear-gradient(135deg, #0c0c11 0%, #1a1a1a 100%);
+				border: 1px solid #d4af37;
+				border-radius: 16px;
+				padding: 16px 20px;
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,175,55,0.2);
+				animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+				max-width: 90vw;
+				width: 340px;
+			}
+			#pwa-install-banner.hidden { display: none; }
+			#pwa-install-banner svg { flex-shrink: 0; width: 28px; height: 28px; color: #d4af37; }
+			#pwa-install-banner .content { flex: 1; min-width: 0; }
+			#pwa-install-banner .title { font-weight: 700; color: #f0ecdd; font-size: 14px; }
+			#pwa-install-banner .desc { font-size: 12px; color: #8a8577; margin-top: 2px; }
+			#pwa-install-banner .actions { display: flex; gap: 8px; margin-top: 8px; }
+			#pwa-install-banner button {
+				padding: 8px 16px;
+				border-radius: 10px;
+				font-size: 13px;
+				font-weight: 600;
+				cursor: pointer;
+				transition: all 0.2s;
+			}
+			#pwa-install-banner .install-btn {
+				background: linear-gradient(135deg, #d4af37 0%, #f4e6a8 100%);
+				color: #0a0a0f;
+				border: none;
+				font-weight: 700;
+			}
+			#pwa-install-banner .install-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+			#pwa-install-banner .dismiss-btn {
+				background: transparent;
+				color: #8a8577;
+				border: 1px solid #d4af37;
+				padding: 8px 14px;
+			}
+			#pwa-install-banner .dismiss-btn:hover { background: rgba(212,175,55,0.1); }
+			@media (max-width: 480px) {
+				#pwa-install-banner { left: 12px; right: 12px; transform: none; width: auto; }
+			}
+		</style>
+
+		<!-- PWA Install Banner -->
+		<div id="pwa-install-banner" class="hidden" role="dialog" aria-labelledby="pwa-banner-title" aria-describedby="pwa-banner-desc">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+				<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+				<polyline points="17 8 12 3 7 8"/>
+				<line x1="12" y1="3" x2="12" y2="15"/>
+			</svg>
+			<div class="content">
+				<div class="title" id="pwa-banner-title">Install TradingBible</div>
+				<div class="desc" id="pwa-banner-desc">Get instant access, offline support & push notifications</div>
+				<div class="actions">
+					<button class="dismiss-btn" id="pwa-dismiss">Not now</button>
+					<button class="install-btn" id="pwa-install">Install App</button>
+				</div>
+			</div>
+		</div>
 	</head>
 	<body>
 		<div id="root"></div>
 		<noscript><div style="min-height:100vh;display:grid;place-items:center;background:#0a0a0f;color:#f0ecdd;font-family:sans-serif;text-align:center;padding:2rem">TradingBible needs JavaScript enabled to run.</div></noscript>
+		<script>
+			// Apply theme class synchronously before React renders to prevent flash/invisible content
+			(function() {
+				try {
+					var saved = localStorage.getItem('tb-theme');
+					var theme = (saved === 'light' || saved === 'dark') ? saved : 'dark';
+					var root = document.documentElement;
+					root.classList.remove('light', 'dark');
+					root.classList.add(theme);
+					root.setAttribute('data-theme', theme);
+					root.style.colorScheme = theme;
+				} catch (e) {
+					// Fallback to dark
+					document.documentElement.classList.add('dark');
+				}
+			})();
+		</script>
 		<script type="module" src="/src/main.jsx"></script>
 	</body>
 </html>
-
-    <!-- Additional favicon sizes -->
-    <link rel="icon" type="image/svg+xml" sizes="16x16" href="/icons/favicon-16x16.svg" />
-    <link rel="icon" type="image/svg+xml" sizes="32x32" href="/icons/favicon-32x32.svg" />
-    <link rel="icon" type="image/svg+xml" sizes="180x180" href="/icons/apple-touch-icon.svg" />
