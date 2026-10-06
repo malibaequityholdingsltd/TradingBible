@@ -2972,7 +2972,7 @@ export function AdminSettings() {
   const [saveState, setSaveState] = useState('idle');
   const [settings, setSettings] = useState({
     platformName: 'TradingBible',
-    tagline: 'maliba-admin',
+    tagline: 'TradingBible',
     supportEmail: 'support@tradingbible.app',
     trialDays: 0,
     signupsOpen: true,

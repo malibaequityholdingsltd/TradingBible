@@ -3,7 +3,7 @@ import pb from '@/lib/pocketbaseClient';
 
 export const PLATFORM_SETTINGS_DEFAULTS = {
   platformName: 'TradingBible',
-  tagline: 'maliba-admin',
+  tagline: 'TradingBible',
   supportEmail: 'support@tradingbible.app',
   // trialDays is legacy (no free trial). Kept at 0 so old cached settings
   // never re-enable a trial anywhere.

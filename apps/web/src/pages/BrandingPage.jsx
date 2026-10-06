@@ -13,7 +13,7 @@ const DEFAULTS = {
   primaryColor: '#0a0a0f',
   accentColor: '#d4af37',
   logoUrl: TRADINGBIBLE_LOGO,
-  tagline: 'maliba-admin',
+  tagline: 'TradingBible',
 };
 
 const input = 'w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none focus:border-[#d4af37]/50';
