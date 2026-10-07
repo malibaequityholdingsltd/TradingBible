@@ -100,6 +100,10 @@ export default function TvWidget() {
   });
   const [channelIndex, setChannelIndex] = useState(0);
   const [frameLoaded, setFrameLoaded] = useState(false);
+  // Tuning-in spin: the loader stays up a minimum beat on every tune so
+  // channel hops read as deliberate retunes instead of flicker.
+  const [minSpinDone, setMinSpinDone] = useState(false);
+  const tuneTimer = useRef(null);
   const [pos, setPos] = useState(() => (typeof window !== 'undefined' ? loadPos() : { x: 0, y: 0 }));
   const [dragging, setDragging] = useState(false);
   const [miniPos, setMiniPos] = useState(() => {
@@ -182,6 +186,13 @@ export default function TvWidget() {
   const ytSrc = playing !== null
     ? (probeVid && !useEndpoint ? ytVideoEmbed(probeVid) : hardenEmbed(ordered[playing].embedUrl || ordered[playing].url))
     : '';
+
+  useEffect(() => {
+    setMinSpinDone(false);
+    clearTimeout(tuneTimer.current);
+    tuneTimer.current = setTimeout(() => setMinSpinDone(true), 3000);
+    return () => clearTimeout(tuneTimer.current);
+  }, [playing, ytRetry, useEndpoint]);
 
   // NOTE: every callback below must stay above its consumers — a
   // use-before-declare here throws on mount and blanks the entire app
@@ -824,9 +835,12 @@ export default function TvWidget() {
               >
               <div className="tb-panel-swap flex h-full flex-col">
                 <div className="relative min-h-0 flex-1 bg-black" onMouseMove={pokeCtls} onTouchStart={pokeCtls}>
-                  {!frameLoaded && (
+                  {(!frameLoaded || !minSpinDone) && (
                     <div className="absolute inset-0 grid place-items-center">
-                      <Loader2 className="h-6 w-6 animate-spin text-[#d4af37]" />
+                      <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="h-6 w-6 animate-spin text-[#d4af37]" />
+                        <span className="text-[10px] uppercase tracking-[0.25em] text-[#d4af37]">{t('tv.tuning')}</span>
+                      </div>
                     </div>
                   )}
                   {isYoutube ? (

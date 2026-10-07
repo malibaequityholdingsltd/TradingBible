@@ -56,6 +56,9 @@ export default function OnboardingTutorial({ onClose, onComplete }) {
           <button onClick={visit} className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-[#d4af37] hover:underline">
             {t('c.takeMeThere')} <ArrowRight className="h-4 w-4" />
           </button>
+          <button onClick={() => { onClose?.(); nav('/app/guide'); }} className="mt-2 block text-sm text-[#8a8577] transition hover:text-[#e9e7df] hover:underline">
+            Open the full Pro Guide — 24 missions, tracked progress
+          </button>
 
           <div className="mt-6 flex items-center gap-1.5">
             {STEPS.map((_, idx) => (

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 728 90" width="728" height="90">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0c1420"/>
+      <stop offset="1" stop-color="#0a0a0f"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4e6a8"/>
+      <stop offset="1" stop-color="#a67c1e"/>
+    </linearGradient>
+  </defs>
+  <rect width="728" height="90" fill="url(#bg)"/>
+  <g stroke="#38bdf8" stroke-opacity="0.12">
+    <line x1="0" y1="22" x2="728" y2="22"/>
+    <line x1="0" y1="68" x2="728" y2="68"/>
+  </g>
+  <g transform="rotate(-8 120 45)">
+    <rect x="60" y="18" width="120" height="54" rx="8" fill="url(#card)"/>
+    <rect x="70" y="28" width="34" height="8" rx="4" fill="#0a0a0f" opacity="0.55"/>
+    <rect x="70" y="54" width="60" height="6" rx="3" fill="#0a0a0f" opacity="0.35"/>
+    <circle cx="160" cy="58" r="9" fill="#0a0a0f" opacity="0.55"/>
+  </g>
+  <circle cx="215" cy="30" r="12" fill="none" stroke="#38bdf8" stroke-width="3"/>
+  <text x="215" y="36" fill="#38bdf8" font-size="14" font-weight="800" text-anchor="middle" font-family="system-ui, sans-serif">$</text>
+  <circle cx="245" cy="62" r="7" fill="#38bdf8" opacity="0.35"/>
+  <circle cx="262" cy="26" r="4" fill="#38bdf8" opacity="0.5"/>
+  <g font-family="system-ui, sans-serif">
+    <text x="470" y="42" fill="#f0ecdd" font-size="26" font-weight="800" text-anchor="middle">Fund your wallet</text>
+    <text x="470" y="62" fill="#38bdf8" font-size="11" letter-spacing="3" text-anchor="middle">SECURE STRIPE TOP-UP</text>
+  </g>
+  <circle cx="700" cy="20" r="4" fill="#38bdf8"/>
+  <circle cx="30" cy="70" r="3" fill="#38bdf8" opacity="0.6"/>
+</svg>

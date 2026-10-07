@@ -10,7 +10,19 @@ export class ABTestingEngine {
     this.assignments = new Map();
     this.storage = options.storage || (typeof localStorage !== 'undefined' ? localStorage : null);
     this.storageKey = 'tb:ab-assignments';
+    // Optional server sync: (payload) => Promise. Assignment stays
+    // client-side in localStorage; exposures/conversions are mirrored
+    // best-effort so the admin report aggregates across devices.
+    this.sync = typeof options.sync === 'function' ? options.sync : null;
     this.loadAssignments();
+  }
+
+  syncEvent(payload) {
+    if (!this.sync) return;
+    try {
+      const out = this.sync(payload);
+      if (out && typeof out.catch === 'function') out.catch(() => {});
+    } catch { /* best effort */ }
   }
 
   loadAssignments() {
@@ -180,6 +192,7 @@ export class ABTestingEngine {
     const key = `${experimentId}:${variantId}:${metric}`;
     const current = this.getMetric(key);
     this.setMetric(key, current + value);
+    this.syncEvent({ experimentId, variantId, event: 'conversion', metric, value });
   }
 
   // Record that a variant was shown (an exposure / trial). Conversion-rate
@@ -189,6 +202,7 @@ export class ABTestingEngine {
     const key = `${experimentId}:${variantId}:${EXPOSURE_SUFFIX}`;
     const current = this.getMetric(key);
     this.setMetric(key, current + value);
+    this.syncEvent({ experimentId, variantId, event: 'exposure', value });
   }
 
   getExposure(experimentId, variantId) {

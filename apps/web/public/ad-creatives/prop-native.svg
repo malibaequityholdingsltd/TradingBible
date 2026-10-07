@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#160f1c"/>
+      <stop offset="1" stop-color="#0a0a0f"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#a67c1e"/>
+      <stop offset="1" stop-color="#f4e6a8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.75" r="0.6">
+      <stop offset="0" stop-color="#f472b6" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#f472b6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="600" height="400" fill="url(#bg)"/>
+  <rect width="600" height="400" fill="url(#glow)"/>
+  <g>
+    <rect x="90" y="230" width="44" height="100" rx="4" fill="#d4af37" opacity="0.35"/>
+    <rect x="150" y="190" width="44" height="140" rx="4" fill="#d4af37" opacity="0.55"/>
+    <rect x="210" y="140" width="44" height="190" rx="4" fill="url(#gold)"/>
+    <rect x="270" y="200" width="44" height="130" rx="4" fill="#d4af37" opacity="0.45"/>
+  </g>
+  <g transform="translate(440 200)">
+    <circle cx="0" cy="0" r="62" fill="none" stroke="url(#gold)" stroke-width="8"/>
+    <circle cx="0" cy="0" r="46" fill="none" stroke="#d4af37" stroke-width="2" opacity="0.5"/>
+    <text y="16" fill="#f4e6a8" font-size="44" font-weight="800" text-anchor="middle" font-family="system-ui, sans-serif">$</text>
+    <path d="M-40 -48 L-52 -70 M40 -48 L52 -70 M-58 -62 L-34 -62 M34 -62 L58 -62" stroke="#f472b6" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <g font-family="system-ui, sans-serif">
+    <text x="60" y="70" fill="#f0ecdd" font-size="38" font-weight="800">GET FUNDED</text>
+    <text x="60" y="98" fill="#f472b6" font-size="14" letter-spacing="4">UP TO $200K · KEEP 90%</text>
+  </g>
+</svg>

@@ -22,6 +22,10 @@ const DEFAULT_SETTINGS = {
 
 const HIDE_UI_MS = 3500;
 
+// Minimum time the "tuning in" loader stays up on every tune — channel hops
+// read as deliberate retunes instead of flicker.
+const TUNE_SPIN_MS = 3000;
+
 export default function TvPage() {
   const { t, lang } = useI18n();
   const { user, isAuthed } = useAuth();
@@ -39,6 +43,8 @@ export default function TvPage() {
   const [activeChannel, setActiveChannel] = useState(0);
   const [playChannel, setPlayChannel] = useState(null); // index into live channels, or null for ads rotation
   const [frameLoaded, setFrameLoaded] = useState(false);
+  const [minSpinDone, setMinSpinDone] = useState(false);
+  const [bootDone, setBootDone] = useState(false);
   const [ytMuted, setYtMuted] = useState(true);
   const [ytStarted, setYtStarted] = useState(false);
   const [ytError, setYtError] = useState(false);
@@ -100,6 +106,21 @@ export default function TvPage() {
   }, []);
 
   useEffect(() => { setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); setYtRetry(0); setYtApi(false); setUseEndpoint(false); return () => { clearTimeout(advanceTimer.current); clearTimeout(retryTimerTv.current); }; }, [playChannel]);
+
+  // Tuning-in spin: restart the minimum-spin clock on every tune (channel
+  // switch, retry, endpoint fallback) and once for the boot screen.
+  const tuneTimer = useRef(null);
+  const bootTimer = useRef(null);
+  useEffect(() => {
+    setMinSpinDone(false);
+    clearTimeout(tuneTimer.current);
+    tuneTimer.current = setTimeout(() => setMinSpinDone(true), TUNE_SPIN_MS);
+    return () => clearTimeout(tuneTimer.current);
+  }, [playChannel, ytRetry, useEndpoint]);
+  useEffect(() => {
+    bootTimer.current = setTimeout(() => setBootDone(true), TUNE_SPIN_MS);
+    return () => clearTimeout(bootTimer.current);
+  }, []);
 
   // Channel entitlements: the Bloomberg desk plays for everyone (top of
   // funnel, even logged out); higher desks need their plan, and logged-out
@@ -329,7 +350,7 @@ export default function TvPage() {
 
   const seconds = Math.max(4, Math.min(60, Number(settings.rotationSeconds) || 12));
 
-  if (loading) {
+  if (loading || !bootDone) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0a0a0f]">
         <div className="flex flex-col items-center gap-5">
@@ -358,7 +379,7 @@ export default function TvPage() {
           }
         >
         <div key={liveChannels[playChannel].id} className="absolute inset-0 bg-black">
-          {!frameLoaded && (
+          {(!frameLoaded || !minSpinDone) && (
             <div className="absolute inset-0 grid place-items-center">
               <div className="flex flex-col items-center gap-3">
                 <Loader2 className="h-8 w-8 animate-spin text-[#d4af37]" />

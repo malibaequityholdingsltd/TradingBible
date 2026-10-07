@@ -29,6 +29,16 @@ export const PLATFORM_FEATURES_DEFAULTS = {
   wallet: true,
 };
 
+// Minimum plan per PlanProtected route. Admin-editable in Settings —
+// changing these re-gates the user portal with no code deploy.
+export const PLAN_GATES_DEFAULTS = {
+  reports: 'elite',
+  coach: 'elite',
+  apiDocs: 'professional',
+  branding: 'professional',
+  apiKeys: 'professional',
+};
+
 const CACHE_KEY = 'tb:platform-settings-v2';
 const CACHE_TTL = 30 * 60 * 1000;
 const CHANGE_EVENT = 'tb:platform-settings:changed';
@@ -42,6 +52,7 @@ export function notifyPlatformSettingsChanged() {
 export function usePlatformSettings() {
   const [settings, setSettings] = useState(PLATFORM_SETTINGS_DEFAULTS);
   const [features, setFeatures] = useState(PLATFORM_FEATURES_DEFAULTS);
+  const [planGates, setPlanGates] = useState(PLAN_GATES_DEFAULTS);
   const [loaded, setLoaded] = useState(false);
 
   const load = useCallback(async () => {
@@ -52,6 +63,7 @@ export function usePlatformSettings() {
         if (parsed && parsed.ts && Date.now() - parsed.ts < CACHE_TTL) {
           setSettings({ ...PLATFORM_SETTINGS_DEFAULTS, ...(parsed.settings || {}) });
           setFeatures({ ...PLATFORM_FEATURES_DEFAULTS, ...(parsed.features || {}) });
+          setPlanGates({ ...PLAN_GATES_DEFAULTS, ...((parsed.settings || {}).planGates || {}) });
           setLoaded(true);
         }
       }
@@ -65,6 +77,7 @@ export function usePlatformSettings() {
       };
       setSettings(next.settings);
       setFeatures(next.features);
+      setPlanGates({ ...PLAN_GATES_DEFAULTS, ...(next.settings.planGates || {}) });
       setLoaded(true);
       try {
         window.localStorage.setItem(CACHE_KEY, JSON.stringify(next));
@@ -85,7 +98,7 @@ export function usePlatformSettings() {
     };
   }, [load]);
 
-  return { settings, features, loaded, reload: load };
+  return { settings, features, planGates, loaded, reload: load };
 }
 
 export const FEATURE_ROUTES = {

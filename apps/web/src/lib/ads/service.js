@@ -15,7 +15,11 @@ export class AdsService {
     this.rotationEngine = new RotationEngine(options.rotationAlgorithm);
     this.frequencyEngine = new FrequencyCapEngine(options.frequencyOptions);
     this.trackingEngine = new TrackingEngine(options.trackingOptions);
-    this.abTestingEngine = new ABTestingEngine(options.abTestingOptions);
+    this.abOptions = options.abTestingOptions || {};
+    this.abTestingEngine = new ABTestingEngine({
+      ...this.abOptions,
+      sync: (payload) => this.syncExperiment(payload),
+    });
     this.scheduler = new AdScheduler(options.schedulerOptions);
     this.viewabilityTracker = new ViewabilityTracker(options.viewabilityOptions);
     this.ads = new Map();
@@ -112,12 +116,18 @@ export class AdsService {
   }
 
   getAdsForPlacement(placementId, context = {}) {
-    const placement = this.placements.get(placementId);
-    if (!placement) return [];
+    // Unknown placement (e.g. /placements endpoint missing): serve as an
+    // open slot instead of rendering nothing. House ads with an empty
+    // placementIds list are eligible everywhere by design.
+    const placement = this.placements.get(placementId) || {
+      id: placementId,
+      allowedAdTypes: Object.values(AD_TYPES),
+    };
 
     const eligibleAds = Array.from(this.ads.values()).filter(ad => {
       if (ad.enabled === false) return false;
-      if (ad.placementIds && !ad.placementIds.includes(placementId)) return false;
+      if (Array.isArray(ad.placementIds) && ad.placementIds.length > 0 && !ad.placementIds.includes(placementId)) return false;
+      if (Array.isArray(placement.allowedAdTypes) && placement.allowedAdTypes.length > 0 && !placement.allowedAdTypes.includes(ad.type)) return false;
       if (ad.startDate && new Date() < new Date(ad.startDate)) return false;
       if (ad.endDate && new Date() > new Date(ad.endDate)) return false;
 
@@ -177,6 +187,20 @@ export class AdsService {
 
   getVariant(experimentId, context = {}) {
     return this.abTestingEngine.getVariant(experimentId, context);
+  }
+
+  // Best-effort mirror of experiment exposure/conversion counts for the
+  // admin report. Never throws; assignment truth stays in localStorage.
+  async syncExperiment(payload) {
+    try {
+      const token = typeof this.abOptions?.getToken === 'function' ? this.abOptions.getToken() : null;
+      if (!token) return;
+      await fetch(`${this.apiUrl}/experiments/track`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } catch { /* best effort */ }
   }
 
   createPlacement(config) {

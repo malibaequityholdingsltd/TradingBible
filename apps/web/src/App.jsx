@@ -20,6 +20,8 @@ import TvWidget from './components/TvWidget';
 import AmbientDepth from './components/AmbientDepth';
 import PwaStatus from './components/PwaStatus';
 import ErrorBoundary from './components/ErrorBoundary';
+import { AdProvider } from './lib/ads/components.jsx';
+import pb from './lib/pocketbaseClient';
 import LandingPage from './pages/LandingPage';
 import { LoginPage, SignupPage, ResetPage, OnboardingPage } from './pages/AuthFlow';
 
@@ -79,6 +81,7 @@ const PolicyPage = lazy(() => import('./pages/LegalPages').then((m) => ({ defaul
 const RefundPage = lazy(() => import('./pages/LegalPages').then((m) => ({ default: m.RefundPage })));
 const FaqPage = lazy(() => import('./pages/LegalPages').then((m) => ({ default: m.FaqPage })));
 const AdsDemoPage = lazy(() => import('./pages/AdsDemoPage'));
+const ProGuidePage = lazy(() => import('./pages/ProGuidePage'));
 
 function PageFallback() {
     return (
@@ -108,14 +111,18 @@ function SubscriberProtected({ children }) {
 
 // Tier gate: requires a paid plan AT or ABOVE the given tier
 // ('pro' | 'elite' | 'professional'). Below-tier users land on pricing to
-// upgrade. Admins always pass.
-function PlanProtected({ plan, children }) {
+// upgrade. Admins always pass. The `gate` prop names a key in the admin-
+// editable planGates settings map, so plan requirements can change with no
+// code deploy — the `plan` prop is the fallback default.
+function PlanProtected({ plan, gate, children }) {
     const { isAuthed, isAuthReady, user } = useAuth();
+    const { planGates } = usePlatformSettings();
+    const effective = (gate && planGates?.[gate]) || plan;
     if (!isAuthReady) return <PageFallback />;
     if (!isAuthed) return <Navigate to="/login" replace />;
     if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
     if (!isSubscriber(user)) return <Navigate to="/pricing" replace />;
-    if (!meetsPlan(user, plan)) return <Navigate to="/pricing" replace />;
+    if (!meetsPlan(user, effective)) return <Navigate to="/pricing" replace />;
     return children;
 }
 
@@ -286,22 +293,23 @@ function RoutesWithBoundary() {
                     <Route path="/app/heatmaps" element={<PaidProtected><FeatureGate feature="chartBuilder"><HeatmapsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/indicators" element={<PaidProtected><FeatureGate feature="chartBuilder"><IndicatorsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/journal" element={<PaidProtected><JournalPage /></PaidProtected>} />
-                    <Route path="/app/reports" element={<PlanProtected plan="elite"><ReportsPage /></PlanProtected>} />
-                    <Route path="/app/coach" element={<PlanProtected plan="elite"><FeatureGate feature="aiCoach"><CoachPage /></FeatureGate></PlanProtected>} />
+                    <Route path="/app/reports" element={<PlanProtected plan="elite" gate="reports"><ReportsPage /></PlanProtected>} />
+                    <Route path="/app/coach" element={<PlanProtected plan="elite" gate="coach"><FeatureGate feature="aiCoach"><CoachPage /></FeatureGate></PlanProtected>} />
                     <Route path="/app/tools" element={<SubscriberProtected><FeatureGate feature="riskTools"><RiskToolsPage /></FeatureGate></SubscriberProtected>} />
                     <Route path="/app/community" element={<Protected><FeatureGate feature="community"><CommunityPage /></FeatureGate></Protected>} />
+                    <Route path="/app/guide" element={<Protected><ProGuidePage /></Protected>} />
                     <Route path="/app/academy" element={<Protected><FeatureGate feature="academy"><AcademyPage /></FeatureGate></Protected>} />
                     <Route path="/app/security" element={<PaidProtected><SecurityPage /></PaidProtected>} />
-                    <Route path="/app/api-docs" element={<PlanProtected plan="professional"><ApiDocsPage /></PlanProtected>} />
+                    <Route path="/app/api-docs" element={<PlanProtected plan="professional" gate="apiDocs"><ApiDocsPage /></PlanProtected>} />
                     <Route path="/app/integrations" element={<Navigate to="/admin/integrations" replace />} />
-                    <Route path="/app/branding" element={<PlanProtected plan="professional"><BrandingPage /></PlanProtected>} />
+                    <Route path="/app/branding" element={<PlanProtected plan="professional" gate="branding"><BrandingPage /></PlanProtected>} />
                     <Route path="/app/brokers" element={<PaidProtected><BrokersPage /></PaidProtected>} />
                     <Route path="/app/prop-firms" element={<PaidProtected><PropFirmsPage /></PaidProtected>} />
                     <Route path="/app/affiliate" element={<PaidProtected><AffiliatePage /></PaidProtected>} />
                     <Route path="/app/billing" element={<Protected><BillingPage /></Protected>} />
                     <Route path="/app/wallet" element={<EverPaidProtected><WalletPage /></EverPaidProtected>} />
                     <Route path="/app/profile" element={<Protected><ProfilePage /></Protected>} />
-                    <Route path="/app/api-keys" element={<PlanProtected plan="professional"><UserApiKeysPage /></PlanProtected>} />
+                    <Route path="/app/api-keys" element={<PlanProtected plan="professional" gate="apiKeys"><UserApiKeysPage /></PlanProtected>} />
                     <Route path="/teacher" element={<Navigate to="/app" replace />} />
                     <Route path="/student" element={<Protected><StudentDashboardPage /></Protected>} />
                     <Route path="/admin" element={<AdminProtected><AdminDashboard /></AdminProtected>} />
@@ -328,6 +336,7 @@ function App() {
         <ThemeProvider>
         <AuthProvider>
           <NotificationsProvider>
+          <AdProvider options={{ apiUrl: '/hcgi/api/ads', abTestingOptions: { getToken: () => pb.authStore.token } }}>
             <div id="app-bg" aria-hidden="true" />
             <Router>
                 <MaintenanceGate>
@@ -339,6 +348,7 @@ function App() {
                 <ThemeSwitcher />
                 <Toaster />
             </Router>
+          </AdProvider>
           </NotificationsProvider>
         </AuthProvider>
         </ThemeProvider>

@@ -9,9 +9,41 @@ import { useTrades, computeStats } from '@/hooks/useTrades';
 import { useAuth } from '@/hooks/useAuth';
 import DashboardWidgets from '@/components/DashboardWidgets';
 import AccountBalances from '@/components/AccountBalances';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { AdSlot } from '@/lib/ads/components.jsx';
 import { PageHero, Card, StatGrid, EmptyState, GoldButton, GhostButton, SectionHead, Skeleton, CardSkeleton } from '@/components/ui-kit';
 
 const GOLD = '#d4af37';
+
+// Slim get-started banner: hides itself once all 24 Pro Guide missions
+// (manual + auto-detected) are done. Local-only, never blocks.
+function GuideBanner() {
+  const [dismissed, setDismissed] = React.useState(() => {
+    try { return localStorage.getItem('tb:guide-banner-hide') === '1'; } catch { return true; }
+  });
+  const [pct, setPct] = React.useState(null);
+  React.useEffect(() => {
+    if (dismissed) return;
+    try {
+      const manual = JSON.parse(localStorage.getItem('tb:guide-done-v1') || '[]');
+      // 24 missions total; auto-detected ones resolve on the guide page.
+      // Banner counts manual check-offs; visiting the guide reconciles.
+      setPct(Array.isArray(manual) ? manual.length : 0);
+    } catch { setPct(0); }
+  }, [dismissed]);
+  if (dismissed || pct === null || pct >= 24) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#d4af37]/25 bg-gradient-to-r from-[#d4af37]/[0.08] to-transparent p-4">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#d4af37]/15 text-[#d4af37]">✦</span>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-semibold text-[#f0ecdd]">New here? Run the Pro Guide.</div>
+        <div className="text-xs text-[#8a8577]">24 missions across the full portal — {pct}/24 done.</div>
+      </div>
+      <Link to="/app/guide" className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-xs font-bold text-[#0a0a0f]">Start guide</Link>
+      <button onClick={() => { try { localStorage.setItem('tb:guide-banner-hide', '1'); } catch {} setDismissed(true); }} className="px-2 py-1 text-xs text-[#6a665a] hover:text-[#e9e7df]" aria-label="Dismiss">✕</button>
+    </div>
+  );
+}
 
 function DashStat({ icon: Icon, label, value, delta, positive }) {
   return (
@@ -98,6 +130,10 @@ export default function DashboardPage() {
             </>
           }
         />
+        <ErrorBoundary fallback={null}>
+          <AdSlot placementId="ph_dashboard_top" />
+        </ErrorBoundary>
+        <GuideBanner />
         <AccountBalances />
         <StatGrid cols={4}>
           <DashStat icon={Wallet} label={t('dash.perfPnl')} value={fmtMoney(stats.balance - 100000)} delta={t('dash.syncedN', { n: stats.totalTrades })} positive={stats.balance >= 100000} />

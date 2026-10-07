@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Footer from '@/components/Footer';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { AdSlot } from '@/lib/ads/components.jsx';
 import { Card, EmptyState, GhostButton, GoldButton, PageHero } from '@/components/ui-kit';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
 import { homeRouteForUser } from '@/lib/homeRoute';
 
-function PublicShell({ titleKey, descKey, pointKeys }) {
+function PublicShell({ titleKey, descKey, pointKeys, adPlacementId }) {
   const { user, isAuthed } = useAuth();
   const { t } = useI18n();
   const homeTo = homeRouteForUser(isAuthed ? user : null);
@@ -28,6 +30,13 @@ function PublicShell({ titleKey, descKey, pointKeys }) {
             ))}
           </ul>
         </Card>
+        {adPlacementId && (
+          <ErrorBoundary fallback={null}>
+            <div className="mx-auto mt-6 max-w-3xl">
+              <AdSlot placementId={adPlacementId} />
+            </div>
+          </ErrorBoundary>
+        )}
       </div>
       <Footer />
     </div>
@@ -109,6 +118,7 @@ export const BlogPage = () => (
     titleKey="pub.blogTitle"
     descKey="pub.blogDesc"
     pointKeys={['pub.blogP1', 'pub.blogP2', 'pub.blogP3', 'pub.blogP4']}
+    adPlacementId="ph_blog_feed"
   />
 );
 

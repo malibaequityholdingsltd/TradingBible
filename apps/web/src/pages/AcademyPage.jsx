@@ -6,6 +6,8 @@ import {
 	Sprout, Zap, Briefcase, Layers, Filter, Timer, Library,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { AdSlot } from '@/lib/ads/components.jsx';
 import { Card, EmptyState, GhostButton, GoldButton, Kicker, Note, PageHero, Tabs } from '@/components/ui-kit';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -975,6 +977,10 @@ export default function AcademyPage() {
 				</div>
 			</div>
 		</section>
+
+			<ErrorBoundary fallback={null}>
+				<AdSlot placementId="ph_academy_feed" />
+			</ErrorBoundary>
 
 			{/* Tabs */}
 			<div className="mb-5">
