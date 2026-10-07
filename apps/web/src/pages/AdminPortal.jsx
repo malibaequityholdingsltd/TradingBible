@@ -7,7 +7,7 @@ import {
   Crown, TrendingDown, Clock, Zap, Settings2, Lock, Bell, Cpu, HardDrive,
   Wifi, Package, Plus, Copy, RotateCcw, Plug, TestTube, AlertCircle, Check,
   Upload,   ChevronDown, MoreVertical, Power, Code, Layers, MonitorPlay, Target,
-  GraduationCap, LayoutDashboard
+  GraduationCap, LayoutDashboard, Type
 } from 'lucide-react';
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar,
@@ -18,6 +18,7 @@ import pb from '@/lib/pocketbaseClient';
 import { notifyPlatformSettingsChanged } from '@/lib/platformSettings';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { LIVE_CHANNELS } from '@/lib/liveChannels';
+import { ABTestingEngine } from '@/lib/ads/abtesting.js';
 import { useToast } from '@/hooks/use-toast';
 
 const GOLD = '#d4af37';
@@ -1040,6 +1041,8 @@ export function AdminBilling() {
   const [live, setLive] = useState(null);
   const [payUser, setPayUser] = useState(null);
   const [payments, setPayments] = useState([]);
+  const [payouts, setPayouts] = useState([]);
+  const [payoutsLoaded, setPayoutsLoaded] = useState(false);
   const [busy, setBusy] = useState(null);
 
   useEffect(() => {
@@ -1050,6 +1053,18 @@ export function AdminBilling() {
         const res = await fetch(`${API_SERVER_URL}/admin/billing/summary`, { headers: { Authorization: `Bearer ${token}` } });
         if (res.ok) setLive(await res.json());
       } catch { /* estimates remain */ }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = pb.authStore.token;
+        if (!token) return;
+        const res = await fetch(`${API_SERVER_URL}/wallet/admin/withdrawals`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) setPayouts((await res.json()).withdrawals || []);
+      } catch { /* payouts stay empty */ }
+      finally { setPayoutsLoaded(true); }
     })();
   }, []);
 
@@ -1217,6 +1232,42 @@ export function AdminBilling() {
             </table>
           </div>
         )}
+
+        <div className="glass mt-4 overflow-x-auto rounded-2xl">
+          <div className="border-b border-[#d4af37]/12 px-5 py-3.5">
+            <h3 className="font-semibold text-[#f0ecdd]">Wallet Payouts & Swaps</h3>
+            <p className="mt-0.5 text-xs text-[#8a8577]">Automatic Stripe Connect transfers and non-custodial swap records. View-only — money moves without admin action.</p>
+          </div>
+          <table className="w-full min-w-[720px] text-sm">
+            <thead>
+                <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
+                  <th className="px-5 py-3 font-medium">User</th>
+                  <th className="px-5 py-3 font-medium">Type</th>
+                  <th className="px-5 py-3 font-medium">Amount</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium hidden md:table-cell">Rail / KYC</th>
+                  <th className="px-5 py-3 font-medium hidden lg:table-cell">Reference</th>
+                </tr>
+              </thead>
+            <tbody>
+              {payouts.map(w => (
+                <tr key={w.id} className="border-b border-white/5 hover:bg-white/[0.03]">
+                  <td className="px-5 py-3">
+                    <div className="truncate text-[#f0ecdd] max-w-[180px]">{w.userEmail || '—'}</div>
+                    <div className="font-mono text-[11px] text-[#6a665a]">{w.created ? String(w.created).slice(0, 16).replace('T', ' ') : ''}</div>
+                  </td>
+                  <td className="px-5 py-3"><Badge color={w.type === 'swap' ? 'muted' : 'gold'}>{w.type}</Badge></td>
+                  <td className="px-5 py-3 font-mono text-[#f0ecdd]">{Number(w.amount) > 0 ? '+' : ''}{Number(w.amount).toFixed(2)} {w.currency}</td>
+                  <td className="px-5 py-3"><Badge color={w.status === 'completed' ? 'green' : w.status === 'failed' ? 'red' : 'gold'}>{w.status}</Badge></td>
+                  <td className="px-5 py-3 text-xs text-[#8a8577] hidden md:table-cell">{[w.connectStatus, w.kycStatus].filter(Boolean).join(' · ') || '—'}</td>
+                  <td className="px-5 py-3 font-mono text-xs text-[#6a665a] max-w-[160px] truncate hidden lg:table-cell">{w.reference || '—'}</td>
+                </tr>
+              ))}
+              {payoutsLoaded && !payouts.length && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#8a8577]">No payouts or swaps yet.</td></tr>}
+              {!payoutsLoaded && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#8a8577]">Loading…</td></tr>}
+            </tbody>
+          </table>
+        </div>
         {payUser && (
           <div className="glass mt-4 rounded-2xl p-4 sm:p-5">
             <div className="mb-3 flex items-center justify-between">
@@ -1245,6 +1296,7 @@ const CONTENT_TABS = [
   { id: 'forum', label: 'Community Forum', icon: Users },
   { id: 'courses', label: 'Academy Courses', icon: LibraryBig },
   { id: 'calendar', label: 'Economic Calendar', icon: FileText },
+  { id: 'copy', label: 'Site Copy', icon: Type },
 ];
 
 const SIGNAL_STATUSES = ['published', 'draft', 'rejected'];
@@ -1592,6 +1644,136 @@ function GenericContentTab({ prefix, title, fields, subtitle }) {
   );
 }
 
+/* ─── SITE COPY (no-code page text) ────────────────────────────────────
+   Curated i18n keys the admin can rewrite. Stored as `copy:* rows via the
+   generic content API; the app merges enabled rows over built-in ENGLISH
+   strings at runtime (other languages keep shipped text). */
+const SITE_COPY_KEYS = [
+  { key: 'land.heroKick', where: 'Landing → hero eyebrow' },
+  { key: 'land.heroA', where: 'Landing → hero title A' },
+  { key: 'land.heroB', where: 'Landing → hero title B' },
+  { key: 'land.heroC', where: 'Landing → hero title C' },
+  { key: 'land.heroSub', where: 'Landing → hero subtitle' },
+  { key: 'land.viewPricing', where: 'Landing → pricing button' },
+  { key: 'land.pricingSub', where: 'Landing → pricing section subtitle' },
+  { key: 'land.featTitleA', where: 'Landing → features title' },
+  { key: 'land.aiTitleA', where: 'Landing → AI coach title' },
+  { key: 'price.chooseEdge', where: 'Pricing → page headline' },
+  { key: 'price.sub', where: 'Pricing → page subtitle' },
+  { key: 'aca.titleA', where: 'Academy → hero title' },
+  { key: 'pub.blogTitle', where: 'Blog → page title' },
+  { key: 'wal.subtitle', where: 'Wallet → page subtitle' },
+];
+
+function SiteCopyTab() {
+  const { items, loading, create, update, remove: removeRow } = useAdminApi('copy');
+  const { toast } = useToast();
+  const [key, setKey] = useState(SITE_COPY_KEYS[0].key);
+  const [value, setValue] = useState('');
+  const [editing, setEditing] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
+  const label = 'mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider';
+
+  const byKey = Object.fromEntries((items || []).map((i) => [i?.config?.key || '', i]));
+
+  const bustCache = async () => {
+    try {
+      const { notifySiteCopyChanged } = await import('@/lib/siteContent');
+      notifySiteCopyChanged();
+    } catch { /* cache bust is best effort */ }
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!value.trim()) { toast({ variant: 'destructive', title: 'Text is empty' }); return; }
+    setBusy(true);
+    try {
+      if (editing) await update(editing.id, { config: { key, value: value.trim() }, enabled: true });
+      else await create({ title: key, slug: key.replace(/\./g, '-'), config: { key, value: value.trim() }, enabled: true });
+      setEditing(null);
+      setValue('');
+      await bustCache();
+      toast({ title: 'Site copy updated — live on next page view' });
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Save failed', description: String(err?.message || err) });
+    } finally { setBusy(false); }
+  };
+
+  const startEdit = (item) => {
+    setEditing(item);
+    setKey(item?.config?.key || SITE_COPY_KEYS[0].key);
+    setValue(item?.config?.value || '');
+  };
+
+  const remove = async (item) => {
+    try {
+      await removeRow(item.id);
+      await bustCache();
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Delete failed', description: String(err?.message || err) });
+    }
+  };
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h3 className="font-semibold text-[#f0ecdd]">Site Copy</h3>
+        <p className="mt-1 text-xs text-[#8a8577]">Rewrite page headlines and buttons without code. Applies to English text; other languages keep shipped translations. Changes go live on next page view.</p>
+      </div>
+      <form onSubmit={submit} className="glass rounded-2xl p-5">
+        <h4 className="mb-4 text-sm font-semibold text-[#f0ecdd]">{editing ? `Edit ${editing?.config?.key}` : 'New override'}</h4>
+        <div className="grid gap-4">
+          <div><label className={label}>Text to rewrite</label>
+            <select className={input} value={key} onChange={(e) => { setKey(e.target.value); setEditing(null); }}>
+              {SITE_COPY_KEYS.map((k) => <option key={k.key} value={k.key} className="bg-[#0f0f14]">{k.key} — {k.where}</option>)}
+            </select>
+          </div>
+          <div><label className={label}>New text</label>
+            <textarea rows="3" className={input} value={value} onChange={(e) => setValue(e.target.value)} placeholder="Replacement text shown to users…" />
+          </div>
+          {byKey[key] && !editing && <p className="text-xs text-[#d4af37]">This text already has an override — saving creates a second row. Edit the existing one below instead.</p>}
+        </div>
+        <div className="mt-4 flex gap-2">
+          <button type="submit" disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90 disabled:opacity-50">
+            <Save className="h-4 w-4" /> {editing ? 'Update text' : 'Publish text'}
+          </button>
+          {editing && <button type="button" onClick={() => { setEditing(null); setValue(''); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
+        </div>
+      </form>
+      <div className="glass overflow-hidden rounded-2xl">
+        <table className="w-full min-w-[520px] text-sm">
+          <thead>
+            <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
+              <th className="px-5 py-3">Key</th>
+              <th className="px-5 py-3">Live text</th>
+              <th className="px-5 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan="3" className="px-5 py-10 text-center text-[#8a8577]">Loading…</td></tr>
+            ) : (items || []).length === 0 ? (
+              <tr><td colSpan="3" className="px-5 py-10 text-center text-[#8a8577]">No overrides — the app shows built-in text everywhere.</td></tr>
+            ) : (items || []).map((item) => (
+              <tr key={item.id} className="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
+                <td className="px-5 py-3 font-mono text-xs text-[#d4af37]">{item?.config?.key}</td>
+                <td className="px-5 py-3 text-[#e9e7df]">{item?.config?.value}</td>
+                <td className="px-5 py-3">
+                  <div className="flex justify-end gap-2">
+                    <button onClick={() => startEdit(item)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => remove(item)} className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/20 text-red-400 hover:border-red-500/60" aria-label="Revert"><Trash2 className="h-3.5 w-3.5" /></button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export function AdminContent() {
   const [tab, setTab] = useState('signals');
   return (
@@ -1619,6 +1801,7 @@ export function AdminContent() {
 
       {tab === 'signals' && <SignalsTab />}
       {tab === 'forum' && <ForumTab />}
+      {tab === 'copy' && <SiteCopyTab />}
       {tab === 'courses' && (
         <GenericContentTab prefix="course" title="Academy Courses" subtitle="Course catalog shown in the Academy. Publish lessons, quizzes and certificates per course."
           fields={[
@@ -2571,24 +2754,43 @@ export function AdminTvAds() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({ title: '', headline: '', imageUrl: '', logoUrl: '', linkUrl: '', cta: 'Learn more', accent: '#d4af37', durationSeconds: 12, snippet: '', enabled: true });
+  const [form, setForm] = useState({ title: '', headline: '', imageUrl: '', logoUrl: '', linkUrl: '', cta: 'Learn more', accent: '#d4af37', durationSeconds: 12, snippet: '', enabled: true, type: 'banner', weight: 1, priority: 0, placementIds: [] });
+  // Advanced serving JSON: targeting, frequencyCaps, dayparting, pages,
+  // vastXml/vmapXml, storyDurationSeconds. Validated on save, merged into config.
+  const [advancedJson, setAdvancedJson] = useState('');
+  const [advJsonError, setAdvJsonError] = useState('');
+
+  const AD_TYPE_OPTIONS = ['banner', 'video', 'native', 'interstitial', 'rewarded', 'sticky', 'app_open', 'amp', 'story'];
+  const PLACEMENT_OPTIONS = [
+    { id: 'ph_dashboard_top', name: 'Dashboard top banner' },
+    { id: 'ph_academy_feed', name: 'Academy in-feed' },
+    { id: 'ph_blog_feed', name: 'Blog in-feed' },
+    { id: 'ph_story', name: 'Story fullscreen' },
+  ];
+  const EMPTY_AD_FORM = { title: '', headline: '', imageUrl: '', videoUrl: '', logoUrl: '', linkUrl: '', cta: 'Learn more', accent: '#d4af37', durationSeconds: 12, snippet: '', enabled: true, type: 'banner', weight: 1, priority: 0, placementIds: [] };
+  const ADVANCED_KEYS = ['targeting', 'frequencyCaps', 'dayparting', 'pages', 'vastXml', 'vmapXml', 'storyDurationSeconds'];
 
   // ── Live channels (manual channel guide for the TV widget + TV page) ──
   const [channels, setChannels] = useState([]);
   const [chEditing, setChEditing] = useState(null);
   const [chBusy, setChBusy] = useState(false);
   const [chForm, setChForm] = useState({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true, plan: 'pro' });
+  // ── Experiments (server-aggregated exposures/conversions) ──
+  const [experiments, setExperiments] = useState([]);
+  const [expLoaded, setExpLoaded] = useState(false);
 
   const load = useCallback(async () => {
     const token = pb.authStore.token;
     try {
-      const [adsRes, setRes, chRes] = await Promise.all([
+      const [adsRes, setRes, chRes, expRes] = await Promise.all([
         fetch(`${API_SERVER_URL}/ads/admin/list`, { headers: { Authorization: `Bearer ${token}` } }),
         fetch(`${API_SERVER_URL}/ads`),
         fetch(`${API_SERVER_URL}/ads/admin/channels/list`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_SERVER_URL}/ads/admin/experiments/stats`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      const [adsData, feedData, chData] = await Promise.all([adsRes.json(), setRes.json(), chRes.json().catch(() => ({}))]);
+      const [adsData, feedData, chData, expData] = await Promise.all([adsRes.json(), setRes.json(), chRes.json().catch(() => ({})), expRes.json().catch(() => ({}))]);
       setAds(adsRes.ok ? adsData.ads || [] : []);
+      setExperiments(expRes.ok ? expData.experiments || [] : []);
       if (feedData?.settings) setSettings((s) => ({ ...s, ...feedData.settings }));
       // Built-ins first (locked rows — they ship in code, not the DB).
       const builtins = LIVE_CHANNELS.map((c) => ({
@@ -2602,10 +2804,28 @@ export function AdminTvAds() {
     } catch {
       setAds([]);
       setChannels([]);
+      setExperiments([]);
     } finally {
       setLoading(false);
+      setExpLoaded(true);
     }
   }, []);
+
+  // Significance per experiment, computed with the same engine clients use.
+  const expReports = useMemo(() => {
+    const engine = new ABTestingEngine({ storage: null });
+    return experiments.map((exp) => {
+      const varIds = Object.keys(exp.variants || {});
+      const metrics = [...new Set(varIds.flatMap((id) => Object.keys(exp.variants[id]?.metrics || {})))];
+      const experiment = { id: exp.id, variants: varIds.map((id) => ({ id })), metrics };
+      const results = Object.fromEntries(varIds.map((id) => [id, {
+        variant: { id },
+        metrics: exp.variants[id]?.metrics || {},
+        exposures: exp.variants[id]?.exposures || 0,
+      }]));
+      return { exp, significance: engine.calculateSignificance(experiment, results) || {} };
+    });
+  }, [experiments]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -2622,17 +2842,38 @@ export function AdminTvAds() {
 
   const saveAd = async (e) => {
     e.preventDefault();
+    let advanced = {};
+    if (advancedJson.trim()) {
+      try {
+        const parsed = JSON.parse(advancedJson);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('must be a JSON object');
+        advanced = Object.fromEntries(Object.entries(parsed).filter(([k]) => ADVANCED_KEYS.includes(k)));
+        setAdvJsonError('');
+      } catch (err) {
+        setAdvJsonError(`Invalid advanced JSON: ${err.message}`);
+        return;
+      }
+    } else {
+      setAdvJsonError('');
+    }
+    const payload = {
+      ...form,
+      weight: Number(form.weight) || 0,
+      priority: Math.trunc(Number(form.priority) || 0),
+      ...advanced,
+    };
     setBusy(true);
     try {
       if (editing) {
-        await api(`/admin/${editing.id}`, { method: 'PATCH', body: { config: form, enabled: form.enabled } });
+        await api(`/admin/${editing.id}`, { method: 'PATCH', body: { config: payload, enabled: form.enabled } });
         toast({ title: 'Broadcast updated' });
       } else {
-        await api('/admin', { method: 'POST', body: { title: form.title, config: form, enabled: form.enabled } });
+        await api('/admin', { method: 'POST', body: { title: form.title, config: payload, enabled: form.enabled } });
         toast({ title: 'Broadcast created' });
       }
       setEditing(null);
-      setForm({ title: '', headline: '', imageUrl: '', videoUrl: '', logoUrl: '', linkUrl: '', cta: 'Learn more', accent: '#d4af37', durationSeconds: 12, snippet: '', enabled: true });
+      setForm({ ...EMPTY_AD_FORM });
+      setAdvancedJson('');
       await load();
     } catch (err) {
       toast({ title: 'Save failed', description: String(err.message || err) });
@@ -2704,8 +2945,21 @@ export function AdminTvAds() {
   const setCF = (k) => (e) => setChForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
 
   const startEdit = (ad) => {
+    const c = ad.config || {};
     setEditing(ad);
-    setForm({ ...ad.config, title: ad.title || ad.config?.title || '', enabled: ad.enabled !== false });
+    setForm({
+      ...EMPTY_AD_FORM,
+      ...c,
+      title: ad.title || c.title || '',
+      enabled: ad.enabled !== false,
+      type: c.type || 'banner',
+      weight: c.weight ?? 1,
+      priority: c.priority ?? 0,
+      placementIds: Array.isArray(c.placementIds) ? c.placementIds : [],
+    });
+    const adv = Object.fromEntries(ADVANCED_KEYS.filter((k) => c[k] !== undefined && c[k] !== '' && !(Array.isArray(c[k]) && c[k].length === 0)).map((k) => [k, c[k]]));
+    setAdvancedJson(Object.keys(adv).length ? JSON.stringify(adv, null, 2) : '');
+    setAdvJsonError('');
   };
 
   const setF = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
@@ -2760,8 +3014,59 @@ export function AdminTvAds() {
           <div><label className={label}>Link URL (opens on click)</label><input className={input} value={form.linkUrl} onChange={setF('linkUrl')} placeholder="https://…" /></div>
           <div><label className={label}>Accent color</label><input type="color" className="h-12 w-full cursor-pointer rounded-xl border border-[#d4af37]/15 bg-[#0f0f14]" value={form.accent} onChange={setF('accent')} /></div>
           <div><label className={label}>Duration (seconds)</label><input type="number" min="4" max="60" className={input} value={form.durationSeconds} onChange={setF('durationSeconds')} /></div>
+          <div><label className={label}>Format</label>
+            <select className={input} value={form.type || 'banner'} onChange={setF('type')}>
+              {AD_TYPE_OPTIONS.map((t) => <option key={t} value={t} className="bg-[#0f0f14]">{t}</option>)}
+            </select>
+          </div>
+          <div><label className={label}>Weight (rotation)</label><input type="number" min="0" step="1" className={input} value={form.weight} onChange={setF('weight')} /></div>
+          <div><label className={label}>Priority (higher first)</label><input type="number" step="1" className={input} value={form.priority} onChange={setF('priority')} /></div>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <label className={label}>In-app slots (none = everywhere)</label>
+            <div className="flex flex-wrap gap-2">
+              {PLACEMENT_OPTIONS.map((p) => (
+                <label key={p.id} className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-xs transition ${form.placementIds?.includes(p.id) ? 'border-[#d4af37]/60 bg-[#d4af37]/10 text-[#f0ecdd]' : 'border-[#d4af37]/15 text-[#8a8577]'}`}>
+                  <input
+                    type="checkbox"
+                    checked={form.placementIds?.includes(p.id) || false}
+                    onChange={(e) => setForm((f) => {
+                      const cur = Array.isArray(f.placementIds) ? f.placementIds : [];
+                      return { ...f, placementIds: e.target.checked ? [...cur, p.id] : cur.filter((x) => x !== p.id) };
+                    })}
+                    className="h-4 w-4 accent-[#d4af37]"
+                  />
+                  {p.name}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div className="sm:col-span-2 lg:col-span-3"><label className={label}>Advanced serving JSON (optional: targeting, frequencyCaps, dayparting, pages, vastXml, vmapXml, storyDurationSeconds)</label>
+            <textarea rows="4" spellCheck="false" className={`${input} font-mono text-xs`} value={advancedJson} onChange={(e) => setAdvancedJson(e.target.value)} placeholder='{"frequencyCaps": [{"type": "impressions_per_day", "max": 3}], "targeting": [{"type": "user_segment", "segments": ["pro"]}]}' />
+            {advJsonError && <p className="mt-1 text-xs text-red-400">{advJsonError}</p>}
+          </div>
           <div className="sm:col-span-2 lg:col-span-3"><label className={label}>Snippet (body text)</label>
             <textarea rows="4" className={input} value={form.snippet} onChange={setF('snippet')} placeholder="Longer description shown under the headline…" /></div>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <label className={label}>Live creative preview</label>
+            <div className="overflow-hidden rounded-xl border border-[#d4af37]/15 bg-[#0a0a0f]">
+              {form.imageUrl ? (
+                <img src={form.imageUrl} alt="" className="max-h-56 w-full object-cover" onError={e => { e.currentTarget.style.display = 'none'; }} />
+              ) : (
+                <div className="grid h-24 place-items-center text-xs text-[#6a665a]">No image — add a Background image URL to preview</div>
+              )}
+              <div className="flex items-center gap-3 p-3">
+                {form.logoUrl && <img src={form.logoUrl} alt="" className="h-9 w-9 rounded-lg object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-semibold text-[#f0ecdd]">{form.headline || form.title || 'Headline preview'}</div>
+                  <div className="truncate text-xs text-[#8a8577]">{form.snippet || 'Snippet preview'}</div>
+                </div>
+                <span className="shrink-0 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1.5 text-xs font-bold text-[#0a0a0f]">{form.cta || 'Learn more'}</span>
+              </div>
+              <div className="border-t border-white/5 px-3 py-2 font-mono text-[11px] text-[#6a665a]">
+                {(form.type || 'banner')} · weight {form.weight ?? 1} · priority {form.priority ?? 0} · {(form.placementIds?.length ? form.placementIds.join(', ') : 'everywhere')}
+              </div>
+            </div>
+          </div>
           <label className="flex items-center gap-3 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
             <input type="checkbox" checked={form.enabled} onChange={setF('enabled')} className="h-5 w-5 accent-[#d4af37]" />
             <span className="text-sm text-[#c9c4b4]">Live now</span>
@@ -2770,7 +3075,7 @@ export function AdminTvAds() {
             <button type="submit" disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90 disabled:opacity-50">
               <Save className="h-4 w-4" /> {editing ? 'Update broadcast' : 'Publish broadcast'}
             </button>
-            {editing && <button type="button" onClick={() => { setEditing(null); setForm({ title: '', headline: '', imageUrl: '', videoUrl: '', logoUrl: '', linkUrl: '', cta: 'Learn more', accent: '#d4af37', durationSeconds: 12, snippet: '', enabled: true }); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
+            {editing && <button type="button" onClick={() => { setEditing(null); setForm({ ...EMPTY_AD_FORM }); setAdvancedJson(''); setAdvJsonError(''); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
           </div>
         </form>
       </div>
@@ -2782,6 +3087,8 @@ export function AdminTvAds() {
             <thead>
               <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
                 <th className="px-5 py-3">Broadcast</th>
+                <th className="px-5 py-3">Format</th>
+                <th className="px-5 py-3">Slots</th>
                 <th className="px-5 py-3">Status</th>
                 <th className="px-5 py-3">Views</th>
                 <th className="px-5 py-3">Clicks</th>
@@ -2791,14 +3098,15 @@ export function AdminTvAds() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="6" className="px-5 py-10 text-center text-[#8a8577]">Loading broadcasts…</td></tr>
+                <tr><td colSpan="8" className="px-5 py-10 text-center text-[#8a8577]">Loading broadcasts…</td></tr>
               ) : ads.length === 0 ? (
-                <tr><td colSpan="6" className="px-5 py-10 text-center text-[#8a8577]">No broadcasts yet — create one above.</td></tr>
+                <tr><td colSpan="8" className="px-5 py-10 text-center text-[#8a8577]">No broadcasts yet — create one above.</td></tr>
               ) : ads.map((ad) => {
                 const c = ad.config || {};
                 const clicks = Number(c.clicks) || 0;
                 const views = Number(c.views) || 0;
                 const ctr = views > 0 ? ((clicks / views) * 100).toFixed(2) + '%' : '—';
+                const slots = Array.isArray(c.placementIds) && c.placementIds.length > 0 ? c.placementIds : ['everywhere'];
                 return (
                   <tr key={ad.id} className="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
                     <td className="px-5 py-4">
@@ -2810,6 +3118,8 @@ export function AdminTvAds() {
                         </div>
                       </div>
                     </td>
+                    <td className="px-5 py-4"><span className="rounded-full bg-[#d4af37]/10 px-2.5 py-1 font-mono text-xs text-[#d4af37]">{c.type || 'banner'}</span></td>
+                    <td className="px-5 py-4 font-mono text-xs text-[#8a8577]">{slots.join(', ')}</td>
                     <td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-xs ${ad.enabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[#8a8577]'}`}>{ad.enabled ? 'Live' : 'Paused'}</span></td>
                     <td className="px-5 py-4 text-[#c9c4b4]">{views.toLocaleString()}</td>
                     <td className="px-5 py-4 text-[#c9c4b4]">{clicks.toLocaleString()}</td>
@@ -2826,6 +3136,58 @@ export function AdminTvAds() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Experiments — server-aggregated A/B results */}
+      <div className="glass mt-6 overflow-hidden rounded-2xl">
+        <div className="border-b border-[#d4af37]/12 px-5 py-3.5">
+          <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><TestTube className="h-4 w-4 text-[#d4af37]" /> Experiments</h3>
+          <p className="mt-0.5 text-xs text-[#8a8577]">Exposures and conversions mirrored from clients. Assignment stays client-side; counts aggregate here across devices.</p>
+        </div>
+        {!expLoaded ? (
+          <p className="px-5 py-10 text-center text-sm text-[#8a8577]">Loading experiments…</p>
+        ) : expReports.length === 0 ? (
+          <p className="px-5 py-10 text-center text-sm text-[#8a8577]">No experiment data yet — it appears once clients with experiments report exposures.</p>
+        ) : expReports.map(({ exp, significance }) => (
+          <div key={exp.id} className="border-b border-white/5 px-5 py-4 last:border-0">
+            <div className="font-mono text-sm font-semibold text-[#f0ecdd]">{exp.id}</div>
+            <div className="mt-2 overflow-x-auto">
+              <table className="w-full min-w-[520px] text-sm">
+                <thead>
+                  <tr className="text-left text-xs uppercase tracking-wider text-[#6a665a]">
+                    <th className="py-2 pr-4 font-medium">Variant</th>
+                    <th className="py-2 pr-4 font-medium">Exposures</th>
+                    <th className="py-2 pr-4 font-medium">Conversions</th>
+                    <th className="py-2 pr-4 font-medium">Lift</th>
+                    <th className="py-2 font-medium">p-value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(exp.variants || {}).map(([varId, v]) => {
+                    const metric = Object.keys(v.metrics || {})[0];
+                    const sig = metric ? significance[`${varId}.${metric}`] : null;
+                    const isControl = varId === Object.keys(exp.variants || {})[0];
+                    return (
+                      <tr key={varId} className="border-t border-white/5">
+                        <td className="py-2 pr-4 font-mono text-[#c9c4b4]">{varId}{isControl && <span className="ml-2 text-[10px] uppercase text-[#6a665a]">control</span>}</td>
+                        <td className="py-2 pr-4 font-mono text-[#f0ecdd]">{(v.exposures || 0).toLocaleString()}</td>
+                        <td className="py-2 pr-4 font-mono text-[#f0ecdd]">{metric ? `${(v.metrics[metric] || 0).toLocaleString()} ${metric}` : '—'}</td>
+                        <td className="py-2 pr-4 font-mono text-[#c9c4b4]">{sig && Number.isFinite(sig.lift) ? `${sig.lift > 0 ? '+' : ''}${sig.lift.toFixed(1)}%` : '—'}</td>
+                        <td className="py-2 font-mono">
+                          {sig ? (
+                            <span className={sig.significant ? 'text-emerald-400' : 'text-[#8a8577]'}>
+                              {sig.pValue.toFixed(4)}{sig.significant ? ' ✓' : ''}
+                            </span>
+                          ) : '—'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Live channels — manual channel guide for TV widget + TV page */}
@@ -2983,6 +3345,7 @@ export function AdminSettings() {
     allowManualPropAccounts: false,
     digestEnabled: false,
     digestHourUTC: 18,
+    planGates: { reports: 'elite', coach: 'elite', apiDocs: 'professional', branding: 'professional', apiKeys: 'professional' },
   });
   const [features, setFeatures] = useState({
     aiCoach: true,
@@ -3124,6 +3487,33 @@ export function AdminSettings() {
             );
           })}
           <button onClick={() => toast({ title: 'Feature settings saved' })} className="mt-2 flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90"><Save className="h-4 w-4" /> Save</button>
+        </div>
+      )}
+
+      {tab === 'features' && (
+        <div className="glass mt-4 max-w-xl rounded-2xl p-5 sm:p-6 space-y-3">
+          <h3 className="font-semibold text-[#f0ecdd] mb-1">Plan Gates</h3>
+          <p className="text-xs text-[#8a8577] -mt-2">Minimum plan required per premium page. Takes effect on next page view — no deploy needed.</p>
+          {[
+            ['reports', 'Reports & Analytics (/app/reports)'],
+            ['coach', 'SI Coach (/app/coach)'],
+            ['apiDocs', 'API Docs (/app/api-docs)'],
+            ['branding', 'White-label Branding (/app/branding)'],
+            ['apiKeys', 'API Keys (/app/api-keys)'],
+          ].map(([k, label]) => (
+            <label key={k} className="flex items-center justify-between gap-4 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3">
+              <span className="text-sm text-[#c9c4b4]">{label}</span>
+              <select
+                value={settings.planGates?.[k] || 'elite'}
+                onChange={(e) => setSettings((p) => ({ ...p, planGates: { ...(p.planGates || {}), [k]: e.target.value } }))}
+                className="rounded-lg border border-[#d4af37]/25 bg-[#0f0f14] px-3 py-2 text-sm text-[#f0ecdd] outline-none"
+              >
+                <option value="pro" className="bg-[#0f0f14]">Pro and up</option>
+                <option value="elite" className="bg-[#0f0f14]">Elite and up</option>
+                <option value="professional" className="bg-[#0f0f14]">Professional only</option>
+              </select>
+            </label>
+          ))}
         </div>
       )}
 

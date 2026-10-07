@@ -231,6 +231,7 @@ router.delete('/forum-replies/:id', supabaseAuth, async (req, res, next) => {
 // Content lives in `admin_integrations` under prefixed keys:
 //   course:*   — academy course catalog
 //   cal_event:* — curated economic calendar events
+//   copy:*     — site-copy overrides (see GET /admin/content-copy below)
 // The `config` jsonb holds the payload; `enabled` is the publish toggle.
 
 function slugify(raw) {
@@ -293,6 +294,25 @@ router.delete('/content/:prefix/:id', supabaseAuth, async (req, res, next) => {
 		await assertAdmin(req);
 		await supabaseRest(`/rest/v1/admin_integrations?id=eq.${encodeURIComponent(req.params.id)}`, { method: 'DELETE' });
 		res.status(204).end();
+	} catch (err) { next(err); }
+});
+
+// ── Public: site-copy overrides (no auth — marketing copy is public) ─
+// Admin-curated i18n key → value pairs. The web app merges these over its
+// built-in English strings so admins can rewrite page copy without code.
+// Rows live under `copy:*` keys with config { key (i18n key), value }.
+router.get('/content-copy', async (req, res, next) => {
+	try {
+		const rows = await supabaseRest('/rest/v1/admin_integrations', {
+			query: { select: 'key,config', 'key': 'like.copy:%', enabled: 'eq.true', order: 'created.desc', limit: 200 },
+		});
+		const overrides = {};
+		for (const r of rows || []) {
+			const k = r?.config?.key || String(r?.key || '').replace(/^copy:/, '');
+			const v = r?.config?.value;
+			if (k && typeof v === 'string' && v && !(k in overrides)) overrides[k] = v;
+		}
+		res.json({ overrides });
 	} catch (err) { next(err); }
 });
 

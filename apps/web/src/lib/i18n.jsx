@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react';
+import { API_SERVER_URL } from './apiServerClient';
 
 // ─── Tiny i18n: auto-detect from device/browser, manual override in localStorage ───
 export const SUPPORTED_LANGS = [
@@ -95,6 +96,7 @@ const STRINGS = {
     'nav.brokers': 'Brokers',
     'nav.propfirms': 'Prop Firms',
     'nav.wallet': 'Wallet',
+    'nav.guide': 'Pro Guide',
     'nav.community': 'Community',
     'nav.academy': 'Academy',
     'nav.apidocs': 'API Docs',
@@ -1752,6 +1754,7 @@ const STRINGS = {
     'nav.brokers': 'Brokers',
     'nav.propfirms': 'Firmes de prop',
     'nav.wallet': 'Portefeuille',
+    'nav.guide': 'Guide Pro',
     'nav.community': 'Communauté',
     'nav.academy': 'Académie',
     'nav.apidocs': 'Docs API',
@@ -3419,6 +3422,7 @@ const STRINGS = {
     'nav.brokers': 'Brokers',
     'nav.propfirms': 'Firmas prop',
     'nav.wallet': 'Cartera',
+    'nav.guide': 'Guía Pro',
     'nav.community': 'Comunidad',
     'nav.academy': 'Academia',
     'nav.apidocs': 'Docs API',
@@ -5086,6 +5090,7 @@ const STRINGS = {
     'nav.brokers': 'Brokers',
     'nav.propfirms': 'Firmas prop',
     'nav.wallet': 'Carteira',
+    'nav.guide': 'Guia Pro',
     'nav.community': 'Comunidade',
     'nav.academy': 'Academia',
     'nav.apidocs': 'Docs API',
@@ -6753,6 +6758,7 @@ const STRINGS = {
     'nav.brokers': 'Broker',
     'nav.propfirms': 'Prop Firmen',
     'nav.wallet': 'Wallet',
+    'nav.guide': 'Pro-Leitfaden',
     'nav.community': 'Community',
     'nav.academy': 'Akademie',
     'nav.apidocs': 'API-Docs',
@@ -8420,6 +8426,7 @@ const STRINGS = {
     'nav.brokers': 'الوسطاء',
     'nav.propfirms': 'شركات البروب',
     'nav.wallet': 'المحفظة',
+    'nav.guide': 'الدليل الاحترافي',
     'nav.community': 'المجتمع',
     'nav.academy': 'الأكاديمية',
     'nav.apidocs': 'وثائق API',
@@ -10087,6 +10094,7 @@ const STRINGS = {
     'nav.brokers': '经纪商',
     'nav.propfirms': '自营公司',
     'nav.wallet': '钱包',
+    'nav.guide': '专业指南',
     'nav.community': '社区',
     'nav.academy': '学院',
     'nav.apidocs': 'API 文档',
@@ -11754,6 +11762,7 @@ const STRINGS = {
     'nav.brokers': 'ब्रोकर',
     'nav.propfirms': 'प्रॉप फर्म',
     'nav.wallet': 'वॉलेट',
+    'nav.guide': 'प्रो गाइड',
     'nav.community': 'समुदाय',
     'nav.academy': 'अकादमी',
     'nav.apidocs': 'API दस्तावेज़',
@@ -13368,6 +13377,18 @@ function interpolate(template, vars = {}) {
 
 export function I18nProvider({ children }) {
   const [lang, setLangState] = useState(detectLanguage);
+  // Admin-curated copy overrides (English only). Loaded async + cached;
+  // pages re-render with new copy when it arrives — no reload needed.
+  const [copyOverrides, setCopyOverrides] = useState(() => {
+    try {
+      const raw = window.localStorage.getItem('tb:site-copy-v1');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.ts && Date.now() - parsed.ts < 30 * 60 * 1000) return parsed.overrides || {};
+      }
+    } catch { /* ignore */ }
+    return {};
+  });
 
   const setLang = useCallback((next) => {
     if (next === 'auto') {
@@ -13386,11 +13407,36 @@ export function I18nProvider({ children }) {
     } catch { /* ignore */ }
   }, [lang]);
 
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      try {
+        const res = await fetch(`${API_SERVER_URL}/admin/content-copy`);
+        if (res.ok && live) {
+          const data = await res.json();
+          const next = data?.overrides && typeof data.overrides === 'object' ? data.overrides : {};
+          setCopyOverrides(next);
+          try { window.localStorage.setItem('tb:site-copy-v1', JSON.stringify({ ts: Date.now(), overrides: next })); } catch { /* ignore */ }
+        }
+      } catch { /* keep cache/defaults */ }
+    })();
+    const onChange = () => {
+      try { window.localStorage.removeItem('tb:site-copy-v1'); } catch { /* ignore */ }
+      setCopyOverrides({});
+    };
+    window.addEventListener('tb:site-copy:changed', onChange);
+    return () => { live = false; window.removeEventListener('tb:site-copy:changed', onChange); };
+  }, []);
+
   const value = useMemo(() => {
     const dict = STRINGS[lang] || STRINGS.en;
-    const t = (key, vars, fb) => interpolate(dict[key] ?? STRINGS.en[key] ?? fb ?? key, vars);
+    const t = (key, vars, fb) => {
+      // Site-copy overrides win for English; other languages keep shipped text.
+      if (lang === 'en' && copyOverrides[key] !== undefined) return interpolate(copyOverrides[key], vars);
+      return interpolate(dict[key] ?? STRINGS.en[key] ?? fb ?? key, vars);
+    };
     return { lang, setLang, t };
-  }, [lang, setLang]);
+  }, [lang, setLang, copyOverrides]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

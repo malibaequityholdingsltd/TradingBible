@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" width="360" height="640">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#14141b"/>
+      <stop offset="1" stop-color="#0a0a0f"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#a67c1e"/>
+      <stop offset="1" stop-color="#f4e6a8"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="640" fill="url(#bg)"/>
+  <g transform="rotate(-6 180 300)">
+    <rect x="100" y="180" width="160" height="220" rx="10" fill="#1a1a22" stroke="#d4af37" stroke-width="3"/>
+    <line x1="120" y1="230" x2="240" y2="230" stroke="#d4af37" stroke-width="3" opacity="0.6"/>
+    <line x1="120" y1="265" x2="240" y2="265" stroke="#3a3a46" stroke-width="8" stroke-linecap="round"/>
+    <line x1="120" y1="295" x2="210" y2="295" stroke="#3a3a46" stroke-width="8" stroke-linecap="round"/>
+    <line x1="120" y1="325" x2="225" y2="325" stroke="#34d399" stroke-width="8" stroke-linecap="round"/>
+    <line x1="120" y1="355" x2="190" y2="355" stroke="#3a3a46" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <line x1="250" y1="150" x2="285" y2="115" stroke="url(#gold)" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="288" cy="112" r="5" fill="#f4e6a8"/>
+  <polyline points="40,480 110,450 170,465 240,410 300,425" fill="none" stroke="url(#gold)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <g font-family="system-ui, sans-serif" text-anchor="middle">
+    <text x="180" y="520" fill="#f0ecdd" font-size="30" font-weight="800">STEP 1</text>
+    <text x="180" y="548" fill="#d4af37" font-size="13" letter-spacing="3">JOURNAL EVERY TRADE</text>
+  </g>
+</svg>

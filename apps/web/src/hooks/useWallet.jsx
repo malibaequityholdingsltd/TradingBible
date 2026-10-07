@@ -79,10 +79,17 @@ export function useWallet() {
 		if (data.url) window.location.href = data.url;
 		return data;
 	};
-	const withdraw = async (amount, address) => {
-		const res = await apiServerClient.fetch('/wallet/withdraw', { method: 'POST', headers: headers(), body: JSON.stringify({ amount, address }) });
+	function codedError(data, fallback) {
+		const err = new Error(data?.message || data?.error || fallback);
+		err.code = data?.error || 'unknown';
+		err.detail = data;
+		return err;
+	}
+
+	const withdraw = async (amount) => {
+		const res = await apiServerClient.fetch('/wallet/withdraw', { method: 'POST', headers: headers(), body: JSON.stringify({ amount }) });
 		const data = await res.json().catch(() => ({}));
-		if (!res.ok) throw new Error(data.error || 'withdraw failed');
+		if (!res.ok) throw codedError(data, 'withdraw failed');
 		await load();
 		return data;
 	};
@@ -95,5 +102,95 @@ export function useWallet() {
 		return data;
 	};
 
-	return { wallets, totalUsd, ledger, loading, syncing, reload: load, addWallet, removeWallet, deposit, withdraw, payWithWallet };
+	// ── Real-money rails (Connect + KYC + swaps) ──────────────────
+	const [rails, setRails] = useState({ connect: { status: 'none' }, kyc: { status: 'none' }, providers: {} });
+
+	const loadRails = useCallback(async () => {
+		try {
+			const res = await apiServerClient.fetch('/wallet/rails', { headers: headers() });
+			if (!res.ok) return null;
+			const data = await res.json();
+			setRails(data);
+			return data;
+		} catch { return null; }
+	}, []);
+
+	useEffect(() => {
+		if (!pb.authStore.token) return;
+		loadRails();
+	}, [loadRails]);
+
+	const onboardConnect = async (country) => {
+		const res = await apiServerClient.fetch('/wallet/connect/onboard', { method: 'POST', headers: headers(), body: JSON.stringify({ country: country || 'US' }) });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw codedError(data, 'bank setup failed');
+		if (data.url) window.location.href = data.url;
+		return data;
+	};
+
+	const refreshConnectStatus = async () => {
+		const res = await apiServerClient.fetch('/wallet/connect/status', { headers: headers() });
+		const data = await res.json().catch(() => ({}));
+		if (res.ok) {
+			setRails((r) => ({ ...r, connect: { ...(r.connect || {}), status: data.status || r.connect?.status, accountId: data.accountId } }));
+		}
+		return data;
+	};
+
+	const startKyc = async () => {
+		const res = await apiServerClient.fetch('/wallet/kyc/session', { method: 'POST', headers: headers() });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw codedError(data, 'verification failed to start');
+		if (data.url) window.location.href = data.url;
+		return data;
+	};
+
+	const refreshKycStatus = async () => {
+		const res = await apiServerClient.fetch('/wallet/kyc/status', { headers: headers() });
+		const data = await res.json().catch(() => ({}));
+		if (res.ok) {
+			setRails((r) => ({ ...r, kyc: { ...(r.kyc || {}), status: data.status || r.kyc?.status, verifiedAt: data.verifiedAt } }));
+		}
+		return data;
+	};
+
+	const swapTokens = async () => {
+		const res = await apiServerClient.fetch('/wallet/swap/tokens', { headers: headers() });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw codedError(data, 'swap tokens failed');
+		return data;
+	};
+
+	const swapQuote = async ({ chainId, sell, buy, sellAmount, taker }) => {
+		const res = await apiServerClient.fetch('/wallet/swap/quote', { method: 'POST', headers: headers(), body: JSON.stringify({ chainId, sell, buy, sellAmount, taker }) });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw codedError(data, 'quote failed');
+		return data;
+	};
+
+	const swapIntent = async (payload) => {
+		const res = await apiServerClient.fetch('/wallet/swap/intent', { method: 'POST', headers: headers(), body: JSON.stringify(payload) });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw codedError(data, 'swap intent failed');
+		await load();
+		return data;
+	};
+
+	const swapConfirm = async ({ intentId, txHash }) => {
+		const res = await apiServerClient.fetch('/wallet/swap/confirm', { method: 'POST', headers: headers(), body: JSON.stringify({ intentId, txHash }) });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw codedError(data, 'swap confirm failed');
+		await load();
+		return data;
+	};
+
+	const onrampOrder = async ({ walletAddress, currency, network, fiatAmount, fiatCurrency }) => {
+		const res = await apiServerClient.fetch('/wallet/onramp/order', { method: 'POST', headers: headers(), body: JSON.stringify({ walletAddress, currency, network, fiatAmount, fiatCurrency }) });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw codedError(data, 'on-ramp failed');
+		if (data.url) window.open(data.url, '_blank', 'noopener,noreferrer');
+		return data;
+	};
+
+	return { wallets, totalUsd, ledger, loading, syncing, reload: load, addWallet, removeWallet, deposit, withdraw, payWithWallet, rails, loadRails, onboardConnect, refreshConnectStatus, startKyc, refreshKycStatus, swapTokens, swapQuote, swapIntent, swapConfirm, onrampOrder };
 }

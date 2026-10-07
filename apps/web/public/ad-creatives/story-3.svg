@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" width="360" height="640">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#171208"/>
+      <stop offset="1" stop-color="#0a0a0f"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#a67c1e"/>
+      <stop offset="1" stop-color="#f4e6a8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.35" r="0.5">
+      <stop offset="0" stop-color="#d4af37" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#d4af37" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="360" height="640" fill="url(#bg)"/>
+  <rect width="360" height="640" fill="url(#glow)"/>
+  <g transform="translate(180 260)">
+    <path d="M0 -90 L22 -30 L84 -30 L34 12 L50 72 L0 36 L-50 72 L-34 12 L-84 -30 L-22 -30 Z" fill="url(#gold)"/>
+    <rect x="-70" y="90" width="140" height="18" rx="9" fill="#d4af37" opacity="0.7"/>
+    <rect x="-50" y="116" width="100" height="12" rx="6" fill="#d4af37" opacity="0.4"/>
+  </g>
+  <g fill="#f4e6a8">
+    <circle cx="60" cy="120" r="3"/>
+    <circle cx="300" cy="100" r="4"/>
+    <circle cx="90" cy="420" r="3" opacity="0.6"/>
+    <circle cx="280" cy="450" r="2.5" opacity="0.5"/>
+    <circle cx="180" cy="80" r="2" opacity="0.4"/>
+  </g>
+  <g font-family="system-ui, sans-serif" text-anchor="middle">
+    <text x="180" y="520" fill="#f0ecdd" font-size="30" font-weight="800">STEP 3</text>
+    <text x="180" y="548" fill="#d4af37" font-size="13" letter-spacing="3">GET FUNDED</text>
+  </g>
+</svg>

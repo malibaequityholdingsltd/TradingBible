@@ -43,6 +43,7 @@
 - [Order Flow](/app/orderflow): TradingBible application page.
 - [Policy](/policy): TradingBible application page.
 - [Pricing](/pricing): TradingBible application page.
+- [Pro Guide](/app/guide): TradingBible application page.
 - [Profile](/app/profile): TradingBible application page.
 - [Prop Firms](/app/prop-firms): TradingBible application page.
 - [Refund](/refund): TradingBible application page.

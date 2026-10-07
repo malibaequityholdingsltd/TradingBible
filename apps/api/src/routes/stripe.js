@@ -384,6 +384,22 @@ router.post('/webhook', async (req, res) => {
         });
         if (type === 'invoice.payment_failed') await updateUser(user.id, { subscriptionStatus: 'past_due' });
       }
+    } else if (type.startsWith('identity.verification_session.')) {
+      // Wallet KYC: mirror verification outcome into wallet_money_rails.
+      const uid = data.metadata?.user_id || data.metadata?.userId || null;
+      if (uid) {
+        try {
+          const { supabaseRest } = await import('../utils/supabaseClient.js');
+          const status = type === 'identity.verification_session.verified' ? 'verified'
+            : type === 'identity.verification_session.requires_input' ? 'failed' : 'pending';
+          const patch = { kyc_status: status, kyc_session_id: data.id || null, updated_at: new Date().toISOString() };
+          if (status === 'verified') patch.kyc_verified_at = new Date().toISOString();
+          await supabaseRest('/rest/v1/wallet_money_rails', {
+            method: 'POST', body: { owner: uid, ...patch }, prefer: 'return=representation,resolution=merge-duplicates',
+          });
+          logger.info(`wallet kyc ${status} for ${uid}`);
+        } catch (e) { logger.error('wallet kyc webhook failed', String(e)); }
+      }
     }
   } catch (err) {
     logger.error('Stripe webhook handling error', String(err));

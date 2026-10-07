@@ -68,6 +68,23 @@ function sanitizeConfig(raw) {
 			}
 		}
 	}
+	const AD_TYPE_LIST = ['banner', 'video', 'native', 'interstitial', 'rewarded', 'sticky', 'app_open', 'amp', 'story'];
+	const type = String(c.type || 'banner').trim().toLowerCase();
+	const cleanList = (v, max = 20) => Array.isArray(v)
+		? v.filter((s) => typeof s === 'string' && s.trim()).map((s) => s.trim().slice(0, 60)).slice(0, max)
+		: [];
+	const cleanJsonList = (v, max = 20) => Array.isArray(v) ? v.filter((r) => r && typeof r === 'object').slice(0, max) : [];
+	const cleanPage = (p) => {
+		const o = p && typeof p === 'object' ? p : {};
+		return {
+			...(o.title ? { title: String(o.title).slice(0, 120) } : {}),
+			...(o.headline ? { headline: String(o.headline).slice(0, 300) } : {}),
+			...(o.imageUrl ? { imageUrl: cleanUrl(o.imageUrl) } : {}),
+			...(o.videoUrl ? { videoUrl: cleanUrl(o.videoUrl) } : {}),
+			...(o.cta ? { cta: String(o.cta).slice(0, 40) } : {}),
+			...(o.linkUrl ? { linkUrl: cleanUrl(o.linkUrl) } : {}),
+		};
+	};
 	return {
 		title: String(c.title || '').trim().slice(0, 120),
 		headline: String(c.headline || '').trim().slice(0, 300),
@@ -83,6 +100,24 @@ function sanitizeConfig(raw) {
 		clicks: Number(c.clicks) || 0,
 		notes: String(c.notes || '').slice(0, 500),
 		i18n,
+		// ── Serving framework fields (placements, targeting, experiments) ──
+		type: AD_TYPE_LIST.includes(type) ? type : 'banner',
+		weight: Math.max(0, Number(c.weight ?? 1) || 0),
+		priority: Math.trunc(Number(c.priority) || 0),
+		placementIds: cleanList(c.placementIds),
+		targeting: cleanJsonList(c.targeting),
+		frequencyCaps: cleanJsonList(c.frequencyCaps, 10),
+		dayparting: cleanJsonList(c.dayparting, 14),
+		pages: cleanJsonList(c.pages, 10).map(cleanPage),
+		vastXml: String(c.vastXml || '').slice(0, 100000),
+		vmapXml: String(c.vmapXml || '').slice(0, 100000),
+		storyDurationSeconds: Math.max(1, Math.min(30, Number(c.storyDurationSeconds) || 5)),
+		ampWidth: Math.max(1, Math.min(2000, Math.trunc(Number(c.ampWidth) || 320))),
+		ampHeight: Math.max(1, Math.min(2000, Math.trunc(Number(c.ampHeight) || 100))),
+		ampSlot: String(c.ampSlot || '').trim().slice(0, 80),
+		rewardAmount: String(c.rewardAmount || '').trim().slice(0, 24),
+		startDate: String(c.startDate || '').trim().slice(0, 32),
+		endDate: String(c.endDate || '').trim().slice(0, 32),
 	};
 }
 
@@ -103,8 +138,93 @@ function publicAd(row) {
 		durationSeconds: Math.max(4, Math.min(60, Number(c.durationSeconds) || 12)),
 		snippet: c.snippet || '',
 		i18n: c.i18n && typeof c.i18n === 'object' ? c.i18n : {},
+		type: c.type || 'banner',
+		weight: Number(c.weight ?? 1) || 0,
+		priority: Math.trunc(Number(c.priority) || 0),
+		placementIds: Array.isArray(c.placementIds) ? c.placementIds : [],
+		targeting: Array.isArray(c.targeting) ? c.targeting : [],
+		frequencyCaps: Array.isArray(c.frequencyCaps) ? c.frequencyCaps : [],
+		dayparting: Array.isArray(c.dayparting) ? c.dayparting : [],
+		pages: Array.isArray(c.pages) ? c.pages : [],
+		vastXml: c.vastXml || '',
+		vmapXml: c.vmapXml || '',
+		storyDurationSeconds: c.storyDurationSeconds || 5,
+		ampWidth: c.ampWidth || 320,
+		ampHeight: c.ampHeight || 100,
+		ampSlot: c.ampSlot || '',
+		rewardAmount: c.rewardAmount || '',
+		startDate: c.startDate || '',
+		endDate: c.endDate || '',
 	};
 }
+
+// Curated in-app placements (served to AdSlot clients). House ads with an
+// empty placementIds list are eligible everywhere.
+const AD_PLACEMENTS = [
+	{ id: 'ph_dashboard_top', name: 'Dashboard Top Banner', type: 'header', allowedAdTypes: ['banner', 'amp'] },
+	{ id: 'ph_academy_feed', name: 'Academy In-Feed', type: 'in_feed', allowedAdTypes: ['native', 'video', 'amp'] },
+	{ id: 'ph_blog_feed', name: 'Blog In-Feed', type: 'in_feed', allowedAdTypes: ['native', 'video', 'amp'] },
+	{ id: 'ph_story', name: 'Story Fullscreen', type: 'story', allowedAdTypes: ['story'] },
+];
+
+// ── Public: placement directory for AdSlot clients ───────────────
+router.get('/placements', async (req, res) => {
+	return res.json({ placements: AD_PLACEMENTS });
+});
+
+// ── Authed: experiment exposure / conversion ping (best effort) ───
+// Powers the admin experiments report. Assignment stays client-side in
+// localStorage; these pings only aggregate counts server-side.
+router.post('/experiments/track', async (req, res) => {
+	const user = await getAuthedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	const experimentId = String(req.body?.experimentId || '').trim().slice(0, 80);
+	const variantId = String(req.body?.variantId || '').trim().slice(0, 80);
+	const event = String(req.body?.event || '').trim();
+	const metric = String(req.body?.metric || '').trim().slice(0, 80);
+	if (!experimentId || !variantId) return res.status(422).json({ error: 'experiment + variant required' });
+	if (event !== 'exposure' && event !== 'conversion') return res.status(422).json({ error: 'unknown event' });
+	try {
+		await supabase.createEvent?.({
+			owner: user.id,
+			eventType: `adexp.${event}`,
+			status: experimentId,
+			transactionId: variantId,
+			planName: metric,
+			amount: Number(req.body?.value || 1) || 1,
+			currency: 'USD',
+			occurredAt: new Date().toISOString(),
+		});
+		return res.json({ ok: true });
+	} catch (err) {
+		logger.error('ad experiment track failed', String(err));
+		return res.status(500).json({ error: 'failed' });
+	}
+});
+
+// ── Admin: experiment stats (exposures + conversions per variant) ──
+router.get('/admin/experiments/stats', async (req, res) => {
+	if (!(await isAdmin(req))) return res.status(403).json({ error: 'forbidden' });
+	try {
+		const rows = await supabaseRest('/rest/v1/billing_events', {
+			query: { select: 'eventType,status,transactionId,planName,amount', eventType: 'in.(adexp.exposure,adexp.conversion)', order: 'occurredAt.desc', limit: 5000 },
+		});
+		const experiments = {};
+		for (const r of rows || []) {
+			const expId = r.status || 'unknown';
+			const varId = r.transactionId || 'unknown';
+			const metric = r.planName || 'conversion';
+			const exp = (experiments[expId] ??= { id: expId, variants: {} });
+			const v = (exp.variants[varId] ??= { id: varId, exposures: 0, metrics: {} });
+			if (r.eventType === 'adexp.exposure') v.exposures += 1;
+			else v.metrics[metric] = (v.metrics[metric] || 0) + (Number(r.amount) || 1);
+		}
+		return res.json({ experiments: Object.values(experiments) });
+	} catch (err) {
+		logger.error('ad experiment stats failed', String(err));
+		return res.status(500).json({ error: 'failed' });
+	}
+});
 
 async function getAuthedUser(req) {
 	const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
