@@ -1,6 +1,7 @@
-// OHLC candle data. Crypto symbols proxy Binance klines; everything else is
-// generated as realistic synthetic OHLC seeded from the symbol so charts stay
-// stable between refreshes but still animate a live last candle.
+// OHLC candle data. Crypto symbols proxy Binance klines (live); everything
+// else tradeable pulls live Yahoo Finance OHLCV (no key), then Alpha Vantage
+// (cached), then synthetic random-walk as the last resort so charts never
+// render empty. Every response carries its `source`.
 
 const CRYPTO_MAP = {
 	BTCUSD: 'BTCUSDT', ETHUSD: 'ETHUSDT', SOLUSD: 'SOLUSDT', BNBUSD: 'BNBUSDT',
@@ -30,6 +31,7 @@ export function binanceSymbolFor(symbol) {
 }
 
 import { avCandles, isRateLimited } from '../utils/alphaVantage.js';
+import { yahooCandles } from '../utils/yahoo.js';
 
 const VALID_INTERVALS = ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w', '1M'];
 
@@ -126,26 +128,35 @@ export default async (req, res) => {
 	}
 
 	const binanceSymbol = binanceSymbolFor(symbol);
+	// Single primary feed: Yahoo first for every symbol (crypto spot included),
+	// Binance as automatic fallback for crypto, then Alpha Vantage, then
+	// synthetic so charts never render empty.
+	const yahooFirst = await yahooCandles(symbol, interval, limit).catch(() => null);
+	if (yahooFirst && yahooFirst.length) {
+		return res.json({ symbol, interval, source: 'yahoo', candles: yahooFirst });
+	}
 	if (binanceSymbol) {
-		try {
-			const upstream = await fetch(
-				`https://api.binance.com/api/v3/klines?symbol=${binanceSymbol}&interval=${interval}&limit=${limit}`,
-			);
-			if (!upstream.ok) throw new Error(`binance klines failed: ${upstream.status} ${upstream.statusText}`);
-			const rows = await upstream.json();
-			const candles = rows.map((r) => ({
-				time: r[0],
-				open: +r[1], high: +r[2], low: +r[3], close: +r[4], volume: +r[5],
-			}));
-			if (candles.length) return res.json({ symbol, interval, source: 'binance', candles });
-		} catch {
-			// fall through to Alpha Vantage / synthetic below — charts must
-			// never render empty because one provider hiccuped
+		// Rotate Binance hosts — api.binance.com is geo-blocked in some regions.
+		for (const host of ['https://data-api.binance.vision', 'https://api.binance.com', 'https://api.binance.us']) {
+			try {
+				const upstream = await fetch(
+					`${host}/api/v3/klines?symbol=${binanceSymbol}&interval=${interval}&limit=${limit}`,
+				);
+				if (!upstream.ok) continue;
+				const rows = await upstream.json();
+				const candles = rows.map((r) => ({
+					time: r[0],
+					open: +r[1], high: +r[2], low: +r[3], close: +r[4], volume: +r[5],
+				}));
+				if (candles.length) return res.json({ symbol, interval, source: 'binance', candles });
+			} catch {
+				// try next host, then fall through to Yahoo / synthetic below —
+				// charts must never render empty because one provider hiccuped
+			}
 		}
 	}
 
-	// Non-crypto: try Alpha Vantage for real OHLCV (cached), fall back to
-	// synthetic candles when the symbol is unsupported or the key is throttled.
+	// Alpha Vantage next (cached), then synthetic so charts never render empty.
 	if (!isRateLimited()) {
 		try {
 			const avRows = await avCandles(symbol, interval, limit);

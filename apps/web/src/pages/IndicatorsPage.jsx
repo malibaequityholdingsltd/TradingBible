@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useI18n } from '@/lib/i18n';
@@ -9,7 +10,7 @@ import WatchlistStrip from '@/components/WatchlistStrip';
 import { useCandles } from '@/hooks/useCandles';
 import { INDICATOR_DEFS } from '@/lib/indicators';
 import SymbolSearchPicker from '@/components/SymbolSearchPicker';
-import { Card, EmptyState, PageHero, SectionHead } from '@/components/ui-kit';
+import { Card, EmptyState, PageHero, SectionHead, GhostButton } from '@/components/ui-kit';
 
 const DESC_KEYS = {
   sma: 'ind.d.sma', ema: 'ind.d.ema', wma: 'ind.d.wma', rsi: 'ind.d.rsi', macd: 'ind.d.macd',
@@ -25,7 +26,8 @@ function lastValue(arr) {
 
 export default function IndicatorsPage() {
   const { t } = useI18n();
-  const [symbol, setSymbol] = useState('BTCUSD');
+  const [params] = useSearchParams();
+  const [symbol, setSymbol] = useState(() => ((params.get('symbol') || 'BTCUSD').toUpperCase()));
   const [timeframe, setTimeframe] = useState('1h');
   const [chartType, setChartType] = useState('candle');
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -60,7 +62,7 @@ export default function IndicatorsPage() {
         <PageHero
           kicker={t('ind.title')}
           title={t('ind.pick')}
-          actions={<button onClick={() => setPickerOpen(true)} className="flex min-h-[44px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90"><Plus className="h-4 w-4" /> {t('ind.configure')}</button>}
+          actions={<><button onClick={() => setPickerOpen(true)} className="flex min-h-[44px] items-center gap-1.5 whitespace-nowrap rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90"><Plus className="h-4 w-4" /> {t('ind.configure')}</button><Link to={`/app/charts?symbol=${encodeURIComponent(symbol)}`} className="inline-flex min-h-[44px] items-center whitespace-nowrap rounded-xl border border-[#d4af37]/30 px-4 text-sm font-semibold text-[#d4af37]">Full charts</Link><Link to={`/app/terminal-pro?symbol=${encodeURIComponent(symbol)}`} className="inline-flex min-h-[44px] items-center whitespace-nowrap rounded-xl border border-[#d4af37]/30 px-4 text-sm font-semibold text-[#d4af37]">Terminal Pro</Link></>}
         />
 
         {/* One control deck: symbol + watchlist + strip */}

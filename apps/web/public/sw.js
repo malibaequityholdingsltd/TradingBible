@@ -1,8 +1,8 @@
 // TradingBible Service Worker - Offline First, Push Notifications, Background Sync
-const CACHE_NAME = 'tradingbible-v1.2.0';
-const STATIC_CACHE = 'tradingbible-static-v1.2.0';
-const DYNAMIC_CACHE = 'tradingbible-dynamic-v1.2.0';
-const API_CACHE = 'tradingbible-api-v1.2.0';
+const CACHE_NAME = 'tradingbible-v1.2.1';
+const STATIC_CACHE = 'tradingbible-static-v1.2.1';
+const DYNAMIC_CACHE = 'tradingbible-dynamic-v1.2.1';
+const API_CACHE = 'tradingbible-api-v1.2.1';
 
 const STATIC_ASSETS = [
   '/',
@@ -214,8 +214,8 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
   if (event.data === 'getVersion') {
-    event.ports[0].postMessage({ version: '1.2.0' });
+    event.ports[0].postMessage({ version: '1.2.1' });
   }
 });
 
-console.log('[SW] TradingBible Service Worker v1.2.0 loaded');
+console.log('[SW] TradingBible Service Worker v1.2.1 loaded');

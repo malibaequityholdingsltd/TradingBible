@@ -26,7 +26,7 @@ const CHAPTERS = [
       { id: 'trade.plan', title: 'Pick your plan', body: 'Pro unlocks the terminal, Elite adds the SI coach, Professional adds API + white-label.', to: '/pricing', cta: 'Compare plans' },
       { id: 'trade.broker', title: 'Connect a live broker', body: 'Sync executions automatically — no manual entry, no missing fills.', to: '/app/brokers', cta: 'Connect broker', auto: 'broker' },
       { id: 'trade.trade', title: 'Log your first trades', body: 'Three logged trades unlocks your P&L curve, win rate and trader score.', to: '/app/journal', cta: 'Open journal', auto: 'trades' },
-      { id: 'trade.terminal', title: 'Set up the terminal', body: 'Watchlists, quotes and one-tap tickets arranged your way.', to: '/app/terminal', cta: 'Open terminal' },
+      { id: 'trade.terminal', title: 'Set up the terminal', body: 'Watchlists, quotes and one-tap tickets arranged your way.', to: '/app/terminal-pro', cta: 'Open terminal' },
     ],
   },
   {
@@ -50,7 +50,7 @@ const CHAPTERS = [
       { id: 'markets.tv', title: 'Tune into TradingBible TV', body: 'Live desks, 24/7. Minimize it and it keeps playing while you work.', to: '/tv', cta: 'Open TV' },
       { id: 'markets.signals', title: 'Follow a signal', body: 'Entry, stop and targets with live status — paper-trade it first.', to: '/app/signals', cta: 'View signals' },
       { id: 'markets.calendar', title: 'Check the calendar', body: 'CPI, NFP, FOMC — never hold size through red-folders blind again.', to: '/app/economic-calendar', cta: 'Open calendar' },
-      { id: 'markets.charts', title: 'Save a chart layout', body: 'Indicators, drawings and timeframes persist across sessions.', to: '/app/charts', cta: 'Open charts' },
+      { id: 'markets.charts', title: 'Work the Terminal Pro desk', body: 'Multi-chart layouts, indicators, drawings and timeframes that persist across sessions.', to: '/app/terminal-pro', cta: 'Open Terminal Pro' },
     ],
   },
   {
@@ -86,7 +86,7 @@ const CHAPTERS = [
       { id: 'secure.profile', title: 'Complete your profile', body: 'Username, market, experience — personalizes coaching and stats.', to: '/app/profile', cta: 'Edit profile' },
       { id: 'secure.2fa', title: 'Enable 2FA + passkeys', body: 'TOTP and WebAuthn under Security. Five minutes, permanent peace.', to: '/app/security', cta: 'Secure account' },
       { id: 'secure.reports', title: 'Export your first report', body: 'Tax-ready P&L exports. Elite and up.', to: '/app/reports', cta: 'Open reports' },
-      { id: 'secure.prop', title: 'Track a prop challenge', body: 'Log evaluation trades against firm rules before paying the fee.', to: '/app/prop-firms', cta: 'Compare firms' },
+      { id: 'secure.prop', title: 'Enter a Funded evaluation', body: 'Pass on real journaled fills and trade firm capital.', to: '/app/funded', cta: 'Get funded' },
     ],
   },
 ];
@@ -108,7 +108,7 @@ export default function ProGuidePage() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify([...manual])); } catch { /* ignore */ }
   }, [manual]);
 
-  const stats = useMemo(() => computeStats(trades || []), [trades]);
+  const stats = useMemo(() => computeStats(trades || []) || { totalTrades: 0 }, [trades]);
   const autoDone = useMemo(() => ({
     broker: (live || []).length > 0,
     trades: (stats.totalTrades || 0) > 0,
@@ -153,7 +153,7 @@ export default function ProGuidePage() {
               <div className="font-semibold text-[#f0ecdd]">Portal mastered. Now get funded.</div>
               <div className="text-xs text-[#8a8577]">Compare prop firms and log your evaluation in the journal.</div>
             </div>
-            <GoldButton to="/app/prop-firms" className="!px-4 !py-2 !text-xs">Compare firms <ArrowRight className="h-4 w-4" /></GoldButton>
+            <GoldButton to="/app/funded" className="!px-4 !py-2 !text-xs">See programs <ArrowRight className="h-4 w-4" /></GoldButton>
           </Card>
         )}
 

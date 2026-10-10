@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Search } from 'lucide-react';
 import { SYMBOL_GROUPS } from '@/lib/symbols';
 import { useI18n } from '@/lib/i18n';
@@ -10,12 +11,33 @@ export default function SymbolSearchPicker({ value, onChange, buttonClassName = 
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
+  const [pos, setPos] = useState(null);
   const inputRef = useRef(null);
+  const btnRef = useRef(null);
+  const panelRef = useRef(null);
+
+  const toggle = () => {
+    if (open) { setOpen(false); return; }
+    // Viewport placement with drop-up: the picker often lives inside
+    // blurred/scrolling bars where there is no room below.
+    const r = btnRef.current?.getBoundingClientRect();
+    if (r) {
+      const left = Math.min(r.left, Math.max(8, window.innerWidth - 272));
+      const below = window.innerHeight - r.bottom;
+      if (below < 340 && r.top > below) {
+        setPos({ bottom: Math.max(8, window.innerHeight - r.top + 6), left, up: true });
+      } else {
+        setPos({ top: r.bottom + 6, left, up: false });
+      }
+    }
+    setOpen(true);
+  };
 
   useEffect(() => {
     if (open) {
       setQ('');
-      const id = requestAnimationFrame(() => inputRef.current?.focus());
+      // Never yank the page when the menu opens.
+      const id = requestAnimationFrame(() => { try { inputRef.current?.focus({ preventScroll: true }); } catch { inputRef.current?.focus(); } });
       return () => cancelAnimationFrame(id);
     }
     return undefined;
@@ -24,8 +46,17 @@ export default function SymbolSearchPicker({ value, onChange, buttonClassName = 
   useEffect(() => {
     if (!open) return undefined;
     const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    // Scrolling the picker's own list must NOT close it — only scrolling
+    // anywhere else (page, rails, other panels) dismisses the menu.
+    const onScroll = (e) => { if (panelRef.current && panelRef.current.contains(e.target)) return; setOpen(false); };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('resize', onScroll);
+    window.addEventListener('scroll', onScroll, true);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('scroll', onScroll, true);
+    };
   }, [open ]);
 
   const query = q.trim().toLowerCase();
@@ -40,15 +71,16 @@ export default function SymbolSearchPicker({ value, onChange, buttonClassName = 
   return (
     <div className="relative">
       <button
-        onClick={() => setOpen((o) => !o)}
+        ref={btnRef}
+        onClick={toggle}
         className={`flex items-center gap-1 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2.5 py-1 text-xs font-medium text-[#e9e7df] ${buttonClassName}`}
       >
         <span className="font-mono">{value}</span> <ChevronDown className="h-3 w-3" />
       </button>
-      {open && (
+      {open && createPortal(
         <>
-          <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
-          <div className={`sheen-panel overlay-pop absolute left-0 z-30 mt-1 flex max-h-80 w-64 flex-col overflow-hidden rounded-xl border border-[#d4af37]/15 bg-[#0d0d12]/90 shadow-xl backdrop-blur-xl ${dropdownClassName}`}>
+          <div className="fixed inset-0 z-[80] cursor-default" onClick={() => setOpen(false)} />
+          <div ref={panelRef} style={{ top: pos?.top, bottom: pos?.bottom, left: pos?.left }} className={`sheen-panel overlay-pop fixed z-[90] flex max-h-80 w-64 flex-col overflow-hidden rounded-xl border border-[#d4af37]/15 bg-[#0d0d12]/95 shadow-xl backdrop-blur-xl ${dropdownClassName}`}>
             <div className="relative border-b border-[#d4af37]/10 p-2">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a8577]" />
               <input
@@ -79,7 +111,8 @@ export default function SymbolSearchPicker({ value, onChange, buttonClassName = 
               ))}
             </div>
           </div>
-        </>
+        </>,
+        document.body,
       )}
     </div>
   );

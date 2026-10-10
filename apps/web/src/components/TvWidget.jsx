@@ -6,7 +6,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
-import { hardenEmbed, useLiveChannels, ytVideoEmbed, localizeChannelHours } from '@/lib/liveChannels';
+import { hardenEmbed, useLiveChannels, ytVideoEmbed, swapEmbedHost, youtubeEmbedUrl, localizeChannelHours } from '@/lib/liveChannels';
 import { useLiveStatus } from '@/lib/useLiveStatus';
 import { useLockBody } from '@/hooks/useLockBody';
 import { meetsPlan } from '@/lib/entitlements';
@@ -40,16 +40,23 @@ function tickerFloor() {
   return Math.round(h);
 }
 
+// Phone dock clearance: the bottom nav owns the lowest ~116px on phones —
+// no TV surface may rest or travel there (bubbles snap and drag above it).
+function dockClear() {
+  if (typeof window === 'undefined') return 0;
+  return window.innerWidth < 640 ? 116 : 0;
+}
+
 function snapToEdge(x, y) {
   const w = window.innerWidth;
   const h = window.innerHeight;
   const top = tickerFloor();
   let cx = Math.min(Math.max(x, MARGIN), w - BTN - MARGIN);
-  let cy = Math.min(Math.max(y, top), h - BTN - MARGIN);
+  let cy = Math.min(Math.max(y, top), h - BTN - MARGIN - dockClear());
   const dl = cx - MARGIN;
   const dr = w - BTN - MARGIN - cx;
   const dt = cy - top;
-  const db = h - BTN - MARGIN - cy;
+  const db = h - BTN - MARGIN - dockClear() - cy;
   const min = Math.min(dl, dr, dt, db);
   if (min === dl) cx = MARGIN;
   else if (min === dr) cx = w - BTN - MARGIN;
@@ -137,6 +144,7 @@ export default function TvWidget() {
   const [ytRetry, setYtRetry] = useState(0);
   const [ytApi, setYtApi] = useState(false);
   const [useEndpoint, setUseEndpoint] = useState(false);
+  const [altHost, setAltHost] = useState(false);
   const [guideQuery, setGuideQuery] = useState('');
   const [toasts, setToasts] = useState([]);
   const [ctlsHidden, setCtlsHidden] = useState(false);
@@ -181,18 +189,19 @@ export default function TvWidget() {
   const ordered = view !== 'ads' && frozenRef.current.length ? frozenRef.current : liveOrdered;
 
   const playing = view === 'player' ? channelIndex : null;
-  const isYoutube = playing !== null && /(youtube\.com|youtube-nocookie\.com)\/embed\//.test(ordered[playing]?.embedUrl || '');
+  const isYoutube = playing !== null && /(youtube\.com|youtube-nocookie\.com|youtu\.be)/.test(`${ordered[playing]?.embedUrl || ''} ${ordered[playing]?.url || ''}`);
   const probeVid = playing !== null ? liveStates[ordered[playing]?.id]?.videoId || null : null;
-  const ytSrc = playing !== null
-    ? (probeVid && !useEndpoint ? ytVideoEmbed(probeVid) : hardenEmbed(ordered[playing].embedUrl || ordered[playing].url))
-    : '';
+  const ytBase = playing !== null
+    ? (probeVid && !useEndpoint ? ytVideoEmbed(probeVid) : (youtubeEmbedUrl(hardenEmbed(ordered[playing].embedUrl || '')) || youtubeEmbedUrl(ordered[playing].url || '')))
+    : null;
+  const ytSrc = ytBase && altHost ? swapEmbedHost(ytBase) : (ytBase || '');
 
   useEffect(() => {
     setMinSpinDone(false);
     clearTimeout(tuneTimer.current);
     tuneTimer.current = setTimeout(() => setMinSpinDone(true), 3000);
     return () => clearTimeout(tuneTimer.current);
-  }, [playing, ytRetry, useEndpoint]);
+  }, [playing, ytRetry, useEndpoint, altHost]);
 
   // NOTE: every callback below must stay above its consumers — a
   // use-before-declare here throws on mount and blanks the entire app
@@ -254,19 +263,25 @@ export default function TvWidget() {
       if (viewRef.current !== 'player') return;
       if (String(ordered[channelIndexRef.current]?.id || '') !== retryId.current) return;
       attemptsRef.current.clear();
-      setUseEndpoint(false); setYtError(false); setYtBlocked(false); setFrameLoaded(false);
+      setUseEndpoint(false); setAltHost(false); setYtError(false); setYtBlocked(false); setFrameLoaded(false);
       setYtRetry((n) => n + 1);
     }, 30000);
   }, [ordered]);
 
   // Failure chain: direct confirmed video first, then the channel endpoint,
-  // then auto-advance — a slate only when nothing is left to try.
+  // then the alternate YouTube host, then auto-advance — a slate only when
+  // nothing is left to try.
   const handleStreamError = useCallback((blocked) => {
     const c = ordered[channelIndex];
     const id = c ? String(c.id) : '';
     const vid = (id && liveStates[id]?.videoId) || null;
     if (vid && !useEndpoint) {
       setUseEndpoint(true);
+      setYtError(false); setYtBlocked(false); setFrameLoaded(false);
+      return;
+    }
+    if (!altHost) {
+      setAltHost(true);
       setYtError(false); setYtBlocked(false); setFrameLoaded(false);
       return;
     }
@@ -284,7 +299,7 @@ export default function TvWidget() {
       setYtError(true);
       scheduleAutoRetry();
     }
-  }, [ordered, channelIndex, useEndpoint, liveStates, findNextPlayable, scheduleAutoRetry]);
+  }, [ordered, channelIndex, useEndpoint, altHost, liveStates, findNextPlayable, scheduleAutoRetry]);
 
   // Instant live on open: straight into the best desk, zero extra taps.
   const openTv = useCallback(() => {
@@ -539,7 +554,7 @@ export default function TvWidget() {
   // Every new channel starts muted until tapped. Cleanup also clears the
   // auto-advance and self-retry timers.
   useEffect(() => {
-    setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); setYtApi(false); setUseEndpoint(false);
+    setYtMuted(true); setYtStarted(false); setYtError(false); setYtBlocked(false); setYtApi(false); setUseEndpoint(false); setAltHost(false);
     return () => { clearTimeout(advanceTimer.current); clearTimeout(retryTimer.current); };
   }, [channelIndex]);
 
@@ -605,7 +620,7 @@ export default function TvWidget() {
       const w = window.innerWidth; const h = window.innerHeight;
       setPos({
         x: Math.min(Math.max(nx, MARGIN), w - BTN - MARGIN),
-        y: Math.min(Math.max(ny, tickerFloor()), h - BTN - MARGIN),
+        y: Math.min(Math.max(ny, tickerFloor()), h - BTN - MARGIN - dockClear()),
       });
       if (e.cancelable) e.preventDefault();
     };
@@ -690,7 +705,7 @@ export default function TvWidget() {
       const panelH = panelRef.current?.offsetHeight || 448;
       setMiniPos({
         x: Math.min(Math.max(nx, 12), w - panelW - 12),
-        y: Math.min(Math.max(ny, tickerFloor()), Math.max(tickerFloor(), h - panelH)),
+        y: Math.min(Math.max(ny, tickerFloor()), Math.max(tickerFloor(), h - panelH - dockClear())),
       });
       if (e.cancelable) e.preventDefault();
     };
@@ -754,7 +769,7 @@ export default function TvWidget() {
             ? { left: expandedPos.x, top: expandedPos.y, right: 'auto', bottom: 'auto', width: '900px', height: '600px', maxWidth: 'calc(100vw - 24px)', maxHeight: 'calc(100vh - 24px)' }
             : (miniPos
               ? { left: miniPos.x, top: miniPos.y, right: 'auto', bottom: 'auto', width: '26rem', maxWidth: '94vw', height: 'auto', maxHeight: '64dvh' }
-              : { bottom: '0.75rem', [pos.x < (typeof window !== 'undefined' ? window.innerWidth : 1024) / 2 ? 'left' : 'right']: '0.75rem' })}
+              : { bottom: (typeof window !== 'undefined' && window.innerWidth < 640) ? '7.5rem' : '0.75rem', [pos.x < (typeof window !== 'undefined' ? window.innerWidth : 1024) / 2 ? 'left' : 'right']: '0.75rem' })}
         >
           {/* Gold top-edge accent + ambient glow + terminal scanlines */}
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
@@ -843,9 +858,9 @@ export default function TvWidget() {
                       </div>
                     </div>
                   )}
-                  {isYoutube ? (
+                  {isYoutube && ytSrc ? (
                     <YoutubePlayer
-                      key={`${ordered[playing].id}-${probeVid || 'live'}-${useEndpoint ? 'ep' : 'd'}-${ytRetry}`}
+                      key={`${ordered[playing].id}-${probeVid || 'live'}-${useEndpoint ? 'ep' : 'd'}-${altHost ? 'alt' : 'main'}-${ytRetry}`}
                       ref={ytRef}
                       src={ytSrc}
                       title={ordered[playing].title}
@@ -854,7 +869,7 @@ export default function TvWidget() {
                       onApiReady={(ready) => { setYtApi(!!ready); if (ready) tryAutoSound(); }}
                       onLoaded={() => setFrameLoaded(true)}
                     />
-                  ) : (
+                  ) : !isYoutube ? (
                     <iframe
                       key={ordered[playing].id}
                       src={hardenEmbed(ordered[playing].embedUrl || ordered[playing].url)}
@@ -864,6 +879,15 @@ export default function TvWidget() {
                       allowFullScreen
                       onLoad={() => setFrameLoaded(true)}
                     />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#07070a] p-4 text-center">
+                      <Radio className="h-6 w-6 text-[#6a665a]" />
+                      <p className="text-xs font-semibold text-[#f0ecdd]">This desk is off-air right now</p>
+                      <p className="max-w-[240px] text-[11px] leading-relaxed text-[#8a8577]">Live shows run at set hours — pick a desk with a LIVE badge in the guide.</p>
+                      <a href={ordered[playing]?.url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-semibold text-[#8a8577] hover:text-[#d4af37] hover:underline">
+                        Open on YouTube instead
+                      </a>
+                    </div>
                   )}
                   {/* Network wall slate: this browser can't reach YouTube. */}
                   {isYoutube && ytBlocked && (
@@ -872,7 +896,7 @@ export default function TvWidget() {
                       <p className="text-xs font-semibold text-[#f0ecdd]">Can't reach YouTube</p>
                       <p className="max-w-[240px] text-[11px] leading-relaxed text-[#8a8577]">Your network is blocking youtube.com — check connection, VPN, ad-blocker or region restrictions, then re-open the channel.</p>
                       <p className="text-[10px] uppercase tracking-wider text-[#6a665a]">Retrying automatically…</p>
-                      <button onClick={() => { attemptsRef.current.clear(); setUseEndpoint(false); setYtBlocked(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="mt-1 min-h-[40px] rounded-xl border border-[#d4af37]/30 px-5 text-xs font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
+                      <button onClick={() => { attemptsRef.current.clear(); setUseEndpoint(false); setAltHost(false); setYtBlocked(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="mt-1 min-h-[40px] rounded-xl border border-[#d4af37]/30 px-5 text-xs font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
                         Try again
                       </button>
                       <a href={ordered[playing]?.url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-semibold text-[#8a8577] hover:text-[#d4af37] hover:underline">
@@ -887,7 +911,7 @@ export default function TvWidget() {
                       <p className="text-xs font-semibold text-[#f0ecdd]">This desk is off-air right now</p>
                       <p className="max-w-[240px] text-[11px] leading-relaxed text-[#8a8577]">Live shows run at set hours — pick a desk with a LIVE badge in the guide.</p>
                       <div className="mt-1 flex items-center gap-2">
-                        <button onClick={() => { attemptsRef.current.clear(); setUseEndpoint(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="min-h-[40px] rounded-xl border border-[#d4af37]/30 px-5 text-xs font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
+                        <button onClick={() => { attemptsRef.current.clear(); setUseEndpoint(false); setAltHost(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="min-h-[40px] rounded-xl border border-[#d4af37]/30 px-5 text-xs font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
                           Try again
                         </button>
                         <button onClick={openChannels} className="min-h-[40px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 text-xs font-bold text-[#0a0a0f] transition hover:opacity-90">
@@ -1122,7 +1146,7 @@ export default function TvWidget() {
 
       {/* Go-live toasts: a desk just started broadcasting — tap to jump in. */}
       {toasts.length > 0 && (
-        <div className="fixed bottom-4 left-1/2 z-[95] flex w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 flex-col gap-2">
+        <div className="fixed bottom-[7.5rem] left-1/2 z-[95] flex w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 flex-col gap-2 sm:bottom-4">
           {toasts.map((toast) => (
             <button
               key={toast.key}

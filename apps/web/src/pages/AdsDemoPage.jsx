@@ -47,7 +47,7 @@ const mockAds = [
     imageUrl: 'https://picsum.photos/seed/funded-trader/600/400',
     logoUrl: 'https://picsum.photos/seed/prop-firm/64/64',
     snippet: 'Join thousands of traders who passed our evaluation and now trade with firm capital. No risk to your own money.',
-    linkUrl: 'https://tradingbible.app/prop-firms',
+    linkUrl: 'https://tradingbible.app/funded',
     cta: 'Apply Now',
     accent: '#10b981',
     weight: 6,

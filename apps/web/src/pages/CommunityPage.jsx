@@ -7,6 +7,7 @@ import pb from '@/lib/pocketbaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { avatarUrl } from '@/lib/avatar';
+import { displayName } from '@/lib/displayName';
 
 function Avatar({ src, letter, className = 'h-10 w-10 text-sm' }) {
   return (
@@ -48,7 +49,7 @@ function ThreadModal({ thread, onClose, onReplied }) {
     if (!body.trim()) return;
     setBusy(true);
     try {
-      await pb.collection('forum_replies').create({ body, thread: thread.id, owner: user.id, authorName: user.username || user.email, authorAvatar: avatarUrl(user) });
+      await pb.collection('forum_replies').create({ body, thread: thread.id, owner: user.id, authorName: displayName(user), authorAvatar: avatarUrl(user) });
       await pb.collection('forum_threads').update(thread.id, { replyCount: (thread.replyCount || 0) + 1 }).catch(() => {});
       setBody(''); await load(); onReplied?.();
     } catch {
@@ -110,7 +111,7 @@ function Forum() {
     if (!form.title.trim() || !form.body.trim()) return;
     setBusy(true);
     try {
-      await pb.collection('forum_threads').create({ ...form, owner: user.id, authorName: user.username || user.email, authorAvatar: avatarUrl(user), replyCount: 0 });
+      await pb.collection('forum_threads').create({ ...form, owner: user.id, authorName: displayName(user), authorAvatar: avatarUrl(user), replyCount: 0 });
       setForm({ title: '', body: '', category: 'General' }); setCreating(false); await load();
       toast({ title: t('com.threadPosted') });
     } catch {

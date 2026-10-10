@@ -96,7 +96,10 @@ body {
 
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
-  --header-h: calc(4rem + var(--safe-top));
+  --header-h: calc(2.25rem + var(--safe-top));
+  /* App header height below the ticker: single compact row everywhere
+     (phone search expands as an overlay). */
+  --apphead: 3.5rem;
 }
 
 /* ─── CSS TOKENS ─────────────────────────────────────────────────── */
@@ -364,7 +367,19 @@ body {
 .tv-pop { animation: tv-pop .3s cubic-bezier(.2,.9,.28,1.15) backwards; }
 @keyframes tv-progress { from { width: 0%; } to { width: 100%; } }
 .tv-progress { animation-name: tv-progress; animation-timing-function: linear; animation-fill-mode: forwards; }
-@media (prefers-reduced-motion: reduce) { .animate-marquee, .animate-floaty, .tv-pop, .ambient-blob { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .animate-marquee, .animate-floaty, .tv-pop, .ambient-blob, .dock-pop, .dock-float, .dock-glow, .dock-sheet-up, .dock-fade { animation: none; } }
+
+/* ─── Phone dock motion set ────────────────────────────────────────── */
+@keyframes dock-pop { 0% { transform: scale(0.55); } 55% { transform: scale(1.12); } 100% { transform: scale(1); } }
+.dock-pop { animation: dock-pop 0.35s cubic-bezier(0.2, 0.9, 0.28, 1.2); }
+@keyframes dock-float { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -4px); } }
+.dock-float { animation: dock-float 3.2s ease-in-out infinite; }
+@keyframes dock-glow { 0%, 100% { box-shadow: 0 0 0 2px #d4af37, 0 12px 32px rgba(212, 175, 55, 0.65); } 50% { box-shadow: 0 0 0 2px #f4e6a8, 0 12px 44px rgba(212, 175, 55, 0.85); } }
+.dock-glow { animation: dock-glow 2.4s ease-in-out infinite; }
+@keyframes dock-sheet-up { from { opacity: 0; transform: translateY(48px); } to { opacity: 1; transform: translateY(0); } }
+.dock-sheet-up { animation: dock-sheet-up 0.32s cubic-bezier(0.2, 0.9, 0.3, 1); }
+@keyframes dock-fade { from { opacity: 0; } to { opacity: 1; } }
+.dock-fade { animation: dock-fade 0.25s ease-out; }
 
 /* AmbientDepth — app-wide 4D atmosphere (gold aurora drift + depth). */
 .ambient-blob {
@@ -524,6 +539,28 @@ html.light .bg-\[\#0f0f14\]\/90 { background-color: rgba(251, 249, 243, 0.92) !i
 html.light .app-header { background-color: rgba(251, 249, 243, 0.92) !important; border-bottom-color: rgba(166, 124, 30, 0.3) !important; }
 html.light .app-header-pill { background-color: rgba(45, 52, 64, 0.05) !important; border-color: rgba(45, 52, 64, 0.12) !important; }
 html.light .app-search-trigger { background-color: rgba(255, 255, 255, 0.7) !important; border-color: rgba(45, 52, 64, 0.14) !important; }
+html.light .app-header .tb-title { color: #232830; }
+html.light .app-header .hdr-ic { color: #4d5563; }
+
+/* Phone chrome — light-mode surfaces (dark-first components) */
+html.light .tb-ticker { background: #faf8f2; border-color: rgba(166, 124, 30, 0.35); }
+html.light .tb-ticker .tk-sym { color: #6a6252; }
+html.light .tb-ticker .tk-px { color: #232830; }
+html.light .tb-drawer { background: rgba(251, 249, 243, 0.96); border-color: #e4ded0; }
+html.light .tb-searchpanel { background: #faf8f2; border-color: #e4ded0; }
+html.light .tb-avatarmenu { background: #fffdf9; color: #2d3440; border-color: rgba(166, 124, 30, 0.35); }
+html.light .tb-avatarmenu [role="separator"] { background: rgba(45, 52, 64, 0.1); }
+html.light .tb-avatarmenu [data-highlighted] { background: rgba(45, 52, 64, 0.07); color: #232830; }
+html.light .tb-dock { background: #fffdf9; border-color: rgba(166, 124, 30, 0.4); box-shadow: 0 16px 40px -18px rgba(60, 55, 40, 0.45); }
+html.light .tb-dock .dock-tab { color: #6a6252; }
+html.light .tb-dock .pill-on { background: rgba(212, 175, 55, 0.2); color: #7a5c0e; box-shadow: inset 0 0 12px rgba(212, 175, 55, 0.2); }
+html.light .tb-dock .lbl-on { color: #7a5c0e; }
+html.light .tb-dock .dock-ring { --tw-ring-color: #fffdf9; }
+html.light .tb-dockfade { background: linear-gradient(to top, #f2efe7, rgba(242, 239, 231, 0.92), transparent); }
+html.light .tb-sheet { background: #fffdf9; border-color: rgba(166, 124, 30, 0.4); }
+html.light .tb-sheet .sheet-row { color: #4d5563; }
+html.light .tb-sheet .sheet-on { color: #232830; }
+html.light .tb-sheet .tile { border-color: #e4ded0; background: #ffffff; }
 
 /* App header motion — drifting hairline glow + slow light sweep (both modes) */
 .app-header-hairline {
@@ -1818,4 +1855,99 @@ html.light .ad-amp-caption .ad-headline {
     max-width: 100%;
     border-radius: 0;
   }
+}
+
+/* ─── TEXT-FIT GUARANTEES (no text escapes overlays or layouts) ──── */
+/* Long words, links, emails and numbers wrap everywhere instead of
+   overflowing cards, modals, drawers and table cells. */
+.tb-page :where(p, h1, h2, h3, h4, h5, h6, span, div, li, td, th, a, button, label) {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+.tb-page :where(table) { table-layout: auto; }
+.tb-page :where(img, svg, video, canvas) { max-width: 100%; }
+/* Flex children may shrink instead of pushing text outside the row. */
+.tb-page :where(.flex) > :where(div, p, span) { min-width: 0; }
+
+/* Every fullscreen overlay panel contains its content: scrollable,
+   height-capped, and padded so text never paints outside the sheet. */
+div[class*="fixed inset-0"] > div:not([class*="max-h"]) {
+  max-height: min(92dvh, 100dvh - 2rem);
+}
+div[class*="fixed inset-0"] > div[class*="rounded"] {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ─── LIGHT THEME — HARDENING PASS ────────────────────────────────── */
+/* PageHero stat values used an inline style (unremappable) — now classed. */
+html.light .tb-hero-stat-value { color: #2d3440 !important; }
+/* Dropdown option lists render dark natively — force light popup. */
+html.light select option { background-color: #fffef9; color: #2d3440; }
+/* Form placeholders stay visible on ivory inputs. */
+html.light input::placeholder,
+html.light textarea::placeholder { color: #8b8f96 !important; opacity: 1; }
+/* Focus rings stay gold on light surfaces. */
+html.light *:focus-visible { outline-color: #a67c1e; }
+/* Recharts + lightweight-charts tooltips injected with dark inline styles. */
+html.light .recharts-tooltip-wrapper,
+html.light .recharts-default-tooltip {
+  background-color: #fffef9 !important;
+  border: 1px solid #e4ded0 !important;
+  color: #2d3440 !important;
+}
+/* Dark gradient overlays that sit on imagery in both themes. */
+html.light .bg-gradient-to-t.from-black\/80,
+html.light .bg-gradient-to-t.from-black\/70 {
+  --tw-gradient-from: rgba(45, 52, 64, 0.72) !important;
+}
+/* Gold gradient buttons keep dark text in both themes (already correct). */
+/* Muted mono numbers inside pitch-black chips (PageHero stats). */
+html.light .tb-hero-chip { background-color: rgba(60, 55, 40, 0.07) !important; border-color: #e4ded0 !important; }
+.tb-hero-stat-value { color: #f0ecdd; }
+.tb-hero-chip { overflow-wrap: break-word; }
+
+/* ─── TERMINAL PRO — READABILITY SYSTEM (both themes) ──────────── */
+/* Base type scale: nothing interactive below 12px; data in tabular nums. */
+.tb-term { font-size: 14px; }
+.tb-term .term-label { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.tb-term .term-data { font-variant-numeric: tabular-nums; }
+.tb-term .term-help { font-size: 12px; line-height: 1.55; }
+/* Segmented tab bar: full labels, 44px targets, scrollable on phones. */
+.tb-term-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
+.tb-term-tab {
+  display: inline-flex; align-items: center; gap: 7px; min-height: 42px;
+  padding: 8px 14px; border-radius: 12px; font-size: 13px; font-weight: 600;
+  border: 1px solid transparent; color: #8a8577; white-space: nowrap;
+  transition: background-color .2s, color .2s, border-color .2s;
+}
+.tb-term-tab:hover { color: #e9e7df; background: rgba(255,255,255,0.05); }
+.tb-term-tab--active { color: #d4af37; background: rgba(212,175,55,0.13); border-color: rgba(212,175,55,0.4); }
+/* Light mode: terminal surfaces go fully solid + high-contrast text. */
+html.light .tb-term-tab { color: #4d5563; }
+html.light .tb-term-tab:hover { color: #232830; background: rgba(60,55,40,0.07); }
+html.light .tb-term-tab--active { color: #7a5c0e; background: rgba(212,175,55,0.18); border-color: rgba(166,124,30,0.55); }
+html.light .tb-term .term-panel { background: #fffef9 !important; border-color: #d9d2bf !important; box-shadow: 0 8px 24px -18px rgba(60,55,40,0.35) !important; }
+html.light .tb-term .term-inset { background: rgba(60,55,40,0.06) !important; border-color: #e0d9c6 !important; }
+html.light .tb-term .term-muted { color: #3f4753 !important; }
+html.light .tb-term .term-faint { color: #5b636f !important; }
+html.light .tb-term .term-row-active { background: rgba(212,175,55,0.16) !important; }
+/* Dark mode inset rows: keep depth without muddying text. */
+.tb-term .term-inset { background: rgba(0,0,0,0.28); }
+/* Terminal pro dark stage — stays dark in light mode on purpose. */
+.term-stage { background: #07070a; }
+html.light .term-stage { background: #07070a !important; border-color: rgba(166,124,30,0.5) !important; }
+html.light .term-stage * { color-scheme: dark; }
+
+/* ─── SINGLE-LINE BUTTONS ──────────────────────────────────────── */
+/* Action-button labels never wrap to two lines: icons keep their size,
+   text truncates with ellipsis on the rare too-narrow button. */
+.btn-sheen, .tb-term-tab { white-space: nowrap; }
+.btn-sheen > svg, .tb-term-tab > svg, .tb-tabs button > svg { flex-shrink: 0; }
+.btn-sheen {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

@@ -41,6 +41,7 @@ export default function AdvancedChart({
   const wrapRef = useRef(null);
   const [dims, setDims] = useState({ w: 800, h: compact ? 260 : 460 });
   const [view, setView] = useState(null); // {start,end} index window
+  const fitted = useRef(''); // auto-fit key — trader owns zoom afterwards
   const [hover, setHover] = useState(null); // index
   const drag = useRef(null);
 
@@ -55,9 +56,16 @@ export default function AdvancedChart({
     return () => ro.disconnect();
   }, [compact, fullscreen]);
 
-  // Default view = all candles; reset when data length changes materially.
+  // Default view = last ~90 candles with air to breathe — fit once per
+  // symbol/timeframe so bodies and wicks read instantly; the trader owns
+  // zoom/pan afterwards and live appends never yank the view back.
   useEffect(() => {
-    if (candles.length) setView({ start: 0, end: candles.length - 1 });
+    if (!candles.length) return;
+    const key = `${symbol}-${timeframe}`;
+    if (fitted.current === key) return;
+    fitted.current = key;
+    const end = candles.length - 1;
+    setView({ start: Math.max(0, end - 89), end });
   }, [candles.length, symbol, timeframe]);
 
   const subPanes = useMemo(() => indicators.filter((i) => INDICATOR_DEFS[i.type]?.pane === 'sub'), [indicators]);
@@ -181,7 +189,7 @@ export default function AdvancedChart({
     ns = Math.max(0, ne - newSpan);
     setView({ start: ns, end: ne });
   };
-  const reset = () => setView({ start: 0, end: candles.length - 1 });
+  const reset = () => { const end = candles.length - 1; setView({ start: Math.max(0, end - 89), end }); };
 
   const hovered = hover != null ? visible[hover] : visible[n - 1];
   const priceGridLines = 5;

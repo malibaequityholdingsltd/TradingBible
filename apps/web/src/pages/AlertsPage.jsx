@@ -36,7 +36,7 @@ function CreateAlert({ onCreate, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 pt-20 backdrop-blur-sm" onClick={onClose}>
-      <div className="tb-card w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+      <div className="tb-card max-h-[85dvh] w-full max-w-md overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between"><h3 className="font-semibold text-[#f0ecdd]">{t('al.newAlert')}</h3><button onClick={onClose} className="text-[#8a8577]"><X className="h-5 w-5" /></button></div>
         <label className="mb-1 block text-xs text-[#8a8577]">{t('al.symbol')}</label>
         <div className="mb-3"><SymbolSearchPicker value={symbol} onChange={setSymbol} buttonClassName="w-full justify-between px-3 py-2 text-sm" /></div>

@@ -5,8 +5,7 @@ import { Card, EmptyState, GhostButton, GoldButton, PageHero, SectionHead, Stat,
 import { useI18n } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 import { affiliateStats, registerAffiliate, claimAffiliatePayout } from '@/lib/affiliate';
-
-const money = (n) => (n || n === 0) ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n) : '$0.00';
+import { API_SERVER_URL } from '@/lib/apiServerClient';
 
 const STATUS_STYLE = {
   signed_up: 'bg-white/10 text-[#c9c4b4]',
@@ -35,6 +34,15 @@ export default function AffiliatePage() {
   }, []);
 
   const [lastSync, setLastSync] = useState(null);
+  const [tbcRate, setTbcRate] = useState(1 / 3.25); // 1 TBC = 1 KWD, NOT 1 USD
+
+  useEffect(() => {
+    fetch(`${API_SERVER_URL}/tbc/econ`).then((r) => r.json()).then((d) => {
+      const rt = Number(d?.tbcPerUsd);
+      if (rt > 0.15 && rt < 0.6) setTbcRate(rt); // 1 TBC = 1 KWD — reject 1:1
+      else if (Number(d?.usdPerKwd) >= 2 && Number(d?.usdPerKwd) <= 5) setTbcRate(1 / Number(d.usdPerKwd));
+    }).catch(() => {});
+  }, []);
 
   const loadQuiet = useCallback(async () => {
     try {
@@ -74,7 +82,7 @@ export default function AffiliatePage() {
     setClaiming(true);
     try {
       const res = await claimAffiliatePayout();
-      toast({ title: t('afl.payoutReq'), description: t('afl.payoutReqDesc', { n: res.claimed }) });
+      toast({ title: res.tbc > 0 ? `Paid ${res.tbc} TBC` : t('afl.payoutReq'), description: res.tbc > 0 ? `${res.claimed} referral${res.claimed === 1 ? '' : 's'} · $${res.usd} → ${res.tbc} TBC @ ${res.rate}` : t('afl.payoutReqDesc', { n: res.claimed }) });
       await load();
     } catch (err) {
       toast({ variant: 'destructive', title: t('afl.claimFail'), description: err?.message || t('afl.tryAgain') });
@@ -130,9 +138,10 @@ export default function AffiliatePage() {
           <StatGrid cols={4}>
             <Stat label={t('afl.clicks')} value={data?.clicks ?? 0} />
             <Stat label={t('afl.signups')} value={data?.signups ?? 0} />
-            <Stat label={t('afl.pendingEarn')} value={money(pending)} tone="text-[#d4af37]" />
-            <Stat label={t('afl.paid')} value={money(paid)} tone="text-emerald-400" />
+            <Stat label={`${t('afl.pendingEarn')} · TBC`} value={`${(Math.round(pending * tbcRate * 100) / 100).toLocaleString()} TBC`} tone="text-[#d4af37]" />
+            <Stat label={`${t('afl.paid')} · TBC`} value={`${(Math.round(paid * tbcRate * 100) / 100).toLocaleString()} TBC`} tone="text-emerald-400" />
           </StatGrid>
+          <p className="-mt-1 text-xs text-[#8a8577]">Paid in TBC at {tbcRate} TBC per $1 — spendable on challenges, signals and mentorship, claimable on-chain at launch.</p>
 
           <div className="mb-3 flex items-center gap-3">
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">{t('afl.refHistory')}</h3>
@@ -154,7 +163,7 @@ export default function AffiliatePage() {
                     <td className="px-5 py-3.5 font-medium text-[#f0ecdd]">{r.email}</td>
                     <td className="px-4 py-3.5 font-mono text-xs text-[#c9c4b4]">{new Date(r.created).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
                     <td className="px-4 py-3.5 text-[#c9c4b4]">{r.plan || t('afl.notSubbed')}</td>
-                    <td className="px-4 py-3.5 font-mono font-semibold text-[#d4af37]">{money(r.commission)}</td>
+                    <td className="px-4 py-3.5 font-mono font-semibold text-[#d4af37]">{(Math.round(Number(r.commission) * tbcRate * 100) / 100).toLocaleString()} <span className="text-[10px]">TBC</span></td>
                     <td className="px-4 py-3.5"><span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${STATUS_STYLE[r.status] || 'bg-white/10 text-[#8a8577]'}`}>{t(`afl.st_${r.status}`, null, r.status.replace('_', ' '))}</span></td>
                   </tr>
                 ))}

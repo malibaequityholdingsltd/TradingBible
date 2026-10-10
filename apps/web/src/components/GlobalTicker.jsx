@@ -1,63 +1,49 @@
-import React from 'react';
-import { TrendingUp } from 'lucide-react';
-import { useMarketData } from '@/hooks/useMarketData';
+import React, { useMemo } from 'react';
+import { useQuotes } from '@/hooks/useQuotes';
 
 function fmtPrice(n) {
-  return n >= 1000 ? n.toLocaleString('en-US', { maximumFractionDigits: 0 }) : n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  if (n == null) return '—';
+  return n >= 1000 ? n.toLocaleString('en-US', { maximumFractionDigits: 0 }) : n.toLocaleString('en-US', { maximumFractionDigits: 4 });
 }
 
+// Every symbol resolves live: crypto + stocks + forex + metals + indices,
+// one Yahoo-first feed via /quotes (Binance fallback for crypto). The numbers
+// below are skeleton placeholders shown for a heartbeat before live data
+// arrives — never presented as prices (no change shown until live).
 const TICKER_SYMBOLS = [
-  { symbol: 'BTCUSD', price: 64200, changePercent: 2.18, live: true },
-  { symbol: 'ETHUSD', price: 3480, changePercent: 1.42, live: true },
-  { symbol: 'SOLUSD', price: 142.0, changePercent: 3.90, live: true },
-  { symbol: 'EURUSD', price: 1.0842, changePercent: 0.12, live: false },
-  { symbol: 'GBPUSD', price: 1.2695, changePercent: -0.08, live: false },
-  { symbol: 'USDJPY', price: 151.32, changePercent: 0.24, live: false },
-  { symbol: 'GBPJPY', price: 191.4, changePercent: 0.67, live: false },
-  { symbol: 'AUDUSD', price: 0.6591, changePercent: 0.18, live: false },
-  { symbol: 'NZDUSD', price: 0.5983, changePercent: -0.05, live: false },
-  { symbol: 'USDCAD', price: 1.3682, changePercent: -0.14, live: false },
-  { symbol: 'USDCHF', price: 0.9045, changePercent: 0.09, live: false },
-  { symbol: 'EURGBP', price: 0.8542, changePercent: -0.06, live: false },
-  { symbol: 'EURJPY', price: 163.85, changePercent: 0.31, live: false },
-  { symbol: 'BNBUSD', price: 598.4, changePercent: 1.22, live: false },
-  { symbol: 'XRPUSD', price: 0.6231, changePercent: 2.05, live: false },
-  { symbol: 'DOGEUSD', price: 0.1582, changePercent: -1.44, live: false },
-  { symbol: 'ADAUSD', price: 0.4521, changePercent: 0.78, live: false },
-  { symbol: 'XAUUSD', price: 2384.6, changePercent: 0.55, live: false },
-  { symbol: 'XAGUSD', price: 28.14, changePercent: -0.22, live: false },
-  { symbol: 'USOIL', price: 78.45, changePercent: 1.10, live: false },
-  { symbol: 'US30', price: 39120, changePercent: 0.34, live: false },
-  { symbol: 'NAS100', price: 18240, changePercent: 1.04, live: false },
-  { symbol: 'SPX500', price: 5228.4, changePercent: 0.48, live: false },
-  { symbol: 'AAPL', price: 224.5, changePercent: -0.31, live: false },
-  { symbol: 'NVDA', price: 118.2, changePercent: 2.64, live: false },
-  { symbol: 'TSLA', price: 246.8, changePercent: -1.15, live: false },
-  { symbol: 'MSFT', price: 428.9, changePercent: 0.62, live: false },
-  { symbol: 'AMZN', price: 186.3, changePercent: 0.91, live: false },
+  'BTCUSD', 'ETHUSD', 'SOLUSD', 'EURUSD', 'GBPUSD', 'USDJPY', 'GBPJPY',
+  'AUDUSD', 'XAUUSD', 'XAGUSD', 'WTIUSD', 'NAS100', 'US30', 'SPX500',
+  'AAPL', 'NVDA', 'TSLA', 'MSFT',
 ];
 
-// Fixed total height (h-16 = 64px) shared with every page's top offset.
-// Keep the two inner rows' heights summing to 64px so layout math elsewhere stays correct.
+// Slim top strip (36px + safe-area). Height comes from --header-h, which
+// every page offset derives from — so the strip, headers and content
+// padding all shrink together. Never hardcode the height here.
 export default function GlobalTicker() {
-  const { tickers } = useMarketData();
+  const { quotes } = useQuotes(TICKER_SYMBOLS, { refreshMs: 30000 });
 
-  const rows = TICKER_SYMBOLS.map((s) => {
-    if (!s.live) return s;
-    const t = tickers.find((x) => x.symbol === s.symbol);
-    return t ? { ...s, price: t.price, changePercent: t.changePercent } : s;
-  });
+  const rows = useMemo(() => TICKER_SYMBOLS.map((s) => {
+    const q = quotes[s];
+    return {
+      symbol: s,
+      price: q?.price ?? null,
+      changePercent: q?.changePercent ?? null,
+      live: Boolean(q) && q.source !== 'synthetic',
+    };
+  }), [quotes]);
 
   return (
-    <div id="tb-ticker" className="fixed inset-x-0 top-0 z-50 h-[var(--header-h)] border-b border-[#d4af37]/10 bg-[#0a0a0f]/95 backdrop-blur-sm" style={{ paddingTop: 'var(--safe-top)' }}>
+    <div id="tb-ticker" className="tb-ticker fixed inset-x-0 top-0 z-50 h-[var(--header-h)] border-b border-[#d4af37]/10 bg-[#0a0a0f]" style={{ paddingTop: 'var(--safe-top)' }}>
       <div className="flex h-full items-center overflow-hidden">
-        <div className="flex h-full w-max animate-marquee items-center gap-8 whitespace-nowrap px-4 font-mono text-xs sm:gap-10 sm:px-6 sm:text-sm">
+        <div className="flex h-full w-max animate-marquee items-center gap-2 whitespace-nowrap px-2 font-mono text-[11px] leading-none sm:gap-4 sm:px-3 sm:text-xs">
           {[...rows, ...rows].map((t, i) => (
-            <span key={`${t.symbol}-${i}`} className={`flex items-center gap-1.5 sm:gap-2 ${t.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              <TrendingUp className={`h-3.5 w-3.5 shrink-0 ${t.changePercent >= 0 ? '' : 'rotate-180'}`} />
-              <span className="text-[#c9c4b4]">{t.symbol}</span>
-              <span className="text-[#f0ecdd]">{fmtPrice(t.price)}</span>
-              {t.changePercent >= 0 ? '+' : ''}{t.changePercent.toFixed(2)}%
+            <span key={`${t.symbol}-${i}`} className={`flex items-center gap-1 ${(t.changePercent ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              <span className="tk-sym text-[#c9c4b4]">{t.symbol}</span>
+              <span className="tk-px text-[#f0ecdd]">{fmtPrice(t.price)}</span>
+              {t.changePercent == null
+                ? <span className="text-[#5f5b50]">···</span>
+                : <span>{t.changePercent >= 0 ? '+' : ''}{t.changePercent.toFixed(2)}%</span>}
+              <span aria-hidden className="pl-1 text-[#3a372f]">•</span>
             </span>
           ))}
         </div>

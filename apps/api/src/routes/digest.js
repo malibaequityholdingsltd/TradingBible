@@ -30,7 +30,7 @@ async function isAdminToken(token) {
 		const rows = await supabaseRest(`/rest/v1/users?id=eq.${authUser.id}`, { query: { select: 'id,email,role', limit: 1 } }).catch(() => []);
 		const profile = rows?.[0];
 		const email = String(authUser.email || '').toLowerCase();
-		if (profile?.role === 'admin' || /@tradingbible\.app$/.test(email) || email === 'malibaequityholdingsltd@outlook.com') {
+		if (profile?.role === 'admin' || /@tradingbible\.app$/.test(email) || email === 'malibaequityholdingsltd@outlook.com' || email === 'tradingbible@hotmail.com') {
 			return authUser;
 		}
 		return null;

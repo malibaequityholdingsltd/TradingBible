@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Plus, Trash2, Star, Search, X, Columns3, List, Loader2, TrendingUp, TrendingDown, Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Plus, Trash2, Star, Search, X, Columns3, List, Loader2, TrendingUp, TrendingDown, Check, LineChart } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useWatchlists } from '@/hooks/useWatchlists';
 import { useQuotes } from '@/hooks/useQuotes';
@@ -151,6 +152,7 @@ export default function WatchlistsPage() {
               <>
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                   <h2 className="mr-auto text-lg font-semibold text-[#f0ecdd]">{active.name}</h2>
+                  <Link to={`/app/terminal-pro${symbols[0] ? `?symbol=${encodeURIComponent(symbols[0])}` : ''}`} className="flex items-center gap-1 whitespace-nowrap rounded-lg border border-[#d4af37]/30 px-2.5 py-1.5 text-xs font-semibold text-[#d4af37]"><LineChart className="h-3.5 w-3.5" /> Terminal Pro</Link>
                   <span className={`h-1.5 w-1.5 rounded-full ${status === 'live' ? 'bg-emerald-400 animate-pulse' : 'bg-[#d4af37]'}`} />
                   {!active.isDefault && <button onClick={() => setDefault(active.id)} className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#d4af37] hover:border-[#d4af37]/40"><Star className="h-3.5 w-3.5" /> {t('wl.pin')}</button>}
                   <div className="flex overflow-hidden rounded-lg border border-[#d4af37]/15">
@@ -206,15 +208,19 @@ export default function WatchlistsPage() {
                           const pos = (r.changePercent || 0) >= 0;
                           return (
                             <tr key={r.symbol} className="border-t border-white/5 hover:bg-white/[0.02]">
-                              <td className="py-2.5"><div className="font-mono font-semibold text-[#f0ecdd]">{r.symbol}</div><div className="text-[10px] text-[#8a8577]">{r.name}</div></td>
-                              <td className="py-2.5 text-right font-mono text-[#e9e7df]">{fmt(r.price)}</td>
+                              <td className="py-2.5"><div className="font-mono font-semibold text-[#f0ecdd]">{r.symbol}</div><div className="text-[10px] text-[#8a8577]">{r.name}</div></td>                              <td className="py-2.5 text-right font-mono text-[#e9e7df]">{fmt(r.price)}</td>
                               <td className={`py-2.5 text-right font-mono ${pos ? 'text-emerald-400' : 'text-red-400'}`}>
                                 <div className="flex items-center justify-end gap-1">{pos ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}{pos ? '+' : ''}{r.changePercent ?? '—'}%</div>
                                 <div className="text-[10px] opacity-80">{pos ? '+' : ''}{fmt(r.change)}</div>
                               </td>
                               <td className="py-2.5 text-right font-mono text-[10px] text-[#8a8577]">{fmt(r.high)}<br />{fmt(r.low)}</td>
                               <td className="py-2.5 text-right font-mono text-[#c9c4b4]">{fmtVol(r.volume)}</td>
-                              <td className="py-2.5 text-right"><button onClick={() => removeSymbol(active.id, r.symbol)} className="text-[#5f5b50] hover:text-red-400"><X className="h-4 w-4" /></button></td>
+                              <td className="py-2.5 text-right">
+                                <span className="inline-flex items-center gap-1">
+                                  <Link to={`/app/terminal-pro?symbol=${encodeURIComponent(r.symbol)}`} title="Open in Terminal Pro" className="text-[#8a8577] hover:text-[#d4af37]"><LineChart className="h-4 w-4" /></Link>
+                                  <button onClick={() => removeSymbol(active.id, r.symbol)} className="text-[#5f5b50] hover:text-red-400"><X className="h-4 w-4" /></button>
+                                </span>
+                              </td>
                             </tr>
                           );
                         })}

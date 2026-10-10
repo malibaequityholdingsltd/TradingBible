@@ -18,7 +18,7 @@ const router = Router();
 
 function isAdminEmail(email) {
 	const value = String(email || '').toLowerCase();
-	return /@tradingbible\.app$/.test(value) || value === 'malibaequityholdingsltd@outlook.com';
+	return /@tradingbible\.app$/.test(value) || value === 'malibaequityholdingsltd@outlook.com' || value === 'tradingbible@hotmail.com';
 }
 
 async function assertAdmin(req) {
@@ -87,6 +87,39 @@ router.get('/users', supabaseAuth, async (req, res, next) => {
 		}
 		const users = [...merged.values()].sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
 		res.json(users);
+	} catch (err) {
+		next(err);
+	}
+});
+
+// PATCH /api/admin/users/:id — suspend / unsuspend (identity-review gate).
+// Body: { suspended: boolean, reason?: string }
+router.patch('/users/:id', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const id = String(req.params.id || '').trim();
+		if (!id) return res.status(422).json({ error: 'user id required' });
+		const suspended = req.body?.suspended !== false;
+		if (suspended) {
+			const reason = String(req.body?.reason || 'manual review').slice(0, 300);
+			const { supabaseRest: rest } = await import('../utils/supabaseClient.js');
+			const rows = await rest('/rest/v1/users', {
+				query: { select: 'id,user_settings', id: `eq.${id}`, limit: 1 },
+			}).catch(() => null);
+			const cur = rows?.[0]?.user_settings && typeof rows[0].user_settings === 'object' ? rows[0].user_settings : {};
+			const settings = { ...cur, suspended: true, suspendedAt: new Date().toISOString(), suspendedReason: 'manual', suspendedDetail: reason };
+			if (rows?.[0]) {
+				await rest(`/rest/v1/users?id=eq.${encodeURIComponent(id)}`, { method: 'PATCH', body: { user_settings: settings } });
+			} else {
+				await rest('/rest/v1/users', { method: 'POST', body: { id, user_settings: settings }, prefer: 'return=representation,resolution=merge-duplicates' });
+			}
+			logger.warn(`account suspended manually ${id}: ${reason}`);
+			return res.json({ ok: true, suspended: true });
+		}
+		const { unsuspendUser } = await import('../utils/payout-scan.js');
+		await unsuspendUser(id);
+		logger.warn(`account unsuspended manually ${id}`);
+		return res.json({ ok: true, suspended: false });
 	} catch (err) {
 		next(err);
 	}

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Bot, Plug, BookOpen, ArrowRight, Check, BarChart3, Menu, X,
-  CircleDot, GraduationCap, Wallet, Radar, Sparkles,
+  CircleDot, GraduationCap, Wallet, Radar, Sparkles, Trophy,
 } from 'lucide-react';
 import { PLANS, translatePlan } from '@/lib/mockData';
 import Footer from '@/components/Footer';
@@ -18,9 +18,9 @@ import { Card, GhostButton, GoldButton, Kicker, StatGrid, Stat } from '@/compone
 const LOGO = TRADINGBIBLE_LOGO;
 
 const STATS = [
-  { value: '8+', label: 'Broker integrations' },
-  { value: '60+', label: 'Technical indicators' },
-  { value: '99.9%', label: 'Platform uptime' },
+  { value: '20+', label: 'Broker integrations' },
+  { value: '147', label: 'Trading lessons' },
+  { value: '100M', label: 'TBC fixed supply' },
   { value: '24/7', label: 'SI coaching' },
 ];
 
@@ -28,9 +28,11 @@ const FEATURES = [
   { icon: BarChart3, title: 'Institutional analytics', body: 'Equity curve, profit factor, drawdown and a proprietary Trader Score — computed live from synced trades.' },
   { icon: Bot, title: 'SI trading coach', body: 'Your personal SI reviews every trade, grades discipline, spots recurring mistakes and answers questions grounded in your real history.' },
   { icon: BookOpen, title: 'Journal that syncs itself', body: 'Connect a broker or prop firm once — trades land in your journal automatically with analytics, reports and a trading calendar.' },
-  { icon: Plug, title: 'Brokers, prop firms & wallet', body: 'MT4, MT5, cTrader, Interactive Brokers, Binance, Bybit and top prop firms, plus self-custody wallet tracking with live balances.' },
+  { icon: Plug, title: 'Named brokers & wallet', body: 'Binance, Deriv, easyMarkets, Interactive Brokers, Alpaca and Coinbase over API and MT5 bridge — plus self-custody wallets with live balances. Live accounts only, never demos.' },
   { icon: CircleDot, title: '3D bubble heatmaps', body: 'The whole market as living bubbles across 5 markets plus an All view — size by move or volume, drag them, search any pair, switch color themes.' },
-  { icon: GraduationCap, title: 'SI-run academy', body: 'A full trading school where the SI writes every lesson, grades every quiz, hosts live webinars and tutors you one-on-one. Lifetime access, one payment.' },
+  { icon: GraduationCap, title: 'Lifetime academy', body: '6 paths, 147 lessons, 8 live webinars a week with SI-written lessons, graded quizzes and 1-on-1 tutoring. $150 once — yours forever.' },
+  { icon: Trophy, title: 'Funded evaluations', body: 'Two-step, one-step and dollar-ruled futures programs to $400K in firm capital. One live seat per size, payouts to your bank, entry fee refunded.' },
+  { icon: Wallet, title: 'TBC brand money', body: 'Entries, signals, mentorship and academy settle in TBC from your till — convert, swap, buy or receive it first. Plans stay on card, never TBC.' },
 ];
 
 const STEPS = [
@@ -41,9 +43,9 @@ const STEPS = [
 
 const FAQS = [
   { q: 'Do you offer a free trial?', a: 'No — TradingBible is paid-only: your card is charged at checkout before you enter the terminal. Instead of a trial, every first payment carries a 14-day money-back guarantee, so you can test broker sync, analytics, the SI Coach and signals risk-free.' },
-  { q: 'Which brokers and platforms are supported?', a: 'Named brokers only — Binance, OANDA, Interactive Brokers, Alpaca, Coinbase and more (live accounts only), plus prop firms like FTMO and FundedNext — with self-custody wallet tracking for BTC, ETH, USDC and Solana. Trades and balances sync automatically, nothing is typed by hand.' },
+  { q: 'Which brokers and platforms are supported?', a: 'Named brokers only — Binance, Deriv, easyMarkets, Interactive Brokers, Alpaca, Coinbase and more (live accounts only), plus TradingBible Funded evaluations — with self-custody wallet tracking for BTC, ETH, USDC and Solana. Trades and balances sync automatically, nothing is typed by hand.' },
   { q: 'What does the SI Coach actually do?', a: 'Your 24/7 SI mentor: it reviews every synced trade for quality, risk and discipline, detects recurring mistakes (widened stops, revenge trading, overtrading), grades your discipline and answers questions grounded in your real history — try “What is my biggest mistake?”.' },
-  { q: 'How does the Academy work?', a: 'One $150 lifetime payment unlocks the full school: 6 paths including Forex Mastery A–Z, Crypto Mastery A–Z and Order Flow Mastery (146 topics from pips and wallets to funding rates and prop-firm challenges), an SI that writes every lesson and grades every quiz, a 1-on-1 tutor inside each lesson, 8 live webinars a week and a certificate per path. Admins enter free.' },
+  { q: 'How does the Academy work?', a: 'One $150 lifetime payment unlocks the full school: 6 paths including Forex Mastery A–Z, Crypto Mastery A–Z and Order Flow Mastery (147 topics from pips and wallets to funding rates and prop-firm challenges), an SI that writes every lesson and grades every quiz, a 1-on-1 tutor inside each lesson, 8 live webinars a week and a certificate per path. Admins enter free.' },
 ];
 
 function Nav({ homeTo, isAuthed, platformName }) {
@@ -65,17 +67,18 @@ function Nav({ homeTo, isAuthed, platformName }) {
   const navLink = 'relative rounded-full px-4 py-2 text-sm font-medium text-[#8a8577] transition-colors hover:text-[#f0ecdd] after:absolute after:inset-x-4 after:-bottom-0.5 after:h-px after:origin-left after:scale-x-0 after:bg-gradient-to-r after:from-[#f4e6a8] after:to-[#d4af37] after:transition-transform after:duration-300 hover:after:scale-x-100';
 
   return (
-    <header className={`fixed inset-x-0 top-[var(--header-h)] z-40 border-b transition-all duration-300 ${scrolled ? 'border-[#d4af37]/15 bg-[#07070a]/92 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl' : 'border-[#d4af37]/10 bg-[#07070a]/70 backdrop-blur-xl'}`}>
+    <header className={`fixed inset-x-0 top-[var(--header-h)] z-40 border-b border-[#d4af37]/15 bg-[#07070a] ${scrolled ? 'shadow-[0_8px_32px_rgba(0,0,0,0.35)]' : ''}`}>
       <div className="mx-auto flex w-full max-w-[96rem] items-center justify-between gap-2 overflow-hidden px-3 py-3 sm:gap-4 sm:px-6 sm:py-4">
         <Link to={homeTo} className="flex min-w-0 shrink-0 items-center gap-2.5">
           <img src={LOGO} alt={`${brand} logo`} className="h-9 w-9 shrink-0 rounded-xl object-contain gold-glow sm:h-10 sm:w-10" />
           <span className="hidden truncate text-xl font-extrabold tracking-tight text-[#e9e7df] sm:inline sm:text-2xl">{first ? `${first} ` : ''}<span className="tb-gold-text">{last}</span></span>
         </Link>
 
-        <nav className="hidden items-center gap-1 rounded-full border border-white/5 bg-white/[0.03] p-1.5 backdrop-blur-md md:flex">
+        <nav className="hidden items-center gap-1 rounded-full border border-white/5 bg-[#0a0a0f] p-1.5 md:flex">
           <a href="#features" className={navLink}>{t('land.features')}</a>
           <a href="#academy" className={navLink}>{t('nav.academy')}</a>
           <Link to="/pricing" className={navLink}>{t('land.pricing')}</Link>
+          <Link to="/tbc" className={navLink}>TBC</Link>
           <Link to="/about" className={navLink}>{t('land.about')}</Link>
         </nav>
 
@@ -99,11 +102,12 @@ function Nav({ homeTo, isAuthed, platformName }) {
       </div>
 
       {menuOpen && !isAuthed && (
-        <div className="border-t border-[#d4af37]/10 bg-[#07070a]/95 px-4 py-3 backdrop-blur-xl md:hidden">
+        <div className="border-t border-[#d4af37]/10 bg-[#07070a] px-4 py-3 md:hidden">
           <nav className="flex flex-col gap-1">
             <a href="#features" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]">{t('land.features')}</a>
             <a href="#academy" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]">{t('nav.academy')}</a>
             <Link to="/pricing" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]">{t('land.pricing')}</Link>
+            <Link to="/tbc" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#d4af37] transition-colors hover:bg-white/5">TBC</Link>
             <Link to="/about" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#c9c4b4] transition-colors hover:bg-white/5 hover:text-[#e9e7df]">{t('land.about')}</Link>
             <Link to="/login" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#c9c4b4] transition-colors hover:bg-white/5 hover:text-[#e9e7df]">{t('land.login')}</Link>
           </nav>
@@ -253,7 +257,7 @@ export default function LandingPage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {[
-              { icon: BookOpen, title: '6 learning paths', body: 'Beginner, Forex, Crypto, Order Flow to Professional, curated around you.' },
+              { icon: BookOpen, title: '6 learning paths', body: 'Beginner to Professional — Forex, Crypto, Order Flow and Intermediate, curated around you.' },
               { icon: Radar, title: '8 live sessions / week', body: 'SI-hosted webinars with real Q&A across every desk.' },
               { icon: BarChart3, title: 'Graded & certified', body: 'SI-graded quizzes and shareable certificates per path.' },
               { icon: Wallet, title: '$150 once', body: 'Lifetime access. No subscription, no trial games.' },

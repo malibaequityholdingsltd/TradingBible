@@ -22,7 +22,7 @@ const HISTORY_KEY = 'tb:search-history';
 
 // Global app search (Spotlight / ⌘K): find any page, direction, help topic,
 // support answer or quick action from one search bar.
-export default function GlobalSearch() {
+export default function GlobalSearch({ autoFocus = false, onNavigate = null }) {
   const { t } = useI18n();
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
@@ -72,7 +72,7 @@ export default function GlobalSearch() {
     return undefined;
   }, [open ]);
 
-  const go = (to) => { setOpen(false); nav(to); };
+  const go = (to) => { setOpen(false); try { onNavigate?.(); } catch { /* ignore */ } nav(to); };
 
   const query = q.trim().toLowerCase();
   const { trades } = useTrades();
@@ -94,16 +94,15 @@ export default function GlobalSearch() {
     const P = (group, icon, title, keys, to) => ({ kind: 'page', group, icon, title, keys: `${keys} ${to}`.toLowerCase(), to });
     const pages = [
       P(t('nav.trade', null, 'Trade'), LayoutDashboard, t('nav.dashboard', null, 'Dashboard'), 'dashboard home overview pnl balance winrate', '/app'),
-      P(t('nav.trade', null, 'Trade'), ListOrdered, t('nav.terminal', null, 'Terminal'), 'terminal live quotes ticker tape order book', '/app/terminal'),
       P(t('nav.trade', null, 'Trade'), BookOpen, t('nav.journal', null, 'Trading Journal'), 'journal trades diary notes history export csv', '/app/journal'),
       P(t('nav.trade', null, 'Trade'), Plug, t('nav.brokers', null, 'Brokers'), 'broker connect sync mt4 mt5 ctrader api key', '/app/brokers'),
-      P(t('nav.trade', null, 'Trade'), Trophy, t('nav.propfirms', null, 'Prop Firms'), 'prop firm funded challenge ftmo account', '/app/prop-firms'),
+      P(t('nav.trade', null, 'Trade'), Trophy, t('nav.funded', null, 'Funded'), 'funded evaluation firm capital challenge account', '/app/funded'),
       P(t('nav.trade', null, 'Trade'), Landmark, t('nav.wallet', null, 'Wallet'), 'wallet crypto deposit withdraw address balance bitcoin ethereum', '/app/wallet'),
       P(t('nav.analyze', null, 'Analyze'), BarChart3, t('nav.analytics', null, 'Analytics'), 'analytics performance stats profit factor charts', '/app/analytics'),
       P(t('nav.analyze', null, 'Analyze'), FileText, t('nav.reports', null, 'Reports'), 'reports daily weekly monthly pdf schedule email', '/app/reports'),
       P(t('nav.analyze', null, 'Analyze'), Bot, t('nav.coach', null, 'SI Coach'), 'ai coach chat advice review mistakes discipline score', '/app/coach'),
       P(t('nav.analyze', null, 'Analyze'), Calculator, t('nav.tools', null, 'Risk Tools'), 'risk calculator position size lot stop loss take profit', '/app/tools'),
-      P(t('nav.markets', null, 'Markets'), CandlestickChart, t('nav.charts', null, 'Advanced Charts'), 'charts candlestick drawings indicators timeframe', '/app/charts'),
+      P(t('nav.markets', null, 'Markets'), CandlestickChart, t('nav.terminalPro', null, 'Terminal Pro'), 'terminal pro charts candlestick drawings indicators timeframe orderflow footprint heatmap dom replay watchlists quotes', '/app/terminal-pro'),
       P(t('nav.markets', null, 'Markets'), Gauge, t('nav.indicators', null, 'Indicators'), 'indicators rsi macd ema bollinger signals', '/app/indicators'),
       P(t('nav.markets', null, 'Markets'), CircleDot, t('nav.heatmaps', null, 'Heatmaps'), 'heatmap bubbles crypto forex stocks movers gainers losers', '/app/heatmaps'),
       P(t('nav.markets', null, 'Markets'), Layers, t('nav.orderflow', null, 'Order Flow'), 'orderflow order flow footprint depth tape volume delta bookmap dom', '/app/orderflow'),
@@ -116,7 +115,7 @@ export default function GlobalSearch() {
       P(t('fot.h_education', null, 'Education'), GraduationCap, t('fot.l_academy', null, 'Academy (public)'), 'academy public school forex crypto learn courses', '/academy'),
       P(t('nav.learn', null, 'Learn & Connect'), Code2, t('nav.apidocs', null, 'API Docs'), 'api docs developers keys webhook integration', '/app/api-docs'),
 
-      P(t('nav.account', null, 'Account'), User, t('nav.profile', null, 'Profile'), 'profile username avatar account settings personal', '/app/profile'),
+      P(t('nav.account', null, 'Account'), User, t('nav.profile', null, 'Profile'), 'profile name avatar account settings personal', '/app/profile'),
       P(t('nav.account', null, 'Account'), KeyRound, t('nav.apikeys', null, 'API Keys'), 'api keys tokens create revoke', '/app/api-keys'),
       P(t('nav.account', null, 'Account'), CreditCard, t('nav.billing', null, 'Billing'), 'billing subscription plan pro elite professional pay invoice cancel upgrade price', '/app/billing'),
       P(t('nav.account', null, 'Account'), Share2, t('nav.affiliate', null, 'Affiliate'), 'affiliate refer referral commission earnings payout', '/app/affiliate'),
@@ -208,7 +207,7 @@ export default function GlobalSearch() {
     }));
     const acctGroup = t('nav.account', null, 'Account');
     const account = [
-      { kind: 'page', group: acctGroup, icon: User, title: 'Edit profile', keys: 'profile username avatar name edit account personal', to: '/app/profile' },
+      { kind: 'page', group: acctGroup, icon: User, title: 'Edit profile', keys: 'profile name avatar edit account personal', to: '/app/profile' },
       { kind: 'page', group: acctGroup, icon: Lock, title: 'Password & 2FA', keys: 'password 2fa totp two factor authentication passkey security login', to: '/app/security' },
       { kind: 'page', group: acctGroup, icon: KeyRound, title: 'Sessions & devices', keys: 'sessions devices active login logout security', to: '/app/security' },
       { kind: 'page', group: acctGroup, icon: Bell, title: 'Price alerts', keys: 'alerts notifications price notify target trigger', to: '/app/alerts' },
@@ -277,6 +276,7 @@ export default function GlobalSearch() {
         <input
           ref={inputRef}
           value={q}
+          autoFocus={autoFocus}
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => setOpen(true)}
           onKeyDown={(e) => { if (e.key === 'Escape') { setOpen(false); e.currentTarget.blur(); } }}

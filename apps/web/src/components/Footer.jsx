@@ -26,7 +26,7 @@ const COLUMNS = [
       { labelKey: 'fot.l_ai_coach', to: '/app/coach' },
       { labelKey: 'fot.l_dashboard', to: '/app' },
       { labelKey: 'fot.l_broker_integrations', to: '/app/brokers' },
-      { labelKey: 'fot.l_market_data', to: '/app/terminal' },
+      { labelKey: 'fot.l_market_data', to: '/app/terminal-pro' },
       { labelKey: 'fot.l_performance_analytics', to: '/app/analytics' },
     ],
   },
@@ -35,6 +35,7 @@ const COLUMNS = [
     links: [
       { labelKey: 'fot.l_features_overview', to: '/about' },
       { labelKey: 'fot.l_pricing', to: '/pricing' },
+      { labelKey: 'fot.l_tbc', to: '/tbc' },
       { labelKey: 'fot.l_plans_comparison', to: '/pricing' },
       { labelKey: 'fot.l_api_access', to: '/app/api-docs' },
       { labelKey: 'fot.l_premium_features', to: '/pricing' },
@@ -43,7 +44,7 @@ const COLUMNS = [
   {
     headingKey: 'fot.h_trading',
     links: [
-      { labelKey: 'fot.l_trading_overview', to: '/app/terminal' },
+      { labelKey: 'fot.l_trading_overview', to: '/app/terminal-pro' },
       { labelKey: 'fot.l_broker_connections', to: '/app/brokers' },
       { labelKey: 'fot.l_strategy_analysis', to: '/app/analytics' },
       { labelKey: 'fot.l_risk_management', to: '/app/tools' },

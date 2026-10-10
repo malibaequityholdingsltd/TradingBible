@@ -16,11 +16,12 @@ import { API_SERVER_URL } from '@/lib/apiServerClient';
 // in by the channel owner can't be suppressed by any parameter.
 const YOUTUBE_LOCKDOWN = 'autoplay=1&mute=1&enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&cc_load_policy=0';
 
-// Privacy-enhanced embeds: youtube-nocookie.com serves the identical
-// player/API with NO consent wall — youtube.com embeds in consent regions
-// (UK/EU) halt on a "Before you continue" screen that no autoplay or API
-// call can dismiss, which surfaced as permanently queued/paused desks.
-const YT_EMBED_HOST = 'https://www.youtube-nocookie.com/embed';
+// Primary embed host: www.youtube.com. youtube-nocookie.com serves the
+// identical player and remains the automatic fallback (see swapEmbedHost),
+// but nocookie is refused on several networks — and a blocked default means
+// every desk fails before the fallback can save it. Default to the host
+// that plays widest; the consent-wall tradeoff only affects UK/EU viewers.
+const YT_EMBED_HOST = 'https://www.youtube.com/embed';
 
 function ytLive(channelId) {
 	return `${YT_EMBED_HOST}/live_stream?channel=${channelId}&${YOUTUBE_LOCKDOWN}`;
@@ -245,17 +246,6 @@ export const LIVE_CHANNELS = [
 		hours: 'Weekdays · 6a–5p ET from Mornings',
 	},
 	{
-		id: 'ig-live-trading',
-		title: 'IG Live Trading',
-		desk: 'London',
-		url: 'https://www.youtube.com/channel/UCwvras8SRKKhx_cboj2p1nw/live',
-		embedUrl: ytLive('UCwvras8SRKKhx_cboj2p1nw'),
-		blurb: 'Daily live shows — Morning Markets, Trade Live US Open.',
-		isNew: true,
-		plan: 'pro',
-		hours: 'Weekdays · Trade Live 7:30–10:30a UK + US open',
-	},
-	{
 		id: 'tradertv-live',
 		title: 'TraderTV Live',
 		desk: 'Day Trade',
@@ -377,6 +367,29 @@ export function hardenEmbed(url) {
 	return missing.length ? `${u}${sep}${missing.join('&')}` : u;
 }
 
+// Coerce any YouTube watch/live/shorts/share URL into a proper embed URL.
+// Loading a watch or channel page inside an iframe answers with
+// X-Frame-Options: SAMEORIGIN, which surfaces as ERR_BLOCKED_BY_RESPONSE.
+// Returns null when the URL names no playable video (channel/live pages
+// without a probe-confirmed videoId) so callers show the off-air slate
+// instead of a dead frame.
+export function youtubeEmbedUrl(url) {
+  const u = String(url || '');
+  if (/(youtube\.com|youtube-nocookie\.com)\/embed\//.test(u)) return u;
+  const m = u.match(/(?:youtube\.com\/(?:watch\?[^#]*v=|live\/|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  if (m) return `https://www.youtube.com/embed/${m[1]}`;
+  return null;
+}
+// Host swap: youtube-nocookie.com and www.youtube.com serve the identical
+// player, but networks/blockers often allow one and refuse the other.
+// Retrying the same video on the alternate host recovers desks that would
+// otherwise show a dead "refused to connect" frame.
+export function swapEmbedHost(url) {
+  const u = String(url || '');
+  if (u.includes('www.youtube-nocookie.com')) return u.replace('www.youtube-nocookie.com', 'www.youtube.com');
+  if (u.includes('www.youtube.com')) return u.replace('www.youtube.com', 'www.youtube-nocookie.com');
+  return u;
+}
 // Reachability probe: can this browser actually load YouTube? A no-cors
 // fetch resolves on any HTTP response (even opaque) and rejects only when
 // the network itself fails (DNS blocked, offline, VPN/proxy wall, aggressive

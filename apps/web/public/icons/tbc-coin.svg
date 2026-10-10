@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="tbc-gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f9efc4"/>
+      <stop offset="0.35" stop-color="#f4e6a8"/>
+      <stop offset="0.62" stop-color="#d4af37"/>
+      <stop offset="0.85" stop-color="#a67c1e"/>
+      <stop offset="1" stop-color="#f4e6a8"/>
+    </linearGradient>
+    <linearGradient id="tbc-sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="0.45" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="tbc-bg" cx="0.5" cy="0.35" r="0.9">
+      <stop offset="0" stop-color="#1c1c24"/>
+      <stop offset="1" stop-color="#0a0a0f"/>
+    </radialGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#tbc-bg)"/>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="none" stroke="url(#tbc-gold)" stroke-width="6"/>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#tbc-sheen)"/>
+  <text x="128" y="172" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="118" font-weight="800" letter-spacing="-4" fill="url(#tbc-gold)">TB</text>
+</svg>

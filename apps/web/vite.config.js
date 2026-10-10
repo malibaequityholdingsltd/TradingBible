@@ -395,9 +395,9 @@ export default defineConfig({
 				changeOrigin: true,
 			},
 		},
-		headers: {
-			'Cross-Origin-Embedder-Policy': 'credentialless',
-		},
+		// NOTE: never send Cross-Origin-Embedder-Policy here — COEP blocks
+		// cross-origin iframes without CORP headers, which kills every
+		// YouTube embed on /tv with "refused to connect".
 		allowedHosts: [
 			'.app-preview.com',
 			'.app-preview.io',

@@ -68,8 +68,7 @@ function DashStat({ icon: Icon, label, value, delta, positive }) {
 
 // Command deck: one tap to every desk of the terminal.
 const DESKS = [
-  { to: '/app/terminal', icon: ListOrdered, key: 'nav.terminal', fallback: 'Terminal', blurb: 'Watchlists, groups and live quotes' },
-  { to: '/app/charts', icon: LineChart, key: 'nav.charts', fallback: 'Advanced Charts', blurb: 'Indicators, drawings and templates' },
+  { to: '/app/terminal-pro', icon: LineChart, key: 'nav.terminalPro', fallback: 'Terminal Pro', blurb: 'Charts, layouts, drawings and live quotes' },
   { to: '/app/heatmaps', icon: Grid2x2, key: 'nav.heatmaps', fallback: 'Heatmaps', blurb: '5 markets of living bubbles' },
   { to: '/app/orderflow', icon: Activity, key: 'nav.orderflow', fallback: 'Order Flow', blurb: 'Depth, tape and footprint' },
 ];
@@ -125,7 +124,7 @@ export default function DashboardPage() {
           actions={
             <>
               <GoldButton to="/app/journal" className="min-h-[40px] px-4 py-2 text-xs"><PlusCircle className="h-4 w-4" /> {t('jou.newTrade', null, 'New trade')}</GoldButton>
-              <GhostButton to="/app/charts" className="min-h-[40px] px-4 py-2 text-xs"><LineChart className="h-4 w-4" /> {t('nav.charts')}</GhostButton>
+              <GhostButton to="/app/terminal-pro" className="!min-h-[40px] !px-4 !py-2 !text-xs"><LineChart className="h-4 w-4" /> {t('nav.terminalPro', null, 'Terminal Pro')}</GhostButton>
               <GhostButton to="/tv" className="min-h-[40px] px-4 py-2 text-xs"><MonitorPlay className="h-4 w-4" /> {t('nav.tv', null, 'TradingBible TV')}</GhostButton>
             </>
           }

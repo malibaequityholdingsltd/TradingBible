@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { Mail, ArrowRight, User, KeyRound, BookOpen, ShieldCheck, LineChart, Bot, Sparkles, Loader2, Link2 } from 'lucide-react';
+import { Mail, ArrowRight, User, KeyRound, BookOpen, ShieldCheck, LineChart, Bot, Sparkles, Loader2, Link2, Phone, CalendarDays } from 'lucide-react';
 import { MARKETS, EXPERIENCE, GOALS } from '@/lib/mockData';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
@@ -108,7 +108,7 @@ function describeAuthError(err, t, fallback) {
     return message || (t ? t('auth.errRateLimited') : 'Please wait before requesting another code.');
   }
   if (/email rate limit exceeded/i.test(message)) {
-    const dur = formatCooldownDuration(OTP_RATE_LIMIT_FALLBACK_SECONDS);
+    const dur = formatCooldownDuration(3600);
     return t ? t('auth.errTooMany', { dur }) : `Too many code requests were sent recently. Please wait ${dur}, then try again.`;
   }
   if (code === 'otp_disabled' || /email provider is disabled/i.test(message)) {
@@ -680,7 +680,10 @@ export function SignupPage() {
   const { settings } = usePlatformSettings();
   const { t } = useI18n();
   const { toast } = useToast();
-  const [username, setUsername] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [dob, setDob] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
@@ -731,10 +734,40 @@ export function SignupPage() {
     setBusy(true);
     try {
       if (!sent) {
+        const first = firstName.trim();
+        const last = lastName.trim();
+        const mail = email.trim();
+        const tel = phone.trim();
+        if (!first || !last) {
+          toast({ variant: 'destructive', title: t('auth.firstName', null, 'First name'), description: t('auth.nameRequired', null, 'Please enter your first and last name.') });
+          return;
+        }
+        if (!mail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) {
+          toast({ variant: 'destructive', title: t('auth.emailAddress', null, 'Email'), description: t('auth.emailRequired', null, 'A valid email address is required.') });
+          return;
+        }
+        if (!tel || tel.replace(/\D/g, '').length < 7) {
+          toast({ variant: 'destructive', title: t('auth.phone', null, 'Phone'), description: t('auth.phoneRequired', null, 'A valid phone number is required.') });
+          return;
+        }
+        if (!dob) {
+          toast({ variant: 'destructive', title: t('auth.dob', null, 'Date of birth'), description: t('auth.dobRequired', null, 'Your date of birth is required.') });
+          return;
+        }
+        const birth = new Date(`${dob}T00:00:00`);
+        const adult = new Date(birth);
+        adult.setFullYear(adult.getFullYear() + 18);
+        if (Number.isNaN(birth.getTime()) || adult > new Date()) {
+          toast({ variant: 'destructive', title: t('auth.dob', null, 'Date of birth'), description: t('auth.mustBe18', null, 'You must be at least 18 years old to open an account.') });
+          return;
+        }
         await requestOTP({
-          email: email.trim(),
+          email: mail,
           shouldCreateUser: true,
-          username: username.trim() || email.split('@')[0],
+          first_name: first,
+          last_name: last,
+          dob,
+          phone: tel,
           role: 'user',
           accountType: 'trader',
         });
@@ -791,8 +824,11 @@ export function SignupPage() {
       await requestOTP({
         email: email.trim(),
         shouldCreateUser: true,
-          username: username.trim() || email.split('@')[0],
-          accountType: 'trader',
+        first_name: firstName.trim() || undefined,
+        last_name: lastName.trim() || undefined,
+        dob: dob || undefined,
+        phone: phone.trim() || undefined,
+        accountType: 'trader',
       });
       const until = Date.now() + OTP_COOLDOWN_SECONDS * 1000;
       writeOtpCooldownUntil(email, until);
@@ -848,8 +884,18 @@ export function SignupPage() {
         <form className="space-y-2.5 sm:space-y-3" onSubmit={submit}>
           {!sent && (
             <>
-              <Field icon={User} type="text" placeholder={t('auth.usernamePh')} value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" />
+              <div className="grid grid-cols-2 gap-2.5">
+                <Field icon={User} type="text" placeholder={t('auth.firstName', null, 'First name')} value={firstName} onChange={(e) => setFirstName(e.target.value)} autoComplete="given-name" />
+                <Field icon={User} type="text" placeholder={t('auth.lastName', null, 'Last name')} value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="family-name" />
+              </div>
               <Field icon={Mail} type="email" placeholder={t('auth.emailPh')} value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+              <div className="grid grid-cols-2 gap-2.5">
+                <Field icon={Phone} type="tel" placeholder={t('auth.phonePh', null, 'Phone number')} value={phone} onChange={(e) => setPhone(e.target.value)} required autoComplete="tel" />
+                <Field icon={CalendarDays} type="date" placeholder={t('auth.dob', null, 'Date of birth')} value={dob} onChange={(e) => setDob(e.target.value)} required max={new Date().toISOString().slice(0, 10)} />
+              </div>
+              <p className="rounded-xl border border-red-400/25 bg-red-400/[0.05] p-2.5 text-center text-[11px] leading-relaxed text-[#c9c4b4]">
+                <span className="font-bold text-red-400">Use your real government identity.</span> Name and date of birth are used for KYC verification and cannot be changed later — any mistake means opening a new account.
+              </p>
               <p className="text-center text-xs text-[#8a8577]">{t('auth.codeHint')}</p>
             </>
           )}

@@ -213,7 +213,7 @@ export const STATIC_CURRICULA = {
 				description: 'Prop-firm challenges, trading plans, algos and the funded-trader routine.',
 				lessons: [
 					{ lessonKey: 'trading-plan-fx', title: 'Your FX trading plan: sessions, pairs, rules', minutes: 18, tags: ['forex'] },
-					{ lessonKey: 'prop-firms', title: 'Prop firms: FTMO, FundedNext — passing the challenge', minutes: 22, tags: ['forex'] },
+					{ lessonKey: 'prop-firms', title: 'TradingBible Funded — passing the evaluation', minutes: 22, tags: ['forex'] },
 					{ lessonKey: 'psychology-fx', title: 'FX psychology: overtrading, revenge & patience', minutes: 20, tags: ['forex'] },
 					{ lessonKey: 'backtest-ea', title: 'Backtesting & EAs: forward-test before you fund', minutes: 24, tags: ['forex'] },
 					{ lessonKey: 'playbook-capstone', title: 'Capstone: your complete FX playbook', minutes: 24, tags: ['forex'] },

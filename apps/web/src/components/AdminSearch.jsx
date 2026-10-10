@@ -76,7 +76,7 @@ export default function AdminSearch() {
       P('Pages', Briefcase, 'Jobs & Hiring', 'jobs hiring careers postings applicants', '/admin/jobs'),
       P('Pages', Settings, 'Admin Settings', 'settings platform maintenance features trial signups', '/admin/settings'),
       { kind: 'action', group: 'Quick actions', icon: Eye, title: 'View app as trader', keys: 'view app preview trader terminal', run: () => { setOpen(false); enterAdminPreview(); nav('/app'); } },
-      { kind: 'action', group: 'Quick actions', icon: Users, title: 'Find a user', keys: 'find user search email username account', run: () => go('/admin/users') },
+      { kind: 'action', group: 'Quick actions', icon: Users, title: 'Find a user', keys: 'find user search email name phone account', run: () => go('/admin/users') },
       { kind: 'action', group: 'Quick actions', icon: CreditCard, title: 'Billing & payouts', keys: 'payout affiliate billing money', run: () => go('/admin/billing') },
       { kind: 'action', group: 'Quick actions', icon: HelpCircle, title: 'View public site', keys: 'home landing public website', run: () => go('/') },
       { kind: 'action', group: 'Quick actions', icon: LogOut, title: 'Sign out', keys: 'sign out logout exit', run: () => { setOpen(false); logout(); nav('/'); } },

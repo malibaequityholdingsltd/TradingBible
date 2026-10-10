@@ -107,7 +107,7 @@ export const FEATURE_ROUTES = {
   community: ['/app/community'],
   economicCalendar: ['/app/economic-calendar'],
   riskTools: ['/app/tools'],
-  chartBuilder: ['/app/charts', '/app/indicators', '/app/heatmaps'],
+  chartBuilder: ['/app/terminal-pro', '/app/indicators', '/app/heatmaps'],
   signals: ['/app/signals', '/app/alerts'],
   wallet: ['/app/wallet'],
 };

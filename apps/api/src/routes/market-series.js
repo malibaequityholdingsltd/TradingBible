@@ -1,8 +1,9 @@
 // Series endpoints: /intraday, /daily, /weekly, /monthly.
-// Crypto symbols proxy Binance klines (real data); everything else tries
-// Alpha Vantage (cached) and falls back to synthetic candles so the chart
-// never renders empty, even when the free key is throttled.
+// Single primary feed: Yahoo first for every symbol, Binance as automatic
+// fallback for crypto, then Alpha Vantage (cached), then synthetic so the
+// chart never renders empty.
 import { avCandles, isRateLimited } from '../utils/alphaVantage.js';
+import { yahooCandles } from '../utils/yahoo.js';
 import { binanceSymbolFor, synthCandles } from './candles.js';
 
 function makeHandler(defaultInterval) {
@@ -12,13 +13,23 @@ function makeHandler(defaultInterval) {
 		let limit = parseInt(req.query.limit, 10) || 150;
 		limit = Math.min(Math.max(limit, 20), 500);
 
+		try {
+			const yahoo = await yahooCandles(symbol, interval, limit).catch(() => null);
+			if (yahoo && yahoo.length) {
+				return res.json({ symbol, interval, source: 'yahoo', delayed: false, candles: yahoo });
+			}
+		} catch {
+			// fall through to Binance / Alpha Vantage / synthetic
+		}
+
 		const bSymbol = binanceSymbolFor(symbol);
 		if (bSymbol) {
-			try {
-				const upstream = await fetch(
-					`https://api.binance.com/api/v3/klines?symbol=${bSymbol}&interval=${interval}&limit=${limit}`,
-				);
-				if (upstream.ok) {
+			for (const host of ['https://data-api.binance.vision', 'https://api.binance.com', 'https://api.binance.us']) {
+				try {
+					const upstream = await fetch(
+						`${host}/api/v3/klines?symbol=${bSymbol}&interval=${interval}&limit=${limit}`,
+					);
+					if (!upstream.ok) continue;
 					const rows = await upstream.json();
 					const candles = rows.map((r) => ({
 						time: r[0],
@@ -27,10 +38,19 @@ function makeHandler(defaultInterval) {
 					if (candles.length) {
 						return res.json({ symbol, interval, source: 'binance', delayed: false, candles });
 					}
+				} catch {
+					// try next host, then fall through to Yahoo / synthetic
 				}
-			} catch {
-				// fall through to Alpha Vantage / synthetic
 			}
+		}
+
+		try {
+			const yahoo = await yahooCandles(symbol, interval, limit).catch(() => null);
+			if (yahoo && yahoo.length) {
+				return res.json({ symbol, interval, source: 'yahoo', delayed: false, candles: yahoo });
+			}
+		} catch {
+			// fall through to Alpha Vantage / synthetic
 		}
 
 		if (!isRateLimited()) {

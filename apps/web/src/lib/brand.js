@@ -23,10 +23,12 @@ export const BRAND = {
         <circle cx="16" cy="16" r="4" fill="#d4af37"/>
       </svg>
     `,
-    // Fallback external URL (CDN)
-    url: 'https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/f18f53c1fa5ec4181c7033589080fd00.png',
+    // Local first (bundled in /public/logos) — remote CDN kept as fallback.
+    url: '/logos/tradingbible-logo.png',
     // Dark mode variant (if needed)
-    urlDark: 'https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/f18f53c1fa5ec4181c7033589080fd00.png',
+    urlDark: '/logos/tradingbible-logo.png',
+    // Remote fallback if the bundled file ever goes missing.
+    urlRemote: 'https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/f18f53c1fa5ec4181c7033589080fd00.png',
   },
 
   // Color palette

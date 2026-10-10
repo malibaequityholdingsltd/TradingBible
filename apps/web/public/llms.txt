@@ -2,6 +2,7 @@
 - [About](/about): TradingBible application page.
 - [Academy](/app/academy): TradingBible application page.
 - [Academy Info](/academy): TradingBible application page.
+- [Admin Airdrops](/admin/airdrops): TradingBible application page.
 - [Admin Analytics](/admin/analytics): TradingBible application page.
 - [Admin Api Keys](/admin/api-keys): TradingBible application page.
 - [Admin Billing](/admin/billing): TradingBible application page.
@@ -19,33 +20,39 @@
 - [Alerts](/app/alerts): TradingBible application page.
 - [Analytics](/app/analytics): TradingBible application page.
 - [Api Docs](/app/api-docs): TradingBible application page.
+- [Backtest](/app/backtest): TradingBible application page.
 - [Billing](/app/billing): TradingBible application page.
 - [Blog](/blog): TradingBible application page.
 - [Branding](/app/branding): TradingBible application page.
 - [Brokers](/app/brokers): TradingBible application page.
 - [Careers](/careers): TradingBible application page.
-- [Charts](/app/charts): TradingBible application page.
+- [Challenges](/app/challenges): TradingBible application page.
 - [Coach](/app/coach): TradingBible application page.
 - [Community](/app/community): TradingBible application page.
 - [Contact](/contact): TradingBible application page.
 - [Dashboard](/app): TradingBible application page.
+- [Defi](/app/defi): TradingBible application page.
 - [Div](/__tvtest): TradingBible application page.
 - [Economic Calendar](/app/economic-calendar): TradingBible application page.
 - [Faq](/faq): TradingBible application page.
+- [Funded](/app/funded): TradingBible application page.
 - [Guides](/guides): TradingBible application page.
 - [Heatmaps](/app/heatmaps): TradingBible application page.
 - [Indicators](/app/indicators): TradingBible application page.
 - [Journal](/app/journal): TradingBible application page.
 - [Landing](/): TradingBible application page.
+- [Leaderboard](/leaderboard): TradingBible application page.
 - [Login](/login): TradingBible application page.
+- [Market](/app/market): TradingBible application page.
+- [Mentors](/app/mentors): TradingBible application page.
 - [Navigate](/teacher): TradingBible application page.
 - [Onboarding](/onboarding): TradingBible application page.
 - [Order Flow](/app/orderflow): TradingBible application page.
+- [Paper](/app/paper): TradingBible application page.
 - [Policy](/policy): TradingBible application page.
 - [Pricing](/pricing): TradingBible application page.
 - [Pro Guide](/app/guide): TradingBible application page.
 - [Profile](/app/profile): TradingBible application page.
-- [Prop Firms](/app/prop-firms): TradingBible application page.
 - [Refund](/refund): TradingBible application page.
 - [Reports](/app/reports): TradingBible application page.
 - [Reset](/reset): TradingBible application page.
@@ -53,10 +60,14 @@
 - [Security](/app/security): TradingBible application page.
 - [Signals](/app/signals): TradingBible application page.
 - [Signup](/signup): TradingBible application page.
+- [Staking](/app/staking): TradingBible application page.
 - [Student Dashboard](/student): TradingBible application page.
-- [Terminal](/app/terminal): TradingBible application page.
+- [Symbol Redirect](/app/charts): TradingBible application page.
+- [Terminal Premium](/app/terminal-pro): TradingBible application page.
 - [Terms](/terms): TradingBible application page.
+- [Token](/tbc): TradingBible application page.
 - [Tv](/tv): TradingBible application page.
 - [User Api Keys](/app/api-keys): TradingBible application page.
 - [Wallet](/app/wallet): TradingBible application page.
+- [Watchlists](/app/watchlists): TradingBible application page.
 - [Webinars](/webinars): TradingBible application page.
