@@ -28,7 +28,7 @@ async function api(path, opts = {}) {
 
 export function providerIdForBroker(broker) {
   const name = String(broker?.id || broker?.name || '').toLowerCase();
-  // Longest ids first; short ids (<=3 chars like xm/ig/cmc) require exact or
+  // Longest ids first; short ids (<=3 chars like xm) require exact or
   // word-boundary match to avoid false positives ('ig' in 'signal').
   const ids = Object.keys(PROVIDERS).sort((a, b) => b.length - a.length);
   for (const id of ids) {
@@ -36,7 +36,7 @@ export function providerIdForBroker(broker) {
       if (name === id || new RegExp(`(^|[^a-z])${id}([^a-z]|$)`).test(name)) return id;
     } else if (name === id || name.includes(id)) return id;
   }
-  if (/oanda/.test(name)) return 'oanda';
+  if (/deriv/.test(name)) return 'deriv';
   if (/coinbase/.test(name)) return 'coinbase';
   if (/ibkr|interactive/.test(name)) return 'ibkr';
   if (/alpaca/.test(name)) return 'alpaca';

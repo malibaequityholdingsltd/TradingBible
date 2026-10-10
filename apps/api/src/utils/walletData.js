@@ -12,6 +12,9 @@ export const NETWORKS = {
 	'usdc-base': { chain: 'evm', label: 'USDC · Base', currency: 'USDC', decimals: 6, rpc: ['https://mainnet.base.org', 'https://base-rpc.publicnode.com'], token: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' },
 	'usdc-polygon': { chain: 'evm', label: 'USDC · Polygon', currency: 'USDC', decimals: 6, rpc: ['https://polygon-rpc.com', 'https://polygon-bor-rpc.publicnode.com'], token: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359' },
 	solana: { chain: 'sol', label: 'Solana', currency: 'SOL', priceSymbol: 'SOLUSD', decimals: 9, rpc: ['https://api.mainnet-beta.solana.com', 'https://solana-rpc.publicnode.com'] },
+	// TBC entries appear only once their contract is configured (TBC_CONTRACT_*).
+	...(process.env.TBC_CONTRACT_ETHEREUM ? { 'tbc-ethereum': { chain: 'evm', label: 'TBC · Ethereum', currency: 'TBC', decimals: 18, rpc: ['https://ethereum-rpc.publicnode.com', 'https://eth.llamarpc.com'], token: process.env.TBC_CONTRACT_ETHEREUM } } : {}),
+	...(process.env.TBC_CONTRACT_BASE ? { 'tbc-base': { chain: 'evm', label: 'TBC · Base', currency: 'TBC', decimals: 18, rpc: ['https://mainnet.base.org', 'https://base-rpc.publicnode.com'], token: process.env.TBC_CONTRACT_BASE } } : {}),
 };
 
 export function isValidAddress(network, address) {
@@ -24,6 +27,8 @@ export function isValidAddress(network, address) {
 		case 'usdt-ethereum':
 		case 'usdc-base':
 		case 'usdc-polygon':
+		case 'tbc-ethereum':
+		case 'tbc-base':
 			return /^0x[a-fA-F0-9]{40}$/.test(a);
 		case 'solana':
 			return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(a);

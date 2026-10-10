@@ -181,7 +181,7 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <Link to="/app/charts" className="tb-card tb-card-hover p-5">
+          <Link to="/app/terminal-pro" className="tb-card tb-card-hover p-5">
             <div className="flex items-center gap-2"><CandlestickChart className="h-5 w-5 text-[#d4af37]" /><h2 className="font-semibold text-[#f0ecdd]">{t('ana.advCharts')}</h2></div>
             <p className="mt-2 text-sm text-[#8a8577]">{t('ana.openCharts')}</p>
             <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-[#d4af37]">{t('ana.openCharts')} <ArrowRight className="h-3.5 w-3.5" /></span>

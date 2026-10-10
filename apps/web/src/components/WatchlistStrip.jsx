@@ -60,7 +60,14 @@ export default function WatchlistStrip({ active, onSelect, bare }) {
                 onClick={() => onSelect(s)}
                 className={`min-w-[118px] shrink-0 rounded-xl border px-3 py-2 text-left transition ${isActive ? 'border-[#d4af37]/60 bg-[#d4af37]/10' : 'border-[#d4af37]/12 bg-white/[0.02] hover:border-[#d4af37]/40'}`}
               >
-                <span className={`block truncate font-mono text-xs font-bold ${isActive ? 'text-[#d4af37]' : 'text-[#f0ecdd]'}`}>{s}</span>
+                <span className={`flex items-center gap-1.5 truncate font-mono text-xs font-bold ${isActive ? 'text-[#d4af37]' : 'text-[#f0ecdd]'}`}>
+                  <span className="truncate">{s}</span>
+                  {q && (
+                    <span title={q.source === 'synthetic' ? 'Simulated price — no live feed for this symbol yet' : `Live via ${q.source}`} className={`shrink-0 rounded px-1 font-sans text-[9px] font-bold ${q.source === 'synthetic' ? 'bg-white/10 text-[#8a8577]' : 'bg-emerald-500/15 text-emerald-400'}`}>
+                      {q.source === 'synthetic' ? 'SIM' : 'LIVE'}
+                    </span>
+                  )}
+                </span>
                 <span className="mt-0.5 block font-mono text-[11px] text-[#e9e7df]">
                   {q?.price != null ? q.price : '—'}{' '}
                   <span className={up ? 'text-emerald-400' : 'text-red-400'}>

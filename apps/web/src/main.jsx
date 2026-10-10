@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client';
 import App from '@/App';
 import '@/index.css';
 import '@/styles/tokens.css';
+import { bootWhiteLabel } from '@/lib/whitelabel';
+
+// Apply saved white-label theme (accent + text colors) before first paint.
+try { bootWhiteLabel(); } catch { /* default brand */ }
 
 // Stale-bundle guard: after a deploy, cached HTML can reference deleted lazy
 // chunks, which otherwise renders a permanent blank screen. On the first

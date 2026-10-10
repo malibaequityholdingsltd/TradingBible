@@ -4,13 +4,12 @@ import { useI18n } from '@/lib/i18n';
 import {
   X, ArrowRight, ArrowLeft, LayoutDashboard, BookOpen, Bot, GraduationCap,
   Plug, Users, BarChart3, Calculator, Check, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2,
-  CandlestickChart, ListOrdered, Grid2x2, ShieldCheck, CreditCard,
+  CandlestickChart, ListOrdered, Grid2x2, ShieldCheck, CreditCard, SquareTerminal,
 } from 'lucide-react';
 
 const STEPS = [
   { icon: LayoutDashboard, titleKey: 'nav.dashboard', to: '/app', bodyKey: 'tour.b.dashboard' },
-  { icon: ListOrdered, titleKey: 'nav.terminal', to: '/app/terminal', bodyKey: 'tour.b.terminal' },
-  { icon: CandlestickChart, titleKey: 'nav.charts', to: '/app/charts', bodyKey: 'tour.b.charts' },
+  { icon: SquareTerminal, titleKey: 'nav.terminalPro', to: '/app/terminal-pro', bodyKey: 'tour.b.terminalPro' },
   { icon: Grid2x2, titleKey: 'nav.heatmaps', to: '/app/heatmaps', bodyKey: 'tour.b.heatmaps' },
   { icon: BarChart3, titleKey: 'nav.analytics', to: '/app/analytics', bodyKey: 'tour.b.analytics' },
   { icon: Radar, titleKey: 'nav.signals', to: '/app/signals', bodyKey: 'tour.b.signals' },
@@ -20,7 +19,7 @@ const STEPS = [
   { icon: Bot, titleKey: 'nav.coach', to: '/app/coach', bodyKey: 'tour.b.coach' },
   { icon: GraduationCap, titleKey: 'nav.academy', to: '/app/academy', bodyKey: 'tour.b.academy' },
   { icon: Plug, titleKey: 'nav.brokers', to: '/app/brokers', bodyKey: 'tour.b.brokers' },
-  { icon: ShieldCheck, titleKey: 'nav.propfirms', to: '/app/prop-firms', bodyKey: 'tour.b.propfirms' },
+  { icon: ShieldCheck, titleKey: 'nav.propfirms', to: '/app/funded', bodyKey: 'tour.b.propfirms' },
   { icon: Users, titleKey: 'nav.community', to: '/app/community', bodyKey: 'tour.b.community' },
   { icon: Calculator, titleKey: 'nav.tools', to: '/app/tools', bodyKey: 'tour.b.tools' },
   { icon: Landmark, titleKey: 'nav.wallet', to: '/app/wallet', bodyKey: 'tour.b.wallet' },

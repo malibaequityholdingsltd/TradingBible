@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import logger from '../utils/logger.js';
-import { supabase, getSupabaseUser } from '../utils/supabaseClient.js';
+import { supabase, getSupabaseUser, supabaseRest } from '../utils/supabaseClient.js';
 
 const router = Router();
 
@@ -140,7 +140,17 @@ router.get('/stats', async (req, res) => {
 	}
 });
 
-// ── Claim payout: move earned commissions to pending payout ──────
+// ── Claim payout: commissions are paid in TBC brand credits ────────
+// Peg: 1 TBC = 1 KWD. USD-denominated commissions convert at the published
+// TBC rate and land as ledger rows (asset='TBC'). TBC is the brand's money:
+// spendable on challenges, signals and mentorship, convertible, and
+// claimable on-chain at token launch.
+async function tbcRate() {
+	const { tbcEcon } = await import('../utils/tbc-econ.js');
+	const e = await tbcEcon().catch(() => ({ tbcPerUsd: 1 / 3.25 }));
+	return Number(e.tbcPerUsd) || 1 / 3.25;
+}
+
 router.post('/claim', async (req, res) => {
 	const user = await getAuthedUser(req);
 	if (!user) return res.status(401).json({ error: 'unauthorized' });
@@ -150,7 +160,17 @@ router.post('/claim', async (req, res) => {
 		if (!code) return res.status(422).json({ error: 'no affiliate code' });
 		const updated = await supabase.claimAffiliateSignups(code.id).catch(() => []);
 		if (!updated || !updated.length) return res.status(422).json({ error: 'nothing to claim' });
-		return res.json({ ok: true, claimed: updated.length });
+		const usd = Math.round(updated.reduce((s, r) => s + (Number(r.commission) || 0), 0) * 100) / 100;
+		const rate = await tbcRate().catch(() => 1);
+		const tbc = Math.round(usd * rate * 100) / 100;
+		if (tbc > 0) {
+			await supabaseRest('/rest/v1/bank_transactions', {
+				method: 'POST',
+				body: { owner: user.id, kind: 'affiliate_payout', amount: tbc, currency: 'TBC', status: 'completed', reference: `affiliate:${code.id}`, counterparty: 'tbc-economy', asset: 'TBC', fiatValue: usd },
+				prefer: 'return=representation',
+			}).catch(() => null);
+		}
+		return res.json({ ok: true, claimed: updated.length, usd, tbc, rate });
 	} catch (err) {
 		logger.error('affiliate claim failed', String(err));
 		return res.status(500).json({ error: 'claim failed' });

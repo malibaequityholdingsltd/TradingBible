@@ -24,17 +24,17 @@ export function PageHero({ kicker, kickerIcon, title, accent, subtitle, stats, a
 				</h2>
 			)}
 			{subtitle && <p className="tb-sub">{subtitle}</p>}
-			{stats && stats.length > 0 && (
-				<div className="mt-4 flex flex-wrap gap-2">
+	{stats && stats.length > 0 && (
+			<div className="mt-3 flex flex-wrap gap-2">
 					{stats.map((s) => (
-						<span key={s.label} className="rounded-full border border-[#d4af37]/20 bg-black/20 px-3 py-1 text-xs backdrop-blur-md">
+						<span key={s.label} className="tb-hero-chip rounded-full border border-[#d4af37]/20 bg-black/20 px-3 py-1 text-xs backdrop-blur-md">
 							<span className="text-[#8a8577]">{s.label} </span>
-							<span className="font-mono font-semibold" style={{ color: s.color || '#f0ecdd' }}>{s.value}</span>
+							<span className="tb-hero-stat-value font-mono font-semibold" style={{ color: s.color || undefined }}>{s.value}</span>
 						</span>
 					))}
 				</div>
 			)}
-			{actions && <div className="mt-4 flex flex-wrap gap-2">{actions}</div>}
+			{actions && <div className="mt-3 flex flex-wrap gap-2">{actions}</div>}
 			{children}
 		</section>
 	);
@@ -99,10 +99,10 @@ export function Tabs({ tabs, active, onChange }) {
 				<button
 					key={tb.id}
 					onClick={() => onChange(tb.id)}
-					className={`flex min-h-[42px] items-center gap-2 rounded-xl px-4 text-sm font-semibold transition active:scale-95 ${active === tb.id ? 'tab-active bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] text-[#0a0a0f] shadow-[0_8px_24px_-10px_rgba(212,175,55,0.7)]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}
+					className={`flex min-h-[42px] shrink-0 items-center gap-2 whitespace-nowrap rounded-xl px-4 text-sm font-semibold transition active:scale-95 ${active === tb.id ? 'tab-active bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] text-[#0a0a0f] shadow-[0_8px_24px_-10px_rgba(212,175,55,0.7)]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}
 				>
-					{tb.icon && <tb.icon className="h-4 w-4" />}
-					{tb.label}
+					{tb.icon && <tb.icon className="h-4 w-4 shrink-0" />}
+					<span className="truncate">{tb.label}</span>
 				</button>
 			))}
 		</div>
@@ -110,14 +110,14 @@ export function Tabs({ tabs, active, onChange }) {
 }
 
 export function GoldButton({ to, href, onClick, className = '', children, ...rest }) {
-	const cls = `btn-sheen inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] px-5 text-sm font-bold text-[#0a0a0f] shadow-[0_10px_30px_-10px_rgba(212,175,55,0.7),inset_0_1px_0_rgba(255,255,255,0.5)] transition hover:brightness-105 active:scale-[0.98] ${className}`;
+	const cls = `btn-sheen inline-flex min-h-[44px] max-w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-xl bg-gradient-to-r from-[#f4e6a8] via-[#d4af37] to-[#c99a25] px-5 text-sm font-bold text-[#0a0a0f] shadow-[0_10px_30px_-10px_rgba(212,175,55,0.7),inset_0_1px_0_rgba(255,255,255,0.5)] transition hover:brightness-105 active:scale-[0.98] ${className}`;
 	if (to) return <Link to={to} className={cls} {...rest}>{children}</Link>;
 	if (href) return <a href={href} className={cls} {...rest}>{children}</a>;
 	return <button onClick={onClick} className={cls} {...rest}>{children}</button>;
 }
 
 export function GhostButton({ to, href, onClick, className = '', children, ...rest }) {
-	const cls = `btn-sheen inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#d4af37]/30 bg-white/[0.03] px-5 text-sm font-semibold text-[#d4af37] backdrop-blur-md transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 hover:shadow-[0_0_24px_-8px_rgba(212,175,55,0.5)] active:scale-[0.98] ${className}`;
+	const cls = `btn-sheen inline-flex min-h-[44px] max-w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-xl border border-[#d4af37]/30 bg-white/[0.03] px-5 text-sm font-semibold text-[#d4af37] backdrop-blur-md transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 hover:shadow-[0_0_24px_-8px_rgba(212,175,55,0.5)] active:scale-[0.98] ${className}`;
 	if (to) return <Link to={to} className={cls} {...rest}>{children}</Link>;
 	if (href) return <a href={href} className={cls} {...rest}>{children}</a>;
 	return <button onClick={onClick} className={cls} {...rest}>{children}</button>;
@@ -125,11 +125,11 @@ export function GhostButton({ to, href, onClick, className = '', children, ...re
 
 export function EmptyState({ icon: Icon, title, sub, action }) {
 	return (
-		<div className="tb-card flex flex-col items-center px-6 py-14 text-center">
-			{Icon && <Icon className="h-10 w-10 text-[#6a665a]" />}
-			<p className="mt-3 font-semibold text-[#f0ecdd]">{title}</p>
-			{sub && <p className="mt-1 max-w-md text-sm text-[#8a8577]">{sub}</p>}
-			{action && <div className="mt-4">{action}</div>}
+		<div className="tb-card flex flex-col items-center px-6 py-8 text-center">
+			{Icon && <Icon className="h-8 w-8 text-[#6a665a]" />}
+			<p className="mt-2 text-sm font-semibold text-[#f0ecdd]">{title}</p>
+			{sub && <p className="mt-1 max-w-md text-[13px] text-[#8a8577]">{sub}</p>}
+			{action && <div className="mt-3">{action}</div>}
 		</div>
 	);
 }

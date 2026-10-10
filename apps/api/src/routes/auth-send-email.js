@@ -25,6 +25,15 @@ const transporter = smtpHost && smtpPort && smtpUser && smtpPass
 
 const webhook = hookSecret ? new Webhook(hookSecret.replace(/^v1,whsec_/, '')) : null;
 
+if (!transporter) {
+  console.error('[auth-email] SMTP NOT CONFIGURED — sign-in codes will NOT be emailed. Set SMTP_HOST/SMTP_USER/SMTP_PASS in the API env and restart.');
+}
+
+// Diagnosis helper (no secrets): lets admin confirm the hook can send.
+export function authSendEmailStatus(req, res) {
+  return res.json({ configured: Boolean(transporter), host: smtpHost || null, port: smtpPort || null });
+}
+
 function getMailCopy(emailData = {}) {
   const action = String(emailData.email_action_type || '').toLowerCase();
   const token = String(emailData.token || '');

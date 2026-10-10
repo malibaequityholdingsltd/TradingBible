@@ -57,7 +57,7 @@ function SignalCard({ symbol, timeframe, onResult, onSave }) {
       <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/5 pt-3">
         <span className="font-mono text-xs text-[#8a8577]">px {sig.price}</span>
         <div className="flex flex-wrap gap-2">
-          <GhostButton to={`/app/charts?symbol=${symbol}`} className="min-h-[36px] px-2.5 py-1 text-[11px]">{t('sig.chart')}</GhostButton>
+          <GhostButton to={`/app/terminal-pro?symbol=${symbol}`} className="min-h-[36px] px-2.5 py-1 text-[11px]">{t('sig.chart')}</GhostButton>
           {side && <button onClick={() => onSave(symbol, timeframe, sig, planLevels(sig.price, candles), side)} className="flex min-h-[36px] items-center gap-1 rounded-xl bg-[#d4af37]/15 px-2.5 py-1 text-[11px] text-[#d4af37] hover:bg-[#d4af37]/25"><Save className="h-3 w-3" /> {t('c.add')}</button>}
         </div>
       </div>
@@ -158,6 +158,19 @@ export default function SignalsPage() {
 
   const removeSaved = async (id) => { try { await pb.collection('trading_signals').delete(id); loadSaved(); } catch { /* ignore */ } };
 
+  const toggleList = async (s) => {
+    const listed = s?.meta?.marketplace === true;
+    try {
+      const res = await apiServerClient.fetch(`/market/${listed ? 'unlist' : 'list'}/${s.id}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' },
+        body: listed ? undefined : JSON.stringify({ price: 0 }),
+      });
+      if (!res.ok) throw new Error('marketplace update failed');
+      loadSaved();
+    } catch { /* ignore */ }
+  };
+
   const visible = UNIVERSE.filter((sym) => {
     const s = results[sym]; if (!s) return true; // keep loading cards visible
     if (fType !== 'all' && s.signalType !== fType) return false;
@@ -238,6 +251,7 @@ export default function SignalsPage() {
                         ) : (
                           <div className="flex items-center gap-2">
                             <span className="rounded-full bg-[#d4af37]/10 px-2 py-0.5 text-[11px] text-[#d4af37]">{t('sig.open')}</span>
+                            <button onClick={() => toggleList(s)} className="text-[10px] text-[#d4af37] hover:underline">{s?.meta?.marketplace ? 'Unlist' : 'List'}</button>
                             <button onClick={() => removeSaved(s.id)} className="text-[10px] text-[#5f5b50] hover:text-red-400">{t('sig.del')}</button>
                           </div>
                         )}

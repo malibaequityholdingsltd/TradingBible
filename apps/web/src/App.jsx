@@ -4,7 +4,6 @@ import { Lock } from 'lucide-react';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/hooks/useTheme';
-import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { I18nProvider } from '@/lib/i18n';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { meetsPlan } from '@/lib/entitlements';
@@ -20,6 +19,7 @@ import TvWidget from './components/TvWidget';
 import AmbientDepth from './components/AmbientDepth';
 import PwaStatus from './components/PwaStatus';
 import ErrorBoundary from './components/ErrorBoundary';
+import GuideButton from './components/GuideButton';
 import { AdProvider } from './lib/ads/components.jsx';
 import pb from './lib/pocketbaseClient';
 import LandingPage from './pages/LandingPage';
@@ -32,7 +32,6 @@ const JournalPage = lazy(() => import('./pages/JournalPage'));
 const CoachPage = lazy(() => import('./pages/CoachPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
-const ChartsPage = lazy(() => import('./pages/ChartsPage'));
 const HeatmapsPage = lazy(() => import('./pages/HeatmapsPage'));
 const IndicatorsPage = lazy(() => import('./pages/IndicatorsPage'));
 const ReportsPage = lazy(() => import('./pages/ReportsPage'));
@@ -46,14 +45,16 @@ const BrandingPage = lazy(() => import('./pages/BrandingPage'));
 const BillingPage = lazy(() => import('./pages/BillingPage'));
 const WalletPage = lazy(() => import('./pages/WalletPage'));
 const OrderFlowPage = lazy(() => import('./pages/OrderFlowPage'));
-const TerminalPage = lazy(() => import('./pages/TerminalPage'));
+const WatchlistsPage = lazy(() => import('./pages/WatchlistsPage'));
+const TerminalPremiumPage = lazy(() => import('./pages/TerminalPremiumPage'));
 const AlertsPage = lazy(() => import('./pages/AlertsPage'));
 const SignalsPage = lazy(() => import('./pages/SignalsPage'));
 const EconomicCalendarPage = lazy(() => import('./pages/EconomicCalendarPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const TvPage = lazy(() => import('./pages/TvPage'));
 const BrokersPage = lazy(() => import('./pages/ExtraPages').then((m) => ({ default: m.BrokersPage })));
-const PropFirmsPage = lazy(() => import('./pages/PropFirmsPage'));
+const FundedPage = lazy(() => import('./pages/FundedPage'));
+const SuspendedPage = lazy(() => import('./pages/SuspendedPage'));
 const AffiliatePage = lazy(() => import('./pages/AffiliatePage'));
 const AdminDashboard = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminDashboard })));
 const AdminUsers = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminUsers })));
@@ -67,6 +68,7 @@ const AdminApiKeys = lazy(() => import('./pages/AdminPortal').then((m) => ({ def
 const AdminPlugins = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminPlugins })));
 const AdminJobs = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminJobs })));
 const AdminTvAds = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminTvAds })));
+const AdminAirdrops = lazy(() => import('./pages/AdminAirdrops'));
 const PricingPage = lazy(() => import('./pages/ExtraPages').then((m) => ({ default: m.PricingPage })));
 const UserApiKeysPage = lazy(() => import('./pages/UserApiKeysPage'));
 const GuidesPage = lazy(() => import('./pages/PublicInfoPages').then((m) => ({ default: m.GuidesPage })));
@@ -82,6 +84,22 @@ const RefundPage = lazy(() => import('./pages/LegalPages').then((m) => ({ defaul
 const FaqPage = lazy(() => import('./pages/LegalPages').then((m) => ({ default: m.FaqPage })));
 const AdsDemoPage = lazy(() => import('./pages/AdsDemoPage'));
 const ProGuidePage = lazy(() => import('./pages/ProGuidePage'));
+const TokenPage = lazy(() => import('./pages/TokenPage'));
+const ChallengesPage = lazy(() => import('./pages/ChallengesPage'));
+const BacktestPage = lazy(() => import('./pages/BacktestPage'));
+const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
+const MarketPage = lazy(() => import('./pages/MarketPage'));
+const StakingPage = lazy(() => import('./pages/StakingPage'));
+const DefiPage = lazy(() => import('./pages/DefiPage'));
+const MentorsPage = lazy(() => import('./pages/MentorsPage'));
+const PaperPage = lazy(() => import('./pages/PaperPage'));
+
+// Legacy routes merged into Terminal Pro (?symbol= is preserved).
+function SymbolRedirect({ to }) {
+    const { search } = useLocation();
+    const symbol = (new URLSearchParams(search).get('symbol') || '').toUpperCase();
+    return <Navigate to={symbol ? `${to}?symbol=${encodeURIComponent(symbol)}` : to} replace />;
+}
 
 function PageFallback() {
     return (
@@ -235,6 +253,7 @@ function AppChrome() {
             {!hideTicker && <GlobalTicker />}
             <AlertMonitor />
             <ScrollToTop />
+            {!hideTicker && <ErrorBoundary fallback={null}><GuideButton /></ErrorBoundary>}
             {inApp && features.aiCoach !== false && <ErrorBoundary fallback={null}><LiveChatWidget /></ErrorBoundary>}
             {pathname !== '/tv' && inApp && <ErrorBoundary fallback={null}><TvWidget /></ErrorBoundary>}
         </>
@@ -257,8 +276,21 @@ function RootRedirect() {
 // never poisons the rest of the app.
 function RoutesWithBoundary() {
     const { pathname } = useLocation();
+    const { isAuthed, isAuthReady, user } = useAuth();
+    // Suspended accounts stay logged in but see only the suspended page
+    // (support contact + live chat bubble, which mounts in AppChrome).
+    // Admins are never gated here.
+    if (isAuthReady && isAuthed && user?.role !== 'admin' && user?.user_settings?.suspended) {
+        return (
+            <ErrorBoundary key="suspended" showDetails={import.meta.env.DEV}>
+                <Suspense fallback={<PageFallback />}>
+                    <SuspendedPage />
+                </Suspense>
+            </ErrorBoundary>
+        );
+    }
     return (
-        <ErrorBoundary key={pathname}>
+        <ErrorBoundary key={pathname} showDetails={import.meta.env.DEV}>
             <Suspense fallback={<PageFallback />}>
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
@@ -274,6 +306,7 @@ function RoutesWithBoundary() {
                     <Route path="/policy" element={<PolicyPage />} />
                     <Route path="/refund" element={<RefundPage />} />
                     <Route path="/faq" element={<FaqPage />} />
+                    <Route path="/tbc" element={<TokenPage />} />
                     <Route path="/tv" element={<EverPaidProtected><TvPage /></EverPaidProtected>} />
                     {import.meta.env.DEV && <Route path="/__tvtest" element={<div style={{ minHeight: "200dvh", background: "#0a0a0f" }}><TvWidget /></div>} />}
                     {import.meta.env.DEV && <Route path="/__ads-demo" element={<Protected><AdsDemoPage /></Protected>} />}
@@ -283,16 +316,25 @@ function RoutesWithBoundary() {
                     <Route path="/onboarding" element={<Protected><OnboardingPage /></Protected>} />
                     <Route path="/app" element={<PaidProtected><DashboardPage /></PaidProtected>} />
                     <Route path="/app/analytics" element={<PaidProtected><AnalyticsPage /></PaidProtected>} />
-                    <Route path="/app/watchlists" element={<Navigate to="/app/orderflow" replace />} />
+                    <Route path="/app/watchlists" element={<PaidProtected><WatchlistsPage /></PaidProtected>} />
                     <Route path="/app/orderflow" element={<PaidProtected><OrderFlowPage /></PaidProtected>} />
-                    <Route path="/app/terminal" element={<PaidProtected><TerminalPage /></PaidProtected>} />
+                    <Route path="/app/terminal" element={<SymbolRedirect to="/app/terminal-pro" />} />
+                    <Route path="/app/terminal-pro" element={<PaidProtected><TerminalPremiumPage /></PaidProtected>} />
                     <Route path="/app/alerts" element={<PaidProtected><FeatureGate feature="signals"><AlertsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/signals" element={<PaidProtected><FeatureGate feature="signals"><SignalsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/economic-calendar" element={<EverPaidProtected><FeatureGate feature="economicCalendar"><EconomicCalendarPage /></FeatureGate></EverPaidProtected>} />
-                    <Route path="/app/charts" element={<PaidProtected><FeatureGate feature="chartBuilder"><ChartsPage /></FeatureGate></PaidProtected>} />
+                    <Route path="/app/charts" element={<SymbolRedirect to="/app/terminal-pro" />} />
                     <Route path="/app/heatmaps" element={<PaidProtected><FeatureGate feature="chartBuilder"><HeatmapsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/indicators" element={<PaidProtected><FeatureGate feature="chartBuilder"><IndicatorsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/journal" element={<PaidProtected><JournalPage /></PaidProtected>} />
+                    <Route path="/app/challenges" element={<Protected><ChallengesPage /></Protected>} />
+                    <Route path="/app/paper" element={<Protected><PaperPage /></Protected>} />
+                    <Route path="/app/backtest" element={<PaidProtected><BacktestPage /></PaidProtected>} />
+                    <Route path="/app/market" element={<Protected><MarketPage /></Protected>} />
+                    <Route path="/app/staking" element={<Protected><StakingPage /></Protected>} />
+                    <Route path="/app/defi" element={<Protected><DefiPage /></Protected>} />
+                    <Route path="/app/mentors" element={<Protected><MentorsPage /></Protected>} />
+                    <Route path="/leaderboard" element={<LeaderboardPage />} />
                     <Route path="/app/reports" element={<PlanProtected plan="elite" gate="reports"><ReportsPage /></PlanProtected>} />
                     <Route path="/app/coach" element={<PlanProtected plan="elite" gate="coach"><FeatureGate feature="aiCoach"><CoachPage /></FeatureGate></PlanProtected>} />
                     <Route path="/app/tools" element={<SubscriberProtected><FeatureGate feature="riskTools"><RiskToolsPage /></FeatureGate></SubscriberProtected>} />
@@ -304,7 +346,8 @@ function RoutesWithBoundary() {
                     <Route path="/app/integrations" element={<Navigate to="/admin/integrations" replace />} />
                     <Route path="/app/branding" element={<PlanProtected plan="professional" gate="branding"><BrandingPage /></PlanProtected>} />
                     <Route path="/app/brokers" element={<PaidProtected><BrokersPage /></PaidProtected>} />
-                    <Route path="/app/prop-firms" element={<PaidProtected><PropFirmsPage /></PaidProtected>} />
+                    <Route path="/app/funded" element={<PaidProtected><FundedPage /></PaidProtected>} />
+                    <Route path="/app/prop-firms" element={<Navigate to="/app/funded" replace />} />
                     <Route path="/app/affiliate" element={<PaidProtected><AffiliatePage /></PaidProtected>} />
                     <Route path="/app/billing" element={<Protected><BillingPage /></Protected>} />
                     <Route path="/app/wallet" element={<EverPaidProtected><WalletPage /></EverPaidProtected>} />
@@ -321,6 +364,7 @@ function RoutesWithBoundary() {
                     <Route path="/admin/settings" element={<AdminProtected><AdminSettings /></AdminProtected>} />
                     <Route path="/admin/integrations" element={<AdminProtected><AdminIntegrations /></AdminProtected>} />
                     <Route path="/admin/tv" element={<AdminProtected><AdminTvAds /></AdminProtected>} />
+                    <Route path="/admin/airdrops" element={<AdminProtected><AdminAirdrops /></AdminProtected>} />
                     <Route path="/admin/api-keys" element={<AdminProtected><AdminApiKeys /></AdminProtected>} />
                     <Route path="/admin/plugins" element={<AdminProtected><AdminPlugins /></AdminProtected>} />
                     <Route path="/admin/jobs" element={<AdminProtected><AdminJobs /></AdminProtected>} />
@@ -345,7 +389,6 @@ function App() {
                     <RoutesWithBoundary />
                 </MaintenanceGate>
                 <PwaStatus />
-                <ThemeSwitcher />
                 <Toaster />
             </Router>
           </AdProvider>

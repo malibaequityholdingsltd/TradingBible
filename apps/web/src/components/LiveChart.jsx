@@ -4,7 +4,7 @@ import {
 } from 'lightweight-charts';
 import {
   MousePointer2, TrendingUp, Minus, Square, MoveUpRight, Type, Trash2, Maximize2,
-  Minimize2, Download, Save, BookMarked, X,
+  Minimize2, Download, Save, BookMarked, X, Camera, Share2,
 } from 'lucide-react';
 import pb from '@/lib/pocketbaseClient';
 import { useI18n } from '@/lib/i18n';
@@ -31,7 +31,7 @@ const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 export default function LiveChart({
   initialSymbol = 'BTCUSD', initialTimeframe = '1h', initialType = 'candle',
   initialIndicators = [], drawingsEnabled = true, compact = false,
-  onSymbolChange,
+  hidePicker = false, onSymbolChange, onSnapshot, onShare,
 }) {
   const [symbol, setSymbol] = useState(initialSymbol);
   const [timeframe, setTimeframe] = useState(initialTimeframe);
@@ -51,6 +51,7 @@ export default function LiveChart({
   const wrapRef = useRef(null);
   const chartApi = useRef(null);
   const mainSeries = useRef(null);
+  const lastView = useRef(''); // viewport auto-fit key — user owns zoom after
   const overlaySeries = useRef([]);
   const subPanes = useRef([]);
 
@@ -109,6 +110,21 @@ export default function LiveChart({
       time: Math.floor(c.time / 1000), value: c.volume,
       color: c.close >= c.open ? 'rgba(52,211,153,0.35)' : 'rgba(248,113,113,0.35)',
     })));
+
+    // Default viewport: last ~90 candles with air above/below so bodies,
+    // wicks and wick direction read instantly. Fit once per symbol +
+    // timeframe — afterwards the trader owns zoom/pan (live ticks never
+    // yank the view).
+    const viewKey = `${symbol}-${timeframe}`;
+    if (viewKey !== lastView.current && data.length > 10) {
+      lastView.current = viewKey;
+      try {
+        chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, data.length - 90), to: data.length + 7 });
+      } catch { /* keep library default */ }
+    }
+    try {
+      chart.priceScale('right').applyOptions({ scaleMargins: { top: 0.12, bottom: 0.15 } });
+    } catch { /* ignore */ }
 
     // Clear previous indicator series.
     overlaySeries.current.forEach((s) => { try { chart.removeSeries(s); } catch { /* */ } });
@@ -241,7 +257,7 @@ export default function LiveChart({
       <div className={`glass rounded-2xl p-3 sm:p-4 ${fullscreen ? 'fixed inset-2 z-[55] flex flex-col overflow-hidden' : ''}`}>
         {/* Top controls */}
         <div className="mb-2 flex flex-wrap items-center gap-2">
-          {symbolPicker}
+          {(!hidePicker || fullscreen) && symbolPicker}
           <div className="flex overflow-hidden rounded-lg border border-[#d4af37]/15">
             {TIMEFRAMES.map((tf) => (
               <button key={tf} onClick={() => setTimeframe(tf)}
@@ -257,6 +273,14 @@ export default function LiveChart({
           <button onClick={() => setPickerOpen(true)} className="rounded-lg border border-[#d4af37]/15 px-2.5 py-1 text-[11px] text-[#c9c4b4] hover:text-[#e9e7df]">Indicators ({indicators.length})</button>
           <AddToWatchlist symbol={symbol} />
           <div className="ml-auto flex items-center gap-1.5">
+            {/* Terminal actions live here in fullscreen — the floating
+                cluster underneath is covered while expanded. */}
+            {fullscreen && onSnapshot && (
+              <button onClick={onSnapshot} title="Snapshot to journal + download page PNG" className="rounded-lg border border-[#d4af37]/30 p-1.5 text-[#d4af37] hover:bg-[#d4af37]/10"><Camera className="h-3.5 w-3.5" /></button>
+            )}
+            {fullscreen && onShare && (
+              <button onClick={onShare} title="Share this view" className="rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]"><Share2 className="h-3.5 w-3.5" /></button>
+            )}
             <button onClick={exportPng} title={t('lc.exportPng')} className="rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]"><Download className="h-3.5 w-3.5" /></button>
             <button onClick={() => setFullscreen((f) => !f)} title={t('lc.fullscreen')} className="rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]">{fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}</button>
           </div>
@@ -301,9 +325,10 @@ export default function LiveChart({
           </div>
         )}
 
-        {/* Chart + overlay */}
-        <div className="relative flex-1" style={{ minHeight: 0 }}>
-          <div ref={wrapRef} className={compact && !fullscreen ? 'h-[300px] w-full' : fullscreen ? 'h-[calc(100vh-180px)] w-full' : 'h-[460px] w-full'} />
+        {/* Chart + overlay — in fullscreen the canvas flex-fills every pixel
+            below the toolbars instead of a hardcoded viewport guess. */}
+        <div className={`relative flex-1 ${fullscreen ? 'flex min-h-0 flex-col' : ''}`} style={{ minHeight: 0 }}>
+          <div ref={wrapRef} className={compact && !fullscreen ? 'h-[300px] w-full' : fullscreen ? 'min-h-[240px] w-full flex-1' : 'h-[460px] w-full'} />
           {drawingsEnabled && (
             <svg
               className="absolute inset-0 h-full w-full"

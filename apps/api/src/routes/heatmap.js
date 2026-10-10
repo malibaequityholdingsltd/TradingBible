@@ -1,6 +1,9 @@
 // Market heatmap data. Crypto cells pull live 24h stats from Binance; every
-// other category is generated deterministically per (symbol, period) so cells
-// stay coherent while the period selector changes the picture.
+// other category resolves through the same Yahoo-first feed as /quotes —
+// live price plus real period-over-period change from history. The seeded
+// generator below is a last-resort fallback for Yahoo outages only.
+
+import { yahooQuote, yahooPeriodChange, yahooSymbolFor } from '../utils/yahoo.js';
 
 const CRYPTO = [
 	['BTCUSD', 'BTCUSDT', 'Bitcoin'], ['ETHUSD', 'ETHUSDT', 'Ethereum'],
@@ -128,7 +131,43 @@ function synthCell(symbol, name, price, period) {
 	// Gives non-crypto bubbles meaningful relative sizes in Volume mode.
 	const vrand = mulberry32(seedStr(symbol + period + ':vol'));
 	const quoteVolume = Math.round(base * (2000 + vrand() * 800000));
-	return { symbol, name, price: +base.toFixed(2), changePercent, changeAmount, volume: quoteVolume, quoteVolume };
+	return { symbol, name, price: +base.toFixed(2), changePercent, changeAmount, volume: quoteVolume, quoteVolume, live: false };
+}
+
+// Bounded parallelism so a cold 160-symbol poll doesn't 429 Yahoo.
+async function mapLimit(items, limit, fn) {
+	const out = new Array(items.length);
+	let i = 0;
+	const workers = new Array(Math.min(limit, items.length)).fill(null).map(async () => {
+		while (i < items.length) {
+			const idx = i++;
+			try { out[idx] = await fn(items[idx], idx); }
+			catch { out[idx] = null; }
+		}
+	});
+	await Promise.all(workers);
+	return out;
+}
+
+// Live Yahoo cells for one category. entries: [displaySymbol, name, base?]
+// — base is ignored unless Yahoo fails (fallback only).
+async function yahooCells(entries, period, market) {
+	const cells = await mapLimit(entries, 10, async ([disp, name]) => {
+		const ySym = yahooSymbolFor(disp);
+		if (!ySym) return synthCell(disp, name, 0, period);
+		const [q, hist] = await Promise.all([
+			yahooQuote(disp).catch(() => null),
+			period === '1d' ? null : yahooPeriodChange(ySym, period).catch(() => null),
+		]);
+		if (!q) return synthCell(disp, name, 0, period);
+		const changePercent = hist ?? q.changePercent;
+		return {
+			symbol: disp, name, price: q.price, changePercent,
+			changeAmount: +((q.price * changePercent) / 100).toFixed(2),
+			volume: q.volume || 0, quoteVolume: 0, live: true, source: 'yahoo',
+		};
+	});
+	return cells.map((c) => ({ ...c, market }));
 }
 
 async function cryptoLive(period) {
@@ -198,19 +237,19 @@ export default async (req, res) => {
 	let cells;
 	switch (type) {
 		case 'crypto': cells = tag(await cryptoLive(period), 'crypto'); break;
-		case 'forex': cells = tag(FOREX.map(([s, n, p]) => synthCell(s, n, p, period)), 'forex'); break;
-		case 'commodity': cells = tag(COMMODITY.map(([s, n, p]) => synthCell(s, n, p, period)), 'commodity'); break;
-		case 'sector': cells = tag(SECTOR.map(([s, n]) => synthCell(s, n, 0, period)), 'sector'); break;
-		case 'stock': cells = tag(STOCK.map(([s, n, p]) => synthCell(s, n, p, period)), 'stock'); break;
+		case 'forex': cells = await yahooCells(FOREX, period, 'forex'); break;
+		case 'commodity': cells = await yahooCells(COMMODITY, period, 'commodity'); break;
+		case 'sector': cells = await yahooCells(SECTOR, period, 'sector'); break;
+		case 'stock': cells = await yahooCells(STOCK, period, 'stock'); break;
 		case 'all': {
 			const [c, f, cm, se, st] = await Promise.all([
 				cryptoLive(period),
-				FOREX.map(([s, n, p]) => synthCell(s, n, p, period)),
-				COMMODITY.map(([s, n, p]) => synthCell(s, n, p, period)),
-				SECTOR.map(([s, n]) => synthCell(s, n, 0, period)),
-				STOCK.map(([s, n, p]) => synthCell(s, n, p, period)),
+				yahooCells(FOREX, period, 'forex'),
+				yahooCells(COMMODITY, period, 'commodity'),
+				yahooCells(SECTOR, period, 'sector'),
+				yahooCells(STOCK, period, 'stock'),
 			]);
-			cells = [...tag(c, 'crypto'), ...tag(f, 'forex'), ...tag(cm, 'commodity'), ...tag(se, 'sector'), ...tag(st, 'stock')];
+			cells = [...tag(c, 'crypto'), ...f, ...cm, ...se, ...st];
 			break;
 		}
 		default:

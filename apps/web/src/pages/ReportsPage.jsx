@@ -4,6 +4,7 @@ import AppLayout from '@/components/AppLayout';
 import { useI18n } from '@/lib/i18n';
 import { fmtMoney } from '@/lib/mockData';
 import { useTrades, computeStats } from '@/hooks/useTrades';
+import { displayName } from '@/lib/displayName';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { PageHero, SectionHead, StatGrid, EmptyState, GoldButton, GhostButton } from '@/components/ui-kit';
@@ -75,11 +76,11 @@ export default function ReportsPage() {
           <EmptyState icon={FileBarChart} title={t('rep.noData')} sub={t('rep.connectSub')} />
         ) : (
           <>
-            <div className="print-area tb-card p-5 sm:p-6">
+            <div className="print-area tb-card p-4 sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-5">
                 <div className="min-w-0">
                   <h2 className="text-xl font-bold text-[#f0ecdd]">{t('rep.docTitle')}</h2>
-                  <p className="mt-1 truncate text-xs text-[#8a8577]">{user?.username || user?.email} · {t('rep.generated', { dt: generatedAt })}</p>
+                  <p className="mt-1 truncate text-xs text-[#8a8577]">{displayName(user)} · {t('rep.generated', { dt: generatedAt })}</p>
                 </div>
                 <div className="shrink-0 text-right"><div className="font-semibold text-[#d4af37]">TradingBible</div><div className="text-[10px] uppercase tracking-widest text-[#8a8577]">{t('rep.terminal')}</div></div>
               </div>

@@ -68,38 +68,17 @@ export const PROVIDERS = {
   },
   easymarkets: {
     id: 'easymarkets', name: 'easyMarkets', kind: 'Forex / CFD', method: 'bridge', category: 'forex_cfd',
-    website: 'https://www.easymarkets.com/', clientLogin: 'https://www.easymarkets.com/login',
-    apiDocs: 'https://www.easymarkets.com/', color: '#3b82f6',
+    website: 'https://www.easy-markets.com/int/en-za/', clientLogin: 'https://www.easy-markets.com/int/en-za/',
+    apiDocs: 'https://www.easy-markets.com/int/en-za/', color: '#3b82f6',
     blurb: 'API availability must be verified before implementation.',
     setup: 'Connection path under review — available once its supported method is confirmed.',
   },
-  oanda: {
-    id: 'oanda', name: 'OANDA', kind: 'Forex / CFD', method: 'api_key', category: 'forex_cfd',
-    website: 'https://www.oanda.com/', clientLogin: 'https://www.oanda.com/account/login',
-    apiDocs: 'https://developer.oanda.com/rest-live-v20/introduction/', color: '#3b82f6',
-    blurb: 'Personal access token sync (adapter in progress — keys validate next).',
-    setup: 'Create a read-only personal token in OANDA fxTrade → Manage API Access, then paste it here.',
-  },
-  forex_com: {
-    id: 'forex_com', name: 'FOREX.com', kind: 'Forex / CFD', method: 'bridge', category: 'forex_cfd',
-    website: 'https://www.forex.com/', clientLogin: 'https://www.forex.com/en/login/',
-    apiDocs: 'https://www.forex.com/en/market-analysis/', color: '#0ab28a',
-    blurb: 'API / supported trading platforms.',
-    setup: 'Use your FOREX.com MT trading login once bridge sync opens.',
-  },
-  ig: {
-    id: 'ig', name: 'IG', kind: 'Forex / CFD', method: 'bridge', category: 'forex_cfd',
-    website: 'https://www.ig.com/', clientLogin: 'https://www.ig.com/au/login',
-    apiDocs: 'https://labs.ig.com/rest-trading-api-guide', color: '#e0533d',
-    blurb: 'IG REST dealing API.',
-    setup: 'Use your IG MT trading login once bridge sync opens.',
-  },
-  cmc: {
-    id: 'cmc', name: 'CMC Markets', kind: 'Forex / CFD', method: 'bridge', category: 'forex_cfd',
-    website: 'https://www.cmcmarkets.com/', clientLogin: 'https://www.cmcmarkets.com/en/login',
-    apiDocs: 'https://www.cmcmarkets.com/en/trading-apis', color: '#5b8def',
-    blurb: 'CMC trading APIs.',
-    setup: 'Use your CMC MT trading login once bridge sync opens.',
+  deriv: {
+    id: 'deriv', name: 'Deriv', kind: 'Forex / CFD', method: 'api_key', category: 'forex_cfd',
+    website: 'https://deriv.com/', clientLogin: 'https://app.deriv.com/',
+    apiDocs: 'https://developers.deriv.com/', color: '#ff444f',
+    blurb: 'API token sync (paste a read-only token).',
+    setup: 'Create a read-only API token in Deriv account settings, then paste it here.',
   },
   fxcm: {
     id: 'fxcm', name: 'FXCM', kind: 'Forex / CFD', method: 'bridge', category: 'forex_cfd',
@@ -188,15 +167,7 @@ export const PROVIDERS = {
 };
 
 export const PROP_FIRMS = [
-  { id: 'ftmo', name: 'FTMO', via: 'MT5 bridge', method: 'bridge', integration: 'MT4_MT5', website: 'https://trader.ftmo.com/', clientLogin: 'https://trader.ftmo.com/', color: '#0ab28a', blurb: 'Challenge + funded accounts sync through MT5. Verify direct API scopes/terms before production.' },
-  { id: 'topstep', name: 'Topstep', via: 'MT5 bridge', method: 'bridge', integration: 'MT4_MT5', website: 'https://www.topstep.com/', clientLogin: 'https://www.topstep.com/login', color: '#f0b90b', blurb: 'Futures funded accounts through the bridge.' },
-  { id: 'the5ers', name: 'The5ers', via: 'MT5 bridge', method: 'bridge', integration: 'MT4_MT5', website: 'https://the5ers.com/', clientLogin: 'https://the5ers.com/login', color: '#7c5cff', blurb: 'Funded accounts through the bridge.' },
-  { id: 'fundednext', name: 'FundedNext', via: 'MT5 bridge', method: 'bridge', integration: 'MT4_MT5', website: 'https://fundednext.com/', clientLogin: 'https://fundednext.com/login', color: '#5b8def', blurb: 'Challenge + funded accounts through the bridge.' },
-  { id: 'apex', name: 'Apex Trader Funding', via: 'MT5 bridge', method: 'bridge', integration: 'MT4_MT5', website: 'https://apextraderfunding.com/', clientLogin: 'https://apextraderfunding.com/login', color: '#e0533d', blurb: 'Futures funded accounts through the bridge.' },
-  { id: 'e8', name: 'E8 Markets', via: 'MT5 bridge', method: 'bridge', integration: 'MT4_MT5', website: 'https://e8markets.com/', clientLogin: 'https://e8markets.com/login', color: '#d4af37', blurb: 'Funded accounts through the bridge.' },
-  { id: 'fundingpips', name: 'Funding Pips', via: 'MT5 bridge', method: 'bridge', integration: 'MT4_MT5', website: 'https://fundingpips.com/', clientLogin: 'https://fundingpips.com/login', color: '#34d399', blurb: 'Funded accounts through the bridge.' },
-  { id: 'funderpro', name: 'FunderPro', via: 'MT5 bridge', method: 'bridge', integration: 'MT4_MT5', website: 'https://funderpro.com/', clientLogin: 'https://funderpro.com/login', color: '#4a90d9', blurb: 'Funded accounts through the bridge.' },
-  { id: 'alpha', name: 'Alpha Capital Group', via: 'MT5 bridge', method: 'bridge', integration: 'MT4_MT5', website: 'https://alphacapitalgroup.uk/', clientLogin: 'https://alphacapitalgroup.uk/login', color: '#8a8577', blurb: 'Funded accounts through the bridge.' },
+  { id: 'tbfunded', name: 'TradingBible Funded', via: 'Native', method: 'native', integration: 'NATIVE', website: '/app/funded', clientLogin: '/app/challenges', color: '#d4af37', blurb: 'Our own evaluations — pass on real fills, trade firm capital.' },
 ];
 
 export const PROVIDER_LIST = Object.values(PROVIDERS);
@@ -206,16 +177,12 @@ export const PROVIDER_LIST = Object.values(PROVIDERS);
 // bundled, nothing to maintain when brands refresh their marks).
 const LOGO_DOMAINS = {
   binance: 'binance.com', bybit: 'bybit.com', okx: 'okx.com', exness: 'exness.com', hfm: 'hfm.com',
-  easymarkets: 'easymarkets.com', oanda: 'oanda.com', forex_com: 'forex.com',
-  ig: 'ig.com', cmc: 'cmcmarkets.com', fxcm: 'fxcm.com',
+  easymarkets: 'easy-markets.com',
+  deriv: 'deriv.com', fxcm: 'fxcm.com',
   pepperstone: 'pepperstone.com', icmarkets: 'icmarkets.com', xm: 'xm.com',
   avatrade: 'avatrade.com', ibkr: 'interactivebrokers.com', alpaca: 'alpaca.markets',
   schwab: 'schwab.com', tradier: 'tradier.com', tastytrade: 'tastytrade.com',
   tradestation: 'tradestation.com', coinbase: 'coinbase.com',
-  ftmo: 'ftmo.com', topstep: 'topstep.com', the5ers: 'the5ers.com',
-  fundednext: 'fundednext.com', apex: 'apextraderfunding.com', e8: 'e8markets.com',
-  fundingpips: 'fundingpips.com', funderpro: 'funderpro.com',
-  alpha: 'alphacapitalgroup.uk',
 };
 for (const [id, def] of Object.entries(PROVIDERS)) {
   if (LOGO_DOMAINS[id]) def.logoDomain = LOGO_DOMAINS[id];

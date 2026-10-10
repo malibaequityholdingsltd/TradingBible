@@ -7,7 +7,7 @@ import {
   Crown, TrendingDown, Clock, Zap, Settings2, Lock, Bell, Cpu, HardDrive,
   Wifi, Package, Plus, Copy, RotateCcw, Plug, TestTube, AlertCircle, Check,
   Upload,   ChevronDown, MoreVertical, Power, Code, Layers, MonitorPlay, Target,
-  GraduationCap, LayoutDashboard, Type
+  GraduationCap, LayoutDashboard, Type, Trophy, Coins, Ban
 } from 'lucide-react';
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar,
@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import AdminLayout from '@/components/AdminLayout';
 import pb from '@/lib/pocketbaseClient';
+import { displayName, displayInitial } from '@/lib/displayName';
 import { notifyPlatformSettingsChanged } from '@/lib/platformSettings';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { LIVE_CHANNELS } from '@/lib/liveChannels';
@@ -70,7 +71,10 @@ function normalizeAdminUser(raw, source) {
     role,
     created,
     username: raw.username || (raw.email ? raw.email.split('@')[0] : 'user'),
-    name: raw.name || raw.username || (raw.email ? raw.email.split('@')[0] : 'User'),
+    name: raw.name || [raw.first_name ?? raw.firstName, raw.last_name ?? raw.lastName].filter(Boolean).join(' ') || raw.username || (raw.email ? raw.email.split('@')[0] : 'User'),
+    first_name: raw.first_name ?? raw.firstName ?? '',
+    last_name: raw.last_name ?? raw.lastName ?? '',
+    dob: raw.dob || null,
     plan: planKey(raw.plan),
     accountType: raw.accountType === 'company' || raw.account_type === 'company' ? 'teacher'
       : raw.accountType === 'individual' || raw.account_type === 'individual' ? 'trader'
@@ -213,7 +217,9 @@ function Pagination({ page, total, perPage, onChange }) {
 function EditUserModal({ user, userSource, onClose, onSaved }) {
   const { toast } = useToast();
   const [form, setForm] = useState({
-    username: user.username || '',
+    first_name: user.first_name || '',
+    last_name: user.last_name || '',
+    dob: (user.dob || '').slice(0, 10),
     name: user.name || '',
     plan: planKey(user.plan),
     role: user.role || 'user',
@@ -233,8 +239,10 @@ function EditUserModal({ user, userSource, onClose, onSaved }) {
         });
       } else {
         updated = await pb.collection('users').update(user.id, {
-          username: form.username,
-          name: form.name,
+          first_name: form.first_name,
+          last_name: form.last_name,
+          dob: form.dob || null,
+          name: `${String(form.first_name).trim()} ${String(form.last_name).trim()}`.trim() || form.name,
           plan: form.plan,
           role: form.role,
           phone: form.phone,
@@ -249,17 +257,18 @@ function EditUserModal({ user, userSource, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="glass w-full max-w-lg rounded-2xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto">
+      <div className="glass w-full max-w-lg rounded-2xl p-4 sm:p-5 max-h-[90vh] overflow-y-auto">
         <div className="mb-5 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-[#f0ecdd]">Edit User</h3>
           <button onClick={onClose} className="rounded-lg p-1.5 text-[#8a8577] hover:bg-white/8 hover:text-[#f0ecdd]"><X className="h-5 w-5" /></button>
         </div>
         <form onSubmit={save} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[['username', 'Username'], ['name', 'Display Name']].map(([k, l]) => (
+            {[['first_name', 'First name'], ['last_name', 'Last name'], ['dob', 'Date of birth'], ['name', 'Display Name']].map(([k, l]) => (
               <div key={k}>
                 <label className="mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">{l}</label>
-                <input value={form[k]} onChange={e => setForm({ ...form, [k]: e.target.value })}
+                <input value={form[k] ?? ''} onChange={e => setForm({ ...form, [k]: e.target.value })}
+                  type={k === 'dob' ? 'date' : 'text'}
                   disabled={userSource === 'profiles'}
                   className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50 disabled:opacity-50" />
               </div>
@@ -317,7 +326,9 @@ function EditUserModal({ user, userSource, onClose, onSaved }) {
 function UserDetailModal({ user, onClose }) {
   const fields = [
     ['Email', user.email],
-    ['Username', user.username || '—'],
+    ['First name', user.first_name || '—'],
+    ['Last name', user.last_name || '—'],
+    ['Date of birth', (user.dob || '').slice(0, 10) || '—'],
     ['Name', user.name || '—'],
     ['Phone', user.phone || '—'],
     ['Plan', planLabel(user.plan)],
@@ -333,14 +344,14 @@ function UserDetailModal({ user, onClose }) {
   ];
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="glass w-full max-w-lg rounded-2xl p-5 sm:p-6 max-h-[80vh] overflow-y-auto">
+      <div className="glass w-full max-w-lg rounded-2xl p-4 sm:p-5 max-h-[80vh] overflow-y-auto">
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-full bg-[#d4af37]/15 text-lg font-bold text-[#d4af37]">
-              {(user.username || user.email || 'U').charAt(0).toUpperCase()}
+              {displayInitial(user)}
             </div>
             <div>
-              <div className="font-semibold text-[#f0ecdd]">{user.username || user.email}</div>
+              <div className="font-semibold text-[#f0ecdd]">{displayName(user)}</div>
               <div className="text-xs text-[#8a8577]">User Profile</div>
             </div>
           </div>
@@ -549,10 +560,10 @@ export function AdminDashboard() {
                       <td className="py-2.5">
                         <div className="flex items-center gap-2">
                           <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#d4af37]/10 text-xs font-bold text-[#d4af37]">
-                            {(u.username || u.email || 'U').charAt(0).toUpperCase()}
+                            {displayInitial(u)}
                           </div>
                           <div className="min-w-0">
-                            <div className="text-[#e9e7df] truncate max-w-[100px] sm:max-w-none">{u.username || '—'}</div>
+                            <div className="text-[#e9e7df] truncate max-w-[100px] sm:max-w-none">{displayName(u)}</div>
                             <div className="text-xs text-[#8a8577] truncate max-w-[120px] sm:max-w-none">{u.email}</div>
                           </div>
                         </div>
@@ -592,7 +603,7 @@ export function AdminUsers() {
 
   const filtered = useMemo(() => {
     let out = users;
-    if (q) out = out.filter(u => (u.email + (u.username || '') + (u.name || '')).toLowerCase().includes(q.toLowerCase()));
+    if (q) out = out.filter(u => (u.email + (u.first_name || '') + (u.last_name || '') + (u.name || '') + (u.phone || '')).toLowerCase().includes(q.toLowerCase()));
     if (planFilter !== 'all') out = out.filter(u => displayPlan(u.plan) === planFilter);
     if (roleFilter !== 'all') out = out.filter(u => (u.role || 'user') === roleFilter);
     return out;
@@ -622,8 +633,22 @@ export function AdminUsers() {
     } catch (err) { toast({ variant: 'destructive', title: 'Failed', description: err?.message }); }
   };
 
-  const bulkDelete = async () => {
-    if (source === 'profiles') {
+    const setSuspended = async (u, suspended) => {
+    if (u.role === 'admin') return toast({ variant: 'destructive', title: 'Cannot suspend admin' });
+    if (suspended && !window.confirm(`Suspend ${u.email}? They stay logged in but lose everything except support contact.`)) return;
+    try {
+      const res = await fetch(`${API_SERVER_URL}/admin/users/${u.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pb.authStore.token}` },
+        body: JSON.stringify({ suspended, reason: suspended ? 'manual review' : undefined }),
+      });
+      if (!res.ok) throw new Error('request failed');
+      setUsers((prev) => prev.map((x) => (x.id === u.id ? { ...x, user_settings: { ...(x.user_settings || {}), suspended } } : x)));
+      toast({ title: suspended ? 'Account suspended' : 'Account restored', description: u.email });
+    } catch (err) { toast({ variant: 'destructive', title: 'Failed', description: err?.message }); }
+  };
+
+  const bulkDelete = async () => {    if (source === 'profiles') {
       toast({ variant: 'destructive', title: 'Bulk delete disabled', description: 'Delete profile-backed users in Supabase Auth > Users.' });
       return;
     }
@@ -673,8 +698,8 @@ export function AdminUsers() {
   };
 
   const exportCSV = () => {
-    const rows = [['id', 'email', 'username', 'name', 'plan', 'role', 'verified', 'created', 'subscriptionStatus']];
-    filtered.forEach(u => rows.push([u.id, u.email, u.username || '', u.name || '', displayPlan(u.plan), u.role || 'user', u.verified ? 'true' : 'false', (u.created || '').slice(0, 10), u.subscriptionStatus || '']));
+    const rows = [['id', 'email', 'first_name', 'last_name', 'name', 'dob', 'phone', 'plan', 'role', 'verified', 'created', 'subscriptionStatus']];
+    filtered.forEach(u => rows.push([u.id, u.email, u.first_name || '', u.last_name || '', u.name || '', (u.dob || '').slice(0, 10), u.phone || '', displayPlan(u.plan), u.role || 'user', u.verified ? 'true' : 'false', (u.created || '').slice(0, 10), u.subscriptionStatus || '']));
     const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
     const a = document.createElement('a'); a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`; a.download = `users_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
     toast({ title: 'Exported', description: `${filtered.length} users downloaded.` });
@@ -708,7 +733,7 @@ export function AdminUsers() {
         )}
         <div className="flex flex-1 min-w-[180px] items-center gap-2 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5">
           <Search className="h-4 w-4 shrink-0 text-[#8a8577]" />
-          <input value={q} onChange={e => { setQ(e.target.value); setPage(1); }} placeholder="Search by email, name, or username…"
+          <input value={q} onChange={e => { setQ(e.target.value); setPage(1); }} placeholder="Search by email, name, or phone…"
             className="w-full bg-transparent text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none" />
           {q && <button onClick={() => setQ('')}><X className="h-4 w-4 text-[#6a665a] hover:text-[#c9c4b4]" /></button>}
         </div>
@@ -761,21 +786,29 @@ export function AdminUsers() {
               </thead>
               <tbody>
                 {paged.map(u => (
-                  <tr key={u.id} className={`border-b border-white/5 transition hover:bg-white/[0.03] ${selected.has(u.id) ? 'bg-[#d4af37]/5' : ''}`}>
+                  <tr key={u.id} className={`border-b border-white/5 transition hover:bg-white/[0.03] ${selected.has(u.id) ? 'bg-[#d4af37]/5' : ''} ${u.role === 'admin' ? 'bg-[#d4af37]/[0.05]' : ''}`}>
                     <td className="px-4 py-3"><input type="checkbox" checked={selected.has(u.id)} onChange={() => toggleOne(u.id)} className="h-4 w-4 accent-[#d4af37]" /></td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#d4af37]/10 text-xs font-bold text-[#d4af37]">
-                          {(u.username || u.email || 'U').charAt(0).toUpperCase()}
+                      <div className="flex items-center gap-2.5">
+                        <div className={`relative grid h-9 w-9 shrink-0 place-items-center rounded-full text-xs font-bold ${u.role === 'admin' ? 'bg-[#d4af37]/20 text-[#d4af37] ring-1 ring-[#d4af37]/50' : 'bg-[#d4af37]/10 text-[#d4af37]'}`}>
+                          {displayInitial(u)}
+                          {u.role === 'admin' && <Crown className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full bg-[#0a0a0f] p-0.5 text-[#d4af37]" />}
                         </div>
                         <div className="min-w-0">
-                          <div className="text-[#f0ecdd] truncate max-w-[120px] sm:max-w-none">{u.username || <span className="text-[#6a665a]">—</span>}</div>
-                          <div className="text-xs text-[#8a8577] truncate max-w-[150px]">{u.email}</div>
+                          <div className="flex min-w-0 items-center gap-1.5">
+                            <span className="truncate font-medium text-[#f0ecdd]">{displayName(u)}</span>
+                            {u.role === 'admin' && <span className="shrink-0 rounded-full bg-[#d4af37]/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#d4af37]">Admin</span>}
+                          </div>
+                          <div className="truncate text-xs text-[#8a8577] max-w-[200px] sm:max-w-[260px]" title={u.email}>{u.email}</div>
+                          {u.phone && (
+                            <div className="truncate font-mono text-[11px] text-[#6a665a] max-w-[200px]">{u.phone}</div>
+                          )}
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">{planBadge(u.plan)}</td>
                     <td className="px-4 py-3 hidden sm:table-cell">
+                      {u.user_settings?.suspended && <Badge color="red"><Ban className="h-3 w-3" /> Suspended</Badge>}
                       {u.role === 'admin'
                         ? <Badge color="gold"><Shield className="h-3 w-3" /> Admin</Badge>
                         : <Badge color="muted">{(u.role || 'user').charAt(0).toUpperCase() + (u.role || 'user').slice(1)}</Badge>}
@@ -790,6 +823,9 @@ export function AdminUsers() {
                       <div className="flex items-center justify-end gap-1">
                         <button onClick={() => setViewing(u)} title="View" className="rounded-lg p-1.5 text-[#8a8577] hover:bg-white/8 hover:text-[#c9c4b4]"><Eye className="h-4 w-4" /></button>
                         <button onClick={() => setEditing(u)} title="Edit" className="rounded-lg p-1.5 text-[#8a8577] hover:bg-white/8 hover:text-[#d4af37]"><Edit2 className="h-4 w-4" /></button>
+                        {u.user_settings?.suspended
+                          ? <button onClick={() => setSuspended(u, false)} disabled={u.role === 'admin'} title="Restore account" className="rounded-lg p-1.5 text-emerald-400/80 hover:bg-emerald-500/10 hover:text-emerald-400 disabled:opacity-20"><Ban className="h-4 w-4" /></button>
+                          : <button onClick={() => setSuspended(u, true)} disabled={u.role === 'admin'} title="Suspend account" className="rounded-lg p-1.5 text-[#8a8577] hover:bg-red-500/10 hover:text-red-400 disabled:opacity-20"><Ban className="h-4 w-4" /></button>}
                         <button onClick={() => remove(u)} disabled={u.role === 'admin' || source === 'profiles'} title={source === 'profiles' ? 'Delete in Supabase Auth' : 'Delete'} className="rounded-lg p-1.5 text-red-400/60 hover:bg-red-500/10 hover:text-red-400 disabled:opacity-20"><Trash2 className="h-4 w-4" /></button>
                       </div>
                     </td>
@@ -1043,6 +1079,8 @@ export function AdminBilling() {
   const [payments, setPayments] = useState([]);
   const [payouts, setPayouts] = useState([]);
   const [payoutsLoaded, setPayoutsLoaded] = useState(false);
+  const [chAttempts, setChAttempts] = useState([]);
+  const [chLoaded, setChLoaded] = useState(false);
   const [busy, setBusy] = useState(null);
 
   useEffect(() => {
@@ -1065,6 +1103,15 @@ export function AdminBilling() {
         if (res.ok) setPayouts((await res.json()).withdrawals || []);
       } catch { /* payouts stay empty */ }
       finally { setPayoutsLoaded(true); }
+    })();
+    (async () => {
+      try {
+        const token = pb.authStore.token;
+        if (!token) return;
+        const res = await fetch(`${API_SERVER_URL}/challenges/admin/all`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) setChAttempts((await res.json()).attempts || []);
+      } catch { /* attempts stay empty */ }
+      finally { setChLoaded(true); }
     })();
   }, []);
 
@@ -1101,6 +1148,18 @@ export function AdminBilling() {
       setPayments(data.payments || []);
     } catch (err) {
       toast({ variant: 'destructive', title: 'Payments lookup failed', description: err.message });
+    } finally { setBusy(null); }
+  };
+
+  const payChallenge = async (a) => {
+    if (!window.confirm(`Pay pass reward for ${a.userEmail || a.owner} (${a.product_name}) via their connected bank?`)) return;
+    setBusy(`chalpay:${a.id}`);
+    try {
+      const r = await adminCall(`/challenges/admin/payout/${a.id}`, {});
+      toast({ title: `Paid $${r.payout} (${r.transferId})` });
+      setChAttempts((prev) => prev.map((x) => (x.id === a.id ? { ...x, status: 'paid' } : x)));
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Payout failed', description: err.message });
     } finally { setBusy(null); }
   };
 
@@ -1212,7 +1271,7 @@ export function AdminBilling() {
                 {paid.map(u => (
                   <tr key={u.id} className="border-b border-white/5 hover:bg-white/[0.03]">
                     <td className="px-5 py-3">
-                      <div className="text-[#f0ecdd] truncate max-w-[140px]">{u.username || u.name || '—'}</div>
+                      <div className="text-[#f0ecdd] truncate max-w-[140px]">{displayName(u)}</div>
                       <div className="text-xs text-[#8a8577] truncate max-w-[160px]">{u.email}</div>
                     </td>
                     <td className="px-5 py-3">{planBadge(u.plan)}</td>
@@ -1268,6 +1327,56 @@ export function AdminBilling() {
             </tbody>
           </table>
         </div>
+
+        <div className="glass mt-4 overflow-x-auto rounded-2xl">
+          <div className="border-b border-[#d4af37]/12 px-5 py-3.5">
+            <h3 className="font-semibold text-[#f0ecdd]">TradingBible Funded — Attempts</h3>
+            <p className="mt-0.5 text-xs text-[#8a8577]">Passed attempts pay the product pass reward to the trader's connected bank. One click.</p>
+          </div>
+          <table className="w-full min-w-[760px] text-sm">
+            <thead>
+                <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
+                  <th className="px-5 py-3 font-medium">User</th>
+                  <th className="px-5 py-3 font-medium">Program</th>
+                  <th className="px-5 py-3 font-medium">Fee</th>
+                  <th className="px-5 py-3 font-medium">Progress</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium text-right">Payout</th>
+                </tr>
+              </thead>
+            <tbody>
+              {chAttempts.map((a) => {
+                const s = a.stats || {};
+                const failRule = (s.checks || []).find((c) => !c.pass && (c.id === 'maxdd' || c.id === 'daily'));
+                return (
+                  <tr key={a.id} className="border-b border-white/5 hover:bg-white/[0.03]">
+                    <td className="px-5 py-3">
+                      <div className="truncate text-[#f0ecdd] max-w-[180px]">{a.userEmail || '—'}</div>
+                      <div className="font-mono text-[11px] text-[#6a665a]">{a.created_at ? String(a.created_at).slice(0, 10) : ''}</div>
+                    </td>
+                    <td className="px-5 py-3 text-[#c9c4b4]">{a.product_name}</td>
+                    <td className="px-5 py-3 font-mono text-xs text-[#8a8577]">${Number(a.fee_paid || 0).toLocaleString()}</td>
+                    <td className="px-5 py-3 font-mono text-xs text-[#8a8577]">
+                      {s.equity !== undefined ? `+${s.profitPct}% · DD ${s.maxDdPct}% · day ${s.worstDayPct}% · ${s.days}d · ${s.trades}t` : '—'}
+                      {failRule && <span className="block text-[11px] text-red-400">Breach: {failRule.label}</span>}
+                    </td>
+                    <td className="px-5 py-3"><Badge color={a.status === 'passed' || a.status === 'paid' ? 'green' : a.status === 'failed' ? 'red' : 'gold'}>{a.status}</Badge></td>
+                    <td className="px-5 py-3 text-right">
+                      {a.status === 'passed' && (
+                        <button onClick={() => payChallenge(a)} disabled={busy === `chalpay:${a.id}`} className="rounded-lg border border-[#d4af37]/30 px-3 py-1.5 text-xs font-bold text-[#d4af37] disabled:opacity-50">
+                          {busy === `chalpay:${a.id}` ? 'Paying…' : 'Pay reward'}
+                        </button>
+                      )}
+                      {a.status === 'paid' && <span className="text-xs text-emerald-400">Paid ✓</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+              {chLoaded && !chAttempts.length && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#8a8577]">No attempts yet.</td></tr>}
+              {!chLoaded && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#8a8577]">Loading…</td></tr>}
+            </tbody>
+          </table>
+        </div>
         {payUser && (
           <div className="glass mt-4 rounded-2xl p-4 sm:p-5">
             <div className="mb-3 flex items-center justify-between">
@@ -1295,6 +1404,9 @@ const CONTENT_TABS = [
   { id: 'signals', label: 'Trading Signals', icon: BarChart3 },
   { id: 'forum', label: 'Community Forum', icon: Users },
   { id: 'courses', label: 'Academy Courses', icon: LibraryBig },
+  { id: 'challenges', label: 'Challenges', icon: Trophy },
+  { id: 'brokerlinks', label: 'Broker Links', icon: Plug },
+  { id: 'tbc', label: 'TBC Economy', icon: Coins },
   { id: 'calendar', label: 'Economic Calendar', icon: FileText },
   { id: 'copy', label: 'Site Copy', icon: Type },
 ];
@@ -1802,6 +1914,59 @@ export function AdminContent() {
       {tab === 'signals' && <SignalsTab />}
       {tab === 'forum' && <ForumTab />}
       {tab === 'copy' && <SiteCopyTab />}
+      {tab === 'challenges' && (
+        <GenericContentTab prefix="challenge" title="TradingBible Funded — Evaluation Programs" subtitle="Programs sold on Challenges + Funded pages. Phase-1 rules drive evaluation; Phase-2 + funded terms are shown to traders."
+          fields={[
+            { key: 'name', label: 'Program name', required: true, default: '', full: false },
+            { key: 'description', label: 'Pitch', type: 'textarea', default: '', full: true },
+            { key: 'fee', label: 'Entry fee Standard (USD)', type: 'number', default: '499', full: false },
+            { key: 'feeSwing', label: 'Entry fee Swing (USD)', type: 'number', default: '519', full: false },
+            { key: 'accountSize', label: 'Account size (USD)', type: 'number', default: '100000', full: false },
+            { key: 'phase', label: 'Format (two-step / one-step / futures)', default: 'two-step', full: false },
+            { key: 'mode', label: 'Engine mode (two-step / one-step / futures)', default: 'two-step', full: false },
+            { key: 'targetPct', label: 'Phase 1 target %', type: 'number', default: '10', full: false },
+            { key: 'target2Pct', label: 'Phase 2 verification target %', type: 'number', default: '5', full: false },
+            { key: 'targetUsd', label: 'Target $ (futures, 0 = use %)', type: 'number', default: '0', full: false },
+            { key: 'maxDrawdownPct', label: 'Max loss %', type: 'number', default: '10', full: false },
+            { key: 'maxDdUsd', label: 'Max drawdown $ (futures, 0 = use %)', type: 'number', default: '0', full: false },
+            { key: 'maxLossMode', label: 'Max-loss mode (static / eod-trailing)', default: 'static', full: false },
+            { key: 'dailyLossPct', label: 'Max daily loss %', type: 'number', default: '5', full: false },
+            { key: 'dailyLossUsd', label: 'Daily loss $ (futures Pro, 0 = none/%)', type: 'number', default: '0', full: false },
+            { key: 'bestDayMaxPct', label: 'Best-day gate % (1-step, 0 = off)', type: 'number', default: '0', full: false },
+            { key: 'consistencyMaxPct', label: 'Consistency gate % (futures, 0 = off)', type: 'number', default: '0', full: false },
+            { key: 'consistencyBase', label: 'Consistency base (total / positive)', default: 'total', full: false },
+            { key: 'maxContracts', label: 'Max contracts (futures, 0 = n/a)', type: 'number', default: '0', full: false },
+            { key: 'accountTypeOptions', label: 'Account types (standard,swing)', default: 'standard,swing', full: false },
+            { key: 'leverageStandard', label: 'Leverage · Standard', default: '1:100', full: false },
+            { key: 'leverageSwing', label: 'Leverage · Swing', default: '1:30', full: false },
+            { key: 'minDays', label: 'Min trading days', type: 'number', default: '4', full: false },
+            { key: 'profitSplitPct', label: 'Profit split % (trader)', type: 'number', default: '80', full: false },
+            { key: 'maxSplitPct', label: 'Max split after scaling %', type: 'number', default: '90', full: false },
+            { key: 'payoutCycleDays', label: 'Payout cycle (days)', type: 'number', default: '14', full: false },
+            { key: 'leverage', label: 'Leverage', default: '1:100', full: false },
+            { key: 'platforms', label: 'Platforms', default: 'MT5 · cTrader · TradingBible Terminal', full: true },
+            { key: 'instruments', label: 'Instruments', default: 'Forex · Metals · Indices · Crypto · Stocks', full: true },
+            { key: 'scaling', label: 'Scaling plan', default: 'Qualify every 4 months: +25% capital, up to $400K', full: true },
+            { key: 'payout', label: 'Pass reward paid out (USD)', type: 'number', default: '500', full: false },
+          ]} />
+      )}
+      {tab === 'brokerlinks' && (
+        <GenericContentTab prefix="brokerlink" title="Broker Referral Links" subtitle="Revenue-share links shown as 'Open account' on the Brokers page. Provider ID must match the broker list id (e.g. binance, exness)."
+          fields={[
+            { key: 'provider', label: 'Provider ID', required: true, default: '', full: false },
+            { key: 'url', label: 'Referral URL', required: true, default: '', full: true },
+          ]} />
+      )}
+      {tab === 'tbc' && (
+        <GenericContentTab prefix="tbc" title="TBC Brand-Credit Economy" subtitle='One row titled exactly "config" drives the wallet rate and claims. Peg is fixed: 1 TBC = 1 KWD. Set USD-per-KWD (default 3.25); TBC-per-$1 derives automatically. TBC credits are off-chain utility credits — not tokens, not investments.'
+          fields={[
+            { key: 'title', label: 'Row title (must be "config")', required: true, default: 'config', full: false },
+            { key: 'usdPerKwd', label: 'USD per 1 KWD (= USD per 1 TBC)', type: 'number', default: '3.25', full: false },
+            { key: 'claimMin', label: 'Min on-chain claim (TBC)', type: 'number', default: '100', full: false },
+            { key: 'claimEnabled', label: 'Claims open? (true/false)', default: 'false', full: false },
+            { key: 'note', label: 'Policy note shown in wallet', type: 'textarea', default: '', full: true },
+          ]} />
+      )}
       {tab === 'courses' && (
         <GenericContentTab prefix="course" title="Academy Courses" subtitle="Course catalog shown in the Academy. Publish lessons, quizzes and certificates per course."
           fields={[
@@ -3300,7 +3465,7 @@ function DigestPanel() {
   };
 
   return (
-    <div className="glass mt-5 max-w-xl rounded-2xl p-5 sm:p-6">
+    <div className="glass mt-5 max-w-xl rounded-2xl p-4 sm:p-5">
       <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><Mail className="h-4 w-4 text-[#d4af37]" /> Sunday Email Digest</h3>
       <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">
         Summarizes the coming week's economic calendar and emails every user on Sundays at the configured hour (UTC).
@@ -3439,7 +3604,7 @@ export function AdminSettings() {
       </div>
 
       {tab === 'general' && (
-        <form onSubmit={save} className="glass max-w-xl rounded-2xl p-5 sm:p-6 space-y-5">
+        <form onSubmit={save} className="glass max-w-xl rounded-2xl p-4 sm:p-5 space-y-5">
           <h3 className="font-semibold text-[#f0ecdd]">General Configuration</h3>
           <div className="text-xs text-[#8a8577]">
             {saveState === 'saving' && 'Saving automatically...'}
@@ -3469,7 +3634,7 @@ export function AdminSettings() {
       )}
 
       {tab === 'features' && (
-        <div className="glass max-w-xl rounded-2xl p-5 sm:p-6 space-y-3">
+        <div className="glass max-w-xl rounded-2xl p-4 sm:p-5 space-y-3">
           <h3 className="font-semibold text-[#f0ecdd] mb-4">Feature Toggles</h3>
           {Object.entries(features).map(([k, v]) => {
             const labels = { aiCoach: 'SI Coach', academy: 'Academy', community: 'Community', economicCalendar: 'Economic Calendar', riskTools: 'Risk Tools', chartBuilder: 'Chart Builder', signals: 'Trading Signals', wallet: 'Wallet & Banking' };
@@ -3491,7 +3656,7 @@ export function AdminSettings() {
       )}
 
       {tab === 'features' && (
-        <div className="glass mt-4 max-w-xl rounded-2xl p-5 sm:p-6 space-y-3">
+        <div className="glass mt-4 max-w-xl rounded-2xl p-4 sm:p-5 space-y-3">
           <h3 className="font-semibold text-[#f0ecdd] mb-1">Plan Gates</h3>
           <p className="text-xs text-[#8a8577] -mt-2">Minimum plan required per premium page. Takes effect on next page view — no deploy needed.</p>
           {[
@@ -3518,7 +3683,7 @@ export function AdminSettings() {
       )}
 
       {tab === 'security' && (
-        <div className="glass max-w-xl rounded-2xl p-5 sm:p-6 space-y-4">
+        <div className="glass max-w-xl rounded-2xl p-4 sm:p-5 space-y-4">
           <h3 className="font-semibold text-[#f0ecdd]">Security Settings</h3>
           {[['twoFARequired', 'Require 2FA for all users', 'Forces two-factor authentication on every account'],
             ['emailVerification', 'Enforce email verification', 'Users cannot trade until email is verified']].map(([k, l, d]) => (

@@ -3,14 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const USE_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
-const ADMIN_EMAIL = 'malibaequityholdingsltd@outlook.com';
+const ADMIN_EMAILS = ['malibaequityholdingsltd@outlook.com', 'tradingbible@hotmail.com'];
 
 function normalizeEmail(value) {
   return String(value || '').trim().toLowerCase();
 }
 
 function isAdminEmail(value) {
-  return normalizeEmail(value) === ADMIN_EMAIL;
+  return ADMIN_EMAILS.includes(normalizeEmail(value));
 }
 
 function parseFilterValue(raw) {
@@ -155,11 +155,23 @@ function createSupabaseCompatClient() {
     if (!user) return null;
     const normalized = normalizeProfile(profile, profile?.profileSource || 'users');
     const admin = isAdminEmail(user.email);
+    // OAuth providers ship full_name instead of first/last — split it as a
+    // last-resort fallback so social signups still get a real name.
+    const metaName = String(user.user_metadata?.full_name || user.user_metadata?.name || '').trim();
+    const [metaFirst, ...metaRest] = metaName.split(/\s+/).filter(Boolean);
+    const settings = (normalized?.user_settings && typeof normalized.user_settings === 'object')
+      ? normalized.user_settings
+      : null;
     return {
       id: user.id,
       email: user.email,
       verified: !!user.email_confirmed_at,
       username: normalized?.username || user.user_metadata?.username || (user.email || '').split('@')[0],
+      first_name: normalized?.first_name || user.user_metadata?.first_name || metaFirst || null,
+      last_name: normalized?.last_name || user.user_metadata?.last_name || metaRest.join(' ') || null,
+      phone: normalized?.phone || settings?.phone || null,
+      dob: normalized?.dob || settings?.dob || null,
+      address: normalized?.address || settings?.address || null,
       plan: normalized?.plan || user.user_metadata?.plan || null,
       accountType: normalized?.accountType || user.user_metadata?.accountType || 'trader',
       companyName: normalized?.companyName || user.user_metadata?.companyName || null,
@@ -202,7 +214,13 @@ function createSupabaseCompatClient() {
       }
 
       if (!profile) {
-        const fallbackUsername = session.user.user_metadata?.username || (session.user.email || '').split('@')[0] || 'user';
+        const md = session.user.user_metadata || {};
+        const fallbackFirst = md.first_name || null;
+        const fallbackLast = md.last_name || null;
+        const fallbackUsername = md.username
+          || [fallbackFirst, fallbackLast].filter(Boolean).join('').toLowerCase().replace(/[^a-z0-9]/g, '')
+          || (session.user.email || '').split('@')[0] || 'user';
+        const fallbackName = [fallbackFirst, fallbackLast].filter(Boolean).join(' ') || fallbackUsername;
         const fallbackRole = session.user.user_metadata?.role || (isAdminEmail(session.user.email) ? 'admin' : 'user');
         const fallbackAccountType = session.user.user_metadata?.accountType === 'company'
           ? 'teacher'
@@ -212,12 +230,18 @@ function createSupabaseCompatClient() {
         const fallbackCompanyName = session.user.user_metadata?.companyName || null;
 
         try {
+          // Only carry identity fields present in auth metadata — never
+          // overwrite profile values with nulls on repeat logins.
+          const identityPatch = { username: fallbackUsername, name: fallbackName };
+          if (fallbackFirst) identityPatch.first_name = fallbackFirst;
+          if (fallbackLast) identityPatch.last_name = fallbackLast;
+          if (md.dob) identityPatch.dob = md.dob;
+          if (md.phone) identityPatch.phone = md.phone;
           const { data: createdProfile, error: profileError } = await Promise.race([
             supabase.from('users').upsert({
               id: session.user.id,
               email: session.user.email,
-              username: fallbackUsername,
-              name: fallbackUsername,
+              ...identityPatch,
               role: fallbackRole,
               accountType: fallbackAccountType,
               companyName: fallbackCompanyName,
@@ -348,12 +372,69 @@ function createSupabaseCompatClient() {
         }
 
         if (table === 'users') {
-          const { data: updated, error } = await supabase.from('users').update(patch).eq('id', id).select().single();
-          if (!error) return updated;
+          // The users table has no first_name / last_name / phone / dob
+          // columns — names live in auth metadata, phone/dob inside
+          // user_settings. Split the patch so profile saves actually persist
+          // instead of failing on unknown columns.
+          const isForm = patch != null && typeof patch === 'object' && typeof patch.get === 'function';
+          const tablePatch = isForm ? patch : { ...patch };
+          let identity = null;
+          let settings = null;
+          let contact = null;
+          let metaError = null;
+          // Auth metadata belongs to the signed-in user only — never write
+          // another user's names into our own session (admin editing others).
+          const isSelf = String(id) === String(authStore.record?.id);
+          if (!isForm) {
+            identity = {};
+            for (const k of ['first_name', 'last_name']) {
+              // Compulsory names: blank values never erase stored identity.
+              if (tablePatch[k] !== undefined && String(tablePatch[k]).trim() !== '') { identity[k] = String(tablePatch[k]).trim(); }
+              delete tablePatch[k];
+            }
+            if (!Object.keys(identity).length) identity = null;
+            contact = {};
+            for (const k of ['phone', 'dob', 'address']) {
+              if (tablePatch[k] !== undefined) { contact[k] = tablePatch[k]; delete tablePatch[k]; }
+            }
+            if (!Object.keys(contact).length) contact = null;
+            if (contact) {
+              const base = (authStore.record?.user_settings && typeof authStore.record.user_settings === 'object')
+                ? authStore.record.user_settings
+                : {};
+              settings = { ...base, ...contact };
+              tablePatch.user_settings = settings;
+            }
+            if (identity && isSelf) {
+              try {
+                const { error: mErr } = await supabase.auth.updateUser({ data: identity });
+                if (mErr) throw mErr;
+              } catch (e) { metaError = e; }
+            }
+            if (!Object.keys(tablePatch).length) {
+              if (metaError) throw metaError;
+              const merged = { ...(authStore.record || {}), ...(identity || {}), ...(contact || {}), ...(settings ? { user_settings: settings } : {}) };
+              authStore.record = merged;
+              notifyAuth();
+              return merged;
+            }
+          }
+          const { data: updated, error } = await supabase.from('users').update(tablePatch).eq('id', id).select().single();
+          if (!error) {
+            const merged = { ...updated, ...(identity || {}), ...(contact || {}), ...(settings ? { user_settings: settings } : {}) };
+            authStore.record = merged;
+            notifyAuth();
+            return merged;
+          }
 
-          const upsertPayload = { ...patch, id };
+          const upsertPayload = { ...(typeof tablePatch === 'object' && !(typeof tablePatch.get === 'function') ? tablePatch : {}), id };
           const { data: upserted, error: upsertError } = await supabase.from('users').upsert(upsertPayload).select().single();
-          if (!upsertError && upserted) return upserted;
+          if (!upsertError && upserted) {
+            const merged = { ...upserted, ...(identity || {}), ...(contact || {}), ...(settings ? { user_settings: settings } : {}) };
+            authStore.record = merged;
+            notifyAuth();
+            return merged;
+          }
 
           if (isMissingRelationError(error) || isMissingRelationError(upsertError)) {
             const profilePatch = {};
@@ -408,7 +489,11 @@ function createSupabaseCompatClient() {
 
         const rawType = options.accountType === 'company' ? 'teacher' : options.accountType === 'individual' ? 'trader' : options.accountType || 'trader';
         const metadata = {
-          username: options.username || email.split('@')[0],
+          username: options.username || [options.first_name, options.last_name].filter(Boolean).join('').toLowerCase().replace(/[^a-z0-9]/g, '') || email.split('@')[0],
+          first_name: options.first_name || null,
+          last_name: options.last_name || null,
+          dob: options.dob || null,
+          phone: options.phone || null,
           role: isAdminEmail(email) ? 'admin' : (options.role || 'user'),
           accountType: rawType,
           teacherSubject: rawType === 'teacher' ? String(options.teacherSubject || '').slice(0, 120) : null,

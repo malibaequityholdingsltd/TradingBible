@@ -6,6 +6,7 @@ import {
 import AppLayout from '@/components/AppLayout';
 import { MARKETS, fmtMoney } from '@/lib/mockData';
 import { useTrades, computeStats } from '@/hooks/useTrades';
+import pb from '@/lib/pocketbaseClient';
 import { syncAllBrokers } from '@/lib/brokerSync';
 import { useAuth } from '@/hooks/useAuth';
 import { usePlatformSettings } from '@/lib/platformSettings';
@@ -137,6 +138,22 @@ export default function JournalPage() {
     const a = document.createElement('a'); a.href = url; a.download = 'tradingbible-journal.csv'; a.click(); URL.revokeObjectURL(url);
   };
 
+  const [taxBusy, setTaxBusy] = useState(false);
+  const exportTax = async () => {
+    setTaxBusy(true);
+    try {
+      const res = await fetch(`/hcgi/api/tax/csv?year=${new Date().getFullYear()}`, {
+        headers: { Authorization: `Bearer ${pb.authStore.token}` },
+      });
+      if (!res.ok) throw new Error('tax export failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = `tradingbible-tax-${new Date().getFullYear()}.csv`; a.click(); URL.revokeObjectURL(url);
+    } catch {
+      toast({ variant: 'destructive', title: 'Tax export failed' });
+    } finally { setTaxBusy(false); }
+  };
+
   const syncBrokers = async () => {
     if (!user?.id) return;
     setSyncing(true);
@@ -172,6 +189,7 @@ export default function JournalPage() {
             {['All', 'Long', 'Short', 'Buy', 'Sell'].map((d) => <option key={d} className="bg-[#0f0f14]">{d}</option>)}
           </select>
           <GhostButton onClick={exportCsv} className="!min-h-[42px] !px-3 !py-2"><Download className="h-4 w-4" /> <span className="hidden sm:inline">{t('jou.export')}</span></GhostButton>
+          <GhostButton onClick={exportTax} disabled={taxBusy} className="!min-h-[42px] !px-3 !py-2"><Download className="h-4 w-4" /> <span className="hidden sm:inline">{taxBusy ? '…' : 'Tax CSV'}</span></GhostButton>
           <GoldButton onClick={syncBrokers} disabled={syncing} className="!min-h-[42px] !px-4 !py-2 disabled:opacity-60">
             <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? t('jrn.syncing') : t('jrn.syncBrokers')}
           </GoldButton>

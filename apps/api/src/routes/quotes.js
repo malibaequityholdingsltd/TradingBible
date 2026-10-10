@@ -1,6 +1,7 @@
-// Quotes for arbitrary symbols. Crypto pulls live Binance 24h stats; every
-// other symbol is generated deterministically from a base price so quotes stay
-// coherent across refreshes while the last value drifts "live".
+// Quotes for arbitrary symbols. Crypto pulls live Binance 24h stats, US
+// stocks use Finnhub when keyed, everything else tradeable pulls live Yahoo
+// Finance quotes (no key). Synthetic random-walk quotes are the last resort
+// only — every quote carries its `source` so the UI can badge LIVE vs SIM.
 
 const CRYPTO_MAP = {
 	BTCUSD: 'BTCUSDT', ETHUSD: 'ETHUSDT', SOLUSD: 'SOLUSDT', BNBUSD: 'BNBUSDT',
@@ -90,6 +91,7 @@ function synthQuote(symbol) {
 }
 
 import { avQuote, isRateLimited } from '../utils/alphaVantage.js';
+import { yahooQuote } from '../utils/yahoo.js';
 
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 
@@ -144,20 +146,46 @@ export default async (req, res) => {
 		.map((s) => rev.get(s) ?? s);
 	if (!symbols.length) return res.json({ quotes: [] });
 
-	// Live crypto batch
-	const cryptoSymbols = symbols.filter((s) => CRYPTO_MAP[s]);
+	// Single primary feed: Yahoo Finance first for every symbol (crypto via
+	// XXX-USD spot, forex via =X, metals/energy/index futures, US stocks).
+	// Keyed Finnhub stays ahead of it for stocks when configured; Binance is
+	// the automatic fallback for crypto only. Anything unresolved ends up
+	// synthetic — always labelled with its `source`.
 	const liveMap = {};
+	const stockSymbols = symbols.filter((s) => !CRYPTO_MAP[s] && FINNHUB_STOCKS.has(s));
+	if (stockSymbols.length) {
+		const results = await Promise.all(stockSymbols.map((s) => finnhubQuote(s)));
+		stockSymbols.forEach((s, i) => {
+			if (results[i]) liveMap[s] = results[i];
+		});
+	}
+
+	// Yahoo Finance (free, no key) for anything not already resolved live.
+	const yahooPending = symbols.filter((s) => !liveMap[s]);
+	if (yahooPending.length) {
+		const yResults = await Promise.all(yahooPending.map((s) => yahooQuote(s).catch(() => null)));
+		yahooPending.forEach((s, i) => {
+			if (yResults[i]) liveMap[s] = yResults[i];
+		});
+	}
+
+	// Live crypto fallback (Binance hosts rotate — api.binance.com is
+	// geo-blocked in some regions, vision/us work there instead).
+	const cryptoSymbols = symbols.filter((s) => CRYPTO_MAP[s] && !liveMap[s]);
 	if (cryptoSymbols.length) {
-		try {
-			const binList = cryptoSymbols.map((s) => CRYPTO_MAP[s]);
-			const q = encodeURIComponent(JSON.stringify(binList));
-			const upstream = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${q}`);
-			if (upstream.ok) {
+		const binList = cryptoSymbols.map((s) => CRYPTO_MAP[s]);
+		const q = encodeURIComponent(JSON.stringify(binList));
+		const hosts = ['https://data-api.binance.vision', 'https://api.binance.com', 'https://api.binance.us'];
+		const want = new Set(cryptoSymbols);
+		for (const host of hosts) {
+			try {
+				const upstream = await fetch(`${host}/api/v3/ticker/24hr?symbols=${q}`);
+				if (!upstream.ok) continue;
 				const data = await upstream.json();
 				const rev = Object.fromEntries(Object.entries(CRYPTO_MAP).map(([k, v]) => [v, k]));
 				for (const t of data) {
 					const sym = rev[t.symbol];
-					if (sym) {
+					if (sym && want.has(sym)) {
 						liveMap[sym] = {
 							symbol: sym,
 							price: Number(t.lastPrice),
@@ -168,27 +196,20 @@ export default async (req, res) => {
 							volume: Number(t.quoteVolume),
 							source: 'binance',
 						};
+						want.delete(sym);
 					}
 				}
+				if (!want.size) break;
+			} catch {
+				// try next host, else fall through to synthetic for crypto too
 			}
-		} catch {
-			// fall through to synthetic for crypto too
 		}
 	}
 
-	// Live stock batch via Finnhub (parallel, one call per symbol)
-	const stockSymbols = symbols.filter((s) => !CRYPTO_MAP[s] && FINNHUB_STOCKS.has(s));
-	if (stockSymbols.length) {
-		const results = await Promise.all(stockSymbols.map((s) => finnhubQuote(s)));
-		stockSymbols.forEach((s, i) => {
-			if (results[i]) liveMap[s] = results[i];
-		});
-	}
-
-	// Alpha Vantage as the primary source (cached 60s). Only queried for
+	// Alpha Vantage as a backup source (cached 60s). Only queried for
 	// symbols not already resolved above and while not rate limited, since the
-	// free key is capped at 25 requests/day. Anything it can't serve falls
-	// back to Binance/Finnhub live data or a synthetic quote.
+	// free key is capped at 25 requests/day. Anything still unresolved ends
+	// up synthetic — always labelled with its `source`.
 	if (!isRateLimited()) {
 		const pending = symbols.filter((s) => !liveMap[s]);
 		const avResults = await Promise.all(pending.map((s) => avQuote(s).catch(() => null)));

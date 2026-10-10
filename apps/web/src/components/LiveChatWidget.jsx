@@ -116,7 +116,7 @@ export default function LiveChatWidget() {
       {open && (
         <div
           className="tv-chat-panel tv-pop fixed z-[70] flex h-[34rem] max-h-[calc(100dvh-2rem)] w-[min(25rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl"
-          style={{ bottom: '0.75rem', right: '0.75rem' }}
+          style={{ bottom: (typeof window !== 'undefined' && window.innerWidth < 640) ? '7.5rem' : '0.75rem', right: '0.75rem' }}
         >
           {/* Gold top-edge accent + ambient glow + terminal scanlines */}
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
@@ -294,7 +294,7 @@ export default function LiveChatWidget() {
           onClick={() => setOpen(true)}
           aria-label={t('aiw.openLabel')}
           title={t('aiw.openTitle')}
-          className="tv-chat-btn fixed bottom-3 right-3 z-[70] grid place-items-center overflow-hidden rounded-full border border-[#d4af37]/30 bg-[#0c0c11] shadow-[0_8px_28px_rgba(0,0,0,0.5),0_0_0_1px_rgba(212,175,55,0.4)] transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]"
+          className="tv-chat-btn fixed bottom-[7rem] right-3 z-[70] grid place-items-center overflow-hidden rounded-full border border-[#d4af37]/30 bg-[#0c0c11] shadow-[0_8px_28px_rgba(0,0,0,0.5),0_0_0_1px_rgba(212,175,55,0.4)] transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)] sm:bottom-3"
           style={{ height: BTN, width: BTN }}
         >
           <span className="relative grid h-10 w-10 place-items-center">

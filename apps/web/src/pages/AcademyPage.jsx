@@ -225,12 +225,22 @@ function Paywall({ onPurchased }) {
 	const [configured, setConfigured] = useState(true);
 	const [checked, setChecked] = useState(false);
 	const { ledger, payWithWallet } = useWallet();
-	const walletBalance = ledger?.balances?.USD || 0;
+	const tbcBalance = ledger?.balances?.TBC || 0;
+	// 1 TBC = 1 KWD, NOT 1 USD — $150 list converts at KWD peg (default 150/3.25 ≈ 46.15 TBC)
+	const [tbcPerUsd, setTbcPerUsd] = useState(1 / 3.25);
+	const tbcPrice = Math.round(150 * tbcPerUsd * 100) / 100;
 
 	useEffect(() => {
 		getStripeConfig().then((cfg) => {
 			setConfigured(Boolean(cfg?.prices?.academy));
 		}).catch(() => {}).finally(() => setChecked(true));
+	}, []);
+	useEffect(() => {
+		fetch(`${API_SERVER_URL}/tbc/econ`).then((r) => r.json()).then((e) => {
+			const rt = Number(e?.tbcPerUsd);
+			if (rt > 0.15 && rt < 0.6) setTbcPerUsd(rt); // 1 TBC = 1 KWD — reject 1:1
+			else if (Number(e?.usdPerKwd) >= 2 && Number(e?.usdPerKwd) <= 5) setTbcPerUsd(1 / Number(e.usdPerKwd));
+		}).catch(() => {});
 	}, []);
 
 	const buy = async () => {
@@ -278,8 +288,8 @@ function Paywall({ onPurchased }) {
 				</div>
 
 				<div className="mt-6 flex items-end gap-1.5">
-					<span className="tb-gold-text text-5xl font-bold">$150</span>
-					<span className="mb-1.5 text-sm text-[#8a8577]">{t('aca.priceNote')}</span>
+					<span className="tb-gold-text text-5xl font-bold">₮{tbcPrice.toLocaleString()}</span>
+					<span className="mb-1.5 text-sm text-[#8a8577]">$150 list · {t('aca.priceNote')}</span>
 				</div>
 
 				<div className="mt-6 flex flex-col items-center gap-3">
@@ -290,10 +300,10 @@ function Paywall({ onPurchased }) {
 					>
 						{busy ? <><Loader2 className="h-5 w-5 animate-spin" /> {t('aca.opening')}</> : <><CircleDollarSign className="h-5 w-5" /> {t('aca.cta')}</>}
 					</GoldButton>
-					<GhostButton onClick={buyWithWallet} disabled={busy || walletBalance < 150} className="disabled:opacity-40">
-						<Wallet className="h-4 w-4" /> {t('aca.walletPay')} ({walletBalance >= 150 ? t('aca.available') : t('aca.needMore', { amt: `$${(150 - walletBalance).toFixed(2)}` })})
+					<GhostButton onClick={buyWithWallet} disabled={busy || tbcBalance < tbcPrice} className="disabled:opacity-40">
+						<Wallet className="h-4 w-4" /> {t('aca.walletPay')} — pay {tbcPrice.toLocaleString()} TBC in TBC ({tbcBalance >= tbcPrice ? t('aca.available') : t('aca.needMore', { amt: `${(tbcPrice - tbcBalance).toFixed(2)} TBC` })})
 					</GhostButton>
-					<div className="text-xs text-[#8a8577]">${walletBalance.toFixed(2)} · <a href="/app/wallet" className="text-[#d4af37] hover:underline">{t('bill.fundWallet')}</a></div>
+					<div className="text-xs text-[#8a8577]">{tbcBalance.toLocaleString()} TBC in till · <a href="/app/wallet" className="text-[#d4af37] hover:underline">{t('bill.fundWallet')} — convert, swap, buy or receive TBC</a></div>
 				</div>
 			<p className="mt-3 text-xs text-[#6a665a]">{t('aca.guarantee')}</p>
 			</div>
@@ -403,12 +413,12 @@ function LessonView({ pathKey, curriculum, course, lesson, progress, onBack, onL
 				)}
 			</PageHero>
 
-			<Card className="mx-auto w-full max-w-4xl p-5 sm:p-6">
+			<Card className="mx-auto w-full max-w-4xl p-4 sm:p-5">
 				<Markdown text={content.content} />
 			</Card>
 
 			{content.quiz?.length > 0 && (
-				<Card className="mx-auto w-full max-w-4xl p-5 sm:p-6">
+				<Card className="mx-auto w-full max-w-4xl p-4 sm:p-5">
 					<h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><Award className="h-5 w-5 text-[#d4af37]" /> {t('aca.quizTitle')}</h3>
 					{grade ? (
 						<div className="mt-4">
@@ -515,7 +525,7 @@ function CurriculumView({ pathKey, curriculum, progressMap, onOpenLesson, onLeav
 			</PageHero>
 
 			{certificate?.certificateCode && (
-				<Card className="border-[#d4af37]/25 p-5 sm:p-6">
+				<Card className="border-[#d4af37]/25 p-4 sm:p-5">
 					<div className="flex flex-wrap items-center gap-3">
 						<Trophy className="h-8 w-8 text-[#d4af37]" />
 						<div className="min-w-0 flex-1">

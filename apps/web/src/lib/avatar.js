@@ -14,5 +14,7 @@ export function avatarUrl(record, thumb = '100x100') {
 
 // Uppercase first letter fallback for avatar placeholders.
 export function initialOf(record) {
-  return (record?.username || record?.name || record?.email || 'A').charAt(0).toUpperCase();
+  const first = record?.first_name ?? record?.firstName ?? '';
+  if (String(first).trim()) return String(first).trim().charAt(0).toUpperCase();
+  return (record?.name || record?.email || 'A').charAt(0).toUpperCase();
 }

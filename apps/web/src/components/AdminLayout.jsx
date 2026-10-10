@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Settings, FileText, CreditCard, LibraryBig, BarChart3,
-  LogOut, Menu, Shield, X, Plug, Key, Package, User, ChevronDown, MonitorPlay, Briefcase
+  LogOut, Menu, Shield, X, Plug, Key, Package, User, ChevronDown, MonitorPlay, Briefcase, Gift
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import AdminSearch from '@/components/AdminSearch';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { displayName, displayInitial } from '@/lib/displayName';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { enterAdminPreview } from '@/lib/adminPreview';
 import {
@@ -25,6 +26,7 @@ const NAV = [
   { to: '/admin/users', label: 'User Management', icon: Users },
   { to: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/admin/billing', label: 'Billing & Revenue', icon: CreditCard },
+  { to: '/admin/airdrops', label: 'Airdrops', icon: Gift },
   { to: '/admin/content', label: 'Content', icon: LibraryBig },
   { to: '/admin/reports', label: 'Reports & Logs', icon: FileText },
   { to: '/admin/tv', label: 'TradingBible TV', icon: MonitorPlay },
@@ -57,7 +59,7 @@ export default function AdminLayout({ children, title }) {
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
   const { user, logout } = useAuth();
-  const initial = (user?.username || user?.email || 'A').charAt(0).toUpperCase();
+  const initial = displayInitial(user);
   const homeTo = homeRouteForUser(user);
   const signOut = () => { logout(); nav('/'); };
 
@@ -168,7 +170,7 @@ export default function AdminLayout({ children, title }) {
                     {initial}
                   </span>
                   <span className="hidden text-left lg:block">
-                    <span className="block max-w-[120px] truncate text-xs font-medium text-[#e9e7df]">{user?.username || 'Admin'}</span>
+                    <span className="block max-w-[120px] truncate text-xs font-medium text-[#e9e7df]">{displayName(user)}</span>
                     <span className="block text-[10px] text-[#6a665a]">Administrator</span>
                   </span>
                   <Shield className="hidden h-3.5 w-3.5 shrink-0 text-[#d4af37]/60 lg:block" />

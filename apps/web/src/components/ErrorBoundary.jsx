@@ -29,7 +29,9 @@ export default class ErrorBoundary extends React.Component {
   render() {
     const { error } = this.state;
     if (!error) return this.props.children;
-    const fallback = this.props.fallback || (
+    // NOTE: ?? (not ||) so an explicit fallback={null} renders nothing —
+    // widget crashes stay contained instead of blanking the page.
+    const fallback = this.props.fallback ?? (
       <div className="grid min-h-[60vh] place-items-center px-6">
         <div className="glass w-full max-w-md rounded-2xl p-8 text-center">
           <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]"><AlertTriangle className="h-6 w-6" /></div>

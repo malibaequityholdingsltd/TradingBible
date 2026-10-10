@@ -5,6 +5,7 @@ import AppLayout from '@/components/AppLayout';
 import { PageHero, GoldButton, GhostButton } from '@/components/ui-kit';
 import { PLANS, fmtMoney, translatePlan, BROKER_REGISTRY, PROP_FIRM_REGISTRY, CONNECTION_TYPES, getProviderById } from '@/lib/mockData';
 import pb from '@/lib/pocketbaseClient';
+import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { connectBroker, disconnectBroker, resyncBrokerAccount, syncAllBrokers } from '@/lib/brokerSync';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
@@ -50,6 +51,7 @@ function timeAgo(iso, t) {
     const [apiSecret, setApiSecret] = useState('');
     const [passphrase, setPassphrase] = useState('');
     const [label, setLabel] = useState('');
+    const [refLinks, setRefLinks] = useState({});
 
     const load = async () => {
       if (!user?.id) { setConnected([]); setLoading(false); return; }
@@ -64,6 +66,7 @@ function timeAgo(iso, t) {
     useEffect(() => { load(); }, [user?.id]);
     useEffect(() => {
       setProviders([...BROKER_REGISTRY, ...PROP_FIRM_REGISTRY]);
+      fetch(`${API_SERVER_URL}/brokers/links`).then((r) => r.json()).then((d) => setRefLinks(d.links || {})).catch(() => {});
     }, []);
 
     const filtered = useMemo(() => {
@@ -195,10 +198,21 @@ const forex = filtered.filter((p) => p.kind?.toLowerCase().includes('forex') || 
                 </div>
                 {pending && <div className="text-[11px] text-[#d4af37]">Pending — coming soon.</div>}
               </div>
+            ) : p.connectionType === 'native' ? (
+              <Link to="/app/challenges" className="mt-3 block rounded-lg border border-[#d4af37]/30 bg-[#d4af37]/[0.06] py-2.5 text-center text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/[0.12]">
+                View program
+              </Link>
             ) : (
-              <GoldButton onClick={() => openConnect(p)} className="mt-3 w-full !rounded-lg !py-2.5 !text-sm !font-medium">
-                <Plug className="h-4 w-4" /> Connect
-              </GoldButton>
+              <>
+                <GoldButton onClick={() => openConnect(p)} className="mt-3 w-full !rounded-lg !py-2.5 !text-sm !font-medium">
+                  <Plug className="h-4 w-4" /> Connect
+                </GoldButton>
+                {refLinks[p.id] && (
+                  <a href={refLinks[p.id]} target="_blank" rel="noopener noreferrer sponsored" className="mt-2 block text-center text-xs font-semibold text-[#d4af37] hover:underline">
+                    Open account ↗
+                  </a>
+                )}
+              </>
             )}
           </div>
         );
@@ -213,7 +227,7 @@ const forex = filtered.filter((p) => p.kind?.toLowerCase().includes('forex') || 
         <div className="tb-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8a8577]" />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search broker — Exness, HFM, IBKR, Alpaca, OANDA…" className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-2.5 pl-9 pr-3 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/60" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search broker — Exness, HFM, IBKR, Alpaca, Deriv…" className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-2.5 pl-9 pr-3 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/60" />
           </div>
           <div className="flex items-center gap-2 text-xs text-[#8a8577]">
             <GhostButton onClick={syncAll} disabled={busy === 'sync:all' || !connected.length} className="!min-h-[36px] !px-3 !py-1.5 !text-xs">
@@ -253,7 +267,7 @@ const forex = filtered.filter((p) => p.kind?.toLowerCase().includes('forex') || 
       </div>
       {selected && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4" onClick={() => setSelected(null)}>
-          <div className="tb-card w-full max-w-md space-y-4 p-5" onClick={(e) => e.stopPropagation()}>
+          <div className="tb-card max-h-[90dvh] w-full max-w-md space-y-4 overflow-y-auto p-5" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between gap-2">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-[#f0ecdd]"><Plug className="h-4 w-4 text-[#d4af37]" /> Connect {selected.name}</h3>
               <button onClick={() => setSelected(null)} className="rounded-full p-1.5 text-[#8a8577] hover:bg-white/5" aria-label="Close"><X className="h-4 w-4" /></button>

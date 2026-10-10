@@ -569,10 +569,18 @@ async function probeChannel({ url, embedUrl }) {
 				}
 			} catch { /* fall through to scraping */ }
 		}
-		if (channelId) {
-			const { text } = await fetchText(`https://www.youtube.com/channel/${channelId}/live`);
-			if (!text || text.length < 50000) return { live: null };
-			const candidates = candidateVideoIds(text);
+	if (channelId) {
+		const { text } = await fetchText(`https://www.youtube.com/channel/${channelId}/live`);
+		if (!text || text.length < 50000) return { live: null };
+		// Primary signal: a live channel's /live page canonical-points to
+		// the broadcast (watch?v=…). Watch-page fetches get captcha
+		// challenges, so never depend on them for the live verdict.
+		const canon = text.match(/<link rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})"/);
+		if (canon) {
+			const title = await liveVideoTitle(canon[1]).catch(() => null);
+			return title ? { live: true, videoId: canon[1], title } : { live: true, videoId: canon[1] };
+		}
+		const candidates = candidateVideoIds(text);
 			if (!candidates.length) return { live: null };
 			let sawFalse = false;
 			for (const vid of candidates) {
