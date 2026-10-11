@@ -360,7 +360,7 @@ export function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07070a] px-6 pt-24 pb-16 sm:pt-28">
+    <div className="relative min-h-screen overflow-x-clip bg-[#07070a] px-6 pt-24 pb-16 sm:pt-28">
       <div className="pointer-events-none absolute left-1/2 top-0 h-[28rem] w-[60rem] max-w-none -translate-x-1/2 rounded-full bg-[#d4af37]/[0.07] blur-[140px]" />
       <div className="relative mx-auto max-w-[96rem]">
         <Link to={homeTo} className="mb-10 flex items-center gap-2.5"><img src={TRADINGBIBLE_LOGO} alt="TradingBible logo" className="h-9 w-9 rounded-lg object-contain" /><span className="font-semibold">Trading<span className="gold-text">Bible</span></span></Link>

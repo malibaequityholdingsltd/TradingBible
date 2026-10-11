@@ -192,5 +192,44 @@ export function useWallet() {
 		return data;
 	};
 
-	return { wallets, totalUsd, ledger, loading, syncing, reload: load, addWallet, removeWallet, deposit, withdraw, payWithWallet, rails, loadRails, onboardConnect, refreshConnectStatus, startKyc, refreshKycStatus, swapTokens, swapQuote, swapIntent, swapConfirm, onrampOrder };
+	// ── Bank infrastructure: accounts, P2P transfers, statements ──
+	const getAccounts = async () => {
+		const res = await apiServerClient.fetch('/wallet/accounts', { headers: headers() });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw codedError(data, 'accounts failed');
+		return data.accounts || [];
+	};
+
+	const transfer = async ({ to, asset, amount, memo, idempotencyKey }) => {
+		const res = await apiServerClient.fetch('/wallet/transfer', { method: 'POST', headers: headers(), body: JSON.stringify({ to, asset, amount, memo, idempotencyKey }) });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw codedError(data, 'transfer failed');
+		await load();
+		return data;
+	};
+
+	const getStatement = async (month) => {
+		const res = await apiServerClient.fetch(`/wallet/statement?month=${encodeURIComponent(month)}`, { headers: headers() });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw codedError(data, 'statement failed');
+		return data.statement;
+	};
+
+	const downloadStatement = async (month) => {
+		const token = pb.authStore.token || '';
+		const base = '/hcgi/api';
+		const r = await fetch(`${base}/wallet/statement.csv?month=${encodeURIComponent(month)}`, { headers: { Authorization: `Bearer ${token}` } });
+		if (!r.ok) throw new Error('statement download failed');
+		const blob = await r.blob();
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `tradingbible-statement-${month}.csv`;
+		document.body.appendChild(a);
+		a.click();
+		a.remove();
+		setTimeout(() => URL.revokeObjectURL(url), 5000);
+	};
+
+	return { wallets, totalUsd, ledger, loading, syncing, reload: load, addWallet, removeWallet, deposit, withdraw, payWithWallet, rails, loadRails, onboardConnect, refreshConnectStatus, startKyc, refreshKycStatus, swapTokens, swapQuote, swapIntent, swapConfirm, onrampOrder, getAccounts, transfer, getStatement, downloadStatement };
 }

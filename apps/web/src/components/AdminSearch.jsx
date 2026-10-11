@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Search, X, LayoutDashboard, Users, BarChart3, CreditCard, LibraryBig,
   FileText, MonitorPlay, Plug, Key, Package, Briefcase, Settings,
-  LogOut, Eye, HelpCircle,
+  LogOut, Eye, HelpCircle, Gift,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { enterAdminPreview } from '@/lib/adminPreview';
@@ -67,6 +67,7 @@ export default function AdminSearch() {
       P('Pages', Users, 'User Management', 'users accounts manage roles plans ban', '/admin/users'),
       P('Pages', BarChart3, 'Admin Analytics', 'analytics stats revenue growth charts', '/admin/analytics'),
       P('Pages', CreditCard, 'Admin Billing', 'billing revenue mrr subscriptions invoices paddle stripe', '/admin/billing'),
+      P('Pages', Gift, 'Admin Airdrops', 'airdrops tbc token distribute claim rewards', '/admin/airdrops'),
       P('Pages', LibraryBig, 'Admin Content', 'content cms pages blog academy threads', '/admin/content'),
       P('Pages', FileText, 'Admin Reports & Logs', 'reports logs moderation threads audit', '/admin/reports'),
       P('Pages', MonitorPlay, 'TradingBible TV', 'tv ads broadcast manage rotate', '/admin/tv'),
@@ -91,10 +92,31 @@ export default function AdminSearch() {
   const results = useMemo(() => {
     if (!query) return [...recents, ...items].slice(0, 9);
     const toks = query.split(/\s+/);
-    return items.filter((it) => {
-      const hay = `${it.title} ${it.keys}`.toLowerCase();
-      return toks.every((tk) => hay.includes(tk));
-    }).slice(0, 12);
+    const compact = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    // Subsequence match: every char of the token appears in order — catches
+    // typos like "anlytics" → "analytics" without a fuzzy-search library.
+    const isSubseq = (needle, hay) => {
+      let j = 0;
+      for (let i = 0; i < hay.length && j < needle.length; i++) {
+        if (hay[i] === needle[j]) j++;
+      }
+      return j === needle.length;
+    };
+    const scored = [];
+    for (const it of items) {
+      const title = String(it.title || '').toLowerCase();
+      const hay = `${title} ${it.keys || ''}`.toLowerCase();
+      const hayCompact = hay.replace(/[^a-z0-9]/g, '');
+      const titleCompact = title.replace(/[^a-z0-9]/g, '');
+      const strict = toks.every((tk) => hay.includes(tk) || hayCompact.includes(compact(tk)));
+      if (strict) {
+        scored.push({ it, score: toks.every((tk) => title.includes(tk) || titleCompact.includes(compact(tk))) ? 2 : 1 });
+      } else if (query.length >= 3 && toks.every((tk) => isSubseq(compact(tk), hayCompact))) {
+        scored.push({ it, score: 0.5 });
+      }
+    }
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, 12).map((s) => s.it);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, query, history]);
 

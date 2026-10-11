@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Coins, ShieldCheck, Lock, Vote, Code2, Store, Sparkles, ArrowRight, CheckCircle2, Circle, Loader2 } from 'lucide-react';
-import AppLayout from '@/components/AppLayout';
-import { PageHero, Card } from '@/components/ui-kit';
+import Footer from '@/components/Footer';
+import { PageHero, Card, GoldButton } from '@/components/ui-kit';
+import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { useAuth } from '@/hooks/useAuth';
+import { homeRouteForUser } from '@/lib/homeRoute';
 import { useTbc, TBC_ALLOCATION, TBC_ROADMAP, TBC_SUPPLY, TBC_LOGO_URL } from '@/lib/tbc';
 
 const UTILITIES = [
@@ -20,12 +23,39 @@ function shortAddr(a) {
   return a && a.length > 18 ? `${a.slice(0, 10)}…${a.slice(-8)}` : (a || '');
 }
 
+// Public marketing page: standalone public shell (brand header + footer),
+// never the authenticated app shell — logged-out visitors must not see
+// dashboard chrome (sidebar, account menu, dock).
+function PublicHeader({ homeTo, ctaTo, ctaLabel }) {
+  return (
+    <header className="fixed inset-x-0 top-[var(--header-h)] z-40 border-b border-[#d4af37]/10 bg-[#07070a]/70 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-[96rem] items-center justify-between px-6 py-4">
+        <Link to={homeTo} className="flex items-center gap-2.5" aria-label="TradingBible home">
+          <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-9 w-9 rounded-xl border border-[#d4af37]/40 bg-[#0c0c11] object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+          <span className="text-xl font-black leading-none tracking-tight text-[#f0ecdd]">Trading<span className="gold-text">Bible</span></span>
+        </Link>
+        <nav className="hidden items-center gap-8 text-sm text-[#8a8577] md:flex">
+          <Link to="/" className="hover:text-[#e9e7df]">Home</Link>
+          <Link to="/about" className="hover:text-[#e9e7df]">About</Link>
+          <Link to="/tbc" className="text-[#e9e7df]">TBC</Link>
+          <Link to="/pricing" className="hover:text-[#e9e7df]">Pricing</Link>
+        </nav>
+        <GoldButton to={ctaTo}>{ctaLabel}</GoldButton>
+      </div>
+    </header>
+  );
+}
+
 export default function TokenPage() {
   const { tbc, loaded } = useTbc();
+  const { user, isAuthed } = useAuth();
+  const homeTo = homeRouteForUser(isAuthed ? user : null);
 
   return (
-    <AppLayout title="TradingBible Coin">
-      <div className="tb-page">
+    <div className="min-h-screen bg-[#07070a] pt-[calc(var(--header-h)+72px)]">
+      <PublicHeader homeTo={homeTo} ctaTo={isAuthed ? '/app/wallet' : '/signup'} ctaLabel={isAuthed ? 'Open wallet' : 'Get started'} />
+
+      <div className="tb-page mx-auto w-full max-w-[96rem] px-6 pb-20">
         <PageHero
           kickerIcon={Coins}
           kicker="TradingBible Coin"
@@ -120,9 +150,12 @@ export default function TokenPage() {
             <div className="font-semibold text-[#f0ecdd]">No sale yet. No claims to connect. No contract to trust.</div>
             <div className="text-xs text-[#8a8577]">Any TBC sale, airdrop or staking program will be announced here first — anything else is a scam.</div>
           </div>
-          <Link to="/app/wallet" className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-xs font-bold text-[#0a0a0f]">Open wallet <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
+          <Link to={isAuthed ? '/app/wallet' : '/signup'} className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-xs font-bold text-[#0a0a0f]">Open wallet <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
+          {isAuthed && (<Link to="/app/tbc" className="rounded-xl border border-[#d4af37]/40 px-4 py-2 text-xs font-bold text-[#d4af37]">TBC dashboard</Link>)}
         </Card>
       </div>
-    </AppLayout>
+
+      <Footer />
+    </div>
   );
 }

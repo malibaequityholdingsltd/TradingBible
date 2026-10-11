@@ -1,14 +1,16 @@
 import { Router } from 'express';
 import Stripe from 'stripe';
+import { randomUUID } from 'node:crypto';
 import logger from '../utils/logger.js';
 import { supabase, getSupabaseUser, supabaseRest } from '../utils/supabaseClient.js';
 import { NETWORKS, isValidAddress, getBalance, withUsdValue } from '../utils/walletData.js';
 
 // ── Full wallet: internal USD ledger + external address tracker ─────
 // The ledger reuses the pre-existing `bank_transactions` table (no extra
-// migration needed): kind ∈ {deposit, withdraw, withdraw_crypto, pay, swap},
-// signed amount, currency, status, reference, counterparty (address/source),
-// asset (plan intent for pay rows, else USD), fiatValue (abs amount).
+// migration needed): kind ∈ {deposit, withdraw, withdraw_crypto, pay, swap,
+// transfer_out, transfer_in}, signed amount, currency, status, reference,
+// counterparty (address/source/user id), asset (plan intent for pay rows,
+// else USD/TBC), fiatValue (abs amount).
 // Balance = sum of non-failed rows. External tracking stays read-only
 // (wallet_trackers + public chain data); TradingBible never custodies crypto
 // (swaps are non-custodial: the user signs in their own wallet).
@@ -194,6 +196,208 @@ router.get('/ledger/transactions', async (req, res) => {
 	} catch (err) {
 		logger.error('wallet tx list failed', String(err));
 		return res.json({ transactions: [] });
+	}
+});
+
+// ── Bank accounts (derived view, no new tables) ───────────────────
+// Cash (USD rows) + TBC (TBC rows) presented as numbered accounts.
+// Numbers are deterministic per user — display-only, not a payment rail.
+function accountNumber(owner, tag) {
+	let h = 0;
+	const s = `${owner}:${tag}`;
+	for (let i = 0; i < s.length; i++) h = (Math.imul(h, 31) + s.charCodeAt(i)) | 0;
+	const digits = String(Math.abs(h)).padStart(10, '0').slice(0, 10);
+	return { number: `TB${tag === 'TBC' ? '26' : '19'} ${digits.slice(0, 4)} ${digits.slice(4)}`, last4: digits.slice(-4) };
+}
+
+router.get('/accounts', async (req, res) => {
+	const user = await authedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	try {
+		const balances = await getLedgerBalances(user.id);
+		const cash = accountNumber(user.id, 'USD');
+		const tbc = accountNumber(user.id, 'TBC');
+		return res.json({
+			accounts: [
+				{ id: 'cash', name: 'Cash Account', currency: 'USD', asset: 'USD', balance: balances.USD, ...cash },
+				{ id: 'tbc', name: 'TBC Account', currency: 'TBC', asset: 'TBC', balance: balances.TBC, ...tbc },
+			],
+		});
+	} catch (err) {
+		logger.error('wallet accounts failed', String(err));
+		return res.status(500).json({ error: 'failed' });
+	}
+});
+
+// ── P2P transfers (double-entry, idempotent) ──────────────────────
+// Writes a balanced pair sharing one reference group `txf_<gid>[|<memo>]`:
+// sender `transfer_out` (negative) + receiver `transfer_in` (positive).
+// Balance math is untouched (sums still hold). Idempotency: a client key
+// becomes the group id; replays return the original instead of double-pay.
+// Gated on passed Identity KYC — banks don't wire money for strangers.
+const MAX_TRANSFER = 10000;
+
+function transferGroup(key) {
+	const clean = String(key || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 60);
+	return `txf_${clean || randomUUID()}`;
+}
+
+async function findTransferByGroup(owner, group) {
+	const rows = await supabaseRest('/rest/v1/bank_transactions', {
+		query: { select: 'id,reference,amount,status', owner: `eq.${owner}`, kind: 'eq.transfer_out', reference: `like.${group}%`, limit: 5 },
+	}).catch(() => []);
+	return (rows || [])[0] || null;
+}
+
+router.post('/transfer', async (req, res) => {
+	const user = await authedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	const to = String(req.body?.to || '').trim().slice(0, 120);
+	const asset = String(req.body?.asset || 'USD').trim().toUpperCase();
+	const amount = Math.round(Number(req.body?.amount || 0) * 100) / 100;
+	const memo = String(req.body?.memo || '').replace(/[\r\n|]/g, ' ').trim().slice(0, 120);
+	if (!to) return res.status(422).json({ error: 'recipient required' });
+	if (!['USD', 'TBC'].includes(asset)) return res.status(422).json({ error: 'asset must be USD or TBC' });
+	if (!amount || amount <= 0) return res.status(422).json({ error: 'invalid amount' });
+	if (amount < 1) return res.status(422).json({ error: 'minimum transfer 1' });
+	if (amount > MAX_TRANSFER) return res.status(422).json({ error: `maximum transfer ${MAX_TRANSFER}` });
+	try {
+		const rails = await getRails(user.id);
+		if (rails?.kyc_status !== 'verified') {
+			return res.status(403).json({ error: 'kyc_required', message: 'Verify your identity before sending money.' });
+		}
+		// Recipient by email, then username — never yourself.
+		const needle = encodeURIComponent(to);
+		let recipient = (await supabaseRest('/rest/v1/users', {
+			query: { select: 'id,email,username', email: `eq.${needle}`, limit: 1 },
+		}).catch(() => []))?.[0] || null;
+		if (!recipient) {
+			recipient = (await supabaseRest('/rest/v1/users', {
+				query: { select: 'id,email,username', username: `eq.${needle}`, limit: 1 },
+			}).catch(() => []))?.[0] || null;
+		}
+		if (!recipient) return res.status(404).json({ error: 'recipient_not_found', message: 'No TradingBible user matches that email or username.' });
+		if (recipient.id === user.id) return res.status(422).json({ error: 'cannot send to yourself' });
+
+		// Idempotency replay: same key → original result, no double-pay.
+		const group = transferGroup(req.body?.idempotencyKey);
+		const replay = await findTransferByGroup(user.id, group);
+		if (replay) {
+			return res.json({ ok: true, replay: true, reference: replay.reference, balance: await getLedgerBalances(user.id) });
+		}
+
+		const balances = await getLedgerBalances(user.id);
+		if ((balances[asset] || 0) < amount) {
+			return res.status(422).json({ error: `insufficient ${asset} balance` });
+		}
+
+		const reference = memo ? `${group}|${memo}` : group;
+		const out = await addLedgerTx({
+			owner: user.id, kind: 'transfer_out', amount: -amount, status: 'completed',
+			reference, counterparty: recipient.id, asset,
+		});
+		try {
+			await addLedgerTx({
+				owner: recipient.id, kind: 'transfer_in', amount, status: 'completed',
+				reference, counterparty: user.id, asset,
+			});
+		} catch (e) {
+			// Credit leg failed — void the debit so money can't vanish.
+			if (out?.id) {
+				await supabaseRest(`/rest/v1/bank_transactions?id=eq.${encodeURIComponent(out.id)}`, {
+					method: 'PATCH', body: { status: 'failed', reference: `${reference}|void` },
+				}).catch(() => {});
+			}
+			throw e;
+		}
+		logger.info(`transfer ${reference} ${amount} ${asset} ${user.id} → ${recipient.id}`);
+		return res.json({
+			ok: true, reference,
+			to: { email: recipient.email || null, username: recipient.username || null },
+			amount, asset, memo: memo || null,
+			balance: await getLedgerBalances(user.id),
+		});
+	} catch (err) {
+		logger.error('wallet transfer failed', String(err));
+		return res.status(500).json({ error: 'failed' });
+	}
+});
+
+// ── Statements (computed, no new tables) ──────────────────────────
+// GET /statement?month=YYYY-MM → opening/closing per asset + the month's
+// rows oldest-first. GET /statement.csv?month= → downloadable statement.
+function parseMonth(raw) {
+	const m = String(raw || '').match(/^(\d{4})-(\d{2})$/);
+	if (!m) return null;
+	const start = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, 1));
+	if (Number.isNaN(start.getTime())) return null;
+	const end = new Date(Date.UTC(Number(m[1]), Number(m[2]), 1));
+	return { start, end, label: `${m[1]}-${m[2]}` };
+}
+
+function assetOf(r) {
+	return (r.asset || 'USD') === 'TBC' ? 'TBC' : 'USD';
+}
+
+async function buildStatement(owner, month) {
+	const rows = await supabaseRest('/rest/v1/bank_transactions', {
+		query: { select: '*', owner: `eq.${owner}`, order: 'created.asc', limit: 5000 },
+	});
+	const startIso = month.start.toISOString();
+	const endIso = month.end.toISOString();
+	const opening = { USD: 0, TBC: 0 };
+	const txs = [];
+	for (const r of rows || []) {
+		if (r.status === 'failed') continue;
+		const a = assetOf(r);
+		const v = Number(r.amount) || 0;
+		if (String(r.created) < startIso) opening[a] += v;
+		else if (String(r.created) < endIso) txs.push(toLedgerTx(r));
+	}
+	opening.USD = Math.round(opening.USD * 100) / 100;
+	opening.TBC = Math.round(opening.TBC * 100) / 100;
+	const closing = {
+		USD: Math.round((opening.USD + txs.filter((t) => (t.asset || 'USD') !== 'TBC').reduce((s, t) => s + (Number(t.amount) || 0), 0)) * 100) / 100,
+		TBC: Math.round((opening.TBC + txs.filter((t) => t.asset === 'TBC').reduce((s, t) => s + (Number(t.amount) || 0), 0)) * 100) / 100,
+	};
+	return { month: month.label, opening, closing, count: txs.length, transactions: txs };
+}
+
+router.get('/statement', async (req, res) => {
+	const user = await authedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	const month = parseMonth(req.query?.month) || parseMonth(new Date().toISOString().slice(0, 7));
+	if (!month) return res.status(422).json({ error: 'month must be YYYY-MM' });
+	try {
+		return res.json({ statement: await buildStatement(user.id, month) });
+	} catch (err) {
+		logger.error('wallet statement failed', String(err));
+		return res.status(500).json({ error: 'failed' });
+	}
+});
+
+router.get('/statement.csv', async (req, res) => {
+	const user = await authedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	const month = parseMonth(req.query?.month) || parseMonth(new Date().toISOString().slice(0, 7));
+	if (!month) return res.status(422).json({ error: 'month must be YYYY-MM' });
+	try {
+		const st = await buildStatement(user.id, month);
+		const run = { USD: st.opening.USD, TBC: st.opening.TBC };
+		const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+		const lines = ['Date,Type,Asset,Amount,Balance,Reference,Counterparty'];
+		for (const t of st.transactions) {
+			const a = (t.asset || 'USD') === 'TBC' ? 'TBC' : 'USD';
+			run[a] = Math.round((run[a] + (Number(t.amount) || 0)) * 100) / 100;
+			lines.push([t.created || '', t.type || '', a, t.amount ?? '', run[a], t.reference || '', t.counterparty || ''].map(esc).join(','));
+		}
+		lines.push(['', 'CLOSING', '', '', '', '', ''].map(esc).join(','));
+		res.setHeader('Content-Type', 'text/csv');
+		res.setHeader('Content-Disposition', `attachment; filename="tradingbible-statement-${st.month}.csv"`);
+		return res.send(lines.join('\n'));
+	} catch (err) {
+		logger.error('wallet statement csv failed', String(err));
+		return res.status(500).json({ error: 'failed' });
 	}
 });
 

@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -405,6 +404,11 @@ html.light .ambient-c { background: radial-gradient(circle, rgba(212,150,40,0.22
 .ambient-shade { background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0,0,0,0.38) 100%); }
 html.light .ambient-shade { background: radial-gradient(ellipse at 50% 30%, rgba(255,252,240,0.5) 0%, transparent 50%), radial-gradient(ellipse at 50% 60%, transparent 55%, rgba(166,124,30,0.16) 100%); }
 @keyframes ambient-drift-a { from { transform: translate(0, 0) scale(1); } to { transform: translate(6vw, 5vh) scale(1.12); } }
+/* Phones: one static aura only — three giant animated blurs jank scrolling. */
+@media (max-width: 639px) {
+  .ambient-b, .ambient-c { display: none; }
+  .ambient-a { animation: none; }
+}
 @keyframes ambient-drift-b { from { transform: translate(0, 0) scale(1.05); } to { transform: translate(-5vw, -4vh) scale(1); } }
 @keyframes ambient-drift-c { from { transform: translate(0, 0) scale(1); } to { transform: translate(-4vw, 6vh) scale(1.15); } }
 

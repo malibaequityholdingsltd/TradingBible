@@ -17,6 +17,7 @@ import { getTopicIndex, PATHS } from '@/lib/academyCatalog';
 import { FAQS } from '@/pages/LegalPages';
 import { BROKERS, PROP_FIRMS } from '@/lib/mockData';
 import { INDICATOR_DEFS } from '@/lib/indicators';
+import { ALL_SYMBOLS } from '@/lib/symbols';
 
 const HISTORY_KEY = 'tb:search-history';
 
@@ -96,8 +97,11 @@ export default function GlobalSearch({ autoFocus = false, onNavigate = null }) {
       P(t('nav.trade', null, 'Trade'), LayoutDashboard, t('nav.dashboard', null, 'Dashboard'), 'dashboard home overview pnl balance winrate', '/app'),
       P(t('nav.trade', null, 'Trade'), BookOpen, t('nav.journal', null, 'Trading Journal'), 'journal trades diary notes history export csv', '/app/journal'),
       P(t('nav.trade', null, 'Trade'), Plug, t('nav.brokers', null, 'Brokers'), 'broker connect sync mt4 mt5 ctrader api key', '/app/brokers'),
+      P(t('nav.trade', null, 'Trade'), Layers, t('nav.paper', null, 'Paper Trading'), 'paper trading demo simulator practice virtual funds', '/app/paper'),
+      P(t('nav.trade', null, 'Trade'), BarChart3, t('nav.backtest', null, 'Backtest'), 'backtest backtesting strategy history simulation winrate', '/app/backtest'),
+      P(t('nav.trade', null, 'Trade'), Trophy, t('nav.challenges', null, 'Challenges'), 'challenges prop evaluation pass profit target drawdown', '/app/challenges'),
       P(t('nav.trade', null, 'Trade'), Trophy, t('nav.funded', null, 'Funded'), 'funded evaluation firm capital challenge account', '/app/funded'),
-      P(t('nav.trade', null, 'Trade'), Landmark, t('nav.wallet', null, 'Wallet'), 'wallet crypto deposit withdraw address balance bitcoin ethereum', '/app/wallet'),
+      P(t('nav.trade', null, 'Trade'), Landmark, t('nav.wallet', null, 'Wallet'), 'wallet crypto deposit withdraw address balance bitcoin ethereum send transfer statement accounts monthly', '/app/wallet'),
       P(t('nav.analyze', null, 'Analyze'), BarChart3, t('nav.analytics', null, 'Analytics'), 'analytics performance stats profit factor charts', '/app/analytics'),
       P(t('nav.analyze', null, 'Analyze'), FileText, t('nav.reports', null, 'Reports'), 'reports daily weekly monthly pdf schedule email', '/app/reports'),
       P(t('nav.analyze', null, 'Analyze'), Bot, t('nav.coach', null, 'SI Coach'), 'ai coach chat advice review mistakes discipline score', '/app/coach'),
@@ -107,9 +111,16 @@ export default function GlobalSearch({ autoFocus = false, onNavigate = null }) {
       P(t('nav.markets', null, 'Markets'), CircleDot, t('nav.heatmaps', null, 'Heatmaps'), 'heatmap bubbles crypto forex stocks movers gainers losers', '/app/heatmaps'),
       P(t('nav.markets', null, 'Markets'), Layers, t('nav.orderflow', null, 'Order Flow'), 'orderflow order flow footprint depth tape volume delta bookmap dom', '/app/orderflow'),
       P(t('nav.markets', null, 'Markets'), Star, t('nav.watchlists', null, 'Watchlists'), 'watchlist symbols favorites tracking groups', '/app/watchlists'),
+      P(t('nav.markets', null, 'Markets'), Grid2x2, t('nav.market', null, 'Market'), 'market overview quotes movers gainers losers screener breadth', '/app/market'),
       P(t('nav.markets', null, 'Markets'), Radar, t('nav.signals', null, 'Trading Signals'), 'signals buy sell breakout strategy alerts setups', '/app/signals'),
       P(t('nav.markets', null, 'Markets'), Bell, t('nav.alerts', null, 'Price Alerts'), 'alerts price notification target trigger', '/app/alerts'),
       P(t('nav.markets', null, 'Markets'), CalendarClock, t('nav.economic', null, 'Economic Calendar'), 'economic calendar news events fomc nfp cpi earnings', '/app/economic-calendar'),
+      P(t('nav.trade', null, 'Trade'), Star, t('nav.staking', null, 'Staking'), 'staking stake yield earn apy rewards lock', '/app/staking'),
+      P(t('nav.trade', null, 'Trade'), Plug, t('nav.defi', null, 'DeFi'), 'defi decentralized wallet swap liquidity yield web3', '/app/defi'),
+      P(t('nav.learn', null, 'Learn & Connect'), Users, t('nav.mentors', null, 'Mentors'), 'mentors coaching teacher tutor 1-on-1 guidance', '/app/mentors'),
+      P(t('nav.learn', null, 'Learn & Connect'), Trophy, t('nav.leaderboard', null, 'Leaderboard'), 'leaderboard ranking top traders competition best', '/leaderboard'),
+      P(t('nav.learn', null, 'Learn & Connect'), BookOpen, t('nav.proGuide', null, 'Pro Guide'), 'pro guide manual handbook how to use platform', '/app/guide'),
+      P(t('nav.trade', null, 'Trade'), CircleDot, t('nav.token', null, 'TBC Token'), 'tbc token coin crypto airdrop rewards utility dashboard balance send', (user ? '/app/tbc' : '/tbc')),
       P(t('nav.learn', null, 'Learn & Connect'), Users, t('nav.community', null, 'Community'), 'community forum leaderboard traders discussion', '/app/community'),
       P(t('nav.learn', null, 'Learn & Connect'), GraduationCap, t('nav.academy', null, 'Academy'), 'academy school courses lessons quizzes webinar certificate tutor student teacher', '/app/academy'),
       P(t('fot.h_education', null, 'Education'), GraduationCap, t('fot.l_academy', null, 'Academy (public)'), 'academy public school forex crypto learn courses', '/academy'),
@@ -205,6 +216,12 @@ export default function GlobalSearch({ autoFocus = false, onNavigate = null }) {
       keys: `${d.label || ''} ${key} indicator overlay study`.toLowerCase(),
       to: '/app/indicators',
     }));
+    const symbols = (ALL_SYMBOLS || []).map((s) => ({
+      kind: 'symbol', group: t('nav.markets', null, 'Markets'), icon: CandlestickChart,
+      title: s.name && s.name !== s.symbol ? `${s.name} · ${s.symbol}` : s.symbol,
+      keys: `${s.symbol} ${s.name || ''} ${String(s.symbol).replace(/USD$/, ' / usd')} market chart trade quote price`.toLowerCase(),
+      to: `/app/terminal-pro?symbol=${encodeURIComponent(s.symbol)}`,
+    }));
     const acctGroup = t('nav.account', null, 'Account');
     const account = [
       { kind: 'page', group: acctGroup, icon: User, title: 'Edit profile', keys: 'profile name avatar edit account personal', to: '/app/profile' },
@@ -212,17 +229,38 @@ export default function GlobalSearch({ autoFocus = false, onNavigate = null }) {
       { kind: 'page', group: acctGroup, icon: KeyRound, title: 'Sessions & devices', keys: 'sessions devices active login logout security', to: '/app/security' },
       { kind: 'page', group: acctGroup, icon: Bell, title: 'Price alerts', keys: 'alerts notifications price notify target trigger', to: '/app/alerts' },
     ];
-    return [...recents, ...pages, ...tvChannels, ...myTrades, ...lessons, ...paths, ...brokers, ...indicators, ...faqs, ...account, ...support, ...actions, ...admin];
+    return [...recents, ...pages, ...symbols, ...tvChannels, ...myTrades, ...lessons, ...paths, ...brokers, ...indicators, ...faqs, ...account, ...support, ...actions, ...admin];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t, theme, isAdmin, user?.accountType, query, history, topicIndex, tradeSymbols]);
 
   const results = useMemo(() => {
     if (!query) return items.slice(0, 9);
     const toks = query.split(/\s+/);
-    return items.filter((it) => {
-      const hay = `${it.title} ${it.keys}`.toLowerCase();
-      return toks.every((tk) => hay.includes(tk));
-    }).slice(0, 14);
+    const compact = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    // Subsequence match: every char of the token appears in order — catches
+    // typos like "anlytics" → "analytics" without a fuzzy-search library.
+    const isSubseq = (needle, hay) => {
+      let j = 0;
+      for (let i = 0; i < hay.length && j < needle.length; i++) {
+        if (hay[i] === needle[j]) j++;
+      }
+      return j === needle.length;
+    };
+    const scored = [];
+    for (const it of items) {
+      const title = String(it.title || '').toLowerCase();
+      const hay = `${title} ${it.keys || ''}`.toLowerCase();
+      const hayCompact = hay.replace(/[^a-z0-9]/g, '');
+      const titleCompact = title.replace(/[^a-z0-9]/g, '');
+      const strict = toks.every((tk) => hay.includes(tk) || hayCompact.includes(compact(tk)));
+      if (strict) {
+        scored.push({ it, score: toks.every((tk) => title.includes(tk) || titleCompact.includes(compact(tk))) ? 2 : 1 });
+      } else if (query.length >= 3 && toks.every((tk) => isSubseq(compact(tk), hayCompact))) {
+        scored.push({ it, score: 0.5 });
+      }
+    }
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, 14).map((s) => s.it);
   }, [items, query]);
 
   useEffect(() => { setActive(0); }, [query]);
@@ -299,7 +337,7 @@ export default function GlobalSearch({ autoFocus = false, onNavigate = null }) {
                     <Search className="h-6 w-6" />
                   </span>
                   <p className="mt-4 text-[15px] font-semibold text-[#e9e7df]">{t('c.noResults', null, 'Nothing found. Try different words.')}</p>
-                  <p className="mt-1 max-w-xs text-xs leading-relaxed text-[#6a665a]">Try a page name, a topic like “broker” or “refund”, or an action like “theme”.</p>
+                  <p className="mt-1 max-w-xs text-xs leading-relaxed text-[#6a665a]">Try a page name, a symbol like "BTC" or "EURUSD", a topic like "broker", or an action like "theme".</p>
                 </div>
               )}
               {results.map((it, i) => {

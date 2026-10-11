@@ -419,6 +419,11 @@ export default defineConfig({
 		},
 	},
 	build: {
+		// dist/ sits outside the package root, so Vite won't empty it by
+		// default — do it explicitly to avoid serving stale hashed bundles.
+		emptyOutDir: true,
+		cssCodeSplit: true,
+		chunkSizeWarningLimit: 600,
 		rollupOptions: {
 			external: [
 				'@babel/parser',
@@ -426,6 +431,15 @@ export default defineConfig({
 				'@babel/generator',
 				'@babel/types'
 			],
+			output: {
+				manualChunks: {
+					'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+					'vendor-supabase': ['@supabase/supabase-js'],
+					'vendor-charts': ['recharts', 'lightweight-charts'],
+					'vendor-motion': ['framer-motion'],
+					'vendor-eth': ['ethers'],
+				},
+			},
 			checks: {
 				pluginTimings: false,
 			}

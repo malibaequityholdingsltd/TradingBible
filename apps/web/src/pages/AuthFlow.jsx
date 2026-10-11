@@ -318,7 +318,7 @@ function AuthFormFrame({ mode, title, subtitle, step, totalSteps, children, foot
   );
 }
 
-const ProviderButtons = ({ busy, onGoogle, onApple, t }) => {
+const ProviderButtons = ({ busy, onGoogle, onDiscord, t }) => {
   const tt = t || ((k) => k);
   return (
     <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
@@ -334,13 +334,13 @@ const ProviderButtons = ({ busy, onGoogle, onApple, t }) => {
       </button>
       <button
         type="button"
-        onClick={onApple}
+        onClick={onDiscord}
         disabled={busy}
-        aria-label={tt('auth.continueApple')}
-        className="flex min-h-[48px] items-center justify-center gap-2.5 rounded-xl border border-white/10 bg-[#111113] px-3 text-sm font-semibold text-[#f5f5f7] shadow-[0_10px_30px_rgba(0,0,0,0.22)] transition hover:-translate-y-0.5 hover:border-[#d4af37]/40 hover:shadow-[0_14px_36px_rgba(0,0,0,0.28)] disabled:cursor-not-allowed disabled:opacity-60"
+        aria-label={tt('auth.continueDiscord', null, 'Continue with Discord')}
+        className="flex min-h-[48px] items-center justify-center gap-2.5 rounded-xl border border-[#5865F2]/40 bg-[#5865F2] px-3 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(88,101,242,0.35)] transition hover:-translate-y-0.5 hover:border-[#d4af37]/40 hover:shadow-[0_14px_36px_rgba(88,101,242,0.45)] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        <AppleLogo />
-        <span className="hidden xs:inline sm:inline">Apple</span>
+        <DiscordLogo />
+        <span className="hidden xs:inline sm:inline">Discord</span>
       </button>
     </div>
   );
@@ -363,10 +363,10 @@ function GoogleLogo() {
   );
 }
 
-function AppleLogo() {
+function DiscordLogo() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-current">
-      <path d="M16.7 12.8c.1 2.9 2.5 3.9 2.5 3.9-.3.8-.8 1.5-1.3 2.2-.7 1-1.4 2-2.5 2.1-1 .1-1.4-.6-2.6-.6s-1.7.6-2.7.6c-1.1 0-1.9-1-2.6-2-1.7-2.5-3-7.1-1.2-10.2.8-1.3 2.1-2.1 3.6-2.1 1.1 0 2.2.8 2.8.8.7 0 2-.9 3.4-.8.6 0 2.5.2 3.7 1.9-.1.1-2.2 1.3-2.1 4.2ZM14.5 3.9c.5-.7.8-1.7.7-2.7-1 .1-2.1.7-2.8 1.5-.6.7-1.1 1.7-1 2.7 1.1.1 2.2-.6 3.1-1.5Z" />
+      <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.291a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z" />
     </svg>
   );
 }
@@ -577,7 +577,7 @@ export function LoginPage() {
     } catch (err) {
       toast({
         variant: 'destructive',
-        title: t('auth.e.oauth', { p: provider === 'google' ? 'Google' : 'Apple' }),
+        title: t('auth.e.oauth', { p: provider === 'google' ? 'Google' : 'Discord' }),
         description: describeAuthError(err, t),
       });
       setOauthBusy('');
@@ -651,7 +651,7 @@ export function LoginPage() {
         {!needTotp && !sent && (
           <>
             <div className="mt-4 rounded-[1.25rem] border border-[#d4af37]/14 bg-gradient-to-b from-white/[0.06] to-transparent p-3 sm:rounded-[1.5rem] sm:p-4">
-              <ProviderButtons busy={oauthBusy} t={t} onGoogle={() => startOAuth('google')} onApple={() => startOAuth('apple')} />
+              <ProviderButtons busy={oauthBusy} t={t} onGoogle={() => startOAuth('google')} onDiscord={() => startOAuth('discord')} />
             </div>
             <div className="mt-3 flex items-center gap-3">
               <div className="h-px flex-1 bg-white/10" />
@@ -807,7 +807,7 @@ export function SignupPage() {
     } catch (err) {
       toast({
         variant: 'destructive',
-        title: t('auth.e.oauth', { p: provider === 'google' ? 'Google' : 'Apple' }),
+        title: t('auth.e.oauth', { p: provider === 'google' ? 'Google' : 'Discord' }),
         description: describeAuthError(err, t),
       });
       setOauthBusy('');
@@ -912,7 +912,7 @@ export function SignupPage() {
         {sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={resend} className="text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? t('auth.e.resendIn', { n: cooldownSeconds }) : t('auth.e.resend')}</button></div>}
         {!sent && cooldownSeconds <= 0 && (
           <div className="mt-4 rounded-[1.25rem] border border-[#d4af37]/14 bg-gradient-to-b from-white/[0.06] to-transparent p-3 sm:rounded-[1.5rem] sm:p-4">
-            <ProviderButtons busy={oauthBusy} t={t} onGoogle={() => startOAuth('google')} onApple={() => startOAuth('apple')} />
+            <ProviderButtons busy={oauthBusy} t={t} onGoogle={() => startOAuth('google')} onDiscord={() => startOAuth('discord')} />
           </div>
         )}
         {cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">{t('auth.e.coolNote', { dur: formatCooldownDuration(cooldownSeconds) })}</p>}
