@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, Plus, Trash2, RefreshCw, ShieldCheck, KeyRound, ExternalLink, AlertTriangle, CreditCard, ArrowUpRight, ArrowDownRight, Landmark } from 'lucide-react';
+import { Wallet, Plus, Trash2, RefreshCw, ShieldCheck, KeyRound, ExternalLink, AlertTriangle, CreditCard, ArrowUpRight, ArrowDownRight, Landmark, Send, Download, ArrowLeftRight, FileText, Coins } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { fmtMoney } from '@/lib/mockData';
 import { useI18n } from '@/lib/i18n';
@@ -32,7 +32,11 @@ function shortAddr(a) {
 }
 
 /* ── Money path: Fund → Verify → Connect → Withdraw ─────────────── */
-function MoneyPath({ walletBalance, tbcBalance, kycStatus, connectStatus, railBusy, busy, depAmount, setDepAmount, withAmount, setWithAmount, showDep, setShowDep, showWith, setShowWith, doDeposit, doWithdraw, doOnboard, doKyc, t }) {
+function MoneyPath({ walletBalance, tbcBalance, kycStatus, connectStatus, railBusy, busy, depAmount, setDepAmount, withAmount, setWithAmount, showDep, setShowDep, showWith, setShowWith, doDeposit, doWithdraw, doOnboard, doKyc, onGoCrypto, t }) {
+	const goCrypto = (id) => {
+		if (onGoCrypto) onGoCrypto(id);
+		else document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	};
 	const [counter, setCounter] = useState('fund'); // fund | cashout | id | bank
 	const verified = kycStatus === 'verified';
 	const banked = connectStatus === 'active';
@@ -59,10 +63,10 @@ function MoneyPath({ walletBalance, tbcBalance, kycStatus, connectStatus, railBu
 						<h3 className="flex flex-wrap items-baseline gap-x-2 text-base font-extrabold text-[#f0ecdd]">Feed the till <span className="text-[#d4af37]"><TbcMoney amount={tbcBalance} /></span><span className="font-mono text-xs font-semibold text-[#8a8577]">· only TBC spends</span></h3>
 						<p className="mt-1 max-w-xl text-[12px] leading-relaxed text-[#8a8577]">Nothing else spends in-app. Convert cash, swap crypto, buy crypto or receive TBC — then entries, signals and mentorship unlock. Plans stay on card/cash.</p>
 						<div className="mt-3 flex flex-wrap items-center gap-2">
-							<GhostButton onClick={() => document.getElementById('tbc-convert')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="!min-h-[44px] whitespace-nowrap !px-4 !py-2.5 !text-xs !font-semibold">Convert cash → TBC</GhostButton>
-							<GhostButton onClick={() => document.getElementById('swap-desk')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="!min-h-[44px] whitespace-nowrap !px-4 !py-2.5 !text-xs !font-semibold">Swap crypto → TBC</GhostButton>
-							<GhostButton onClick={() => document.getElementById('swap-desk')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="!min-h-[44px] whitespace-nowrap !px-4 !py-2.5 !text-xs !font-semibold">Buy crypto</GhostButton>
-							<GhostButton onClick={() => document.getElementById('tbc-convert')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="!min-h-[44px] whitespace-nowrap !px-4 !py-2.5 !text-xs !font-semibold">Receive TBC</GhostButton>
+							<GhostButton onClick={() => goCrypto('tbc-convert')} className="!min-h-[44px] whitespace-nowrap !px-4 !py-2.5 !text-xs !font-semibold">Convert cash → TBC</GhostButton>
+							<GhostButton onClick={() => goCrypto('swap-desk')} className="!min-h-[44px] whitespace-nowrap !px-4 !py-2.5 !text-xs !font-semibold">Swap crypto → TBC</GhostButton>
+							<GhostButton onClick={() => goCrypto('swap-desk')} className="!min-h-[44px] whitespace-nowrap !px-4 !py-2.5 !text-xs !font-semibold">Buy crypto</GhostButton>
+							<GhostButton onClick={() => goCrypto('tbc-convert')} className="!min-h-[44px] whitespace-nowrap !px-4 !py-2.5 !text-xs !font-semibold">Receive TBC</GhostButton>
 						</div>
 						{!showDep ? (
 							<GoldButton onClick={() => setShowDep(true)} className="mt-3 !min-h-[44px] whitespace-nowrap !px-5 !py-2.5 !text-xs"><ArrowDownRight className="h-4 w-4" /> Top up cash ({fmtMoney(walletBalance)} for plans / convert)</GoldButton>
@@ -134,9 +138,9 @@ function MoneyPath({ walletBalance, tbcBalance, kycStatus, connectStatus, railBu
 
 export default function WalletPage() {
 	const bank = useWallet();
-	const { user } = useAuth();
+	const { user, isAuthReady } = useAuth();
 	const { wallets, totalUsd, ledger, loading, syncing, reload, addWallet, removeWallet, deposit, withdraw } = bank;
-	const { rails, loadRails, onboardConnect, refreshConnectStatus, startKyc, refreshKycStatus, swapTokens, swapQuote, swapIntent, swapConfirm, onrampOrder } = bank;
+	const { rails, loadRails, onboardConnect, refreshConnectStatus, startKyc, refreshKycStatus, swapTokens, swapQuote, swapIntent, swapConfirm, onrampOrder, transfer, getAccounts, getStatement, downloadStatement } = bank;
 	const { toast } = useToast();
 	const { t } = useI18n();
 	const { tbc } = useTbc();
@@ -487,7 +491,84 @@ export default function WalletPage() {
 		} catch (e) { toast({ variant: 'destructive', title: 'Card-to-crypto', description: e.message }); } finally { setBusy(false); }
 	};
 
-	const txLabel = (type) => ({ deposit: t('wal.deposit'), withdraw: t('wal.withdraw'), withdraw_crypto: t('wal.withdraw'), pay: t('bill.payWallet'), swap: 'Swap', reward: 'Reward', payout: 'Payout', tbc_convert: 'TBC convert', tbc_claim: 'TBC claim', tbc_send: 'TBC sent', tbc_receive: 'TBC received', affiliate_payout: 'Affiliate TBC', airdrop: 'Airdrop' }[type] || type);
+	const txLabel = (type) => ({ deposit: t('wal.deposit'), withdraw: t('wal.withdraw'), withdraw_crypto: t('wal.withdraw'), pay: t('bill.payWallet'), swap: 'Swap', reward: 'Reward', payout: 'Payout', tbc_convert: 'TBC convert', tbc_claim: 'TBC claim', tbc_send: 'TBC sent', tbc_receive: 'TBC received', affiliate_payout: 'Affiliate TBC', airdrop: 'Airdrop', transfer_out: 'Sent', transfer_in: 'Received' }[type] || type);
+
+	// ── Bank infrastructure: accounts, P2P send, statements ──
+	const [accounts, setAccounts] = useState([]);
+	const [bankTab, setBankTab] = useState('accounts'); // accounts | send | money | crypto | activity
+	const BANK_TABS = [
+		{ id: 'accounts', label: 'Accounts', icon: Landmark },
+		{ id: 'send', label: 'Send', icon: Send },
+		{ id: 'money', label: 'Add cash', icon: ArrowDownRight },
+		{ id: 'crypto', label: 'Crypto', icon: Coins },
+		{ id: 'activity', label: 'Activity', icon: FileText },
+	];
+	const goCryptoSection = (id) => {
+		setBankTab('crypto');
+		setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+	};
+	// Deep links: /app/wallet?tab=send|crypto|activity… land on the right set.
+	useEffect(() => {
+		try {
+			const tab = new URLSearchParams(window.location.search).get('tab');
+			if (['accounts', 'send', 'money', 'crypto', 'activity'].includes(tab)) setBankTab(tab);
+		} catch { /* ignore */ }
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+	const [sendForm, setSendForm] = useState({ to: '', asset: 'TBC', amount: '', memo: '' });
+	const [sendBusy, setSendBusy] = useState(false);
+	const [stmtMonth, setStmtMonth] = useState(() => new Date().toISOString().slice(0, 7));
+	const [statement, setStatement] = useState(null);
+	const [stmtBusy, setStmtBusy] = useState(false);
+
+	useEffect(() => {
+		if (!isAuthReady) return;
+		getAccounts().then(setAccounts).catch(() => {});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isAuthReady]);
+
+	const doSend = async (e) => {
+		e?.preventDefault?.();
+		if (!sendForm.to.trim()) { toast({ variant: 'destructive', title: 'Recipient required', description: 'Enter their email or username.' }); return; }
+		const n = Number(sendForm.amount);
+		if (!n || n < 1) { toast({ variant: 'destructive', title: 'Amount', description: 'Minimum send is 1.' }); return; }
+		setSendBusy(true);
+		try {
+			const data = await transfer({
+				to: sendForm.to.trim(), asset: sendForm.asset, amount: n,
+				memo: sendForm.memo.trim(),
+				idempotencyKey: `${user?.id || 'u'}_${Date.now()}_${n}`,
+			});
+			const who = data?.to?.username || data?.to?.email || sendForm.to.trim();
+			toast({ title: data?.replay ? 'Already sent — no double charge' : `Sent ${n} ${sendForm.asset} to ${who}` });
+			setSendForm({ to: '', asset: sendForm.asset, amount: '', memo: '' });
+			getAccounts().then(setAccounts).catch(() => {});
+		} catch (err) {
+			if (err?.code === 'kyc_required') {
+				toast({ variant: 'destructive', title: 'Identity verification required', description: 'Verify your identity to send money.' });
+			} else if (err?.code === 'recipient_not_found') {
+				toast({ variant: 'destructive', title: 'Recipient not found', description: 'No TradingBible user matches that email or username.' });
+			} else {
+				toast({ variant: 'destructive', title: 'Send failed', description: err?.message || 'Try again.' });
+			}
+		} finally { setSendBusy(false); }
+	};
+
+	const loadStatement = async () => {
+		if (!/^\d{4}-\d{2}$/.test(stmtMonth)) return;
+		setStmtBusy(true);
+		try { setStatement(await getStatement(stmtMonth)); }
+		catch (err) { toast({ variant: 'destructive', title: 'Statement failed', description: err?.message || 'Try again.' }); }
+		finally { setStmtBusy(false); }
+	};
+
+	const saveStatementCsv = async () => {
+		if (!/^\d{4}-\d{2}$/.test(stmtMonth)) return;
+		setStmtBusy(true);
+		try { await downloadStatement(stmtMonth); }
+		catch { toast({ variant: 'destructive', title: 'Download failed' }); }
+		finally { setStmtBusy(false); }
+	};
 
 	return (
 		<AppLayout title={t('nav.wallet')}>
@@ -503,11 +584,24 @@ export default function WalletPage() {
 					</h1>
 				</div>
 				<div className="ml-auto flex flex-wrap items-center gap-2">
-					<GoldButton onClick={() => setShowDep(!showDep)} className="!min-h-[44px] !px-5 !py-2.5 !text-xs"><Plus className="h-4 w-4" /> Top up</GoldButton>
+					<GoldButton onClick={() => { setBankTab('money'); setShowDep(true); }} className="!min-h-[44px] !px-5 !py-2.5 !text-xs"><Plus className="h-4 w-4" /> Top up</GoldButton>
 					<GhostButton onClick={reload} disabled={syncing} className="!min-h-[44px] !px-4 !py-2.5 !text-xs"><RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} /> Refresh</GhostButton>
 				</div>
 			</div>
 
+			{/* ── Bank tabs ── */}
+			<div className="flex gap-1 overflow-x-auto rounded-2xl border border-white/[0.07] bg-black/30 p-1.5">
+				{BANK_TABS.map((tb) => (
+					<button key={tb.id} onClick={() => setBankTab(tb.id)}
+						className={`flex min-h-[44px] flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-3 text-[13px] font-bold transition ${bankTab === tb.id ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
+						<tb.icon className="h-4 w-4" />
+						{tb.label}
+					</button>
+				))}
+			</div>
+
+			{bankTab === 'accounts' && (
+			<>
 			{/* ── Safes ── */}
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
 				<div className="rounded-3xl border border-[#d4af37]/30 bg-[#d4af37]/[0.06] p-5 transition-all duration-200 hover:-translate-y-0.5">
@@ -527,6 +621,83 @@ export default function WalletPage() {
 				</div>
 			</div>
 
+			{/* ── Bank accounts ── */}
+			<div>
+				<div className="mb-3 flex items-baseline gap-3">
+					<h3 className="whitespace-nowrap font-mono text-sm font-bold uppercase tracking-widest text-[#f0ecdd]">Accounts</h3>
+					<span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+					<GhostButton onClick={() => setBankTab('send')} className="!px-3 !py-2 !text-xs"><Send className="h-4 w-4" /> Send money</GhostButton>
+				</div>
+				<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+					{(accounts.length ? accounts : [
+						{ id: 'cash', name: 'Cash Account', currency: 'USD', asset: 'USD', balance: walletBalance, number: '', last4: '' },
+						{ id: 'tbc', name: 'TBC Account', currency: 'TBC', asset: 'TBC', balance: tbcBalance, number: '', last4: '' },
+					]).map((a) => (
+						<div key={a.id} className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#111116] to-black p-5">
+							<div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-[#d4af37]/10 blur-2xl" />
+							<div className="flex items-center justify-between gap-2">
+								<span className="text-[11px] font-bold uppercase tracking-wide text-[#d4af37]">{a.name}</span>
+								<Landmark className="h-4 w-4 text-[#5f5b50]" />
+							</div>
+							<div className="mt-2 font-mono text-2xl font-extrabold text-[#f0ecdd]">
+								{a.asset === 'TBC' ? <TbcMoney amount={a.balance} /> : fmtMoney(Number(a.balance) || 0)}
+							</div>
+							<div className="mt-1 font-mono text-[11px] tracking-wider text-[#6a665a]">
+								{a.number ? `${a.number} ···· ${a.last4}` : 'Number issued on first activity'}
+							</div>
+						</div>
+					))}
+				</div>
+			</div>
+			</>
+			)}
+			{bankTab === 'send' && (
+					<form onSubmit={doSend} className="mt-3 rounded-3xl border border-[#d4af37]/25 bg-[#d4af37]/[0.04] p-4 sm:p-5">
+						<div className="flex items-center gap-2 text-sm font-bold text-[#f0ecdd]"><ArrowLeftRight className="h-4 w-4 text-[#d4af37]" /> Send to another trader</div>
+						<p className="mt-1 text-xs text-[#8a8577]">Settles instantly in their account. Identity-verified senders only — mentorship, signals and marketplace all settle this way.</p>
+						<div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+							<input className={input} value={sendForm.to} onChange={(e) => setSendForm({ ...sendForm, to: e.target.value })} placeholder="Email or username" autoComplete="off" />
+							<div className="grid grid-cols-2 gap-3">
+								<select className={input} value={sendForm.asset} onChange={(e) => setSendForm({ ...sendForm, asset: e.target.value })}>
+									<option value="TBC" className="bg-[#0f0f14]">TBC</option>
+									<option value="USD" className="bg-[#0f0f14]">USD cash</option>
+								</select>
+								<input className={input} type="number" min="1" step="any" value={sendForm.amount} onChange={(e) => setSendForm({ ...sendForm, amount: e.target.value })} placeholder="Amount" />
+							</div>
+						</div>
+						<input className={`${input} mt-3`} value={sendForm.memo} onChange={(e) => setSendForm({ ...sendForm, memo: e.target.value })} placeholder="Note (optional) — e.g. Mentorship session" maxLength={120} autoComplete="off" />
+						<div className="mt-3 flex flex-wrap gap-2">
+							<GoldButton disabled={sendBusy} className="!min-h-[44px] !px-5 !py-2.5 !text-xs"><Send className="h-4 w-4" /> {sendBusy ? 'Sending…' : `Send ${sendForm.asset}`}</GoldButton>
+							<GhostButton type="button" onClick={() => setBankTab('accounts')} className="!min-h-[44px] !px-4 !py-2.5 !text-xs">Cancel</GhostButton>
+						</div>
+					</form>
+			)}
+			{bankTab === 'accounts' && (
+				<>
+				{/* ── Statements ── */}
+				<Card className="mt-3 p-4 sm:p-5">
+					<div className="flex flex-wrap items-center gap-3">
+						<FileText className="h-4 w-4 text-[#d4af37]" />
+						<div className="min-w-0 flex-1">
+							<div className="text-sm font-bold text-[#f0ecdd]">Monthly statements</div>
+							<div className="text-xs text-[#8a8577]">Opening balance, every line, closing balance — bank-grade paper trail.</div>
+						</div>
+						<input type="month" className={`${input} !w-auto`} value={stmtMonth} max={new Date().toISOString().slice(0, 7)} onChange={(e) => setStmtMonth(e.target.value)} aria-label="Statement month" />
+						<GhostButton onClick={loadStatement} disabled={stmtBusy} className="!px-4 !py-2 !text-xs">View</GhostButton>
+						<GhostButton onClick={saveStatementCsv} disabled={stmtBusy} className="!px-4 !py-2 !text-xs"><Download className="h-4 w-4" /> CSV</GhostButton>
+					</div>
+					{statement && (
+						<div className="mt-3 grid grid-cols-2 gap-3 rounded-2xl border border-white/[0.07] bg-black/30 p-4 font-mono text-sm sm:grid-cols-4">
+							<div><div className="text-[10px] uppercase tracking-widest text-[#5f5b50]">Opened</div><div className="text-[#c9c4b4]">{fmtMoney(statement.opening?.USD || 0)}</div><div className="text-[#c9c4b4]">{Number(statement.opening?.TBC || 0).toLocaleString()} TBC</div></div>
+							<div><div className="text-[10px] uppercase tracking-widest text-[#5f5b50]">Lines</div><div className="text-[#f0ecdd]">{statement.count}</div></div>
+							<div><div className="text-[10px] uppercase tracking-widest text-[#5f5b50]">Closed · Cash</div><div className="text-emerald-400">{fmtMoney(statement.closing?.USD || 0)}</div></div>
+							<div><div className="text-[10px] uppercase tracking-widest text-[#5f5b50]">Closed · TBC</div><div className="text-emerald-400">{Number(statement.closing?.TBC || 0).toLocaleString()} TBC</div></div>
+						</div>
+					)}
+				</Card>
+				</>
+			)}
+
 				{needsSetup && (
 					<Card className="border-[#d4af37]/40 p-5">
 						<div className="flex items-start gap-3">
@@ -543,20 +714,28 @@ export default function WalletPage() {
 					</Card>
 				)}
 
+				{bankTab === 'money' && (
 				<MoneyPath
 					walletBalance={walletBalance} tbcBalance={tbcBalance} kycStatus={kycStatus} connectStatus={connectStatus}
 					railBusy={railBusy} busy={busy} depAmount={depAmount} setDepAmount={setDepAmount}
 					withAmount={withAmount} setWithAmount={setWithAmount} showDep={showDep} setShowDep={setShowDep}
 					showWith={showWith} setShowWith={setShowWith} doDeposit={doDeposit} doWithdraw={doWithdraw}
-					doOnboard={doOnboard} doKyc={doKyc} t={t}
+					doOnboard={doOnboard} doKyc={doKyc} onGoCrypto={goCryptoSection} t={t}
 				/>
+				)}
 
+				{bankTab === 'crypto' && (
+				<>
 				<div id="tbc-convert" className="scroll-mt-24">
 					<TbcCard onChanged={reload} />
 				</div>
 
 				<AirdropClaim onChanged={reload} />
+				</>
+				)}
 
+				{bankTab === 'activity' && (
+				<>
 				{/* ── Paper trail ── */}
 				<div>
 					<div className="mb-3 flex items-baseline gap-3">
@@ -590,7 +769,11 @@ export default function WalletPage() {
 						)}
 					</Card>
 				</div>
+				</>
+				)}
 
+				{bankTab === 'crypto' && (
+				<>
 				{/* ── Crypto vault ── */}
 				<Card className="p-4 sm:p-5">
 					<div className="flex flex-wrap items-center gap-3">
@@ -769,6 +952,8 @@ export default function WalletPage() {
 						</div>
 					)}
 				</Card>
+				</>
+				)}
 
 				<Note icon={ShieldCheck}>
 					Cash ledger: every deposit, payout, challenge fee and reward is recorded here — balance is the sum of non-failed rows. Crypto tracking and swaps are non-custodial: your keys never touch our servers.

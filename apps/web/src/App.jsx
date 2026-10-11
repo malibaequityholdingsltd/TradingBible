@@ -14,15 +14,17 @@ import { NotificationsProvider } from '@/hooks/useNotifications';
 import ScrollToTop from './components/ScrollToTop';
 import GlobalTicker from './components/GlobalTicker';
 import AlertMonitor from './components/AlertMonitor';
-import LiveChatWidget from './components/LiveChatWidget';
-import TvWidget from './components/TvWidget';
 import AmbientDepth from './components/AmbientDepth';
 import PwaStatus from './components/PwaStatus';
 import ErrorBoundary from './components/ErrorBoundary';
-import GuideButton from './components/GuideButton';
 import { AdProvider } from './lib/ads/components.jsx';
 import pb from './lib/pocketbaseClient';
-import LandingPage from './pages/LandingPage';
+// Heavy persistent widgets load after first paint — they mount once and
+// survive navigation, but must never bloat the initial bundle.
+const LiveChatWidget = lazy(() => import('./components/LiveChatWidget'));
+const TvWidget = lazy(() => import('./components/TvWidget'));
+const GuideButton = lazy(() => import('./components/GuideButton'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 import { LoginPage, SignupPage, ResetPage, OnboardingPage } from './pages/AuthFlow';
 
 // Lazy-load heavy authenticated + secondary pages so the initial bundle stays
@@ -85,6 +87,7 @@ const FaqPage = lazy(() => import('./pages/LegalPages').then((m) => ({ default: 
 const AdsDemoPage = lazy(() => import('./pages/AdsDemoPage'));
 const ProGuidePage = lazy(() => import('./pages/ProGuidePage'));
 const TokenPage = lazy(() => import('./pages/TokenPage'));
+const TokenDashboardPage = lazy(() => import('./pages/TokenDashboardPage'));
 const ChallengesPage = lazy(() => import('./pages/ChallengesPage'));
 const BacktestPage = lazy(() => import('./pages/BacktestPage'));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
@@ -253,9 +256,9 @@ function AppChrome() {
             {!hideTicker && <GlobalTicker />}
             <AlertMonitor />
             <ScrollToTop />
-            {!hideTicker && <ErrorBoundary fallback={null}><GuideButton /></ErrorBoundary>}
-            {inApp && features.aiCoach !== false && <ErrorBoundary fallback={null}><LiveChatWidget /></ErrorBoundary>}
-            {pathname !== '/tv' && inApp && <ErrorBoundary fallback={null}><TvWidget /></ErrorBoundary>}
+            {!hideTicker && <ErrorBoundary fallback={null}><Suspense fallback={null}><GuideButton /></Suspense></ErrorBoundary>}
+            {inApp && features.aiCoach !== false && <ErrorBoundary fallback={null}><Suspense fallback={null}><LiveChatWidget /></Suspense></ErrorBoundary>}
+            {pathname !== '/tv' && inApp && <ErrorBoundary fallback={null}><Suspense fallback={null}><TvWidget /></Suspense></ErrorBoundary>}
         </>
     );
 }
@@ -307,6 +310,7 @@ function RoutesWithBoundary() {
                     <Route path="/refund" element={<RefundPage />} />
                     <Route path="/faq" element={<FaqPage />} />
                     <Route path="/tbc" element={<TokenPage />} />
+                    <Route path="/app/tbc" element={<Protected><TokenDashboardPage /></Protected>} />
                     <Route path="/tv" element={<EverPaidProtected><TvPage /></EverPaidProtected>} />
                     {import.meta.env.DEV && <Route path="/__tvtest" element={<div style={{ minHeight: "200dvh", background: "#0a0a0f" }}><TvWidget /></div>} />}
                     {import.meta.env.DEV && <Route path="/__ads-demo" element={<Protected><AdsDemoPage /></Protected>} />}

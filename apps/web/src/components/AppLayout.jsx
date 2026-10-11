@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Code2, Palette, CreditCard, HelpCircle, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, MonitorPlay, Compass, FlaskConical, Store, Medal, Briefcase, SquareTerminal, Star, Coins, Droplets, Sun, Moon, Languages, Check, X, Search } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Code2, Palette, CreditCard, HelpCircle, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, MonitorPlay, Compass, FlaskConical, Store, Medal, Briefcase, SquareTerminal, Star, Coins, Droplets, Sun, Moon, Languages, Check, X, Search, Gem } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { avatarUrl } from '@/lib/avatar';
 import { displayInitial } from '@/lib/displayName';
@@ -58,6 +58,7 @@ const NAV_GROUPS = [
       { to: '/app/signals', labelKey: 'nav.signals', icon: Radar },
       { to: '/app/market', labelKey: 'nav.market', icon: Store },
       { to: '/app/staking', labelKey: 'nav.staking', icon: Coins },
+      { to: '/app/tbc', labelKey: 'nav.token', icon: Gem },
       { to: '/app/defi', labelKey: 'nav.defi', icon: Droplets },
       { to: '/leaderboard', labelKey: 'nav.leaderboard', icon: Medal },
       { to: '/app/alerts', labelKey: 'nav.alerts', icon: Bell },

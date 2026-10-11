@@ -66,6 +66,7 @@
 - [Terminal Premium](/app/terminal-pro): TradingBible application page.
 - [Terms](/terms): TradingBible application page.
 - [Token](/tbc): TradingBible application page.
+- [Token Dashboard](/app/tbc): TradingBible application page.
 - [Tv](/tv): TradingBible application page.
 - [User Api Keys](/app/api-keys): TradingBible application page.
 - [Wallet](/app/wallet): TradingBible application page.
