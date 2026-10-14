@@ -7,6 +7,7 @@ import { useI18n } from '@/lib/i18n';
 import { avatarUrl } from '@/lib/avatar';
 import { displayName, displayInitial } from '@/lib/displayName';
 import { useToast } from '@/hooks/use-toast';
+import PhoneField from '@/components/PhoneField';
 import pb from '@/lib/pocketbaseClient';
 import { useWallet } from '@/hooks/useWallet';
 import { MARKETS, EXPERIENCE, GOALS } from '@/lib/mockData';
@@ -185,7 +186,7 @@ export default function ProfilePage() {
             <Row icon={User} label={`${t('auth.firstName', null, 'First name')} *`}><input className={input} value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} placeholder={t('auth.firstName', null, 'First name')} autoComplete="given-name" disabled={identityLocked} /></Row>
             <Row icon={User} label={`${t('auth.lastName', null, 'Last name')} *`}><input className={input} value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} placeholder={t('auth.lastName', null, 'Last name')} autoComplete="family-name" disabled={identityLocked} /></Row>
             <Row icon={Mail} label={t('auth.emailAddress')}><input className={input} type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required /></Row>
-            <Row icon={Phone} label={`${t('auth.phone', null, 'Phone')} *`}><input className={input} type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder={t('prof.phonePh')} autoComplete="tel" /></Row>
+            <Row icon={Phone} label={`${t('auth.phone', null, 'Phone')} *`}><PhoneField value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} /></Row>
             <Row icon={CalendarDays} label={`${t('auth.dob', null, 'Date of birth')} *`}><input className={input} type="date" value={form.dob || ''} onChange={(e) => setForm({ ...form, dob: e.target.value })} max={new Date().toISOString().slice(0, 10)} disabled={identityLocked} /></Row>
             <div className="sm:col-span-2">
               <Row icon={MapPin} label={t('prof.address', null, 'Residential address')}>

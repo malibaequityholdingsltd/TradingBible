@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Code2, Palette, CreditCard, HelpCircle, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, MonitorPlay, Compass, FlaskConical, Store, Medal, Briefcase, SquareTerminal, Star, Coins, Droplets, Sun, Moon, Languages, Check, X, Search, Gem } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Code2, Palette, CreditCard, HelpCircle, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, MonitorPlay, Compass, FlaskConical, Medal, Briefcase, SquareTerminal, Star, Coins, Sun, Moon, Languages, Check, X, Search } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { avatarUrl } from '@/lib/avatar';
 import { displayInitial } from '@/lib/displayName';
@@ -11,10 +11,12 @@ import OnboardingTutorial from '@/components/OnboardingTutorial';
 import GlobalSearch from '@/components/GlobalSearch';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
+import ThemePickerDialog from '@/components/ThemePickerDialog';
 import { BrandWordmark, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { meetsPlan } from '@/lib/entitlements';
 import { isAdminPreview, exitAdminPreview } from '@/lib/adminPreview';
+import { WL_PRESETS, WL_DEFAULTS, applyWhiteLabel, loadLocalTheme, saveLocalTheme } from '@/lib/whitelabel';
 import { usePlatformSettings, featureForRoute } from '@/lib/platformSettings';
 import {
   DropdownMenu,
@@ -28,51 +30,54 @@ import {
   DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
 
+// iOS Settings-style tile tints: one solid rounded tile + white glyph per
+// item. The gold row highlight stays brand; tiles stay Apple-palette.
+const IOS = {
+  blue: '#0A84FF', orange: '#FF9F0A', purple: '#BF5AF2', green: '#30D158',
+  gray: '#8E8E93', teal: '#64D2FF', pink: '#FF375F', red: '#FF453A',
+  indigo: '#5E5CE6', brown: '#AC8E68', yellow: '#FFD60A',
+};
 const NAV_GROUPS = [
   {
     labelKey: 'nav.trade',
     items: [
-      { to: '/app/terminal-pro', labelKey: 'nav.terminalPro', icon: SquareTerminal },
-      { to: '/app/journal', labelKey: 'nav.journal', icon: BookOpen },
-      { to: '/app/challenges', labelKey: 'nav.challenges', icon: Trophy },
-      { to: '/app/paper', labelKey: 'nav.paper', icon: FlaskConical },
-      { to: '/app/brokers', labelKey: 'nav.brokers', icon: Plug },
-      { to: '/app/funded', labelKey: 'nav.funded', icon: Trophy },
-      { to: '/app/wallet', labelKey: 'nav.wallet', icon: Landmark, requiresSubscriber: true },    ],
+      { to: '/app/terminal-pro', labelKey: 'nav.terminalPro', icon: SquareTerminal, tint: IOS.blue },
+      { to: '/app/journal', labelKey: 'nav.journal', icon: BookOpen, tint: IOS.orange },
+      { to: '/app/challenges', labelKey: 'nav.challenges', icon: Trophy, tint: IOS.purple },
+      { to: '/app/paper', labelKey: 'nav.paper', icon: FlaskConical, tint: IOS.green },
+      { to: '/app/brokers', labelKey: 'nav.brokers', icon: Plug, tint: IOS.gray },
+      { to: '/app/wallet', labelKey: 'nav.wallet', icon: Landmark, requiresSubscriber: true, tint: IOS.teal },    ],
   },
   {
     labelKey: 'nav.analyze',
     items: [
-      { to: '/app/analytics', labelKey: 'nav.analytics', icon: BarChart3 },
-      { to: '/app/backtest', labelKey: 'nav.backtest', icon: FlaskConical },
-      { to: '/app/reports', labelKey: 'nav.reports', icon: FileText, requiresSubscriber: true, requiredPlan: 'elite' },
-      { to: '/app/coach', labelKey: 'nav.coach', icon: Bot, requiresSubscriber: true, requiredPlan: 'elite' },
-      { to: '/app/tools', labelKey: 'nav.tools', icon: Calculator, requiresSubscriber: true },
+      { to: '/app/analytics', labelKey: 'nav.analytics', icon: BarChart3, tint: IOS.pink },
+      { to: '/app/backtest', labelKey: 'nav.backtest', icon: FlaskConical, tint: IOS.indigo },
+      { to: '/app/reports', labelKey: 'nav.reports', icon: FileText, requiresSubscriber: true, requiredPlan: 'elite', tint: IOS.red },
+      { to: '/app/coach', labelKey: 'nav.coach', icon: Bot, requiresSubscriber: true, requiredPlan: 'elite', tint: IOS.purple },
+      { to: '/app/tools', labelKey: 'nav.tools', icon: Calculator, requiresSubscriber: true, tint: IOS.gray },
     ],
   },
   {
     labelKey: 'nav.markets',
     items: [
-      { to: '/app/watchlists', labelKey: 'nav.watchlists', icon: Star },
-      { to: '/tv', labelKey: 'nav.tv', icon: MonitorPlay },
-      { to: '/app/signals', labelKey: 'nav.signals', icon: Radar },
-      { to: '/app/market', labelKey: 'nav.market', icon: Store },
-      { to: '/app/staking', labelKey: 'nav.staking', icon: Coins },
-      { to: '/app/tbc', labelKey: 'nav.token', icon: Gem },
-      { to: '/app/defi', labelKey: 'nav.defi', icon: Droplets },
-      { to: '/leaderboard', labelKey: 'nav.leaderboard', icon: Medal },
-      { to: '/app/alerts', labelKey: 'nav.alerts', icon: Bell },
-      { to: '/app/economic-calendar', labelKey: 'nav.economic', icon: CalendarClock },
+      { to: '/app/watchlists', labelKey: 'nav.watchlists', icon: Star, tint: IOS.yellow, glyph: '#3a2f00' },
+      { to: '/tv', labelKey: 'nav.tv', icon: MonitorPlay, tint: IOS.red },
+      { to: '/app/signals', labelKey: 'nav.signals', icon: Radar, tint: IOS.orange },
+      { to: '/app/staking', labelKey: 'nav.staking', icon: Coins, tint: IOS.green },
+      { to: '/leaderboard', labelKey: 'nav.leaderboard', icon: Medal, tint: IOS.purple },
+      { to: '/app/alerts', labelKey: 'nav.alerts', icon: Bell, tint: IOS.pink },
+      { to: '/app/economic-calendar', labelKey: 'nav.economic', icon: CalendarClock, tint: IOS.indigo },
     ],
   },
   {
     labelKey: 'nav.learn',
     items: [
-      { to: '/app/guide', labelKey: 'nav.guide', icon: Compass },
-      { to: '/app/mentors', labelKey: 'nav.mentors', icon: Briefcase },
-      { to: '/app/community', labelKey: 'nav.community', icon: Users },
-      { to: '/app/academy', labelKey: 'nav.academy', icon: GraduationCap },
-      { to: '/app/api-docs', labelKey: 'nav.apidocs', icon: Code2, requiresSubscriber: true, requiredPlan: 'professional' },
+      { to: '/app/guide', labelKey: 'nav.guide', icon: Compass, tint: IOS.teal },
+      { to: '/app/mentors', labelKey: 'nav.mentors', icon: Briefcase, tint: IOS.brown },
+      { to: '/app/community', labelKey: 'nav.community', icon: Users, tint: IOS.blue },
+      { to: '/app/academy', labelKey: 'nav.academy', icon: GraduationCap, tint: IOS.red },
+      { to: '/app/api-docs', labelKey: 'nav.apidocs', icon: Code2, requiresSubscriber: true, requiredPlan: 'professional', tint: IOS.gray },
     ],
   },
 ];
@@ -83,24 +88,24 @@ function Brand({ homeTo, platformName, tagline }) {
   const first = words.slice(0, -1).join(' ');
   const last = words[words.length - 1] || '';
   return (
-    <Link to={homeTo} className="group flex items-center gap-4">
+    <Link to={homeTo} className="group flex items-center gap-2.5">
       <BrandWordmark size={32} showTagline={false} />
       <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-emerald-400 ring-2 ring-[#0a0a0f]" />
     </Link>
   );
 }
 
-function NavItem({ to, labelKey, icon: Icon, end, locked, t, onNav }) {
+function NavItem({ to, labelKey, icon: Icon, end, locked, t, onNav, tint, glyph }) {
   const inner = (
     <>
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/[0.04] text-[#8a8577] transition group-hover:text-[#d4af37]">
-        <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] shadow-[0_1px_6px_rgba(0,0,0,0.35)] transition group-hover:brightness-110" style={{ background: tint || 'rgba(255,255,255,0.06)', color: glyph || '#fff' }}>
+        <Icon className="h-4 w-4" strokeWidth={2} />
       </span>
-      <span className="min-w-0 flex-1 truncate text-left text-[13px] font-medium">{t(labelKey)}</span>
+      <span className="min-w-0 flex-1 truncate text-left text-[13px] font-medium tabular-nums">{t(labelKey)}</span>
       {locked && <Crown className="h-3.5 w-3.5 shrink-0 text-[#d4af37]" />}
     </>
   );
-  const cls = 'tbl-row group flex min-h-[48px] w-full items-center gap-3 rounded-2xl px-3 py-2 transition-all';
+  const cls = 'tbl-row group flex min-h-[44px] w-full items-center gap-2.5 rounded-[10px] px-2.5 py-2 tabular-nums transition-all';
   if (locked) {
     return (
       <button onClick={onNav} className={`${cls} text-[#8a8577]/70 hover:bg-white/[0.04] hover:text-[#e9e7df]`}>
@@ -110,7 +115,7 @@ function NavItem({ to, labelKey, icon: Icon, end, locked, t, onNav }) {
   }
   return (
     <NavLink to={to} end={end} onClick={onNav}
-      className={({ isActive }) => `${cls} ${isActive ? 'tbl-row--active bg-gradient-to-r from-[#d4af37]/20 to-[#d4af37]/5 text-[#f0ecdd] ring-1 ring-inset ring-[#d4af37]/30' : 'text-[#8a8577] hover:bg-white/[0.04] hover:text-[#e9e7df]'}`}>
+      className={({ isActive }) => `${cls} ${isActive ? 'tbl-row--active bg-[#d4af37]/[0.12] font-semibold text-[#f0ecdd] shadow-[inset_0_1px_0_rgba(244,230,168,0.12)] ring-1 ring-inset ring-[#d4af37]/25' : 'text-[#8a8577] hover:bg-white/[0.04] hover:text-[#e9e7df]'}`}>
       {inner}
     </NavLink>
   );
@@ -121,6 +126,29 @@ export default function AppLayout({ children, title }) {
   const [moreOpen, setMoreOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [tutorial, setTutorial] = useState(false);
+  // One-click app themes (everyone, every plan): accent + text colors apply
+  // instantly across the full app, in dark and light. Identity fields
+  // (company/logo) stay in the Branding studio.
+  const [presetId, setPresetId] = useState(() => {
+    try {
+      const saved = loadLocalTheme();
+      if (!saved) return 'tb-gold';
+      const hit = WL_PRESETS.find((pr) => (pr.accentColor || '').toLowerCase() === (saved.accentColor || '').toLowerCase());
+      return hit ? hit.id : 'custom';
+    } catch { return 'tb-gold'; }
+  });
+  const [themeOpen, setThemeOpen] = useState(false);
+  const [presetAccent, setPresetAccent] = useState(() => {
+    try { return loadLocalTheme()?.accentColor || WL_DEFAULTS.accentColor; } catch { return WL_DEFAULTS.accentColor; }
+  });
+  const pickPreset = (pr) => {
+    const base = (() => { try { return loadLocalTheme() || WL_DEFAULTS; } catch { return WL_DEFAULTS; } })();
+    const next = { ...base, accentColor: pr.accentColor, headingColor: pr.headingColor, bodyColor: pr.bodyColor, mutedColor: pr.mutedColor, primaryColor: pr.primaryColor };
+    applyWhiteLabel(next);
+    saveLocalTheme(next);
+    setPresetId(pr.id);
+    setPresetAccent(pr.accentColor);
+  };
   const nav = useNavigate();
   const loc = useLocation();
   const { user, logout, updateProfile } = useAuth();
@@ -139,10 +167,28 @@ export default function AppLayout({ children, title }) {
   const homeTo = homeRouteForUser(user);
 
   useEffect(() => {
-    if (user && user.tutorialDone === false) setTutorial(true);
+    if (!user) return;
+    let dismissed = false;
+    try { dismissed = window.localStorage.getItem('tb:tour-dismissed') === '1'; } catch { /* ignore */ }
+    if (dismissed || user.tutorialDone === true) return;
+    // Only brand-new accounts get the auto tour — existing users were
+    // force-prompted by a DB default of false. They can still open it
+    // anytime from the Help button.
+    const created = Date.parse(user.created || '') || 0;
+    const fresh = !created || (Date.now() - created) < 14 * 864e5;
+    if (fresh) setTutorial(true);
   }, [user]);
 
-  const completeTutorial = () => { updateProfile({ tutorialDone: true }).catch(() => {}); };
+  const dismissTutorial = () => {
+    try { window.localStorage.setItem('tb:tour-dismissed', '1'); } catch { /* ignore */ }
+    updateProfile({ tutorialDone: true }).catch(() => {});
+    setTutorial(false);
+  };
+  const completeTutorial = () => {
+    try { window.localStorage.setItem('tb:tour-dismissed', '1'); } catch { /* ignore */ }
+    updateProfile({ tutorialDone: true }).catch(() => {});
+    setTutorial(false);
+  };
   const closeDrawer = () => setOpen(false);
 
   // Keep the sidebar list scroll across page changes (each page mounts a
@@ -175,7 +221,7 @@ export default function AppLayout({ children, title }) {
     { to: '/app', icon: LayoutDashboard, label: t('nav.dashboard'), end: true },
     { to: '/app/terminal-pro', icon: SquareTerminal, label: t('dock.terminal', null, 'Terminal') },
     { to: '/app/wallet', icon: Landmark, label: t('nav.wallet'), center: true },
-    { to: '/app/funded', icon: Trophy, label: t('nav.funded') },
+    { to: '/app/challenges', icon: Trophy, label: t('nav.challenges') },
   ]
     .filter((m) => {
       const feature = featureForRoute(m.to);
@@ -214,8 +260,8 @@ export default function AppLayout({ children, title }) {
     }));
 
   const SideContent = (
-    <div className="flex h-full flex-col">
-      <nav data-nav-scroll className="tbl-cascade flex-1 space-y-5 overflow-y-auto px-3 pb-4 pt-4">
+    <div className="flex h-full flex-col tabular-nums">
+      <nav data-nav-scroll className="tbl-cascade nice-scroll flex-1 space-y-4 overflow-y-auto px-2 pb-4 pt-3">
         {NAV_GROUPS.map((group) => {
           const items = group.items
             .filter((it) => !it.hidden)
@@ -227,7 +273,7 @@ export default function AppLayout({ children, title }) {
           if (!items.length) return null;
           return (
             <div key={group.labelKey} className="space-y-1">
-              <div className="px-3 pb-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-[#5f5b50]">{t(group.labelKey)}</div>
+              <div className="px-2.5 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#5f5b50] tabular-nums">{t(group.labelKey)}</div>
               {items.map((it) => {
                 const locked = (it.requiresSubscriber && !isSubscriber) || (it.requiredPlan && !meetsPlan(user, it.requiredPlan));
                 return (
@@ -240,6 +286,8 @@ export default function AppLayout({ children, title }) {
                     locked={locked}
                     t={t}
                     onNav={locked ? goPricing : closeDrawer}
+                    tint={it.tint}
+                    glyph={it.glyph}
                   />
                 );
               })}
@@ -248,46 +296,46 @@ export default function AppLayout({ children, title }) {
         })}
       </nav>
       {!isSubscriber && !isAdmin && (
-        <div className="m-3 rounded-2xl border border-[#d4af37]/25 bg-gradient-to-b from-[#d4af37]/[0.08] to-transparent p-4">
+        <div className="m-2 rounded-[10px] border border-[#d4af37]/20 bg-gradient-to-b from-[#d4af37]/[0.08] to-transparent p-3.5 tabular-nums">
           <div className="flex items-center gap-2 text-[#d4af37]"><Crown className="h-4 w-4" /><span className="text-xs font-bold">{t('app.upgrade')}</span></div>
           <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{t('bill.noPlanYet', null, 'Subscribe to unlock the full terminal.')}</p>
-          <button onClick={() => nav('/app/billing')} className="mt-3 min-h-[44px] w-full rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-xs font-bold text-[#0a0a0f] transition hover:opacity-90">{t('app.upgrade')}</button>
+          <button onClick={() => nav('/app/billing')} className="mt-3 min-h-[44px] w-full rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-xs font-bold tabular-nums text-[#0a0a0f] transition hover:opacity-90">{t('app.upgrade')}</button>
         </div>
       )}
-      <div className="border-t border-white/5 px-3 py-3">
-        <button onClick={() => { closeDrawer(); nav('/app'); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-[#8a8577] transition hover:bg-white/5 hover:text-[#e9e7df]"><LayoutDashboard className="h-[18px] w-[18px]" strokeWidth={1.9} />{t('nav.dashboard')}</button>
+      <div className="border-t border-white/5 px-2 py-2.5">
+        <button onClick={() => { closeDrawer(); nav('/app'); }} className="group flex min-h-[44px] w-full items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-sm tabular-nums text-[#8a8577] transition hover:bg-white/5 hover:text-[#e9e7df]"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] shadow-[0_1px_6px_rgba(0,0,0,0.35)] transition group-hover:brightness-110" style={{ background: IOS.blue, color: '#fff' }}><LayoutDashboard className="h-4 w-4" strokeWidth={2} /></span>{t('nav.dashboard')}</button>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-transparent pt-[var(--header-h)]">
-      <aside className="tb-drawer fixed bottom-0 left-0 top-[calc(var(--header-h)+var(--apphead))] z-30 hidden w-[280px] flex-col border-r border-white/5 bg-[#0a0a0f]/80 backdrop-blur-xl lg:block">{SideContent}</aside>
+    <div className="min-h-screen bg-transparent pt-[var(--header-h)] tabular-nums antialiased">
+      <aside className="tb-drawer fixed bottom-0 left-0 top-[calc(var(--header-h)+var(--apphead))] z-30 hidden w-[248px] flex-col border-r border-white/5 bg-[#0a0a0f]/80 backdrop-blur-xl lg:block">{SideContent}</aside>
       {open && <div className="fixed inset-x-0 bottom-0 top-[calc(var(--header-h)+var(--apphead))] z-40 hidden bg-black/70 backdrop-blur-sm sm:block lg:hidden" onClick={() => setOpen(false)} />}
-      <aside className={`tb-drawer fixed bottom-0 left-0 top-[calc(var(--header-h)+var(--apphead))] z-40 hidden w-[280px] flex-col border-r border-white/5 bg-[#0a0a0f]/95 backdrop-blur-xl transition-transform sm:flex lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}>{SideContent}</aside>
-      <div className="lg:pl-[280px]">
+      <aside className={`tb-drawer fixed bottom-0 left-0 top-[calc(var(--header-h)+var(--apphead))] z-40 hidden w-[248px] flex-col border-r border-white/5 bg-[#0a0a0f]/95 backdrop-blur-xl transition-transform sm:flex lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}>{SideContent}</aside>
+      <div className="lg:pl-[248px]">
         {/* Phone header: solid two-row bar (compact row + full-width
             search). sm+ keeps the single-row translucent bar. */}
-        <header className="app-header fixed inset-x-0 left-0 right-0 top-[var(--header-h)] z-[35] w-full border-b border-white/[0.06] bg-[#0a0a0f] sm:bg-[#0a0a0f]/90 sm:backdrop-blur-2xl">
+        <header className="app-header fixed inset-x-0 left-0 right-0 top-[var(--header-h)] z-[35] w-full border-b border-white/[0.06] bg-[#0a0a0f] tabular-nums sm:bg-[#0a0a0f]/90 sm:backdrop-blur-2xl">
           {/* drifting gold hairline + slow light sweep */}
           <div aria-hidden className="app-header-hairline pointer-events-none absolute inset-x-0 bottom-0 h-px" />
           <div aria-hidden className="app-header-sheen pointer-events-none absolute inset-0 overflow-hidden" />
           <div className="flex h-14 w-full items-center justify-between gap-2 px-1 sm:gap-3 sm:px-2">
           {/* Left: menu + brand + page */}
           <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2">
-            <button className="hidden h-9 w-9 shrink-0 place-items-center rounded-full text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37] sm:grid lg:hidden" aria-label={t('app.openNav')} onClick={() => setOpen(true)}>
+            <button className="hidden h-9 w-9 shrink-0 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37] sm:grid lg:hidden" aria-label={t('app.openNav')} onClick={() => setOpen(true)}>
               <Menu className="h-5 w-5" />
             </button>
-            <img src={TRADINGBIBLE_LOGO} alt="" aria-hidden className="h-9 w-9 shrink-0 rounded-xl border border-[#d4af37]/40 bg-[#0c0c11] object-contain gold-glow sm:hidden" onError={e => { e.currentTarget.style.display = 'none'; }} />
+            <img src={TRADINGBIBLE_LOGO} alt="" aria-hidden className="h-8 w-8 shrink-0 rounded-[10px] border border-[#d4af37]/25 bg-[#0c0c11] object-contain gold-glow sm:hidden" onError={e => { e.currentTarget.style.display = 'none'; }} />
             <Link to={homeRouteForUser(user)} className="group hidden items-center gap-2.5 sm:flex" aria-label="TradingBible home">
               <span className="relative">
                 <img
                   src={TRADINGBIBLE_LOGO}
                   alt="TradingBible"
-                    className="h-9 w-9 rounded-xl border border-[#d4af37]/40 bg-[#0c0c11] object-contain transition duration-200 group-hover:scale-105 group-hover:border-[#d4af37]/70"
+                    className="h-8 w-8 rounded-[10px] border border-[#d4af37]/25 bg-[#0c0c11] object-contain transition duration-200 group-hover:scale-105 group-hover:border-[#d4af37]/50"
                   onError={e => { e.currentTarget.style.display = 'none'; }}
                 />
-                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] ring-2 ring-[#0a0a0f]" />
+                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 tabular-nums shadow-[0_0_8px_rgba(52,211,153,0.9)] ring-2 ring-[#0a0a0f]" />
               </span>
               <span className="text-xl font-black leading-none tracking-tight text-[#f0ecdd]">Trading<span className="gold-text">Bible</span></span>
             </Link>
@@ -307,33 +355,33 @@ export default function AppLayout({ children, title }) {
 
           {/* Right: unified action cluster (theme/lang hidden on phones — they live in the drawer) */}
           <div className="flex min-w-0 flex-1 items-center justify-end">
-          <div className="app-header-pill flex shrink-0 items-center gap-1 rounded-full border border-white/[0.06] bg-white/[0.02] p-1 backdrop-blur-md sm:gap-1.5 sm:p-1.5">
+          <div className="app-header-pill flex shrink-0 items-center gap-1 rounded-[10px] border border-white/[0.06] bg-white/[0.02] p-1 tabular-nums backdrop-blur-md sm:gap-1.5 sm:p-1.5">
             {/* Phones: search is an overlay toggled here, not a fixed row */}
             <button onClick={() => setSearchOpen((o) => !o)} aria-label={t('nav.search', null, 'Search')} aria-expanded={searchOpen}
-              className="hdr-ic grid h-9 w-9 shrink-0 place-items-center rounded-full text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] sm:hidden">
+              className="hdr-ic grid h-9 w-9 shrink-0 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] sm:hidden">
               <Search className="h-4 w-4" />
             </button>
             <span className="hidden sm:contents"><ThemeSwitcher inline /></span>
             <span className="hidden sm:contents"><LanguageSwitcher /></span>
             {canSeeSignals && (
-              <button onClick={() => nav('/app/alerts')} className="hdr-ic relative grid h-9 w-9 place-items-center rounded-full text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37]" title={t('app.alerts')}>
+              <button onClick={() => nav('/app/alerts')} className="hdr-ic relative grid h-9 w-9 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37]" title={t('app.alerts')}>
                 <Bell className="h-4 w-4" />
-                {unseen > 0 && <span className="absolute right-1 top-1 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-red-500 px-1 text-[8px] font-bold text-white">{unseen > 9 ? '9+' : unseen}</span>}
+                {unseen > 0 && <span className="absolute right-1 top-1 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-red-500 px-1 text-[8px] font-bold tabular-nums text-white">{unseen > 9 ? '9+' : unseen}</span>}
               </button>
             )}
-            <button onClick={() => setTutorial(true)} aria-label={t('app.help')} title={t('app.help')} className="hidden h-9 w-9 place-items-center rounded-full text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] sm:grid">
+            <button onClick={() => setTutorial(true)} aria-label={t('app.help')} title={t('app.help')} className="hidden h-9 w-9 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] sm:grid">
               <HelpCircle className="h-4 w-4" />
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1.5 rounded-full py-0.5 pl-0.5 pr-1.5 text-left transition hover:bg-white/5">
-                  <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] text-sm font-bold text-[#0a0a0f] ring-1 ring-[#d4af37]/50">
+                <button className="flex items-center gap-1.5 rounded-[10px] py-0.5 pl-0.5 pr-1.5 text-left transition hover:bg-white/5">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-[10px] bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] text-sm font-bold tabular-nums text-[#0a0a0f] ring-1 ring-[#d4af37]/40">
                     {avatar ? <img src={avatar} alt="avatar" className="h-full w-full object-cover" /> : initial}
                   </span>
                   <ChevronDown className="h-3.5 w-3.5 text-[#8a8577]" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" sideOffset={8} className="tb-avatarmenu w-56 border-[#d4af37]/15 bg-[#111113] text-[#e9e7df]">
+              <DropdownMenuContent align="end" sideOffset={8} className="tb-avatarmenu w-56 rounded-[10px] border-[#d4af37]/15 bg-[#111113] tabular-nums text-[#e9e7df]">
                 <DropdownMenuLabel className="px-3 py-2 text-xs uppercase tracking-[0.18em] text-[#8a8577]">{t('app.account')}</DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-white/5" />
                 <DropdownMenuItem onClick={() => nav('/app/profile')} className="min-h-[44px] cursor-pointer gap-2.5">
@@ -350,6 +398,11 @@ export default function AppLayout({ children, title }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => nav('/app/branding')} className="min-h-[44px] cursor-pointer gap-2.5">
                   <Palette className="h-4 w-4 text-[#d4af37]" /> {t('nav.branding')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setThemeOpen(true)} className="min-h-[44px] cursor-pointer gap-2.5">
+                  <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full ring-1 ring-white/20" style={{ background: presetAccent }} />
+                  <span className="flex-1">{t('brd.themes', null, 'App theme')} · {(WL_PRESETS.find((pr) => pr.id === presetId)?.label || t('brd.custom', null, 'Custom')).split(' ').slice(-1)}</span>
+                  <span className="font-mono text-[11px] text-[#5f5b50]">›</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => nav('/app/api-keys')} className="min-h-[44px] cursor-pointer gap-2.5">
                   <KeyRound className="h-4 w-4 text-[#d4af37]" /> {t('nav.apikeys')}
@@ -390,6 +443,7 @@ export default function AppLayout({ children, title }) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <ThemePickerDialog open={themeOpen} onOpenChange={setThemeOpen} activeId={presetId} onPick={pickPreset} />
           </div>
           </div>
           </div>
@@ -399,7 +453,7 @@ export default function AppLayout({ children, title }) {
               <div className="flex items-center gap-2">
                 <div className="min-w-0 flex-1"><GlobalSearch autoFocus onNavigate={() => setSearchOpen(false)} /></div>
                 <button onClick={() => setSearchOpen(false)} aria-label={t('c.close', null, 'Close')}
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 text-[#8a8577] transition hover:text-[#e9e7df]">
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] border border-white/10 text-[#8a8577] transition hover:text-[#e9e7df]">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -408,9 +462,9 @@ export default function AppLayout({ children, title }) {
         </header>
         <main className="mx-auto w-full max-w-[96rem] px-4 pb-24 pt-[calc(var(--apphead)+0.75rem)] sm:px-5 sm:pb-5 sm:pt-[92px] lg:px-7 lg:pt-[100px] xl:px-8 xl:pt-[104px] 2xl:px-12">
           {isAdmin && isAdminPreview() && (
-            <div className="admin-frost mb-2 flex items-center justify-between gap-3 rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/[0.07] px-4 py-2">
+            <div className="admin-frost mb-2 flex items-center justify-between gap-3 rounded-[10px] border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-4 py-2 tabular-nums">
               <span className="text-xs text-[#d4af37]">{t('misc.adminPreview')}</span>
-              <button onClick={() => { exitAdminPreview(); nav('/admin'); }} className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#d4af37]/30 px-3 py-1.5 text-xs font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10"><LogOut className="h-3.5 w-3.5" /> {t('misc.exitAdmin')}</button>
+              <button onClick={() => { exitAdminPreview(); nav('/admin'); }} className="flex shrink-0 items-center gap-1.5 rounded-[10px] border border-[#d4af37]/25 px-3 py-1.5 text-xs font-semibold tabular-nums text-[#d4af37] transition hover:bg-[#d4af37]/10"><LogOut className="h-3.5 w-3.5" /> {t('misc.exitAdmin')}</button>
             </div>
           )}
           {children}
@@ -420,7 +474,7 @@ export default function AppLayout({ children, title }) {
         {/* Phone dock backdrop: solid fade so page text never shows
             around or below the floating dock while scrolling. */}
         <div aria-hidden className="tb-dockfade pointer-events-none fixed inset-x-0 bottom-0 z-30 h-36 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/95 to-transparent sm:hidden" />
-        <nav aria-label="App sections" className="tb-dock fixed inset-x-4 bottom-3 z-40 rounded-[26px] border border-[#d4af37]/20 bg-[#101016] shadow-[0_16px_50px_rgba(0,0,0,0.6),0_0_24px_rgba(212,175,55,0.08)] ring-1 ring-inset ring-white/[0.06] sm:hidden">
+        <nav aria-label="App sections" className="tb-dock fixed inset-x-4 bottom-3 z-40 rounded-[10px] border border-[#d4af37]/15 bg-[#101016] tabular-nums shadow-[0_12px_32px_rgba(0,0,0,0.55),0_0_20px_rgba(212,175,55,0.06)] ring-1 ring-inset ring-white/[0.06] sm:hidden">
           <div className="flex px-2 pb-2 pt-2">
             {MAIN_TABS.map((m) => {
               const Icon = m.icon;
@@ -456,9 +510,9 @@ export default function AppLayout({ children, title }) {
                   </div>
                 );
               }
-              const btn = 'dock-tab flex min-h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-2xl transition active:scale-95';
-              const pill = 'grid h-8 min-w-[52px] shrink-0 place-items-center rounded-full px-4 transition';
-              const lbl = 'truncate text-[10px] font-semibold leading-none';
+              const btn = 'dock-tab ios-spring flex min-h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-[10px] tabular-nums';
+              const pill = 'grid h-8 min-w-[52px] shrink-0 place-items-center rounded-[10px] px-4 transition';
+              const lbl = 'truncate text-[10px] font-semibold tabular-nums leading-none';
               if (m.locked) {
                 return (
                   <button key={m.to} onClick={goPricing} aria-label={m.label} className={`${btn} text-[#8a8577]/70`}>
@@ -474,7 +528,7 @@ export default function AppLayout({ children, title }) {
                   className={`${btn}`}>
                   {({ isActive }) => (
                     <>
-                      <span key={isActive ? 'on' : 'off'} className={`${pill} ${isActive ? 'pill-on dock-pop bg-[#d4af37]/20 text-[#d4af37] shadow-[inset_0_0_12px_rgba(212,175,55,0.15)]' : 'text-[#8a8577]'}`}>
+                      <span key={isActive ? 'on' : 'off'} className={`${pill} ${isActive ? 'pill-on dock-pop bg-[#d4af37]/[0.14] text-[#d4af37] shadow-[inset_0_0_10px_rgba(212,175,55,0.12)] ring-1 ring-inset ring-[#d4af37]/25' : 'text-[#8a8577]'}`}>
                         <Icon className="h-[22px] w-[22px]" strokeWidth={1.9} />
                       </span>
                       <span className={`${lbl} ${isActive ? 'lbl-on text-[#d4af37]' : 'text-[#8a8577]'}`}>{m.label}</span>
@@ -484,8 +538,8 @@ export default function AppLayout({ children, title }) {
               );
             })}
             <button onClick={() => setMoreOpen((o) => !o)} aria-label={t('dock.more', null, 'More')} aria-expanded={moreOpen}
-              className="dock-tab flex min-h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-2xl transition active:scale-95">
-              <span className={`grid h-8 min-w-[52px] shrink-0 place-items-center rounded-full px-4 transition ${moreActive ? 'pill-on bg-[#d4af37]/20 text-[#d4af37] shadow-[inset_0_0_12px_rgba(212,175,55,0.15)]' : 'text-[#8a8577]'}`}>
+              className="dock-tab ios-spring flex min-h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-2xl">
+              <span className={`grid h-8 min-w-[52px] shrink-0 place-items-center rounded-[10px] px-4 transition ${moreActive ? 'pill-on bg-[#d4af37]/[0.14] text-[#d4af37] shadow-[inset_0_0_10px_rgba(212,175,55,0.12)] ring-1 ring-inset ring-[#d4af37]/25' : 'text-[#8a8577]'}`}>
                 <span className={`grid place-items-center transition-transform duration-300 ${moreOpen ? 'rotate-90' : ''}`}>
                   {moreOpen ? <X className="h-[22px] w-[22px]" strokeWidth={1.9} /> : <Menu className="h-[22px] w-[22px]" strokeWidth={1.9} />}
                 </span>
@@ -498,33 +552,51 @@ export default function AppLayout({ children, title }) {
         {moreOpen && (
           <div className="fixed inset-0 z-50 sm:hidden" role="dialog" aria-modal="true" aria-label={t('dock.more', null, 'More')}>
             <div className="dock-fade absolute inset-0 bg-black/70" onClick={() => setMoreOpen(false)} />
-            <div className="tb-sheet dock-sheet-up absolute inset-x-0 bottom-0 max-h-[78vh] overflow-y-auto rounded-t-3xl border-t border-[#d4af37]/25 bg-[#0a0a0f] px-4 pb-[env(safe-area-inset-bottom)]">
+            <div className="tb-sheet dock-sheet-up absolute inset-x-0 bottom-0 max-h-[78vh] overflow-y-auto rounded-t-[10px] border-t border-[#d4af37]/20 bg-[#0a0a0f] px-4 tabular-nums pb-[env(safe-area-inset-bottom)]">
               <div className="sticky top-0 bg-[#0a0a0f] pb-2 pt-2.5">
                 <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-white/15" aria-hidden />
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-[#f0ecdd]">{t('dock.more', null, 'More')}</span>
+                  <span className="text-sm font-bold tabular-nums text-[#f0ecdd]">{t('dock.more', null, 'More')}</span>
                   <button onClick={() => setMoreOpen(false)} aria-label={t('c.close', null, 'Close')}
-                    className="grid h-9 w-9 place-items-center rounded-full border border-white/10 text-[#8a8577] transition hover:text-[#e9e7df]">
+                    className="grid h-9 w-9 place-items-center rounded-[10px] border border-white/10 text-[#8a8577] transition hover:text-[#e9e7df]">
                     <X className="h-4 w-4" />
                   </button>
                 </div>
               </div>
               <div className="space-y-5 pb-4">
+                <div>
+                  <div className="px-1 pb-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#5f5b50] tabular-nums">{t('brd.themes', null, 'App theme')}</div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {WL_PRESETS.map((pr) => (
+                      <button key={pr.id} onClick={() => pickPreset(pr)} aria-label={pr.label}
+                        className={`flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-[10px] border px-1 py-2.5 text-center tabular-nums transition active:scale-95 ${presetId === pr.id ? 'border-[#d4af37]/50 bg-[#d4af37]/[0.07]' : 'border-white/5 text-[#8a8577]'}`}>
+                        <span className="grid h-7 w-7 place-items-center rounded-[10px] font-mono text-[10px] font-extrabold tabular-nums" style={{ background: pr.accentColor, color: pr.primaryColor }}>Aa</span>
+                        <span className="line-clamp-2 text-[10px] font-semibold leading-tight">{pr.label}{pr.id === 'tb-gold' && <span className="mt-0.5 block font-mono text-[8px] font-extrabold uppercase tracking-wider text-[#d4af37]">Default</span>}</span>
+                        {presetId === pr.id && <Check className="h-3 w-3 shrink-0 text-[#d4af37]" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 {NAV_GROUPS.map((group) => {
                   const items = visibleItems(group.items).filter((it) => !SHEET_SKIP.has(it.to));
                   if (!items.length) return null;
                   return (
                     <div key={group.labelKey}>
-                      <div className="px-1 pb-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-[#5f5b50]">{t(group.labelKey)}</div>
+                      <div className="px-1 pb-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#5f5b50] tabular-nums">{t(group.labelKey)}</div>
                       <div className="grid grid-cols-3 gap-2">
                         {items.map((it) => {
                           const Icon = it.icon;
                           const label = t(it.labelKey);
-                          const tile = 'tile flex min-h-[86px] flex-col items-center justify-center gap-1.5 rounded-2xl border px-1 py-3 text-center transition active:scale-95';
+                          const tile = 'tile ios-spring flex min-h-[80px] flex-col items-center justify-center gap-1.5 rounded-[10px] border px-1 py-3 text-center tabular-nums';
+                          const iosTile = (
+                            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] shadow-[0_1px_6px_rgba(0,0,0,0.35)]" style={{ background: it.tint || 'rgba(255,255,255,0.06)', color: it.glyph || '#fff' }}>
+                              <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
+                            </span>
+                          );
                           if (it.locked) {
                             return (
                               <button key={it.to} onClick={() => { setMoreOpen(false); goPricing(); }} aria-label={label} className={`${tile} border-white/5 text-[#8a8577]/70`}>
-                                <Icon className="h-5 w-5 shrink-0" strokeWidth={1.9} />
+                                {iosTile}
                                 <span className="line-clamp-2 text-[10px] font-semibold leading-tight">{label}</span>
                                 <Crown className="h-3 w-3 shrink-0 text-[#d4af37]" />
                               </button>
@@ -532,8 +604,8 @@ export default function AppLayout({ children, title }) {
                           }
                           return (
                             <NavLink key={it.to} to={it.to} end={it.end} onClick={() => setMoreOpen(false)} aria-label={label}
-                              className={({ isActive }) => `${tile} sheet-row ${isActive ? 'sheet-on border-[#d4af37]/50 bg-[#d4af37]/12 text-[#f0ecdd]' : 'border-white/5 text-[#8a8577] hover:border-[#d4af37]/30'}`}>
-                              <Icon className="h-5 w-5 shrink-0" strokeWidth={1.9} />
+                              className={({ isActive }) => `${tile} sheet-row ${isActive ? 'sheet-on border-[#d4af37]/40 bg-[#d4af37]/[0.10] text-[#f0ecdd] ring-1 ring-inset ring-[#d4af37]/25' : 'border-white/5 text-[#8a8577] hover:border-[#d4af37]/25'}`}>
+                              {iosTile}
                               <span className="line-clamp-2 text-[10px] font-semibold leading-tight">{label}</span>
                             </NavLink>
                           );
@@ -547,7 +619,7 @@ export default function AppLayout({ children, title }) {
           </div>
         )}
       </div>
-      {tutorial && <OnboardingTutorial onClose={() => setTutorial(false)} onComplete={completeTutorial} />}
+      {tutorial && <OnboardingTutorial onClose={dismissTutorial} onComplete={completeTutorial} />}
     </div>
   );
 }

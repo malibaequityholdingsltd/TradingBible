@@ -17,17 +17,18 @@
   --tb-violet: #a78bfa;
   --tb-pink: #f472b6;
 
-  --tb-radius-sm: 0.6rem;
-  --tb-radius-md: 0.9rem;
-  --tb-radius-lg: 1.25rem;
-  --tb-radius-xl: 1.6rem;
+  --tb-radius-sm: 0.5rem;
+  --tb-radius-md: 0.75rem;
+  --tb-radius-lg: 0.9rem;
+  --tb-radius-xl: 1.1rem;
 
   --tb-blur-sm: blur(8px);
   --tb-blur-md: blur(14px);
   --tb-blur-lg: blur(20px);
 
-  --tb-shadow-card: 0 24px 60px -28px rgba(0, 0, 0, 0.8), 0 0 44px -30px rgba(212, 175, 55, 0.35);
-  --tb-shadow-gold: 0 12px 40px -12px rgba(212, 175, 55, 0.45);
+  --tb-gold-glow: rgba(212, 175, 55, 0.32);
+  --tb-shadow-card: 0 18px 44px -24px rgba(0, 0, 0, 0.8), 0 0 36px -28px var(--tb-gold-glow);
+  --tb-shadow-gold: 0 10px 32px -12px var(--tb-gold-glow);
   --tb-ring: 0 0 0 1px rgba(212, 175, 55, 0.28);
 
   --tb-ease: cubic-bezier(0.2, 0.9, 0.28, 1.15);
@@ -52,7 +53,7 @@ html.light .tb-hero {
 }
 /* Light hero sheen runs deeper gold so the sweep reads on ivory. */
 html.light .tb-hero::after {
-  background: linear-gradient(105deg, transparent 42%, rgba(166, 124, 30, 0.20) 50%, transparent 58%);
+  background: linear-gradient(105deg, transparent 42%, color-mix(in srgb, var(--tb-gold-deep) 28%, transparent) 50%, transparent 58%);
 }
 
 html.light .tb-kicker { color: #8a6714; }
@@ -61,6 +62,18 @@ html.light .funded-start-btn {
   background: #ffffff;
   color: #000000;
   border: 1px solid rgba(10, 10, 15, 0.85);
+}
+
+/* ── iOS spring press: every tappable surface answers with the iOS
+   spring curve (fast out, soft landing). Applied via .ios-spring on the
+   shared buttons, tabs and dock tiles. */
+.ios-spring {
+  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1), border-color var(--tb-speed) ease, background-color var(--tb-speed) ease, box-shadow var(--tb-speed) ease, opacity 0.15s ease;
+}
+.ios-spring:active { transform: scale(0.96); }
+@media (prefers-reduced-motion: reduce) {
+  .ios-spring { transition: none; }
+  .ios-spring:active { transform: none; }
 }
 
 /* ── Living buttons: a light glide sweeps across on hover, both modes. ── */
@@ -117,12 +130,12 @@ html.light .tb-shimmer { background: rgba(45, 52, 64, 0.07); }
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, transparent 30%, rgba(212, 175, 55, 0.16) 50%, transparent 70%);
+  background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--tb-gold) 16%, transparent) 50%, transparent 70%);
   transform: translateX(-100%);
   animation: tb-shimmer-sweep 1.6s ease-in-out infinite;
 }
 html.light .tb-shimmer::after {
-  background: linear-gradient(100deg, transparent 30%, rgba(166, 124, 30, 0.20) 50%, transparent 70%);
+  background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--tb-gold-deep) 28%, transparent) 50%, transparent 70%);
 }
 @keyframes tb-shimmer-sweep {
   0% { transform: translateX(-100%); }
@@ -144,13 +157,13 @@ html.light .tb-shimmer::after {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(105deg, transparent 42%, rgba(244, 230, 168, 0.07) 50%, transparent 58%);
+  background: linear-gradient(105deg, transparent 42%, color-mix(in srgb, var(--tb-gold) 7%, transparent) 50%, transparent 58%);
   transform: translateX(-100%);
   animation: tb-sheen 9s ease-in-out infinite;
   pointer-events: none;
 }
 html.light .sheen-panel::after {
-  background: linear-gradient(105deg, transparent 42%, rgba(166, 124, 30, 0.15) 50%, transparent 58%);
+  background: linear-gradient(105deg, transparent 42%, color-mix(in srgb, var(--tb-gold-deep) 22%, transparent) 50%, transparent 58%);
 }
 .overlay-pop { animation: tb-overlay-pop 0.3s var(--tb-ease) both; }
 @keyframes tb-overlay-pop {
@@ -223,7 +236,7 @@ main > *, .tb-enter { animation: tb-rise 0.35s var(--tb-ease) both; }
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg, transparent 42%, rgba(244, 230, 168, 0.08) 50%, transparent 58%);
+  background: linear-gradient(105deg, transparent 42%, color-mix(in srgb, var(--tb-gold) 8%, transparent) 50%, transparent 58%);
   transform: translateX(-100%);
   animation: tb-sheen 9s ease-in-out infinite;
   pointer-events: none;
@@ -345,4 +358,130 @@ html.light .tb-card {
   outline: 2px solid var(--tb-gold);
   outline-offset: 2px;
   border-radius: 0.4rem;
+}
+
+/* ── Light-mode readability remap ─────────────────────────────────
+   Most components use raw dark-palette hexes (Tailwind arbitrary values)
+   that cannot see theme vars, so in dark mode they are correct and in
+   light mode they wash out. This layer remaps exactly those hexes to
+   ink-on-ivory equivalents. Dark accents that work on both modes
+   (gold fills, hairlines, status colors) are untouched.
+   Cinematic surfaces (TV portal, TV widget) and dark pills/scrims opt
+   out via the keep-dark block below and keep their original palette. */
+html.light [class*="text-[#f0ecdd]"] { color: #20242c; }
+html.light [class*="text-[#e9e7df]"] { color: #262b34; }
+html.light [class*="text-[#c9c4b4]"] { color: #57503f; }
+html.light [class*="text-[#8a8577]"] { color: #5e594d; }
+html.light [class*="text-[#6a665a]"] { color: #55524a; }
+html.light [class*="text-[#5f5b50]"] { color: #4f4b43; }
+html.light [class*="text-[#b3ae9e]"] { color: #55503f; }
+html.light [class*="text-[#b8b3a3]"] { color: #55503f; }
+html.light [class*="text-[#d4af37]"] { color: #8a6714; }
+html.light [class*="text-[#f0d675]"] { color: #8a6714; }
+html.light [class*="text-[#f4e6a8]"] { color: #8a6714; }
+html.light [class*="text-[#38bdf8]"] { color: #0369a1; }
+html.light [class*="text-white"] { color: #232830; }
+
+/* Gold gradient headlines wash out on ivory — run them deeper in light. */
+html.light .tb-gold-text {
+  background: linear-gradient(120deg, #a67c1e 0%, #8a6714 48%, #6e5410 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Solid dark surfaces become ivory/paper so layouts stop looking dark. */
+html.light [class*="bg-[#0a0a0f]"] { background-color: #f7f4ec; }
+html.light [class*="bg-[#0c0c11]"] { background-color: #fffdf8; }
+html.light [class*="bg-[#07070a]"] { background-color: #f4f1e8; }
+html.light [class*="bg-[#111113]"] { background-color: #fffdf8; }
+html.light [class*="bg-[#0d0d12]"] { background-color: #f7f4ec; }
+html.light [class*="bg-[#0f0f14]"] { background-color: #ffffff; }
+html.light [class*="bg-black/20"] { background-color: rgba(60, 54, 38, 0.08); }
+html.light [class*="bg-black/30"] { background-color: rgba(60, 54, 38, 0.12); }
+html.light [class*="bg-black/50"] { background-color: #ece7d8; }
+html.light [class*="bg-black/60"] { background-color: #e7e1d1; }
+
+/* Gradient stops with dark hexes escape the bg remap above (Tailwind stores
+   them in --tw-gradient-* vars, not background-color). Remap the vars so
+   gradient cards (TBC hero, account cards, plan highlights, dock fade)
+   flip to ivory too. Gold stops are untouched. */
+html.light [class*="from-[#141309]"] { --tw-gradient-from: #f6f2e7 var(--tw-gradient-from-position); }
+html.light [class*="from-[#111116]"] { --tw-gradient-from: #f6f2e7 var(--tw-gradient-from-position); }
+html.light [class*="from-[#0a0a0f]"] { --tw-gradient-from: #f7f4ec var(--tw-gradient-from-position); }
+html.light [class*="from-[#07070a]"] { --tw-gradient-from: #f4f1e8 var(--tw-gradient-from-position); }
+html.light [class*="via-[#0c0c11]"] { --tw-gradient-stops: var(--tw-gradient-from), #fbf9f3 var(--tw-gradient-via-position), var(--tw-gradient-to); }
+html.light [class*="via-[#0a0a0f]"] { --tw-gradient-stops: var(--tw-gradient-from), #f7f4ec var(--tw-gradient-via-position), var(--tw-gradient-to); }
+html.light [class*="via-[#07070a]"] { --tw-gradient-stops: var(--tw-gradient-from), #f4f1e8 var(--tw-gradient-via-position), var(--tw-gradient-to); }
+html.light [class*="to-[#0f0f14]"] { --tw-gradient-to: #ffffff var(--tw-gradient-to-position); }
+html.light [class*="to-[#07070a]"] { --tw-gradient-to: #f4f1e8 var(--tw-gradient-to-position); }
+html.light [class*="to-black"] { --tw-gradient-to: #ece7d8 var(--tw-gradient-to-position); }
+
+/* White hairlines turn into ink hairlines. */
+html.light [class*="border-white/5"] { border-color: rgba(35, 40, 48, 0.10); }
+html.light [class*="border-white/8"] { border-color: rgba(35, 40, 48, 0.12); }
+html.light [class*="border-white/10"] { border-color: rgba(35, 40, 48, 0.14); }
+html.light [class*="border-white/[0.06]"] { border-color: rgba(35, 40, 48, 0.10); }
+html.light [class*="border-white/[0.07]"] { border-color: rgba(35, 40, 48, 0.12); }
+html.light [class*="divide-white/5"] > * + * { border-color: rgba(35, 40, 48, 0.10); }
+html.light [class*="divide-white/8"] > * + * { border-color: rgba(35, 40, 48, 0.12); }
+html.light [class*="divide-white/[0.06]"] > * + * { border-color: rgba(35, 40, 48, 0.10); }
+html.light [class*="border-white/15"], html.light [class*="border-white/20"] { border-color: rgba(35, 40, 48, 0.18); }
+
+/* Redesign gold tint + warm grays wash out on ivory — deepen them. */
+html.light [class*="text-[#e8c95a]"] { color: #8a6714; }
+html.light [class*="text-[#a8a394]"] { color: #57503f; }
+html.light [class*="text-[#d8d3c3]"] { color: #57503f; }
+html.light [class*="text-[#b5b0a2]"] { color: #55503f; }
+html.light [class*="text-[#7dd3fc]"] { color: #0369a1; }
+html.light [class*="text-[#fdba74]"] { color: #c2410c; }
+html.light [class*="text-[#f472b6]"] { color: #be185d; }
+
+/* White text on colored fills must stay white (badges, brand buttons). */
+html.light :is([class*="bg-[#5865F2]"][class*="text-white"], [class*="bg-red-500"][class*="text-white"]) { color: #fff; }
+
+/* Mobile dock + misc dark solids. */
+html.light [class*="bg-[#101016]"] { background-color: #fffdf8; }
+
+/* Mid-tone black veils degrade to warm gray on ivory (scrims /70+/80 stay dark). */
+html.light [class*="bg-black/55"] { background-color: rgba(60, 54, 38, 0.22); }
+html.light [class*="bg-black/40"] { background-color: rgba(60, 54, 38, 0.16); }
+html.light [class*="bg-black/25"] { background-color: rgba(60, 54, 38, 0.10); }
+html.light [class*="bg-black/10"] { background-color: rgba(60, 54, 38, 0.05); }
+
+/* Broken 3-stop gradients: dark middle/bottom stops that escape the remap. */
+html.light [class*="via-[#121209]"] { --tw-gradient-stops: var(--tw-gradient-from), #f6f2e7 var(--tw-gradient-via-position), var(--tw-gradient-to); }
+html.light [class*="to-[#0c0c11]"] { --tw-gradient-to: #fffdf8 var(--tw-gradient-to-position); }
+
+/* ── Keep-dark contexts: [data-force-dark] subtrees (TV portal, TV
+   widget) keep their full original palette, and same-element dark
+   pills/scrims plus the red live badge keep light text on dark fills.
+   Scrim *descendants* (dialog panels) are NOT pinned — panels carry
+   their own flipped surfaces and their text must flip with them. */
+html.light :is([data-force-dark] [class*="text[#f0ecdd]"],[data-force-dark][class*="text[#f0ecdd]"],[class*="bg-black/70"][class*="text[#f0ecdd]"],[class*="bg-black/80"][class*="text[#f0ecdd]"],[class*="bg-[#e50914]"][class*="text[#f0ecdd]"]) { color: #f0ecdd; }
+html.light :is([data-force-dark] [class*="text[#e9e7df]"],[data-force-dark][class*="text[#e9e7df]"],[class*="bg-black/70"][class*="text[#e9e7df]"],[class*="bg-black/80"][class*="text[#e9e7df]"],[class*="bg-[#e50914]"][class*="text[#e9e7df]"]) { color: #e9e7df; }
+html.light :is([data-force-dark] [class*="text[#c9c4b4]"],[data-force-dark][class*="text[#c9c4b4]"],[class*="bg-black/70"][class*="text[#c9c4b4]"],[class*="bg-black/80"][class*="text[#c9c4b4]"],[class*="bg-[#e50914]"][class*="text[#c9c4b4]"]) { color: #c9c4b4; }
+html.light :is([data-force-dark] [class*="text[#8a8577]"],[data-force-dark][class*="text[#8a8577]"],[class*="bg-black/70"][class*="text[#8a8577]"],[class*="bg-black/80"][class*="text[#8a8577]"],[class*="bg-[#e50914]"][class*="text[#8a8577]"]) { color: #8a8577; }
+html.light :is([data-force-dark] [class*="text[#6a665a]"],[data-force-dark][class*="text[#6a665a]"],[class*="bg-black/70"][class*="text[#6a665a]"],[class*="bg-black/80"][class*="text[#6a665a]"],[class*="bg-[#e50914]"][class*="text[#6a665a]"]) { color: #6a665a; }
+html.light :is([data-force-dark] [class*="text[#5f5b50]"],[data-force-dark][class*="text[#5f5b50]"],[class*="bg-black/70"][class*="text[#5f5b50]"],[class*="bg-black/80"][class*="text[#5f5b50]"],[class*="bg-[#e50914]"][class*="text[#5f5b50]"]) { color: #5f5b50; }
+html.light :is([data-force-dark] [class*="text[#d4af37]"],[data-force-dark][class*="text[#d4af37]"],[class*="bg-black/70"][class*="text[#d4af37]"],[class*="bg-black/80"][class*="text[#d4af37]"],[class*="bg-[#e50914]"][class*="text[#d4af37]"]) { color: #d4af37; }
+html.light :is([data-force-dark] [class*="text[#f0d675]"],[data-force-dark][class*="text[#f0d675]"],[class*="bg-black/70"][class*="text[#f0d675]"],[class*="bg-black/80"][class*="text[#f0d675]"],[class*="bg-[#e50914]"][class*="text[#f0d675]"]) { color: #f0d675; }
+html.light :is([data-force-dark] [class*="text[#f4e6a8]"],[data-force-dark][class*="text[#f4e6a8]"],[class*="bg-black/70"][class*="text[#f4e6a8]"],[class*="bg-black/80"][class*="text[#f4e6a8]"],[class*="bg-[#e50914]"][class*="text[#f4e6a8]"]) { color: #f4e6a8; }
+html.light :is([data-force-dark] [class*="text[#38bdf8]"],[data-force-dark][class*="text[#38bdf8]"],[class*="bg-black/70"][class*="text[#38bdf8]"],[class*="bg-black/80"][class*="text[#38bdf8]"],[class*="bg-[#e50914]"][class*="text[#38bdf8]"]) { color: #38bdf8; }
+html.light :is([data-force-dark] [class*="text-white"],[data-force-dark][class*="text-white"],[class*="bg-[#e50914]"][class*="text-white"]) { color: #fff; }
+html.light :is([data-force-dark] [class*="bg[#0a0a0f]"],[data-force-dark][class*="bg[#0a0a0f]"]) { background-color: #0a0a0f; }
+html.light :is([data-force-dark] [class*="bg[#0c0c11]"],[data-force-dark][class*="bg[#0c0c11]"]) { background-color: #0c0c11; }
+html.light :is([data-force-dark] [class*="bg[#07070a]"],[data-force-dark][class*="bg[#07070a]"]) { background-color: #07070a; }
+html.light :is([data-force-dark] [class*="bg[#111113]"],[data-force-dark][class*="bg[#111113]"]) { background-color: #111113; }
+html.light :is([data-force-dark] [class*="bg[#0d0d12]"],[data-force-dark][class*="bg[#0d0d12]"]) { background-color: #0d0d12; }
+html.light :is([data-force-dark] [class*="bg[#0f0f14]"],[data-force-dark][class*="bg[#0f0f14]"]) { background-color: #0f0f14; }
+html.light :is([data-force-dark] [class*="bg-black/20"],[data-force-dark][class*="bg-black/20"]) { background-color: rgba(0,0,0,0.2); }
+html.light :is([data-force-dark] [class*="bg-black/30"],[data-force-dark][class*="bg-black/30"]) { background-color: rgba(0,0,0,0.3); }
+html.light :is([data-force-dark] [class*="bg-black/50"],[data-force-dark][class*="bg-black/50"]) { background-color: rgba(0,0,0,0.5); }
+html.light :is([data-force-dark] [class*="bg-black/60"],[data-force-dark][class*="bg-black/60"]) { background-color: rgba(0,0,0,0.6); }
+html.light [data-force-dark] .tb-gold-text, html.light [data-force-dark] * .tb-gold-text {
+  background: linear-gradient(120deg, var(--tb-gold-hi) 0%, var(--tb-gold) 45%, var(--tb-gold-deep) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

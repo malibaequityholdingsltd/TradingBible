@@ -313,7 +313,7 @@ body {
   .btn-spotlight:hover::after {
     opacity: 1;
   }
-  .gold-glow { box-shadow: 0 0 0 1px rgba(212,175,55,0.35), 0 12px 40px -12px rgba(212,175,55,0.45); }
+  .gold-glow { box-shadow: 0 0 0 1px var(--tb-gold-glow), 0 12px 40px -12px var(--tb-gold-glow); }
   .grain { background-image: radial-gradient(rgba(212,175,55,0.08) 1px, transparent 1px); background-size: 22px 22px; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   .no-scrollbar::-webkit-scrollbar { display: none; width: 0; height: 0; }
@@ -740,7 +740,12 @@ html.light .tv-tv-btn {
   box-shadow: 0 8px 24px -12px rgba(60, 55, 40, 0.4), 0 0 0 1px rgba(166, 124, 30, 0.35) !important;
 }
 html.light .tv-chat-btn {
+  background: linear-gradient(135deg, #fffdf9 0%, #f0e9d6 100%) !important;
+  border-color: rgba(166, 124, 30, 0.45) !important;
   box-shadow: 0 8px 24px -12px rgba(166, 124, 30, 0.45), 0 0 0 1px rgba(166, 124, 30, 0.4) !important;
+}
+html.light .tv-chat-btn:hover {
+  box-shadow: 0 10px 30px -12px rgba(166, 124, 30, 0.55), 0 0 0 1px rgba(166, 124, 30, 0.55) !important;
 }
 html.light .tv-tv-dot { background-color: rgba(45, 52, 64, 0.18) !important; }
 html.light .tv-tv-dot-active { background-color: #a67c1e !important; }
@@ -963,6 +968,31 @@ html.light .grain {
   background-image: radial-gradient(rgba(184,134,11,0.16) 1px, transparent 1px);
   background-size: 22px 22px;
 }
+
+/* Company Bible (admin page + floating widget) — light-mode detail pass.
+   Scoped under .cb-scope so dark mode stays pixel-identical. Covers the
+   gold / pale-gold / violet accents and dark gradients the generic remap
+   misses, so every section reads on ivory. */
+html.light .cb-scope .text-\[\#d4af37\],
+html.light .cb-scope .text-\[\#e8c95a\] { color: #7a5c0e !important; }
+html.light .cb-scope .text-violet-300 { color: #6d28d9 !important; }
+html.light .cb-scope .border-violet-400\/30 { border-color: rgba(109,40,217,0.35) !important; }
+html.light .cb-scope .bg-violet-400\/\[0\.06\] { background-color: rgba(109,40,217,0.08) !important; }
+html.light .cb-scope.bg-\[\#0c0c11\]\/92,
+html.light .cb-scope .bg-\[\#0c0c11\]\/92 { background-color: rgba(251,249,243,0.94) !important; }
+html.light .cb-scope.from-\[\#141309\],
+html.light .cb-scope .from-\[\#141309\] { --tw-gradient-from: #f3eee0 !important; }
+html.light .cb-scope .via-\[\#0c0c11\] { --tw-gradient-via: #f8f4e9 !important; }
+html.light .cb-scope.to-\[\#0a0a0f\],
+html.light .cb-scope.to-\[\#0c0c11\],
+html.light .cb-scope .to-\[\#0a0a0f\],
+html.light .cb-scope .to-\[\#0c0c11\] { --tw-gradient-to: #e7e2d2 !important; }
+html.light .cb-scope .bg-white\/\[0\.04\],
+html.light .cb-scope .bg-white\/\[0\.05\] { background-color: #eeeade !important; }
+html.light .cb-scope .border-white\/\[0\.06\],
+html.light .cb-scope .border-white\/\[0\.07\] { border-color: #e4ded0 !important; }
+html.light .cb-scope .bg-black\/25 { border-color: #e4ded0 !important; }
+html.light .cb-scope .cb-modal-backdrop { background: rgba(45,52,64,0.45) !important; }
 
 /* ─── LIGHT THEME: REMAP HARDCODED DARK PALETTE ──────────────────── */
 /* The app styles mostly use fixed dark hexes; these overrides keep every
@@ -1919,20 +1949,38 @@ html.light .tb-hero-chip { background-color: rgba(60, 55, 40, 0.07) !important; 
 .tb-term .term-label { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .tb-term .term-data { font-variant-numeric: tabular-nums; }
 .tb-term .term-help { font-size: 12px; line-height: 1.55; }
-/* Segmented tab bar: full labels, 44px targets, scrollable on phones. */
-.tb-term-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
-.tb-term-tab {
-  display: inline-flex; align-items: center; gap: 7px; min-height: 42px;
-  padding: 8px 14px; border-radius: 12px; font-size: 13px; font-weight: 600;
-  border: 1px solid transparent; color: #8a8577; white-space: nowrap;
-  transition: background-color .2s, color .2s, border-color .2s;
+/* iOS segmented tab bar: one pill container, sliding-tint segments,
+   44px targets, scrollable on phones. */
+.tb-term-tabs {
+  display: flex; gap: 2px; overflow-x: auto; padding: 3px;
+  border-radius: 14px; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  scrollbar-width: none; -ms-overflow-style: none;
 }
+.tb-term-tabs::-webkit-scrollbar { display: none; }
+.tb-term-tab {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  flex: 1 0 auto; min-height: 42px;
+  padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  border: 1px solid transparent; color: #8a8577; white-space: nowrap;
+  transition: background-color .2s cubic-bezier(0.32, 0.72, 0, 1), color .2s, border-color .2s, transform .2s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.tb-term-tab:active { transform: scale(0.96); }
 .tb-term-tab:hover { color: #e9e7df; background: rgba(255,255,255,0.05); }
-.tb-term-tab--active { color: #d4af37; background: rgba(212,175,55,0.13); border-color: rgba(212,175,55,0.4); }
+.tb-term-tab--active {
+  color: #f0d675; background: linear-gradient(180deg, rgba(212,175,55,0.22), rgba(212,175,55,0.12));
+  border-color: rgba(212,175,55,0.45);
+  box-shadow: 0 2px 10px -2px rgba(212,175,55,0.5), inset 0 1px 0 rgba(244,230,168,0.25);
+}
 /* Light mode: terminal surfaces go fully solid + high-contrast text. */
+html.light .tb-term-tabs { background: rgba(60,55,40,0.08); border-color: rgba(35,40,48,0.12); }
 html.light .tb-term-tab { color: #4d5563; }
 html.light .tb-term-tab:hover { color: #232830; background: rgba(60,55,40,0.07); }
-html.light .tb-term-tab--active { color: #7a5c0e; background: rgba(212,175,55,0.18); border-color: rgba(166,124,30,0.55); }
+html.light .tb-term-tab--active {
+  color: #fffdf8; background: linear-gradient(180deg, #a67c1e, #8a6714);
+  border-color: #8a6714;
+  box-shadow: 0 2px 10px -4px rgba(122,92,14,0.7), inset 0 1px 0 rgba(255,255,255,0.35);
+}
 html.light .tb-term .term-panel { background: #fffef9 !important; border-color: #d9d2bf !important; box-shadow: 0 8px 24px -18px rgba(60,55,40,0.35) !important; }
 html.light .tb-term .term-inset { background: rgba(60,55,40,0.06) !important; border-color: #e0d9c6 !important; }
 html.light .tb-term .term-muted { color: #3f4753 !important; }

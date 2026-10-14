@@ -612,6 +612,12 @@ router.post('/sync', async (req, res, next) => {
 				results.push({ provider: cred.provider, ok: false, error: message });
 			}
 		}
+		// Hard-breach auto-enforcement: freshly synced fills can breach an
+		// active evaluation — fail + lock it now, notify the trader.
+		try {
+			const { enforceChallengesForUser } = await import('../lib/challengeEnforce.js');
+			await enforceChallengesForUser(user.id).catch(() => {});
+		} catch { /* enforcement never breaks sync */ }
 		res.json({ results });
 	} catch (err) { next(err); }
 });

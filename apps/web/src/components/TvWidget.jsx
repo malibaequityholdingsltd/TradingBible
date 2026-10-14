@@ -760,7 +760,7 @@ export default function TvWidget() {
   const liveTitle = playing !== null ? liveStates[ordered[playing]?.id]?.title || null : null;
 
   return (
-    <div className="tv-widget-root" style={{ display: 'contents' }}>
+    <div className="tv-widget-root" data-force-dark style={{ display: 'contents' }}>
       {open && (
         <div
           ref={panelRef}

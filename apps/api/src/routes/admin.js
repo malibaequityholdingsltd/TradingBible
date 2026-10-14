@@ -5,6 +5,9 @@ import Stripe from 'stripe';
 import { createTransport } from 'nodemailer';
 import logger from '../utils/logger.js';
 import { supabase, getSupabaseUser, supabaseRest } from '../utils/supabaseClient.js';
+import { provisionEmployee } from '../utils/hiring.js';
+import { tbcBalances as balances } from '../utils/tbc-econ.js';
+import { TBC_META, tbcContracts } from './tbc.js';
 import { supabaseAuth } from '../middleware/supabase-auth.js';
 
 let API_VERSION = '1.1.0';
@@ -260,6 +263,111 @@ router.delete('/forum-replies/:id', supabaseAuth, async (req, res, next) => {
 	} catch (err) { next(err); }
 });
 
+// ── Mentors ──────────────────────────────────────────────────────────
+// Mentor directory oversight. Profiles are created by users via
+// POST /market/mentors/register; admins can enable/disable or edit them.
+
+router.get('/mentors', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const rows = await supabaseRest('/rest/v1/mentors', {
+			query: { select: '*', order: 'created_at.desc', limit: 1000 },
+		});
+		res.json(rows || []);
+	} catch (err) { next(err); }
+});
+
+router.patch('/mentors/:owner', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const patch = {};
+		if (req.body) {
+			if ('enabled' in req.body) patch.enabled = Boolean(req.body.enabled);
+			if ('headline' in req.body) patch.headline = String(req.body.headline || '').slice(0, 140);
+			if ('price_usd' in req.body) {
+				const n = Number(req.body.price_usd);
+				if (!Number.isNaN(n) && n >= 0) patch.price_usd = n;
+			}
+			if ('topics' in req.body && Array.isArray(req.body.topics)) {
+				patch.topics = req.body.topics.map((t) => String(t).slice(0, 40)).slice(0, 12);
+			}
+		}
+		const updated = await supabaseRest(`/rest/v1/mentors?owner=eq.${encodeURIComponent(req.params.owner)}`, {
+			method: 'PATCH', body: patch, prefer: 'return=representation', query: { select: '*' },
+		});
+		res.json(updated?.[0] || { owner: req.params.owner, ...patch });
+	} catch (err) { next(err); }
+});
+
+router.get('/mentors/sessions', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const rows = await supabaseRest('/rest/v1/mentor_sessions', {
+			query: { select: '*', order: 'created_at.desc', limit: 1000 },
+		});
+		res.json(rows || []);
+	} catch (err) { next(err); }
+});
+
+// ── Wallet overview (read-only) ──────────────────────────────────────
+// Platform-wide money-movement oversight. No transfer/withdraw powers:
+// all value movement stays in user-scoped /wallet routes + billing refunds.
+
+router.get('/wallet/overview', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const [trackers, rails, txns, crypto, ledger] = await Promise.all([
+			supabaseRest('/rest/v1/wallet_trackers', { query: { select: 'id,network,created', order: 'created.desc', limit: 1000 } }),
+			supabaseRest('/rest/v1/wallet_money_rails', { query: { select: 'connect_status,kyc_status', limit: 1000 } }),
+			supabaseRest('/rest/v1/bank_transactions', { query: { select: '*', order: 'created.desc', limit: 25 } }),
+			supabaseRest('/rest/v1/crypto_accounts', { query: { select: 'id', limit: 1000 } }),
+			supabaseRest('/rest/v1/bank_transactions', { query: { select: 'kind,amount,currency,asset,status,created', order: 'created.desc', limit: 5000 } }),
+		]);
+		const byStatus = {};
+		for (const t of txns || []) byStatus[t.status || 'unknown'] = (byStatus[t.status || 'unknown'] || 0) + 1;
+		const OUTFLOW_KINDS = new Set(['withdraw', 'withdraw_crypto', 'pay', 'transfer_out', 'swap']);
+		const isTbcRow = (t) => String(t.currency || '').toUpperCase() === 'TBC' || String(t.asset || '').toUpperCase() === 'TBC';
+		const sums = { inUsd: 0, outUsd: 0, inTbc: 0, outTbc: 0, inUsd30d: 0, outUsd30d: 0, inTbc30d: 0, outTbc30d: 0, pendingUsd: 0, issuedTbc: 0, circulatingTbc: 0 };
+		const cutoff = Date.now() - 30 * 864e5;
+		for (const t of ledger || []) {
+			const amt = Math.abs(Number(t.amount) || 0);
+			const isTbc = isTbcRow(t);
+			const out = OUTFLOW_KINDS.has(t.kind);
+			const recent = new Date(t.created).getTime() >= cutoff;
+			if (['pending', 'processing'].includes(String(t.status)) && !isTbc) sums.pendingUsd += amt;
+			if (isTbc) {
+				if (!out) sums.issuedTbc += amt;
+				sums.circulatingTbc += out ? -amt : amt;
+				sums[out ? 'outTbc' : 'inTbc'] += amt;
+				if (recent) sums[out ? 'outTbc30d' : 'inTbc30d'] += amt;
+			} else {
+				sums[out ? 'outUsd' : 'inUsd'] += amt;
+				if (recent) sums[out ? 'outUsd30d' : 'inUsd30d'] += amt;
+			}
+		}
+		const maxSupply = Number(TBC_META.maxSupply) || 100000000;
+		const contracts = tbcContracts();
+		const tbcSupply = {
+			maxSupply,
+			issuedTbc: Math.round(sums.issuedTbc * 100) / 100,
+			circulatingTbc: Math.round(sums.circulatingTbc * 100) / 100,
+			remainingTbc: Math.round((maxSupply - sums.issuedTbc) * 100) / 100,
+			onChainDeployed: Object.values(contracts).some(Boolean),
+			allocation: TBC_META.allocation,
+		};
+		res.json({
+			trackedWallets: (trackers || []).length,
+			railsOnboarded: (rails || []).filter((r) => r.connect_status && r.connect_status !== 'none').length,
+			kycVerified: (rails || []).filter((r) => r.kyc_status === 'verified').length,
+			cryptoAccounts: (crypto || []).length,
+			recentTransactions: txns || [],
+			transactionsByStatus: byStatus,
+			money: sums,
+			tbcSupply,
+		});
+	} catch (err) { next(err); }
+});
+
 // ── Generic admin_integrations CRUD (courses, calendar events, etc.) ──
 // Content lives in `admin_integrations` under prefixed keys:
 //   course:*   — academy course catalog
@@ -349,6 +457,159 @@ router.get('/content-copy', async (req, res, next) => {
 	} catch (err) { next(err); }
 });
 
+// ── Company Bible (admin-only, A–Z, nothing hidden) ───────────────
+// Single source of truth for every company/brand fact admins see in the
+// Company widget + /admin/company page. Stored as one row in
+// `admin_integrations` (key `company:profile`, config = full JSON object)
+// so no migration is needed. GET returns stored config merged over
+// COMPANY_DEFAULTS; PUT replaces the stored config wholesale.
+export const COMPANY_DEFAULTS = {
+	identity: {
+		name: 'TradingBible',
+		shortName: 'TB',
+		tagline: 'TradingBible',
+		mission: 'Empower individuals with transparent, data-driven market intelligence, innovative technology, and world-class educational resources that support smarter financial decision-making.',
+		vision: "Become one of the world's leading financial technology platforms by making professional trading intelligence accessible to every trader and investor.",
+		voice: 'Professional, data-driven, educational — institutional quality without institutional gatekeeping.',
+		responseSLA: 'Team responds within one business day.',
+	},
+	legal: {
+		legalName: 'TradingBible LLC',
+		form: 'Delaware limited liability company',
+		formed: 'August 2026',
+		naics: '511210',
+		agent: 'Delaware Registered Agent, Inc.',
+		duns: '14-997-6777',
+		licenseNote: 'Delaware incorporation is NOT a brokerage license. No live client deposits until a licensed entity + banking + safeguarding are operational.',
+		jurisdiction: 'England & Wales (Terms); U.S. retail forex $20M minimum adjusted net capital; Nigeria substance if managed from Nigeria.',
+		liabilityCap: 'Greater of 12 months fees or USD 100.',
+		dataController: 'TradingBible LLC',
+	},
+	holdings: {
+		parent: 'TradingBible Holdings, Inc.',
+		parentStatus: 'Proposed — not yet formed/listed.',
+		ticker: 'TB',
+		tickerStatus: 'Requested — not reserved/confirmed. Nasdaq Capital preferred; NYSE / NYSE American / NGX alternatives.',
+		entities: 'TradingBible LLC (existing) + Holdings / Markets / Securities / Digital Assets / Technologies / Blockchain (all proposed — create only when needed).',
+		coin: 'TBC',
+		coinStatus: 'Proposed native coin, max 100,000,000, Cosmos SDK + CometBFT + Cosmos EVM baseline, fixed supply. TBC IS NOT TB equity — never advertise interchangeably.',
+		control: 'Illustrative 100M fully diluted: founder 60M / private 15M / employee pool 10M / public 15M. One-share-one-vote default; authorized shares do not guarantee control.',
+	},
+	brand: {
+		colors: 'Gold #d4af37 · light #f4e6a8 · dark #a67c1e · bg #0a0a0f · card #0f0f14 · text #f0ecdd · muted #8a8577 · dim #6a665a.',
+		logo: 'Rounded dark square, gold border/chevron + dot. Bundled /logos/tradingbible-logo.png + CDN fallback. Favicon set.',
+		typography: 'system-ui stack; ui-monospace for numbers.',
+		emailShell: 'Dark #07070a/#0b0b10, gold border, TradingBible header, footer TradingBible LLC · tradingbible.app, tagline: Trade like the 1%. Journal like a fund.',
+		socials: 'twitter.com/tradingbible · discord.gg/tradingbible · github.com/tradingbible (+ facebook/linkedin/instagram/youtube/tiktok @tradingbible in footer).',
+	},
+	contacts: {
+		website: 'https://tradingbible.app',
+		support: 'support@tradingbible.app',
+		legal: 'legal@tradingbible.app',
+		privacy: 'privacy@tradingbible.app',
+		ads: 'ads@tradingbible.app',
+	},
+	leadership: {
+		ceo: 'Malik Nlem — Founder & Chief Executive',
+		vp: 'Victor Okechukwu — Vice President',
+		quant: 'Maliba SI — Head of Quantitative Research',
+		team: 'Operators, engineers, and quants from global markets and technology.',
+		advisers: 'None engaged: Goldman Sachs / Morgan Stanley / J.P. Morgan / Jefferies / Chapel Hill Denham / Renaissance Capital (proposed only). Hire Delaware + U.S. securities + Nigerian counsel + tax + regulatory first.',
+	},
+	markets: {
+		coverage: 'Crypto ~60 (Binance) · Forex ~40 · Commodities 20 incl. XAU/USD · Indices 6 (NQ/ES/DJI/SPX/RUT/VIX) + 20 sector ETFs + ~100 US stocks.',
+		feeds: 'Binance klines (crypto) · Finnhub (US stocks) · Alpha Vantage cached (equities/forex, 25 req/day free) · synthetic fallback so charts never render empty.',
+		categories: 'Forex · Gold XAU/USD · Bitcoin BTC/USD derivatives · Stocks & indices · Commodities (oil/silver+) · Crypto spot (BTC/ETH+). Regulated launch starts with a manageable set.',
+		mt5: 'Retail MT5 app ≠ broker rights. Institutional broker-side rights required. Gateway MT_BRIDGE_URL=https://mt-bridge.tradingbible.app (dev only on Hostinger Ubuntu 24.04). Endpoints: POST /v1/accounts · GET /v1/accounts/{id} · GET /v1/positions · POST /v1/orders · GET /v1/orders/{id} · GET /v1/history · GET /v1/stream · GET /v1/health.',
+		liquidity: 'RFQs: LMAPX / B2PRIME / oneZero. Start largely externally hedged. Risk engine: exposure, leverage, margin, stop-out, feed anomalies, slippage, hedging failures, outages, concentration.',
+	},
+	product: {
+		version: '1.2.0 live.',
+		stack: 'React 18 + Vite + Tailwind · Node + Express 5 · Supabase Postgres RLS · Paddle/Stripe · VPS Ubuntu + PM2 + Nginx + Lets Encrypt.',
+		surfaces: 'Terminal Pro · journal · analytics · SI reports/coach (Elite+) · signals/indicators (14 built-ins) · risk tools · backtest/paper · challenges · broker sync (Binance/Deriv/easyMarkets/IBKR/Alpaca/Coinbase, MT5 bridge, self-custody) · alerts/heatmaps/order-flow/calendar · community · academy/mentors/webinars · TV · wallet/billing · API/white-label (Professional) · TBC page · admin portal · 24-mission Pro-Guide.',
+		terminal: 'Proprietary Terminal Pro + future Chart SDK (Charts by TradingBible) as licensable assets. Durable workspace storage — logout must not erase trades or saved analysis.',
+		auth: 'Supabase GoTrue (OTP / magic links / WebAuthn passkeys) + branded Send-Email webhook hook.',
+	},
+	monetization: {
+		plans: 'Pro $19.99/mo · Elite SI $49.99/mo (most popular) · Professional $99/mo. Stripe, no free trial, card required. 14-day money-back on first subscription.',
+		lines: 'Subscriptions + TV ads + affiliate + challenge rails + academy + TBC activity + API/white-label licensing.',
+		tractionNote: 'NO verified traction figures exist — users/subs/MRR/churn/waitlist/TBC all founder-to-confirm (template only). Projections illustrative (ARPU ~$36.89, 60/30/10 mix).',
+		payouts: 'CFD withdrawals every 14 days to TBC wallet (80% standard → 90% scaling; 1-step fixed 90%). First funded payout refunds entry fee in TBC.',
+	},
+	compliance: {
+		kyc: 'Passkeys · session management · KYC-gated profiles (frozen after verification) · suspend/close lifecycle · sanctions + SoF + monitoring + withdrawal approvals + reconciliation.',
+		segregation: 'Separate operating money / regulatory capital / client funds / crypto assets. Client assets are never company funding.',
+		filings: 'U.S.: restructuring + audited financials + Form S-1 + prospectus + SEC review + exchange application + underwriting/pricing, then periodic reporting + insider compliance. Nigeria: issuer eligibility + SEC registration + NGX admission + advisers + prospectus + audited accounts. Delaware LLC cannot assume direct NGX Growth listing.',
+		readiness: 'Cap table · 3-yr projections · audited accounts · licenses · risk disclosures · IP records · material contracts · cybersecurity · litigation · governance · use of proceeds. Costs: brokerage launch $720K–$2.09M (excl. capital/collateral) · IPO prep $1.1M–$4M + underwriting % + ongoing compliance.',
+	},
+	roadmap: {
+		phases: '01 Corporate/legal 2026–27 → 02 Licensing/capital 2027–28 → 03 Technology 2027–28 → 04 Controlled launch 2028–29 → 05 Revenue/governance 2028–30 → 06 IPO prep 2029–31+ → 07 Listing 2030–32+ → 08 Public-company expansion. Dates indicative.',
+		first90: 'Days 1–30: verify records/ownership/tax, appoint counsel, commission licensing + IPO feasibility. Days 31–60: plan/model/capital/architecture + MT5/liquidity RFQs. Days 61–90: jurisdiction shortlist + vendor quotes + prototype scope + funding/governance plan.',
+		strategy: 'Regulated brokerage + proprietary tech (licensing/market-data/enterprise), not commissions alone. IPO is a milestone earned via performance, not a launch prerequisite.',
+	},
+};
+
+export function companyContextText(c) {
+	const d = { ...COMPANY_DEFAULTS, ...(c || {}) };
+	const pick = (o) => Object.entries(o || {}).map(([k, v]) => `${k}: ${v}`).join(' | ');
+	return [
+		`Identity — ${pick(d.identity)}`,
+		`Legal — ${pick(d.legal)}`,
+		`Holdings — ${pick(d.holdings)}`,
+		`Brand — ${pick(d.brand)}`,
+		`Contacts — ${pick(d.contacts)}`,
+		`Leadership — ${pick(d.leadership)}`,
+		`Markets — ${pick(d.markets)}`,
+		`Product — ${pick(d.product)}`,
+		`Monetization — ${pick(d.monetization)}`,
+		`Compliance — ${pick(d.compliance)}`,
+		`Roadmap — ${pick(d.roadmap)}`,
+	].join('\n');
+}
+
+router.get('/company', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const rows = await supabaseRest('/rest/v1/admin_integrations', {
+			query: { select: '*', key: 'eq.company:profile', limit: 1 },
+		}).catch(() => []);
+		const stored = rows?.[0]?.config && typeof rows[0].config === 'object' ? rows[0].config : {};
+		const merged = {};
+		for (const k of Object.keys(COMPANY_DEFAULTS)) merged[k] = { ...COMPANY_DEFAULTS[k], ...(stored[k] || {}) };
+		res.json({ defaults: COMPANY_DEFAULTS, profile: merged, stored: Boolean(rows?.[0]), updated: rows?.[0]?.updated || null });
+	} catch (err) { next(err); }
+});
+
+router.put('/company', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const body = req.body && typeof req.body === 'object' ? req.body : {};
+		const config = {};
+		for (const k of Object.keys(COMPANY_DEFAULTS)) {
+			if (body[k] && typeof body[k] === 'object') config[k] = body[k];
+			else config[k] = COMPANY_DEFAULTS[k];
+		}
+		const existing = await supabaseRest('/rest/v1/admin_integrations', {
+			query: { select: 'id', key: 'eq.company:profile', limit: 1 },
+		}).catch(() => []);
+		let row;
+		if (existing?.[0]?.id) {
+			const updated = await supabaseRest(`/rest/v1/admin_integrations?id=eq.${encodeURIComponent(existing[0].id)}`, {
+				method: 'PATCH', body: { config, enabled: true }, prefer: 'return=representation', query: { select: '*' },
+			});
+			row = updated?.[0];
+		} else {
+			const created = await supabaseRest('/rest/v1/admin_integrations', {
+				method: 'POST',
+				body: { key: 'company:profile', provider: 'admin', config, enabled: true },
+				prefer: 'return=representation', query: { select: '*' },
+			});
+			row = created?.[0];
+		}
+		res.json({ ok: true, profile: config, updated: row?.updated || null });
+	} catch (err) { next(err); }
+});
+
 // ── System health ────────────────────────────────────────────────
 // Live service checks for the admin dashboard (replaces hardcoded ok).
 router.get('/health', supabaseAuth, async (req, res, next) => {
@@ -360,11 +621,21 @@ router.get('/health', supabaseAuth, async (req, res, next) => {
 			stripe: Boolean(process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SANDBOX_SECRET_KEY),
 			paddle: Boolean(process.env.PADDLE_LIVE_API_KEY || process.env.PADDLE_SANDBOX_API_KEY),
 			dnb: Boolean(process.env.DNB_CLIENT_ID && process.env.DNB_CLIENT_SECRET),
+			alphaVantage: Boolean(process.env.ALPHA_VANTAGE_API_KEY),
+			finnhub: Boolean(process.env.FINNHUB_API_KEY),
+			market: false,
 		};
 		try {
 			const ping = await supabaseRest('/auth/v1/admin/users', { query: { per_page: 1 } });
 			checks.supabase = ping !== undefined;
 		} catch { checks.supabase = false; }
+		try {
+			const ctrl = new AbortController();
+			const t = setTimeout(() => ctrl.abort(), 4000);
+			const r = await fetch('https://api.binance.com/api/v3/ping', { signal: ctrl.signal }).catch(() => null);
+			checks.market = Boolean(r && r.ok);
+			clearTimeout(t);
+		} catch { checks.market = false; }
 		res.json({
 			status: checks.supabase ? 'ok' : 'degraded',
 			version: API_VERSION,
@@ -382,6 +653,33 @@ router.get('/logs', supabaseAuth, async (req, res, next) => {
 	} catch (err) { next(err); }
 });
 
+async function getBillingSummary() {
+	const stripe = stripeClient();
+	if (!stripe) return { configured: false };
+	const priceToPlan = {};
+	for (const [plan, price] of Object.entries(BILLING_PRICE_MAP())) if (price) priceToPlan[price] = plan;
+	let mrrCents = 0;
+	let activeCount = 0;
+	const byPlan = {};
+	let startingAfter;
+	for (let page = 0; page < 10; page++) {
+		const list = await stripe.subscriptions.list({ status: 'active', limit: 100, ...(startingAfter ? { starting_after: startingAfter } : {}) });
+		for (const sub of list.data || []) {
+			activeCount++;
+			for (const item of sub.items?.data || []) {
+				const plan = priceToPlan[item.price?.id] || 'other';
+				const amt = (item.price?.unit_amount || 0) * (item.quantity || 1);
+				const monthly = item.price?.recurring?.interval === 'year' ? Math.round(amt / 12) : amt;
+				mrrCents += monthly;
+				byPlan[plan] = (byPlan[plan] || 0) + monthly;
+			}
+		}
+		if (!list.has_more) break;
+		startingAfter = list.data?.[list.data.length - 1]?.id;
+	}
+	return { configured: true, mrr: mrrCents / 100, activeCount, byPlanCents: byPlan, currency: 'usd' };
+}
+
 // ── Billing summary from live Stripe data ────────────────────────
 function stripeClient() {
 	const key = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SANDBOX_SECRET_KEY || '';
@@ -398,30 +696,7 @@ const BILLING_PRICE_MAP = () => ({
 router.get('/billing/summary', supabaseAuth, async (req, res, next) => {
 	try {
 		await assertAdmin(req);
-		const stripe = stripeClient();
-		if (!stripe) return res.json({ configured: false });
-		const priceToPlan = {};
-		for (const [plan, price] of Object.entries(BILLING_PRICE_MAP())) if (price) priceToPlan[price] = plan;
-		let mrrCents = 0;
-		let activeCount = 0;
-		const byPlan = {};
-		let startingAfter;
-		for (let page = 0; page < 10; page++) {
-			const list = await stripe.subscriptions.list({ status: 'active', limit: 100, ...(startingAfter ? { starting_after: startingAfter } : {}) });
-			for (const sub of list.data || []) {
-				activeCount++;
-				for (const item of sub.items?.data || []) {
-					const plan = priceToPlan[item.price?.id] || 'other';
-					const amt = (item.price?.unit_amount || 0) * (item.quantity || 1);
-					const monthly = item.price?.recurring?.interval === 'year' ? Math.round(amt / 12) : amt;
-					mrrCents += monthly;
-					byPlan[plan] = (byPlan[plan] || 0) + monthly;
-				}
-			}
-			if (!list.has_more) break;
-			startingAfter = list.data?.[list.data.length - 1]?.id;
-		}
-		res.json({ configured: true, mrr: mrrCents / 100, activeCount, byPlanCents: byPlan, currency: 'usd' });
+		res.json(await getBillingSummary());
 	} catch (err) { next(err); }
 });
 
@@ -484,6 +759,154 @@ router.post('/billing/refund', supabaseAuth, async (req, res, next) => {
 	} catch (err) { next(err); }
 });
 
+// ── D&B financial statements (CSV downloads) ─────────────────────
+// Draft Balance Sheet + Income Statement from platform records, for D&B
+// upload (D-U-N-S 14-997-6777). D&B accepts csv ≤ 10 MB. These are
+// UNaudited summaries — have your accountant finalize before submitting.
+const DUNS_NUMBER = '14-997-6777';
+const COMPANY_LEGAL = 'TradingBible LLC';
+
+function parseStatementPeriod(query) {
+	const to = query?.to ? new Date(`${String(query.to).slice(0, 10)}T23:59:59Z`) : new Date();
+	const from = query?.from ? new Date(`${String(query.from).slice(0, 10)}T00:00:00Z`) : new Date(Date.UTC(2026, 7, 1));
+	if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from > to) {
+		const err = new Error('invalid from/to (use YYYY-MM-DD)');
+		err.status = 400;
+		throw err;
+	}
+	return { from, to };
+}
+
+function csvCell(v) {
+	const s = String(v ?? '');
+	return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function sendStatementCsv(res, filename, rows) {
+	res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+	res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+	res.send(`${rows.map((r) => r.map(csvCell).join(',')).join('\n')}\n`);
+}
+
+async function collectLedgerRecords(from, to) {
+	const [charges, refunds, bankTxns, billingEvents] = await Promise.all([
+		(async () => {
+			const stripe = stripeClient();
+			if (!stripe) return { gross: 0, count: 0, configured: false };
+			let gross = 0, count = 0, startingAfter;
+			const gte = Math.floor(from.getTime() / 1000), lte = Math.floor(to.getTime() / 1000);
+			for (let page = 0; page < 20; page++) {
+				const list = await stripe.charges.list({ created: { gte, lte }, limit: 100, ...(startingAfter ? { starting_after: startingAfter } : {}) });
+				for (const c of list.data || []) {
+					if (c.status === 'succeeded' && (c.currency || '').toLowerCase() === 'usd') { gross += (c.amount || 0) / 100; count++; }
+				}
+				if (!list.has_more) break;
+				startingAfter = list.data?.[list.data.length - 1]?.id;
+			}
+			return { gross, count, configured: true };
+		})(),
+		(async () => {
+			const stripe = stripeClient();
+			if (!stripe) return 0;
+			let total = 0, startingAfter;
+			const gte = Math.floor(from.getTime() / 1000), lte = Math.floor(to.getTime() / 1000);
+			for (let page = 0; page < 20; page++) {
+				const list = await stripe.refunds.list({ created: { gte, lte }, limit: 100, ...(startingAfter ? { starting_after: startingAfter } : {}) });
+				for (const r of list.data || []) total += (r.amount || 0) / 100;
+				if (!list.has_more) break;
+				startingAfter = list.data?.[list.data.length - 1]?.id;
+			}
+			return total;
+		})(),
+		supabaseRest('/rest/v1/bank_transactions', { query: { select: 'kind,amount,currency,asset,status,created', order: 'created.desc', limit: 5000 } }).catch(() => []),
+		supabaseRest('/rest/v1/billing_events', { query: { select: 'eventType,planName,amount,currency,status,occurredAt', order: 'occurredAt.desc', limit: 5000 } }).catch(() => []),
+	]);
+	const inRange = (d) => { const t = new Date(d).getTime(); return !Number.isNaN(t) && t >= from.getTime() && t <= to.getTime(); };
+	const txns = (bankTxns || []).filter((t) => inRange(t.created));
+	const events = (billingEvents || []).filter((e) => inRange(e.occurredAt || e.created));
+	const usd = (rows) => rows.filter((t) => String(t.currency || 'USD').toUpperCase() === 'USD' && String(t.asset || 'USD').toUpperCase() !== 'TBC');
+	const tbc = (rows) => rows.filter((t) => String(t.currency || '').toUpperCase() === 'TBC' || String(t.asset || '').toUpperCase() === 'TBC');
+	const sumAbs = (rows) => rows.reduce((n, t) => n + Math.abs(Number(t.amount) || 0), 0);
+	const OUTFLOW_KINDS = new Set(['withdraw', 'withdraw_crypto', 'pay', 'transfer_out', 'swap']);
+	const usdTx = usd(txns), tbcTx = tbc(txns);
+	return {
+		stripe: charges, refunds,
+		outflowsUsd: sumAbs(usdTx.filter((t) => OUTFLOW_KINDS.has(t.kind))),
+		inflowsUsd: sumAbs(usdTx.filter((t) => !OUTFLOW_KINDS.has(t.kind))),
+		outflowsTbc: sumAbs(tbcTx.filter((t) => OUTFLOW_KINDS.has(t.kind))),
+		pendingUsd: sumAbs(usdTx.filter((t) => ['pending', 'processing'].includes(String(t.status)))),
+		txnCount: txns.length, eventCount: events.length,
+	};
+}
+
+// GET /api/admin/financials/income-statement?from=YYYY-MM-DD&to=YYYY-MM-DD
+router.get('/financials/income-statement', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const { from, to } = parseStatementPeriod(req.query);
+		const r = await collectLedgerRecords(from, to);
+		const f = (d) => d.toISOString().slice(0, 10);
+		const gross = r.stripe.gross, refunds = r.refunds;
+		const feesEst = r.stripe.configured ? gross * 0.029 + r.stripe.count * 0.3 : 0;
+		const net = gross - refunds - feesEst - r.outflowsUsd + r.inflowsUsd;
+		sendStatementCsv(res, `tradingbible-income-statement-${f(from)}-${f(to)}.csv`, [
+			['TradingBible LLC — Income Statement (DRAFT, platform records, unaudited)'],
+			['D-U-N-S', DUNS_NUMBER],
+			['Period', `${f(from)} to ${f(to)}`],
+			['Generated (UTC)', new Date().toISOString()],
+			[],
+			['Section', 'Line', 'Amount (USD)', 'Source / notes'],
+			['Revenue', 'Subscription revenue (Stripe succeeded charges)', gross.toFixed(2), r.stripe.configured ? `${r.stripe.count} charges` : 'Stripe not configured — 0'],
+			['Revenue', 'Other platform inflows (bank ledger)', r.inflowsUsd.toFixed(2), `${r.txnCount} ledger txns in period`],
+			['Revenue', 'TOTAL REVENUE', (gross + r.inflowsUsd).toFixed(2), ''],
+			['Deductions', 'Refunds issued', refunds.toFixed(2), 'Stripe refunds'],
+			['Deductions', 'Processing fees (ESTIMATE 2.9% + $0.30/txn)', feesEst.toFixed(2), 'Estimate only — confirm in Stripe dashboard'],
+			['Expenses', 'Platform outflows paid (withdrawals, payouts, purchases)', r.outflowsUsd.toFixed(2), 'bank ledger, completed + pending'],
+			['Expenses', `TBC-denominated outflows (memo, in TBC)`, r.outflowsTbc.toFixed(2), 'Not converted — settle TBC/USD rate with accountant'],
+			['Total', 'NET INCOME, platform records (DRAFT)', net.toFixed(2), 'Have accountant finalize before D&B upload'],
+			[],
+			['Disclaimer', 'Draft from platform records only. Excludes payroll, contractors, infrastructure, marketing, taxes, and non-USD activity. Not audited.'],
+		]);
+	} catch (err) { next(err); }
+});
+
+// GET /api/admin/financials/balance-sheet?asof=YYYY-MM-DD
+router.get('/financials/balance-sheet', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const asof = req.query?.asof ? new Date(`${String(req.query.asof).slice(0, 10)}T23:59:59Z`) : new Date();
+		if (Number.isNaN(asof.getTime())) { const e = new Error('invalid asof (use YYYY-MM-DD)'); e.status = 400; throw e; }
+		const from = new Date(Date.UTC(2026, 7, 1));
+		const r = await collectLedgerRecords(from, asof);
+		const f = (d) => d.toISOString().slice(0, 10);
+		let mrr = 0, subs = 0;
+		try {
+			const s = await getBillingSummary();
+			if (s?.configured) { mrr = Number(s.mrr) || 0; subs = Number(s.activeCount) || 0; }
+		} catch { /* MRR stays 0 */ }
+		const cash = r.stripe.gross - r.refunds - r.outflowsUsd + r.inflowsUsd;
+		const pending = r.pendingUsd;
+		const assets = cash + mrr;
+		const equity = assets - pending;
+		sendStatementCsv(res, `tradingbible-balance-sheet-${f(asof)}.csv`, [
+			['TradingBible LLC — Balance Sheet (DRAFT, platform records, unaudited)'],
+			['D-U-N-S', DUNS_NUMBER],
+			['As of', f(asof)],
+			['Generated (UTC)', new Date().toISOString()],
+			[],
+			['Section', 'Line', 'Amount (USD)', 'Source / notes'],
+			['Assets', 'Cash collected, net of refunds and recorded outflows (since 2026-08-01)', cash.toFixed(2), 'Stripe + bank ledger'],
+			['Assets', 'Active subscription MRR (receivables proxy, 1 month)', mrr.toFixed(2), `${subs} active subscribers`],
+			['Assets', 'TOTAL ASSETS', assets.toFixed(2), ''],
+			['Liabilities', 'Pending payouts / withdrawals', pending.toFixed(2), 'bank ledger pending + processing'],
+			['Liabilities', 'TOTAL LIABILITIES', pending.toFixed(2), 'Excludes taxes, payables, debt — accountant to add'],
+			['Equity', "Owner's equity / retained (plug — accountant to finalize)", equity.toFixed(2), 'Assets minus liabilities'],
+			[],
+			['Disclaimer', 'Draft from platform records only. Not audited. Excludes bank balances, Stripe unsettled funds, TBC treasury, fixed assets, taxes, and debt.'],
+		]);
+	} catch (err) { next(err); }
+});
+
 // ── Real integration connectivity tests ──────────────────────────
 router.post('/integrations/test', supabaseAuth, async (req, res, next) => {
 	try {
@@ -525,7 +948,38 @@ router.post('/integrations/test', supabaseAuth, async (req, res, next) => {
 			const bal = await s.balance.retrieve();
 			return res.json({ ok: true, detail: `balance reachable (${(bal?.available?.[0]?.currency || '').toUpperCase()})` });
 		}
-		return res.status(400).json({ ok: false, error: 'unknown kind (smtp|url|supabase|stripe)' });
+		if (kind === 'alpha_vantage') {
+			const key = process.env.ALPHA_VANTAGE_API_KEY || '';
+			if (!key) return res.json({ ok: false, error: 'ALPHA_VANTAGE_API_KEY not set on server' });
+			const ctrl = new AbortController();
+			const t = setTimeout(() => ctrl.abort(), 10000);
+			try {
+				const r = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=${encodeURIComponent(key)}`, { signal: ctrl.signal });
+				const j = await r.json().catch(() => ({}));
+				const q = j?.['Global Quote']?.['05. price'];
+				return res.json(q ? { ok: true, detail: `GLOBAL_QUOTE live (IBM $${q})` } : { ok: false, error: 'no quote returned (rate limit?)' });
+			} finally { clearTimeout(t); }
+		}
+		if (kind === 'finnhub') {
+			const key = process.env.FINNHUB_API_KEY || '';
+			if (!key) return res.json({ ok: false, error: 'FINNHUB_API_KEY not set on server' });
+			const ctrl = new AbortController();
+			const t = setTimeout(() => ctrl.abort(), 10000);
+			try {
+				const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=AAPL&token=${encodeURIComponent(key)}`, { signal: ctrl.signal });
+				const j = await r.json().catch(() => ({}));
+				return res.json(j?.c ? { ok: true, detail: `quote live (AAPL $${j.c})` } : { ok: false, error: 'no quote returned' });
+			} finally { clearTimeout(t); }
+		}
+		if (kind === 'binance') {
+			const ctrl = new AbortController();
+			const t = setTimeout(() => ctrl.abort(), 8000);
+			try {
+				const r = await fetch('https://api.binance.com/api/v3/ping', { signal: ctrl.signal });
+				return res.json(r.ok ? { ok: true, detail: 'public market data reachable (no key needed)' } : { ok: false, error: `HTTP ${r.status}` });
+			} finally { clearTimeout(t); }
+		}
+		return res.status(400).json({ ok: false, error: 'unknown kind (smtp|url|supabase|stripe|alpha_vantage|finnhub|binance)' });
 	} catch (err) {
 		return res.json({ ok: false, error: String(err?.message || err).slice(0, 200) });
 	}
@@ -649,10 +1103,221 @@ router.patch('/jobs/postings/:id', supabaseAuth, async (req, res, next) => {
 			if (req.body?.[k] !== undefined) patch[k] = String(req.body[k]).slice(0, 8000);
 		}
 		if (req.body?.status !== undefined) patch.status = req.body.status === 'closed' ? 'closed' : 'open';
-		const updated = await supabaseRest(`/rest/v1/job_postings?id=eq.${encodeURIComponent(req.params.id)}`, {
-			method: 'PATCH', body: patch, prefer: 'return=representation', query: { select: '*' },
-		});
+		if (req.body?.auto_accept !== undefined) patch.auto_accept = req.body.auto_accept === true;
+		if (req.body?.hiring !== undefined && typeof req.body.hiring === 'object' && req.body.hiring !== null) {
+			// Merge over the stored config: partial edits (e.g. just the
+			// deadline) must never wipe salary, screening, or trial setups.
+			let stored = {};
+			try {
+				const cur = await supabaseRest(`/rest/v1/job_postings?id=eq.${encodeURIComponent(req.params.id)}`, {
+					query: { select: 'hiring', limit: 1 },
+				});
+				if (cur?.[0]?.hiring && typeof cur[0].hiring === 'object') stored = cur[0].hiring;
+			} catch { /* column missing → fresh object; fallback below saves rest */ }
+			const merged = { ...stored, ...req.body.hiring };
+			const closesRaw = String(merged.closes_at ?? '').trim();
+			const closesAt = closesRaw && !Number.isNaN(Date.parse(closesRaw)) ? new Date(closesRaw).toISOString() : null;
+			const freqRaw = String(merged.salary_freq || 'monthly').toLowerCase();
+			patch.hiring = {
+				screening: Array.isArray(merged.screening) ? merged.screening.slice(0, 8).map((q) => ({ q: String(q?.q || q || '').slice(0, 280), required: q?.required !== false })) : [],
+				samples_required: merged.samples_required === true,
+				trial_task: String(merged.trial_task || '').slice(0, 2000),
+				trial_days: Math.max(1, Math.min(90, Number(merged.trial_days) || 14)),
+				salary_tbc: Math.max(0, Math.round((Number(merged.salary_tbc) || 0) * 100) / 100),
+				salary_freq: ['weekly', 'monthly'].includes(freqRaw) ? freqRaw : 'monthly',
+				closes_at: closesAt,
+			};
+		}
+		let updated;
+		try {
+			updated = await supabaseRest(`/rest/v1/job_postings?id=eq.${encodeURIComponent(req.params.id)}`, {
+				method: 'PATCH', body: patch, prefer: 'return=representation', query: { select: '*' },
+			});
+		} catch (err) {
+			// Column added after deploy via Table Editor: if it is still
+			// missing, save everything else instead of failing the edit.
+			if (/auto_accept|hiring/i.test(String(err))) {
+				delete patch.auto_accept;
+				delete patch.hiring;
+				updated = await supabaseRest(`/rest/v1/job_postings?id=eq.${encodeURIComponent(req.params.id)}`, {
+					method: 'PATCH', body: patch, prefer: 'return=representation', query: { select: '*' },
+				});
+			} else throw err;
+		}
 		res.json(updated?.[0] || { id: req.params.id });
+	} catch (err) { next(err); }
+});
+
+// ── POST /admin/jobs/applications/:id/hire — accept + auto-provision ──
+// Creates (or upgrades) the login, assigns the staff role, stages a mentor
+// row for coaches, sends the invite email. The temp password is returned
+// ONLY here (admin eyes) — never through the public apply flow.
+router.post('/jobs/applications/:id/hire', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const apps = await supabaseRest(`/rest/v1/job_applications?id=eq.${encodeURIComponent(req.params.id)}`, {
+			query: { select: '*', limit: 1 },
+		});
+		const app = apps?.[0];
+		if (!app) return res.status(404).json({ error: 'application not found' });
+		if (app.status === 'hired') return res.json({ hired: true, already: true, email: app.email });
+		// Collection window: how many BSD candidates are in the pool and
+		// whether the window is still open (admin may still hire early).
+		let poolSize = 0;
+		try {
+			const pool = await supabaseRest('/rest/v1/job_applications', {
+				query: { select: 'id', jobId: `eq.${encodeURIComponent(app.jobId || '')}`, limit: 500 },
+			});
+			poolSize = (pool || []).length;
+		} catch { /* advisory only */ }
+		// Posting joined in code (not via FK embed) so hiring works even if
+		// the jobId relation was never created in the dashboard.
+		let posting = {};
+		if (app.jobId) {
+			try {
+				const posts = await supabaseRest(`/rest/v1/job_postings?id=eq.${encodeURIComponent(app.jobId)}`, {
+					query: { select: 'id,title,department,hiring', limit: 1 },
+				});
+				if (posts?.[0]) posting = posts[0];
+			} catch {
+				const posts = await supabaseRest(`/rest/v1/job_postings?id=eq.${encodeURIComponent(app.jobId)}`, {
+					query: { select: 'id,title,department', limit: 1 },
+				}).catch(() => null);
+				if (posts?.[0]) posting = posts[0];
+			}
+		}
+		const result = await provisionEmployee({
+			name: app.name, email: app.email, posting,
+		});
+		const updated = await supabaseRest(`/rest/v1/job_applications?id=eq.${encodeURIComponent(req.params.id)}`, {
+			method: 'PATCH', body: { status: 'hired' }, prefer: 'return=representation', query: { select: '*' },
+		});
+		const closesAt = posting?.hiring && typeof posting.hiring === 'object' ? posting.hiring.closes_at || null : null;
+		res.json({
+			hired: true,
+			email: app.email,
+			role: result.role,
+			loginCreated: result.created,
+			tempPassword: result.tempPassword,
+			application: updated?.[0] || { id: req.params.id, status: 'hired' },
+			poolSize,
+			closesAt,
+			windowOpen: closesAt ? Date.now() < Date.parse(closesAt) : false,
+		});
+	} catch (err) { next(err); }
+});
+
+// ── Probation review queue ─────────────────────────────────────────
+// Every hire starts on probation (trial_ends_at, default 14 days — per
+// posting trial_days). Confirm graduates them to full employee.
+router.get('/jobs/trials', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const rows = await supabaseRest('/rest/v1/users', {
+			query: { select: 'id,email,username,name,role,trial_ends_at', trial_ends_at: 'not.is.null', order: 'trial_ends_at.asc', limit: 200 },
+		}).catch((err) => {
+			if (/trial_ends_at/i.test(String(err))) return [];
+			throw err;
+		});
+		res.json(rows || []);
+	} catch (err) { next(err); }
+});
+
+router.post('/jobs/trials/:id/confirm', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const updated = await supabaseRest(`/rest/v1/users?id=eq.${encodeURIComponent(req.params.id)}`, {
+			method: 'PATCH', body: { trial_ends_at: null }, prefer: 'return=representation', query: { select: 'id,email' },
+		});
+		res.json({ confirmed: true, user: updated?.[0] || { id: req.params.id } });
+	} catch (err) { next(err); }
+});
+
+// ── TBC payroll (staff paid in TBC only) ─────────────────────────────
+// Salaries are denominated in TBC (1 TBC = 1 KWD). The admin funds payroll
+// from their own TBC balance (convert cash → TBC in the wallet first).
+// Employees cash out themselves: TBC → USD convert, then bank withdrawal.
+// GET returns the payroll roster (hired applications + posting salaries);
+// POST executes one run and reports per-person results (never partial-silent).
+router.get('/jobs/payroll', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const apps = await supabaseRest('/rest/v1/job_applications', {
+			query: { select: 'id,name,email,status,jobId,created', status: 'eq.hired', order: 'created.asc', limit: 500 },
+		}).catch(() => []);
+		const ids = [...new Set((apps || []).map((a) => a.jobId).filter(Boolean))];
+		let hiringById = {};
+		if (ids.length) {
+			const posts = await supabaseRest('/rest/v1/job_postings', {
+				query: { select: 'id,title,hiring', id: `in.(${ids.map((x) => encodeURIComponent(x)).join(',')})`, limit: 200 },
+			}).catch(() => null);
+			for (const q of posts || []) hiringById[q.id] = { title: q.title, hiring: q.hiring && typeof q.hiring === 'object' ? q.hiring : {} };
+		}
+		res.json((apps || []).map((a) => ({
+			appId: a.id, name: a.name, email: a.email,
+			title: hiringById[a.jobId]?.title || 'Opening',
+			salary_tbc: Number(hiringById[a.jobId]?.hiring?.salary_tbc) || 0,
+			salary_freq: hiringById[a.jobId]?.hiring?.salary_freq || 'monthly',
+			hiredAt: a.created || null,
+		})));
+	} catch (err) { next(err); }
+});
+
+router.get('/jobs/payroll/history', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const rows = await supabaseRest('/rest/v1/bank_transactions', {
+			query: { select: 'owner,amount,created,reference', kind: 'eq.tbc_receive', reference: 'like.payroll:%', order: 'created.desc', limit: 2000 },
+		}).catch(() => []);
+		const byOwner = {};
+		for (const t of rows || []) {
+			const o = byOwner[t.owner] || (byOwner[t.owner] = { owner: t.owner, totalPaidTbc: 0, runs: 0, lastPaidAt: null, periods: [] });
+			o.totalPaidTbc += Number(t.amount) || 0;
+			o.runs++;
+			if (!o.lastPaidAt || String(t.created) > String(o.lastPaidAt)) o.lastPaidAt = t.created;
+			const period = String(t.reference || '').replace(/^payroll:/, '');
+			if (period && !o.periods.includes(period)) o.periods.push(period);
+		}
+		res.json(Object.values(byOwner));
+	} catch (err) { next(err); }
+});
+
+router.post('/jobs/payroll', supabaseAuth, async (req, res, next) => {
+	try {
+		const admin = await assertAdmin(req);
+		const payments = Array.isArray(req.body?.payments) ? req.body.payments : [];
+		const clean = payments
+			.map((x) => ({ email: String(x?.email || '').trim().toLowerCase(), tbc: Math.round((Number(x?.tbc) || 0) * 100) / 100 }))
+			.filter((x) => x.email.includes('@') && x.tbc > 0)
+			.slice(0, 200);
+		if (!clean.length) return res.status(422).json({ error: 'no valid payments' });
+		const total = Math.round(clean.reduce((n, x) => n + x.tbc, 0) * 100) / 100;
+		const fund = await balances(admin.id).catch(() => ({ tbc: 0 }));
+		if ((fund?.tbc || 0) < total) {
+			return res.status(422).json({ error: `insufficient TBC — run needs ${total}, balance has ${Math.round((fund?.tbc || 0) * 100) / 100}. Convert cash → TBC first.` });
+		}
+		const note = String(req.body?.note || '').slice(0, 60) || new Date().toISOString().slice(0, 7);
+		const results = [];
+		for (const x of clean) {
+			try {
+				const peers = await supabaseRest('/rest/v1/users', {
+					query: { select: 'id,email', email: `eq.${x.email}`, limit: 1 }, // RAW: URLSearchParams encodes
+				}).catch(() => []);
+				if (!peers?.[0]) throw new Error('no member with that email');
+				await supabaseRest('/rest/v1/bank_transactions', {
+					method: 'POST',
+					body: { owner: admin.id, kind: 'tbc_send', amount: -x.tbc, currency: 'TBC', status: 'completed', reference: `payroll:${note}`, counterparty: 'member', asset: 'TBC', fiatValue: 0 },
+					prefer: 'return=representation',
+				});
+				await supabaseRest('/rest/v1/bank_transactions', {
+					method: 'POST',
+					body: { owner: peers[0].id, kind: 'tbc_receive', amount: x.tbc, currency: 'TBC', status: 'completed', reference: `payroll:${note}`, counterparty: 'member', asset: 'TBC', fiatValue: 0 },
+					prefer: 'return=representation',
+				});
+				results.push({ email: x.email, tbc: x.tbc, ok: true });
+			} catch (err) { results.push({ email: x.email, tbc: x.tbc, ok: false, error: String(err?.message || err).slice(0, 120) }); }
+		}
+		res.json({ run: note, total, paid: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length, results });
 	} catch (err) { next(err); }
 });
 
@@ -668,9 +1333,18 @@ router.get('/jobs/applications', supabaseAuth, async (req, res, next) => {
 	try {
 		await assertAdmin(req);
 		const rows = await supabaseRest('/rest/v1/job_applications', {
-			query: { select: '*,job_postings(title)', order: 'created.desc', limit: 500 },
+			query: { select: '*', order: 'created.desc', limit: 500 },
 		});
-		res.json(rows || []);
+		// Join posting titles in code (FK-embed independent, see hire above).
+		const ids = [...new Set((rows || []).map((a) => a.jobId).filter(Boolean))];
+		let titleById = {};
+		if (ids.length) {
+			const posts = await supabaseRest('/rest/v1/job_postings', {
+				query: { select: 'id,title', id: `in.(${ids.map((x) => encodeURIComponent(x)).join(',')})`, limit: 500 },
+			}).catch(() => null);
+			for (const q of posts || []) titleById[q.id] = q.title;
+		}
+		res.json((rows || []).map((a) => ({ ...a, job_postings: a.jobId && titleById[a.jobId] ? { title: titleById[a.jobId] } : null })));
 	} catch (err) { next(err); }
 });
 
@@ -678,7 +1352,7 @@ router.patch('/jobs/applications/:id', supabaseAuth, async (req, res, next) => {
 	try {
 		await assertAdmin(req);
 		const status = String(req.body?.status || '');
-		if (!['new', 'reviewing', 'shortlisted', 'rejected', 'hired'].includes(status)) {
+		if (!['new', 'reviewing', 'shortlisted', 'trial_task', 'rejected', 'hired'].includes(status)) {
 			return res.status(400).json({ error: 'invalid status' });
 		}
 		const updated = await supabaseRest(`/rest/v1/job_applications?id=eq.${encodeURIComponent(req.params.id)}`, {

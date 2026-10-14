@@ -92,6 +92,7 @@ function synthQuote(symbol) {
 
 import { avQuote, isRateLimited } from '../utils/alphaVantage.js';
 import { yahooQuote } from '../utils/yahoo.js';
+import { isWeekendClosed } from '../utils/marketHours.js';
 
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 
@@ -137,6 +138,19 @@ async function finnhubQuote(symbol) {
 	}
 }
 
+// Last real print per symbol — the freeze source when a market is closed
+// and every live provider fails. Bounded so memory can't grow.
+const lastGood = new Map();
+function remember(sym, q) {
+	if (q && Number.isFinite(q.price) && q.price > 0) {
+		lastGood.set(sym, { quote: { ...q }, at: Date.now() });
+		if (lastGood.size > 500) {
+			const first = lastGood.keys().next().value;
+			lastGood.delete(first);
+		}
+	}
+}
+
 export default async (req, res) => {
 	const raw = String(req.query.symbols || req.query.symbol || '').toUpperCase();
 	// Canonicalize Binance-style names (BTCUSDT → BTCUSD, PAXGUSDT → XAUUSD).
@@ -171,6 +185,7 @@ export default async (req, res) => {
 
 	// Live crypto fallback (Binance hosts rotate — api.binance.com is
 	// geo-blocked in some regions, vision/us work there instead).
+	// Live crypto fallback (PAXG doubles as live weekend spot gold).
 	const cryptoSymbols = symbols.filter((s) => CRYPTO_MAP[s] && !liveMap[s]);
 	if (cryptoSymbols.length) {
 		const binList = cryptoSymbols.map((s) => CRYPTO_MAP[s]);
@@ -218,7 +233,29 @@ export default async (req, res) => {
 		});
 	}
 
-	const quotes = symbols.map((s) => liveMap[s] || synthQuote(s));
+	for (const [sym, q] of Object.entries(liveMap)) remember(sym, q);
+	const weekend = (s) => isWeekendClosed(s, CRYPTO_MAP);
+	const quotes = symbols.map((s) => {
+		const live = liveMap[s];
+		if (live) {
+			// A "live" quote for a closed market is Friday's session print —
+			// label it closed so the UI badges it instead of faking ticks.
+			if (weekend(s) && live.source !== 'binance') {
+				return { ...live, source: 'close', closed: true, asOf: lastGood.get(s)?.at || Date.now() };
+			}
+			return live;
+		}
+		if (weekend(s)) {
+			// Closed and every provider failed: freeze the last real close.
+			// Never synthesize drift for a shut market (weekend PAXG drift
+			// and random-walk both lie about spot). With zero history,
+			// return an honest null print — the UI renders "—", not fiction.
+			const g = lastGood.get(s);
+			if (g) return { ...g.quote, source: 'close', closed: true, asOf: g.at };
+			return { symbol: s, price: null, changePercent: null, change: null, high: null, low: null, volume: 0, source: 'close', closed: true, asOf: null };
+		}
+		return synthQuote(s);
+	});
 	const delayed = quotes.some((q) => q.source === 'synthetic') && isRateLimited();
 	res.json({ quotes, delayed });
 };

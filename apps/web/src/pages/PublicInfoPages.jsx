@@ -128,9 +128,11 @@ export const CareersPage = () => {
   const homeTo = homeRouteForUser(isAuthed ? user : null);
   const [jobs, setJobs] = useState([]);
   const [openId, setOpenId] = useState(null);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', coverLetter: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', coverLetter: '', samples: '', website: '', answers: {} });
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const [applyErr, setApplyErr] = useState('');
+  const resetForm = () => { setForm({ name: '', email: '', phone: '', coverLetter: '', samples: '', website: '', answers: {} }); setApplyErr(''); };
 
   useEffect(() => {
     (async () => {
@@ -145,6 +147,7 @@ export const CareersPage = () => {
     e?.preventDefault?.();
     if (!openId || !form.name.trim() || !form.email.trim()) return;
     setBusy(true);
+    setApplyErr('');
     try {
       const res = await fetch('/hcgi/api/jobs/apply', {
         method: 'POST',
@@ -154,13 +157,17 @@ export const CareersPage = () => {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || 'request failed');
       setDone(true);
-      setForm({ name: '', email: '', phone: '', coverLetter: '' });
-    } catch {
+      resetForm();
+    } catch (err) {
       setDone(false);
+      setApplyErr(err?.message || 'request failed');
     } finally {
       setBusy(false);
     }
   };
+  const openJob = jobs.find((j) => j.id === openId) || null;
+  const screeningQs = Array.isArray(openJob?.hiring?.screening) ? openJob.hiring.screening : [];
+  const samplesRequired = openJob?.hiring?.samples_required === true;
 
   return (
     <div className="min-h-screen bg-[#07070a] px-6 pt-24 pb-16 sm:pt-28">
@@ -186,7 +193,13 @@ export const CareersPage = () => {
                 <h3 className="mt-2 text-xl font-semibold text-[#f0ecdd]">{j.title}</h3>
                 <p className="mt-2 flex-1 text-sm leading-relaxed text-[#8a8577]">{j.description}</p>
                 {j.requirements && <p className="mt-2 text-xs text-[#6a665a]">{t('job.requirements')}: {j.requirements}</p>}
-                <GhostButton onClick={() => { setOpenId(openId === j.id ? null : j.id); setDone(false); }} className="mt-5 w-full">{t('job.apply')}</GhostButton>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  <span className="rounded-full bg-[#d4af37]/10 px-2 py-0.5 text-[10px] font-bold text-[#d4af37]">{t('job.paidTbc', null, 'Paid in TBC')}{Number(j.hiring?.salary_tbc) > 0 ? ` · ${j.hiring.salary_tbc} TBC/${j.hiring.salary_freq === 'weekly' ? 'wk' : 'mo'}` : ''}</span>
+                  {j.hiring?.closes_at && !Number.isNaN(Date.parse(j.hiring.closes_at)) && (
+                    <span className="rounded-full bg-sky-400/10 px-2 py-0.5 text-[10px] font-bold text-sky-300">{t('job.closesAt', null, 'Apply by')} {String(j.hiring.closes_at).slice(0, 10)}</span>
+                  )}
+                </div>
+                <GhostButton onClick={() => { setOpenId(openId === j.id ? null : j.id); setDone(false); setApplyErr(''); }} className="mt-5 w-full">{t('job.apply')}</GhostButton>
                 {openId === j.id && (
                   done ? (
                     <p className="mt-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-center text-sm text-emerald-400">{t('job.applied')}</p>
@@ -196,6 +209,21 @@ export const CareersPage = () => {
                       <input value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder={t('job.emailPh')} type="email" required className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
                       <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} placeholder={t('job.phonePh')} className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
                       <textarea value={form.coverLetter} onChange={(e) => setForm((p) => ({ ...p, coverLetter: e.target.value }))} placeholder={t('job.coverPh')} className="min-h-[100px] w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
+                      {screeningQs.map((q, i) => (
+                        <div key={i}>
+                          <div className="mb-1 text-xs font-semibold text-[#d4af37]">{q?.q || `Question ${i + 1}`}{q?.required !== false ? ' *' : ''}</div>
+                          <textarea value={form.answers[i] || ''} onChange={(e) => setForm((p) => ({ ...p, answers: { ...p.answers, [i]: e.target.value } }))} required={q?.required !== false} placeholder={t('job.answerPh', null, 'Your answer…')} className="min-h-[64px] w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
+                        </div>
+                      ))}
+                      <div>
+                        <div className="mb-1 text-xs font-semibold text-[#d4af37]">{t('job.samplesPh', null, 'Links to your work (portfolio, profile, samples)')}{samplesRequired ? ' *' : ''}</div>
+                        <textarea value={form.samples} onChange={(e) => setForm((p) => ({ ...p, samples: e.target.value }))} required={samplesRequired} placeholder="https://…" className="min-h-[56px] w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
+                      </div>
+                      {/* Honeypot: invisible to humans, irresistible to bots. */}
+                      <div aria-hidden style={{ position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' }}>
+                        <input value={form.website} onChange={(e) => setForm((p) => ({ ...p, website: e.target.value }))} placeholder="Website" tabIndex={-1} autoComplete="off" />
+                      </div>
+                      {applyErr && <p className="rounded-xl border border-red-400/30 bg-red-400/5 p-2.5 text-center text-xs text-red-300">{applyErr}</p>}
                       <GoldButton disabled={busy} className="w-full">{t('job.sendApp')}</GoldButton>
                     </form>
                   )

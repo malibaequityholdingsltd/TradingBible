@@ -283,7 +283,7 @@ export default function RiskToolsPage() {
         <Note icon={Wallet}>
           Calculators only — nothing here places orders. Live prices come from the same feeds as your charts; sizing math runs 100% in your browser and never leaves the page.
         </Note>
-        <p className="text-center text-xs text-[#6a665a]">Evaluating for TradingBible Funded? The guard rails match the <Link to="/app/funded" className="font-semibold text-[#d4af37] hover:underline">program rulebook</Link>.</p>
+        <p className="text-center text-xs text-[#6a665a]">Evaluating for TradingBible Funded? The guard rails match the <Link to="/app/challenges" className="font-semibold text-[#d4af37] hover:underline">program rulebook</Link>.</p>
       </div>
     </AppLayout>
   );

@@ -5,6 +5,9 @@
 import { avCandles, isRateLimited } from '../utils/alphaVantage.js';
 import { yahooCandles } from '../utils/yahoo.js';
 import { binanceSymbolFor, synthCandles } from './candles.js';
+import { isWeekendClosed } from '../utils/marketHours.js';
+
+const lastGoodSeries = new Map();
 
 function makeHandler(defaultInterval) {
 	return async (req, res) => {
@@ -13,9 +16,13 @@ function makeHandler(defaultInterval) {
 		let limit = parseInt(req.query.limit, 10) || 150;
 		limit = Math.min(Math.max(limit, 20), 500);
 
+		const bSym = binanceSymbolFor(symbol);
+		const closed = !bSym && isWeekendClosed(symbol);
 		try {
 			const yahoo = await yahooCandles(symbol, interval, limit).catch(() => null);
 			if (yahoo && yahoo.length) {
+				lastGoodSeries.set(`${symbol}|${interval}`, yahoo);
+				if (closed) return res.json({ symbol, interval, source: 'close', closed: true, delayed: false, candles: yahoo });
 				return res.json({ symbol, interval, source: 'yahoo', delayed: false, candles: yahoo });
 			}
 		} catch {
@@ -23,7 +30,7 @@ function makeHandler(defaultInterval) {
 		}
 
 		const bSymbol = binanceSymbolFor(symbol);
-		if (bSymbol) {
+		if (bSymbol && !closed) {
 			for (const host of ['https://data-api.binance.vision', 'https://api.binance.com', 'https://api.binance.us']) {
 				try {
 					const upstream = await fetch(
@@ -64,6 +71,10 @@ function makeHandler(defaultInterval) {
 			}
 		}
 
+		if (closed) {
+			const g = lastGoodSeries.get(`${symbol}|${interval}`);
+			return res.json({ symbol, interval, source: 'close', closed: true, delayed: false, candles: g || [] });
+		}
 		return res.json({ symbol, interval, source: 'synthetic', delayed: true, candles: synthCandles(symbol, interval, limit) });
 	};
 }

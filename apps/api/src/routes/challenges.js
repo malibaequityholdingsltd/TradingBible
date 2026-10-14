@@ -2,7 +2,8 @@ import { Router } from 'express';
 import logger from '../utils/logger.js';
 import { supabaseRest } from '../utils/supabaseClient.js';
 import { getSupabaseUser } from '../utils/supabaseClient.js';
-import { evaluateChallenge } from '../lib/challengeRules.js';
+import { evaluateChallenge, toProduct } from '../lib/challengeRules.js';
+import { enforceChallengesForUser, notifyBreach, getAttemptTrades, flattenAttemptAccount } from '../lib/challengeEnforce.js';
 
 // ── Funded challenges ────────────────────────────────────────────
 // Products live in `admin_integrations` (key `challenge:<slug>`, managed in
@@ -26,69 +27,6 @@ async function isAdmin(user) {
 		const rows = await supabaseRest(`/rest/v1/users?id=eq.${user.id}&select=role`, { query: { select: 'role', limit: 1 } });
 		return rows?.[0]?.role === 'admin';
 	} catch { return false; }
-}
-
-function accountTypesFor(c) {
-	const mode = String(c.mode || c.phase || 'two-step');
-	if (mode === 'futures') {
-		return [{ id: 'futures', label: 'Futures', leverage: String(c.leverage || 'Futures margin'), holding: 'Exchange hours + contract calendar', news: 'Unrestricted' }];
-	}
-	const levStd = String(c.leverageStandard || c.leverage || '1:100');
-	const levSwing = String(c.leverageSwing || '1:30');
-	const opts = String(c.accountTypeOptions || 'standard,swing').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
-	const all = {
-		standard: { id: 'standard', label: 'Standard', leverage: levStd, holding: 'Intraday only — NO overnight / NO weekend holding (flat by close)', news: 'News trading NOT ALLOWED' },
-		swing: { id: 'swing', label: 'Swing', leverage: levSwing, holding: 'Overnight + weekend holding allowed', news: 'No news restrictions' },
-	};
-	const picked = opts.filter((o) => all[o]).map((o) => all[o]);
-	return picked.length ? picked : [all.standard, all.swing];
-}
-
-function toProduct(row) {
-	const c = row?.config || {};
-	const feeStd = Number(c.feeStandard ?? c.fee) || 0;
-	const feeSwing = Number(c.feeSwing ?? c.fee) || 0;
-	return {
-		key: String(row.key || '').replace(/^challenge:/, ''),
-		name: c.name || row.key,
-		description: c.description || '',
-		fee: feeStd,
-		fees: { standard: feeStd, swing: feeSwing },
-		accountSize: Number(c.accountSize) || 100000,
-		// Phase 1 (evaluated by the engine) + Phase 2 verification (displayed,
-		// same risk rails, lower target) + funded terms (displayed).
-		phase: String(c.phase || 'two-step'),
-		mode: String(c.mode || c.phase || 'two-step'),
-		leverage: String(c.leverage || '1:100'),
-		platforms: String(c.platforms || 'MT5 · cTrader · TradingBible Terminal'),
-		instruments: String(c.instruments || 'Forex · Metals · Indices · Crypto · Stocks'),
-		maxContracts: Math.trunc(Number(c.maxContracts ?? 0)),
-		refundableFee: c.refundableFee !== false,
-		accountTypes: accountTypesFor(c),
-		rules: {
-			mode: String(c.mode || c.phase || 'two-step'),
-			targetPct: Number(c.targetPct ?? 10),
-			target2Pct: Number(c.target2Pct ?? 5),
-			targetUsd: Number(c.targetUsd ?? 0),
-			maxDrawdownPct: Number(c.maxDrawdownPct ?? 10),
-			maxDdUsd: Number(c.maxDdUsd ?? 0),
-			maxLossMode: String(c.maxLossMode || ((c.mode || c.phase) === 'two-step' ? 'static' : 'eod-trailing')),
-			dailyLossPct: Number(c.dailyLossPct ?? (((c.mode || c.phase) === 'one-step') ? 3 : ((c.mode || c.phase) === 'futures' ? 0 : 5))),
-			dailyLossUsd: Number(c.dailyLossUsd ?? 0),
-			dailyEnforced: c.dailyEnforced !== false,
-			minDays: Math.trunc(Number(c.minDays ?? 4)),
-			bestDayMaxPct: Number(c.bestDayMaxPct ?? ((c.mode || c.phase) === 'one-step' ? 50 : 0)),
-			consistencyMaxPct: Number(c.consistencyMaxPct ?? 0),
-			consistencyBase: String(c.consistencyBase || 'total'),
-		},
-		funded: {
-			profitSplitPct: Number(c.profitSplitPct ?? 80),
-			maxSplitPct: Number(c.maxSplitPct ?? 90),
-			payoutCycleDays: Math.trunc(Number(c.payoutCycleDays ?? 14)),
-			scaling: String(c.scaling || 'Qualify every 4 months: +25% capital, up to $400K'),
-		},
-		enabled: row.enabled !== false,
-	};
 }
 
 // ── Public: challenge catalog ────────────────────────────────────
@@ -176,18 +114,29 @@ router.post('/buy', async (req, res) => {
 				prefer: 'return=representation',
 			});
 		}
-		return res.json({ ok: true, attempt: attempt?.[0] || null, tbcCharged: tbcFee });
+		// Owned execution: every attempt gets a dedicated in-house paper
+		// account (no outside broker in the loop). Legacy fallback kept.
+		const bought = attempt?.[0] || null;
+		if (bought?.id) {
+			await supabaseRest('/rest/v1/paper_accounts', {
+				method: 'POST',
+				body: { owner: user.id, name: `challenge:${bought.id}`, balance: product.accountSize, contest: productKey },
+				prefer: 'return=representation',
+			}).catch((e) => logger.warn('challenge paper account failed', String(e?.message || e)));
+		}
+		return res.json({ ok: true, attempt: bought, tbcCharged: tbcFee });
 	} catch (err) {
 		logger.error('challenge buy failed', String(err));
 		return res.status(500).json({ error: 'failed' });
 	}
 });
 
-// ── My attempts ──────────────────────────────────────────────────
+// ── My attempts (auto-enforces: breached actives fail + lock here) ──
 router.get('/my', async (req, res) => {
 	const user = await authedUser(req);
 	if (!user) return res.status(401).json({ error: 'unauthorized' });
 	try {
+		await enforceChallengesForUser(user.id).catch(() => {});
 		const rows = await supabaseRest('/rest/v1/challenge_attempts', {
 			query: { select: '*', owner: `eq.${user.id}`, order: 'created_at.desc', limit: 50 },
 		});
@@ -214,11 +163,7 @@ router.post('/evaluate/:id', async (req, res) => {
 			query: { select: 'config', 'key': `eq.challenge:${attempt.product_key}`, limit: 1 },
 		}).catch(() => []);
 		const product = toProduct({ key: attempt.product_key, config: prodRows?.[0]?.config || {} });
-		const trades = await supabaseRest('/rest/v1/trades', {
-			query: { select: 'pnl,tradeDate', owner: `eq.${user.id}`, order: 'tradeDate.asc', limit: 5000 },
-		}).catch(() => []);
-		const since = new Date(attempt.started_at).getTime();
-		const windowed = (trades || []).filter((t) => new Date(t.tradeDate).getTime() >= since);
+		const windowed = await getAttemptTrades(user.id, attempt);
 		const result = evaluateChallenge({ startBalance: product.accountSize, rules: product.rules, trades: windowed });
 
 		const status = result.failed ? 'failed' : result.status === 'passed' ? 'passed' : 'active';
@@ -227,6 +172,12 @@ router.post('/evaluate/:id', async (req, res) => {
 			body: { stats: result, status, decided_at: status === 'active' ? null : new Date().toISOString() },
 			prefer: 'return=representation',
 		});
+		if (status === 'failed') {
+			const labels = (result.checks || []).filter((c) => !c.pass && !c.soft).map((c) => c.label).join('; ') || 'hard rail breached';
+			const flat = await flattenAttemptAccount(user.id, attempt).catch(() => ({ flattened: 0 }));
+			await notifyBreach(user.id, product.name || attempt.product_key,
+				`${labels}${flat.flattened ? ` — ${flat.flattened} open position(s) auto-closed` : ''}`).catch(() => {});
+		}
 		return res.json({ ok: true, attempt: updated?.[0] || null, result });
 	} catch (err) {
 		logger.error('challenge evaluate failed', String(err));
@@ -236,9 +187,9 @@ router.post('/evaluate/:id', async (req, res) => {
 
 // ── Trader: request a payout on a passed attempt ────────────────
 // Creates a pending payout_request ledger row. The desk approves via
-// POST /admin/payout/:id, which transfers to the trader's connected
-// bank, flips the request to completed and refunds the entry fee in
-// TBC on the first payout.
+// POST /admin/payout/:id, which credits the reward in TBC to the
+// trader's till, flips the request to completed and refunds the entry
+// fee in TBC on the first payout. No bank connection needed.
 router.post('/payout/request', async (req, res) => {
 	const user = await authedUser(req);
 	if (!user) return res.status(401).json({ error: 'unauthorized' });
@@ -262,13 +213,6 @@ router.post('/payout/request', async (req, res) => {
 		}).catch(() => []);
 		const payout = Number(prodRows?.[0]?.config?.payout) || 0;
 		if (!(payout > 0)) return res.status(422).json({ error: 'payouts are not configured for this program yet' });
-		const rails = await supabaseRest('/rest/v1/wallet_money_rails', {
-			query: { select: 'connect_account_id,connect_status', owner: `eq.${user.id}`, limit: 1 },
-		}).catch(() => []);
-		const rail = rails?.[0];
-		if (!rail?.connect_account_id || rail.connect_status !== 'active') {
-			return res.status(422).json({ error: 'connect your bank first (Wallet → Way out)' });
-		}
 		const created = await supabaseRest('/rest/v1/bank_transactions', {
 			method: 'POST',
 			body: { owner: user.id, kind: 'payout_request', amount: payout, currency: 'USD', status: 'pending', reference: `payout_req:${attempt.id}:${Date.now()}`, counterparty: 'trader_request', asset: 'USD', fiatValue: payout },
@@ -320,15 +264,12 @@ router.get('/admin/all', async (req, res) => {
 	}
 });
 
-// ── Admin: pay pass reward via the trader's Connect account ──────
+// ── Admin: pay pass reward in TBC to the trader's till ──────────
 // Product carries `payout` (USD pass reward, set in Content → Challenges).
-// Transfer goes platform → trader Connect account; ledger + attempt flip.
+// Reward is credited in TBC (converted at the live rate); ledger + attempt flip.
 router.post('/admin/payout/:id', async (req, res) => {
 	const user = await authedUser(req);
 	if (!user || !(await isAdmin(user))) return res.status(403).json({ error: 'admin only' });
-	const Stripe = (await import('stripe')).default;
-	const key = process.env.STRIPE_SECRET_KEY || '';
-	if (!key) return res.status(503).json({ error: 'Stripe not configured' });
 	try {
 		const rows = await supabaseRest(`/rest/v1/challenge_attempts?id=eq.${encodeURIComponent(req.params.id)}`, {
 			query: { select: '*', limit: 1 },
@@ -341,13 +282,10 @@ router.post('/admin/payout/:id', async (req, res) => {
 		}).catch(() => []);
 		const payout = Number(prodRows?.[0]?.config?.payout) || 0;
 		if (!(payout > 0)) return res.status(422).json({ error: 'set a pass reward on the product first' });
-		const rails = await supabaseRest('/rest/v1/wallet_money_rails', {
-			query: { select: 'connect_account_id,connect_status', owner: `eq.${attempt.owner}`, limit: 1 },
+		const prior = await supabaseRest('/rest/v1/bank_transactions', {
+			query: { select: 'id', owner: `eq.${attempt.owner}`, kind: 'eq.payout', reference: `eq.payout:${attempt.id}`, limit: 1 },
 		}).catch(() => []);
-		const rail = rails?.[0];
-		if (!rail?.connect_account_id || rail.connect_status !== 'active') {
-			return res.status(422).json({ error: 'trader bank not connected' });
-		}
+		if (prior?.length) return res.status(422).json({ error: 'already paid' });
 		// Same payout-fraud scan as wallet withdrawals (never on purchases).
 		try {
 			const { scanPayoutIdentity } = await import('../utils/payout-scan.js');
@@ -358,18 +296,13 @@ router.post('/admin/payout/:id', async (req, res) => {
 		} catch (err) {
 			logger.warn('challenge payout scan hook failed open', String(err?.message || err));
 		}
-		const stripe = new Stripe(key);
-		const transfer = await stripe.transfers.create({
-			amount: Math.round(payout * 100),
-			currency: 'usd',
-			destination: rail.connect_account_id,
-			description: `TradingBible Funded pass reward ${attempt.product_key}`.slice(0, 200),
-		}, { idempotencyKey: `challenge_payout_${attempt.id}` });
+		const { tbcForUsd } = await import('../utils/tbc-econ.js');
+		const { tbc: payoutTbc } = await tbcForUsd(payout);
 		await supabaseRest('/rest/v1/bank_transactions', {
 			method: 'POST',
-			body: { owner: attempt.owner, kind: 'payout', amount: payout, currency: 'USD', status: 'completed', reference: transfer.id, counterparty: 'stripe_connect', asset: 'USD', fiatValue: payout },
+			body: { owner: attempt.owner, kind: 'payout', amount: payoutTbc, currency: 'TBC', status: 'completed', reference: `payout:${attempt.id}`, counterparty: 'internal', asset: 'TBC', fiatValue: payout },
 			prefer: 'return=representation',
-		}).catch(() => {});
+		});
 		await supabaseRest(`/rest/v1/challenge_attempts?id=eq.${attempt.id}`, {
 			method: 'PATCH', body: { status: 'paid', decided_at: new Date().toISOString() },
 		});
@@ -410,7 +343,7 @@ router.post('/admin/payout/:id', async (req, res) => {
 		} catch (err) {
 			logger.warn('challenge fee refund failed', String(err?.message || err));
 		}
-		return res.json({ ok: true, transferId: transfer.id, payout, ...(refundTbc > 0 ? { feeRefundedTbc: refundTbc } : {}) });
+		return res.json({ ok: true, payoutTbc, payoutUsd: payout, ...(refundTbc > 0 ? { feeRefundedTbc: refundTbc } : {}) });
 	} catch (err) {
 		logger.error('challenge payout failed', String(err));
 		return res.status(502).json({ error: err?.message || 'payout failed' });

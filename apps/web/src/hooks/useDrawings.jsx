@@ -1,16 +1,54 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import pb from '@/lib/pocketbaseClient';
 
-// Persists per-user, per-symbol chart drawings in the PocketBase
-// `chart_drawings` collection. The "live" set for a symbol is the single
-// non-template record; templates are additional named records.
+// Persists per-user, per-symbol chart drawings.
+// Cloud: PocketBase `chart_drawings` (single non-template live record per
+// owner+symbol, plus named templates).
+// Local: localStorage mirror `tb:drawings:v1:{uid||anon}:{symbol}` —
+// write-through on every update + hydrate before cloud load, so refresh
+// survives logged-out / offline / RLS failures. Cloud wins when it loads
+// with data; local is kept as fallback.
+function lsKey(symbol, uid) {
+  return `tb:drawings:v1:${uid || 'anon'}:${String(symbol || '').toUpperCase()}`;
+}
+
+function readLocal(symbol, uid) {
+  try {
+    const raw = localStorage.getItem(lsKey(symbol, uid));
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch { return []; }
+}
+
+function writeLocal(symbol, uid, next) {
+  try {
+    localStorage.setItem(lsKey(symbol, uid), JSON.stringify(next.slice(0, 500)));
+  } catch { /* storage full — keep in memory */ }
+}
+
 export function useDrawings(symbol) {
-  const [drawings, setDrawings] = useState([]);
+  const [uid, setUid] = useState(() => pb.authStore.record?.id || null);
+  const [drawings, setDrawings] = useState(() => readLocal(symbol, pb.authStore.record?.id || null));
   const [recordId, setRecordId] = useState(null);
   const [templates, setTemplates] = useState([]);
   const [loaded, setLoaded] = useState(false);
+  const [saveError, setSaveError] = useState(null);
   const saveTimer = useRef(null);
-  const uid = pb.authStore.record?.id;
+
+  // Reactive auth: late session resolution must reload, not stay logged-out.
+  useEffect(() => {
+    const unsub = pb.authStore.onChange?.((_t, record) => {
+      setUid(record?.id || null);
+    });
+    pb.authStore.ready?.then(() => setUid(pb.authStore.record?.id || null)).catch(() => {});
+    return unsub;
+  }, []);
+
+  // Re-hydrate local mirror when symbol/uid changes (before cloud load).
+  useEffect(() => {
+    setDrawings(readLocal(symbol, uid));
+    setRecordId(null);
+  }, [symbol, uid]);
 
   const loadTemplates = useCallback(async () => {
     if (!uid) return;
@@ -24,12 +62,13 @@ export function useDrawings(symbol) {
     } catch { /* ignore */ }
   }, [symbol, uid]);
 
-  // Load the live drawing set for this symbol.
+  // Load the live drawing set for this symbol. Cloud wins if non-empty;
+  // otherwise keep the local mirror (never wipe to [] blindly).
   useEffect(() => {
     let active = true;
     setLoaded(false);
     (async () => {
-      if (!uid) { setDrawings([]); setRecordId(null); setLoaded(true); return; }
+      if (!uid) { if (active) setLoaded(true); return; }
       try {
         const rec = await pb.collection('chart_drawings').getFirstListItem(
           `owner = "${uid}" && symbol = "${symbol}" && is_template = false`,
@@ -37,11 +76,20 @@ export function useDrawings(symbol) {
         );
         if (!active) return;
         setRecordId(rec.id);
-        setDrawings(Array.isArray(rec.data) ? rec.data : []);
+        const cloud = Array.isArray(rec.data) ? rec.data : [];
+        if (cloud.length) {
+          setDrawings(cloud);
+          writeLocal(symbol, uid, cloud);
+        } else {
+          // Cloud empty — keep local mirror (may hold unsynced work).
+          setDrawings(readLocal(symbol, uid));
+        }
+        setSaveError(null);
       } catch {
         if (!active) return;
+        // No cloud row / RLS / offline — keep local mirror as-is.
         setRecordId(null);
-        setDrawings([]);
+        setDrawings(readLocal(symbol, uid));
       }
       if (active) setLoaded(true);
     })();
@@ -49,7 +97,7 @@ export function useDrawings(symbol) {
     return () => { active = false; };
   }, [symbol, uid, loadTemplates]);
 
-  // Debounced auto-save of the live set.
+  // Debounced cloud auto-save (local already written synchronously).
   const persist = useCallback((next) => {
     if (!uid) return;
     clearTimeout(saveTimer.current);
@@ -63,17 +111,23 @@ export function useDrawings(symbol) {
           }, { requestKey: `save-${symbol}` });
           setRecordId(rec.id);
         }
-      } catch { /* ignore transient */ }
+        setSaveError(null);
+      } catch (e) {
+        // Local mirror already kept the work — surface for UI hint.
+        setSaveError('cloud save failed — kept on this device');
+      }
     }, 600);
   }, [uid, recordId, symbol]);
 
   const update = useCallback((updater) => {
     setDrawings((prev) => {
       const next = typeof updater === 'function' ? updater(prev) : updater;
-      persist(next);
-      return next;
+      const safe = Array.isArray(next) ? next : [];
+      writeLocal(symbol, pb.authStore.record?.id || uid, safe);
+      persist(safe);
+      return safe;
     });
-  }, [persist]);
+  }, [persist, symbol, uid]);
 
   const saveTemplate = useCallback(async (name, shared) => {
     if (!uid) return;
@@ -93,7 +147,7 @@ export function useDrawings(symbol) {
     loadTemplates();
   }, [loadTemplates]);
 
-  return { drawings, update, loaded, templates, saveTemplate, applyTemplate, deleteTemplate };
+  return { drawings, update, loaded, templates, saveTemplate, applyTemplate, deleteTemplate, saveError };
 }
 
 export default useDrawings;

@@ -32,6 +32,18 @@ export function binanceSymbolFor(symbol) {
 
 import { avCandles, isRateLimited } from '../utils/alphaVantage.js';
 import { yahooCandles } from '../utils/yahoo.js';
+import { isWeekendClosed } from '../utils/marketHours.js';
+
+// Last real candle set per symbol+interval — the freeze source when a
+// market is closed and every live provider fails. Never synthesize a
+// weekend tape for a shut market.
+const lastGoodCandles = new Map();
+function rememberCandles(symbol, interval, candles) {
+	if (Array.isArray(candles) && candles.length) {
+		lastGoodCandles.set(`${symbol}|${interval}`, { candles, at: Date.now() });
+		if (lastGoodCandles.size > 200) lastGoodCandles.delete(lastGoodCandles.keys().next().value);
+	}
+}
 
 const VALID_INTERVALS = ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w', '1M'];
 
@@ -131,11 +143,16 @@ export default async (req, res) => {
 	// Single primary feed: Yahoo first for every symbol (crypto spot included),
 	// Binance as automatic fallback for crypto, then Alpha Vantage, then
 	// synthetic so charts never render empty.
+	const closed = isWeekendClosed(symbol, CRYPTO_MAP);
 	const yahooFirst = await yahooCandles(symbol, interval, limit).catch(() => null);
 	if (yahooFirst && yahooFirst.length) {
+		rememberCandles(symbol, interval, yahooFirst);
+		if (closed) return res.json({ symbol, interval, source: 'close', closed: true, candles: yahooFirst });
 		return res.json({ symbol, interval, source: 'yahoo', candles: yahooFirst });
 	}
-	if (binanceSymbol) {
+	// Closed markets never touch weekend-drifting crypto proxies (PAXG) —
+	// Friday's tape is the truth until the reopen.
+	if (binanceSymbol && !closed) {
 		// Rotate Binance hosts — api.binance.com is geo-blocked in some regions.
 		for (const host of ['https://data-api.binance.vision', 'https://api.binance.com', 'https://api.binance.us']) {
 			try {
@@ -161,6 +178,8 @@ export default async (req, res) => {
 		try {
 			const avRows = await avCandles(symbol, interval, limit);
 			if (avRows && avRows.length) {
+				rememberCandles(symbol, interval, avRows);
+				if (closed) return res.json({ symbol, interval, source: 'close', closed: true, candles: avRows });
 				return res.json({ symbol, interval, source: 'alphavantage', candles: avRows });
 			}
 		} catch {
@@ -168,5 +187,10 @@ export default async (req, res) => {
 		}
 	}
 
+	if (closed) {
+		const g = lastGoodCandles.get(`${symbol}|${interval}`);
+		if (g) return res.json({ symbol, interval, source: 'close', closed: true, candles: g.candles });
+		return res.json({ symbol, interval, source: 'close', closed: true, candles: [] });
+	}
 	return res.json({ symbol, interval, source: 'synthetic', candles: synthCandles(symbol, interval, limit) });
 };

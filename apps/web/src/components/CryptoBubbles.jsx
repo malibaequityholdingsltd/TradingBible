@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { Search, Move3d, BarChart3, TrendingUp, TrendingDown, Flame, RefreshCw } from 'lucide-react';
 import { useHeatmap } from '@/hooks/useHeatmap';
 import { useI18n } from '@/lib/i18n';
+import { txt, numOrNull } from '@/lib/safeRender';
 
 // CryptoBubbles — cryptobubbles.net-style interactive 3D bubble visualization
 // for every market (crypto, forex, commodities, sectors, stocks).
@@ -472,8 +473,8 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
                   <Icon className={`h-3.5 w-3.5 ${cls}`} />{label}
                 </span>
                 <span className="mt-0.5 block truncate font-mono text-base font-bold text-[#f0ecdd]">
-                  {cell ? `${cell.symbol.replace('USD', '')} ` : '—'}
-                  {cell && <span className={cls}>{cell.changePercent >= 0 ? '+' : ''}{cell.changePercent}%</span>}
+                  {cell ? `${txt(cell.symbol, '').replace('USD', '')} ` : '—'}
+                  {cell && (() => { const c = numOrNull(cell.changePercent); return <span className={cls}>{c == null ? '—' : `${c >= 0 ? '+' : ''}${c}%`}</span>; })()}
                 </span>
                 <span className="mt-1.5 block h-1 overflow-hidden rounded-full bg-white/5">
                   <span className="block h-full rounded-full transition-all" style={{ width: `${Math.min(100, (mag / maxMag) * 100)}%`, background: scheme.accent }} />
@@ -630,12 +631,12 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
             className="pointer-events-none absolute z-10 min-w-[160px] max-w-[calc(100%-16px)] rounded-xl border border-[#d4af37]/25 bg-[#0d0d12]/95 p-3 shadow-xl backdrop-blur"
             style={{ left: Math.min(Math.max(hover.x + 16, 8), Math.max(8, size.w - 188)), top: Math.max(Math.min(hover.y - 20, size.h - 120), 8) }}
           >
-            <div className="font-mono text-sm font-bold text-[#f0ecdd]">{hover.cell.symbol.replace('USD', '')} <span className="font-normal text-[#8a8577]">· {hover.cell.name}{hover.cell.market ? ` · ${hover.cell.market}` : ''}</span></div>
-            <div className="mt-1 font-mono text-xs text-[#c9c4b4]">${fmtPrice(hover.cell.price)}</div>
-            <div className={`font-mono text-xs font-semibold ${hover.cell.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              {hover.cell.changePercent >= 0 ? '+' : ''}{hover.cell.changePercent}% · {period}
+            <div className="font-mono text-sm font-bold text-[#f0ecdd]">{txt(hover.cell.symbol, '').replace('USD', '')} <span className="font-normal text-[#8a8577]">· {txt(hover.cell.name, '')}{txt(hover.cell.market, '') ? ` · ${txt(hover.cell.market, '')}` : ''}</span></div>
+            <div className="mt-1 font-mono text-xs text-[#c9c4b4]">${fmtPrice(numOrNull(hover.cell.price) ?? undefined)}</div>
+            <div className={`font-mono text-xs font-semibold ${(numOrNull(hover.cell.changePercent) ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {(() => { const c = numOrNull(hover.cell.changePercent); return c == null ? `— · ${period}` : `${c >= 0 ? '+' : ''}${c}% · ${period}`; })()}
             </div>
-            <div className="mt-0.5 font-mono text-[11px] text-[#8a8577]">{type === 'crypto' ? 'Vol 24h' : 'Activity'}: {fmtVol(hover.cell.quoteVolume)}</div>
+            <div className="mt-0.5 font-mono text-[11px] text-[#8a8577]">{type === 'crypto' ? 'Vol 24h' : 'Activity'}: {fmtVol(numOrNull(hover.cell.quoteVolume) ?? undefined)}</div>
           </div>
         )}
       </div>

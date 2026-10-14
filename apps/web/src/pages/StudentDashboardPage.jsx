@@ -7,8 +7,8 @@ import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useI18n } from '@/lib/i18n';
+import { Card, SectionHead, Stat, StatGrid, EmptyState, GoldButton, GhostButton, Skeleton } from '@/components/ui-kit';
 
-const cardCls = 'glass rounded-2xl p-5';
 const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40';
 
 function StudentGuard({ children }) {
@@ -94,7 +94,15 @@ export default function StudentDashboardPage() {
   if (loading || !scope) {
     return (
       <AppLayout title={t('sch.stPortal')}>
-        <div className="py-16 text-center text-sm text-[#8a8577]">{t('sch.loading')}</div>
+        <Card className="p-5">
+          <Skeleton className="h-4 w-1/3" />
+          <div className="mt-2.5 space-y-1.5">
+            <Skeleton className="h-3.5 w-full" />
+            <Skeleton className="h-3.5 w-full" />
+            <Skeleton className="h-3.5 w-2/3" />
+          </div>
+          <div className="mt-3 text-center text-sm text-[#8a8577]">{t('sch.loading')}</div>
+        </Card>
       </AppLayout>
     );
   }
@@ -104,24 +112,24 @@ export default function StudentDashboardPage() {
 
   return (
     <AppLayout title={`${scope.schoolName} · ${t('sch.stPortal')}`}>
-      <div className="mb-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
-        <div className={cardCls}><div className="text-xs text-[#8a8577]">{t('sch.myExams')}</div><div className="mt-2 text-2xl font-semibold text-[#f0ecdd]">{pending.length}</div></div>
-        <div className={cardCls}><div className="text-xs text-[#8a8577]">{t('sch.myGrades')}</div><div className="mt-2 text-2xl font-semibold text-[#f0ecdd]">{scope.submissions.length}</div></div>
-        <div className={cardCls}><div className="text-xs text-[#8a8577]">{t('sch.myCerts')}</div><div className="mt-2 text-2xl font-semibold text-[#f0ecdd]">{scope.certificates.length}</div></div>
-        <div className={cardCls}><div className="text-xs text-[#8a8577]">{scope.student?.classroom || t('sch.general')}</div><div className="mt-2 truncate text-lg font-semibold text-[#f0ecdd]">{scope.student?.name}</div></div>
-      </div>
+      <StatGrid cols={4}>
+        <Stat label={t('sch.myExams')} value={pending.length} />
+        <Stat label={t('sch.myGrades')} value={scope.submissions.length} />
+        <Stat label={t('sch.myCerts')} value={scope.certificates.length} />
+        <Stat label={scope.student?.classroom || t('sch.general')} value={scope.student?.name} />
+      </StatGrid>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <div className={cardCls}>
-          <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><BookOpen className="h-4 w-4 text-[#d4af37]" /> {t('sch.myExams')}</h3>
+        <Card className="p-5">
+          <SectionHead icon={BookOpen} title={t('sch.myExams')} />
           <div className="mt-3 space-y-2">
-            {pending.length === 0 && <div className="text-sm text-[#8a8577]">{t('sch.queueEmpty')}</div>}
+            {pending.length === 0 && <EmptyState icon={BookOpen} title={t('sch.queueEmpty')} />}
             {pending.map((a) => (
               <div key={a.id} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
                 <div className="font-medium text-[#f0ecdd]">{a.title}</div>
                 <div className="text-xs text-[#8a8577] capitalize">{t(`sch.type_${a.type}`, null, a.type)}</div>
                 {a.payload?.instructions && <div className="mt-1 text-xs text-[#c9c4b4]">{a.payload.instructions}</div>}
-                <button onClick={() => { setOpenExam(a); setAnswer(''); }} className="mt-2 rounded-lg border border-[#d4af37]/25 px-2.5 py-1 text-xs text-[#d4af37]">{t('sch.answerNow', null, 'Answer')}</button>
+                <GhostButton onClick={() => { setOpenExam(a); setAnswer(''); }} className="mt-2 !min-h-0 !px-2.5 !py-1 !text-xs">{t('sch.answerNow', null, 'Answer')}</GhostButton>
               </div>
             ))}
           </div>
@@ -130,18 +138,18 @@ export default function StudentDashboardPage() {
               <div className="text-sm font-semibold text-[#f0ecdd]">{openExam.title}</div>
               <textarea value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder={t('sch.answerPh')} className={`${input} min-h-[120px]`} />
               <div className="flex gap-2">
-                <button onClick={submitAnswer} disabled={busy || !answer.trim()} className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] disabled:opacity-60">{t('sch.submitNow')}</button>
-                <button onClick={() => { setOpenExam(null); setAnswer(''); }} className="rounded-xl border border-white/10 px-4 py-2 text-sm text-[#8a8577]">{t('sch.cancel')}</button>
+                <GoldButton onClick={submitAnswer} disabled={busy || !answer.trim()} className="!px-4 !py-2 !text-sm">{t('sch.submitNow')}</GoldButton>
+                <GhostButton onClick={() => { setOpenExam(null); setAnswer(''); }} className="!px-4 !py-2 !text-sm">{t('sch.cancel')}</GhostButton>
               </div>
             </div>
           )}
-        </div>
+        </Card>
 
         <div className="space-y-5">
-          <div className={cardCls}>
-            <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><FileCheck2 className="h-4 w-4 text-[#d4af37]" /> {t('sch.myGrades')}</h3>
+          <Card className="p-5">
+            <SectionHead icon={FileCheck2} title={t('sch.myGrades')} />
             <div className="mt-3 space-y-2">
-              {scope.submissions.length === 0 && <div className="text-sm text-[#8a8577]">{t('sch.noSubs')}</div>}
+              {scope.submissions.length === 0 && <EmptyState icon={FileCheck2} title={t('sch.noSubs')} />}
               {scope.submissions.map((s) => (
                 <div key={s.id} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
                   <div className="font-medium text-[#f0ecdd]">{s.assessmentTitle}</div>
@@ -150,12 +158,12 @@ export default function StudentDashboardPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
 
-          <div className={cardCls}>
-            <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><Award className="h-4 w-4 text-[#d4af37]" /> {t('sch.myCerts')}</h3>
+          <Card className="p-5">
+            <SectionHead icon={Award} title={t('sch.myCerts')} />
             <div className="mt-3 space-y-2">
-              {scope.certificates.length === 0 && <div className="text-sm text-[#8a8577]">{t('sch.dCerts')}</div>}
+              {scope.certificates.length === 0 && <EmptyState icon={Award} title={t('sch.dCerts')} />}
               {scope.certificates.map((c) => (
                 <div key={c.id} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
                   <div className="font-medium text-[#f0ecdd]">{c.title}</div>
@@ -163,7 +171,7 @@ export default function StudentDashboardPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     </AppLayout>

@@ -230,29 +230,27 @@ function createSupabaseCompatClient() {
         const fallbackCompanyName = session.user.user_metadata?.companyName || null;
 
         try {
-          // Only carry identity fields present in auth metadata — never
-          // overwrite profile values with nulls on repeat logins.
-          const identityPatch = { username: fallbackUsername, name: fallbackName };
-          if (fallbackFirst) identityPatch.first_name = fallbackFirst;
-          if (fallbackLast) identityPatch.last_name = fallbackLast;
-          if (md.dob) identityPatch.dob = md.dob;
-          if (md.phone) identityPatch.phone = md.phone;
+          // First-login provisioning only: INSERT so an existing row is
+          // never clobbered. On PK conflict the row already exists (a slow
+          // profile read, not a new user) — leave it untouched.
+          const provision = { id: session.user.id, email: session.user.email };
+          if (fallbackUsername) { provision.username = fallbackUsername; provision.name = fallbackName; }
+          if (fallbackFirst) provision.first_name = fallbackFirst;
+          if (fallbackLast) provision.last_name = fallbackLast;
+          if (md.dob) provision.dob = md.dob;
+          if (md.phone) provision.phone = md.phone;
+          if (fallbackRole === 'admin') { provision.role = 'admin'; provision.plan = 'professional'; }
+          else if (md.plan && ['pro', 'elite', 'professional'].includes(md.plan)) { provision.plan = md.plan; }
+          if (fallbackAccountType) provision.accountType = fallbackAccountType;
+          if (fallbackCompanyName) provision.companyName = fallbackCompanyName;
           const { data: createdProfile, error: profileError } = await Promise.race([
-            supabase.from('users').upsert({
-              id: session.user.id,
-              email: session.user.email,
-              ...identityPatch,
-              role: fallbackRole,
-              accountType: fallbackAccountType,
-              companyName: fallbackCompanyName,
-              plan: fallbackRole === 'admin' ? 'professional' : null,
-            }).select().single(),
+            supabase.from('users').insert(provision).select().single(),
             new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
           ]);
           if (!profileError && createdProfile) {
             profile = normalizeProfile(createdProfile, 'users');
           }
-        } catch { /* ignore upsert errors */ }
+        } catch { /* row exists or insert failed — existing data untouched */ }
       }
 
       authStore.token = session.access_token;

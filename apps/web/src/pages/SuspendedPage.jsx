@@ -8,6 +8,7 @@ import apiServerClient from '@/lib/apiServerClient';
 import pb from '@/lib/pocketbaseClient';
 import { useToast } from '@/hooks/use-toast';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { Card, SectionHead, GoldButton, GhostButton, Note } from '@/components/ui-kit';
 
 export default function SuspendedPage() {
   const { user, logout } = useAuth();
@@ -47,7 +48,7 @@ export default function SuspendedPage() {
   return (
     <div className="grid min-h-[calc(100dvh-var(--header-h))] place-items-center px-4 py-10 pt-[var(--header-h)]">
       <div className="w-full max-w-lg space-y-4">
-        <div className="glass rounded-2xl border border-red-400/25 p-8 text-center">
+        <Card className="border-red-400/25 p-8 text-center">
           <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="mx-auto h-12 w-12 rounded-xl object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           <div className="mx-auto mt-4 grid h-12 w-12 place-items-center rounded-2xl bg-red-400/10 text-red-400">
             <ShieldAlert className="h-6 w-6" />
@@ -60,14 +61,12 @@ export default function SuspendedPage() {
             {' '}Withdrawals and trading are paused until support clears it.
             {when ? ` Flagged ${when}.` : ''}
           </p>
-          <p className="mt-2 text-xs text-[#5f5b50]">Signed in as {user?.email}</p>
-        </div>
+          <div className="mt-3 text-left"><Note>Signed in as {user?.email}</Note></div>
+        </Card>
 
-        <div className="glass rounded-2xl p-6">
-          <h2 className="flex items-center gap-2 text-sm font-bold text-[#f0ecdd]">
-            <MessageCircle className="h-4 w-4 text-[#d4af37]" /> Contact live support
-          </h2>
-          <p className="mt-1 text-xs text-[#8a8577]">Every message is also emailed to your inbox.</p>
+        <Card className="p-6">
+          <SectionHead icon={MessageCircle} title="Contact live support" />
+          <div className="mt-1"><Note>Every message is also emailed to your inbox.</Note></div>
           {sent && <p className="mt-3 rounded-xl bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-400">Received — check your email for our reply.</p>}
           <form onSubmit={send} className="mt-3 space-y-2.5">
             <input
@@ -78,16 +77,15 @@ export default function SuspendedPage() {
               value={message} onChange={(e) => setMessage(e.target.value)} rows={4} maxLength={4000}
               className="w-full resize-y rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm text-[#e9e7df] outline-none placeholder-[#5f5b50] focus:border-[#d4af37]/50"
               placeholder="Explain what happened — include any payment details you paid with…" aria-label="Message" />
-            <button disabled={busy || !message.trim()}
-              className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-sm font-bold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-50">
+            <GoldButton disabled={busy || !message.trim()} className="w-full">
               <Send className="h-4 w-4" /> {busy ? 'Sending…' : 'Send to support'}
-            </button>
+            </GoldButton>
           </form>
           <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/5 pt-3">
-            <button onClick={() => window.dispatchEvent(new Event('tb:open-live-chat'))} className="text-xs font-semibold text-[#d4af37] hover:underline">Open live chat</button>
-            <button onClick={() => { logout(); }} className="flex items-center gap-1.5 text-xs text-[#8a8577] hover:text-[#e9e7df]"><LogOut className="h-3.5 w-3.5" /> Sign out</button>
+            <GhostButton onClick={() => window.dispatchEvent(new Event('tb:open-live-chat'))} className="!min-h-0 !px-2.5 !py-1.5 !text-xs">Open live chat</GhostButton>
+            <GhostButton onClick={() => { logout(); }} className="!min-h-0 !px-2.5 !py-1.5 !text-xs"><LogOut className="h-3.5 w-3.5" /> Sign out</GhostButton>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

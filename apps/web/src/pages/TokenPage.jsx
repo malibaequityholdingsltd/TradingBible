@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import { PageHero, Card, GoldButton } from '@/components/ui-kit';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
+import { useI18n } from '@/lib/i18n';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { useTbc, TBC_ALLOCATION, TBC_ROADMAP, TBC_SUPPLY, TBC_LOGO_URL } from '@/lib/tbc';
 
@@ -48,6 +49,7 @@ function PublicHeader({ homeTo, ctaTo, ctaLabel }) {
 
 export default function TokenPage() {
   const { tbc, loaded } = useTbc();
+  const { t } = useI18n();
   const { user, isAuthed } = useAuth();
   const homeTo = homeRouteForUser(isAuthed ? user : null);
 
@@ -150,8 +152,8 @@ export default function TokenPage() {
             <div className="font-semibold text-[#f0ecdd]">No sale yet. No claims to connect. No contract to trust.</div>
             <div className="text-xs text-[#8a8577]">Any TBC sale, airdrop or staking program will be announced here first — anything else is a scam.</div>
           </div>
-          <Link to={isAuthed ? '/app/wallet' : '/signup'} className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-xs font-bold text-[#0a0a0f]">Open wallet <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
-          {isAuthed && (<Link to="/app/tbc" className="rounded-xl border border-[#d4af37]/40 px-4 py-2 text-xs font-bold text-[#d4af37]">TBC dashboard</Link>)}
+          <Link to={isAuthed ? '/app/wallet' : '/signup'} className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-xs font-bold text-[#0a0a0f]">{t('tbc.openWallet')} <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>
+          {isAuthed && (<Link to="/app/wallet?tab=crypto" className="rounded-xl border border-[#d4af37]/40 px-4 py-2 text-xs font-bold text-[#d4af37]">{t('tbc.tbcDash')}</Link>)}
         </Card>
       </div>
 

@@ -1,0 +1,205 @@
+/* Admin Console skin — "midnight ops deck".
+ * Scoped under .adm-console (AdminLayout root only): subscriber pages are
+ * completely unaffected. Dark-first; light theme inherits gracefully. */
+
+/* ── Backdrop ─────────────────────────────────────────────── */
+.adm-console {
+  --adm-bg0: #06070c;
+  --adm-bg1: #0a0d16;
+  --adm-panel: #0d1119;
+  --adm-line: rgba(148, 163, 184, 0.14);
+  --adm-gold: #d4af37;
+  --adm-ink: #eef1f6;
+  --adm-mut: #8b94a7;
+  position: relative;
+  isolation: isolate;
+}
+.adm-console::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 320px at 85% -80px, rgba(212, 175, 55, 0.07), transparent 60%),
+    radial-gradient(700px 420px at -10% 20%, rgba(56, 130, 246, 0.05), transparent 60%);
+}
+.adm-console::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.16;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, black 30%, transparent 100%);
+}
+
+/* ── Sidebar rail ─────────────────────────────────────────── */
+.adm-console aside {
+  background: rgba(8, 10, 16, 0.92) !important;
+  border-right: 1px solid var(--adm-line) !important;
+}
+.adm-console .tbl-row {
+  border-radius: 10px !important;
+  border: 1px solid transparent;
+  position: relative;
+}
+.adm-console .tbl-row--active {
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.16), rgba(212, 175, 55, 0.03)) !important;
+  border-color: rgba(212, 175, 55, 0.25) !important;
+  box-shadow: none !important;
+}
+.adm-console .tbl-row--active::before {
+  content: "";
+  position: absolute;
+  left: -13px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--adm-gold);
+}
+.adm-console .tbl-row span:first-child {
+  border-radius: 8px !important;
+}
+
+/* ── Top bar ──────────────────────────────────────────────── */
+.adm-console .app-header {
+  background: rgba(8, 10, 16, 0.88) !important;
+  border-bottom: 1px solid var(--adm-line) !important;
+}
+
+/* ── Panels: flatter ops-deck cards ───────────────────────── */
+.adm-console .glass,
+.adm-console .tb-card,
+.adm-console .tb-hero {
+  background: linear-gradient(180deg, rgba(21, 27, 40, 0.92), rgba(13, 17, 25, 0.94)) !important;
+  border: 1px solid var(--adm-line) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 12px 32px -18px rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.adm-console .tb-hero {
+  border-top: 2px solid rgba(212, 175, 55, 0.55) !important;
+}
+.adm-console .tb-card-hover:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(212, 175, 55, 0.4) !important;
+}
+
+/* ── Headings: ops-deck voice ─────────────────────────────── */
+.adm-console h2 {
+  letter-spacing: -0.01em;
+}
+.adm-console h3 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* ── Tables: dense terminal grid ──────────────────────────── */
+.adm-console table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+.adm-console thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.adm-console thead tr {
+  background: rgba(10, 13, 22, 0.96) !important;
+}
+.adm-console thead th {
+  font-size: 10px !important;
+  letter-spacing: 0.14em !important;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25) !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+.adm-console tbody td {
+  padding-top: 9px !important;
+  padding-bottom: 9px !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08) !important;
+}
+.adm-console tbody tr {
+  transition: background 0.12s ease;
+}
+.adm-console tbody tr:hover {
+  background: rgba(212, 175, 55, 0.05) !important;
+}
+.adm-console tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+/* ── Inputs ───────────────────────────────────────────────── */
+.adm-console input:not([type="checkbox"]):not([type="radio"]),
+.adm-console select,
+.adm-console textarea {
+  background: #090c13 !important;
+  border: 1px solid var(--adm-line) !important;
+  border-radius: 8px !important;
+}
+.adm-console input:focus,
+.adm-console select:focus,
+.adm-console textarea:focus {
+  border-color: rgba(212, 175, 55, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12) !important;
+  outline: none !important;
+}
+
+/* ── Console buttons: squared ops style ───────────────────── */
+.adm-console button.rounded-xl {
+  border-radius: 8px !important;
+}
+
+/* ── Dividers + scrollbars ────────────────────────────────── */
+.adm-console ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.adm-console ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.22);
+  border-radius: 8px;
+  border: 2px solid #080a10;
+}
+.adm-console ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── Light theme: keep console readable ───────────────────── */
+html.light .adm-console {
+  --adm-bg0: #eceae2;
+  --adm-bg1: #f4f2ea;
+  --adm-panel: #ffffff;
+  --adm-line: rgba(60, 60, 60, 0.14);
+  --adm-ink: #23262d;
+  --adm-mut: #6b7280;
+}
+html.light .adm-console::after {
+  opacity: 0.35;
+}
+html.light .adm-console aside,
+html.light .adm-console .app-header {
+  background: rgba(255, 255, 255, 0.92) !important;
+}
+html.light .adm-console .glass,
+html.light .adm-console .tb-card,
+html.light .adm-console .tb-hero {
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+html.light .adm-console thead tr {
+  background: rgba(244, 242, 234, 0.97) !important;
+}
+html.light .adm-console input:not([type="checkbox"]):not([type="radio"]),
+html.light .adm-console select,
+html.light .adm-console textarea {
+  background: #ffffff !important;
+  color: #23262d !important;
+}

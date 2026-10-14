@@ -3,6 +3,7 @@ import { Bell, Plus, Trash2, Pause, Play, Loader2, ArrowUp, ArrowDown, Percent, 
 import AppLayout from '@/components/AppLayout';
 import { PageHero, Card, Tabs, Stat, StatGrid, EmptyState, GoldButton, GhostButton, CardSkeleton } from '@/components/ui-kit';
 import { useAlerts } from '@/hooks/useAlerts';
+import { txt, numOrNull } from '@/lib/safeRender';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useI18n } from '@/lib/i18n';
 import { ALL_SYMBOLS } from '@/lib/symbols';
@@ -116,23 +117,25 @@ export default function AlertsPage() {
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {alerts.map((a) => {
-                const M = TYPE_META[a.alertType]; const Icon = M.icon; const q = quotes[a.symbol];
-                const isPct = a.alertType.startsWith('pct');
+                const sym = txt(a.symbol, '');
+                const M = TYPE_META[txt(a.alertType, '')] || TYPE_META.above; const Icon = M.icon; const q = quotes[sym];
+                const isPct = txt(a.alertType, '').startsWith('pct');
                 const typeLabel = t(M.key);
+                const qp = numOrNull(q?.price); const qc = numOrNull(q?.changePercent);
                 return (
                   <Card key={a.id}>
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <div className="font-mono text-sm font-semibold text-[#f0ecdd]">{a.symbol}</div>
-                        <div className="truncate text-[10px] text-[#8a8577]">{nameOf(a.symbol)}</div>
+                        <div className="font-mono text-sm font-semibold text-[#f0ecdd]">{sym || '—'}</div>
+                        <div className="truncate text-[10px] text-[#8a8577]">{txt(nameOf(sym), '')}</div>
                       </div>
-                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] ${a.status === 'active' ? 'bg-emerald-400/10 text-emerald-400' : a.status === 'paused' ? 'bg-[#d4af37]/10 text-[#d4af37]' : 'bg-blue-400/10 text-blue-400'}`}>{a.status}</span>
+                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] ${a.status === 'active' ? 'bg-emerald-400/10 text-emerald-400' : a.status === 'paused' ? 'bg-[#d4af37]/10 text-[#d4af37]' : 'bg-blue-400/10 text-blue-400'}`}>{txt(a.status, '')}</span>
                     </div>
-                    <div className={`mt-3 flex items-center gap-1.5 text-sm ${M.color}`}><Icon className="h-4 w-4" />{typeLabel} <span className="font-mono font-semibold text-[#f0ecdd]">{isPct ? `${a.target}%` : a.target}</span></div>
-                    {q && <div className="mt-1 text-xs text-[#8a8577]">{t('al.now')}: <span className="font-mono text-[#c9c4b4]">{q.price}</span> ({q.changePercent >= 0 ? '+' : ''}{q.changePercent}%)</div>}
+                    <div className={`mt-3 flex items-center gap-1.5 text-sm ${M.color}`}><Icon className="h-4 w-4" />{typeLabel} <span className="font-mono font-semibold text-[#f0ecdd]">{isPct ? `${txt(a.target, '—')}%` : txt(a.target, '—')}</span></div>
+                    {q && <div className="mt-1 text-xs text-[#8a8577]">{t('al.now')}: <span className="font-mono text-[#c9c4b4]">{qp == null ? '—' : qp}</span> ({qc == null ? '—' : `${qc >= 0 ? '+' : ''}${qc}%`})</div>}
                     <div className="mt-2 flex flex-wrap gap-1">
-                      <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-[#8a8577]">{a.frequency}</span>
-                      {(a.channels || []).map((c) => <span key={c} className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-[#8a8577]">{c.replace('_', '-')}</span>)}
+                      <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-[#8a8577]">{txt(a.frequency, '')}</span>
+                      {(a.channels || []).map((c, ci) => <span key={ci} className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-[#8a8577]">{txt(c, '').replace('_', '-')}</span>)}
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2 border-t border-white/5 pt-3">
                       {a.status !== 'triggered' && (

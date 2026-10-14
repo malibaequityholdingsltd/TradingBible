@@ -40,7 +40,10 @@ async function request(path, { token, service = false, method = 'GET', body, pre
 	if (!res.ok) {
 		const text = await res.text().catch(() => '');
 		logger.error(`Supabase ${method} ${path} failed: ${res.status} ${res.statusText}`, text.slice(0, 300));
-		throw new Error(`Supabase ${method} request failed: ${res.status}`);
+		// Include the backend snippet: API fallbacks match on it to detect
+		// post-deploy columns that Table Editor hasn't added yet. The error
+		// middleware only exposes messages for 4xx, so 500s stay generic.
+		throw new Error(`Supabase ${method} request failed: ${res.status} ${text.slice(0, 200)}`);
 	}
 	if (res.status === 204) return null;
 	const text = await res.text();

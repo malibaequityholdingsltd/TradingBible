@@ -5,7 +5,9 @@ import { MARKETS, EXPERIENCE, GOALS } from '@/lib/mockData';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
+import PhoneField from '@/components/PhoneField';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { Kicker, Card, GoldButton, GhostButton, Note } from '@/components/ui-kit';
 import { usePlatformSettings } from '@/lib/platformSettings';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { readRefFromUrl, trackAffiliateSignup } from '@/lib/affiliate';
@@ -170,10 +172,10 @@ function Shell({ children }) {
 function HeroPanel() {
   return (
     <div>
-      <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-4 py-1.5 text-xs font-medium tracking-wide text-[#d4af37]">
+      <div className="mb-4"><Kicker>
         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#d4af37]" />
         SI-POWERED TRADING TERMINAL
-      </p>
+      </Kicker></div>
       <h1 className="text-5xl font-extrabold leading-[0.98] tracking-tight">
         Your Trading <span className="gold-text">Terminal.</span><br />
         Track. Analyze. <span className="gold-text">Win.</span>
@@ -185,11 +187,11 @@ function HeroPanel() {
       </div>
       <div className="mt-10 grid max-w-md grid-cols-2 gap-3">
         {HERO_FEATURES.map(({ icon: Icon, title, text }) => (
-          <div key={title} className="shell-panel-soft rounded-2xl p-4 transition hover:border-[#d4af37]/25">
+          <Card key={title} className="p-4">
             <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#d4af37]/12 text-[#d4af37]"><Icon className="h-4 w-4" /></div>
             <div className="mt-2.5 text-sm font-semibold text-[#e9e7df]">{title}</div>
             <div className="mt-1 text-xs leading-4 text-[#8a8577]">{text}</div>
-          </div>
+          </Card>
         ))}
       </div>
     </div>
@@ -198,13 +200,10 @@ function HeroPanel() {
 
 function GuideButton() {
   return (
-    <Link
-      to="/guides"
-      className="inline-flex min-h-[42px] items-center gap-2 rounded-full border border-[#d4af37]/25 bg-[#d4af37]/10 px-4 py-2 text-sm font-medium text-[#d4af37] transition hover:border-[#d4af37]/50 hover:bg-[#d4af37]/15"
-    >
+    <GhostButton to="/guides">
       <BookOpen className="h-4 w-4" />
       Guide
-    </Link>
+    </GhostButton>
   );
 }
 
@@ -292,16 +291,16 @@ function StepsBar({ step, total }) {
 
 function TrustStrip({ t }) {
   return (
-    <p className="mt-4 text-center text-xs leading-relaxed text-[#8a8577]">
+    <div className="mt-4"><Note>
       {t('bill.noPlanYet', null, 'Subscribe to unlock the full terminal.')}
-    </p>
+    </Note></div>
   );
 }
 
 function AuthFormFrame({ mode, title, subtitle, step, totalSteps, children, footer, t }) {
   const tt = t || ((k) => k);
   return (
-    <section className="auth-card glass relative overflow-hidden rounded-[1.5rem] p-4 shadow-[0_30px_80px_rgba(0,0,0,0.24)] ring-1 ring-white/8 sm:rounded-[2rem] sm:p-6 lg:p-8">
+    <Card className="relative overflow-hidden p-4 sm:p-6 lg:p-8">
       <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
       <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#d4af37]/10 blur-3xl" />
       <div className="relative space-y-5 sm:space-y-6">
@@ -314,7 +313,7 @@ function AuthFormFrame({ mode, title, subtitle, step, totalSteps, children, foot
         <div>{children}</div>
         {footer ? <div>{footer}</div> : null}
       </div>
-    </section>
+    </Card>
   );
 }
 
@@ -345,8 +344,6 @@ const ProviderButtons = ({ busy, onGoogle, onDiscord, t }) => {
     </div>
   );
 };
-
-const goldBtn = 'flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-3 font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60';
 
 function GoogleLogo() {
   return (
@@ -604,10 +601,9 @@ export function LoginPage() {
         }
       >
         {linkState?.status === 'pending' && (
-          <div className="mb-3 flex items-center gap-2.5 rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/[0.06] px-4 py-3 text-sm text-[#e9e7df]">
-            <Loader2 className="h-4 w-4 animate-spin text-[#d4af37]" />
+          <Note icon={Loader2}>
             {t('auth.linkSigningIn', null, 'Signing you in from your email link…')}
-          </div>
+          </Note>
         )}
         {linkState?.status === 'error' && (
           <div className="mb-3 rounded-xl border border-red-500/30 bg-red-500/[0.07] px-4 py-3 text-sm">
@@ -643,29 +639,28 @@ export function LoginPage() {
               onComplete={() => verifyTotpStep()}
             />
           )}
-          <button disabled={busy || (!needTotp && !sent && cooldownSeconds > 0)} className={`${goldBtn} btn-spotlight`}>{busy ? t('auth.e.plsWait') : (needTotp ? t('auth.verifyTotp') : (sent ? t('auth.verifySignin') : t('auth.sendCode')))} <ArrowRight className="h-4 w-4" /></button>
+          <GoldButton disabled={busy || (!needTotp && !sent && cooldownSeconds > 0)} className="w-full btn-spotlight">{busy ? t('auth.e.plsWait') : (needTotp ? t('auth.verifyTotp') : (sent ? t('auth.verifySignin') : t('auth.sendCode')))} <ArrowRight className="h-4 w-4" /></GoldButton>
         </form>
         {needTotp && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy} onClick={() => { setNeedTotp(false); setTotpCode(''); setPendingAuth(null); }} className="text-[#8a8577] hover:text-[#d4af37]">{t('auth.backToEmail')}</button></div>}
         {!needTotp && sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={sendCode} className="text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? t('auth.e.resendIn', { n: cooldownSeconds }) : t('auth.e.resend')}</button></div>}
         {!needTotp && cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">{t('auth.e.coolNote', { dur: formatCooldownDuration(cooldownSeconds) })}</p>}
         {!needTotp && !sent && (
           <>
-            <div className="mt-4 rounded-[1.25rem] border border-[#d4af37]/14 bg-gradient-to-b from-white/[0.06] to-transparent p-3 sm:rounded-[1.5rem] sm:p-4">
+            <Card className="mt-4 p-3 sm:p-4">
               <ProviderButtons busy={oauthBusy} t={t} onGoogle={() => startOAuth('google')} onDiscord={() => startOAuth('discord')} />
-            </div>
+            </Card>
             <div className="mt-3 flex items-center gap-3">
               <div className="h-px flex-1 bg-white/10" />
               <span className="text-[11px] uppercase tracking-widest text-[#8a8577]">{t('auth.or')}</span>
               <div className="h-px flex-1 bg-white/10" />
             </div>
-            <button
-              type="button"
+            <GhostButton
               disabled={passkeyBusy}
               onClick={signInWithPasskey}
-              className="mt-1.5 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] py-2.5 text-sm font-medium text-[#e9e7df] transition hover:border-[#d4af37]/40 hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-1.5 w-full"
             >
               {passkeyBusy ? t('auth.e.passkeyVerifying') : <><ShieldCheck className="h-4 w-4" /> {t('auth.passkey')}</>}
-            </button>
+            </GhostButton>
           </>
         )}
       </AuthFormFrame>
@@ -851,14 +846,14 @@ export function SignupPage() {
     return (
       <Shell>
         <div className="mx-auto w-full max-w-md">
-          <div className="auth-card glass rounded-2xl p-6 text-center sm:p-7">
+          <Card className="p-6 text-center sm:p-7">
             <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37]"><KeyRound className="h-5 w-5" /></div>
             <h1 className="text-xl font-bold">{t('auth.signupsPaused')}</h1>
             <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">
               {t('auth.pausedBody', { brand })}
             </p>
-            <Link to="/login" className={`${goldBtn} mt-6 justify-center`}>{t('auth.loginAccount')} <ArrowRight className="h-4 w-4" /></Link>
-          </div>
+            <GoldButton to="/login" className="mt-6 w-full">{t('auth.loginAccount')} <ArrowRight className="h-4 w-4" /></GoldButton>
+          </Card>
         </div>
       </Shell>
     );
@@ -889,8 +884,8 @@ export function SignupPage() {
                 <Field icon={User} type="text" placeholder={t('auth.lastName', null, 'Last name')} value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="family-name" />
               </div>
               <Field icon={Mail} type="email" placeholder={t('auth.emailPh')} value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-              <div className="grid grid-cols-2 gap-2.5">
-                <Field icon={Phone} type="tel" placeholder={t('auth.phonePh', null, 'Phone number')} value={phone} onChange={(e) => setPhone(e.target.value)} required autoComplete="tel" />
+              <div className="grid grid-cols-1 gap-2.5">
+                <PhoneField value={phone} onChange={setPhone} />
                 <Field icon={CalendarDays} type="date" placeholder={t('auth.dob', null, 'Date of birth')} value={dob} onChange={(e) => setDob(e.target.value)} required max={new Date().toISOString().slice(0, 10)} />
               </div>
               <p className="rounded-xl border border-red-400/25 bg-red-400/[0.05] p-2.5 text-center text-[11px] leading-relaxed text-[#c9c4b4]">
@@ -907,13 +902,13 @@ export function SignupPage() {
               onComplete={() => submit()}
             />
           )}
-          <button disabled={busy || (!sent && cooldownSeconds > 0)} className={`${goldBtn} btn-spotlight`}>{busy ? t('auth.e.plsWait') : (sent ? t('auth.verifyContinue') : t('auth.sendCode'))} <ArrowRight className="h-4 w-4" /></button>
+          <GoldButton disabled={busy || (!sent && cooldownSeconds > 0)} className="w-full btn-spotlight">{busy ? t('auth.e.plsWait') : (sent ? t('auth.verifyContinue') : t('auth.sendCode'))} <ArrowRight className="h-4 w-4" /></GoldButton>
         </form>
         {sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={resend} className="text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? t('auth.e.resendIn', { n: cooldownSeconds }) : t('auth.e.resend')}</button></div>}
         {!sent && cooldownSeconds <= 0 && (
-          <div className="mt-4 rounded-[1.25rem] border border-[#d4af37]/14 bg-gradient-to-b from-white/[0.06] to-transparent p-3 sm:rounded-[1.5rem] sm:p-4">
+          <Card className="mt-4 p-3 sm:p-4">
             <ProviderButtons busy={oauthBusy} t={t} onGoogle={() => startOAuth('google')} onDiscord={() => startOAuth('discord')} />
-          </div>
+          </Card>
         )}
         {cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">{t('auth.e.coolNote', { dur: formatCooldownDuration(cooldownSeconds) })}</p>}
       </AuthFormFrame>
@@ -962,7 +957,7 @@ export function OnboardingPage() {
   return (
     <Shell>
       <div className="mx-auto w-full max-w-md">
-      <div className="auth-card glass rounded-2xl p-6 sm:p-7">
+      <Card className="p-6 sm:p-7">
         <h1 className="text-2xl font-bold">{t('auth.tailor')}</h1>
         <p className="auth-muted mt-1 text-sm text-[#8a8577]">{t('auth.tailorSub')}</p>
         <div className="mt-6 space-y-6">
@@ -970,8 +965,8 @@ export function OnboardingPage() {
           <Group title={t('auth.experience')} options={EXPERIENCE} value={exp} onChange={setExp} />
           <Group title={t('auth.mainGoal')} options={GOALS} value={goal} onChange={setGoal} />
         </div>
-        <button onClick={finish} disabled={busy} className={`${goldBtn} mt-8`}>{t('auth.connectBrokers')} <ArrowRight className="h-4 w-4" /></button>
-      </div>
+        <GoldButton onClick={finish} disabled={busy} className="mt-8 w-full">{t('auth.connectBrokers')} <ArrowRight className="h-4 w-4" /></GoldButton>
+      </Card>
       </div>
     </Shell>
   );

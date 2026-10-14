@@ -49,7 +49,7 @@ const CRYPTO_QUOTE = {
 	XAUUSD: 'PAXGUSDT',
 };
 
-async function liveQuote(symbol) {
+export async function liveQuote(symbol) {
 	const sym = String(symbol || '').toUpperCase();
 	const bin = CRYPTO_QUOTE[sym] || (/^[A-Z0-9]{2,10}USDT$/.test(sym) ? sym : null);
 	if (bin) {
@@ -70,7 +70,7 @@ async function liveQuote(symbol) {
 	return null;
 }
 
-async function settleTrade(user, t, exitPrice, reason) {
+export async function settleTrade(user, t, exitPrice, reason) {
 	const dir = t.side === 'short' ? -1 : 1;
 	const exit = exitPrice * (1 - SLIPPAGE * dir);
 	const pnl = Math.round((exit - Number(t.entry)) * Number(t.qty) * dir * 100) / 100;
@@ -194,6 +194,21 @@ router.post('/trade', async (req, res) => {
 		const a = await ownAccount(user.id, accountId);
 		if (!a) return res.status(404).json({ error: 'account not found' });
 		if (qty * price > Number(a.balance) * 10) return res.status(422).json({ error: 'position too large (10x cap)' });
+		// Chart↔challenge binding: verify the ticket price against the same
+		// server live quote used for closes/settlement. Prevents stale chart
+		// clicks from filling far off-market. Skipped when no live quote
+		// (market closed / unsupported symbol) — fill stays allowed.
+		let live = null;
+		try { live = await liveQuote(symbol); } catch { live = null; }
+		if (live && live.price > 0) {
+			const dev = Math.abs(price - live.price) / live.price;
+			if (dev > 0.03) {
+				return res.status(422).json({
+					error: `price ${price} is ${(dev * 100).toFixed(2)}% off live ${live.price} (${live.source}) — refresh the chart quote and retry`,
+					livePrice: live.price, source: live.source, deviationPct: Math.round(dev * 10000) / 100,
+				});
+			}
+		}
 		const payload = { owner: user.id, account_id: a.id, symbol, side, qty, entry: price, status: 'open' };
 		if (stop != null) payload.stop = stop;
 		if (target != null) payload.target = target;
