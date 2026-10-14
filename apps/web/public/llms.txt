@@ -8,13 +8,16 @@
 - [Admin Billing](/admin/billing): TradingBible application page.
 - [Admin Content](/admin/content): TradingBible application page.
 - [Admin Dashboard](/admin): TradingBible application page.
+- [Admin Employees](/admin/employees): TradingBible application page.
 - [Admin Integrations](/admin/integrations): TradingBible application page.
 - [Admin Jobs](/admin/jobs): TradingBible application page.
+- [Admin Mentors](/admin/mentors): TradingBible application page.
 - [Admin Plugins](/admin/plugins): TradingBible application page.
 - [Admin Reports](/admin/reports): TradingBible application page.
 - [Admin Settings](/admin/settings): TradingBible application page.
 - [Admin Tv Ads](/admin/tv): TradingBible application page.
 - [Admin Users](/admin/users): TradingBible application page.
+- [Admin Wallet](/admin/wallet): TradingBible application page.
 - [Ads Demo](/__ads-demo): TradingBible application page.
 - [Affiliate](/app/affiliate): TradingBible application page.
 - [Alerts](/app/alerts): TradingBible application page.
@@ -31,11 +34,9 @@
 - [Community](/app/community): TradingBible application page.
 - [Contact](/contact): TradingBible application page.
 - [Dashboard](/app): TradingBible application page.
-- [Defi](/app/defi): TradingBible application page.
 - [Div](/__tvtest): TradingBible application page.
 - [Economic Calendar](/app/economic-calendar): TradingBible application page.
 - [Faq](/faq): TradingBible application page.
-- [Funded](/app/funded): TradingBible application page.
 - [Guides](/guides): TradingBible application page.
 - [Heatmaps](/app/heatmaps): TradingBible application page.
 - [Indicators](/app/indicators): TradingBible application page.
@@ -43,7 +44,6 @@
 - [Landing](/): TradingBible application page.
 - [Leaderboard](/leaderboard): TradingBible application page.
 - [Login](/login): TradingBible application page.
-- [Market](/app/market): TradingBible application page.
 - [Mentors](/app/mentors): TradingBible application page.
 - [Navigate](/teacher): TradingBible application page.
 - [Onboarding](/onboarding): TradingBible application page.
@@ -66,7 +66,6 @@
 - [Terminal Premium](/app/terminal-pro): TradingBible application page.
 - [Terms](/terms): TradingBible application page.
 - [Token](/tbc): TradingBible application page.
-- [Token Dashboard](/app/tbc): TradingBible application page.
 - [Tv](/tv): TradingBible application page.
 - [User Api Keys](/app/api-keys): TradingBible application page.
 - [Wallet](/app/wallet): TradingBible application page.

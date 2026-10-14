@@ -3,6 +3,7 @@ import { CalendarDays, Clock, Filter, Globe, AlertTriangle, RefreshCw, CalendarC
 import AppLayout from '@/components/AppLayout';
 import { PageHero, Card, Tabs, EmptyState, GhostButton } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
+import { txt } from '@/lib/safeRender';
 import apiServerClient from '@/lib/apiServerClient';
 
 const TIMEZONES = [
@@ -175,7 +176,7 @@ export default function EconomicCalendarPage() {
                     <thead><tr className="text-left text-[10px] uppercase tracking-wider text-[#8a8577]"><th className="p-3">{t('cal.thTime')}</th><th className="p-3">{t('cal.thCountry')}</th><th className="p-3">{t('cal.thEvent')}</th><th className="p-3 text-center">{t('cal.thImpact')}</th><th className="p-3 text-right">{t('cal.thPrev')}</th><th className="p-3 text-right">{t('cal.thForecast')}</th><th className="p-3 text-right">{t('cal.thActual')}</th></tr></thead>
                     <tbody>
                       {evs.map((e) => {
-                        const im = IMPACT_META[e.impact] || IMPACT_META.low;
+                        const im = IMPACT_META[txt(e.impact, '')] || IMPACT_META.low;
                         const imLabel = t(im.key);
                         const numA = e.actual == null ? NaN : parseFloat(String(e.actual).replace(/[^0-9.-]/g, ''));
                         const numF = e.forecast == null ? NaN : parseFloat(String(e.forecast).replace(/[^0-9.-]/g, ''));
@@ -183,8 +184,8 @@ export default function EconomicCalendarPage() {
                         return (
                           <tr key={e.id} className={`border-t border-white/5 ${e.time > now ? '' : 'opacity-90'}`}>
                             <td className="p-3 font-mono text-[#c9c4b4]">{tzFormat(e.time, tz, { hour: '2-digit', minute: '2-digit' })}</td>
-                            <td className="p-3"><span className="text-[#e9e7df]">{e.country}</span></td>
-                            <td className="p-3 text-[#e9e7df]">{e.name}</td>
+                            <td className="p-3"><span className="text-[#e9e7df]">{txt(e.country, '—')}</span></td>
+                            <td className="p-3 text-[#e9e7df]">{txt(e.name, '—')}</td>
                             <td className="p-3 text-center"><span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px]" style={{ color: im.color, background: `${im.color}1e` }}><span className={`h-1.5 w-1.5 rounded-full ${im.dot}`} />{imLabel}</span></td>
                             <td className="p-3 text-right font-mono text-[#8a8577]">{fmtValue(e.previous, e.unit)}</td>
                             <td className="p-3 text-right font-mono text-[#c9c4b4]">{fmtValue(e.forecast, e.unit)}</td>

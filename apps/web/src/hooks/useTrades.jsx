@@ -1,5 +1,34 @@
 import { useEffect, useState, useCallback } from 'react';
 import pb from '@/lib/pocketbaseClient';
+import { txt, numOrNull } from '@/lib/safeRender';
+
+const TEXT_KEYS = ['symbol', 'market', 'direction', 'strategy', 'emotion', 'source', 'notes'];
+const NUM_KEYS = ['entry', 'exit', 'sl', 'tp', 'size', 'risk', 'pnl'];
+
+function normTrade(t) {
+  if (!t || typeof t !== 'object') return t;
+  const out = { ...t };
+  // tradeDate column may not exist on older DBs — fall back so every
+  // downstream sort/filter/analytic keeps working.
+  if (!out.tradeDate) out.tradeDate = out.closedAt || out.openedAt || out.created || null;
+  for (const k of TEXT_KEYS) {
+    if (k in out) {
+      const v = out[k];
+      out[k] = typeof v === 'string' ? v : (v == null ? '' : txt(v, ''));
+    }
+  }
+  for (const k of NUM_KEYS) {
+    if (k in out) {
+      const v = out[k];
+      if (typeof v === 'number' || typeof v === 'string') {
+        const n = numOrNull(v);
+        out[k] = n == null && v !== '' ? v : n;
+        if (typeof out[k] === 'string' && out[k].trim() === '') out[k] = null;
+      } else if (v != null) out[k] = null;
+    }
+  }
+  return out;
+}
 
 export function useTrades() {
   const [trades, setTrades] = useState([]);
@@ -8,8 +37,9 @@ export function useTrades() {
   const load = useCallback(async () => {
     if (!pb.authStore.isValid) { setLoading(false); return; }
     try {
-      const items = await pb.collection('trades').getFullList({ sort: '-tradeDate' });
-      setTrades(items);
+      // '-tradeDate' breaks on DBs without that column — '-created' always exists.
+      const items = await pb.collection('trades').getFullList({ sort: '-created' });
+      setTrades((items || []).map(normTrade));
     } catch {
       setTrades([]);
     } finally {

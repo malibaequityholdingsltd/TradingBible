@@ -19,7 +19,7 @@ const STEPS = [
   { icon: Bot, titleKey: 'nav.coach', to: '/app/coach', bodyKey: 'tour.b.coach' },
   { icon: GraduationCap, titleKey: 'nav.academy', to: '/app/academy', bodyKey: 'tour.b.academy' },
   { icon: Plug, titleKey: 'nav.brokers', to: '/app/brokers', bodyKey: 'tour.b.brokers' },
-  { icon: ShieldCheck, titleKey: 'nav.propfirms', to: '/app/funded', bodyKey: 'tour.b.propfirms' },
+  { icon: ShieldCheck, titleKey: 'nav.propfirms', to: '/app/challenges', bodyKey: 'tour.b.propfirms' },
   { icon: Users, titleKey: 'nav.community', to: '/app/community', bodyKey: 'tour.b.community' },
   { icon: Calculator, titleKey: 'nav.tools', to: '/app/tools', bodyKey: 'tour.b.tools' },
   { icon: Landmark, titleKey: 'nav.wallet', to: '/app/wallet', bodyKey: 'tour.b.wallet' },

@@ -86,7 +86,7 @@ const CHAPTERS = [
       { id: 'secure.profile', title: 'Complete your profile', body: 'Username, market, experience — personalizes coaching and stats.', to: '/app/profile', cta: 'Edit profile' },
       { id: 'secure.2fa', title: 'Enable 2FA + passkeys', body: 'TOTP and WebAuthn under Security. Five minutes, permanent peace.', to: '/app/security', cta: 'Secure account' },
       { id: 'secure.reports', title: 'Export your first report', body: 'Tax-ready P&L exports. Elite and up.', to: '/app/reports', cta: 'Open reports' },
-      { id: 'secure.prop', title: 'Enter a Funded evaluation', body: 'Pass on real journaled fills and trade firm capital.', to: '/app/funded', cta: 'Get funded' },
+      { id: 'secure.prop', title: 'Enter a Funded evaluation', body: 'Pass on real journaled fills and trade firm capital.', to: '/app/challenges', cta: 'Get funded' },
     ],
   },
 ];
@@ -153,7 +153,7 @@ export default function ProGuidePage() {
               <div className="font-semibold text-[#f0ecdd]">Portal mastered. Now get funded.</div>
               <div className="text-xs text-[#8a8577]">Compare prop firms and log your evaluation in the journal.</div>
             </div>
-            <GoldButton to="/app/funded" className="!px-4 !py-2 !text-xs">See programs <ArrowRight className="h-4 w-4" /></GoldButton>
+            <GoldButton to="/app/challenges" className="!px-4 !py-2 !text-xs">See programs <ArrowRight className="h-4 w-4" /></GoldButton>
           </Card>
         )}
 

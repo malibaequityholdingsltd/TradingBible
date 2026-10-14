@@ -22,8 +22,8 @@ import pb from './lib/pocketbaseClient';
 // Heavy persistent widgets load after first paint — they mount once and
 // survive navigation, but must never bloat the initial bundle.
 const LiveChatWidget = lazy(() => import('./components/LiveChatWidget'));
+const AdminCompanyWidget = lazy(() => import('./components/AdminCompanyWidget'));
 const TvWidget = lazy(() => import('./components/TvWidget'));
-const GuideButton = lazy(() => import('./components/GuideButton'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 import { LoginPage, SignupPage, ResetPage, OnboardingPage } from './pages/AuthFlow';
 
@@ -55,7 +55,6 @@ const EconomicCalendarPage = lazy(() => import('./pages/EconomicCalendarPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
 const TvPage = lazy(() => import('./pages/TvPage'));
 const BrokersPage = lazy(() => import('./pages/ExtraPages').then((m) => ({ default: m.BrokersPage })));
-const FundedPage = lazy(() => import('./pages/FundedPage'));
 const SuspendedPage = lazy(() => import('./pages/SuspendedPage'));
 const AffiliatePage = lazy(() => import('./pages/AffiliatePage'));
 const AdminDashboard = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminDashboard })));
@@ -69,6 +68,10 @@ const AdminIntegrations = lazy(() => import('./pages/AdminPortal').then((m) => (
 const AdminApiKeys = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminApiKeys })));
 const AdminPlugins = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminPlugins })));
 const AdminJobs = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminJobs })));
+const AdminMentors = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminMentors })));
+const AdminEmployees = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminEmployees })));
+const AdminWallet = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminWallet })));
+const AdminCompany = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminCompany })));
 const AdminTvAds = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminTvAds })));
 const AdminAirdrops = lazy(() => import('./pages/AdminAirdrops'));
 const PricingPage = lazy(() => import('./pages/ExtraPages').then((m) => ({ default: m.PricingPage })));
@@ -87,13 +90,10 @@ const FaqPage = lazy(() => import('./pages/LegalPages').then((m) => ({ default: 
 const AdsDemoPage = lazy(() => import('./pages/AdsDemoPage'));
 const ProGuidePage = lazy(() => import('./pages/ProGuidePage'));
 const TokenPage = lazy(() => import('./pages/TokenPage'));
-const TokenDashboardPage = lazy(() => import('./pages/TokenDashboardPage'));
 const ChallengesPage = lazy(() => import('./pages/ChallengesPage'));
 const BacktestPage = lazy(() => import('./pages/BacktestPage'));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
-const MarketPage = lazy(() => import('./pages/MarketPage'));
 const StakingPage = lazy(() => import('./pages/StakingPage'));
-const DefiPage = lazy(() => import('./pages/DefiPage'));
 const MentorsPage = lazy(() => import('./pages/MentorsPage'));
 const PaperPage = lazy(() => import('./pages/PaperPage'));
 
@@ -256,8 +256,8 @@ function AppChrome() {
             {!hideTicker && <GlobalTicker />}
             <AlertMonitor />
             <ScrollToTop />
-            {!hideTicker && <ErrorBoundary fallback={null}><Suspense fallback={null}><GuideButton /></Suspense></ErrorBoundary>}
             {inApp && features.aiCoach !== false && <ErrorBoundary fallback={null}><Suspense fallback={null}><LiveChatWidget /></Suspense></ErrorBoundary>}
+            {pathname.startsWith('/admin') && <ErrorBoundary fallback={null}><Suspense fallback={null}><AdminCompanyWidget /></Suspense></ErrorBoundary>}
             {pathname !== '/tv' && inApp && <ErrorBoundary fallback={null}><Suspense fallback={null}><TvWidget /></Suspense></ErrorBoundary>}
         </>
     );
@@ -310,7 +310,12 @@ function RoutesWithBoundary() {
                     <Route path="/refund" element={<RefundPage />} />
                     <Route path="/faq" element={<FaqPage />} />
                     <Route path="/tbc" element={<TokenPage />} />
-                    <Route path="/app/tbc" element={<Protected><TokenDashboardPage /></Protected>} />
+                    {/* Merged surfaces — old deep links land in their new home */}
+                    <Route path="/app/tbc" element={<Navigate to="/app/wallet?tab=crypto" replace />} />
+                    <Route path="/app/defi" element={<Navigate to="/app/wallet?tab=crypto" replace />} />
+                    <Route path="/app/market" element={<Navigate to="/app/signals?tab=market" replace />} />
+                    <Route path="/app/funded" element={<Navigate to="/app/challenges" replace />} />
+                    <Route path="/app/prop-firms" element={<Navigate to="/app/challenges" replace />} />
                     <Route path="/tv" element={<EverPaidProtected><TvPage /></EverPaidProtected>} />
                     {import.meta.env.DEV && <Route path="/__tvtest" element={<div style={{ minHeight: "200dvh", background: "#0a0a0f" }}><TvWidget /></div>} />}
                     {import.meta.env.DEV && <Route path="/__ads-demo" element={<Protected><AdsDemoPage /></Protected>} />}
@@ -334,9 +339,7 @@ function RoutesWithBoundary() {
                     <Route path="/app/challenges" element={<Protected><ChallengesPage /></Protected>} />
                     <Route path="/app/paper" element={<Protected><PaperPage /></Protected>} />
                     <Route path="/app/backtest" element={<PaidProtected><BacktestPage /></PaidProtected>} />
-                    <Route path="/app/market" element={<Protected><MarketPage /></Protected>} />
                     <Route path="/app/staking" element={<Protected><StakingPage /></Protected>} />
-                    <Route path="/app/defi" element={<Protected><DefiPage /></Protected>} />
                     <Route path="/app/mentors" element={<Protected><MentorsPage /></Protected>} />
                     <Route path="/leaderboard" element={<LeaderboardPage />} />
                     <Route path="/app/reports" element={<PlanProtected plan="elite" gate="reports"><ReportsPage /></PlanProtected>} />
@@ -350,8 +353,6 @@ function RoutesWithBoundary() {
                     <Route path="/app/integrations" element={<Navigate to="/admin/integrations" replace />} />
                     <Route path="/app/branding" element={<PlanProtected plan="professional" gate="branding"><BrandingPage /></PlanProtected>} />
                     <Route path="/app/brokers" element={<PaidProtected><BrokersPage /></PaidProtected>} />
-                    <Route path="/app/funded" element={<PaidProtected><FundedPage /></PaidProtected>} />
-                    <Route path="/app/prop-firms" element={<Navigate to="/app/funded" replace />} />
                     <Route path="/app/affiliate" element={<PaidProtected><AffiliatePage /></PaidProtected>} />
                     <Route path="/app/billing" element={<Protected><BillingPage /></Protected>} />
                     <Route path="/app/wallet" element={<EverPaidProtected><WalletPage /></EverPaidProtected>} />
@@ -361,6 +362,7 @@ function RoutesWithBoundary() {
                     <Route path="/student" element={<Protected><StudentDashboardPage /></Protected>} />
                     <Route path="/admin" element={<AdminProtected><AdminDashboard /></AdminProtected>} />
                     <Route path="/admin/users" element={<AdminProtected><AdminUsers /></AdminProtected>} />
+                    <Route path="/admin/employees" element={<AdminProtected><AdminEmployees /></AdminProtected>} />
                     <Route path="/admin/analytics" element={<AdminProtected><AdminAnalytics /></AdminProtected>} />
                     <Route path="/admin/billing" element={<AdminProtected><AdminBilling /></AdminProtected>} />
                     <Route path="/admin/content" element={<AdminProtected><AdminContent /></AdminProtected>} />
@@ -372,6 +374,9 @@ function RoutesWithBoundary() {
                     <Route path="/admin/api-keys" element={<AdminProtected><AdminApiKeys /></AdminProtected>} />
                     <Route path="/admin/plugins" element={<AdminProtected><AdminPlugins /></AdminProtected>} />
                     <Route path="/admin/jobs" element={<AdminProtected><AdminJobs /></AdminProtected>} />
+                    <Route path="/admin/mentors" element={<AdminProtected><AdminMentors /></AdminProtected>} />
+                    <Route path="/admin/wallet" element={<AdminProtected><AdminWallet /></AdminProtected>} />
+                    <Route path="/admin/company" element={<AdminProtected><AdminCompany /></AdminProtected>} />
                 </Routes>
             </Suspense>
         </ErrorBoundary>

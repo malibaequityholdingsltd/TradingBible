@@ -277,20 +277,44 @@ const apiUrl = process.env.INTEGRATED_AI_API_URL;
 	//   3. DeepSeek (DEEPSEEK_*) — OpenAI-compatible /chat/completions, V4 Flash by default.
 	//   4. Any other OpenAI-compatible endpoint (OPENAI_*) — OpenAI / Groq / OpenRouter / etc.
 	if (!apiUrl || !apiKey || !websiteId) {
-		if (opencodeUrl) {
-			return streamOpencode({ userId, systemPrompt, userMessage });
-		}
-		if (deepSeekKey) {
-			return streamOpenAiCompatible({
+		// Provider fallthrough: try each configured backend in priority
+		// order and move to the next one on failure (dead local gateway,
+		// expired key, free-tier refusal). The last error carries the
+		// combined detail for logs; the route maps it to a friendly message.
+		const failures = [];
+		const attempt = async (label, fn, timeoutMs = 25000) => {
+			try {
+				return await Promise.race([
+					fn(),
+					new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timed out`)), timeoutMs)),
+				]);
+			} catch (err) {
+				failures.push(`${label}: ${String(err?.message || err).slice(0, 180)}`);
+				logger.error(`SI provider ${label} failed, trying next`, String(err?.message || err).slice(0, 200));
+				return null;
+			}
+		};
+		const opencode = opencodeUrl
+			? await attempt('local gateway', () => streamOpencode({ userId, systemPrompt, userMessage }))
+			: null;
+		if (opencode) return opencode;
+		const deepseek = deepSeekKey
+			? await attempt('deepseek-compatible', () => streamOpenAiCompatible({
 				systemPrompt,
 				userMessage,
 				baseUrl: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com',
 				apiKey: deepSeekKey,
 				model: process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash',
 				maxTokens: process.env.DEEPSEEK_MAX_TOKENS,
-			});
+			}))
+			: null;
+		if (deepseek) return deepseek;
+		try {
+			return await streamOpenAiCompatible({ systemPrompt, userMessage });
+		} catch (err) {
+			failures.push(`openai-compatible: ${String(err?.message || err).slice(0, 180)}`);
+			throw new Error(failures.length ? `SI providers failed — ${failures.join(' · ')}` : err.message);
 		}
-		return streamOpenAiCompatible({ systemPrompt, userMessage });
 	}
 
 	const response = await fetch(`${apiUrl}/generate`, {
@@ -361,22 +385,40 @@ export async function generateText({ systemPrompt, userMessage }) {
 		.trim();
 
 	if (!apiUrl || !apiKey || !websiteId) {
+		// Same fallthrough as stream(): dead gateway or refused key must
+		// not kill Academy content generation while another backend works.
+		const failures = [];
 		if (opencodeUrl) {
-			// Fresh session per generation: content generation must be stateless,
-			// so accumulated conversation history can never bleed into a new
-			// curriculum or lesson.
-			return completeOpencode({ userId: `academy-content-${randomUUID()}`, systemPrompt, userMessage });
+			try {
+				// Fresh session per generation: content generation must be stateless,
+				// so accumulated conversation history can never bleed into a new
+				// curriculum or lesson.
+				return await completeOpencode({ userId: `academy-content-${randomUUID()}`, systemPrompt, userMessage });
+			} catch (err) {
+				failures.push(`local gateway: ${String(err?.message || err).slice(0, 180)}`);
+				logger.error('SI provider local gateway failed, trying next', String(err?.message || err).slice(0, 200));
+			}
 		}
 		if (deepSeekKey) {
-			return completeOpenAiCompatibleText({
-				systemPrompt,
-				userMessage,
-				baseUrl: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com',
-				apiKey: deepSeekKey,
-				model: process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash',
-			});
+			try {
+				return await completeOpenAiCompatibleText({
+					systemPrompt,
+					userMessage,
+					baseUrl: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com',
+					apiKey: deepSeekKey,
+					model: process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash',
+				});
+			} catch (err) {
+				failures.push(`deepseek-compatible: ${String(err?.message || err).slice(0, 180)}`);
+				logger.error('SI provider deepseek-compatible failed, trying next', String(err?.message || err).slice(0, 200));
+			}
 		}
-		return completeOpenAiCompatibleText({ systemPrompt, userMessage });
+		try {
+			return await completeOpenAiCompatibleText({ systemPrompt, userMessage });
+		} catch (err) {
+			failures.push(`openai-compatible: ${String(err?.message || err).slice(0, 180)}`);
+			throw new Error(failures.length ? `SI providers failed — ${failures.join(' · ')}` : err.message);
+		}
 	}
 
 	const response = await fetch(`${apiUrl}/generate`, {

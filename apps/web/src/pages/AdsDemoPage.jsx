@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AdProvider, AdSlot, AdSkeleton, AdComponent, AdErrorBoundary, BannerAd, NativeAdItem, AmpAd, StoryAd, toAmpHTML } from '@/lib/ads/components.jsx';
 import { getAdsService, initializeAds } from '@/lib/ads/service.js';
 import { createPlacementId, AD_TYPES, AD_PLACEMENTS, AD_SIZES } from '@/lib/ads/types.js';
+import { PageHero, Card, SectionHead, GhostButton, Kicker } from '@/components/ui-kit';
 
 const mockAds = [
   {
@@ -207,16 +208,13 @@ function MockAdsService() {
 
 function DemoPlacement({ placementId, title, description, children }) {
   return (
-    <div className="demo-placement">
-      <div className="demo-placement-header">
-        <h3 className="font-semibold text-[#f0ecdd]">{title}</h3>
-        <span className="text-xs text-[#8a8577] px-2 py-0.5 rounded bg-white/5">{placementId}</span>
-      </div>
+    <Card className="p-4">
+      <SectionHead title={title} right={<Kicker>{placementId}</Kicker>} />
       <p className="text-sm text-[#8a8577] mb-3">{description}</p>
       <div className="demo-placement-content">
         {children}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -232,10 +230,10 @@ function AdsDemoContent() {
     <div className="demo-page max-w-6xl mx-auto p-6 space-y-8">
       <MockAdsService />
       
-      <div className="demo-header">
-        <h1 className="font-display text-3xl md:text-4xl gold-text mb-2">Ads System Demo</h1>
-        <p className="text-[#8a8577]">Interactive showcase of all ad formats, targeting, rotation, and tracking</p>
-      </div>
+      <PageHero
+        title="Ads System Demo"
+        subtitle="Interactive showcase of all ad formats, targeting, rotation, and tracking"
+      />
       
       <AdErrorBoundary>
         <div className="grid gap-6 md:grid-cols-2">
@@ -317,25 +315,23 @@ function AdsDemoContent() {
         </div>
         
         <div className="space-y-4">
-          <h2 className="font-semibold text-xl gold-text">Interactive Modals</h2>
+          <SectionHead title="Interactive Modals" />
           <div className="flex flex-wrap gap-3">
-            <button 
+            <GhostButton
               onClick={() => setShowInterstitial(true)}
-              className="btn-glass px-4 py-2 rounded-xl text-sm"
             >
               Show Interstitial
-            </button>
-            <button 
+            </GhostButton>
+            <GhostButton
               onClick={() => setShowRewarded(true)}
-              className="btn-glass px-4 py-2 rounded-xl text-sm"
             >
               Show Rewarded Video
-            </button>
+            </GhostButton>
           </div>
         </div>
         
         <div className="space-y-4">
-          <h2 className="font-semibold text-xl gold-text">Manual Ad Components</h2>
+          <SectionHead title="Manual Ad Components" />
           <div className="grid gap-4 md:grid-cols-3">
             {mockAds.filter(a => ![AD_TYPES.AMP, AD_TYPES.STORY].includes(a.type)).map(ad => (
               <AdComponent
@@ -356,8 +352,8 @@ function AdsDemoContent() {
         </div>
         
         <div className="space-y-4 pt-6 border-t border-white/10">
-          <h2 className="font-semibold text-xl gold-text">Ad Types Reference</h2>
-          <div className="overflow-x-auto">
+          <SectionHead title="Ad Types Reference" />
+          <Card className="overflow-x-auto p-4">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-[#8a8577] border-b border-white/10">
@@ -395,7 +391,7 @@ function AdsDemoContent() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </Card>
         </div>
       </AdErrorBoundary>
       

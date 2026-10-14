@@ -1,8 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Radar, ArrowUpRight, ArrowDownRight, Minus, Save, Loader2, Trophy } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { Radar, ArrowUpRight, ArrowDownRight, Minus, Save, Loader2, Store } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { PageHero, Card, Tabs, Stat, StatGrid, EmptyState, GhostButton } from '@/components/ui-kit';
+import { PageHero, Card, Tabs, Stat, StatGrid, EmptyState, GhostButton, GoldButton } from '@/components/ui-kit';
+import { useToast } from '@/hooks/use-toast';
+import { TbcMoney } from '@/components/TbcSign';
+import { txt, numOrNull } from '@/lib/safeRender';
 import pb from '@/lib/pocketbaseClient';
 import apiServerClient from '@/lib/apiServerClient';
 import { useI18n } from '@/lib/i18n';
@@ -67,13 +70,80 @@ function SignalCard({ symbol, timeframe, onResult, onSave }) {
 
 export default function SignalsPage() {
   const { t } = useI18n();
+  const { toast } = useToast();
+  const [params] = useSearchParams();
   const [timeframe, setTimeframe] = useState('1h');
   const [results, setResults] = useState({});
   const [fType, setFType] = useState('all');
   const [fStrength, setFStrength] = useState('all');
   const [fConf, setFConf] = useState('all');
   const [saved, setSaved] = useState([]);
-  const [tab, setTab] = useState('live');
+  const [tab, setTab] = useState(() => (params.get('tab') === 'market' ? 'market' : 'live'));
+  useEffect(() => {
+    try {
+      const q = new URLSearchParams(window.location.search).get('tab');
+      if (q === 'market' || q === 'history' || q === 'live') setTab(q);
+    } catch { /* ignore */ }
+  }, []);
+  // ── Signal market (merged from /app/market) ──
+  const [marketSignals, setMarketSignals] = useState([]);
+  const [myPrice, setMyPrice] = useState('29');
+  const [marketBusy, setMarketBusy] = useState('');
+  const [tbcPerUsd, setTbcPerUsd] = useState(1 / 3.25);
+  const tbcFor = (usd) => Math.round(Number(usd || 0) * tbcPerUsd * 100) / 100;
+  const loadMarket = useCallback(async () => {
+    if (!pb.authStore.token) return;
+    try {
+      const { API_SERVER_URL } = await import('@/lib/apiServerClient');
+      const data = await fetch(`${API_SERVER_URL}/market/signals`, { headers: { Authorization: `Bearer ${pb.authStore.token}` } }).then((r) => r.json()).catch(() => ({}));
+      setMarketSignals(data.signals || []);
+    } catch { /* ignore */ }
+  }, []);
+  useEffect(() => { if (tab === 'market') loadMarket(); }, [tab, loadMarket]);
+  useEffect(() => {
+    fetch('/hcgi/api/tbc/econ').then((r) => r.json()).then((e) => {
+      const rt = Number(e?.tbcPerUsd);
+      if (rt > 0.15 && rt < 0.6) setTbcPerUsd(rt);
+      else if (Number(e?.usdPerKwd) >= 2 && Number(e?.usdPerKwd) <= 5) setTbcPerUsd(1 / Number(e.usdPerKwd));
+    }).catch(() => {});
+  }, []);
+  const setMyMarketPrice = async () => {
+    const n = Number(myPrice);
+    if (!(n >= 0)) { toast({ variant: 'destructive', title: 'Enter a monthly price (0 = free tier off)' }); return; }
+    setMarketBusy('price');
+    try {
+      const { API_SERVER_URL } = await import('@/lib/apiServerClient');
+      const res = await fetch(`${API_SERVER_URL}/market/price`, { method: 'POST', headers: { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ price: n }) });
+      if (!res.ok) throw new Error('failed');
+      toast({ title: n > 0 ? `Your signals cost $${n}/mo` : 'Paid tier off' });
+    } catch (e) { toast({ variant: 'destructive', title: 'Price failed', description: e.message }); }
+    finally { setMarketBusy(''); }
+  };
+  const marketSubscribe = async (creatorId, creator, amount) => {
+    if (!window.confirm(`Subscribe to ${creator} for ${tbcFor(amount).toLocaleString()} TBC/mo ($${amount} list)? 75% goes to the creator. Paid in TBC only.`)) return;
+    setMarketBusy(`sub:${creatorId}`);
+    try {
+      const { API_SERVER_URL } = await import('@/lib/apiServerClient');
+      const res = await fetch(`${API_SERVER_URL}/market/subscribe`, { method: 'POST', headers: { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ creator: creatorId }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'subscribe failed');
+      toast({ title: data.already ? 'Already subscribed' : 'Subscribed', description: 'Full entries unlocked.' });
+      await loadMarket();
+    } catch (e) { toast({ variant: 'destructive', title: 'Subscribe failed', description: e.message }); }
+    finally { setMarketBusy(''); }
+  };
+  const marketUnsub = async (creatorId, creator) => {
+    if (!window.confirm(`Cancel your subscription to ${creator}?`)) return;
+    setMarketBusy(`sub:${creatorId}`);
+    try {
+      const { API_SERVER_URL } = await import('@/lib/apiServerClient');
+      const res = await fetch(`${API_SERVER_URL}/market/unsubscribe`, { method: 'POST', headers: { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ creator: creatorId }) });
+      if (!res.ok) throw new Error('unsubscribe failed');
+      toast({ title: 'Subscription cancelled' });
+      await loadMarket();
+    } catch (e) { toast({ variant: 'destructive', title: 'Cancel failed', description: e.message }); }
+    finally { setMarketBusy(''); }
+  };
 
   const onResult = useCallback((sym, sig) => setResults((r) => ({ ...r, [sym]: sig })), []);
 
@@ -204,6 +274,7 @@ export default function SignalsPage() {
         <Tabs
           tabs={[
             { id: 'live', label: t('term.live'), icon: Radar },
+            { id: 'market', label: 'Market', icon: Store },
             { id: 'history', label: t('sig.tracked') },
           ]}
           active={tab}
@@ -218,7 +289,52 @@ export default function SignalsPage() {
           </div>
         )}
 
-        {tab === 'live' ? (
+        {tab === 'market' ? (
+          <>
+            <Card className="flex flex-wrap items-center gap-3 p-4">
+              <div className="min-w-0 flex-1 text-sm text-[#c9c4b4]">Sell your own signals — set a monthly price (USD list, settled in TBC from subscriber tills).</div>
+              <input className="w-32 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50 min-h-[44px]" type="number" min="0" value={myPrice} onChange={(e) => setMyPrice(e.target.value)} placeholder="$/mo" />
+              <GoldButton disabled={marketBusy === 'price'} onClick={setMyMarketPrice} className="!px-3 !py-2 !text-xs">{marketBusy === 'price' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Set my price'}</GoldButton>
+            </Card>
+            {marketSignals.length === 0 ? (
+              <EmptyState icon={Store} title="No listed signals yet" sub="Be the first creator to list one from the tracked table (List)." />
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {marketSignals.map((ms) => (
+                  <Card key={ms.id} className="p-5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-sm font-bold text-[#f0ecdd]">{ms.symbol}</span>
+                      <span className={`flex items-center gap-1 text-xs font-bold ${ms.side === 'long' ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {ms.side === 'long' ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}{ms.side}
+                      </span>
+                    </div>
+                    <div className="mt-1 text-xs text-[#8a8577]">by {ms.creator} · {ms.created ? new Date(ms.created).toLocaleDateString() : ''}</div>
+                    {ms.subscribed || ms.entry !== null ? (
+                      <>
+                        <div className="mt-3 grid grid-cols-3 gap-2 font-mono text-xs">
+                          <div><div className="text-[#6a665a]">Entry</div><div className="text-[#f0ecdd]">{ms.entry ?? '—'}</div></div>
+                          <div><div className="text-[#6a665a]">Target</div><div className="text-emerald-400">{ms.target ?? '—'}</div></div>
+                          <div><div className="text-[#6a665a]">Stop</div><div className="text-red-400">{ms.stop ?? '—'}</div></div>
+                        </div>
+                        {ms.subscribed && (
+                          <button onClick={() => marketUnsub(ms.creatorId, ms.creator)} className="mt-2 text-[11px] text-[#6a665a] hover:text-red-400 hover:underline">Cancel subscription</button>
+                        )}
+                      </>
+                    ) : (
+                      <div className="mt-3 rounded-lg border border-[#d4af37]/20 bg-[#d4af37]/[0.05] p-3 text-center">
+                        <div className="text-[#d4af37]"><TbcMoney amount={tbcFor(ms.price)} /></div>
+                        <div className="font-mono text-[11px] text-[#8a8577]">${ms.price}/mo list · TBC only</div>
+                        <GhostButton disabled={marketBusy === `sub:${ms.creatorId}`} onClick={() => marketSubscribe(ms.creatorId, ms.creator, ms.price)} className="mt-2 !px-3 !py-1.5 !text-xs">
+                          {marketBusy === `sub:${ms.creatorId}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Unlock entries'}
+                        </GhostButton>
+                      </div>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            )}
+          </>
+        ) : tab === 'live' ? (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {visible.map((sym) => <SignalCard key={`${sym}-${timeframe}`} symbol={sym} timeframe={timeframe} onResult={onResult} onSave={onSave} />)}
           </div>
@@ -234,13 +350,13 @@ export default function SignalsPage() {
                   const live = s.outcome === 'open' && livePx[s.symbol] != null
                     ? resolveSignal(s, [], livePx[s.symbol])
                     : null;
-                  const pnl = s.outcome === 'win' || s.outcome === 'loss' ? Number(s.pnlPct) : live?.pnlPct;
+                  const pnl = s.outcome === 'win' || s.outcome === 'loss' ? numOrNull(s.pnlPct) : numOrNull(live?.pnlPct);
                   return (
                     <tr key={s.id} className="border-t border-white/5">
-                      <td className="p-3"><div className="font-mono font-semibold text-[#f0ecdd]">{s.symbol}</div><div className="text-[10px] text-[#8a8577]">{s.timeframe}</div></td>
+                      <td className="p-3"><div className="font-mono font-semibold text-[#f0ecdd]">{txt(s.symbol, '—')}</div><div className="text-[10px] text-[#8a8577]">{txt(s.timeframe, '')}</div></td>
                       <td className="p-3"><span className="rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ color: meta.color, background: meta.bg }}>{t('sig.st_' + (s.signalType || 'hold'))}</span></td>
-                      <td className="p-3 text-[#c9c4b4]">{t('sig.' + (s.strength || 'weak'), null, s.strength)}</td>
-                      <td className="p-3 font-mono text-[#c9c4b4]">{s.price}</td>
+                      <td className="p-3 text-[#c9c4b4]">{t('sig.' + (txt(s.strength, 'weak') || 'weak'), null, txt(s.strength, ''))}</td>
+                      <td className="p-3 font-mono text-[#c9c4b4]">{txt(s.price, '—')}</td>
                       <td className="p-3 text-[10px] text-[#8a8577]">{new Date(s.created).toLocaleDateString()}</td>
                       <td className={`p-3 font-mono ${pnl == null ? 'text-[#6a665a]' : pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{pnl == null ? '—' : `${pnl >= 0 ? '+' : ''}${Number(pnl).toFixed(2)}%`}</td>
                       <td className="p-3">

@@ -15,7 +15,9 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
+import { txt } from '@/lib/safeRender';
 import { PageHero, GoldButton, GhostButton, EmptyState, Card } from '@/components/ui-kit';
+import EvaluationsPanel from '@/components/EvaluationsPanel';
 
 const FIELD_DEFS = [
   { key: 'symbol', labelKey: 'jou.f_symbol' },
@@ -40,8 +42,8 @@ function TradeCard({ trade, strategyWinRate, onView }) {
     <button onClick={() => onView(trade)} className="tb-card tb-card-hover flex flex-col p-3 text-left sm:p-5">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="truncate font-mono text-base font-bold tracking-tight text-[#f0ecdd] sm:text-lg">{trade.symbol}</div>
-          <div className="mt-0.5 text-[10px] uppercase tracking-wide text-[#8a8577] sm:text-xs">{trade.market || '—'}</div>
+          <div className="truncate font-mono text-base font-bold tracking-tight text-[#f0ecdd] sm:text-lg">{txt(trade.symbol, '—')}</div>
+          <div className="mt-0.5 text-[10px] uppercase tracking-wide text-[#8a8577] sm:text-xs">{txt(trade.market, '—')}</div>
         </div>
         <span
           className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold sm:px-2.5 sm:py-1 sm:text-xs ${
@@ -49,18 +51,18 @@ function TradeCard({ trade, strategyWinRate, onView }) {
           }`}
         >
           {isLong ? <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> : <ArrowDownRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />}
-          {trade.direction || '—'}
+          {txt(trade.direction, '—')}
         </span>
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-white/[0.03] p-2.5 sm:mt-4 sm:gap-3 sm:p-3">
         <div className="min-w-0">
           <div className="text-[9px] uppercase tracking-wider text-[#6a665a] sm:text-[10px]">{t('jou.f_entry')}</div>
-          <div className="truncate font-mono text-xs text-[#c9c4b4] sm:text-sm">{trade.entry ?? '—'}</div>
+          <div className="truncate font-mono text-xs text-[#c9c4b4] sm:text-sm">{txt(trade.entry, '—')}</div>
         </div>
         <div className="min-w-0">
           <div className="text-[9px] uppercase tracking-wider text-[#6a665a] sm:text-[10px]">{t('jou.f_exit')}</div>
-          <div className="truncate font-mono text-xs text-[#c9c4b4] sm:text-sm">{trade.exit ?? '—'}</div>
+          <div className="truncate font-mono text-xs text-[#c9c4b4] sm:text-sm">{txt(trade.exit, '—')}</div>
         </div>
       </div>
 
@@ -95,7 +97,7 @@ function TradeCard({ trade, strategyWinRate, onView }) {
       </div>
 
       <div className="mt-2.5 flex items-center gap-1.5 text-[10px] text-[#6a665a] sm:mt-3 sm:text-[11px]">
-        <Calendar className="h-3 w-3 shrink-0" /> {trade.tradeDate ? String(trade.tradeDate).slice(0, 10) : '—'}
+        <Calendar className="h-3 w-3 shrink-0" /> {txt(trade.tradeDate, '').slice(0, 10) || '—'}
         {trade.source && <span className="ml-1 truncate text-[#5f5b50]">· {trade.source}</span>}
       </div>
 
@@ -126,9 +128,9 @@ export default function JournalPage() {
   }, [stats]);
 
   const rows = useMemo(() => trades.filter((t) =>
-    (market === 'All' || t.market === market) &&
-    (direction === 'All' || (t.direction || '').toLowerCase() === direction.toLowerCase()) &&
-    ((t.symbol || '').toLowerCase().includes(q.toLowerCase()) || (t.strategy || '').toLowerCase().includes(q.toLowerCase()) || (t.emotion || '').toLowerCase().includes(q.toLowerCase()))
+    (market === 'All' || txt(t.market, '') === market) &&
+    (direction === 'All' || txt(t.direction, '').toLowerCase() === direction.toLowerCase()) &&
+    (txt(t.symbol, '').toLowerCase().includes(q.toLowerCase()) || txt(t.strategy, '').toLowerCase().includes(q.toLowerCase()) || txt(t.emotion, '').toLowerCase().includes(q.toLowerCase()))
   ), [trades, q, market, direction]);
 
   const exportCsv = () => {
@@ -220,12 +222,15 @@ export default function JournalPage() {
           </div>
         )}
 
+        {/* Bought evaluations live here — attempts, gates, payouts */}
+        <EvaluationsPanel />
+
         {/* View details dialog */}
         <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
           <DialogContent className="tb-card max-h-[85vh] max-w-md overflow-y-auto border-[#d4af37]/20 bg-[#0c0c11] text-[#e9e7df]">
             <DialogHeader>
               <DialogTitle className="text-[#f0ecdd]">
-                <span className="font-mono">{viewing?.symbol}</span> {t('jou.details')}
+                <span className="font-mono">{txt(viewing?.symbol, '')}</span> {t('jou.details')}
               </DialogTitle>
             </DialogHeader>
             {viewing && (
@@ -234,13 +239,13 @@ export default function JournalPage() {
                   <div key={key} className="rounded-lg bg-white/[0.03] p-2.5">
                     <div className="text-[10px] uppercase tracking-wider text-[#6a665a]">{t(labelKey)}</div>
                     <div className={`mt-0.5 font-mono ${key === 'pnl' ? ((viewing.pnl || 0) >= 0 ? 'text-emerald-400' : 'text-red-400') : 'text-[#e9e7df]'}`}>
-                      {viewing[key] ?? '—'}
+                      {txt(viewing[key], '—')}
                     </div>
                   </div>
                 ))}
                 <div className="col-span-2 rounded-lg bg-white/[0.03] p-2.5">
                   <div className="text-[10px] uppercase tracking-wider text-[#6a665a]">{t('jou.notes')}</div>
-                  <div className="mt-0.5 text-[#c9c4b4]">{viewing.notes || '—'}</div>
+                  <div className="mt-0.5 text-[#c9c4b4]">{txt(viewing.notes, '—')}</div>
                 </div>
                 <div className="col-span-2 rounded-lg bg-white/[0.03] p-2.5">
                   <div className="text-[10px] uppercase tracking-wider text-[#6a665a]">{t('jou.date')}</div>

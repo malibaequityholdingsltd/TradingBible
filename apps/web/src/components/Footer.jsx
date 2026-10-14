@@ -114,27 +114,27 @@ export default function Footer() {
   const last = words[words.length - 1] || '';
 
   return (
-    <footer className="border-t border-[#d4af37]/12 bg-[#0a0a0f]">
-      <div className="mx-auto max-w-[96rem] px-6 pt-16 pb-10">
+    <footer className="border-t border-[#d4af37]/10 bg-[#0a0a0f] tabular-nums antialiased">
+      <div className="mx-auto max-w-[96rem] px-6 pt-12 pb-8">
         {/* Brand + blurb + socials */}
-        <div className="flex flex-col gap-8 border-b border-[#d4af37]/10 pb-10 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex flex-col gap-8 border-b border-[#d4af37]/10 pb-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-sm">
             <Link to={homeTo} className="mb-4 flex items-center gap-2.5">
-              <img src={LOGO} alt={`${brand} logo`} className="h-9 w-9 rounded-lg object-contain" />
+              <img src={LOGO} alt={`${brand} logo`} className="h-8 w-8 rounded-[10px] border border-[#d4af37]/20 bg-[#0c0c11] object-contain" />
               <span className="font-semibold tracking-tight text-[#f0ecdd]">{first ? `${first} ` : ''}<span className="gold-text">{last}</span></span>
             </Link>
             <p className="text-sm leading-relaxed text-[#8a8577]">
               {t('fot.blurb')}
             </p>
             <div className="mt-4 flex items-start gap-3">
-              <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-12 w-12 shrink-0 rounded-lg object-contain" />
+              <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-10 w-10 shrink-0 rounded-[10px] border border-[#d4af37]/20 bg-[#0c0c11] object-contain" />
               <p className="text-xs leading-relaxed text-[#6a665a]">
                 TradingBible is owned and operated by <span className="text-[#c9c4b4]">TradingBible LLC</span>.
                 <br />Registered in Delaware, USA. c/o Delaware Registered Agent, Inc.
                 <br />{t('fot.mission')}
               </p>
             </div>
-            <div className="mt-5 flex items-center gap-3">
+            <div className="mt-5 flex items-center gap-2">
               {SOCIALS.map(({ label, icon: Icon, href }) => (
                 <a
                   key={label}
@@ -142,7 +142,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noreferrer noopener"
                   aria-label={label}
-                  className="grid h-9 w-9 place-items-center rounded-full border border-[#d4af37]/20 text-[#8a8577] transition hover:border-[#d4af37]/60 hover:text-[#d4af37]"
+                  className="grid h-8 w-8 place-items-center rounded-[10px] border border-[#d4af37]/20 text-[#8a8577] transition hover:border-[#d4af37]/50 hover:text-[#d4af37]"
                 >
                   <Icon className="h-4 w-4" strokeWidth={1.9} />
                 </a>
@@ -150,22 +150,22 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="glass shrink-0 rounded-2xl p-5 lg:w-80">
+          <div className="glass shrink-0 rounded-[10px] p-5 tabular-nums lg:w-80">
             <div className="mb-1 flex items-center gap-2 text-[#d4af37]"><LineChart className="h-4 w-4" /><span className="text-sm font-semibold">{t('foot.startEdge')}</span></div>
-            <p className="mb-4 text-xs text-[#8a8577]">{t('foot.paidNote', null, 'Paid plans only. No free trial. Cancel anytime.')}</p>
-            <Link to="/signup" className="block rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-center text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90">{t('foot.createAcct')}</Link>
+            <p className="mb-4 text-xs tabular-nums text-[#8a8577]">{t('foot.paidNote', null, 'Paid plans only. No free trial. Cancel anytime.')}</p>
+            <Link to="/signup" className="block rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-center text-sm font-semibold tabular-nums text-[#0a0a0f] transition hover:opacity-90">{t('foot.createAcct')}</Link>
           </div>
         </div>
 
         {/* Link columns */}
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 py-12 sm:grid-cols-3 lg:grid-cols-7 lg:gap-x-5">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 py-10 sm:grid-cols-3 lg:grid-cols-7 lg:gap-x-5">
           {COLUMNS.map((col) => (
             <div key={col.headingKey}>
-              <h4 className="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#d4af37]">{t(col.headingKey)}</h4>
-              <ul className="space-y-2.5">
+              <h4 className="mb-3.5 text-[11px] font-bold uppercase tracking-[0.16em] text-[#d4af37] tabular-nums">{t(col.headingKey)}</h4>
+              <ul className="space-y-2">
                 {col.links.map((l) => (
                   <li key={l.labelKey}>
-                    <Link to={l.to} className="text-sm text-[#8a8577] transition hover:text-[#e9e7df]">{t(l.labelKey)}</Link>
+                    <Link to={l.to} className="text-[13px] leading-6 text-[#8a8577] transition hover:text-[#e9e7df]">{t(l.labelKey)}</Link>
                   </li>
                 ))}
               </ul>
@@ -174,15 +174,15 @@ export default function Footer() {
         </div>
 
         {/* Legal disclaimer strip */}
-        <div className="border-t border-[#d4af37]/10 py-8">
-          <p className="max-w-4xl text-xs leading-relaxed text-[#6a665a]">
+        <div className="border-t border-[#d4af37]/10 py-6">
+          <p className="max-w-4xl text-xs leading-relaxed tabular-nums text-[#6a665a]">
             TradingBible provides trade journaling, analytics, and SI-generated insights for educational and record-keeping purposes only. Nothing on this platform constitutes financial, investment, or trading advice. Trading financial instruments carries substantial risk of loss and is not suitable for every investor. Past performance and SI-generated observations are not indicative of future results. Always conduct your own due diligence and consult a licensed financial advisor before making trading decisions.
           </p>
         </div>
 
         {/* Copyright row */}
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-[#d4af37]/10 pt-8 text-sm text-[#8a8577] sm:flex-row">
-          <div className="flex items-center gap-2"><img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 rounded object-contain" /> TradingBible</div>
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-[#d4af37]/10 pt-6 text-[13px] tabular-nums text-[#8a8577] sm:flex-row">
+          <div className="flex items-center gap-2"><img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 rounded-[6px] border border-[#d4af37]/20 bg-[#0c0c11] object-contain" /> TradingBible</div>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             <Link to="/terms" className="hover:text-[#e9e7df]">{t('fot.terms')}</Link>
             <Link to="/policy" className="hover:text-[#e9e7df]">{t('fot.privacy')}</Link>

@@ -9,7 +9,7 @@ import { DESK_PRESETS } from '@/terminal/premiumStore';
 const PAGES = [
   ['Terminal Pro', '/app/terminal-pro'], ['Order Flow', '/app/orderflow'], ['Heatmaps', '/app/heatmaps'],
   ['Journal', '/app/journal'], ['Backtest', '/app/backtest'], ['Paper', '/app/paper'],
-  ['Challenges', '/app/challenges'], ['Brokers', '/app/brokers'], ['Funded', '/app/funded'],
+  ['Challenges', '/app/challenges'], ['Brokers', '/app/brokers'], ['Wallet', '/app/wallet'],
 ];
 
 export default function CommandPalette({ open, onClose, onSymbol, onTimeframe, onDesk }) {

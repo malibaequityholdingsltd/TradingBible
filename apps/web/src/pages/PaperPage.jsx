@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlaskConical, Loader2, Plus, Trash2, Trophy, Crosshair, RotateCcw, Zap, History, AlertTriangle } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import PromptDialog from '@/components/PromptDialog';
 import { PageHero, Card, GoldButton, GhostButton, EmptyState, Note } from '@/components/ui-kit';
 import { useToast } from '@/hooks/use-toast';
 import { useQuotes } from '@/hooks/useQuotes';
@@ -128,9 +129,11 @@ export default function PaperPage() {
     finally { setBusy(''); }
   };
 
-  const closeManual = async (id) => {
-    const px = Number(window.prompt('Close at what price?', '') || '');
+  const [closeFor, setCloseFor] = useState(null);
+  const closeManual = async (id, pxRaw) => {
+    const px = Number(pxRaw);
     if (!(px > 0)) return;
+    setCloseFor(null);
     setBusy(`close:${id}`);
     try {
       const data = await api('/paper/close', { tradeId: id, price: px });
@@ -259,7 +262,7 @@ export default function PaperPage() {
                             <button onClick={() => closeLive(t.id)} disabled={busy === `close:${t.id}`} className="rounded-lg bg-[#d4af37]/15 px-2.5 py-1.5 font-sans text-[11px] font-bold text-[#d4af37] disabled:opacity-50">
                               {busy === `close:${t.id}` ? '…' : 'Close @ live'}
                             </button>
-                            <button onClick={() => closeManual(t.id)} disabled={busy === `close:${t.id}`} className="rounded-lg border border-white/10 px-2.5 py-1.5 font-sans text-[11px] text-[#8a8577] disabled:opacity-50">Manual</button>
+                            <button onClick={() => setCloseFor(t.id)} disabled={busy === `close:${t.id}`} className="rounded-lg border border-white/10 px-2.5 py-1.5 font-sans text-[11px] text-[#8a8577] disabled:opacity-50">Manual</button>
                           </span>
                         </div>
                       );
@@ -350,6 +353,7 @@ export default function PaperPage() {
           Simulator only — paper fills never touch your wallet, journal, or challenges. Stops and targets settle against the same live feeds as your charts.
         </Note>
       </div>
+    <PromptDialog open={closeFor != null} onOpenChange={(o) => !o && setCloseFor(null)} title="Close at what price?" label="Exit price" placeholder="e.g. 67250" inputProps={{ inputMode: 'decimal' }} confirmLabel="Close position" onSubmit={(v) => closeManual(closeFor, v)} />
     </AppLayout>
   );
 }

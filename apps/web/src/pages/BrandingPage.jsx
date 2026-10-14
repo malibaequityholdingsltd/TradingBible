@@ -44,7 +44,14 @@ export default function BrandingPage() {
   const [form, setForm] = useState(() => loadLocalTheme() || WL_DEFAULTS);
   const [recordId, setRecordId] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [activePreset, setActivePreset] = useState(null);
+  // The active preset is derived from the live colors — the app default
+  // (TradingBible Gold) shows selected until any color is customized.
+  const activePreset = WL_PRESETS.find((pr) =>
+    (pr.accentColor || '').toLowerCase() === (form.accentColor || '').toLowerCase() &&
+    (pr.headingColor || '').toLowerCase() === (form.headingColor || '').toLowerCase() &&
+    (pr.bodyColor || '').toLowerCase() === (form.bodyColor || '').toLowerCase() &&
+    (pr.primaryColor || '').toLowerCase() === (form.primaryColor || '').toLowerCase(),
+  )?.id || null;
 
   useEffect(() => {
     if (!user?.id) return;
@@ -62,7 +69,6 @@ export default function BrandingPage() {
   const set = (k) => (v) => {
     const next = { ...form, [k]: typeof v === 'string' ? v : v?.target?.value ?? v };
     setForm(next);
-    setActivePreset(null);
     applyWhiteLabel(next);
     saveLocalTheme(next);
   };
@@ -70,7 +76,6 @@ export default function BrandingPage() {
   const pickPreset = (p) => {
     const next = { ...form, accentColor: p.accentColor, headingColor: p.headingColor, bodyColor: p.bodyColor, mutedColor: p.mutedColor, primaryColor: p.primaryColor };
     setForm(next);
-    setActivePreset(p.id);
     applyWhiteLabel(next);
     saveLocalTheme(next);
   };
@@ -90,11 +95,22 @@ export default function BrandingPage() {
     } finally { setBusy(false); }
   };
 
-  const reset = () => {
+  // Reset to brand defaults everywhere: screen, this device AND the
+  // saved account theme — otherwise the account copy re-applies on reload
+  // and the reset looks broken.
+  const reset = async () => {
     setForm(WL_DEFAULTS);
-    setActivePreset('tb-gold');
     applyWhiteLabel(WL_DEFAULTS);
     clearLocalTheme();
+    if (!user?.id) return;
+    setBusy(true);
+    try {
+      const rid = await saveAccountTheme(user.id, recordId, WL_DEFAULTS);
+      setRecordId(rid);
+      toast({ title: t('brd.reset', null, 'Reset'), description: 'Back to TradingBible defaults.' });
+    } catch {
+      toast({ variant: 'destructive', title: t('brd.saveFail'), description: t('brd.tryAgain') });
+    } finally { setBusy(false); }
   };
 
   const preview = useMemo(() => form, [form]);
@@ -125,13 +141,13 @@ export default function BrandingPage() {
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
             {WL_PRESETS.map((p) => (
               <button key={p.id} onClick={() => pickPreset(p)}
-                className={`group flex min-h-[56px] items-center gap-2.5 rounded-2xl border px-3 py-2.5 text-left transition hover:-translate-y-0.5 ${activePreset === p.id ? 'border-[#d4af37]/60 bg-[#d4af37]/[0.07]' : 'border-white/8 bg-black/30 hover:border-white/20'}`}>
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl font-mono text-xs font-extrabold" style={{ background: p.accentColor, color: p.primaryColor }}>Aa</span>
+                className={`group flex min-h-[56px] items-center gap-2.5 rounded-[10px] border px-3 py-2.5 text-left transition hover:-translate-y-px active:scale-[0.98] ${activePreset === p.id ? 'border-[#d4af37]/60 bg-gradient-to-b from-[#d4af37]/[0.12] to-[#d4af37]/[0.03] shadow-[0_0_20px_-8px_rgba(212,175,55,0.6)]' : 'border-white/10 bg-white/[0.02] hover:border-[#d4af37]/35'}`}>
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg font-mono text-xs font-extrabold ring-1 ring-black/20" style={{ background: p.accentColor, color: p.primaryColor }}>Aa</span>
                 <span className="min-w-0">
                   <span className="block truncate text-xs font-bold text-[#f0ecdd]">{p.label}</span>
                   <span className="block font-mono text-[10px] text-[#6a665a]">{p.accentColor}</span>
                 </span>
-                {activePreset === p.id && <Check className="ml-auto h-3.5 w-3.5 shrink-0 text-[#d4af37]" />}
+                {activePreset === p.id && <span className="ml-auto grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#d4af37]"><Check className="h-3 w-3 text-[#0a0a0f]" strokeWidth={3} /></span>}
               </button>
             ))}
           </div>

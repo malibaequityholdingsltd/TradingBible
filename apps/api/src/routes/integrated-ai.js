@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { ContentBlockType, stream, uploadImages } from '../api/integrated-ai.js';
 import { SystemPrompt } from '../constants/prompts.js';
+import { supabaseRest } from '../utils/supabaseClient.js';
+import { companyContextText, COMPANY_DEFAULTS } from './admin.js';
 import logger from '../utils/logger.js';
 import { uploadFiles } from '../middleware/file-upload.js';
 import { integratedAiRateLimit } from '../middleware/integrated-ai-rate-limit.js';
@@ -43,9 +45,19 @@ router.post('/stream', integratedAiRateLimit, uploadFiles({
 
 	let sseStream;
 	try {
+		// Best-effort Company Bible: admins curate every brand fact at
+		// PUT /admin/company; SI answers from stored truth, else defaults.
+		let systemPrompt = SystemPrompt;
+		try {
+			const rows = await supabaseRest('/rest/v1/admin_integrations?key=eq.company:profile', {
+				query: { select: 'config', limit: 1 },
+			}).catch(() => []);
+			const stored = rows?.[0]?.config && typeof rows[0].config === 'object' ? rows[0].config : COMPANY_DEFAULTS;
+			systemPrompt = `${SystemPrompt}\n\n## Company Bible (admin-curated truth, prefer over general knowledge)\n${companyContextText(stored)}`;
+		} catch { /* defaults already in SystemPrompt */ }
 		sseStream = await stream({
 			userId: req.userId,
-			systemPrompt: SystemPrompt,
+			systemPrompt,
 			userMessage: parsedMessage,
 		});
 	} catch (err) {

@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import {
 	Activity, Pause, Play, Timer, Filter, Layers, Droplets,
 	Plus, GitCompareArrows, CandlestickChart,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import { Card, Tabs, SectionHead, Note, EmptyState, GhostButton } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
 import OrderflowChart from '@/components/OrderflowChart';
 import FlowTapePane from '@/components/FlowTapePane';
@@ -169,14 +169,14 @@ export default function OrderFlowPage() {
 	return (
 		<AppLayout title={t('of.title')}>
 			{/* ── Control bar ─────────────────────────────────────── */}
-			<div className="tint-hero mb-4 rounded-2xl border border-[#d4af37]/15 p-4 sm:p-5">
+			<Card className="mb-4 p-4 sm:p-5">
 				<div className="flex flex-wrap items-center gap-3">
 					<div className="flex items-center gap-2">
 						<Activity className="h-5 w-5 text-[#d4af37]" />
 						<span className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">{market === 'crypto' || market === 'all' ? t('of.depthHead', { a: panes.length, b: MAX_PANES }) : t('of.tapeHead', { a: tapePanes.length, b: MAX_PANES })}</span>
 					</div>
 					<span className="ml-auto flex items-center gap-1.5">
-						<Link to="/app/terminal-pro?view=orderflow" className="whitespace-nowrap rounded-lg border border-[#d4af37]/30 px-2.5 py-1.5 text-xs font-semibold text-[#d4af37]">Terminal Pro</Link>
+						<GhostButton to="/app/terminal-pro?view=orderflow" className="!min-h-0 !px-2.5 !py-1.5 !text-xs">Terminal Pro</GhostButton>
 						<button onClick={() => setPaused((p) => !p)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60" aria-label={paused ? t('of.resumeAll') : t('of.pauseAll')}>
 							{paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
 						</button>
@@ -184,16 +184,12 @@ export default function OrderFlowPage() {
 				</div>
 
 				{/* Market tabs — All / Crypto / Forex / Commodities / Sectors / Stocks */}
-				<div className="no-scrollbar mt-3 flex gap-1.5 overflow-x-auto pb-1 sm:flex-wrap">
-					{MARKET_TABS.map((m) => (
-						<button
-							key={m.id}
-							onClick={() => switchMarket(m.id)}
-							className={`shrink-0 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition ${market === m.id ? 'bg-[#d4af37] text-[#0a0a0f]' : 'border border-[#d4af37]/20 text-[#8a8577] hover:text-[#e9e7df]'}`}
-						>
-							{t(m.key)}
-						</button>
-					))}
+				<div className="mt-3">
+					<Tabs
+						tabs={MARKET_TABS.map((m) => ({ id: m.id, label: t(m.key) }))}
+						active={market}
+						onChange={switchMarket}
+					/>
 				</div>
 
 				{(market === 'crypto') && (
@@ -279,7 +275,7 @@ export default function OrderFlowPage() {
 					</span>
 				</div>
 				)}
-			</div>
+			</Card>
 
 			{/* ── Panes — all in one screen ────────────────────────── */}
 			{(market === 'crypto' || market === 'all') && (
@@ -307,10 +303,9 @@ export default function OrderFlowPage() {
 
 			{market !== 'crypto' && (
 			<>
-				<div className="mt-4 flex items-start gap-2 rounded-2xl border border-[#38bdf8]/20 bg-[#38bdf8]/[0.05] p-4 text-xs leading-relaxed text-[#8a8577] backdrop-blur-md">
-					<Activity className="mt-0.5 h-4 w-4 shrink-0 text-[#38bdf8]" />
+				<div className="mt-4"><Note tone="blue" icon={Activity}>
 					<p>{t('of.tapeNote', { m: market === 'all' ? t('of.theseMarkets') : t(MARKET_TABS.find((m) => m.id === market)?.key || 'c.all') })}</p>
-				</div>
+				</Note></div>
 				<div className="mt-4 grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
 					{tapePanes.map((s) => (
 						<FlowTapePane
@@ -327,12 +322,10 @@ export default function OrderFlowPage() {
 			)}
 
 			{/* ── Correlation tracker ─────────────────────────────── */}
-			<div className="glass mt-4 rounded-2xl p-4 sm:p-5">
-				<h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">
-					<GitCompareArrows className="h-4 w-4" /> {t('of.corrTitle')}
-				</h3>
+			<Card className="mt-4 p-4 sm:p-5">
+				<SectionHead icon={GitCompareArrows} title={t('of.corrTitle')} />
 				{corr.length === 0 ? (
-					<p className="mt-2 text-xs leading-relaxed text-[#8a8577]">{t('of.corrEmpty')}</p>
+					<EmptyState icon={GitCompareArrows} title={t('of.corrEmpty')} />
 				) : (
 					<div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
 						{corr.map(({ a, b, r }) => (
@@ -343,12 +336,11 @@ export default function OrderFlowPage() {
 						))}
 					</div>
 				)}
-			</div>
+			</Card>
 
-			<div className="mt-4 flex items-start gap-2 rounded-2xl border border-[#d4af37]/15 bg-[#d4af37]/[0.04] p-4 text-xs leading-relaxed text-[#8a8577] backdrop-blur-md">
-				<Activity className="mt-0.5 h-4 w-4 shrink-0 text-[#d4af37]" />
+			<div className="mt-4"><Note icon={Activity}>
 				<p>{t('of.footer', { n: MAX_PANES })}</p>
-			</div>
+			</Note></div>
 		</AppLayout>
 	);
 }

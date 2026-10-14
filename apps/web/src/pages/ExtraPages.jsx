@@ -362,40 +362,43 @@ export function PricingPage() {
   return (
     <div className="relative min-h-screen overflow-x-clip bg-[#07070a] px-6 pt-24 pb-16 sm:pt-28">
       <div className="pointer-events-none absolute left-1/2 top-0 h-[28rem] w-[60rem] max-w-none -translate-x-1/2 rounded-full bg-[#d4af37]/[0.07] blur-[140px]" />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[linear-gradient(to_right,rgba(212,175,55,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(212,175,55,0.05)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_0%,black,transparent)]" />
       <div className="relative mx-auto max-w-[96rem]">
-        <Link to={homeTo} className="mb-10 flex items-center gap-2.5"><img src={TRADINGBIBLE_LOGO} alt="TradingBible logo" className="h-9 w-9 rounded-lg object-contain" /><span className="font-semibold">Trading<span className="gold-text">Bible</span></span></Link>
-        <div className="mx-auto mb-12 max-w-3xl text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/[0.06] px-4 py-1.5 text-xs font-medium text-[#d4af37]"><Crown className="h-3.5 w-3.5" /> {t('price.billedStripe')}</div>
-          <h1 className="text-balance text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl">{t('price.chooseEdge')}</h1>
-          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[#8a8577]">{t('price.sub')}</p>
+        <Link to={homeTo} className="mb-10 inline-flex items-center gap-2.5 rounded-full border border-white/[0.07] bg-white/[0.02] py-1.5 pl-1.5 pr-4 backdrop-blur-md transition hover:border-[#d4af37]/30"><img src={TRADINGBIBLE_LOGO} alt="TradingBible logo" className="h-9 w-9 rounded-full object-contain ring-1 ring-[#d4af37]/25" /><span className="font-semibold tracking-tight">Trading<span className="gold-text">Bible</span></span></Link>
+        <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-14">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#d4af37]/30 bg-[#0a0a0f]/70 px-4 py-1.5 text-xs font-semibold tracking-wide text-[#e8c95a] shadow-[0_8px_28px_-12px_rgba(212,175,55,0.5)] backdrop-blur-md"><Crown className="h-3.5 w-3.5" /> {t('price.billedStripe')}</div>
+          <h1 className="text-balance text-4xl font-extrabold leading-[0.98] tracking-[-0.03em] sm:text-6xl">{t('price.chooseEdge')}</h1>
+          <div aria-hidden className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[#d4af37]/60 to-transparent" />
+          <p className="mx-auto mt-5 max-w-xl text-pretty text-base leading-relaxed text-[#a8a394]">{t('price.sub')}</p>
           {isAuthed && (
-            <p className="mt-3 text-sm text-[#8a8577]">{t('bill.walletBalance')} <span className="font-mono font-bold text-[#f0ecdd]">${walletBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></p>
+            <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-white/[0.07] bg-white/[0.02] px-4 py-1.5 text-sm text-[#8a8577] backdrop-blur-md">{t('bill.walletBalance')} <span className="font-mono font-bold text-[#f0ecdd]">${walletBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></p>
           )}
         </div>
-        <div className="mx-auto grid max-w-6xl items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto grid max-w-6xl items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {PLANS.map((raw) => {
             const p = translatePlan(t, raw);
             return (
-              <div key={p.id} className={`price-card relative flex flex-col overflow-hidden rounded-3xl border p-6 transition-transform duration-300 hover:-translate-y-1 sm:p-7 ${p.highlight ? 'price-card-pop border-[#d4af37]/60 bg-gradient-to-b from-[#d4af37]/[0.12] to-[#0f0f14] shadow-[0_24px_80px_-24px_rgba(212,175,55,0.45)] lg:scale-[1.04]' : 'border-white/[0.07] bg-white/[0.02] backdrop-blur-md'}`}>
+              <div key={p.id} className={`price-card group relative flex flex-col overflow-hidden rounded-3xl border p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-300 hover:-translate-y-1.5 sm:p-8 ${p.highlight ? 'price-card-pop border-[#d4af37]/60 bg-gradient-to-b from-[#d4af37]/[0.14] via-[#121209] to-[#0f0f14] shadow-[0_32px_90px_-28px_rgba(212,175,55,0.5)] lg:scale-[1.05]' : 'border-white/[0.07] bg-white/[0.02] backdrop-blur-md hover:border-white/[0.14] hover:shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]'}`}>
                 {p.highlight && (
                   <>
-                    <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
-                    <div className="absolute right-5 top-5 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0f]">{t('misc.popular')}</div>
+                    <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#e8c95a] to-transparent" />
+                    <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_35%_at_50%_0%,rgba(212,175,55,0.14),transparent)]" />
+                    <div className="absolute right-5 top-5 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#0a0a0f] shadow-[0_6px_18px_-6px_rgba(212,175,55,0.7)]">{t('misc.popular')}</div>
                   </>
                 )}
-                <div className="flex items-center gap-3">
-                  <img src={p.logo} alt={`${p.name} plan logo`} className="h-12 w-12 rounded-2xl object-contain ring-1 ring-[#d4af37]/25" />
+                <div className="relative flex items-center gap-3.5">
+                  <img src={p.logo} alt={`${p.name} plan logo`} className="h-12 w-12 rounded-2xl object-contain ring-1 ring-[#d4af37]/25 shadow-[0_8px_20px_-8px_rgba(212,175,55,0.4)]" />
                   <div>
-                    <h3 className="text-lg font-bold text-[#f0ecdd]">{p.name}</h3>
-                    <p className="text-xs text-[#8a8577]">{p.tagline}</p>
+                    <h3 className="text-lg font-bold tracking-tight text-[#f0ecdd]">{p.name}</h3>
+                    <p className="mt-0.5 text-xs leading-snug text-[#8a8577]">{p.tagline}</p>
                   </div>
                 </div>
-                <div className="mt-5 flex items-end gap-1.5">
-                  <span className="font-mono text-[2.6rem] font-bold leading-none tb-gold-text">{p.price === 0 ? 'Free' : `$${p.price}`}</span>
-                  <span className="mb-1.5 text-sm text-[#8a8577]">/{p.period}</span>
+                <div className="relative mt-6 flex items-end gap-2">
+                  <span className="font-mono text-[2.75rem] font-bold leading-none tracking-tight tb-gold-text drop-shadow-[0_2px_16px_rgba(212,175,55,0.3)]">{p.price === 0 ? 'Free' : `$${p.price}`}</span>
+                  <span className="mb-2 text-sm text-[#8a8577]">/{p.period}</span>
                 </div>
-                <div className="my-5 h-px bg-gradient-to-r from-[#d4af37]/25 to-transparent" />
-                <ul className="flex-1 space-y-2.5 text-sm text-[#c9c4b4]">{p.features.map(f => <li key={f} className="flex gap-2.5"><span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#d4af37]/12"><Check className="h-3 w-3 text-[#d4af37]" /></span><span className="leading-snug">{f}</span></li>)}</ul>
+                <div className="relative my-6 h-px bg-gradient-to-r from-[#d4af37]/30 via-[#d4af37]/10 to-transparent" />
+                <ul className="relative flex-1 space-y-3 text-sm text-[#c9c4b4]">{p.features.map(f => <li key={f} className="flex gap-2.5"><span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border border-[#d4af37]/25 bg-[#d4af37]/12"><Check className="h-3 w-3 text-[#e8c95a]" /></span><span className="leading-snug">{f}</span></li>)}</ul>
                 {(() => {
                   const isCurrent = isAuthed && currentPlan === p.id;
                   const canSwitch = isAuthed && hasSub && !isCurrent;
@@ -420,7 +423,10 @@ export function PricingPage() {
             );
           })}
         </div>
-        <p className="mx-auto mt-10 max-w-xl text-center text-xs leading-relaxed text-[#6a665a]">{t('price.guarantee', null, 'Every first payment is covered by a 14-day money-back guarantee. Cancel anytime from your profile — you keep access until the end of your billing period.')}</p>
+        <div className="mx-auto mt-12 max-w-xl text-center">
+          <div aria-hidden className="mx-auto mb-5 h-px w-24 bg-gradient-to-r from-transparent via-[#d4af37]/40 to-transparent" />
+          <p className="text-xs leading-relaxed text-[#6a665a]">{t('price.guarantee', null, 'Every first payment is covered by a 14-day money-back guarantee. Cancel anytime from your profile — you keep access until the end of your billing period.')}</p>
+        </div>
       </div>
       <Footer />
     </div>

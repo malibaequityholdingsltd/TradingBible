@@ -5,7 +5,9 @@ import AppLayout from '@/components/AppLayout';
 import { useWatchlists } from '@/hooks/useWatchlists';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useI18n } from '@/lib/i18n';
+import { txt, numOrNull } from '@/lib/safeRender';
 import { SYMBOL_GROUPS, ALL_SYMBOLS } from '@/lib/symbols';
+import { Card, SectionHead, EmptyState, GoldButton, GhostButton } from '@/components/ui-kit';
 
 const DEFAULTS = [
   { name: 'Favorites', symbols: ['BTCUSD', 'AAPL', 'XAUUSD', 'GBPJPY', 'SOLUSD'] },
@@ -16,7 +18,7 @@ const DEFAULTS = [
 ];
 
 const nameOf = (sym) => ALL_SYMBOLS.find((s) => s.symbol === sym)?.name || sym;
-const fmt = (n) => n == null ? '—' : Math.abs(n) >= 1000 ? n.toLocaleString('en-US', { maximumFractionDigits: 0 }) : Math.abs(n) >= 1 ? n.toFixed(2) : n.toFixed(4);
+const fmt = (n) => { const v = typeof n === 'number' ? n : numOrNull(n); if (v == null) return '—'; return Math.abs(v) >= 1000 ? v.toLocaleString('en-US', { maximumFractionDigits: 0 }) : Math.abs(v) >= 1 ? v.toFixed(2) : v.toFixed(4); };
 const fmtVol = (n) => { if (n == null) return '—'; if (n >= 1e9) return `${(n / 1e9).toFixed(1)}B`; if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`; if (n >= 1e3) return `${(n / 1e3).toFixed(1)}K`; return `${n}`; };
 
 function SymbolPicker({ existing, onAdd, onClose }) {
@@ -24,11 +26,8 @@ function SymbolPicker({ existing, onAdd, onClose }) {
   const [q, setQ] = useState('');
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 pt-24 backdrop-blur-sm" onClick={onClose}>
-      <div className="shell-panel w-full max-w-lg rounded-3xl p-5" onClick={(e) => e.stopPropagation()}>
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-semibold text-[#f0ecdd]">{t('term.addSymbols')}</h3>
-          <button onClick={onClose} className="text-[#8a8577] hover:text-[#e9e7df]"><X className="h-5 w-5" /></button>
-        </div>
+      <Card className="w-full max-w-lg p-5" onClick={(e) => e.stopPropagation()}>
+        <SectionHead title={t('term.addSymbols')} right={<button onClick={onClose} className="text-[#8a8577] hover:text-[#e9e7df]"><X className="h-5 w-5" /></button>} />
         <div className="relative mb-3">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#8a8577]" />
           <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('term.searchPh')}
@@ -57,7 +56,7 @@ function SymbolPicker({ existing, onAdd, onClose }) {
             );
           })}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
@@ -93,11 +92,11 @@ export default function WatchlistsPage() {
   }, [lists, activeId]);
 
   const active = lists.find((l) => l.id === activeId);
-  const symbols = useMemo(() => (Array.isArray(active?.symbols) ? active.symbols : []), [active]);
+  const symbols = useMemo(() => (Array.isArray(active?.symbols) ? active.symbols : []).map((x) => (typeof x === 'string' ? x : x?.symbol ?? '').toString().trim().toUpperCase()).filter(Boolean), [active]);
   const { quotes, status } = useQuotes(symbols);
 
   const rows = useMemo(() => {
-    let r = symbols.map((s) => ({ symbol: s, name: nameOf(s), ...(quotes[s] || {}) }));
+    let r = symbols.map((s) => { const row = { symbol: s, name: nameOf(s), ...(quotes[s] || {}) }; row.symbol = txt(row.symbol, s); row.name = txt(row.name, ''); return row; });
     if (search) r = r.filter((x) => `${x.symbol} ${x.name}`.toLowerCase().includes(search.toLowerCase()));
     const dir = sort === 'name' ? 1 : -1;
     r.sort((a, b) => {
@@ -119,15 +118,12 @@ export default function WatchlistsPage() {
   return (
     <AppLayout title={t('nav.watchlists')}>
       {loading ? (
-        <div className="shell-panel flex items-center justify-center gap-2 rounded-3xl py-20 text-sm text-[#8a8577]"><Loader2 className="h-4 w-4 animate-spin" /> {t('wl.loading')}</div>
+        <Card className="flex items-center justify-center gap-2 py-20 text-sm text-[#8a8577]"><Loader2 className="h-4 w-4 animate-spin" /> {t('wl.loading')}</Card>
       ) : (
         <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
           {/* Sidebar of lists */}
-          <div className="shell-panel rounded-3xl p-3">
-            <div className="mb-2 flex items-center justify-between px-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#8a8577]">{t('wl.lists')}</span>
-              <button onClick={() => setCreating((v) => !v)} className="grid h-6 w-6 place-items-center rounded-md bg-[#d4af37]/15 text-[#d4af37] hover:bg-[#d4af37]/25"><Plus className="h-3.5 w-3.5" /></button>
-            </div>
+          <Card className="p-3">
+            <SectionHead title={t('wl.lists')} right={<button onClick={() => setCreating((v) => !v)} className="grid h-6 w-6 place-items-center rounded-md bg-[#d4af37]/15 text-[#d4af37] hover:bg-[#d4af37]/25"><Plus className="h-3.5 w-3.5" /></button>} />
             {creating && (
               <div className="mb-2 flex gap-1">
                 <input autoFocus value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && submitCreate()}
@@ -144,22 +140,22 @@ export default function WatchlistsPage() {
                 </button>
               ))}
             </div>
-          </div>
+          </Card>
 
           {/* Main panel */}
-          <div className="shell-panel rounded-3xl p-4 sm:p-5">
+          <Card className="p-4 sm:p-5">
             {active ? (
               <>
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                   <h2 className="mr-auto text-lg font-semibold text-[#f0ecdd]">{active.name}</h2>
-                  <Link to={`/app/terminal-pro${symbols[0] ? `?symbol=${encodeURIComponent(symbols[0])}` : ''}`} className="flex items-center gap-1 whitespace-nowrap rounded-lg border border-[#d4af37]/30 px-2.5 py-1.5 text-xs font-semibold text-[#d4af37]"><LineChart className="h-3.5 w-3.5" /> Terminal Pro</Link>
+                  <GhostButton to={`/app/terminal-pro${symbols[0] ? `?symbol=${encodeURIComponent(symbols[0])}` : ''}`} className="!min-h-0 !px-2.5 !py-1.5 !text-xs"><LineChart className="h-3.5 w-3.5" /> Terminal Pro</GhostButton>
                   <span className={`h-1.5 w-1.5 rounded-full ${status === 'live' ? 'bg-emerald-400 animate-pulse' : 'bg-[#d4af37]'}`} />
-                  {!active.isDefault && <button onClick={() => setDefault(active.id)} className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 px-2.5 py-1.5 text-xs text-[#d4af37] hover:border-[#d4af37]/40"><Star className="h-3.5 w-3.5" /> {t('wl.pin')}</button>}
+                  {!active.isDefault && <GhostButton onClick={() => setDefault(active.id)} className="!min-h-0 !px-2.5 !py-1.5 !text-xs"><Star className="h-3.5 w-3.5" /> {t('wl.pin')}</GhostButton>}
                   <div className="flex overflow-hidden rounded-lg border border-[#d4af37]/15">
                     <button onClick={() => setView('list')} className={`grid h-8 w-8 place-items-center ${view === 'list' ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577]'}`}><List className="h-4 w-4" /></button>
                     <button onClick={() => setView('compare')} className={`grid h-8 w-8 place-items-center ${view === 'compare' ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577]'}`}><Columns3 className="h-4 w-4" /></button>
                   </div>
-                  <button onClick={() => setPicker(true)} className="flex items-center gap-1 rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1.5 text-xs font-semibold text-[#0a0a0f]"><Plus className="h-3.5 w-3.5" /> {t('wl.add')}</button>
+                  <GoldButton onClick={() => setPicker(true)} className="!min-h-0 !px-3 !py-1.5 !text-xs"><Plus className="h-3.5 w-3.5" /> {t('wl.add')}</GoldButton>
                   <button onClick={() => { removeList(active.id); setActiveId(null); }} className="grid h-8 w-8 place-items-center rounded-lg border border-red-400/20 text-red-400 hover:bg-red-400/10"><Trash2 className="h-4 w-4" /></button>
                 </div>
 
@@ -177,23 +173,23 @@ export default function WatchlistsPage() {
                 </div>
 
                 {symbols.length === 0 ? (
-                  <div className="py-16 text-center text-sm text-[#8a8577]">{t('wl.noSymbols')}</div>
+                  <EmptyState icon={Search} title={t('wl.noSymbols')} />
                 ) : view === 'compare' ? (
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                     {rows.map((r) => (
-                      <div key={r.symbol} className="shell-panel-soft rounded-2xl p-3">
+                      <Card key={r.symbol} className="p-3">
                         <div className="flex items-center justify-between">
                           <div className="font-mono text-sm font-semibold text-[#f0ecdd]">{r.symbol}</div>
                           <button onClick={() => removeSymbol(active.id, r.symbol)} className="text-[#5f5b50] hover:text-red-400"><X className="h-3.5 w-3.5" /></button>
                         </div>
                         <div className="truncate text-[10px] text-[#8a8577]">{r.name}</div>
                         <div className="mt-2 font-mono text-lg text-[#f0ecdd]">{fmt(r.price)}</div>
-                        <div className={`text-sm font-semibold ${(r.changePercent || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{(r.changePercent || 0) >= 0 ? '+' : ''}{r.changePercent ?? '—'}%</div>
+                        <div className={`text-sm font-semibold ${(numOrNull(r.changePercent) ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{(() => { const c = numOrNull(r.changePercent); return c == null ? '—%' : `${c >= 0 ? '+' : ''}${c}%`; })()}</div>
                         <div className="mt-2 grid grid-cols-2 gap-1 text-[10px] text-[#8a8577]">
                           <span>H {fmt(r.high)}</span><span>L {fmt(r.low)}</span>
                           <span className="col-span-2">Vol {fmtVol(r.volume)}</span>
                         </div>
-                      </div>
+                      </Card>
                     ))}
                   </div>
                 ) : (
@@ -205,12 +201,12 @@ export default function WatchlistsPage() {
                       </tr></thead>
                       <tbody>
                         {rows.map((r) => {
-                          const pos = (r.changePercent || 0) >= 0;
+                          const pos = (numOrNull(r.changePercent) ?? 0) >= 0;
                           return (
                             <tr key={r.symbol} className="border-t border-white/5 hover:bg-white/[0.02]">
                               <td className="py-2.5"><div className="font-mono font-semibold text-[#f0ecdd]">{r.symbol}</div><div className="text-[10px] text-[#8a8577]">{r.name}</div></td>                              <td className="py-2.5 text-right font-mono text-[#e9e7df]">{fmt(r.price)}</td>
                               <td className={`py-2.5 text-right font-mono ${pos ? 'text-emerald-400' : 'text-red-400'}`}>
-                                <div className="flex items-center justify-end gap-1">{pos ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}{pos ? '+' : ''}{r.changePercent ?? '—'}%</div>
+                                <div className="flex items-center justify-end gap-1">{pos ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}{(() => { const c = numOrNull(r.changePercent); return c == null ? '—%' : `${c >= 0 ? '+' : ''}${c}%`; })()}</div>
                                 <div className="text-[10px] opacity-80">{pos ? '+' : ''}{fmt(r.change)}</div>
                               </td>
                               <td className="py-2.5 text-right font-mono text-[10px] text-[#8a8577]">{fmt(r.high)}<br />{fmt(r.low)}</td>
@@ -229,8 +225,8 @@ export default function WatchlistsPage() {
                   </div>
                 )}
               </>
-            ) : <div className="py-16 text-center text-sm text-[#8a8577]">{t('wl.selectCreate')}</div>}
-          </div>
+            ) : <EmptyState icon={Star} title={t('wl.selectCreate')} />}
+          </Card>
         </div>
       )}
       {picker && active && <SymbolPicker existing={symbols} onAdd={(s) => addSymbol(active.id, s)} onClose={() => setPicker(false)} />}

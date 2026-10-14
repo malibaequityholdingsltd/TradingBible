@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X, Send, Sparkles, BarChart3, Cable, Wallet, Target, Info, Wrench, MessageSquare, MessageCircle, Eraser, ExternalLink, Crown } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import { meetsPlan } from '@/lib/entitlements';
 import { useI18n } from '@/lib/i18n';
 import { useIntegratedAi } from '@/hooks/use-integrated-ai';
@@ -59,6 +60,8 @@ function MessageBubble({ from, text, images, tag, t }) {
 // Mounted once at app root, so chats survive page navigation.
 export default function LiveChatWidget() {
   const { isAuthed, user } = useAuth();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   // The bubble shows on every plan; only Elite+ may actually chat.
   // Below-Elite users get an upgrade panel instead (the API enforces too).
   const coachLocked = isAuthed && !meetsPlan(user, 'elite');
@@ -106,7 +109,8 @@ export default function LiveChatWidget() {
     sendMessage(body);
   };
 
-  // Launcher + panel are pinned bottom-right.
+  // Launcher bubble is theme-driven in JS (not CSS) so the color
+  // switches deterministically with the toggle in both modes.
   const visibleMessages = [{ from: 'agent', text: WELCOME }, ...messages.map((m) => ({ from: m.role === 'user' ? 'you' : 'agent', text: m.content, images: m.images }))];
   const isFirstRun = visibleMessages.length <= 1;
   const coachTag = `${t('aiw.coach')} · Muse Spark`;
@@ -294,16 +298,24 @@ export default function LiveChatWidget() {
           onClick={() => setOpen(true)}
           aria-label={t('aiw.openLabel')}
           title={t('aiw.openTitle')}
-          className="tv-chat-btn fixed bottom-[7rem] right-3 z-[70] grid place-items-center overflow-hidden rounded-full border border-[#d4af37]/30 bg-[#0c0c11] shadow-[0_8px_28px_rgba(0,0,0,0.5),0_0_0_1px_rgba(212,175,55,0.4)] transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)] sm:bottom-3"
-          style={{ height: BTN, width: BTN }}
+          className="tv-chat-btn fixed bottom-[78px] right-1 z-[70] grid place-items-center overflow-hidden rounded-full border transition-transform hover:scale-105"
+          style={{
+            height: BTN,
+            width: BTN,
+            backgroundColor: isLight ? '#fffdf9' : '#0c0c11',
+            borderColor: isLight ? 'rgba(166,124,30,0.6)' : 'rgba(212,175,55,0.3)',
+            boxShadow: isLight
+              ? '0 8px 28px rgba(60,55,40,0.35), 0 0 0 1px rgba(166,124,30,0.5)'
+              : '0 8px 28px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,175,55,0.4)',
+          }}
         >
           <span className="relative grid h-10 w-10 place-items-center">
             <svg viewBox="0 0 24 24" className="h-8 w-8" aria-hidden="true">
               <defs>
                 <linearGradient id="si-chat-4d" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#f4e6a8" />
-                  <stop offset="55%" stopColor="#e2bd4f" />
-                  <stop offset="100%" stopColor="#a67c1e" />
+                  <stop offset="0%" stopColor={isLight ? '#c99a25' : '#f4e6a8'} />
+                  <stop offset="55%" stopColor={isLight ? '#a67c1e' : '#e2bd4f'} />
+                  <stop offset="100%" stopColor={isLight ? '#7a5c0e' : '#a67c1e'} />
                 </linearGradient>
               </defs>
               <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" fill="url(#si-chat-4d)" stroke="#0a0a0f" strokeWidth="1" strokeLinejoin="round" />

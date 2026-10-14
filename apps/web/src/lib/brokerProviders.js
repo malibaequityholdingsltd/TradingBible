@@ -167,7 +167,7 @@ export const PROVIDERS = {
 };
 
 export const PROP_FIRMS = [
-  { id: 'tbfunded', name: 'TradingBible Funded', via: 'Native', method: 'native', integration: 'NATIVE', website: '/app/funded', clientLogin: '/app/challenges', color: '#d4af37', blurb: 'Our own evaluations — pass on real fills, trade firm capital.' },
+  { id: 'tbfunded', name: 'TradingBible Funded', via: 'Native', method: 'native', integration: 'NATIVE', website: '/app/challenges', clientLogin: '/app/challenges', color: '#d4af37', blurb: 'Our own evaluations — pass on real fills, trade firm capital.' },
 ];
 
 export const PROVIDER_LIST = Object.values(PROVIDERS);

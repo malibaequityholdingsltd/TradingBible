@@ -7,7 +7,8 @@ import {
   Crown, TrendingDown, Clock, Zap, Settings2, Lock, Bell, Cpu, HardDrive,
   Wifi, Package, Plus, Copy, RotateCcw, Plug, TestTube, AlertCircle, Check,
   Upload,   ChevronDown, MoreVertical, Power, Code, Layers, MonitorPlay, Target,
-  GraduationCap, LayoutDashboard, Type, Trophy, Coins, Ban
+  GraduationCap, LayoutDashboard, Type, Trophy, Coins, Ban, Wallet, Bot,
+  Building2, Landmark, Palette, Rocket, ShieldCheck, Fingerprint, ExternalLink, Sparkles
 } from 'lucide-react';
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar,
@@ -18,6 +19,7 @@ import pb from '@/lib/pocketbaseClient';
 import { displayName, displayInitial } from '@/lib/displayName';
 import { notifyPlatformSettingsChanged } from '@/lib/platformSettings';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
+import { COMPANY_DEFAULTS, loadCompanyProfile, saveCompanyProfile, buildContextText } from '@/lib/companyProfile';
 import { LIVE_CHANNELS } from '@/lib/liveChannels';
 import { ABTestingEngine } from '@/lib/ads/abtesting.js';
 import { useToast } from '@/hooks/use-toast';
@@ -192,6 +194,20 @@ function Spinner() {
         ))}
       </div>
     </div>
+  );
+}
+
+function Collapse({ title, sub, count, defaultOpen = true, children }) {
+  return (
+    <details open={defaultOpen} className="glass rounded-[10px]">
+      <summary className="flex cursor-pointer list-none items-center gap-2 p-4 sm:px-5 [&::-webkit-details-marker]:hidden">
+        <span className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">{title}</span>
+        {count != null && <span className="rounded-md bg-[#d4af37]/12 px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums text-[#d4af37]">{count}</span>}
+        {sub && <span className="truncate text-[11px] text-[#8a8577]">{sub}</span>}
+        <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-[#8a8577] transition-transform open:rotate-180" />
+      </summary>
+      <div className="border-t border-white/[0.07] p-4 sm:px-5">{children}</div>
+    </details>
   );
 }
 
@@ -381,7 +397,8 @@ export function AdminDashboard() {
     const verified = users.filter(u => u.verified).length;
     const academyBuyers = users.filter(u => u.academyAccess).length;
     const academyRevenue = academyBuyers * ACADEMY_PRICE;
-    return { total: users.length, paid: paid.length, mrr, verified, trades: trades.length, academyBuyers, academyRevenue };
+    const customers = users.filter(u => isPaidPlan(u.plan) || u.academyAccess).length;
+    return { total: users.length, paid: paid.length, mrr, verified, trades: trades.length, academyBuyers, academyRevenue, customers };
   }, [users, trades]);
 
   const growth = useMemo(() => {
@@ -419,8 +436,27 @@ export function AdminDashboard() {
     { label: 'Auth Service', status: 'unknown', icon: Shield },
     { label: 'Email Service', status: 'unknown', icon: Mail },
     { label: 'Billing (Stripe)', status: 'unknown', icon: CreditCard },
+    { label: 'Billing (Paddle)', status: 'unknown', icon: CreditCard },
+    { label: 'Market Data', status: 'unknown', icon: Activity },
     { label: 'D&B (DUNS)', status: 'unknown', icon: Globe },
   ]);
+  const [money, setMoney] = useState(null);
+  const [supply, setSupply] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = pb.authStore.token;
+        if (!token) return;
+        const res = await fetch(`${API_SERVER_URL}/admin/wallet/overview`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) {
+          const j = await res.json();
+          setMoney(j.money || null);
+          setSupply(j.tbcSupply || null);
+        }
+      } catch { /* money cards stay blank */ }
+    })();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -438,6 +474,8 @@ export function AdminDashboard() {
           { label: 'Auth Service', status: ok(c.supabase), detail: c.supabase ? 'GoTrue' : 'unreachable', icon: Shield },
           { label: 'Email Service', status: ok(c.smtp), detail: c.smtp ? 'SMTP set' : 'not configured', icon: Mail },
           { label: 'Billing (Stripe)', status: ok(c.stripe), detail: c.stripe ? 'keys set' : 'not configured', icon: CreditCard },
+          { label: 'Billing (Paddle)', status: ok(c.paddle), detail: c.paddle ? 'keys set' : 'not configured', icon: CreditCard },
+          { label: 'Market Data', status: ok(c.market), detail: c.market ? 'feeds reachable' : 'unreachable', icon: Activity },
           { label: 'D&B (DUNS)', status: ok(c.dnb), detail: c.dnb ? 'Direct+ live' : 'sandbox stub', icon: Globe },
         ]);
       } catch {
@@ -446,58 +484,63 @@ export function AdminDashboard() {
     })();
   }, []);
 
+  const sectionHead = (n, title, sub) => (
+    <div className="mb-3 flex items-end justify-between">
+      <div className="flex items-baseline gap-2">
+        <span className="font-mono text-[11px] font-bold text-[#d4af37]">{n}</span>
+        <h3 className="text-sm font-bold uppercase tracking-[0.14em] text-[#f0ecdd]">{title}</h3>
+      </div>
+      {sub && <span className="text-[11px] text-[#6a665a]">{sub}</span>}
+    </div>
+  );
+
   return (
     <AdminLayout title="Admin Dashboard">
       <section className="tb-hero mb-5 overflow-hidden">
         <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-        <div className="relative flex min-w-0 items-center gap-4">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
-            <LayoutDashboard className="h-6 w-6" />
-          </span>
-          <div className="min-w-0">
-            <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Admin Dashboard</h2>
-            <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Live business snapshot — users, revenue, growth and system health.</p>
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
+              <LayoutDashboard className="h-6 w-6" />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Command Deck</h2>
+              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Live business snapshot — growth, money, TBC economy and system health.</p>
+            </div>
           </div>
+          {!loading && (
+            <div className="flex shrink-0 items-stretch gap-6 rounded-2xl border border-[#d4af37]/15 bg-[#0f0f14] px-5 py-3">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.16em] text-[#8a8577]">MRR</div>
+                <div className="font-mono text-xl font-extrabold text-[#10b981]">${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
+              </div>
+              <div className="w-px bg-white/10" />
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.16em] text-[#8a8577]">Customers</div>
+                <div className="font-mono text-xl font-extrabold text-[#f0ecdd]">{stats.customers.toLocaleString()}</div>
+              </div>
+              <div className="w-px bg-white/10" />
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.16em] text-[#8a8577]">Users</div>
+                <div className="font-mono text-xl font-extrabold text-[#f0ecdd]">{stats.total.toLocaleString()}</div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
       {loading ? <Spinner /> : (
         <>
-          <div className="mb-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
+          {sectionHead('01', 'Growth', `${stats.verified} verified`)}
+          <div className="mb-6 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
             <Stat icon={Users} label="Total Users" value={stats.total.toLocaleString()} sub={`${stats.verified} verified`} trend="up" />
             <Stat icon={CreditCard} label="Paid Subscribers" value={stats.paid.toLocaleString()} sub={`${stats.total - stats.paid} without a plan`} color="#3b82f6" />
-            <Stat icon={DollarSign} label="Est. MRR" value={`$${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="Monthly recurring" trend="up" color="#10b981" />
-            <Stat icon={Activity} label="Total Trades" value={stats.trades.toLocaleString()} sub="Across all users" color="#a855f7" />
+            <Stat icon={Users} label="Paying Customers" value={stats.customers.toLocaleString()} sub={`${stats.paid} subs + ${stats.academyBuyers} academy (unique)`} color="#10b981" />
             <Stat icon={GraduationCap} label="Academy Students" value={stats.academyBuyers.toLocaleString()} sub="Lifetime access" color="#38bdf8" />
-            <Stat icon={DollarSign} label="Academy Revenue" value={`$${stats.academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="One-time, lifetime" color="#f472b6" />
+            <Stat icon={Activity} label="Total Trades" value={stats.trades.toLocaleString()} sub="Across all users" color="#a855f7" />
           </div>
 
-          <div className="mb-5 grid gap-4 lg:grid-cols-2">
-            {milestones.map(m => (
-              <div key={m.label} className="glass rounded-2xl p-4 sm:p-5">
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="font-semibold text-[#f0ecdd]">{m.label} <span className="text-xs font-normal text-[#8a8577]">({m.monthsLive != null ? `Month ${m.monthsLive} of 12` : '—'})</span></h3>
-                  <Badge color="gold">Loan model</Badge>
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <div className="mb-1 flex items-center justify-between text-xs text-[#8a8577]">
-                      <span>Users</span><span className="font-mono text-[#f0ecdd]">{stats.total.toLocaleString()} / {m.users.toLocaleString()}</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-white/8"><div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25]" style={{ width: `${m.uPct}%` }} /></div>
-                  </div>
-                  <div>
-                    <div className="mb-1 flex items-center justify-between text-xs text-[#8a8577]">
-                      <span>MRR</span><span className="font-mono text-[#f0ecdd]">${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })} / ${m.mrr.toLocaleString()}</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-white/8"><div className="h-full rounded-full bg-gradient-to-r from-[#10b981] to-[#059669]" style={{ width: `${m.rPct}%` }} /></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mb-5 grid gap-4 lg:grid-cols-3">
-            <div className="glass rounded-2xl p-4 sm:p-5 lg:col-span-2">
+          <div className="mb-6 grid gap-4 lg:grid-cols-5">
+            <div className="glass rounded-2xl p-4 sm:p-5 lg:col-span-3">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-semibold text-[#f0ecdd]">User Growth</h3>
                 <Badge color="gold">{growth.length} months</Badge>
@@ -520,6 +563,54 @@ export function AdminDashboard() {
               ) : <p className="py-10 text-center text-sm text-[#8a8577]">No growth data yet.</p>}
             </div>
 
+            <div className="flex flex-col gap-4 lg:col-span-2">
+              {milestones.map(m => (
+                <div key={m.label} className="glass flex-1 rounded-2xl p-4 sm:p-5">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="font-semibold text-[#f0ecdd]">{m.label} <span className="text-xs font-normal text-[#8a8577]">({m.monthsLive != null ? `Month ${m.monthsLive} of 12` : '—'})</span></h3>
+                    <Badge color="gold">Loan model</Badge>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="mb-1 flex items-center justify-between text-xs text-[#8a8577]">
+                        <span>Users</span><span className="font-mono text-[#f0ecdd]">{stats.total.toLocaleString()} / {m.users.toLocaleString()}</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-white/8"><div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25]" style={{ width: `${m.uPct}%` }} /></div>
+                    </div>
+                    <div>
+                      <div className="mb-1 flex items-center justify-between text-xs text-[#8a8577]">
+                        <span>MRR</span><span className="font-mono text-[#f0ecdd]">${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })} / ${m.mrr.toLocaleString()}</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-white/8"><div className="h-full rounded-full bg-gradient-to-r from-[#10b981] to-[#059669]" style={{ width: `${m.rPct}%` }} /></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {sectionHead('02', 'Money', 'Subscriptions + ledger')}
+          <div className="mb-6 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
+            <Stat icon={DollarSign} label="Est. MRR" value={`$${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="Monthly recurring" trend="up" color="#10b981" />
+            <Stat icon={Activity} label="Ledger In 30d" value={money ? `$${Math.round(money.inUsd30d).toLocaleString()}` : '—'} sub="All USD inflows, incl. non-sub" color="#10b981" />
+            <Stat icon={DollarSign} label="Ledger In All-Time" value={money ? `$${Math.round(money.inUsd).toLocaleString()}` : '—'} sub="USD inflows since launch" color="#3b82f6" />
+            <Stat icon={Wallet} label="Pending Payouts" value={money ? `$${Math.round(money.pendingUsd).toLocaleString()}` : '—'} sub="Awaiting release (USD)" color="#fb923c" />
+            <Stat icon={DollarSign} label="Academy Revenue" value={`$${stats.academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="One-time, lifetime" color="#f472b6" />
+          </div>
+
+          {sectionHead('03', 'TBC economy', supply?.onChainDeployed ? 'On-chain live' : 'Off-chain credits · 1 TBC = 1 KWD')}
+          <div className="mb-6 grid gap-3 grid-cols-2 xl:grid-cols-4">
+            <Stat icon={Coins} label="TBC Total Supply" value={supply ? Number(supply.maxSupply).toLocaleString() : '—'} sub={supply?.onChainDeployed ? 'Fixed · on-chain live' : 'Fixed 100M · off-chain credits'} color="#d4af37" />
+            <Stat icon={Coins} label="TBC Issued" value={supply ? Number(supply.issuedTbc ?? 0).toLocaleString() : '—'} sub="Credits ever issued" color="#f59e0b" />
+            <Stat icon={Coins} label="TBC Circulating" value={supply ? Number(supply.circulatingTbc).toLocaleString() : '—'} sub="Net held by users" color="#38bdf8" />
+            <Stat icon={Coins} label="TBC Remaining" value={supply ? Number(supply.remainingTbc).toLocaleString() : '—'} sub="Unissued vs 100M cap" color="#10b981" />
+          </div>
+          <div className="mb-6 grid gap-3 grid-cols-2 xl:grid-cols-4">
+            <Stat icon={Coins} label="TBC Volume 30d" value={money ? `${Math.round(money.inTbc30d + money.outTbc30d).toLocaleString()} TBC` : '—'} sub="In + out, all TBC flows" color="#d4af37" />
+          </div>
+
+          {sectionHead('04', 'Platform', 'Health + latest users')}
+          <div className="mb-5 grid gap-4 lg:grid-cols-3">
             <div className="glass rounded-2xl p-4 sm:p-5">
               <h3 className="mb-4 font-semibold text-[#f0ecdd]">System Health</h3>
               <div className="space-y-2">
@@ -537,48 +628,48 @@ export function AdminDashboard() {
                 ))}
               </div>
             </div>
-          </div>
 
-          <div className="glass rounded-2xl p-4 sm:p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-semibold text-[#f0ecdd]">Recent Registrations</h3>
-              <span className="text-xs text-[#8a8577]">Latest 8</span>
-            </div>
-            <div className="overflow-x-auto -mx-2 px-2">
-              <table className="w-full min-w-[420px] text-sm">
-                <thead>
-                  <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
-                    <th className="pb-2 font-medium">User</th>
-                    <th className="pb-2 font-medium">Plan</th>
-                    <th className="pb-2 font-medium hidden sm:table-cell">Verified</th>
-                    <th className="pb-2 font-medium">Joined</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recent.map(u => (
-                    <tr key={u.id} className="border-b border-white/5">
-                      <td className="py-2.5">
-                        <div className="flex items-center gap-2">
-                          <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#d4af37]/10 text-xs font-bold text-[#d4af37]">
-                            {displayInitial(u)}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-[#e9e7df] truncate max-w-[100px] sm:max-w-none">{displayName(u)}</div>
-                            <div className="text-xs text-[#8a8577] truncate max-w-[120px] sm:max-w-none">{u.email}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-2.5">{planBadge(u.plan)}</td>
-                      <td className="py-2.5 hidden sm:table-cell">
-                        {u.verified
-                          ? <span className="flex items-center gap-1 text-xs text-emerald-400"><CheckCircle className="h-3.5 w-3.5" /> Yes</span>
-                          : <span className="flex items-center gap-1 text-xs text-[#8a8577]"><XCircle className="h-3.5 w-3.5" /> No</span>}
-                      </td>
-                      <td className="py-2.5 font-mono text-xs text-[#8a8577]">{(u.created || '').slice(0, 10)}</td>
+            <div className="glass rounded-2xl p-4 sm:p-5 lg:col-span-2">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="font-semibold text-[#f0ecdd]">Recent Registrations</h3>
+                <span className="text-xs text-[#8a8577]">Latest 8</span>
+              </div>
+              <div className="overflow-x-auto -mx-2 px-2">
+                <table className="w-full min-w-[420px] text-sm">
+                  <thead>
+                    <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
+                      <th className="pb-2 font-medium">User</th>
+                      <th className="pb-2 font-medium">Plan</th>
+                      <th className="pb-2 font-medium hidden sm:table-cell">Verified</th>
+                      <th className="pb-2 font-medium">Joined</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {recent.map(u => (
+                      <tr key={u.id} className="border-b border-white/5">
+                        <td className="py-2.5">
+                          <div className="flex items-center gap-2">
+                            <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#d4af37]/10 text-xs font-bold text-[#d4af37]">
+                              {displayInitial(u)}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-[#e9e7df] truncate max-w-[100px] sm:max-w-none">{displayName(u)}</div>
+                              <div className="text-xs text-[#8a8577] truncate max-w-[120px] sm:max-w-none">{u.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-2.5">{planBadge(u.plan)}</td>
+                        <td className="py-2.5 hidden sm:table-cell">
+                          {u.verified
+                            ? <span className="flex items-center gap-1 text-xs text-emerald-400"><CheckCircle className="h-3.5 w-3.5" /> Yes</span>
+                            : <span className="flex items-center gap-1 text-xs text-[#8a8577]"><XCircle className="h-3.5 w-3.5" /> No</span>}
+                        </td>
+                        <td className="py-2.5 font-mono text-xs text-[#8a8577]">{(u.created || '').slice(0, 10)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </>
@@ -947,7 +1038,7 @@ export function AdminAnalytics() {
             <Stat icon={TrendingUp} label="Est. MRR" value={`$${mrr.toFixed(0)}`} sub="Monthly recurring" color="#a855f7" />
           </div>
 
-          <div className="mb-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
+          <div className="mb-5 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
             <Stat icon={GraduationCap} label="Academy Students" value={academyBuyers.toLocaleString()} sub="Lifetime access" color="#38bdf8" />
             <Stat icon={DollarSign} label="Academy Revenue" value={`$${academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="One-time, lifetime" color="#f472b6" />
             <Stat icon={UserCheck} label="Est. Churn" value={`${(churn * 100).toFixed(1)}%`} sub="Canceled / ever subscribed" color={churn > 0.3 ? '#ef4444' : '#10b981'} />
@@ -957,8 +1048,8 @@ export function AdminAnalytics() {
           </div>
 
           <div className="mb-5 grid gap-4 lg:grid-cols-2">
-            <div className="glass rounded-2xl p-4 sm:p-5">
-              <h3 className="mb-4 font-semibold text-[#f0ecdd]">New Registrations / Month</h3>
+            <div className="glass rounded-[10px] p-4 sm:p-5">
+              <h3 className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">New Registrations / Month</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={monthlyNew} margin={{ left: -12 }}>
                   <XAxis dataKey="m" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -969,8 +1060,8 @@ export function AdminAnalytics() {
               </ResponsiveContainer>
             </div>
 
-            <div className="glass rounded-2xl p-4 sm:p-5">
-              <h3 className="mb-4 font-semibold text-[#f0ecdd]">Plan Distribution</h3>
+            <div className="glass rounded-[10px] p-4 sm:p-5">
+              <h3 className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Plan Distribution</h3>
               <div className="flex items-center gap-4">
                 <ResponsiveContainer width="50%" height={180}>
                   <PieChart>
@@ -996,8 +1087,7 @@ export function AdminAnalytics() {
           </div>
 
           {tradesByMarket.length > 0 && (
-            <div className="glass rounded-2xl p-4 sm:p-5">
-              <h3 className="mb-4 font-semibold text-[#f0ecdd]">Trade Volume by Market</h3>
+            <Collapse title="Trade Volume by Market" defaultOpen={false}>
               <ResponsiveContainer width="100%" height={180}>
                 <BarChart data={tradesByMarket} layout="vertical" margin={{ left: 0, right: 30 }}>
                   <XAxis type="number" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -1006,34 +1096,31 @@ export function AdminAnalytics() {
                   <Bar dataKey="value" name="Trades" fill={GOLD} radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+            </Collapse>
           )}
 
           {forecastRows.length > 0 && (
-            <div className="glass rounded-2xl p-4 sm:p-5">
+            <Collapse title="Live vs Plan — M1–M12 Forecast" sub="M6: 185 users / $7,102 · M12: 600 / $23,034" defaultOpen={false}>
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h3 className="font-semibold text-[#f0ecdd]">Live vs Plan — M1–M12 Forecast</h3>
-                  <p className="mt-1 text-xs text-[#8a8577]">Targets from the financial model (M6: 185 users / $7,102 MRR · M12: 600 users / $23,034 MRR).</p>
-                </div>
-                <button onClick={exportForecastCSV} className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/60">
+                <p className="text-xs text-[#8a8577]">Targets from the financial model.</p>
+                <button onClick={exportForecastCSV} className="flex items-center gap-1.5 rounded-[10px] border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/60">
                   <Download className="h-4 w-4" /> Export live vs-forecast CSV
                 </button>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[640px] text-sm">
-                  <thead>
-                    <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
-                      <th className="pb-3 font-medium">Month</th>
-                      <th className="pb-3 font-medium">Target Users</th>
-                      <th className="pb-3 font-medium">Live Users</th>
-                      <th className="pb-3 font-medium">Win Rate</th>
-                      <th className="pb-3 font-medium">Target MRR</th>
-                      <th className="pb-3 font-medium">Live MRR</th>
-                      <th className="pb-3 font-medium">Status</th>
+                <table className="w-full min-w-[640px] text-sm tabular-nums">
+                  <thead className="sticky top-0 z-10">
+                    <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
+                      <th className="py-2.5 font-semibold">Month</th>
+                      <th className="py-2.5 font-semibold">Target Users</th>
+                      <th className="py-2.5 font-semibold">Live Users</th>
+                      <th className="py-2.5 font-semibold">Win Rate</th>
+                      <th className="py-2.5 font-semibold">Target MRR</th>
+                      <th className="py-2.5 font-semibold">Live MRR</th>
+                      <th className="py-2.5 font-semibold">Status</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="[&_tr]:border-t [&_tr]:border-white/5 [&_tr:hover]:bg-white/[0.02]">
                     {forecastRows.map(r => {
                       const ahead = r.liveUsers >= r.users;
                       return (
@@ -1062,7 +1149,7 @@ export function AdminAnalytics() {
                   </tbody>
                 </table>
               </div>
-            </div>
+            </Collapse>
           )}
         </>
       )}
@@ -1082,6 +1169,36 @@ export function AdminBilling() {
   const [chAttempts, setChAttempts] = useState([]);
   const [chLoaded, setChLoaded] = useState(false);
   const [busy, setBusy] = useState(null);
+  const [stFrom, setStFrom] = useState('2026-08-01');
+  const [stTo, setStTo] = useState(() => new Date().toISOString().slice(0, 10));
+  const [stBusy, setStBusy] = useState(null);
+  const [stMsg, setStMsg] = useState('');
+
+  const downloadStatement = async (kind) => {
+    setStBusy(kind);
+    setStMsg('');
+    try {
+      const token = pb.authStore.token;
+      const url = kind === 'balance'
+        ? `${API_SERVER_URL}/admin/financials/balance-sheet?asof=${encodeURIComponent(stTo)}`
+        : `${API_SERVER_URL}/admin/financials/income-statement?from=${encodeURIComponent(stFrom)}&to=${encodeURIComponent(stTo)}`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error(`download failed (${res.status})`);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = kind === 'balance' ? `tradingbible-balance-sheet-${stTo}.csv` : `tradingbible-income-statement-${stFrom}-${stTo}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      setStMsg('Downloaded — CSV is accepted by D&B (max 10 MB). Have your accountant finalize before uploading.');
+    } catch (err) {
+      setStMsg(String(err.message || err));
+    } finally {
+      setStBusy(null);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -1152,11 +1269,11 @@ export function AdminBilling() {
   };
 
   const payChallenge = async (a) => {
-    if (!window.confirm(`Pay pass reward for ${a.userEmail || a.owner} (${a.product_name}) via their connected bank?`)) return;
+    if (!window.confirm(`Pay pass reward for ${a.userEmail || a.owner} (${a.product_name}) to their TBC wallet?`)) return;
     setBusy(`chalpay:${a.id}`);
     try {
       const r = await adminCall(`/challenges/admin/payout/${a.id}`, {});
-      toast({ title: `Paid $${r.payout} (${r.transferId})` });
+      toast({ title: `Paid ${Number(r.payoutTbc).toLocaleString()} TBC ($${r.payoutUsd})` });
       setChAttempts((prev) => prev.map((x) => (x.id === a.id ? { ...x, status: 'paid' } : x)));
     } catch (err) {
       toast({ variant: 'destructive', title: 'Payout failed', description: err.message });
@@ -1205,7 +1322,7 @@ export function AdminBilling() {
           </div>
         </div>
       </section>
-      <div className="mb-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
+      <div className="mb-5 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
         <Stat icon={DollarSign} label={live?.configured ? 'Live MRR' : 'Est. MRR'} value={`$${(live?.configured ? live.mrr : mrr).toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub={live?.configured ? `Stripe live · ${live.activeCount} active` : 'Monthly recurring (est)'} trend="up" color="#10b981" />
         <Stat icon={TrendingUp} label="Est. ARR" value={`$${arr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="Annual recurring" trend="up" color={GOLD} />
         <Stat icon={CreditCard} label="Paid Subscribers" value={paid.length} sub={`$${paid.length ? (mrr / paid.length).toFixed(2) : 0} ARPU`} color="#3b82f6" />
@@ -1215,20 +1332,19 @@ export function AdminBilling() {
       </div>
 
       {planBreakdown.length > 0 && (
-        <div className="mb-5 glass rounded-2xl p-4 sm:p-5">
-          <h3 className="mb-4 font-semibold text-[#f0ecdd]">Revenue by Plan</h3>
+        <Collapse title="Revenue by Plan" sub="By subscription tier" defaultOpen={false}>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[460px] text-sm">
-              <thead>
-                <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
-                  <th className="pb-3 font-medium">Plan</th>
-                  <th className="pb-3 font-medium">Subscribers</th>
-                  <th className="pb-3 font-medium">Unit Price</th>
-                  <th className="pb-3 font-medium">Monthly Rev</th>
-                  <th className="pb-3 font-medium hidden sm:table-cell">Share</th>
+            <table className="w-full min-w-[460px] text-sm tabular-nums">
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
+                  <th className="py-2.5 font-semibold">Plan</th>
+                  <th className="py-2.5 font-semibold">Subscribers</th>
+                  <th className="py-2.5 font-semibold">Unit Price</th>
+                  <th className="py-2.5 font-semibold">Monthly Rev</th>
+                  <th className="py-2.5 font-semibold hidden sm:table-cell">Share</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="[&_tr]:border-t [&_tr]:border-white/5 [&_tr:hover]:bg-white/[0.02]">
                 {planBreakdown.map(({ plan, n, rev }) => (
                   <tr key={plan} className="border-b border-white/5">
                     <td className="py-3">{planBadge(plan)}</td>
@@ -1248,26 +1364,24 @@ export function AdminBilling() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Collapse>
       )}
 
       {loading ? <Spinner /> : (
-        <div className="glass overflow-x-auto rounded-2xl">
-          <div className="border-b border-[#d4af37]/12 px-5 py-3.5">
-            <h3 className="font-semibold text-[#f0ecdd]">Active Subscriptions</h3>
-          </div>
-          <table className="w-full min-w-[560px] text-sm">
-            <thead>
-                <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
-                  <th className="px-5 py-3 font-medium">User</th>
-                  <th className="px-5 py-3 font-medium">Plan</th>
-                  <th className="px-5 py-3 font-medium hidden sm:table-cell">Status</th>
-                  <th className="px-5 py-3 font-medium hidden md:table-cell">Period End</th>
-                  <th className="px-5 py-3 font-medium hidden lg:table-cell">Sub ID</th>
-                  <th className="px-5 py-3 font-medium">Actions</th>
+        <Collapse title="Active Subscriptions" sub="Plans, status and actions" defaultOpen={true}>
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[560px] text-sm tabular-nums">
+            <thead className="sticky top-0 z-10">
+                <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
+                  <th className="px-5 py-2.5 font-semibold">User</th>
+                  <th className="px-5 py-2.5 font-semibold">Plan</th>
+                  <th className="px-5 py-2.5 font-semibold hidden sm:table-cell">Status</th>
+                  <th className="px-5 py-2.5 font-semibold hidden md:table-cell">Period End</th>
+                  <th className="px-5 py-2.5 font-semibold hidden lg:table-cell">Sub ID</th>
+                  <th className="px-5 py-2.5 font-semibold">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="[&_tr]:border-t [&_tr]:border-white/5">
                 {paid.map(u => (
                   <tr key={u.id} className="border-b border-white/5 hover:bg-white/[0.03]">
                     <td className="px-5 py-3">
@@ -1290,25 +1404,24 @@ export function AdminBilling() {
               </tbody>
             </table>
           </div>
+        </Collapse>
         )}
 
-        <div className="glass mt-4 overflow-x-auto rounded-2xl">
-          <div className="border-b border-[#d4af37]/12 px-5 py-3.5">
-            <h3 className="font-semibold text-[#f0ecdd]">Wallet Payouts & Swaps</h3>
-            <p className="mt-0.5 text-xs text-[#8a8577]">Automatic Stripe Connect transfers and non-custodial swap records. View-only — money moves without admin action.</p>
-          </div>
-          <table className="w-full min-w-[720px] text-sm">
-            <thead>
-                <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
-                  <th className="px-5 py-3 font-medium">User</th>
-                  <th className="px-5 py-3 font-medium">Type</th>
-                  <th className="px-5 py-3 font-medium">Amount</th>
-                  <th className="px-5 py-3 font-medium">Status</th>
-                  <th className="px-5 py-3 font-medium hidden md:table-cell">Rail / KYC</th>
-                  <th className="px-5 py-3 font-medium hidden lg:table-cell">Reference</th>
+        <Collapse title="Wallet Payouts & Swaps" sub="View-only money movement" defaultOpen={false}>
+          <p className="mb-3 text-xs text-[#8a8577]">Automatic Stripe Connect transfers and non-custodial swap records. View-only — money moves without admin action.</p>
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] text-sm tabular-nums">
+            <thead className="sticky top-0 z-10">
+                <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
+                  <th className="px-5 py-2.5 font-semibold">User</th>
+                  <th className="px-5 py-2.5 font-semibold">Type</th>
+                  <th className="px-5 py-2.5 font-semibold">Amount</th>
+                  <th className="px-5 py-2.5 font-semibold">Status</th>
+                  <th className="px-5 py-2.5 font-semibold hidden md:table-cell">Rail / KYC</th>
+                  <th className="px-5 py-2.5 font-semibold hidden lg:table-cell">Reference</th>
                 </tr>
               </thead>
-            <tbody>
+            <tbody className="[&_tr]:border-t [&_tr]:border-white/5">
               {payouts.map(w => (
                 <tr key={w.id} className="border-b border-white/5 hover:bg-white/[0.03]">
                   <td className="px-5 py-3">
@@ -1326,19 +1439,18 @@ export function AdminBilling() {
               {!payoutsLoaded && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#8a8577]">Loading…</td></tr>}
             </tbody>
           </table>
-        </div>
-
-        <div className="glass mt-4 overflow-x-auto rounded-2xl">
-          <div className="border-b border-[#d4af37]/12 px-5 py-3.5">
-            <h3 className="font-semibold text-[#f0ecdd]">TradingBible Funded — Attempts</h3>
-            <p className="mt-0.5 text-xs text-[#8a8577]">Passed attempts pay the product pass reward to the trader's connected bank. One click.</p>
           </div>
-          <table className="w-full min-w-[760px] text-sm">
-            <thead>
-                <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
-                  <th className="px-5 py-3 font-medium">User</th>
-                  <th className="px-5 py-3 font-medium">Program</th>
-                  <th className="px-5 py-3 font-medium">Fee</th>
+        </Collapse>
+
+        <Collapse title="TradingBible Funded — Attempts" sub="Pass rewards, one click" defaultOpen={false}>
+          <p className="mb-3 text-xs text-[#8a8577]">Passed attempts pay the product pass reward to the trader's TBC wallet. One click.</p>
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[760px] text-sm tabular-nums">
+            <thead className="sticky top-0 z-10">
+                <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
+                  <th className="px-5 py-2.5 font-semibold">User</th>
+                  <th className="px-5 py-2.5 font-semibold">Program</th>
+                  <th className="px-5 py-2.5 font-semibold">Fee</th>
                   <th className="px-5 py-3 font-medium">Progress</th>
                   <th className="px-5 py-3 font-medium">Status</th>
                   <th className="px-5 py-3 font-medium text-right">Payout</th>
@@ -1376,7 +1488,31 @@ export function AdminBilling() {
               {!chLoaded && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#8a8577]">Loading…</td></tr>}
             </tbody>
           </table>
-        </div>
+          </div>
+        </Collapse>
+        <Collapse title="D&B financial statements" sub="D-U-N-S 14-997-6777 · CSV downloads" defaultOpen={false}>
+          <p className="mb-3 text-xs leading-relaxed text-[#8a8577]">
+            D-U-N-S <span className="font-mono text-[#c9c4b4]">14-997-6777</span> · D&amp;B requires a Balance Sheet and an Income Statement
+            (doc, pdf, csv, jpg, png, docx — max 10 MB). Downloads below are <span className="text-[#d4af37]">draft CSVs from platform records, unaudited</span>.
+          </p>
+          <div className="mt-3 flex flex-wrap items-end gap-2">
+            <div>
+              <label className="mb-1 block text-[11px] uppercase tracking-wider text-[#8a8577]">From</label>
+              <input type="date" value={stFrom} onChange={(e) => setStFrom(e.target.value)} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
+            </div>
+            <div>
+              <label className="mb-1 block text-[11px] uppercase tracking-wider text-[#8a8577]">To</label>
+              <input type="date" value={stTo} onChange={(e) => setStTo(e.target.value)} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
+            </div>
+            <button disabled={stBusy} onClick={() => downloadStatement('income')} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90 disabled:opacity-60">
+              <Download className="h-4 w-4" /> {stBusy === 'income' ? 'Preparing…' : 'Income Statement (CSV)'}
+            </button>
+            <button disabled={stBusy} onClick={() => downloadStatement('balance')} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/30 px-4 py-2.5 text-sm font-semibold text-[#d4af37] hover:bg-[#d4af37]/10 disabled:opacity-60">
+              <Download className="h-4 w-4" /> {stBusy === 'balance' ? 'Preparing…' : 'Balance Sheet (CSV)'}
+            </button>
+          </div>
+          {stMsg && <p className="mt-2 text-xs text-[#c9c4b4]">{stMsg}</p>}
+        </Collapse>
         {payUser && (
           <div className="glass mt-4 rounded-2xl p-4 sm:p-5">
             <div className="mb-3 flex items-center justify-between">
@@ -1531,22 +1667,22 @@ function SignalsTab() {
   return (
     <div className="space-y-5">
       <div className="flex justify-between">
-        <h3 className="font-semibold text-[#f0ecdd]">Trading Signals</h3>
+        <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Trading Signals</h3>
         <button onClick={() => { setCreating(true); setEditing(null); }} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] hover:opacity-90"><Plus className="h-4 w-4" /> New signal</button>
       </div>
 
       {(creating || editing) && (
-        <div className="glass rounded-2xl p-5">
+        <div className="glass rounded-[10px] p-4 sm:p-5">
           <h4 className="mb-4 text-sm font-semibold text-[#f0ecdd]">{editing ? `Edit ${editing.symbol}` : 'New signal'}</h4>
           <SignalForm initial={editing} onSave={saveSignal} onCancel={() => { setCreating(false); setEditing(null); }} />
         </div>
       )}
 
-      <div className="glass overflow-hidden rounded-2xl">
+      <div className="glass overflow-hidden rounded-[10px]">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[680px] text-sm">
-            <thead>
-              <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
                 <th className="px-5 py-3">Symbol</th><th className="px-5 py-3">Side</th><th className="px-5 py-3">Entry</th>
                 <th className="px-5 py-3">Target</th><th className="px-5 py-3">Stop</th><th className="px-5 py-3">Status</th>
                 <th className="px-5 py-3 text-right">Actions</th>
@@ -1621,12 +1757,12 @@ function ForumTab() {
 
   return (
     <div className="space-y-5">
-      <h3 className="font-semibold text-[#f0ecdd]">Community Forum</h3>
-      <div className="glass overflow-hidden rounded-2xl">
+      <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Community Forum</h3>
+      <div className="glass overflow-hidden rounded-[10px]">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[680px] text-sm">
-            <thead>
-              <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
                 <th className="px-5 py-3">Thread</th><th className="px-5 py-3">Author</th><th className="px-5 py-3">Replies</th>
                 <th className="px-5 py-3">Flags</th><th className="px-5 py-3 text-right">Actions</th>
               </tr>
@@ -1693,12 +1829,12 @@ function GenericContentTab({ prefix, title, fields, subtitle }) {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="font-semibold text-[#f0ecdd]">{title}</h3>
+        <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">{title}</h3>
         {subtitle && <p className="mt-1 text-xs text-[#8a8577]">{subtitle}</p>}
       </div>
 
-      <form onSubmit={submit} className="glass rounded-2xl p-5">
-        <h4 className="mb-4 text-sm font-semibold text-[#f0ecdd]">{editing ? `Edit ${editing.title || ''}` : 'New item'}</h4>
+      <form onSubmit={submit} className="glass rounded-[10px] p-4 sm:p-5">
+        <h4 className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">{editing ? `Edit ${editing.title || ''}` : 'New item'}</h4>
         {saveError && <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-400">Save failed: {String(saveError)}</div>}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {fields.map((f) => (
@@ -1722,11 +1858,11 @@ function GenericContentTab({ prefix, title, fields, subtitle }) {
         </div>
       </form>
 
-      <div className="glass overflow-hidden rounded-2xl">
+      <div className="glass overflow-hidden rounded-[10px]">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[680px] text-sm">
-            <thead>
-              <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
                 <th className="px-5 py-3">Title</th><th className="px-5 py-3">Status</th><th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -1830,10 +1966,10 @@ function SiteCopyTab() {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="font-semibold text-[#f0ecdd]">Site Copy</h3>
+        <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Site Copy</h3>
         <p className="mt-1 text-xs text-[#8a8577]">Rewrite page headlines and buttons without code. Applies to English text; other languages keep shipped translations. Changes go live on next page view.</p>
       </div>
-      <form onSubmit={submit} className="glass rounded-2xl p-5">
+      <form onSubmit={submit} className="glass rounded-[10px] p-4 sm:p-5">
         <h4 className="mb-4 text-sm font-semibold text-[#f0ecdd]">{editing ? `Edit ${editing?.config?.key}` : 'New override'}</h4>
         <div className="grid gap-4">
           <div><label className={label}>Text to rewrite</label>
@@ -1853,10 +1989,10 @@ function SiteCopyTab() {
           {editing && <button type="button" onClick={() => { setEditing(null); setValue(''); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
         </div>
       </form>
-      <div className="glass overflow-hidden rounded-2xl">
+      <div className="glass overflow-hidden rounded-[10px]">
         <table className="w-full min-w-[520px] text-sm">
-          <thead>
-            <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
+          <thead className="sticky top-0 z-10">
+            <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
               <th className="px-5 py-3">Key</th>
               <th className="px-5 py-3">Live text</th>
               <th className="px-5 py-3 text-right">Actions</th>
@@ -1902,10 +2038,10 @@ export function AdminContent() {
           </div>
         </div>
       </section>
-      <div className="mb-6 flex flex-wrap gap-1 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] p-1 w-fit">
+      <div className="mb-6 flex flex-wrap gap-1 rounded-[10px] border border-white/10 bg-black/30 p-1 w-fit max-w-full overflow-x-auto">
         {CONTENT_TABS.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}
-            className={`flex items-center gap-2 rounded-lg px-3 sm:px-4 py-2 text-sm transition ${tab === id ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#c9c4b4]'}`}>
+            className={`flex items-center gap-1.5 whitespace-nowrap rounded-[8px] px-3 py-2 text-[13px] font-bold transition ${tab === id ? 'bg-gradient-to-b from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_4px_14px_-6px_rgba(212,175,55,0.6)]' : 'text-[#8a8577] hover:bg-white/5 hover:text-[#e9e7df]'}`}>
             <Icon className="h-3.5 w-3.5" /><span className="hidden sm:inline">{label}</span>
           </button>
         ))}
@@ -2108,12 +2244,12 @@ export function AdminReports() {
 
 /* ─── ADMIN INTEGRATIONS ─────────────────────────────────────────── */
 const INTEGRATION_PRESETS = [
-  { provider: 'alpha_vantage', name: 'Alpha Vantage', icon: BarChart3, color: '#3b82f6', fields: [{ key: 'apiKey', label: 'API Key', type: 'password' }] },
-  { provider: 'binance', name: 'Binance', icon: TrendingUp, color: '#f0b90b', fields: [{ key: 'apiKey', label: 'API Key', type: 'password' }, { key: 'apiSecret', label: 'API Secret', type: 'password' }] },
-  { provider: 'finnhub', name: 'Finnhub', icon: Activity, color: '#10b981', fields: [{ key: 'apiKey', label: 'API Key', type: 'password' }] },
-  { provider: 'polygon', name: 'Polygon.io', icon: Globe, color: '#8b5cf6', fields: [{ key: 'apiKey', label: 'API Key', type: 'password' }] },
-  { provider: 'forex_factory', name: 'Forex Factory', icon: Globe, color: GOLD, fields: [{ key: 'apiKey', label: 'API Key (optional)', type: 'password' }] },
-  { provider: 'smtp', name: 'Email (SMTP)', icon: Mail, color: '#ec4899', fields: [{ key: 'apiKey', label: 'SMTP Host', type: 'text' }, { key: 'apiSecret', label: 'Password', type: 'password' }, { key: 'extraConfig', label: 'Port / From Address (JSON)', type: 'text' }] },
+  { provider: 'alpha_vantage', name: 'Alpha Vantage', icon: BarChart3, color: '#3b82f6', testKind: 'alpha_vantage', envKey: 'ALPHA_VANTAGE_API_KEY', note: 'Equities/forex backup feed. Key lives in server .env — Test uses the server key.', fields: [{ key: 'apiKey', label: 'API Key (reference copy)', type: 'password' }] },
+  { provider: 'binance', name: 'Binance', icon: TrendingUp, color: '#f0b90b', testKind: 'binance', noKey: true, note: 'Public market data — no key needed. Per-user private keys live under Brokers, never here.', fields: [] },
+  { provider: 'finnhub', name: 'Finnhub', icon: Activity, color: '#10b981', testKind: 'finnhub', envKey: 'FINNHUB_API_KEY', note: 'US-stock quotes. Key lives in server .env — Test uses the server key.', fields: [{ key: 'apiKey', label: 'API Key (reference copy)', type: 'password' }] },
+  { provider: 'polygon', name: 'Polygon.io', icon: Globe, color: '#8b5cf6', note: 'Not consumed by the backend — stored here for reference only.', fields: [{ key: 'apiKey', label: 'API Key', type: 'password' }] },
+  { provider: 'forex_factory', name: 'Forex Factory', icon: Globe, color: GOLD, noKey: true, note: 'Keyless public calendar feed — nothing to configure.', fields: [] },
+  { provider: 'smtp', name: 'Email (SMTP)', icon: Mail, color: '#ec4899', note: 'Auth emails send via the server .env (SMTP_HOST). Test any host below without saving.', fields: [{ key: 'apiKey', label: 'SMTP Host', type: 'text' }, { key: 'apiSecret', label: 'Password', type: 'password' }, { key: 'extraConfig', label: 'Port / From Address (JSON)', type: 'text' }] },
 ];
 
 function IntegrationCard({ preset, record, onSave, onTest, onDelete }) {
@@ -2180,6 +2316,7 @@ function IntegrationCard({ preset, record, onSave, onTest, onDelete }) {
 
       {expanded && (
         <div className="border-t border-[#d4af37]/10 p-4 sm:p-5 space-y-4">
+          {preset.note && <p className="text-xs leading-relaxed text-[#8a8577]">{preset.note}</p>}
           {preset.fields.map(f => (
             <div key={f.key}>
               <label className="mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">{f.label}</label>
@@ -2216,7 +2353,7 @@ function IntegrationCard({ preset, record, onSave, onTest, onDelete }) {
           )}
 
           <div className="flex flex-wrap gap-2">
-            <button onClick={handleTest} disabled={testing || !form.apiKey}
+            <button onClick={handleTest} disabled={testing || (!form.apiKey && !preset.noKey && !preset.testKind)}
               className="flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/50 disabled:opacity-40">
               {testing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <TestTube className="h-4 w-4" />} Test Connection
             </button>
@@ -2241,11 +2378,16 @@ export function AdminIntegrations() {
   const { toast } = useToast();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [health, setHealth] = useState(null);
 
   const load = async () => {
     setLoading(true);
     try { setRecords(await pb.collection('admin_integrations').getFullList({ requestKey: 'admin-integrations' })); }
     catch { /* ignore */ } finally { setLoading(false); }
+    try {
+      const res = await fetch(`${API_SERVER_URL}/admin/health`, { headers: { Authorization: `Bearer ${pb.authStore.token}` } });
+      if (res.ok) setHealth(await res.json());
+    } catch { /* live strip stays hidden */ }
   };
 
   useEffect(() => { load(); }, []);
@@ -2263,6 +2405,28 @@ export function AdminIntegrations() {
   };
 
   const handleTest = async (id, provider, form) => {
+    const preset = INTEGRATION_PRESETS.find((p) => p.provider === provider) || {};
+    if (preset.testKind) {
+      const res = await fetch(`${API_SERVER_URL}/admin/integrations/test`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: preset.testKind }),
+      });
+      const data = await res.json().catch(() => ({}));
+      const now = new Date().toISOString();
+      const passed = res.ok && data.ok;
+      const result = passed ? `OK — ${data.detail || 'reachable'} at ${now.slice(11, 19)} UTC` : `FAIL — ${data.error || data.detail || `HTTP ${res.status}`} at ${now.slice(11, 19)} UTC`;
+      if (id) {
+        const updated = await pb.collection('admin_integrations').update(id, {
+          status: passed ? 'connected' : 'error', lastTestedAt: now, lastTestResult: result,
+        });
+        setRecords(prev => prev.map(r => r.id === id ? updated : r));
+      } else {
+        toast({ title: passed ? 'Connection tested' : 'Test failed', description: result, variant: passed ? undefined : 'destructive' });
+      }
+      if (!passed) throw new Error(result);
+      return;
+    }
     const key = (form?.apiKey || '').trim();
     let payload;
     if (provider === 'smtp') {
@@ -2318,7 +2482,7 @@ export function AdminIntegrations() {
             </span>
             <div className="min-w-0">
               <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Third-Party Integrations</h2>
-              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Configure API keys and connections to external services.</p>
+              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Live server status first — keys live in server .env, this page tests and stores reference copies.</p>
             </div>
           </div>
           <button onClick={load} className="flex shrink-0 items-center gap-2 rounded-xl border border-[#d4af37]/15 px-3 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/40">
@@ -2328,7 +2492,28 @@ export function AdminIntegrations() {
       </section>
 
       {loading ? <Spinner /> : (
-        <div className="space-y-3">
+        <>
+          {health?.checks && (
+            <div className="mb-4 grid gap-2 grid-cols-2 sm:grid-cols-3 xl:grid-cols-6">
+              {[
+                ['Alpha Vantage', health.checks.alphaVantage],
+                ['Finnhub', health.checks.finnhub],
+                ['Market data', health.checks.market],
+                ['Email SMTP', health.checks.smtp],
+                ['Stripe', health.checks.stripe],
+                ['D&B Direct+', health.checks.dnb],
+              ].map(([label, on]) => (
+                <div key={label} className="glass flex items-center gap-2 rounded-[10px] px-3 py-2.5">
+                  <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${on ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
+                  <span className="min-w-0">
+                    <span className="block truncate text-[11px] font-bold text-[#f0ecdd]">{label}</span>
+                    <span className={`block font-mono text-[10px] ${on ? 'text-emerald-400' : 'text-red-400'}`}>{on ? 'Live' : 'Not set'}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="space-y-3">
           {INTEGRATION_PRESETS.map(preset => (
             <IntegrationCard
               key={preset.provider}
@@ -2339,7 +2524,8 @@ export function AdminIntegrations() {
               onDelete={handleDelete}
             />
           ))}
-        </div>
+          </div>
+        </>
       )}
     </AdminLayout>
   );
@@ -2763,7 +2949,7 @@ export function AdminPlugins() {
 }
 
 /* ─── ADMIN JOBS ─────────────────────────────────────────────────── */
-const APP_STATUSES = ['new', 'reviewing', 'shortlisted', 'rejected', 'hired'];
+const APP_STATUSES = ['new', 'reviewing', 'shortlisted', 'trial_task', 'rejected', 'hired'];
 
 export function AdminJobs() {
   const { toast } = useToast();
@@ -2773,6 +2959,14 @@ export function AdminJobs() {
   const [form, setForm] = useState({ title: '', department: 'Academy', employmentType: 'full-time', location: 'Remote', description: '', requirements: '' });
   const [editingId, setEditingId] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [postQ, setPostQ] = useState('');
+  const [postFilter, setPostFilter] = useState('all');
+  const filteredPostings = useMemo(() => postings.filter((p) => {
+    if (postFilter !== 'all' && p.status !== postFilter) return false;
+    if (postQ && !`${p.title} ${p.department} ${p.employmentType} ${p.location}`.toLowerCase().includes(postQ.toLowerCase())) return false;
+    return true;
+  }), [postings, postQ, postFilter]);
+  const appCountFor = (id) => apps.filter((a) => a.jobId === id && a.status !== 'hired' && a.status !== 'rejected').length;
 
   const call = async (path, opts = {}) => {
     const res = await fetch(`${API_SERVER_URL}/admin/jobs${path}`, {
@@ -2843,13 +3037,157 @@ export function AdminJobs() {
     setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
   };
 
+  // One-click Hire: accept + auto-provision the employee login, staff role,
+  // mentor staging for coaches, and invite email. The temp password comes
+  // back once — share it with the hire directly.
+  const [hiredCreds, setHiredCreds] = useState(null); // { email, tempPassword, role }
+  const [hiringId, setHiringId] = useState(null); // posting id with screening editor open
+  const [hiringDraft, setHiringDraft] = useState({ questions: '', samples_required: false, trial_task: '', trial_days: '14', salary_tbc: '', salary_freq: 'monthly', closes_at: '' });
+  const [trials, setTrials] = useState([]);
+  const [roster, setRoster] = useState([]);
+  const [payAmounts, setPayAmounts] = useState({});
+  const [payResult, setPayResult] = useState(null);
+  const [payBusy, setPayBusy] = useState(false);
+  const loadRoster = async () => {
+    try {
+      const rows = await call('/payroll');
+      setRoster(rows || []);
+      const init = {};
+      for (const r of rows || []) init[r.email] = String(r.salary_tbc || '');
+      setPayAmounts(init);
+    } catch { setRoster([]); }
+  };
+  useEffect(() => { loadRoster(); }, []);
+  const runPayroll = async () => {
+    const payments = Object.entries(payAmounts)
+      .map(([email, v]) => ({ email, tbc: Number(v) }))
+      .filter((x) => x.tbc > 0);
+    if (!payments.length) { toast({ variant: 'destructive', title: 'Nothing to pay', description: 'Enter a TBC amount per person first.' }); return; }
+    const total = payments.reduce((n, x) => n + x.tbc, 0);
+    if (!window.confirm(`Pay ${total} TBC to ${payments.length} staff from YOUR TBC balance? They cash out via Convert → bank.`)) return;
+    setPayBusy(true);
+    try {
+      const res = await call('/payroll', { method: 'POST', body: { payments } });
+      setPayResult(res);
+      loadRoster();
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Payroll failed', description: err.message });
+    } finally { setPayBusy(false); }
+  };
+  const loadTrials = async () => {
+    try {
+      const rows = await call('/trials');
+      setTrials(rows || []);
+    } catch { setTrials([]); }
+  };
+  useEffect(() => { loadTrials(); }, []);
+  const hireApp = async (a) => {
+    const post = postings.find((x) => x.id === a.jobId);
+    const closesAt = post?.hiring?.closes_at;
+    const windowOpen = closesAt && !Number.isNaN(Date.parse(closesAt)) && Date.now() < Date.parse(closesAt);
+    const poolN = apps.filter((x) => x.jobId === a.jobId && x.status !== 'hired' && x.status !== 'rejected').length;
+    const warn = windowOpen ? ` Collection window closes ${String(closesAt).slice(0, 10)} — ${poolN} candidate${poolN === 1 ? '' : 's'} in pool so far. Hire anyway?` : '';
+    if (!window.confirm(`Hire ${a.name} (${a.email})? This creates their employee login immediately.${warn}`)) return;
+    setBusy(true);
+    try {
+      const res = await call(`/applications/${a.id}/hire`, { method: 'POST' });
+      setApps((prev) => prev.map((x) => (x.id === a.id ? { ...x, status: 'hired' } : x)));
+      if (res?.tempPassword) {
+        setHiredCreds({ email: res.email, tempPassword: res.tempPassword, role: res.role });
+      } else {
+        toast({ title: `Hired — ${res?.already ? 'login already existed' : 'login ready'}`, description: res?.email });
+      }
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Hire failed', description: err.message });
+    } finally { setBusy(false); }
+  };
+
+  const openHiring = (p) => {
+    const h = p.hiring && typeof p.hiring === 'object' ? p.hiring : {};
+    setHiringId(p.id);
+    setHiringDraft({
+      questions: (Array.isArray(h.screening) ? h.screening : []).map((q) => q?.q || q).join('\n'),
+      samples_required: h.samples_required === true,
+      trial_task: h.trial_task || '',
+      trial_days: String(h.trial_days || 14),
+      salary_tbc: h.salary_tbc ? String(h.salary_tbc) : '',
+      salary_freq: h.salary_freq || 'monthly',
+      closes_at: h.closes_at ? String(h.closes_at).slice(0, 10) : '',
+    });
+  };
+  const saveHiring = async (p) => {
+    setBusy(true);
+    try {
+      const updated = await call(`/postings/${p.id}`, {
+        method: 'PATCH',
+        body: {
+          hiring: {
+            screening: hiringDraft.questions.split('\n').map((x) => x.trim()).filter(Boolean).map((q) => ({ q, required: true })),
+            samples_required: hiringDraft.samples_required,
+            trial_task: hiringDraft.trial_task,
+            trial_days: hiringDraft.trial_days,
+            salary_tbc: hiringDraft.salary_tbc,
+            salary_freq: hiringDraft.salary_freq,
+            closes_at: hiringDraft.closes_at || null,
+          },
+        },
+      });
+      setPostings((prev) => prev.map((x) => (x.id === p.id ? { ...x, ...updated } : x)));
+      setHiringId(null);
+      toast({ title: 'Screening saved' });
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Save failed', description: err.message });
+    } finally { setBusy(false); }
+  };
+  const confirmTrial = async (u) => {
+    try {
+      await call(`/trials/${u.id}/confirm`, { method: 'POST' });
+      setTrials((prev) => prev.filter((x) => x.id !== u.id));
+      toast({ title: `Probation cleared — ${u.email} is now full staff` });
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Confirm failed', description: err.message });
+    }
+  };
+  const toggleAutoAccept = async (p) => {
+    try {
+      const updated = await call(`/postings/${p.id}`, { method: 'PATCH', body: { auto_accept: !(p.auto_accept === true) } });
+      setPostings((prev) => prev.map((x) => (x.id === p.id ? { ...x, ...updated } : x)));
+      toast({ title: updated?.auto_accept ? `Auto-accept ON — ${p.title} hires every applicant instantly` : `Auto-accept off — ${p.title}` });
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Toggle failed', description: err.message });
+    }
+  };
+
   const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
 
   return (
     <AdminLayout title="Jobs & Hiring">
-      <div className="grid gap-5 lg:grid-cols-2">
-        <div className="glass rounded-2xl p-4 sm:p-5">
-          <h3 className="font-semibold text-[#f0ecdd]">{editingId ? 'Edit posting' : 'New posting'}</h3>
+      {/* ── Pipeline header ── */}
+      <div className="glass mb-4 rounded-2xl p-4 sm:p-5">
+        <div className="flex flex-wrap items-center gap-2">
+          {[
+            ['Openings', postings.filter((p) => p.status === 'open').length],
+            ['Applicants', apps.filter((a) => a.status !== 'hired' && a.status !== 'rejected').length],
+            ['Probation', trials.length],
+            ['Staff', roster.length],
+          ].map(([label, n], i, arr) => (
+            <div key={label} className="flex min-w-0 flex-1 items-center gap-2">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-[10px] bg-[#d4af37]/12 font-mono text-xs font-extrabold text-[#d4af37]">{i + 1}</span>
+              <span className="min-w-0">
+                <span className="block truncate text-xs font-bold text-[#f0ecdd]">{label}</span>
+                <span className="block font-mono text-[11px] tabular-nums text-[#8a8577]">{n}</span>
+              </span>
+              {i < arr.length - 1 && <span className="mx-1 hidden h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent sm:block" aria-hidden />}
+            </div>
+          ))}
+          <button onClick={() => { load(); loadRoster(); loadTrials(); }} className="ml-auto rounded-[10px] border border-[#d4af37]/25 px-3 py-2 text-xs text-[#d4af37]"><RefreshCw className="h-3.5 w-3.5" /></button>
+        </div>
+      </div>
+
+      <div className="grid items-start gap-4 xl:grid-cols-5">
+        {/* ── Left: posting form + openings ── */}
+        <div className="glass rounded-2xl p-4 sm:p-5 xl:col-span-2">
+          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">{editingId ? 'Edit opening' : 'New opening'}</h3>
           <div className="mt-3 space-y-2">
             <input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="e.g. Trading Coach (Forex)" className={input} />
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -2857,54 +3195,262 @@ export function AdminJobs() {
               <input value={form.employmentType} onChange={(e) => setForm((p) => ({ ...p, employmentType: e.target.value }))} placeholder="Type" className={input} />
               <input value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} placeholder="Location" className={input} />
             </div>
-            <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Role description" className={`${input} min-h-[100px]`} />
-            <textarea value={form.requirements} onChange={(e) => setForm((p) => ({ ...p, requirements: e.target.value }))} placeholder="Requirements" className={`${input} min-h-[70px]`} />
+            <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Role description" className={`${input} min-h-[84px]`} />
+            <textarea value={form.requirements} onChange={(e) => setForm((p) => ({ ...p, requirements: e.target.value }))} placeholder="Requirements" className={`${input} min-h-[60px]`} />
             <div className="flex gap-2">
-              <button onClick={savePosting} disabled={busy} className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] disabled:opacity-60">{editingId ? 'Save' : 'Publish'}</button>
-              {editingId && <button onClick={resetForm} className="rounded-xl border border-white/10 px-4 py-2 text-sm text-[#8a8577]">Cancel</button>}
+              <button onClick={savePosting} disabled={busy} className="rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-bold text-[#0a0a0f] disabled:opacity-60">{editingId ? 'Save' : 'Publish'}</button>
+              {editingId && <button onClick={resetForm} className="rounded-[10px] border border-white/10 px-4 py-2 text-sm text-[#8a8577]">Cancel</button>}
             </div>
           </div>
-          <div className="mb-3 mt-6 flex items-center gap-3">
-            <h3 className="text-sm font-bold text-[#f0ecdd]">Postings ({postings.length})</h3>
-            <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+          <div className="mb-2 mt-5 flex items-center gap-2">
+            <h3 className="shrink-0 text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Openings ({postings.length})</h3>
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-lg border border-white/10 bg-black/20 px-2 py-1">
+              <Search className="h-3 w-3 shrink-0 text-[#6a665a]" />
+              <input value={postQ} onChange={(e) => setPostQ(e.target.value)} placeholder="Filter openings…" className="w-full min-w-0 bg-transparent text-[11px] text-[#e9e7df] outline-none placeholder:text-[#5f5b50]" />
+              {postQ && <button onClick={() => setPostQ('')}><X className="h-3 w-3 text-[#6a665a]" /></button>}
+            </div>
+            {['all', 'open', 'closed'].map((s) => (
+              <button key={s} onClick={() => setPostFilter(s)} className={`shrink-0 rounded-md px-1.5 py-1 font-mono text-[10px] font-bold uppercase ${postFilter === s ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'text-[#6a665a] hover:text-[#c9c4b4]'}`}>{s}</button>
+            ))}
           </div>
-          <div className="space-y-2">
-            {postings.map((p) => (
-              <div key={p.id} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="font-medium text-[#f0ecdd]">{p.title}</div>
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] ${p.status === 'open' ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[#8a8577]'}`}>{p.status}</span>
+          <div className="max-h-[560px] space-y-1.5 overflow-y-auto pr-1 nice-scroll">
+            {filteredPostings.map((p) => (
+              <div key={p.id} className={`rounded-[10px] border bg-[#0f0f14] px-2.5 py-2 ${p.status === 'open' ? 'border-[#d4af37]/20' : 'border-white/[0.07] opacity-70'}`}>
+                <div className="flex items-center gap-2">
+                  <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${p.status === 'open' ? 'bg-emerald-400' : 'bg-[#5f5b50]'}`} />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[13px] font-semibold text-[#f0ecdd]">{p.title}</div>
+                    <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] text-[#6a665a]">
+                      <span className="truncate">{p.department} · {p.employmentType} · {p.location}</span>
+                      {Number(p.hiring?.salary_tbc) > 0 && <span className="font-mono font-bold text-[#d4af37]">{p.hiring.salary_tbc} TBC/{p.hiring.salary_freq === 'weekly' ? 'wk' : 'mo'}</span>}
+                      {appCountFor(p.id) > 0 && <span className="rounded bg-[#38bdf8]/10 px-1 font-mono font-bold text-[#38bdf8]">{appCountFor(p.id)} applying</span>}
+                      {p.auto_accept === true && <span className="rounded bg-emerald-400/10 px-1 font-mono font-bold uppercase text-emerald-300">auto</span>}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-0.5">
+                    <button onClick={() => startEdit(p)} title="Edit" className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#d4af37]"><Edit2 className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => togglePosting(p)} title={p.status === 'open' ? 'Close' : 'Reopen'} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#d4af37]"><Power className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => toggleAutoAccept(p)} title="Auto-hire every applicant" className={`grid h-7 w-7 place-items-center rounded-lg hover:bg-white/5 ${p.auto_accept === true ? 'text-emerald-300' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}><Zap className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => (hiringId === p.id ? setHiringId(null) : openHiring(p))} title="Gates: screening, trial, salary" className={`grid h-7 w-7 place-items-center rounded-lg hover:bg-white/5 ${hiringId === p.id ? 'text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}><Settings2 className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => removePosting(p)} title="Delete" className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-red-500/10 hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>
+                  </div>
                 </div>
-                <div className="mt-1 text-xs text-[#8a8577]">{p.department} · {p.employmentType} · {p.location}</div>
-                <div className="mt-2 flex gap-2">
-                  <button onClick={() => startEdit(p)} className="rounded-lg border border-[#d4af37]/25 px-2.5 py-1 text-xs text-[#d4af37]">Edit</button>
-                  <button onClick={() => togglePosting(p)} className="rounded-lg border border-[#d4af37]/25 px-2.5 py-1 text-xs text-[#d4af37]">{p.status === 'open' ? 'Close' : 'Reopen'}</button>
-                  <button onClick={() => removePosting(p)} className="rounded-lg border border-red-500/35 px-2.5 py-1 text-xs text-red-400">Delete</button>
-                </div>
+                {hiringId === p.id && (
+                  <div className="mt-2 space-y-2 rounded-[10px] border border-[#d4af37]/15 bg-black/20 p-3">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#d4af37]">Knockout questions (one per line)</div>
+                    <textarea value={hiringDraft.questions} onChange={(e) => setHiringDraft({ ...hiringDraft, questions: e.target.value })} placeholder={"e.g. Link your live trading journal\nHow many years profitable?"} className={`${input} min-h-[64px]`} />
+                    <label className="flex items-center gap-2 text-xs text-[#c9c4b4]">
+                      <input type="checkbox" checked={hiringDraft.samples_required} onChange={(e) => setHiringDraft({ ...hiringDraft, samples_required: e.target.checked })} className="h-4 w-4 accent-[#d4af37]" />
+                      Require proof-of-work links
+                    </label>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#d4af37]">Trial task brief</div>
+                    <textarea value={hiringDraft.trial_task} onChange={(e) => setHiringDraft({ ...hiringDraft, trial_task: e.target.value })} placeholder="e.g. Record a 5-min XAUUSD breakdown…" className={`${input} min-h-[56px]`} />
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#d4af37]">Salary TBC</div>
+                        <div className="flex gap-2">
+                          <input type="number" min="0" value={hiringDraft.salary_tbc} onChange={(e) => setHiringDraft({ ...hiringDraft, salary_tbc: e.target.value })} placeholder="e.g. 300" className={`${input} min-w-0 flex-1`} />
+                          <select value={hiringDraft.salary_freq} onChange={(e) => setHiringDraft({ ...hiringDraft, salary_freq: e.target.value })} className={`${input} !w-24`}>
+                            <option value="monthly">/ mo</option>
+                            <option value="weekly">/ wk</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#d4af37]">Apply by</div>
+                        <input type="date" value={hiringDraft.closes_at} onChange={(e) => setHiringDraft({ ...hiringDraft, closes_at: e.target.value })} className={`${input} w-full`} />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-[#8a8577]">Probation (days)</span>
+                      <input type="number" min="1" max="90" value={hiringDraft.trial_days} onChange={(e) => setHiringDraft({ ...hiringDraft, trial_days: e.target.value })} className={`${input} !w-20`} />
+                      <button onClick={() => saveHiring(p)} disabled={busy} className="ml-auto rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1.5 text-xs font-bold text-[#0a0a0f] disabled:opacity-50">Save gates</button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
-            {!postings.length && !loading && <p className="text-sm text-[#8a8577]">No postings yet.</p>}
+            {!filteredPostings.length && !loading && <p className="text-sm text-[#8a8577]">{postings.length ? 'No openings match the filter.' : 'No openings yet — publish the first above.'}</p>}
           </div>
         </div>
 
-        <div className="glass rounded-2xl p-4 sm:p-5">
-          <h3 className="font-semibold text-[#f0ecdd]">Applications ({apps.length})</h3>
-          <div className="mt-3 space-y-2">
-            {apps.map((a) => (
-              <div key={a.id} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="font-medium text-[#f0ecdd]">{a.name}</div>
-                  <span className="shrink-0 text-[10px] text-[#6a665a]">{(a.created || '').slice(0, 10)}</span>
-                </div>
-                <div className="text-xs text-[#8a8577]">{a.email}{a.phone ? ` · ${a.phone}` : ''} → {a.job_postings?.title || 'Opening'}</div>
-                {a.coverLetter && <p className="mt-1 max-h-20 overflow-y-auto text-xs leading-relaxed text-[#c9c4b4]">{a.coverLetter}</p>}
-                <select value={a.status} onChange={(e) => setAppStatus(a.id, e.target.value)} className="mt-2 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-1.5 text-xs text-[#e9e7df]">
-                  {APP_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-            ))}
-            {!apps.length && !loading && <p className="text-sm text-[#8a8577]">No applications yet.</p>}
+        {/* ── Right: applicant pipeline ── */}
+        <div className="glass rounded-2xl p-4 sm:p-5 xl:col-span-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Applicants ({apps.length})</h3>
+            {hiredCreds && <button onClick={() => setHiredCreds(null)} className="text-[11px] text-[#8a8577] hover:text-[#e9e7df]">Dismiss hire notice</button>}
           </div>
+          {hiredCreds && (
+            <div className="mt-3 rounded-[10px] border border-emerald-400/30 bg-emerald-400/5 p-3 text-xs">
+              <div className="font-bold text-emerald-300">Hired — login ready for {hiredCreds.email} ({hiredCreds.role})</div>
+              <div className="mt-1 font-mono text-[#f0ecdd]">Temp password: {hiredCreds.tempPassword}</div>
+              <div className="mt-1 text-[#8a8577]">Share it with them directly + invite email sent.</div>
+            </div>
+          )}
+          <div className="mt-3 overflow-x-auto -mx-2 px-2">
+            <table className="w-full min-w-[560px] text-sm">
+              <thead>
+                <tr className="text-left text-[10px] uppercase tracking-wider text-[#5f5b50]">
+                  <th className="pb-2 font-semibold">Candidate</th>
+                  <th className="pb-2 font-semibold">Opening</th>
+                  <th className="pb-2 font-semibold">Risk</th>
+                  <th className="pb-2 font-semibold">Status</th>
+                  <th className="pb-2 text-right font-semibold">Action</th>
+                </tr>
+              </thead>
+              <tbody className="[&_tr]:border-t [&_tr]:border-white/5 [&_tr:hover]:bg-white/[0.02]">
+                {[...apps].sort((x, y) => {
+                  const hx = x.status === 'hired' ? 1 : 0;
+                  const hy = y.status === 'hired' ? 1 : 0;
+                  if (hx !== hy) return hx - hy;
+                  const rank = (a) => {
+                    const t = String(postings.find((p) => p.id === a.jobId)?.title || '');
+                    if (/founder|chief executive/i.test(t)) return 0;
+                    if (/vice president/i.test(t)) return 1;
+                    return 2;
+                  };
+                  const rx = rank(x), ry = rank(y);
+                  if (rx !== ry) return rx - ry;
+                  const sx = x.checks?.samples_ok === true ? 0 : 1;
+                  const sy = y.checks?.samples_ok === true ? 0 : 1;
+                  if (sx !== sy) return sx - sy;
+                  return (Number(x.checks?.risk_score) || 0) - (Number(y.checks?.risk_score) || 0);
+                }).map((a) => {
+                  const trialBrief = a.status === 'trial_task' ? postings.find((x) => x.id === a.jobId)?.hiring?.trial_task : null;
+                  const hasDetail = Boolean(a.coverLetter || trialBrief || (a.checks && typeof a.checks === 'object'));
+                  const cand = (
+                    <>
+                      <div className="font-semibold text-[#f0ecdd]">{a.name}</div>
+                      <div className="font-mono text-[11px] text-[#6a665a]">{a.email}{a.phone ? ` · ${a.phone}` : ''} · {(a.created || '').slice(0, 10)}</div>
+                    </>
+                  );
+                  return (
+                  <tr key={a.id}>
+                    <td className="py-2.5 pr-2">
+                      {hasDetail ? (
+                        <details>
+                          <summary className="cursor-pointer list-none">{cand}<span className="mt-0.5 block text-[10px] font-bold uppercase tracking-wider text-[#d4af37]/70">+ file</span></summary>
+                          <div className="mt-1.5 max-w-[320px] space-y-1.5 rounded-lg border border-white/5 bg-black/20 p-2">
+                            {a.coverLetter && <p className="max-h-20 overflow-y-auto text-[11px] leading-relaxed text-[#c9c4b4]">{a.coverLetter}</p>}
+                            {trialBrief && <p className="rounded-md border border-[#d4af37]/20 bg-[#d4af37]/5 p-1.5 text-[11px] leading-relaxed text-[#c9c4b4]">Trial brief: {trialBrief}</p>}
+                            {a.checks && typeof a.checks === 'object' && (
+                              <>
+                                {typeof a.checks.risk_score === 'number' && (
+                                  <div className={`inline-block rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold ${a.checks.risk_score >= 60 ? 'bg-red-400/10 text-red-300' : a.checks.risk_score >= 30 ? 'bg-[#d4af37]/10 text-[#d4af37]' : 'bg-emerald-400/10 text-emerald-300'}`}>
+                                    Originality {a.checks.risk_score >= 60 ? 'high' : a.checks.risk_score >= 30 ? 'review' : 'low'} ({a.checks.risk_score})
+                                  </div>
+                                )}
+                                {a.checks.samples && a.checks.samples.length > 0 && (
+                                  <div className="text-[11px] text-[#8a8577]">
+                                    Work: {a.checks.samples.map((u, i) => <a key={i} href={u} target="_blank" rel="noreferrer" className="mr-2 font-mono text-[#d4af37] hover:underline">[link {i + 1}]</a>)}
+                                    <span className="ml-1 text-[#6a665a]">({a.checks.samples_note || 'unverified'})</span>
+                                  </div>
+                                )}
+                                {a.checks.answers && typeof a.checks.answers === 'object' && Object.keys(a.checks.answers).length > 0 && Object.entries(a.checks.answers).map(([q, ans], i) => (
+                                  <div key={i} className="text-[11px]"><span className="font-semibold text-[#d4af37]">{q}: </span><span className="text-[#c9c4b4]">{ans}</span></div>
+                                ))}
+                              </>
+                            )}
+                          </div>
+                        </details>
+                      ) : cand}
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-2.5 text-xs text-[#8a8577]">{a.job_postings?.title || 'Opening'}</td>
+                    <td className="whitespace-nowrap px-2 py-2.5">
+                      {typeof a.checks?.risk_score === 'number'
+                        ? <span className={`rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold ${a.checks.risk_score >= 60 ? 'bg-red-400/10 text-red-300' : a.checks.risk_score >= 30 ? 'bg-[#d4af37]/10 text-[#d4af37]' : 'bg-emerald-400/10 text-emerald-300'}`}>{a.checks.risk_score}</span>
+                        : <span className="font-mono text-[10px] text-[#5f5b50]">—</span>}
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-2.5">
+                      {a.status === 'hired'
+                        ? <span className="rounded-md bg-emerald-400/10 px-1.5 py-0.5 text-[10px] font-bold uppercase text-emerald-300">Hired</span>
+                        : <select value={a.status} onChange={(e) => setAppStatus(a.id, e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-1.5 py-1 text-[11px] text-[#e9e7df]">
+                          {APP_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                        </select>}
+                    </td>
+                    <td className="py-2.5 pl-2 text-right">
+                      {a.status !== 'hired' && (
+                        <button onClick={() => hireApp(a)} disabled={busy} className="rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1.5 text-[11px] font-bold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-50">Hire ✓</button>
+                      )}
+                    </td>
+                  </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {!apps.length && !loading && <p className="py-6 text-center text-sm text-[#8a8577]">No applications yet.</p>}
+          </div>
+          {apps.length > 0 && (
+            <p className="mt-2 text-[11px] text-[#6a665a]">Click a candidate for cover letter, checks and trial brief.</p>
+          )}
+
+          <div className="mb-2 mt-6 flex items-center gap-3">
+            <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Probation ({trials.length})</h3>
+            <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+            <button onClick={loadTrials} className="text-[11px] text-[#8a8577] hover:text-[#e9e7df]">Refresh</button>
+          </div>
+          <div className="space-y-2">
+            {trials.map((u) => {
+              const days = u.trial_ends_at ? Math.max(0, Math.ceil((new Date(u.trial_ends_at) - Date.now()) / 864e5)) : null;
+              return (
+                <div key={u.id} className="flex flex-wrap items-center gap-2 rounded-[10px] border border-white/[0.07] bg-black/20 px-3 py-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-semibold text-[#f0ecdd]">{u.username || u.name || u.email}</div>
+                    <div className="font-mono text-[11px] text-[#8a8577]">{u.email} · {u.role}{days !== null ? ` · ${days}d left` : ''}</div>
+                  </div>
+                  <button onClick={() => confirmTrial(u)} className="rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1.5 text-[11px] font-bold text-[#0a0a0f] transition hover:opacity-90">Confirm ✓</button>
+                </div>
+              );
+            })}
+            {!trials.length && <p className="text-xs text-[#6a665a]">Nobody on probation — new hires land here automatically for review.</p>}
+          </div>
+
+          <div className="mb-2 mt-6 flex items-center gap-3">
+            <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">TBC payroll ({roster.length})</h3>
+            <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+            <button onClick={loadRoster} className="text-[11px] text-[#8a8577] hover:text-[#e9e7df]">Refresh</button>
+          </div>
+          <p className="mb-2 text-[11px] leading-relaxed text-[#6a665a]">Salary deposited directly to TBC wallet. They cash out via Convert → bank withdrawal.</p>
+          <div className="overflow-x-auto -mx-2 px-2">
+            <table className="w-full min-w-[480px] text-sm">
+              <thead>
+                <tr className="text-left text-[10px] uppercase tracking-wider text-[#5f5b50]">
+                  <th className="pb-2 font-semibold">Staff</th>
+                  <th className="pb-2 font-semibold">Contract</th>
+                  <th className="pb-2 text-right font-semibold">Pay (TBC)</th>
+                </tr>
+              </thead>
+              <tbody className="[&_tr]:border-t [&_tr]:border-white/5">
+                {roster.map((r) => (
+                  <tr key={r.email}>
+                    <td className="py-2 pr-2">
+                      <div className="truncate text-sm font-semibold text-[#f0ecdd]">{r.name || r.email}</div>
+                      <div className="truncate font-mono text-[11px] text-[#6a665a]">{r.email} · {r.title}</div>
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-2 font-mono text-[11px] text-[#8a8577]">{Number(r.salary_tbc) > 0 ? `${r.salary_tbc} TBC/${r.salary_freq === 'weekly' ? 'wk' : 'mo'}` : '—'}</td>
+                    <td className="py-2 pl-2 text-right">
+                      <input type="number" min="0" value={payAmounts[r.email] ?? ''} onChange={(e) => setPayAmounts({ ...payAmounts, [r.email]: e.target.value })} placeholder="0" className={`${input} !w-24 !py-1.5 text-right font-mono`} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {!roster.length && <p className="py-4 text-center text-xs text-[#6a665a]">No hired staff yet — payroll fills as you hire.</p>}
+          </div>
+          {roster.length > 0 && (
+            <button onClick={runPayroll} disabled={payBusy} className="mt-3 w-full rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-50">
+              {payBusy ? 'Paying…' : 'Run payroll (TBC)'}
+            </button>
+          )}
+          {payResult && (
+            <div className="mt-2 rounded-[10px] border border-[#d4af37]/20 bg-black/20 p-3 text-xs">
+              <div className="font-bold text-[#f0ecdd]">Run {payResult.run}: {payResult.paid} paid · {payResult.failed} failed · {payResult.total} TBC</div>
+              {(payResult.results || []).filter((x) => !x.ok).map((x) => (
+                <div key={x.email} className="mt-1 text-red-300">{x.email}: {x.error}</div>
+              ))}
+              <button onClick={() => setPayResult(null)} className="mt-2 text-[#8a8577] hover:text-[#e9e7df]">Dismiss</button>
+            </div>
+          )}
         </div>
       </div>
     </AdminLayout>
@@ -3465,28 +4011,316 @@ function DigestPanel() {
   };
 
   return (
-    <div className="glass mt-5 max-w-xl rounded-2xl p-4 sm:p-5">
-      <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><Mail className="h-4 w-4 text-[#d4af37]" /> Sunday Email Digest</h3>
+    <div className="glass rounded-[10px] p-4 sm:p-5">
+      <h3 className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]"><Mail className="h-4 w-4 text-[#d4af37]" /> Sunday Email Digest</h3>
       <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">
         Summarizes the coming week's economic calendar and emails every user on Sundays at the configured hour (UTC).
         Enable it with the toggle above, then install the server cron once via <span className="font-mono text-[#d4af37]">bash deploy/digest-cron.sh</span> on the VPS.
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
-        <button disabled={busy} onClick={() => run(true)} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2.5 text-sm font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60 disabled:opacity-60">
+        <button disabled={busy} onClick={() => run(true)} className="flex items-center gap-2 rounded-[10px] border border-[#d4af37]/25 px-4 py-2.5 text-sm font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60 disabled:opacity-60">
           <Eye className="h-4 w-4" /> Preview
         </button>
-        <button disabled={busy} onClick={() => run(false)} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-semibold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-60">
+        <button disabled={busy} onClick={() => run(false)} className="flex items-center gap-2 rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-bold text-[#0a0a0f] transition hover:brightness-105 disabled:opacity-60">
           <Mail className="h-4 w-4" /> {busy ? 'Sending…' : 'Send now'}
         </button>
       </div>
       {last && (
-        <div className="mt-4 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] p-3 text-xs text-[#c9c4b4]">
+        <div className="mt-4 rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] p-3 text-xs text-[#c9c4b4]">
           {last.subject && <p className="font-semibold text-[#f0ecdd]">{last.subject}</p>}
           {last.summary && <p className="mt-1 whitespace-pre-line leading-relaxed">{last.summary}</p>}
           {last.sent !== undefined && <p className="mt-1 text-[#8a8577]">Sent {last.sent}/{last.total} · {last.eventCount ?? 0} events</p>}
         </div>
       )}
     </div>
+  );
+}
+
+/* ─── ADMIN EMPLOYEES ──────────────────────────────────────────── */
+export function AdminEmployees() {
+  const { users } = useUsers();
+  const [roster, setRoster] = useState([]);
+  const [history, setHistory] = useState({});
+  const [aiWork, setAiWork] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const call = async (path) => {
+    const res = await fetch(`${API_SERVER_URL}/admin/jobs${path}`, {
+      headers: { Authorization: `Bearer ${pb.authStore.token}` },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
+    return data;
+  };
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [r, p, h] = await Promise.all([
+        call('/payroll').catch(() => []),
+        call('/postings').catch(() => []),
+        fetch(`${API_SERVER_URL}/admin/jobs/payroll/history`, { headers: { Authorization: `Bearer ${pb.authStore.token}` } }).then((x) => (x.ok ? x.json() : [])).catch(() => []),
+      ]);
+      setRoster(Array.isArray(r) ? r : []);
+      setAiWork((Array.isArray(p) ? p : []).filter((x) => /ai-executed/i.test(x.title || '')));
+      const byOwner = {};
+      for (const row of Array.isArray(h) ? h : []) byOwner[row.owner] = row;
+      setHistory(byOwner);
+    } catch {
+      setRoster([]);
+      setAiWork([]);
+      setHistory({});
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const emailToId = useMemo(() => {
+    const m = {};
+    for (const u of users || []) if (u.email) m[String(u.email).toLowerCase()] = u.id;
+    return m;
+  }, [users]);
+  // Founder first, then VP, then everyone else by hire date.
+  const rankOf = (r) => {
+    const t = String(r.title || '');
+    if (/founder|chief executive/i.test(t)) return 0;
+    if (/vice president/i.test(t)) return 1;
+    return 2;
+  };
+  const orderedRoster = useMemo(() => [...roster].sort((a, b) => {
+    const d = rankOf(a) - rankOf(b);
+    if (d !== 0) return d;
+    return String(a.hiredAt || '') < String(b.hiredAt || '') ? -1 : 1;
+  }), [roster]);
+  const histFor = (email) => history[emailToId[String(email || '').toLowerCase()]] || null;
+  const totalPaidAll = roster.reduce((n, r) => { const h = histFor(r.email); return n + (h ? Number(h.totalPaidTbc) || 0 : 0); }, 0);
+
+  return (
+    <AdminLayout title="Employees">
+      <div className="grid gap-3 grid-cols-2 xl:grid-cols-4">
+        <Stat icon={Users} label="Employed Staff" value={roster.length.toLocaleString()} sub="Hired via Jobs & Hiring" color="#10b981" />
+        <Stat icon={Wallet} label="Monthly Payroll" value={`${roster.reduce((n, r) => n + (String(r.salary_freq) === 'monthly' ? Number(r.salary_tbc) || 0 : 0), 0).toLocaleString()} TBC`} sub="Monthly contracts only" color="#d4af37" />
+        <Stat icon={DollarSign} label="Total Paid Out" value={`${Math.round(totalPaidAll).toLocaleString()} TBC`} sub="All payroll runs, all time" color="#10b981" />
+        <Stat icon={Bot} label="AI Work Records" value={aiWork.length.toLocaleString()} sub="$0 · never payroll" color="#38bdf8" />
+      </div>
+      <div className="glass mt-4 rounded-2xl p-4 sm:p-5">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><Users className="h-4 w-4 text-[#d4af37]" /> Employed staff</h3>
+          <button onClick={load} className="rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><RefreshCw className="h-4 w-4" /></button>
+        </div>
+        {loading ? <p className="text-sm text-[#8a8577]">Loading…</p> : roster.length ? (
+          <div className="overflow-x-auto -mx-2 px-2">
+            <table className="w-full min-w-[760px] text-sm">
+              <thead>
+                <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
+                  <th className="pb-2 font-medium">Name</th>
+                  <th className="pb-2 font-medium">Title</th>
+                  <th className="pb-2 font-medium">Salary</th>
+                  <th className="pb-2 font-medium">Hired</th>
+                  <th className="pb-2 font-medium">Last paid</th>
+                  <th className="pb-2 font-medium">Total paid</th>
+                  <th className="pb-2 font-medium text-right">Runs</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orderedRoster.map((r) => {
+                  const h = histFor(r.email);
+                  return (
+                    <tr key={r.appId || r.email} className="border-b border-white/5">
+                      <td className="py-2.5">
+                        <div className="font-semibold text-[#f0ecdd]">{r.name || 'Staff member'}</div>
+                        <div className="font-mono text-[11px] text-[#6a665a]">{r.email}</div>
+                      </td>
+                      <td className="py-2.5 text-[#c9c4b4]">{r.title || 'Opening'}</td>
+                      <td className="py-2.5 font-mono text-xs text-[#d4af37]">{Number(r.salary_tbc) > 0 ? `${r.salary_tbc} TBC/${r.salary_freq === 'weekly' ? 'wk' : 'mo'}` : '$0'}</td>
+                      <td className="py-2.5 font-mono text-xs text-[#8a8577]">{r.hiredAt ? String(r.hiredAt).slice(0, 10) : '—'}</td>
+                      <td className="py-2.5 font-mono text-xs text-[#8a8577]">{h?.lastPaidAt ? String(h.lastPaidAt).slice(0, 10) : 'Never'}</td>
+                      <td className="py-2.5 font-mono text-xs text-[#f0ecdd]">{h ? `${Math.round(Number(h.totalPaidTbc) || 0).toLocaleString()} TBC` : '0 TBC'}</td>
+                      <td className="py-2.5 text-right font-mono text-xs text-[#8a8577]">{h?.runs ?? 0}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : <p className="text-sm text-[#8a8577]">No hired staff yet. Hire from an application in Jobs &amp; Hiring and they appear here.</p>}
+      </div>
+      <Collapse title="AI-executed work log" sub="$0 · never employment, never payroll" count={aiWork.length} defaultOpen={false}>
+        {aiWork.length ? (
+          <div className="space-y-2">
+            {aiWork.map((w) => (
+              <div key={w.id} className="rounded-[10px] border border-[#38bdf8]/20 bg-[#0f0f14] px-3 py-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-sm font-semibold text-[#f0ecdd]">{w.title}</div>
+                  <span className="rounded-md bg-[#38bdf8]/10 px-2 py-0.5 font-mono text-[10px] text-[#38bdf8]">{w.status} · $0</span>
+                </div>
+                {w.description && <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{w.description}</p>}
+                <div className="mt-1 font-mono text-[11px] text-[#6a665a]">{w.department || 'Engineering'} · {String(w.created || '').slice(0, 10)}</div>
+              </div>
+            ))}
+          </div>
+        ) : <p className="text-sm text-[#8a8577]">No AI work records yet.</p>}
+      </Collapse>
+    </AdminLayout>
+  );
+}
+
+/* ─── ADMIN MENTORS ──────────────────────────────────────────────── */
+export function AdminMentors() {
+  const { toast } = useToast();
+  const [mentors, setMentors] = useState([]);
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(null);
+  const [q, setQ] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = pb.authStore.token;
+      const [m, s] = await Promise.all([
+        fetch(`${API_SERVER_URL}/admin/mentors`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => (r.ok ? r.json() : [])),
+        fetch(`${API_SERVER_URL}/admin/mentors/sessions`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => (r.ok ? r.json() : [])),
+      ]);
+      setMentors(Array.isArray(m) ? m : []);
+      setSessions(Array.isArray(s) ? s : []);
+    } catch {
+      setMentors([]);
+      setSessions([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const toggle = async (m) => {
+    setBusy(m.owner);
+    try {
+      const res = await fetch(`${API_SERVER_URL}/admin/mentors/${encodeURIComponent(m.owner)}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: !m.enabled }),
+      });
+      if (!res.ok) throw new Error('update failed');
+      toast({ title: m.enabled ? 'Mentor hidden' : 'Mentor published' });
+      load();
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Failed', description: String(err.message || err) });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const shown = mentors.filter((m) => !q || `${m.owner} ${m.headline} ${(m.topics || []).join(' ')}`.toLowerCase().includes(q.toLowerCase()));
+  const booked = sessions.filter((s) => s.status === 'booked').length;
+
+  return (
+    <AdminLayout title="Mentors">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          ['Mentors', mentors.length],
+          ['Published', mentors.filter((m) => m.enabled).length],
+          ['Sessions', sessions.length],
+          ['Booked', booked],
+        ].map(([label, value]) => (
+          <div key={label} className="glass rounded-2xl p-4">
+            <div className="text-[11px] uppercase tracking-wider text-[#8a8577]">{label}</div>
+            <div className="mt-1 font-mono text-xl font-bold text-[#f0ecdd]">{value}</div>
+          </div>
+        ))}
+      </div>
+      <div className="glass mt-4 rounded-2xl p-4 sm:p-5">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><GraduationCap className="h-4 w-4 text-[#d4af37]" /> Mentor directory</h3>
+          <div className="flex items-center gap-2">
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search mentors…" className="w-48 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
+            <button onClick={load} className="rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><RefreshCw className="h-4 w-4" /></button>
+          </div>
+        </div>
+        {loading ? <p className="text-sm text-[#8a8577]">Loading…</p> : shown.length ? (
+          <div className="space-y-2">
+            {shown.map((m) => (
+              <div key={m.owner} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2.5">
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-semibold text-[#f0ecdd]">{m.headline || 'Untitled mentor'}</div>
+                  <div className="mt-0.5 truncate font-mono text-xs text-[#8a8577]">{String(m.owner).slice(0, 8)}… · {(m.topics || []).join(', ') || 'no topics'} · ${m.price_usd ?? 0}</div>
+                </div>
+                <button disabled={busy === m.owner} onClick={() => toggle(m)} className={`rounded-lg border px-3 py-1.5 text-xs ${m.enabled ? 'border-emerald-500/40 text-emerald-300' : 'border-[#d4af37]/30 text-[#d4af37]'} disabled:opacity-60`}>
+                  {m.enabled ? 'Published — hide' : 'Hidden — publish'}
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : <p className="text-sm text-[#8a8577]">No mentors yet. New coaches appear here after they register on /app/mentors; staff hires are staged from Jobs &amp; Hiring.</p>}
+      </div>
+      <Collapse title="Recent sessions" count={sessions.length} defaultOpen={false}>
+        {sessions.length ? (
+          <div className="space-y-2">
+            {sessions.slice(0, 25).map((s) => (
+              <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2 text-sm">
+                <div className="min-w-0 truncate text-[#c9c4b4]">{s.topic || 'Session'} · <span className="font-mono text-xs tabular-nums text-[#8a8577]">{s.scheduled_for ? String(s.scheduled_for).slice(0, 16).replace('T', ' ') : 'unscheduled'}</span></div>
+                <div className="font-mono text-xs tabular-nums text-[#d4af37]">${s.price_usd ?? 0} · {s.status}</div>
+              </div>
+            ))}
+          </div>
+        ) : <p className="text-sm text-[#8a8577]">No sessions booked yet.</p>}
+      </Collapse>
+    </AdminLayout>
+  );
+}
+
+/* ─── ADMIN WALLET ───────────────────────────────────────────────── */
+export function AdminWallet() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = pb.authStore.token;
+      const res = await fetch(`${API_SERVER_URL}/admin/wallet/overview`, { headers: { Authorization: `Bearer ${token}` } });
+      setData(res.ok ? await res.json() : null);
+    } catch {
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  return (
+    <AdminLayout title="Wallet & Staking">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          ['Tracked wallets', data?.trackedWallets ?? '—'],
+          ['Rails onboarded', data?.railsOnboarded ?? '—'],
+          ['KYC verified', data?.kycVerified ?? '—'],
+          ['Crypto accounts', data?.cryptoAccounts ?? '—'],
+        ].map(([label, value]) => (
+          <div key={label} className="glass rounded-2xl p-4">
+            <div className="text-[11px] uppercase tracking-wider text-[#8a8577]">{label}</div>
+            <div className="mt-1 font-mono text-xl font-bold text-[#f0ecdd]">{value}</div>
+          </div>
+        ))}
+      </div>
+      <Collapse title="Recent money movement" sub="Read-only oversight" count={data?.recentTransactions?.length ?? 0} defaultOpen={false}>
+        <div className="mb-3 flex justify-end">
+          <button onClick={load} className="rounded-[10px] border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><RefreshCw className="h-4 w-4" /></button>
+        </div>
+        {loading ? <p className="text-sm text-[#8a8577]">Loading…</p> : data?.recentTransactions?.length ? (
+          <div className="space-y-2">
+            {data.recentTransactions.map((t) => (
+              <div key={t.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2 text-sm">
+                <div className="min-w-0 truncate text-[#c9c4b4]">{t.kind || 'transfer'} · <span className="font-mono text-xs tabular-nums text-[#8a8577]">{t.reference || String(t.id).slice(0, 8)}</span></div>
+                <div className="font-mono text-xs tabular-nums text-[#d4af37]">{t.amount} {String(t.currency || 'USD').toUpperCase()} · {t.status}</div>
+              </div>
+            ))}
+          </div>
+        ) : <p className="text-sm text-[#8a8577]">No transactions yet. Withdrawal approvals live under Billing &amp; Revenue; per-user funding detail under User Management.</p>}
+        <p className="mt-3 text-xs text-[#6a665a]">Read-only oversight — value movement stays in user-scoped wallet routes and billing refunds.</p>
+      </Collapse>
+    </AdminLayout>
   );
 }
 
@@ -3594,52 +4428,61 @@ export function AdminSettings() {
           </span>
         </div>
       </section>
-      <div className="flex flex-wrap gap-1 mb-6 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] p-1 w-fit">
+      <div className="flex flex-wrap gap-1 mb-6 rounded-[10px] border border-white/10 bg-black/30 p-1 w-fit max-w-full overflow-x-auto">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}
-            className={`flex items-center gap-2 rounded-lg px-3 sm:px-4 py-2 text-sm transition ${tab === id ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#c9c4b4]'}`}>
+            className={`flex items-center gap-1.5 whitespace-nowrap rounded-[8px] px-3 py-2 text-[13px] font-bold transition ${tab === id ? 'bg-gradient-to-b from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_4px_14px_-6px_rgba(212,175,55,0.6)]' : 'text-[#8a8577] hover:bg-white/5 hover:text-[#e9e7df]'}`}>
             <Icon className="h-3.5 w-3.5" /><span className="hidden sm:inline">{label}</span>
           </button>
         ))}
       </div>
 
       {tab === 'general' && (
-        <form onSubmit={save} className="glass max-w-xl rounded-2xl p-4 sm:p-5 space-y-5">
-          <h3 className="font-semibold text-[#f0ecdd]">General Configuration</h3>
-          <div className="text-xs text-[#8a8577]">
-            {saveState === 'saving' && 'Saving automatically...'}
-            {saveState === 'saved' && 'All changes saved'}
-            {saveState === 'error' && 'Autosave failed'}
-            {saveState === 'idle' && 'Changes save automatically'}
-          </div>
-          {[['platformName', 'Platform Name', 'text'], ['tagline', 'Tagline', 'text'], ['supportEmail', 'Support Email', 'email'], ['digestHourUTC', 'Weekly Digest Hour (UTC, Sundays)', 'number']].map(([k, l, t]) => (
-            <div key={k}>
-              <label className="mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">{l}</label>
-              <input type={t} value={settings[k]} onChange={e => setSettings({ ...settings, [k]: t === 'number' ? Number(e.target.value) : e.target.value })}
-                className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
+        <form onSubmit={save} className="grid items-start gap-4 xl:grid-cols-2">
+          <div className="glass rounded-[10px] p-4 sm:p-5">
+            <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Identity</h3>
+            <p className="mb-4 mt-1 text-xs text-[#8a8577]">Name, contact and schedule.</p>
+            <div className="space-y-3">
+            {[['platformName', 'Platform Name', 'text'], ['tagline', 'Tagline', 'text'], ['supportEmail', 'Support Email', 'email'], ['digestHourUTC', 'Weekly Digest Hour (UTC, Sundays)', 'number']].map(([k, l, t]) => (
+              <div key={k}>
+                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[#8a8577]">{l}</label>
+                <input type={t} value={settings[k]} onChange={e => setSettings({ ...settings, [k]: t === 'number' ? Number(e.target.value) : e.target.value })}
+                  className="w-full rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm tabular-nums text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
+              </div>
+            ))}
             </div>
-          ))}
-          {[['signupsOpen', 'Allow new sign-ups'], ['maintenance', 'Maintenance mode'], ['emailVerification', 'Require email verification'], ['enforceBrokerSync', 'Broker-sync-only trades (no manual entry)'], ['allowManualPropAccounts', 'Allow manual prop-account entry'], ['digestEnabled', 'Sunday economic-calendar email digest']].map(([k, l]) => (
-            <label key={k} className="flex items-center justify-between rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
-              <span className="text-sm text-[#c9c4b4]">{l}</span>
-              <input type="checkbox" checked={settings[k]} onChange={e => setSettings({ ...settings, [k]: e.target.checked })} className="h-5 w-5 accent-[#d4af37]" />
-            </label>
-          ))}
-          <button className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90"><Save className="h-4 w-4" /> Save Settings</button>
+          </div>
+          <div className="space-y-4">
+            <div className="glass rounded-[10px] p-4 sm:p-5">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Access & automation</h3>
+                <span className="font-mono text-[10px] tabular-nums text-[#8a8577]">
+                  {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved ✓' : saveState === 'error' ? 'Save failed' : 'Autosave on'}
+                </span>
+              </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {[['signupsOpen', 'Allow new sign-ups'], ['maintenance', 'Maintenance mode'], ['emailVerification', 'Require email verification'], ['enforceBrokerSync', 'Broker-sync-only trades'], ['allowManualPropAccounts', 'Manual prop accounts'], ['digestEnabled', 'Sunday email digest']].map(([k, l]) => (
+                <label key={k} className="flex items-center justify-between gap-2 rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 cursor-pointer">
+                  <span className="text-[13px] text-[#c9c4b4]">{l}</span>
+                  <input type="checkbox" checked={settings[k]} onChange={e => setSettings({ ...settings, [k]: e.target.checked })} className="h-5 w-5 shrink-0 accent-[#d4af37]" />
+                </label>
+              ))}
+              </div>
+              <button className="mt-3 flex items-center gap-2 rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-bold text-[#0a0a0f] hover:brightness-105"><Save className="h-4 w-4" /> Save Settings</button>
+            </div>
+            <DigestPanel />
+          </div>
         </form>
       )}
 
-      {tab === 'general' && (
-        <DigestPanel />
-      )}
-
       {tab === 'features' && (
-        <div className="glass max-w-xl rounded-2xl p-4 sm:p-5 space-y-3">
-          <h3 className="font-semibold text-[#f0ecdd] mb-4">Feature Toggles</h3>
+        <div className="glass max-w-3xl rounded-[10px] p-4 sm:p-5">
+          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd] mb-4">Feature Toggles</h3>
+          <div className="grid grid-cols-2 gap-2.5">
           {Object.entries(features).map(([k, v]) => {
             const labels = { aiCoach: 'SI Coach', academy: 'Academy', community: 'Community', economicCalendar: 'Economic Calendar', riskTools: 'Risk Tools', chartBuilder: 'Chart Builder', signals: 'Trading Signals', wallet: 'Wallet & Banking' };
             return (
-              <label key={k} className="flex items-center justify-between rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer hover:border-[#d4af37]/25 transition-colors">
+              <label key={k} className="flex items-center justify-between rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 cursor-pointer hover:border-[#d4af37]/25 transition-colors">
                 <div>
                   <div className="text-sm text-[#c9c4b4]">{labels[k] || k}</div>
                   <div className="text-xs text-[#6a665a]">{v ? 'Enabled — visible to users' : 'Disabled — hidden from navigation'}</div>
@@ -3651,14 +4494,16 @@ export function AdminSettings() {
               </label>
             );
           })}
-          <button onClick={() => toast({ title: 'Feature settings saved' })} className="mt-2 flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90"><Save className="h-4 w-4" /> Save</button>
+          </div>
+          <button onClick={() => toast({ title: 'Feature settings saved' })} className="mt-3 flex items-center gap-2 rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-bold text-[#0a0a0f] hover:brightness-105"><Save className="h-4 w-4" /> Save</button>
         </div>
       )}
 
       {tab === 'features' && (
-        <div className="glass mt-4 max-w-xl rounded-2xl p-4 sm:p-5 space-y-3">
-          <h3 className="font-semibold text-[#f0ecdd] mb-1">Plan Gates</h3>
+        <div className="glass mt-4 max-w-3xl rounded-[10px] p-4 sm:p-5 space-y-3">
+          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd] mb-1">Plan Gates</h3>
           <p className="text-xs text-[#8a8577] -mt-2">Minimum plan required per premium page. Takes effect on next page view — no deploy needed.</p>
+          <div className="grid gap-2.5 sm:grid-cols-2">
           {[
             ['reports', 'Reports & Analytics (/app/reports)'],
             ['coach', 'SI Coach (/app/coach)'],
@@ -3666,12 +4511,12 @@ export function AdminSettings() {
             ['branding', 'White-label Branding (/app/branding)'],
             ['apiKeys', 'API Keys (/app/api-keys)'],
           ].map(([k, label]) => (
-            <label key={k} className="flex items-center justify-between gap-4 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3">
-              <span className="text-sm text-[#c9c4b4]">{label}</span>
+            <label key={k} className="flex items-center justify-between gap-3 rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5">
+              <span className="truncate text-[13px] text-[#c9c4b4]">{label}</span>
               <select
                 value={settings.planGates?.[k] || 'elite'}
                 onChange={(e) => setSettings((p) => ({ ...p, planGates: { ...(p.planGates || {}), [k]: e.target.value } }))}
-                className="rounded-lg border border-[#d4af37]/25 bg-[#0f0f14] px-3 py-2 text-sm text-[#f0ecdd] outline-none"
+                className="shrink-0 rounded-lg border border-[#d4af37]/25 bg-[#0f0f14] px-2 py-2 text-[13px] text-[#f0ecdd] outline-none"
               >
                 <option value="pro" className="bg-[#0f0f14]">Pro and up</option>
                 <option value="elite" className="bg-[#0f0f14]">Elite and up</option>
@@ -3679,15 +4524,16 @@ export function AdminSettings() {
               </select>
             </label>
           ))}
+          </div>
         </div>
       )}
 
       {tab === 'security' && (
-        <div className="glass max-w-xl rounded-2xl p-4 sm:p-5 space-y-4">
-          <h3 className="font-semibold text-[#f0ecdd]">Security Settings</h3>
+        <div className="glass max-w-3xl rounded-[10px] p-4 sm:p-5 space-y-4">
+          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Security Settings</h3>
           {[['twoFARequired', 'Require 2FA for all users', 'Forces two-factor authentication on every account'],
             ['emailVerification', 'Enforce email verification', 'Users cannot trade until email is verified']].map(([k, l, d]) => (
-            <label key={k} className="flex items-start justify-between gap-4 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
+            <label key={k} className="flex items-start justify-between gap-4 rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 cursor-pointer">
               <div>
                 <div className="text-sm text-[#c9c4b4]">{l}</div>
                 <div className="text-xs text-[#6a665a] mt-0.5">{d}</div>
@@ -3695,7 +4541,7 @@ export function AdminSettings() {
               <input type="checkbox" checked={settings[k]} onChange={e => setSettings({ ...settings, [k]: e.target.checked })} className="mt-0.5 h-5 w-5 accent-[#d4af37] shrink-0" />
             </label>
           ))}
-          <div className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3">
+          <div className="rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5">
             <div className="flex items-center justify-between text-sm">
               <span className="text-[#c9c4b4]">Session Timeout</span>
               <select className="bg-transparent text-sm text-[#e9e7df] outline-none">
@@ -3703,7 +4549,482 @@ export function AdminSettings() {
               </select>
             </div>
           </div>
-          <button onClick={() => toast({ title: 'Security settings saved' })} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90"><Save className="h-4 w-4" /> Save</button>
+          <button onClick={() => toast({ title: 'Security settings saved' })} className="flex items-center gap-2 rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-bold text-[#0a0a0f] hover:brightness-105"><Save className="h-4 w-4" /> Save</button>
+        </div>
+      )}
+    </AdminLayout>
+  );
+}
+
+// ── Company Bible design system ─────────────────────────────────
+// Config-driven detail renderers: every section gets an icon, blurb and
+// field controls typed by content (text / textarea / code / email / url),
+// plus live visual previews (swatches, plan cards, timeline, TB-vs-TBC).
+const COMPANY_SECTIONS_UI = [
+  { id: 'identity', label: 'Identity', icon: Fingerprint, blurb: 'Name, mission, vision, voice — who TradingBible is and how it speaks.' },
+  { id: 'legal', label: 'Legal & Entity', icon: Landmark, blurb: 'Delaware LLC reality: formation, agent, DUNS, licence limits, liability.' },
+  { id: 'holdings', label: 'Holdings · TB / TBC', icon: Building2, blurb: 'Proposed parent, requested ticker, and the binding TB ≠ TBC distinction.' },
+  { id: 'brand', label: 'Brand System', icon: Palette, blurb: 'Colors, logo, typography, email shell, socials — the full look.' },
+  { id: 'contacts', label: 'Contacts', icon: Mail, blurb: 'Website and every official inbox.' },
+  { id: 'leadership', label: 'Leadership', icon: Users, blurb: 'Founder, VP, quant, team profile, adviser stance.' },
+  { id: 'markets', label: 'Markets & MT5', icon: BarChart3, blurb: 'Coverage, data feeds, MT5 bridge endpoints, liquidity doctrine.' },
+  { id: 'product', label: 'Product & Stack', icon: Cpu, blurb: 'Live version, tech stack, every surface, terminal IP, auth.' },
+  { id: 'monetization', label: 'Money', icon: Wallet, blurb: 'Plans, revenue lines, traction truth, payout rails.' },
+  { id: 'compliance', label: 'Compliance', icon: ShieldCheck, blurb: 'KYC, fund segregation, SEC/NGX filings, readiness costs.' },
+  { id: 'roadmap', label: 'Roadmap', icon: Rocket, blurb: 'Phases to IPO, first-90-day plan, end-state strategy.' },
+];
+
+const prettyLabel = (k) => String(k || '').replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase());
+
+function fieldKind(sectionId, key, value) {
+  const v = String(value ?? '');
+  if (/mt5|bridge|endpoint|POST |GET \/v1/i.test(v) || sectionId === 'markets' && key === 'mt5') return 'code';
+  if (v.includes('@') && /email|support|legal|privacy|ads|contact/i.test(key)) return 'email';
+  if (/url|website|twitter|discord|github|socials/i.test(key) || /^https?:\/\//i.test(v.trim())) return 'url';
+  if (v.length > 140) return 'textarea';
+  return 'text';
+}
+
+function hexesOf(value) {
+  return String(value || '').match(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b/g) || [];
+}
+
+function filledCount(obj) {
+  return Object.values(obj || {}).filter((v) => String(v ?? '').trim() !== '').length;
+}
+
+function openHref(kind, value) {
+  const v = String(value || '').trim();
+  if (!v) return null;
+  if (kind === 'email') return `mailto:${v.split(/\s|,/)[0]}`;
+  const m = v.match(/https?:\/\/[^\s,)]+/i) || v.match(/[\w-]+\.[\w.-]+(\/\S*)?/);
+  if (m) { const u = m[0]; return /^https?:\/\//i.test(u) ? u : `https://${u}`; }
+  return null;
+}
+
+// ── Company Bible (admin-only, A–Z, nothing hidden) ──────────────
+// Every company/brand fact in one editable page: identity, legal,
+// holdings TB/TBC, brand, contacts, leadership, markets/MT5, product,
+// money, compliance, roadmap. Stored via PUT /admin/company (row
+// `company:profile` in admin_integrations), autosaved like Settings.
+export function AdminCompany() {
+  const { toast } = useToast();
+  const [tab, setTab] = useState('identity');
+  // Always render from defaults immediately — server truth merges over on
+  // load. The page never sticks on "Loading…" when offline/unauthorized.
+  const freshDefaults = () => {
+    const f = {};
+    for (const k of Object.keys(COMPANY_DEFAULTS)) f[k] = { ...COMPANY_DEFAULTS[k] };
+    return f;
+  };
+  const [profile, setProfile] = useState(() => {
+    try {
+      const raw = localStorage.getItem('tb:company-profile:v1');
+      if (raw) {
+        const cached = JSON.parse(raw);
+        const merged = freshDefaults();
+        for (const k of Object.keys(merged)) merged[k] = { ...merged[k], ...(cached[k] || {}) };
+        return merged;
+      }
+    } catch { /* ignore */ }
+    return freshDefaults();
+  });
+  const [stored, setStored] = useState(false);
+  const [source, setSource] = useState('defaults');
+  const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState('');
+  const [saveState, setSaveState] = useState('idle');
+  const [copied, setCopied] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(null);
+  const [q, setQ] = useState('');
+
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      const result = await loadCompanyProfile();
+      if (!live) return;
+      setProfile(result.profile);
+      setStored(result.stored);
+      setSource(result.source);
+      setLoadError(result.error);
+      setLoaded(true);
+    })();
+    return () => { live = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Autosave only after the admin actually edits (dirty flag) — never a
+  // blind write-back on page open. 900ms debounce like Settings.
+  const dirty = useRef(false);
+  useEffect(() => {
+    if (!loaded || !dirty.current || !profile) return;
+    const timer = setTimeout(async () => {
+      setSaveState('saving');
+      try {
+        const result = await saveCompanyProfile(profile);
+        setStored(true);
+        setSource(result.source);
+        setLoadError(result.source === 'direct' ? 'Saved direct to database (API unreachable) ✓' : '');
+        setSaveState('saved');
+      } catch (e) {
+        setSaveState('error');
+        toast({ variant: 'destructive', title: 'Company save failed', description: e?.message || 'Please try again.' });
+      }
+    }, 900);
+    return () => clearTimeout(timer);
+  }, [profile, loaded, toast]);
+
+  const TABS = [
+    { id: 'identity', label: 'Identity' },
+    { id: 'legal', label: 'Legal' },
+    { id: 'holdings', label: 'Holdings TB/TBC' },
+    { id: 'brand', label: 'Brand' },
+    { id: 'contacts', label: 'Contacts' },
+    { id: 'leadership', label: 'Leadership' },
+    { id: 'markets', label: 'Markets & MT5' },
+    { id: 'product', label: 'Product' },
+    { id: 'monetization', label: 'Money' },
+    { id: 'compliance', label: 'Compliance' },
+    { id: 'roadmap', label: 'Roadmap' },
+  ];
+
+  const setField = (section, key, value) => {
+    dirty.current = true;
+    setSaveState('idle');
+    setProfile((p) => ({ ...p, [section]: { ...(p?.[section] || {}), [key]: value } }));
+  };
+
+  // Esc dismisses the reset dialog.
+  useEffect(() => {
+    if (!confirmReset) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setConfirmReset(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [confirmReset]);
+
+  if (!profile) {
+    return (
+      <AdminLayout title="Company Bible">
+        <p className="py-10 text-center text-sm text-[#8a8577]">Preparing company bible…</p>
+      </AdminLayout>
+    );
+  }
+
+  const needle = q.trim().toLowerCase();
+  const totals = COMPANY_SECTIONS_UI.reduce((s, sec) => {
+    const keys = Object.keys(profile[sec.id] || {});
+    s.fields += keys.length;
+    s.filled += filledCount(profile[sec.id]);
+    return s;
+  }, { fields: 0, filled: 0 });
+  const totalPct = totals.fields ? Math.round((totals.filled / totals.fields) * 100) : 0;
+
+  const exportJSON = () => {
+    const blob = new Blob([JSON.stringify(profile, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'tradingbible-company-bible.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+
+  const copyBrief = async () => {
+    try {
+      await navigator.clipboard.writeText(buildContextText(profile));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      toast({ variant: 'destructive', title: 'Copy failed', description: 'Clipboard blocked — select the SI brief manually.' });
+    }
+  };
+
+  const resetSection = (id) => setConfirmReset(id);
+
+  const doResetSection = () => {
+    if (!confirmReset) return;
+    dirty.current = true;
+    setSaveState('idle');
+    setProfile((p) => ({ ...p, [confirmReset]: { ...COMPANY_DEFAULTS[confirmReset] } }));
+    setConfirmReset(null);
+  };
+
+  const jumpTo = (secId, key) => {
+    setTab(secId);
+    setTimeout(() => {
+      document.getElementById(`cb-field-${secId}-${key}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 60);
+  };
+
+  const secMeta = COMPANY_SECTIONS_UI.find((s) => s.id === tab) || COMPANY_SECTIONS_UI[0];
+  const SecIcon = secMeta.icon;
+  const secKeys = Object.keys(profile[tab] || {});
+  const secFilled = filledCount(profile[tab]);
+  const holdings = profile.holdings || {};
+
+  const searchHits = (() => {
+    if (!needle) return null;
+    const hits = [];
+    for (const sec of COMPANY_SECTIONS_UI) {
+      for (const [k, v] of Object.entries(profile[sec.id] || {})) {
+        if (`${sec.label} ${k} ${v}`.toLowerCase().includes(needle)) hits.push({ sec: sec.id, label: sec.label, key: k, value: String(v) });
+      }
+    }
+    return hits.slice(0, 80);
+  })();
+
+  const renderField = (secId, k, v) => {
+    const kind = fieldKind(secId, k, v);
+    const match = needle && `${k} ${v}`.toLowerCase().includes(needle);
+    const href = kind === 'email' || kind === 'url' ? openHref(kind, v) : null;
+    const swatches = kind !== 'code' ? hexesOf(v) : [];
+    const base = 'w-full rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm leading-relaxed text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
+    return (
+      <div key={k} id={`cb-field-${secId}-${k}`} className={`scroll-mt-32 rounded-[12px] border p-3.5 transition ${match ? 'border-[#d4af37]/60 bg-[#d4af37]/[0.05]' : 'border-white/[0.06] bg-black/25 hover:border-[#d4af37]/25'}`}>
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <label className="text-[11px] font-bold uppercase tracking-wider text-[#c9c4b4]">{prettyLabel(k)}</label>
+          <span className="rounded-full bg-white/[0.05] px-2 py-0.5 font-mono text-[10px] text-[#6a665a]">{kind}</span>
+          {String(v ?? '').trim() === '' && <span className="rounded-full bg-red-400/10 px-2 py-0.5 text-[10px] font-bold text-red-400">empty</span>}
+          {href && (
+            <a href={href} target={kind === 'url' ? '_blank' : undefined} rel="noreferrer"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline">
+              {kind === 'email' ? 'Send mail' : 'Open link'} <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+          <span className="ml-auto font-mono text-[10px] text-[#6a665a]">{String(v ?? '').length} chars</span>
+        </div>
+        {kind === 'text' || kind === 'email' || kind === 'url' ? (
+          <input value={String(v ?? '')} onChange={(e) => setField(secId, k, e.target.value)} className={base} />
+        ) : (
+          <textarea value={String(v ?? '')} onChange={(e) => setField(secId, k, e.target.value)}
+            rows={kind === 'code' ? 5 : String(v || '').length > 300 ? 5 : 3}
+            spellCheck={false}
+            className={`${base} ${kind === 'code' ? 'font-mono text-[12px] text-[#e8c95a]' : ''}`} />
+        )}
+        {swatches.length > 0 && (
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {swatches.map((hex, i) => (
+              <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 py-0.5 pl-0.5 pr-2.5">
+                <span className="h-5 w-5 rounded-full border border-white/20" style={{ background: hex }} />
+                <span className="font-mono text-[10px] text-[#c9c4b4]">{hex}</span>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <AdminLayout title="Company Bible">
+      {/* ── Hero ── */}
+      <section className="cb-scope relative mb-5 overflow-hidden rounded-2xl border border-[#d4af37]/20 bg-gradient-to-br from-[#141309] via-[#0c0c11] to-[#0a0a0f] p-5 sm:p-7">
+        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#d4af37]/15 blur-[110px]" />
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/10 text-[#d4af37] shadow-[0_0_30px_rgba(212,175,55,0.25)]">
+              <LibraryBig className="h-7 w-7" />
+            </span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Company Bible <span className="tb-gold-text">A–Z</span></h2>
+                <span className="rounded-full bg-[#d4af37]/15 px-2.5 py-0.5 text-[11px] font-bold text-[#d4af37]">{totals.filled}/{totals.fields} fields · {totalPct}%</span>
+              </div>
+              <p className="mt-1 max-w-2xl text-xs leading-relaxed text-[#8a8577] sm:text-sm">
+                Every company & brand fact in one place — identity, legal, holdings, brand, markets, money, compliance, roadmap.
+                Nothing hidden. SI reads this as truth. Edits autosave.
+              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
+                <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-semibold ${saveState === 'error' ? 'border-red-500/40 text-red-400' : saveState === 'saving' ? 'border-[#d4af37]/40 text-[#d4af37]' : 'border-emerald-500/30 text-emerald-300'}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${saveState === 'error' ? 'bg-red-400' : saveState === 'saving' ? 'animate-pulse bg-[#d4af37]' : 'bg-emerald-400'}`} />
+                  {saveState === 'saving' ? 'Saving…' : saveState === 'error' ? 'Save failed' : saveState === 'idle' ? 'Autosave on' : 'All changes saved ✓'}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-2.5 py-1 font-semibold text-[#8a8577]">
+                  {stored ? `Stored on server · via ${source}` : 'Defaults · not stored yet'}
+                </span>
+                {!loaded
+                  ? <span className="text-[#8a8577]">Loading server truth…</span>
+                  : loadError
+                    ? <span className="max-w-full truncate text-amber-400" title={loadError}>{loadError}</span>
+                    : <span className="text-emerald-400">Live ✓</span>}
+              </div>
+            </div>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <button onClick={exportJSON} className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-[#d4af37]/30 px-3.5 text-xs font-bold text-[#d4af37] hover:bg-[#d4af37]/10">
+              <Download className="h-3.5 w-3.5" /> Export JSON
+            </button>
+            <button onClick={copyBrief} className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3.5 text-xs font-bold text-[#0a0a0f] hover:brightness-105">
+              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />} {copied ? 'Copied!' : 'Copy SI brief'}
+            </button>
+          </div>
+        </div>
+        <div className="relative mt-4">
+          <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+            <div className="h-full rounded-full bg-gradient-to-r from-[#a67c1e] via-[#d4af37] to-[#f4e6a8] transition-all" style={{ width: `${totalPct}%` }} />
+          </div>
+        </div>
+        <div className="relative mt-3 flex items-center gap-2 rounded-xl border border-[#d4af37]/20 bg-[#0f0f14]/90 px-3 py-2">
+          <Search className="h-4 w-4 shrink-0 text-[#d4af37]" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search everything A–Z — try TB, TBC, DUNS, MT5, Nasdaq, support@…" className="w-full bg-transparent py-1 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none" />
+          {q && <button onClick={() => setQ('')} className="shrink-0 text-[11px] font-bold text-[#8a8577] hover:text-[#e9e7df]">Clear</button>}
+        </div>
+      </section>
+
+      {searchHits ? (
+        <div className="cb-scope glass rounded-[12px] p-4 sm:p-5">
+          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">
+            {searchHits.length} match{searchHits.length === 1 ? '' : 'es'} for “{q}”
+          </h3>
+          <div className="mt-3 space-y-2">
+            {searchHits.map((h, i) => (
+              <button key={i} onClick={() => jumpTo(h.sec, h.key)} className="block w-full rounded-xl border border-white/[0.06] bg-black/25 p-3 text-left transition hover:border-[#d4af37]/35">
+                <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">{h.label} · {prettyLabel(h.key)}</div>
+                <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-[#c9c4b4]">{h.value}</p>
+                <span className="mt-1 inline-block text-[11px] font-semibold text-[#8a8577]">Jump to field →</span>
+              </button>
+            ))}
+            {searchHits.length === 0 && <p className="py-4 text-center text-xs text-[#8a8577]">Nothing matches. Clear the search to browse sections.</p>}
+          </div>
+        </div>
+      ) : (
+        <div className="cb-scope grid items-start gap-4 xl:grid-cols-[264px_minmax(0,1fr)]">
+          {/* ── Section rail ── */}
+          <div className="xl:sticky xl:top-32">
+            <div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1 xl:grid xl:gap-1 xl:overflow-visible xl:pb-0">
+              {COMPANY_SECTIONS_UI.map((sec) => {
+                const active = tab === sec.id;
+                const n = Object.keys(profile[sec.id] || {}).length;
+                const f = filledCount(profile[sec.id]);
+                const Icon = sec.icon;
+                return (
+                  <button key={sec.id} onClick={() => setTab(sec.id)}
+                    className={`flex min-w-[150px] items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition xl:min-w-0 ${active ? 'border-[#d4af37]/50 bg-[#d4af37]/[0.09] shadow-[0_0_20px_rgba(212,175,55,0.12)]' : 'border-white/[0.06] bg-black/25 hover:border-[#d4af37]/25'}`}>
+                    <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${active ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'bg-white/[0.04] text-[#8a8577]'}`}>
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className={`block truncate text-[13px] font-bold ${active ? 'text-[#f0ecdd]' : 'text-[#c9c4b4]'}`}>{sec.label}</span>
+                      <span className="block font-mono text-[10px] text-[#6a665a]">{f}/{n} filled</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            {/* SI brief card */}
+            <div className="mt-3 hidden rounded-xl border border-[#d4af37]/20 bg-[#0c0c11]/90 p-3.5 xl:block">
+              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">
+                <Sparkles className="h-3.5 w-3.5" /> SI reads this
+              </div>
+              <p className="mt-1.5 font-mono text-[10px] leading-relaxed text-[#6a665a]">
+                {buildContextText(profile).slice(0, 220)}…
+              </p>
+              <button onClick={copyBrief} className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/30 px-2 py-2 text-[11px] font-bold text-[#d4af37] hover:bg-[#d4af37]/10">
+                {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />} {copied ? 'Copied!' : 'Copy full SI brief'}
+              </button>
+            </div>
+          </div>
+
+          {/* ── Section detail ── */}
+          <div className="min-w-0">
+            <div className="glass rounded-[12px] p-4 sm:p-6">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#d4af37]/15 text-[#d4af37]">
+                    <SecIcon className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="text-base font-extrabold text-[#f0ecdd] sm:text-lg">{secMeta.label}</h3>
+                    <p className="mt-0.5 text-xs leading-relaxed text-[#8a8577]">{secMeta.blurb}</p>
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="rounded-full bg-white/[0.05] px-2.5 py-1 font-mono text-[11px] text-[#8a8577]">{secFilled}/{secKeys.length}</span>
+                  <button onClick={() => resetSection(tab)} title="Reset this section to defaults"
+                    className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-2.5 py-1.5 text-[11px] font-semibold text-[#8a8577] hover:border-red-400/40 hover:text-red-400">
+                    <RotateCcw className="h-3 w-3" /> Reset
+                  </button>
+                </div>
+              </div>
+              <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+                <div className="h-full rounded-full bg-gradient-to-r from-[#a67c1e] to-[#f4e6a8]" style={{ width: `${secKeys.length ? Math.round((secFilled / secKeys.length) * 100) : 0}%` }} />
+              </div>
+
+              {/* Holdings banner: TB vs TBC at a glance */}
+              {tab === 'holdings' && (
+                <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+                  <div className="rounded-xl border border-[#d4af37]/40 bg-[#d4af37]/[0.07] p-4">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#d4af37]">Stock · requested</div>
+                    <div className="mt-1 font-mono text-2xl font-black text-[#f0ecdd]">{holdings.ticker || 'TB'}</div>
+                    <p className="mt-1 text-[11px] leading-relaxed text-[#c9c4b4]">{holdings.tickerStatus || ''}</p>
+                  </div>
+                  <div className="rounded-xl border border-violet-400/30 bg-violet-400/[0.06] p-4">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-violet-300">Coin · proposed</div>
+                    <div className="mt-1 font-mono text-2xl font-black text-[#f0ecdd]">{holdings.coin || 'TBC'}</div>
+                    <p className="mt-1 line-clamp-3 text-[11px] leading-relaxed text-[#c9c4b4]">{holdings.coinStatus || ''}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Money banner: plan prices at a glance */}
+              {tab === 'monetization' && profile.monetization?.plans && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {String(profile.monetization.plans).split('·').map((p, i) => (
+                    <span key={i} className="rounded-full border border-[#d4af37]/30 bg-[#d4af37]/[0.07] px-3 py-1.5 font-mono text-[11px] font-bold text-[#e8c95a]">{p.trim()}</span>
+                  ))}
+                </div>
+              )}
+
+              {/* Roadmap banner: phase timeline */}
+              {tab === 'roadmap' && profile.roadmap?.phases && (
+                <ol className="mt-4 space-y-0">
+                  {String(profile.roadmap.phases).split('→').map((p, i, arr) => (
+                    <li key={i} className="relative flex gap-3 pb-3 last:pb-0">
+                      {i < arr.length - 1 && <span aria-hidden className="absolute left-[13px] top-7 h-[calc(100%-1.4rem)] w-px bg-[#d4af37]/25" />}
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[#d4af37]/40 bg-[#d4af37]/10 font-mono text-[10px] font-bold text-[#d4af37]">{String(i + 1).padStart(2, '0')}</span>
+                      <p className="pt-1 text-[12px] leading-relaxed text-[#c9c4b4]">{p.trim()}</p>
+                    </li>
+                  ))}
+                </ol>
+              )}
+
+              <div className="mt-4 space-y-3">
+                {secKeys.map((k) => renderField(tab, k, profile[tab]?.[k]))}
+              </div>
+              <p className="mt-4 border-t border-white/[0.06] pt-3 text-[11px] leading-relaxed text-[#6a665a]">
+                Stored in <span className="font-mono text-[#8a8577]">admin_integrations · key company:profile</span> — the widget, this page, and SI all read the same row. Edits autosave 900ms after you stop typing.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ── Designed reset confirmation (no native browser popup) ── */}
+      {confirmReset && (
+        <div className="cb-scope fixed inset-0 z-[90] grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={`Reset ${confirmReset}`}>
+          <div className="cb-modal-backdrop absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setConfirmReset(null)} />
+          <div className="glass relative w-full max-w-sm overflow-hidden rounded-2xl border-[#d4af37]/30 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
+            <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
+            <div className="flex items-center gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-red-400/30 bg-red-500/10 text-red-400">
+                <RotateCcw className="h-5 w-5" />
+              </span>
+              <div className="min-w-0">
+                <h4 className="text-sm font-extrabold text-[#f0ecdd]">Reset “{confirmReset}”?</h4>
+                <p className="text-[11px] text-[#8a8577]">{Object.keys(profile[confirmReset] || {}).length} fields return to bundled defaults</p>
+              </div>
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-[#c9c4b4]">
+              Your edits in this section will be replaced and saved immediately. Every other section stays untouched.
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button onClick={() => setConfirmReset(null)} className="min-h-[44px] rounded-xl border border-white/10 px-4 text-sm font-bold text-[#c9c4b4] transition hover:border-[#d4af37]/40 hover:text-[#f0ecdd]">
+                Keep my edits
+              </button>
+              <button onClick={doResetSection} className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#f87171] to-[#dc2626] px-4 text-sm font-bold text-white transition hover:brightness-110">
+                Reset section
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </AdminLayout>

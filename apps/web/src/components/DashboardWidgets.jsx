@@ -8,6 +8,7 @@ import { useCandles } from '@/hooks/useCandles';
 import { useI18n } from '@/lib/i18n';
 import { analyzeSignal, SIGNAL_META } from '@/lib/signals';
 import apiServerClient from '@/lib/apiServerClient';
+import { txt, numOrNull } from '@/lib/safeRender';
 
 const IMPACT_DOT = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-slate-500' };
 
@@ -36,10 +37,10 @@ function WatchlistWidget() {
     <WidgetShell icon={Star} title={list ? list.name : t('wdg.watchlist')} to="/app/watchlists">
       {symbols.length === 0 ? <p className="py-6 text-center text-xs text-[#8a8577]">{t('wdg.createWl')}</p> : (
         <div className="space-y-1.5">
-          {symbols.map((s) => { const q = quotes[s]; const pos = (q?.changePercent || 0) >= 0; return (
-            <div key={s} className="flex items-center justify-between text-sm">
-              <span className="font-mono text-[#e9e7df]">{s}</span>
-              <span className="flex items-center gap-3"><span className="font-mono text-[#c9c4b4]">{fmt(q?.price)}</span><span className={`w-16 text-right font-mono text-xs ${pos ? 'text-emerald-400' : 'text-red-400'}`}>{pos ? '+' : ''}{q?.changePercent ?? '—'}%</span></span>
+          {symbols.map((s) => { const sym = txt(s, ''); const q = quotes[sym]; const chg = numOrNull(q?.changePercent); const pos = (chg ?? 0) >= 0; return (
+            <div key={sym || s} className="flex items-center justify-between text-sm">
+              <span className="font-mono text-[#e9e7df]">{sym || '—'}</span>
+              <span className="flex items-center gap-3"><span className="font-mono text-[#c9c4b4]">{fmt(q?.price)}</span><span className={`w-16 text-right font-mono text-xs ${pos ? 'text-emerald-400' : 'text-red-400'}`}>{chg == null ? '—' : `${pos ? '+' : ''}${chg}%`}</span></span>
             </div>
           ); })}
         </div>
@@ -58,8 +59,8 @@ function AlertsWidget() {
         <div className="space-y-1.5">
           {active.map((a) => { const at = String(a.alertType || 'above'); const isPct = at.startsWith('pct'); const up = at.includes('up') || at === 'above'; return (
             <div key={a.id} className="flex items-center justify-between text-sm">
-              <span className="font-mono text-[#e9e7df]">{a.symbol}</span>
-              <span className={`text-xs ${up ? 'text-emerald-400' : 'text-red-400'}`}>{up ? '≥' : '≤'} {isPct ? `${a.target}%` : a.target}</span>
+              <span className="font-mono text-[#e9e7df]">{txt(a.symbol, '—')}</span>
+              <span className={`text-xs ${up ? 'text-emerald-400' : 'text-red-400'}`}>{up ? '≥' : '≤'} {isPct ? `${txt(a.target, '—')}%` : txt(a.target, '—')}</span>
             </div>
           ); })}
         </div>
@@ -76,7 +77,7 @@ function MiniSignal({ symbol }) {
   const Icon = String(sig?.signalType || '').includes('buy') ? ArrowUpRight : String(sig?.signalType || '').includes('sell') ? ArrowDownRight : Minus;
   return (
     <div className="flex items-center justify-between text-sm">
-      <span className="font-mono text-[#e9e7df]">{symbol}</span>
+      <span className="font-mono text-[#e9e7df]">{txt(symbol, '—')}</span>
       {meta ? <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ color: meta.color, background: meta.bg }}><Icon className="h-3 w-3" />{t('sig.st_' + sig.signalType)}</span> : <span className="text-xs text-[#8a8577]">…</span>}
     </div>
   );
@@ -113,7 +114,7 @@ function CalendarWidget() {
           {events.map((e) => (
             <div key={e.id} className="flex items-center gap-2 text-sm">
               <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${IMPACT_DOT[e.impact] || IMPACT_DOT.low}`} />
-              <span className="min-w-0 flex-1 truncate text-[#e9e7df]">{e.country} · {e.name}</span>
+              <span className="min-w-0 flex-1 truncate text-[#e9e7df]">{txt(e.country, '')} · {txt(e.name, '—')}</span>
               <span className="shrink-0 font-mono text-[10px] text-[#8a8577]">{new Date(e.time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit' })}</span>
             </div>
           ))}

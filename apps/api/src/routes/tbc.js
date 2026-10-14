@@ -166,7 +166,7 @@ router.post('/send', async (req, res) => {
 	if (!toEmail || !toEmail.includes('@')) return res.status(422).json({ error: 'recipient email required' });
 	try {
 		const peers = await supabaseRest('/rest/v1/users', {
-			query: { select: 'id,email', email: `eq.${encodeURIComponent(toEmail)}`, limit: 1 },
+			query: { select: 'id,email', email: `eq.${toEmail}`, limit: 1 }, // RAW: URLSearchParams encodes
 		}).catch(() => []);
 		const peer = peers?.[0];
 		if (!peer) return res.status(404).json({ error: 'no member with that email' });

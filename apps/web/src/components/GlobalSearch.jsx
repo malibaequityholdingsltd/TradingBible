@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, LayoutDashboard, ListOrdered, BookOpen, Plug, Trophy, Landmark,
-  BarChart3, FileText, Bot, Calculator, CandlestickChart, Gauge, Grid2x2,
+  BarChart3, FileText, Bot, Calculator, CandlestickChart, Gauge,
   Star, Radar, Bell, CalendarClock, Users, GraduationCap, Code2, Settings,
   User, KeyRound, CreditCard, Share2, Lock, Palette, Tag, Info, Newspaper,
   Briefcase, Mail, Tv, HelpCircle, Sun, Moon, LogOut, Crown, CircleDot, X,
@@ -99,9 +99,8 @@ export default function GlobalSearch({ autoFocus = false, onNavigate = null }) {
       P(t('nav.trade', null, 'Trade'), Plug, t('nav.brokers', null, 'Brokers'), 'broker connect sync mt4 mt5 ctrader api key', '/app/brokers'),
       P(t('nav.trade', null, 'Trade'), Layers, t('nav.paper', null, 'Paper Trading'), 'paper trading demo simulator practice virtual funds', '/app/paper'),
       P(t('nav.trade', null, 'Trade'), BarChart3, t('nav.backtest', null, 'Backtest'), 'backtest backtesting strategy history simulation winrate', '/app/backtest'),
-      P(t('nav.trade', null, 'Trade'), Trophy, t('nav.challenges', null, 'Challenges'), 'challenges prop evaluation pass profit target drawdown', '/app/challenges'),
-      P(t('nav.trade', null, 'Trade'), Trophy, t('nav.funded', null, 'Funded'), 'funded evaluation firm capital challenge account', '/app/funded'),
-      P(t('nav.trade', null, 'Trade'), Landmark, t('nav.wallet', null, 'Wallet'), 'wallet crypto deposit withdraw address balance bitcoin ethereum send transfer statement accounts monthly', '/app/wallet'),
+      P(t('nav.trade', null, 'Trade'), Trophy, t('nav.challenges', null, 'Challenges'), 'challenges prop evaluation funded firm capital pass profit target drawdown account', '/app/challenges'),
+      P(t('nav.trade', null, 'Trade'), Landmark, t('nav.wallet', null, 'Wallet'), 'wallet crypto deposit withdraw address balance bitcoin ethereum send transfer statement accounts monthly tbc token defi swap staking', '/app/wallet'),
       P(t('nav.analyze', null, 'Analyze'), BarChart3, t('nav.analytics', null, 'Analytics'), 'analytics performance stats profit factor charts', '/app/analytics'),
       P(t('nav.analyze', null, 'Analyze'), FileText, t('nav.reports', null, 'Reports'), 'reports daily weekly monthly pdf schedule email', '/app/reports'),
       P(t('nav.analyze', null, 'Analyze'), Bot, t('nav.coach', null, 'SI Coach'), 'ai coach chat advice review mistakes discipline score', '/app/coach'),
@@ -111,16 +110,14 @@ export default function GlobalSearch({ autoFocus = false, onNavigate = null }) {
       P(t('nav.markets', null, 'Markets'), CircleDot, t('nav.heatmaps', null, 'Heatmaps'), 'heatmap bubbles crypto forex stocks movers gainers losers', '/app/heatmaps'),
       P(t('nav.markets', null, 'Markets'), Layers, t('nav.orderflow', null, 'Order Flow'), 'orderflow order flow footprint depth tape volume delta bookmap dom', '/app/orderflow'),
       P(t('nav.markets', null, 'Markets'), Star, t('nav.watchlists', null, 'Watchlists'), 'watchlist symbols favorites tracking groups', '/app/watchlists'),
-      P(t('nav.markets', null, 'Markets'), Grid2x2, t('nav.market', null, 'Market'), 'market overview quotes movers gainers losers screener breadth', '/app/market'),
-      P(t('nav.markets', null, 'Markets'), Radar, t('nav.signals', null, 'Trading Signals'), 'signals buy sell breakout strategy alerts setups', '/app/signals'),
+      P(t('nav.markets', null, 'Markets'), Radar, t('nav.signals', null, 'Trading Signals'), 'signals buy sell breakout strategy alerts setups market overview quotes movers screener', '/app/signals'),
       P(t('nav.markets', null, 'Markets'), Bell, t('nav.alerts', null, 'Price Alerts'), 'alerts price notification target trigger', '/app/alerts'),
       P(t('nav.markets', null, 'Markets'), CalendarClock, t('nav.economic', null, 'Economic Calendar'), 'economic calendar news events fomc nfp cpi earnings', '/app/economic-calendar'),
-      P(t('nav.trade', null, 'Trade'), Star, t('nav.staking', null, 'Staking'), 'staking stake yield earn apy rewards lock', '/app/staking'),
-      P(t('nav.trade', null, 'Trade'), Plug, t('nav.defi', null, 'DeFi'), 'defi decentralized wallet swap liquidity yield web3', '/app/defi'),
+      P(t('nav.trade', null, 'Trade'), Star, t('nav.staking', null, 'Staking'), 'staking stake yield earn apy rewards lock tbc', '/app/staking'),
       P(t('nav.learn', null, 'Learn & Connect'), Users, t('nav.mentors', null, 'Mentors'), 'mentors coaching teacher tutor 1-on-1 guidance', '/app/mentors'),
       P(t('nav.learn', null, 'Learn & Connect'), Trophy, t('nav.leaderboard', null, 'Leaderboard'), 'leaderboard ranking top traders competition best', '/leaderboard'),
       P(t('nav.learn', null, 'Learn & Connect'), BookOpen, t('nav.proGuide', null, 'Pro Guide'), 'pro guide manual handbook how to use platform', '/app/guide'),
-      P(t('nav.trade', null, 'Trade'), CircleDot, t('nav.token', null, 'TBC Token'), 'tbc token coin crypto airdrop rewards utility dashboard balance send', (user ? '/app/tbc' : '/tbc')),
+      P(t('nav.trade', null, 'Trade'), CircleDot, t('nav.token', null, 'TBC Token'), 'tbc token coin crypto airdrop rewards utility dashboard balance send wallet', (user ? '/app/wallet?tab=crypto' : '/tbc')),
       P(t('nav.learn', null, 'Learn & Connect'), Users, t('nav.community', null, 'Community'), 'community forum leaderboard traders discussion', '/app/community'),
       P(t('nav.learn', null, 'Learn & Connect'), GraduationCap, t('nav.academy', null, 'Academy'), 'academy school courses lessons quizzes webinar certificate tutor student teacher', '/app/academy'),
       P(t('fot.h_education', null, 'Education'), GraduationCap, t('fot.l_academy', null, 'Academy (public)'), 'academy public school forex crypto learn courses', '/academy'),
@@ -337,7 +334,7 @@ export default function GlobalSearch({ autoFocus = false, onNavigate = null }) {
                     <Search className="h-6 w-6" />
                   </span>
                   <p className="mt-4 text-[15px] font-semibold text-[#e9e7df]">{t('c.noResults', null, 'Nothing found. Try different words.')}</p>
-                  <p className="mt-1 max-w-xs text-xs leading-relaxed text-[#6a665a]">Try a page name, a symbol like "BTC" or "EURUSD", a topic like "broker", or an action like "theme".</p>
+                  <p className="mt-1 max-w-xs text-xs leading-relaxed text-[#6a665a]">{t('sr.hint')}</p>
                 </div>
               )}
               {results.map((it, i) => {

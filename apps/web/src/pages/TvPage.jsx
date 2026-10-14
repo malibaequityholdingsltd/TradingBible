@@ -385,7 +385,7 @@ export default function TvPage() {
   }
 
   return (
-    <div className="tb-enter relative flex h-[100dvh] flex-col overflow-hidden bg-[#0a0a0f] text-[#f0ecdd]" onClick={wakeUi}>
+    <div data-force-dark className="tb-enter relative flex h-[100dvh] flex-col overflow-hidden bg-[#0a0a0f] text-[#f0ecdd]" onClick={wakeUi}>
       {/* ── Full-bleed stage: live channel or ads rotation ────────── */}
       {playChannel !== null ? (
         <ErrorBoundary
@@ -526,75 +526,43 @@ export default function TvPage() {
         </div>
       )}
 
-      {/* ── Top bar ──────────────────────────────────────────────── */}
-      <header
-        className={`relative z-10 flex items-center justify-between gap-4 px-5 py-4 transition-all duration-500 sm:px-8 ${uiHidden ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
-        style={{ background: 'linear-gradient(to bottom, rgba(5,5,7,0.85), rgba(5,5,7,0))' }}
-      >
-        <div className="flex items-center gap-3 pl-[52px] sm:pl-[124px]">
-          <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-10 w-10 object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
-          <div className="flex items-center gap-2.5">
-            {settings.headerText && settings.headerText !== 'TradingBible TV' ? (
-              <span className="tb-gold-text text-lg font-bold tracking-wide">{settings.headerText}</span>
-            ) : (
-              <span className="text-xl font-black tracking-tight"><span className="tb-gold-text">TradingBible</span><span className="font-semibold text-[#8a8577]"> TV</span></span>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2 pr-[60px] sm:pr-[128px]">
-          {playChannel !== null ? (
-            <>
-              <button onClick={() => { setChannelsOpen(true); }} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="All channels">
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <button onClick={minimizeTv} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="Minimize to widget" title="Minimize to widget">
-                <Minimize className="h-4 w-4" />
-              </button>
-              <button onClick={exitLiveChannel} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="Close live TV">
-                <X className="h-4 w-4" />
-              </button>
-            </>
-          ) : (
-            <>
-          <button onClick={() => setMuted((m) => !m)} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label={muted ? t('tv.unmute') : t('tv.mute')}>
-            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-          </button>
-          <button onClick={() => setPaused((p) => !p)} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label={paused ? t('tv.play') : t('tv.pause')}>
-            {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-          </button>
-            </>
-          )}
-          <button onClick={toggleFullscreen} className="grid h-10 w-10 place-items-center rounded-xl bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label={t('tv.fullscreen')}>
-            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-          </button>
-        </div>
-      </header>
-
-      {/* Back to dashboard — exempt from auto-hide, pinned directly under the market prices */}
-      {!channelsOpen && (
+      {/* ── Brand + quick nav pills ──────────────────────────────────
+          Company name rides left (home), Dashboard sits beside
+          All channels on the right. The floating TV widget keeps
+          its own buttons — untouched. */}
+      <div className="pointer-events-none absolute inset-x-0 top-[calc(var(--header-h)+10px)] z-30 flex items-start justify-between gap-2 px-4">
         <button
           onClick={() => nav(isAuthed ? '/app' : '/')}
-          className="fixed left-4 top-[calc(var(--header-h)+10px)] z-30 flex items-center gap-1.5 rounded-full border border-white/10 bg-black/60 py-2 pl-2.5 pr-3.5 text-xs font-bold text-[#e9e7df] backdrop-blur-md transition hover:border-[#d4af37]/50 hover:text-[#d4af37]"
-          aria-label="Back to dashboard"
-          title="Back to dashboard"
+          className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/10 bg-black/60 py-2 pl-2.5 pr-3.5 text-xs font-black tracking-tight text-[#e9e7df] backdrop-blur-md transition hover:border-[#d4af37]/50"
+          aria-label="TradingBible home"
+          title="TradingBible home"
         >
-          <ChevronLeft className="h-4 w-4" />
-          <span className="hidden sm:inline">Dashboard</span>
+          <img src={TRADINGBIBLE_LOGO} alt="" aria-hidden className="h-5 w-5 object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
+          <span><span className="tb-gold-text">TradingBible</span><span className="font-semibold text-[#8a8577]"> TV</span></span>
         </button>
-      )}
-
-      {/* All channels — same look, pinned to the right edge */}
-      {!channelsOpen && (
-        <button
-          onClick={() => setChannelsOpen(true)}
-          className="fixed right-4 top-[calc(var(--header-h)+10px)] z-30 flex items-center gap-1.5 rounded-full border border-white/10 bg-black/60 py-2 pl-3.5 pr-2.5 text-xs font-bold text-[#e9e7df] backdrop-blur-md transition hover:border-[#d4af37]/50 hover:text-[#d4af37]"
-          aria-label="All channels"
-          title="All channels"
-        >
-          <span className="hidden sm:inline">All channels</span>
-          <Radio className="h-4 w-4" />
-        </button>
-      )}
+        <div className="pointer-events-auto flex items-center gap-2">
+          <button
+            onClick={() => nav(isAuthed ? '/app' : '/')}
+            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/60 py-2 pl-2.5 pr-3.5 text-xs font-bold text-[#e9e7df] backdrop-blur-md transition hover:border-[#d4af37]/50 hover:text-[#d4af37]"
+            aria-label="Back to dashboard"
+            title="Back to dashboard"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </button>
+          {!channelsOpen && (
+            <button
+              onClick={() => setChannelsOpen(true)}
+              className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/60 py-2 pl-3.5 pr-2.5 text-xs font-bold text-[#e9e7df] backdrop-blur-md transition hover:border-[#d4af37]/50 hover:text-[#d4af37]"
+              aria-label="All channels"
+              title="All channels"
+            >
+              <span className="hidden sm:inline">All channels</span>
+              <Radio className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* ── Content ──────────────────────────────────────────────── */}
       {ad && playChannel === null && (
@@ -735,7 +703,7 @@ export default function TvPage() {
 
       {/* ── Bottom bar ───────────────────────────────────────────── */}
       <footer
-        className={`relative z-10 bg-transparent px-5 pb-4 pt-4 transition-all duration-500 sm:px-8 ${uiHidden ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
+        className={`relative z-10 bg-transparent px-5 pb-2 pt-4 transition-all duration-500 sm:px-8 ${uiHidden ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
       >
         {playChannel !== null ? (
             <div className="mx-auto flex max-w-7xl items-center justify-center gap-3">

@@ -22,7 +22,10 @@ function setCache(key, value, ttlMs) {
 
 // Explicit mappings first; generic 6-letter forex pairs fall through to =X.
 const YAHOO_MAP = {
-	XAUUSD: 'GC=F', XAGUSD: 'SI=F', WTIUSD: 'CL=F', BRENT: 'BZ=F',
+	// Spot gold tracks PAX Gold (live, 24/7) — NOT GC=F futures, which
+	// settle ~$20 over spot and freeze all weekend. Silver has no live
+	// spot proxy, so SI=F still freezes honestly at Friday's close.
+	XAUUSD: 'PAXG-USD', XAGUSD: 'SI=F', WTIUSD: 'CL=F', BRENT: 'BZ=F',
 	NATGAS: 'NG=F', COPPER: 'HG=F', PLATINUM: 'PL=F', PALLADIUM: 'PA=F',
 	WHEAT: 'ZW=F', CORN: 'ZC=F', SOYUSD: 'ZS=F', SUGARUSD: 'SB=F',
 	COFFEEUSD: 'KC=F', COCOAUSD: 'CC=F', COTTONUSD: 'CT=F',

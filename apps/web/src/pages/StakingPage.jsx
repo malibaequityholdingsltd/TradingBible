@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Coins, Loader2, Lock, Percent, ShieldCheck, Timer, Users, Zap } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import PromptDialog from '@/components/PromptDialog';
 import { PageHero, Card, GoldButton, GhostButton, Note } from '@/components/ui-kit';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -38,9 +39,11 @@ export default function StakingPage() {
     finally { setBusy(''); }
   };
 
-  const doUndelegate = (id, max) => {
-    const raw = window.prompt(`Undelegate from this validator? Enter TBC (max ${max.toLocaleString()}). Unbonding takes ${STAKING_PARAMS.unbondingDays} days.`, String(max));
-    if (raw === null) return;
+  const [undFor, setUndFor] = useState(null); // { id, max }
+  const doUndelegate = (id, raw) => {
+    const max = undFor?.id === id ? undFor.max : Number(raw);
+    if (raw == null || raw === '') return;
+    setUndFor(null);
     setBusy(`und:${id}`);
     try {
       setAccount(undelegate(id, raw));
@@ -115,7 +118,7 @@ export default function StakingPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
-                <tr className="border-y border-white/5 text-[11px] uppercase tracking-wider text-[#6a665a]">
+                <tr className="border-y border-white/5 text-[11px] uppercase tracking-wider text-[#6a665a] [&_th]:whitespace-nowrap">
                   <th className="px-5 py-3 font-medium">Validator</th>
                   <th className="px-5 py-3 font-medium">Power</th>
                   <th className="px-5 py-3 font-medium">Commission</th>
@@ -145,7 +148,7 @@ export default function StakingPage() {
                             {busy === `del:${v.id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Delegate'}
                           </GoldButton>
                           {mine > 0 && (
-                            <GhostButton disabled={busy === `und:${v.id}`} onClick={() => doUndelegate(v.id, mine)} className="!min-h-[40px] !px-3 !py-1.5 !text-xs">Undelegate</GhostButton>
+                            <GhostButton disabled={busy === `und:${v.id}`} onClick={() => setUndFor({ id: v.id, max: mine })} className="!min-h-[40px] !px-3 !py-1.5 !text-xs">Undelegate</GhostButton>
                           )}
                         </div>
                       </td>
@@ -165,6 +168,7 @@ export default function StakingPage() {
           <Users className="h-3.5 w-3.5" /> Double-sign slashes {(STAKING_PARAMS.slashDoubleSign * 100).toFixed(0)}% plus tombstoning · downtime slashes {(STAKING_PARAMS.slashDowntime * 100).toFixed(2)}% plus jail · <Percent className="h-3.5 w-3.5" /> commission changes capped at {STAKING_PARAMS.commissionChangeMaxPerDay * 100}pp daily.
         </div>
       </div>
+    <PromptDialog open={undFor != null} onOpenChange={(o) => !o && setUndFor(null)} title="Undelegate TBC" sub={`Unbonding takes ${STAKING_PARAMS.unbondingDays} days before funds release.`} label={`Amount (max ${(undFor?.max ?? 0).toLocaleString()} TBC)`} placeholder="TBC amount" inputProps={{ inputMode: 'decimal' }} confirmLabel="Start unbonding" onSubmit={(v) => doUndelegate(undFor?.id, v)} />
     </AppLayout>
   );
 }

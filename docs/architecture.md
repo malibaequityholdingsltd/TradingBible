@@ -46,6 +46,12 @@ Browser  ──▶ tradingbible.app (nginx: static SPA)
 - **certbot.timer** auto-renews the Let's Encrypt certificate.
 - No PocketBase, no Docker — plain VPS. See [Deployment](deployment.md).
 
+## Holdings blueprint alignment
+
+- Canonical strategy: [holdings-master-blueprint.md](holdings-master-blueprint.md) (TB requested, TBC distinct, LLC ≠ licensed broker).
+- MT5 broker path (proposed): institutional broker-side rights + `MT_BRIDGE_URL=https://mt-bridge.tradingbible.app` gateway (`POST /v1/accounts`, `GET /v1/positions`, `POST /v1/orders`, `GET /v1/orders/{id}`, `GET /v1/history`, `GET /v1/stream`, `GET /v1/health`). Hostinger Ubuntu 24.04 = dev gateway only.
+- Terminal direction: proprietary Terminal Pro + future Chart SDK (`Charts by TradingBible`) as a licensable asset; durable workspace storage — logout must not erase trades or saved analysis.
+
 ## Deployment
 
 See [docs/deployment.md](deployment.md) for the VPS runbook and `deploy/` scripts.

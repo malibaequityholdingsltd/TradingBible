@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { GraduationCap, Loader2, CalendarClock } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import PromptDialog from '@/components/PromptDialog';
 import { PageHero, Card, GoldButton, GhostButton, EmptyState } from '@/components/ui-kit';
 import { useToast } from '@/hooks/use-toast';
 import pb from '@/lib/pocketbaseClient';
@@ -71,9 +72,11 @@ export default function MentorsPage() {
     finally { setBusy(''); }
   };
 
-  const bookSession = async (mentor, price) => {
-    const topic = window.prompt(`What should the session with ${mentor} cover?`, book.topic || 'Trade review') || '';
-    if (!topic) return;
+  const [topicFor, setTopicFor] = useState(null); // { mentor, price }
+  const bookSession = async (mentor, price, topicRaw) => {
+    const topic = String(topicRaw || '');
+    if (!topic.trim()) return;
+    setTopicFor(null);
     if (!window.confirm(`Book for ${tbcFor(price).toLocaleString()} TBC ($${price} list)? Paid in TBC from your till now.`)) return;
     setBusy(`book:${mentor}`);
     try {
@@ -123,7 +126,7 @@ export default function MentorsPage() {
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-2">
                   <span className="text-[#d4af37]"><TbcMoney amount={tbcFor(m.price)} /><span className="ml-1 font-mono text-[11px] text-[#8a8577]">/hr (${m.price})</span></span>
-                  <GhostButton disabled={busy === `book:${m.owner}`} onClick={() => bookSession(m.owner, m.price)} className="!px-3 !py-1.5 !text-xs">
+                  <GhostButton disabled={busy === `book:${m.owner}`} onClick={() => setTopicFor({ mentor: m.owner, price: m.price })} className="!px-3 !py-1.5 !text-xs">
                     {busy === `book:${m.owner}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Book session'}
                   </GhostButton>
                 </div>
@@ -152,6 +155,7 @@ export default function MentorsPage() {
           </Card>
         )}
       </div>
+    <PromptDialog open={topicFor != null} onOpenChange={(o) => !o && setTopicFor(null)} title={`Session with ${topicFor?.mentor || 'mentor'}`} sub="What should it cover? Coordinate timing via community DMs after booking." label="Topic" placeholder="Trade review" defaultValue="Trade review" confirmLabel="Book session" onSubmit={(v) => bookSession(topicFor?.mentor, topicFor?.price, v)} />
     </AppLayout>
   );
 }

@@ -133,3 +133,64 @@ export function defaultRules(mode = 'two-step') {
 	}
 	return { mode: 'two-step', targetPct: 10, target2Pct: 5, maxDrawdownPct: 10, maxLossMode: 'static', dailyLossPct: 5, minDays: 4 };
 }
+
+export function accountTypesFor(c) {
+	const mode = String(c.mode || c.phase || 'two-step');
+	if (mode === 'futures') {
+		return [{ id: 'futures', label: 'Futures', leverage: String(c.leverage || 'Futures margin'), holding: 'Exchange hours + contract calendar', news: 'Unrestricted' }];
+	}
+	const levStd = String(c.leverageStandard || c.leverage || '1:100');
+	const levSwing = String(c.leverageSwing || '1:30');
+	const opts = String(c.accountTypeOptions || 'standard,swing').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+	const all = {
+		standard: { id: 'standard', label: 'Standard', leverage: levStd, holding: 'Intraday only — NO overnight / NO weekend holding (flat by close)', news: 'News trading NOT ALLOWED' },
+		swing: { id: 'swing', label: 'Swing', leverage: levSwing, holding: 'Overnight + weekend holding allowed', news: 'No news restrictions' },
+	};
+	const picked = opts.filter((o) => all[o]).map((o) => all[o]);
+	return picked.length ? picked : [all.standard, all.swing];
+}
+
+export function toProduct(row) {
+	const c = row?.config || {};
+	const feeStd = Number(c.feeStandard ?? c.fee) || 0;
+	const feeSwing = Number(c.feeSwing ?? c.fee) || 0;
+	return {
+		key: String(row.key || '').replace(/^challenge:/, ''),
+		name: c.name || row.key,
+		description: c.description || '',
+		fee: feeStd,
+		fees: { standard: feeStd, swing: feeSwing },
+		accountSize: Number(c.accountSize) || 100000,
+		phase: String(c.phase || 'two-step'),
+		mode: String(c.mode || c.phase || 'two-step'),
+		leverage: String(c.leverage || '1:100'),
+		platforms: String(c.platforms || 'MT5 · cTrader · TradingBible Terminal'),
+		instruments: String(c.instruments || 'Forex · Metals · Indices · Crypto · Stocks'),
+		maxContracts: Math.trunc(Number(c.maxContracts ?? 0)),
+		refundableFee: c.refundableFee !== false,
+		accountTypes: accountTypesFor(c),
+		rules: {
+			mode: String(c.mode || c.phase || 'two-step'),
+			targetPct: Number(c.targetPct ?? 10),
+			target2Pct: Number(c.target2Pct ?? 5),
+			targetUsd: Number(c.targetUsd ?? 0),
+			maxDrawdownPct: Number(c.maxDrawdownPct ?? 10),
+			maxDdUsd: Number(c.maxDdUsd ?? 0),
+			maxLossMode: String(c.maxLossMode || ((c.mode || c.phase) === 'two-step' ? 'static' : 'eod-trailing')),
+			dailyLossPct: Number(c.dailyLossPct ?? (((c.mode || c.phase) === 'one-step') ? 3 : ((c.mode || c.phase) === 'futures' ? 0 : 5))),
+			dailyLossUsd: Number(c.dailyLossUsd ?? 0),
+			dailyEnforced: c.dailyEnforced !== false,
+			minDays: Math.trunc(Number(c.minDays ?? 4)),
+			bestDayMaxPct: Number(c.bestDayMaxPct ?? ((c.mode || c.phase) === 'one-step' ? 50 : 0)),
+			consistencyMaxPct: Number(c.consistencyMaxPct ?? 0),
+			consistencyBase: String(c.consistencyBase || 'total'),
+		},
+		funded: {
+			profitSplitPct: Number(c.profitSplitPct ?? 80),
+			maxSplitPct: Number(c.maxSplitPct ?? 90),
+			payoutCycleDays: Math.trunc(Number(c.payoutCycleDays ?? 14)),
+			scaling: String(c.scaling || 'Qualify every 4 months: +25% capital, up to $400K'),
+		},
+		enabled: row.enabled !== false,
+	};
+}

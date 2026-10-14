@@ -51,12 +51,38 @@ function defaultWorkspace() {
   };
 }
 
+// Saved work predates string-only symbols: symbol / watchlist entries may
+// be full quote objects ({symbol, name, price, …}). Rendering one raw throws
+// "Objects are not valid as a React child" and kills Terminal Pro, so every
+// entry point is normalized back to plain strings here.
+function strSym(x, fb = '') {
+  const v = typeof x === 'string' ? x : x?.symbol;
+  const t = String(v ?? '').trim().toUpperCase();
+  return t || fb;
+}
+
 function readLS() {
   try {
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return null;
     const ws = JSON.parse(raw);
     if (!ws || typeof ws !== 'object') return null;
+    ws.symbol = strSym(ws.symbol, 'XAUUSD');
+    if (typeof ws.timeframe !== 'string') ws.timeframe = '15m';
+    // Persisted chart engine is respected: candle/line/area keep drawings
+    // in-house (Supabase + local mirror) so refresh survives. TradingView
+    // stays one click away but never forced — its free embed cannot persist.
+    const VALID_TYPES = ['candle', 'line', 'area', 'tradingview'];
+    if (!VALID_TYPES.includes(ws.chartType)) ws.chartType = 'candle';
+    if (typeof ws.centerTab !== 'string') ws.centerTab = 'chart';
+    if (Array.isArray(ws.watchlist)) {
+      const seen = new Set();
+      ws.watchlist = ws.watchlist.map((x) => strSym(x)).filter((sym) => {
+        if (!sym || seen.has(sym)) return false;
+        seen.add(sym);
+        return true;
+      });
+    }
     // Union stored tools with the full set: saved desks from before the
     // desk rework filtered tabs out (e.g. Replay), and no UI ever hides
     // tools on purpose — so nothing the user had may disappear.
@@ -127,7 +153,12 @@ export function usePremiumWorkspace({ autosave = true, restoreWorkspace = true }
 
   const restoreVersion = useCallback((id) => {
     const v = readVersions().find((x) => x.id === id);
-    if (v?.snapshot) setWorkspace({ ...defaultWorkspace(), ...v.snapshot });
+    if (v?.snapshot) {
+      const snap = { ...v.snapshot };
+      snap.symbol = strSym(snap.symbol, 'XAUUSD');
+      if (Array.isArray(snap.watchlist)) snap.watchlist = [...new Set(snap.watchlist.map((x) => strSym(x)).filter(Boolean))];
+      setWorkspace({ ...defaultWorkspace(), ...snap });
+    }
   }, []);
 
   return { workspace, patch, versions, saveVersion, restoreVersion, loadPreset, cloudStatus };
