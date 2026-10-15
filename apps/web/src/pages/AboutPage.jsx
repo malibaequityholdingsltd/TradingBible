@@ -217,7 +217,7 @@ export default function AboutPage() {
             <h2 className="text-2xl font-extrabold tracking-[-0.02em] sm:text-3xl">{t('abt.contact')} <span className="tb-gold-text">{t('abt.contactB')}</span></h2>
             <p className="mt-3 leading-relaxed text-[#a8a394]">{t('abt.contactSub')}</p>
             <a href="mailto:support@tradingbible.app" className="mt-6 inline-flex items-center gap-2.5 rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/[0.06] px-4 py-2.5 text-sm font-medium text-[#e8c95a] transition hover:border-[#d4af37]/50 hover:bg-[#d4af37]/[0.1]"><Mail className="h-4 w-4" /> support@tradingbible.app</a>
-            <p className="mt-5 text-xs leading-relaxed text-[#6a665a]">TradingBible LLC — Delaware limited liability company · Formed August 2026 · NAICS 511210 · c/o Delaware Registered Agent, Inc.<br />Proposed Holdings Inc. + requested ticker TB are not yet formed/listed/reserved. TBC is not equity and incorporation is not a brokerage license.</p>
+            <p className="mt-5 text-xs leading-relaxed text-[#6a665a]">TradingBible LLC — Delaware limited liability company · Formed August 10, 2026 · EIN issued · NAICS 511210 · Sole operating company; Holdings Inc. on hold.<br />Requested ticker TB not reserved/listed. TBC is not equity and incorporation is not a brokerage license.</p>
           </div>
           <ContactForm />
         </Card>

@@ -2,11 +2,12 @@
 *Prepared for lenders, investors, partners, and users. All statements below are sourced from the company repository and live product; figures marked TBD are to be supplied by the founder.*
 
 ## 1. Company snapshot
-- **Legal name (current operator):** TradingBible LLC
-- **Form & domicile:** Delaware limited liability company, formed August 2026 (NAICS 511210), c/o Delaware Registered Agent, Inc.
-- **Proposed public parent:** TradingBible Holdings, Inc. — *proposed, not yet formed/listed* (see `docs/holdings-master-blueprint.md`).
-- **Requested stock ticker:** TB (Nasdaq Capital preferred; NYSE / NYSE American / NGX alternatives) — *requested, not reserved/confirmed*.
-- **Native coin:** TBC (max 100M, Cosmos SDK baseline, proposed) — *TBC is not TB equity; owning TBC is not owning Holdings.*
+- **Legal name (current + sole operator):** TradingBible LLC — *sole company; Holdings Inc. ON HOLD, not formed.*
+- **Form & domicile:** Delaware limited liability company, formed **August 10, 2026** (NAICS 511210), c/o Delaware Registered Agent, Inc.
+- **Tax/identity:** IRS EIN **issued** (CP575G); D-U-N-S **reported as obtained, not independently verified**.
+- **Structure:** one LLC + product divisions (Terminal, Intelligence, Prop, Developer, future Brokerage, proposed Coin) — *divisions, not subsidiaries.*
+- **Proposed public parent:** TradingBible Holdings, Inc. — *proposed only; ticker TB requested, not reserved/confirmed.*
+- **Native coin:** TBC (max 100M, Cosmos SDK baseline, proposed; 90-day testnet planned) — *TBC is not TB equity.*
 - **Regulatory status:** Delaware incorporation is **not** a brokerage license. No live client deposits until a licensed entity + banking + safeguarding are operational.
 - **Owner/operator:** TradingBible LLC owns and operates the platform solely.
 - **Leadership:**
@@ -94,8 +95,8 @@ AI-powered trading journal and analytics platform with a Bloomberg-grade termina
 
 Track monthly: new trials, trial→paid conversion, churn by plan, ARPU, CAC, LTV. Product is live (v1.2.0) with full subscription billing via Stripe.
 
-## 11. Holdings master blueprint alignment (Oct 2026)
-Full text: `docs/holdings-master-blueprint.md` (Master Blueprint 2.0). Proposed group: Holdings Inc. (IPO parent, TB requested) · Markets (FX/derivatives brokerage, licensed) · Securities (actual shares) · Digital Assets (spot crypto exchange + custody, separately regulated) · Technologies (terminal + Chart SDK licensing) · Blockchain (TBC chain governance). MT5 via institutional broker-side rights + `MT_BRIDGE_URL=https://mt-bridge.tradingbible.app` gateway (dev only on Hostinger Ubuntu 24.04). Roadmap: corporate/legal 2026–27 → licensing/capital 2027–28 → technology 2027–28 → controlled launch 2028–29 → revenue/governance 2028–30 → IPO prep 2029–31+ → listing 2030–32+ → public-company expansion. First 90 days: verify records + appoint counsel + commission licensing/IPO feasibility (1–30); plan/model/architecture + MT5/liquidity RFQs (31–60); jurisdiction shortlist + vendor quotes + prototype scope + funding/governance plan (61–90). None of Goldman Sachs / Morgan Stanley / J.P. Morgan / Jefferies / Chapel Hill Denham / Renaissance Capital is engaged.
+## 11. Holdings master blueprint alignment (2026 Edition)
+Full text: `docs/holdings-master-blueprint.md` (Official Company Profile & Strategic Master Blueprint — 2026 Edition). Founder decision: **LLC sole entity; Holdings ON HOLD.** Divisions under one LLC (Terminal, Intelligence, Prop, Developer, future Brokerage, proposed Coin). MT Bridge `MT_BRIDGE_URL=https://bridge.tradingbible.app` (proposed, not deployed). Roadmap with statuses: formation/EIN completed, D-U-N-S reported, verification audit required, revenue pending, terminal expansion, licensing planned, TBC planned, financing future, IPO long-term. First-90-day plan + official publication-ready About text in the blueprint. None of Goldman Sachs / Morgan Stanley / J.P. Morgan / Jefferies / Chapel Hill Denham / Renaissance Capital is engaged. Titles (Malik Nlem, Victor Okechukwu, Maliba SI) to be confirmed before publication as formal officers.
 
 ## 12. Financial projections & the raise — ILLUSTRATIVE SCENARIOS ONLY
 **These are models, not results and not promises. Every figure below is computed from stated assumptions so a lender/investor can see the mechanics. Founder confirms which scenario (if any) to present.**
