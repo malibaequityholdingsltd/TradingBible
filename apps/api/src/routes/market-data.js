@@ -1,5 +1,6 @@
 // Live market data via Binance public API (no key required).
 // Covers the full crypto registry (display names mirror quotes/candles).
+import { firstUpstream } from '../utils/fetchTimeout.js';
 const SYMBOL_MAP = {
 	BTCUSDT: 'BTCUSD', ETHUSDT: 'ETHUSD', SOLUSDT: 'SOLUSD', BNBUSDT: 'BNBUSD',
 	XRPUSDT: 'XRPUSD', ADAUSDT: 'ADAUSD', DOGEUSDT: 'DOGEUSD', AVAXUSDT: 'AVAXUSD',
@@ -31,25 +32,19 @@ export default async (req, res) => {
 		'https://api.binance.us',
 	];
 	let lastError = null;
-	for (const host of hosts) {
-		try {
-			const upstream = await fetch(`${host}/api/v3/ticker/24hr?symbols=${query}`);
-			if (!upstream.ok) {
-				lastError = new Error(`binance ticker failed: ${upstream.status} ${upstream.statusText}`);
-				continue;
-			}
-			const data = await upstream.json();
-			const tickers = data.map((t) => ({
-				symbol: SYMBOL_MAP[t.symbol] || t.symbol,
-				price: Number(t.lastPrice),
-				changePercent: Number(t.priceChangePercent),
-				high: Number(t.highPrice),
-				low: Number(t.lowPrice),
-			}));
-			return res.json({ tickers });
-		} catch (err) {
-			lastError = err;
-		}
+	try {
+		const upstream = await firstUpstream(hosts, (host) => `${host}/api/v3/ticker/24hr?symbols=${query}`, { timeoutMs: 8000 });
+		const data = await upstream.json();
+		const tickers = data.map((t) => ({
+			symbol: SYMBOL_MAP[t.symbol] || t.symbol,
+			price: Number(t.lastPrice),
+			changePercent: Number(t.priceChangePercent),
+			high: Number(t.highPrice),
+			low: Number(t.lowPrice),
+		}));
+		return res.json({ tickers });
+	} catch (err) {
+		lastError = err;
 	}
 	// Degraded but honest: no fake prices — frontend keeps prior values.
 	return res.json({ tickers: [], degraded: true, error: String(lastError?.message || 'feed unavailable') });

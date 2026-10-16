@@ -4,7 +4,7 @@
 ## 1. Company snapshot
 - **Legal name (current + sole operator):** TradingBible LLC — *sole company; Holdings Inc. ON HOLD, not formed.*
 - **Form & domicile:** Delaware limited liability company, formed **August 10, 2026** (NAICS 511210), c/o Delaware Registered Agent, Inc.
-- **Tax/identity:** IRS EIN **issued** (CP575G); D-U-N-S **reported as obtained, not independently verified**.
+- **Tax/identity:** IRS EIN **issued** (CP575G); D-U-N-S **14-997-6777 — verified**.
 - **Structure:** one LLC + product divisions (Terminal, Intelligence, Prop, Developer, future Brokerage, proposed Coin) — *divisions, not subsidiaries.*
 - **Proposed public parent:** TradingBible Holdings, Inc. — *proposed only; ticker TB requested, not reserved/confirmed.*
 - **Native coin:** TBC (max 100M, Cosmos SDK baseline, proposed; 90-day testnet planned) — *TBC is not TB equity.*

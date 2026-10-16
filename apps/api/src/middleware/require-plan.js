@@ -14,6 +14,11 @@ export const requirePlan = (minimum) => async (req, res, next) => {
 	try {
 		const user = await supabase.getUserById(req.userId);
 		if (user?.role === 'admin') return next();
+		// Hired staff pass the subscriber floor (pro) without buying a plan
+		// so they can work; elite/professional tiers still require payment.
+		// Mirrors isStaffUser/isSubscriber on the frontend.
+		const staff = user?.user_settings?.staff?.hired === true;
+		if (staff && need <= RANK.pro) return next();
 		const have = RANK[String(user?.plan || '').toLowerCase()] || 0;
 		if (have >= need && have > 0) return next();
 		return res.status(403).json({

@@ -6,6 +6,7 @@ import { avCandles, isRateLimited } from '../utils/alphaVantage.js';
 import { yahooCandles } from '../utils/yahoo.js';
 import { binanceSymbolFor, synthCandles } from './candles.js';
 import { isWeekendClosed } from '../utils/marketHours.js';
+import { firstUpstream } from '../utils/fetchTimeout.js';
 
 const lastGoodSeries = new Map();
 

@@ -3,6 +3,7 @@
 // cached aggressively and callers MUST provide a fallback for when Alpha
 // Vantage is unavailable or throttled.
 import logger from './logger.js';
+import { fetchTimeout } from './fetchTimeout.js';
 
 const API_KEY = process.env.ALPHA_VANTAGE_API_KEY;
 const BASE = 'https://www.alphavantage.co/query';
@@ -45,7 +46,7 @@ export async function avFetch(params, ttlMs) {
 
 	let res;
 	try {
-		res = await fetch(`${BASE}?${usp.toString()}`);
+		res = await fetchTimeout(`${BASE}?${usp.toString()}`, { timeoutMs: 10000 });
 	} catch (err) {
 		logger.error(`alpha vantage fetch failed: ${err.message}`);
 		return null;

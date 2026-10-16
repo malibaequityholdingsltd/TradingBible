@@ -2983,16 +2983,17 @@ export function AdminJobs() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [p, a] = await Promise.all([call('/postings'), call('/applications')]);
-      setPostings(p || []);
-      setApps(a || []);
-    } catch {
-      setPostings([]);
-      setApps([]);
+      // Independent loads: a failing applications call must never wipe the
+      // postings list (or vice versa). Each failure surfaces its own toast.
+      const [p, a] = await Promise.allSettled([call('/postings'), call('/applications')]);
+      if (p.status === 'fulfilled') setPostings(p.value || []);
+      else { setPostings([]); toast({ variant: 'destructive', title: 'Openings failed to load', description: String(p.reason?.message || p.reason) }); }
+      if (a.status === 'fulfilled') setApps(a.value || []);
+      else { setApps([]); toast({ variant: 'destructive', title: 'Applications failed to load', description: String(a.reason?.message || a.reason) }); }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -3081,24 +3082,46 @@ export function AdminJobs() {
     } catch { setTrials([]); }
   };
   useEffect(() => { loadTrials(); }, []);
-  const hireApp = async (a) => {
+  // Compliance-first hire: the dialog collects the lawful-hiring
+  // confirmation (work country + region, arrangement, agreement, IP,
+  // payroll, manager approval). The API enforces the same gate server-side.
+  const [hireFor, setHireFor] = useState(null);
+  const [hireCompliance, setHireCompliance] = useState({ workCountry: '', workRegion: '', arrangement: 'eor', agreementSigned: false, ipAssigned: false, payrollReady: false, managerApproved: false, note: '' });
+  const openHire = (a) => {
+    const c = a.compliance && typeof a.compliance === 'object' ? a.compliance : {};
+    setHireCompliance({
+      workCountry: c.workCountry || '', workRegion: c.workRegion || '',
+      arrangement: ['direct', 'eor', 'contractor', 'subsidiary', 'peo'].includes(String(c.arrangement || '').toLowerCase()) ? String(c.arrangement).toLowerCase() : 'eor',
+      agreementSigned: c.agreementSigned === true, ipAssigned: c.ipAssigned === true,
+      payrollReady: c.payrollReady === true, managerApproved: c.managerApproved === true,
+      note: c.note || '',
+    });
+    setHireFor(a);
+  };
+  const hireWarnFor = (a) => {
+    if (!a) return '';
     const post = postings.find((x) => x.id === a.jobId);
     const closesAt = post?.hiring?.closes_at;
     const windowOpen = closesAt && !Number.isNaN(Date.parse(closesAt)) && Date.now() < Date.parse(closesAt);
+    if (!windowOpen) return '';
     const poolN = apps.filter((x) => x.jobId === a.jobId && x.status !== 'hired' && x.status !== 'rejected').length;
-    const warn = windowOpen ? ` Collection window closes ${String(closesAt).slice(0, 10)} — ${poolN} candidate${poolN === 1 ? '' : 's'} in pool so far. Hire anyway?` : '';
-    if (!window.confirm(`Hire ${a.name} (${a.email})? This creates their employee login immediately.${warn}`)) return;
+    return `Collection window closes ${String(closesAt).slice(0, 10)} — ${poolN} candidate${poolN === 1 ? '' : 's'} in pool so far.`;
+  };
+  const confirmHire = async () => {
+    const a = hireFor;
+    if (!a) return;
     setBusy(true);
     try {
-      const res = await call(`/applications/${a.id}/hire`, { method: 'POST' });
-      setApps((prev) => prev.map((x) => (x.id === a.id ? { ...x, status: 'hired' } : x)));
+      const res = await call(`/applications/${a.id}/hire`, { method: 'POST', body: { compliance: hireCompliance } });
+      setApps((prev) => prev.map((x) => (x.id === a.id ? { ...x, status: 'hired', compliance: hireCompliance } : x)));
+      setHireFor(null);
       if (res?.tempPassword) {
         setHiredCreds({ email: res.email, tempPassword: res.tempPassword, role: res.role });
       } else {
         toast({ title: `Hired — ${res?.already ? 'login already existed' : 'login ready'}`, description: res?.email });
       }
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Hire failed', description: err.message });
+      toast({ variant: 'destructive', title: 'Hire blocked', description: err.message });
     } finally { setBusy(false); }
   };
 
@@ -3370,7 +3393,7 @@ export function AdminJobs() {
                     </td>
                     <td className="py-2.5 pl-2 text-right">
                       {a.status !== 'hired' && (
-                        <button onClick={() => hireApp(a)} disabled={busy} className="rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1.5 text-[11px] font-bold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-50">Hire ✓</button>
+                        <button onClick={() => openHire(a)} disabled={busy} className="rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1.5 text-[11px] font-bold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-50">Hire ✓</button>
                       )}
                     </td>
                   </tr>
@@ -3453,6 +3476,56 @@ export function AdminJobs() {
           )}
         </div>
       </div>
+      {/* ── Compliance-first hire dialog (no native popup) ── */}
+      {hireFor && (
+        <div className="fixed inset-0 z-[90] grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={`Hire ${hireFor.name}`}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setHireFor(null)} />
+          <div className="glass relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl p-5 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
+            <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
+            <h4 className="text-sm font-extrabold text-[#f0ecdd]">Hire {hireFor.name}?</h4>
+            <p className="mt-0.5 font-mono text-[11px] text-[#8a8577]">{hireFor.email} · creates their employee login immediately</p>
+            {hireWarnFor(hireFor) && <p className="mt-2 rounded-lg border border-[#d4af37]/25 bg-[#d4af37]/[0.06] px-3 py-2 text-[11px] text-[#e8c95a]">{hireWarnFor(hireFor)}</p>}
+            <p className="mt-3 text-[11px] font-bold uppercase tracking-wider text-[#d4af37]">Lawful-hiring confirmation</p>
+            <p className="mt-0.5 text-[11px] leading-relaxed text-[#8a8577]">No work starts until every item is confirmed. Stored on the application.</p>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <div>
+                <label className="mb-1 block text-[11px] font-semibold text-[#8a8577]">Work country</label>
+                <input value={hireCompliance.workCountry} onChange={(e) => setHireCompliance({ ...hireCompliance, workCountry: e.target.value })} placeholder="e.g. Nigeria" className={input} />
+              </div>
+              <div>
+                <label className="mb-1 block text-[11px] font-semibold text-[#8a8577]">State / region</label>
+                <input value={hireCompliance.workRegion} onChange={(e) => setHireCompliance({ ...hireCompliance, workRegion: e.target.value })} placeholder="e.g. Lagos / Texas" className={input} />
+              </div>
+            </div>
+            <div className="mt-2">
+              <label className="mb-1 block text-[11px] font-semibold text-[#8a8577]">Hiring arrangement</label>
+              <select value={hireCompliance.arrangement} onChange={(e) => setHireCompliance({ ...hireCompliance, arrangement: e.target.value })} className={input}>
+                <option value="direct" className="bg-[#0f0f14]">Direct employment (registered payroll)</option>
+                <option value="eor" className="bg-[#0f0f14]">Employer of Record (no local entity)</option>
+                <option value="contractor" className="bg-[#0f0f14]">Independent contractor (genuine)</option>
+                <option value="subsidiary" className="bg-[#0f0f14]">Local subsidiary</option>
+                <option value="peo" className="bg-[#0f0f14]">PEO co-employment (U.S.)</option>
+              </select>
+            </div>
+            <div className="mt-2 space-y-1.5">
+              {[['agreementSigned', 'Localized employment agreement signed'], ['ipAssigned', 'IP assignment + confidentiality confirmed'], ['payrollReady', 'Payroll registration / EOR coverage confirmed'], ['managerApproved', 'Manager approval to hire']].map(([k, label]) => (
+                <label key={k} className="flex cursor-pointer items-center justify-between gap-2 rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2">
+                  <span className="text-[13px] text-[#c9c4b4]">{label}</span>
+                  <input type="checkbox" checked={hireCompliance[k]} onChange={(e) => setHireCompliance({ ...hireCompliance, [k]: e.target.checked })} className="h-5 w-5 shrink-0 accent-[#d4af37]" />
+                </label>
+              ))}
+            </div>
+            <div className="mt-2">
+              <label className="mb-1 block text-[11px] font-semibold text-[#8a8577]">Compliance note (optional)</label>
+              <input value={hireCompliance.note} onChange={(e) => setHireCompliance({ ...hireCompliance, note: e.target.value })} placeholder="EOR provider, work authorization, …" className={input} />
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button onClick={() => setHireFor(null)} className="min-h-[44px] rounded-xl border border-white/10 px-4 text-sm font-bold text-[#c9c4b4] transition hover:border-[#d4af37]/40 hover:text-[#f0ecdd]">Cancel</button>
+              <button onClick={confirmHire} disabled={busy} className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 text-sm font-bold text-[#0a0a0f] transition hover:brightness-105 disabled:opacity-50">{busy ? 'Hiring…' : 'Confirm hire ✓'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }
@@ -4038,6 +4111,7 @@ function DigestPanel() {
 
 /* ─── ADMIN EMPLOYEES ──────────────────────────────────────────── */
 export function AdminEmployees() {
+  const { toast } = useToast();
   const { users } = useUsers();
   const [roster, setRoster] = useState([]);
   const [history, setHistory] = useState({});
@@ -4056,24 +4130,32 @@ export function AdminEmployees() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [r, p, h] = await Promise.all([
+      // Independent loads: payroll, postings, and history settle on their
+      // own — one failure shows its section empty with a toast, never a
+      // blank page with no explanation.
+      const [r, p, h] = await Promise.allSettled([
         call('/payroll').catch(() => []),
         call('/postings').catch(() => []),
         fetch(`${API_SERVER_URL}/admin/jobs/payroll/history`, { headers: { Authorization: `Bearer ${pb.authStore.token}` } }).then((x) => (x.ok ? x.json() : [])).catch(() => []),
       ]);
-      setRoster(Array.isArray(r) ? r : []);
-      setAiWork((Array.isArray(p) ? p : []).filter((x) => /ai-executed/i.test(x.title || '')));
+      if (r.status === 'fulfilled') setRoster(Array.isArray(r.value) ? r.value : []);
+      else { setRoster([]); toast({ variant: 'destructive', title: 'Staff roster failed to load', description: String(r.reason?.message || r.reason) }); }
+      const posts = p.status === 'fulfilled' ? p.value : [];
+      if (p.status === 'rejected') toast({ variant: 'destructive', title: 'Postings failed to load', description: String(p.reason?.message || p.reason) });
+      setAiWork((Array.isArray(posts) ? posts : []).filter((x) => /ai-executed/i.test(x.title || '')));
+      const hist = h.status === 'fulfilled' ? h.value : [];
       const byOwner = {};
-      for (const row of Array.isArray(h) ? h : []) byOwner[row.owner] = row;
+      for (const row of Array.isArray(hist) ? hist : []) byOwner[row.owner] = row;
       setHistory(byOwner);
-    } catch {
+    } catch (e) {
       setRoster([]);
       setAiWork([]);
       setHistory({});
+      toast({ variant: 'destructive', title: 'Employees failed to load', description: String(e?.message || e) });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
   useEffect(() => { load(); }, [load]);
 
   const emailToId = useMemo(() => {

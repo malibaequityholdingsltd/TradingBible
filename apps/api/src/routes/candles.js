@@ -33,6 +33,7 @@ export function binanceSymbolFor(symbol) {
 import { avCandles, isRateLimited } from '../utils/alphaVantage.js';
 import { yahooCandles } from '../utils/yahoo.js';
 import { isWeekendClosed } from '../utils/marketHours.js';
+import { firstUpstream } from '../utils/fetchTimeout.js';
 
 // Last real candle set per symbol+interval — the freeze source when a
 // market is closed and every live provider fails. Never synthesize a
@@ -153,23 +154,23 @@ export default async (req, res) => {
 	// Closed markets never touch weekend-drifting crypto proxies (PAXG) —
 	// Friday's tape is the truth until the reopen.
 	if (binanceSymbol && !closed) {
-		// Rotate Binance hosts — api.binance.com is geo-blocked in some regions.
-		for (const host of ['https://data-api.binance.vision', 'https://api.binance.com', 'https://api.binance.us']) {
-			try {
-				const upstream = await fetch(
-					`${host}/api/v3/klines?symbol=${binanceSymbol}&interval=${interval}&limit=${limit}`,
-				);
-				if (!upstream.ok) continue;
-				const rows = await upstream.json();
-				const candles = rows.map((r) => ({
-					time: r[0],
-					open: +r[1], high: +r[2], low: +r[3], close: +r[4], volume: +r[5],
-				}));
-				if (candles.length) return res.json({ symbol, interval, source: 'binance', candles });
-			} catch {
-				// try next host, then fall through to Yahoo / synthetic below —
-				// charts must never render empty because one provider hiccuped
-			}
+		// Mirror hosts raced in parallel (8s window) — api.binance.com is
+		// geo-blocked in some regions and blackholed hosts must not stall us.
+		try {
+			const upstream = await firstUpstream(
+				['https://data-api.binance.vision', 'https://api.binance.com', 'https://api.binance.us'],
+				(host) => `${host}/api/v3/klines?symbol=${binanceSymbol}&interval=${interval}&limit=${limit}`,
+				{ timeoutMs: 8000 },
+			);
+			const rows = await upstream.json();
+			const candles = rows.map((r) => ({
+				time: r[0],
+				open: +r[1], high: +r[2], low: +r[3], close: +r[4], volume: +r[5],
+			}));
+			if (candles.length) return res.json({ symbol, interval, source: 'binance', candles });
+		} catch {
+			// all hosts failed — fall through to AV / synthetic below so
+			// charts never render empty because one provider hiccuped
 		}
 	}
 

@@ -93,6 +93,7 @@ function synthQuote(symbol) {
 import { avQuote, isRateLimited } from '../utils/alphaVantage.js';
 import { yahooQuote } from '../utils/yahoo.js';
 import { isWeekendClosed } from '../utils/marketHours.js';
+import { fetchTimeout, firstUpstream } from '../utils/fetchTimeout.js';
 
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 
@@ -117,8 +118,9 @@ const FINNHUB_STOCKS = new Set([
 async function finnhubQuote(symbol) {
 	if (!FINNHUB_API_KEY) return null;
 	try {
-		const upstream = await fetch(
+		const upstream = await fetchTimeout(
 			`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`,
+			{ timeoutMs: 8000 },
 		);
 		if (!upstream.ok) return null;
 		const d = await upstream.json();
@@ -192,32 +194,28 @@ export default async (req, res) => {
 		const q = encodeURIComponent(JSON.stringify(binList));
 		const hosts = ['https://data-api.binance.vision', 'https://api.binance.com', 'https://api.binance.us'];
 		const want = new Set(cryptoSymbols);
-		for (const host of hosts) {
-			try {
-				const upstream = await fetch(`${host}/api/v3/ticker/24hr?symbols=${q}`);
-				if (!upstream.ok) continue;
-				const data = await upstream.json();
-				const rev = Object.fromEntries(Object.entries(CRYPTO_MAP).map(([k, v]) => [v, k]));
-				for (const t of data) {
-					const sym = rev[t.symbol];
-					if (sym && want.has(sym)) {
-						liveMap[sym] = {
-							symbol: sym,
-							price: Number(t.lastPrice),
-							changePercent: Number(t.priceChangePercent),
-							change: Number(t.priceChange),
-							high: Number(t.highPrice),
-							low: Number(t.lowPrice),
-							volume: Number(t.quoteVolume),
-							source: 'binance',
-						};
-						want.delete(sym);
-					}
+		try {
+			const upstream = await firstUpstream(hosts, (host) => `${host}/api/v3/ticker/24hr?symbols=${q}`, { timeoutMs: 8000 });
+			const data = await upstream.json();
+			const rev = Object.fromEntries(Object.entries(CRYPTO_MAP).map(([k, v]) => [v, k]));
+			for (const t of data) {
+				const sym = rev[t.symbol];
+				if (sym && want.has(sym)) {
+					liveMap[sym] = {
+						symbol: sym,
+						price: Number(t.lastPrice),
+						changePercent: Number(t.priceChangePercent),
+						change: Number(t.priceChange),
+						high: Number(t.highPrice),
+						low: Number(t.lowPrice),
+						volume: Number(t.quoteVolume),
+						source: 'binance',
+					};
+					want.delete(sym);
 				}
-				if (!want.size) break;
-			} catch {
-				// try next host, else fall through to synthetic for crypto too
 			}
+		} catch {
+			// all hosts failed — fall through to synthetic for crypto too
 		}
 	}
 

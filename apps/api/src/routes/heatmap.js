@@ -4,6 +4,7 @@
 // generator below is a last-resort fallback for Yahoo outages only.
 
 import { yahooQuote, yahooPeriodChange, yahooSymbolFor } from '../utils/yahoo.js';
+import { fetchTimeout, firstUpstream } from '../utils/fetchTimeout.js';
 
 const CRYPTO = [
 	['BTCUSD', 'BTCUSDT', 'Bitcoin'], ['ETHUSD', 'ETHUSDT', 'Ethereum'],
@@ -178,7 +179,11 @@ async function cryptoLive(period) {
 	// batch per TTL window instead of 60 klines requests per poll.
 	const realChanges = period === '1d' ? null : await periodChanges(period).catch(() => null);
 	try {
-		const upstream = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${query}`);
+		const upstream = await firstUpstream(
+			['https://data-api.binance.vision', 'https://api.binance.com', 'https://api.binance.us'],
+			(host) => `${host}/api/v3/ticker/24hr?symbols=${query}`,
+			{ timeoutMs: 8000 },
+		);
 		if (!upstream.ok) throw new Error('binance');
 		const data = await upstream.json();
 		const byId = Object.fromEntries(data.map((t) => [t.symbol, t]));
@@ -214,7 +219,7 @@ async function periodChanges(period) {
 	if (hit && Date.now() - hit.ts < ttl) return hit.changes;
 	const ids = CRYPTO.map((c) => c[1]);
 	const results = await Promise.allSettled(ids.map(async (id) => {
-		const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${id}&interval=${interval}&limit=${limit}`);
+		const res = await fetchTimeout(`https://api.binance.com/api/v3/klines?symbol=${id}&interval=${interval}&limit=${limit}`, { timeoutMs: 8000 });
 		if (!res.ok) throw new Error('klines');
 		const rows = await res.json();
 		if (!Array.isArray(rows) || rows.length < 2) throw new Error('klines-short');

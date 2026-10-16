@@ -85,6 +85,17 @@ function createSupabaseCompatClient() {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
   });
 
+  // Supabase JS has no built-in request timeout: a stalled network call
+  // would hang forever (e.g. login stuck on "Please wait…"). Every auth
+  // request races a timeout so the UI always settles with a clear error.
+  const withTimeout = (promise, ms, label) => Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(
+      () => reject(new Error(`${label} timed out after ${Math.round(ms / 1000)}s — check your connection and try again.`)),
+      ms,
+    )),
+  ]);
+
   let resolveAuthReady;
   const authReady = new Promise((resolve) => {
     resolveAuthReady = resolve;
@@ -500,14 +511,14 @@ function createSupabaseCompatClient() {
 
         const createUserOnLogin = options.shouldCreateUser !== false;
 
-        const { error } = await supabase.auth.signInWithOtp({
+        const { error } = await withTimeout(supabase.auth.signInWithOtp({
           email,
           options: {
             shouldCreateUser: createUserOnLogin,
             data: metadata,
             emailRedirectTo: `${window.location.origin}/login`,
           },
-        });
+        }), 30000, 'Sending the sign-in code');
         if (error) throw error;
         return { otpId: email, shouldCreateUser: createUserOnLogin };
       },
@@ -522,11 +533,11 @@ function createSupabaseCompatClient() {
         token = token.replace(/\s+/g, '');
         // Short numeric codes verify as email OTP; long link-tokens verify as magiclink.
         const type = token.length > 10 ? 'magiclink' : 'email';
-        const { data, error } = await supabase.auth.verifyOtp({
+        const { data, error } = await withTimeout(supabase.auth.verifyOtp({
           email,
           token,
           type,
-        });
+        }), 30000, 'Verifying the code');
         if (error) throw error;
         await syncAuthFromSession(data?.session);
         return { token: authStore.token, record: authStore.record };

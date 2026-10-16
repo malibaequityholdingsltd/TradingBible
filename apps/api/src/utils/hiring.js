@@ -24,9 +24,14 @@ const cleanUsername = (name, email) => {
 // Find-or-create the auth account, upsert the profile row with the staff
 // role, send an invite email (best effort), and stage a DISABLED mentor row
 // for coaches so they surface in Mentors the moment they set a price.
+// Also stamps user_settings.staff (hired/title/arrangement/hiredAt) so
+// route guards + requirePlan recognize employees — staff work without
+// buying a plan. Existing settings (totp, suspensions) are read-merged,
+// never clobbered. Offboarding = suspend the user (existing flow) or call
+// the staff-revoke endpoint, which clears this flag.
 // Returns { authId, created, tempPassword|null, role }. tempPassword is only
 // ever returned to admin callers — never to the public apply flow.
-export async function provisionEmployee({ name, email, posting }) {
+export async function provisionEmployee({ name, email, posting, staffMeta }) {
 	const cleanEmail = String(email || '').trim().toLowerCase();
 	if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) throw new Error('valid email required');
 	const cleanName = String(name || '').trim().slice(0, 120) || cleanEmail.split('@')[0];
@@ -73,6 +78,14 @@ export async function provisionEmployee({ name, email, posting }) {
 	// users has no phone column — the applicant's phone stays on the
 	// application row where the admin can always see it.
 	const trialDays = Math.max(1, Math.min(90, Number(posting?.hiring?.trial_days ?? 14)));
+	// Read-merge existing settings so totp/suspension/account flags survive.
+	let baseSettings = {};
+	try {
+		const cur = await supabaseRest('/rest/v1/users', {
+			query: { select: 'user_settings', id: `eq.${authId}`, limit: 1 },
+		}).catch(() => null);
+		if (cur?.[0]?.user_settings && typeof cur[0].user_settings === 'object') baseSettings = cur[0].user_settings;
+	} catch { /* fresh row — start empty */ }
 	const profileRow = {
 		id: authId,
 		email: cleanEmail,
@@ -80,6 +93,18 @@ export async function provisionEmployee({ name, email, posting }) {
 		name: cleanName,
 		role,
 		accountType,
+		user_settings: {
+			...baseSettings,
+			staff: {
+				...(baseSettings?.staff && typeof baseSettings.staff === 'object' ? baseSettings.staff : {}),
+				hired: true,
+				title: posting?.title || staffMeta?.title || null,
+				arrangement: staffMeta?.arrangement || null,
+				workCountry: staffMeta?.workCountry || null,
+				workRegion: staffMeta?.workRegion || null,
+				hiredAt: new Date().toISOString(),
+			},
+		},
 	};
 	try {
 		await supabaseRest('/rest/v1/users', {

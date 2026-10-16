@@ -38,6 +38,14 @@ export const FEATURE_PLANS = {
   branding: 'professional',
 };
 
+// Staff marker: hired employees carry user_settings.staff.hired (set by the
+// hire endpoint, never by signup). Staff pass the subscriber floor so they
+// can work without buying a plan; tier checks (elite/professional) still
+// apply. Suspended users are blocked elsewhere regardless of this flag.
+export function isStaffUser(user) {
+  return user?.user_settings?.staff?.hired === true;
+}
+
 export function requiredPlanFor(feature) {
   return FEATURE_PLANS[feature] || null;
 }

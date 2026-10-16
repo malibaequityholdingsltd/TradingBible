@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/hooks/useTheme';
 import { I18nProvider } from '@/lib/i18n';
 import { homeRouteForUser } from '@/lib/homeRoute';
-import { meetsPlan } from '@/lib/entitlements';
+import { meetsPlan, isStaffUser } from '@/lib/entitlements';
 import { isAdminPreview } from '@/lib/adminPreview';
 import { usePlatformSettings } from '@/lib/platformSettings';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
@@ -118,6 +118,9 @@ function PageFallback() {
 function isSubscriber(user) {
     if (!user) return false;
     if (user.role === 'admin') return true;
+    // Hired staff work here — they pass the subscriber floor without buying
+    // a plan. Tier gates (elite/professional) still apply via meetsPlan.
+    if (isStaffUser(user)) return true;
     return ['pro', 'elite', 'professional'].includes((user.plan || '').toLowerCase());
 }
 

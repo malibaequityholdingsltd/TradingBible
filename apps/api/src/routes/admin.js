@@ -1177,6 +1177,44 @@ router.post('/jobs/applications/:id/hire', supabaseAuth, async (req, res, next) 
 		const app = apps?.[0];
 		if (!app) return res.status(404).json({ error: 'application not found' });
 		if (app.status === 'hired') return res.json({ hired: true, already: true, email: app.email });
+		// ── Compliance-first hiring gate (global workforce policy) ──
+		// No one starts work until the lawful hiring structure is confirmed:
+		// work country + region, arrangement (direct/EOR/contractor/
+		// subsidiary/PEO), localized agreement, IP assignment, payroll
+		// readiness, and manager approval. Stored on the application row
+		// (best-effort: older DBs without the column still enforce the gate).
+		const ARRANGEMENTS = ['direct', 'eor', 'contractor', 'subsidiary', 'peo'];
+		const comp = req.body?.compliance && typeof req.body.compliance === 'object' ? req.body.compliance : {};
+		const missing = [];
+		if (!String(comp.workCountry || '').trim()) missing.push('work country');
+		if (!String(comp.workRegion || '').trim()) missing.push('work state/region');
+		if (!ARRANGEMENTS.includes(String(comp.arrangement || '').toLowerCase())) missing.push('hiring arrangement (direct, EOR, contractor, subsidiary, or PEO)');
+		if (comp.agreementSigned !== true) missing.push('localized employment agreement signed');
+		if (comp.ipAssigned !== true) missing.push('IP assignment + confidentiality confirmed');
+		if (comp.payrollReady !== true) missing.push('payroll registration / EOR coverage confirmed');
+		if (comp.managerApproved !== true) missing.push('manager approval to hire');
+		if (missing.length) {
+			return res.status(422).json({ error: `compliance gate: confirm ${missing.join('; ')} before hiring`, missing });
+		}
+		const compliance = {
+			workCountry: String(comp.workCountry).trim().slice(0, 80),
+			workRegion: String(comp.workRegion).trim().slice(0, 80),
+			arrangement: String(comp.arrangement).toLowerCase(),
+			agreementSigned: true, ipAssigned: true, payrollReady: true, managerApproved: true,
+			note: String(comp.note || '').slice(0, 500),
+			confirmedAt: new Date().toISOString(),
+		};
+		try {
+			await supabaseRest(`/rest/v1/job_applications?id=eq.${encodeURIComponent(req.params.id)}`, {
+				method: 'PATCH', body: { compliance }, query: { select: 'id' },
+			});
+		} catch (err) {
+			// Older DBs without the compliance column: enforce the gate from
+			// the request body and continue. Run APPLY_HIRING_COMPLIANCE.sql
+			// once to persist compliance per application.
+			if (!/compliance|column/i.test(String(err?.message || err))) throw err;
+			logger.warn('hiring compliance column missing, gate enforced from request only');
+		}
 		// Collection window: how many BSD candidates are in the pool and
 		// whether the window is still open (admin may still hire early).
 		let poolSize = 0;
@@ -1204,6 +1242,12 @@ router.post('/jobs/applications/:id/hire', supabaseAuth, async (req, res, next) 
 		}
 		const result = await provisionEmployee({
 			name: app.name, email: app.email, posting,
+			staffMeta: {
+				title: posting?.title || null,
+				arrangement: compliance.arrangement,
+				workCountry: compliance.workCountry,
+				workRegion: compliance.workRegion,
+			},
 		});
 		const updated = await supabaseRest(`/rest/v1/job_applications?id=eq.${encodeURIComponent(req.params.id)}`, {
 			method: 'PATCH', body: { status: 'hired' }, prefer: 'return=representation', query: { select: '*' },

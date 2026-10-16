@@ -2,6 +2,7 @@ import { Router } from 'express';
 import logger from '../utils/logger.js';
 import { supabaseRest, getSupabaseUser } from '../utils/supabaseClient.js';
 import { yahooQuote } from '../utils/yahoo.js';
+import { firstUpstream } from '../utils/fetchTimeout.js';
 
 // ── Paper trading (+ competitions) ───────────────────────────────
 // CFD-style simulator: no margin calls, P&L settles to the paper balance
@@ -53,15 +54,12 @@ export async function liveQuote(symbol) {
 	const sym = String(symbol || '').toUpperCase();
 	const bin = CRYPTO_QUOTE[sym] || (/^[A-Z0-9]{2,10}USDT$/.test(sym) ? sym : null);
 	if (bin) {
-		for (const host of BIN_HOSTS) {
-			try {
-				const r = await fetch(`${host}/api/v3/ticker/price?symbol=${bin}`);
-				if (!r.ok) continue;
-				const j = await r.json();
-				const p = Number(j?.price);
-				if (p > 0) return { price: p, source: 'binance' };
-			} catch { /* next host */ }
-		}
+		try {
+			const upstream = await firstUpstream(BIN_HOSTS, (host) => `${host}/api/v3/ticker/price?symbol=${bin}`, { timeoutMs: 8000 });
+			const j = await upstream.json();
+			const p = Number(j?.price);
+			if (p > 0) return { price: p, source: 'binance' };
+		} catch { /* fall through to Yahoo */ }
 	}
 	try {
 		const q = await yahooQuote(sym);

@@ -23,7 +23,7 @@ export const COMPANY_DEFAULTS = {
     form: 'Delaware limited liability company',
     formed: 'August 10, 2026 (Certificate of Formation)',
     ein: 'Issued — IRS EIN confirmation notice (CP575G).',
-    duns: 'Reported as obtained — NOT independently verified here.',
+    duns: 'D-U-N-S 14-997-6777 — VERIFIED.',
     naics: '511210',
     agent: 'Delaware Registered Agent, Inc.',
     holdingCompany: 'NOT FORMED — TradingBible Holdings, Inc. is ON HOLD. No second EIN, corporation, or conversion needed to keep building.',
@@ -87,7 +87,7 @@ export const COMPANY_DEFAULTS = {
     auth: 'Supabase GoTrue (OTP / magic links / WebAuthn passkeys) + branded Send-Email webhook hook. RBAC, RLS, hardware-backed admin auth, key rotation, audit logs, backups, DR, pen-tests, incident response as we scale.',
   },
   monetization: {
-    plans: 'Pro $19.99/mo (journal/analytics/risk) · Elite SI $49.99/mo (SI reports/coaching/integrations) · Professional $99/mo (API/webhooks/white-label). Documented prices — not verified checkout prices. Stripe, no free trial, card required. 14-day money-back on first subscription.',
+    plans: 'Pro $19.99/mo (journal/analytics/risk) · Elite SI $49.99/mo (SI reports/coaching/integrations) · Professional $99/mo (API/webhooks/white-label). VERIFIED current checkout prices. Stripe, no free trial, card required. 14-day money-back on first subscription.',
     lines: 'Subscriptions + developer licensing + chart widgets + institutional software + ads + education/mentorship + affiliates + eligible prop-firm services. Future brokerage commissions/spreads/fees ONLY after legal + regulatory clearance.',
     tractionNote: 'NO verified revenue, profit, valuation, MRR, customer, or growth figures supplied — all pending confirmation, never estimated as achievements. (ARPU ~$36.89 illustrative only.)',
     payouts: 'CFD withdrawals every 14 days to TBC wallet (80% standard → 90% scaling; 1-step fixed 90%). First funded payout refunds entry fee in TBC.',
