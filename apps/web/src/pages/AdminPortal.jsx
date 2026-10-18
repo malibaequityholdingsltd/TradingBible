@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Users, CreditCard, DollarSign, Activity, Search, Trash2, RefreshCw, Shield,
   Save, LibraryBig, FileText, BarChart3, TrendingUp, AlertTriangle, CheckCircle,
@@ -8,7 +9,7 @@ import {
   Wifi, Package, Plus, Copy, RotateCcw, Plug, TestTube, AlertCircle, Check,
   Upload,   ChevronDown, MoreVertical, Power, Code, Layers, MonitorPlay, Target,
   GraduationCap, LayoutDashboard, Type, Trophy, Coins, Ban, Wallet, Bot,
-  Building2, Landmark, Palette, Rocket, ShieldCheck, Fingerprint, ExternalLink, Sparkles
+  Building2, Landmark, Palette, Rocket, ShieldCheck, Fingerprint, ExternalLink, Sparkles, Printer
 } from 'lucide-react';
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar,
@@ -4187,9 +4188,17 @@ export function AdminEmployees() {
         <Stat icon={Bot} label="AI Work Records" value={aiWork.length.toLocaleString()} sub="$0 · never payroll" color="#38bdf8" />
       </div>
       <div className="glass mt-4 rounded-2xl p-4 sm:p-5">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><Users className="h-4 w-4 text-[#d4af37]" /> Employed staff</h3>
-          <button onClick={load} className="rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><RefreshCw className="h-4 w-4" /></button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/admin/staff-id-cards"
+              className="inline-flex items-center gap-2 rounded-xl border border-[#d4af37]/30 px-3 py-2 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10"
+            >
+              <Printer className="h-4 w-4" /> Print ID cards
+            </Link>
+            <button onClick={load} className="rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><RefreshCw className="h-4 w-4" /></button>
+          </div>
         </div>
         {loading ? <p className="text-sm text-[#8a8577]">Loading…</p> : roster.length ? (
           <div className="overflow-x-auto -mx-2 px-2">

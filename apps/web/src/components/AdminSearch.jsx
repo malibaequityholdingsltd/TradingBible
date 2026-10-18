@@ -5,7 +5,7 @@ import {
   FileText, MonitorPlay, Plug, Key, Package, Briefcase, Settings,
   LogOut, Eye, HelpCircle, Gift, GraduationCap, Wallet, Bot, Bell,
   Trophy, CalendarDays, MessagesSquare, Newspaper, TrendingUp, ShieldCheck,
-  BookOpen, PiggyBank, Radio, Tv, FlaskConical, LineChart, UserRound, Globe,
+  BookOpen, PiggyBank, Radio, Tv, FlaskConical, LineChart, UserRound, Globe, IdCard,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { enterAdminPreview } from '@/lib/adminPreview';
@@ -68,6 +68,7 @@ export default function AdminSearch() {
       P('Admin', LayoutDashboard, 'Admin Dashboard', 'dashboard home overview console', '/admin'),
       P('Admin', Users, 'User Management', 'users accounts manage roles plans ban', '/admin/users'),
       P('Admin', UserRound, 'Employees', 'employees staff hired roster payroll ai work log', '/admin/employees'),
+      P('Admin', IdCard, 'ID Cards', 'staff id cards badge print photo qr license card', '/admin/staff-id-cards'),
       P('Admin', BarChart3, 'Admin Analytics', 'analytics stats revenue growth charts', '/admin/analytics'),
       P('Admin', CreditCard, 'Admin Billing', 'billing revenue mrr subscriptions invoices paddle stripe', '/admin/billing'),
       P('Admin', Gift, 'Admin Airdrops', 'airdrops tbc token distribute claim rewards', '/admin/airdrops'),

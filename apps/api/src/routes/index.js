@@ -31,6 +31,7 @@ import companyRouter from './company.js';
 import jobsRouter from './jobs.js';
 import brokersRouter from './brokers.js';
 import terminalRouter from './terminal.js';
+import staffRouter from './staff.js';
 
 const router = Router();
 
@@ -71,6 +72,7 @@ export default () => {
     router.use('/jobs', jobsRouter);
     router.use('/brokers', brokersRouter);
     router.use('/terminal', terminalRouter);
+    router.use('/staff', staffRouter);
 
     return router;
 };

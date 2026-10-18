@@ -1243,6 +1243,7 @@ router.post('/jobs/applications/:id/hire', supabaseAuth, async (req, res, next) 
 		const result = await provisionEmployee({
 			name: app.name, email: app.email, posting,
 			staffMeta: {
+				appId: app.id || req.params.id,
 				title: posting?.title || null,
 				arrangement: compliance.arrangement,
 				workCountry: compliance.workCountry,
@@ -1309,17 +1310,49 @@ router.get('/jobs/payroll', supabaseAuth, async (req, res, next) => {
 		let hiringById = {};
 		if (ids.length) {
 			const posts = await supabaseRest('/rest/v1/job_postings', {
-				query: { select: 'id,title,hiring', id: `in.(${ids.map((x) => encodeURIComponent(x)).join(',')})`, limit: 200 },
+				query: { select: 'id,title,department,hiring', id: `in.(${ids.map((x) => encodeURIComponent(x)).join(',')})`, limit: 200 },
 			}).catch(() => null);
-			for (const q of posts || []) hiringById[q.id] = { title: q.title, hiring: q.hiring && typeof q.hiring === 'object' ? q.hiring : {} };
+			for (const q of posts || []) hiringById[q.id] = { title: q.title, department: q.department || null, hiring: q.hiring && typeof q.hiring === 'object' ? q.hiring : {} };
 		}
-		res.json((apps || []).map((a) => ({
-			appId: a.id, name: a.name, email: a.email,
-			title: hiringById[a.jobId]?.title || 'Opening',
-			salary_tbc: Number(hiringById[a.jobId]?.hiring?.salary_tbc) || 0,
-			salary_freq: hiringById[a.jobId]?.hiring?.salary_freq || 'monthly',
-			hiredAt: a.created || null,
-		})));
+		// Merge the staff card profile (photo, company email, employee number,
+		// department, ...) stored on users.user_settings.staff at hire time or
+		// via the ID-card editor. Matched by email; missing profile is fine.
+		const emails = [...new Set((apps || []).map((a) => String(a.email || '').trim().toLowerCase()).filter(Boolean))];
+		const staffByEmail = {};
+		if (emails.length) {
+			const users = await supabaseRest('/rest/v1/users', {
+				query: { select: 'id,email,name,user_settings', email: `in.(${emails.join(',')})`, limit: 500 },
+			}).catch(() => []);
+			for (const u of users || []) {
+				const s = u.user_settings && typeof u.user_settings === 'object' && u.user_settings.staff && typeof u.user_settings.staff === 'object' ? u.user_settings.staff : {};
+				staffByEmail[String(u.email || '').trim().toLowerCase()] = { userId: u.id, profileName: u.name || null, ...s };
+			}
+		}
+		res.json((apps || []).map((a) => {
+			const s = staffByEmail[String(a.email || '').trim().toLowerCase()] || {};
+			return {
+				id: a.id, appId: a.id,
+				name: s.profileName || a.name, email: a.email,
+				// Manual overrides (set in the ID-card editor) win over the
+				// posting defaults.
+				title: s.title || hiringById[a.jobId]?.title || 'Opening',
+				salary_tbc: Number(hiringById[a.jobId]?.hiring?.salary_tbc) || 0,
+				salary_freq: hiringById[a.jobId]?.hiring?.salary_freq || 'monthly',
+				hiredAt: s.hiredAt || a.created || null,
+				userId: s.userId || null,
+				photoUrl: s.photoUrl || null,
+				workEmail: s.workEmail || null,
+				employeeId: s.employeeId || null,
+				department: s.department || hiringById[a.jobId]?.department || null,
+				phone: s.phone || null,
+				location: s.location || null,
+				bio: s.bio || null,
+				skills: Array.isArray(s.skills) ? s.skills : [],
+				socials: s.socials && typeof s.socials === 'object' ? s.socials : null,
+				emergencyContact: s.emergencyContact && typeof s.emergencyContact === 'object' ? s.emergencyContact : null,
+				verified: Boolean(s.verified),
+			};
+		}));
 	} catch (err) { next(err); }
 });
 
@@ -1378,6 +1411,80 @@ router.post('/jobs/payroll', supabaseAuth, async (req, res, next) => {
 			} catch (err) { results.push({ email: x.email, tbc: x.tbc, ok: false, error: String(err?.message || err).slice(0, 120) }); }
 		}
 		res.json({ run: note, total, paid: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length, results });
+	} catch (err) { next(err); }
+});
+
+// ── PATCH /admin/jobs/staff/:id/card — edit ID-card profile fields ─────
+// Everything card-specific (photo, company email, employee number,
+// department, phone, location, bio, title, skills, socials, emergency
+// contact) lives in users.user_settings.staff; the display name is written
+// to users.name + job_applications.name. Read-merged so totp/passkeys/
+// suspensions and the hiring metadata written by provisionEmployee always
+// survive the edit. `:id` = application id.
+router.patch('/jobs/staff/:id/card', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const apps = await supabaseRest('/rest/v1/job_applications', {
+			query: { select: 'id,email', id: `eq.${encodeURIComponent(req.params.id)}`, limit: 1 },
+		}).catch(() => []);
+		const app = apps?.[0];
+		if (!app) return res.status(404).json({ error: 'application not found' });
+		const users = await supabaseRest('/rest/v1/users', {
+			query: { select: 'id,user_settings', email: `eq.${app.email}`, limit: 1 },
+		}).catch(() => []);
+		const user = users?.[0];
+		if (!user) return res.status(404).json({ error: 'no login for this staff email yet' });
+		const base = user.user_settings && typeof user.user_settings === 'object' ? user.user_settings : {};
+		const cur = base.staff && typeof base.staff === 'object' ? base.staff : {};
+		const body = req.body && typeof req.body === 'object' ? req.body : {};
+		const next = { ...cur };
+		// Display name lives on the profile + application rows (used by the
+		// payroll roster, the admin portal and the public bio), not settings.
+		if ('name' in body && String(body.name || '').trim()) {
+			const cleanName = String(body.name).trim().slice(0, 120);
+			await supabaseRest(`/rest/v1/users?id=eq.${encodeURIComponent(user.id)}`, {
+				method: 'PATCH', body: { name: cleanName }, query: { select: 'id' },
+			}).catch((err) => logger.warn('staff card: profile name update failed', String(err)));
+			await supabaseRest(`/rest/v1/job_applications?id=eq.${encodeURIComponent(app.id)}`, {
+				method: 'PATCH', body: { name: cleanName }, query: { select: 'id' },
+			}).catch((err) => logger.warn('staff card: application name update failed', String(err)));
+		}
+		for (const k of ['photoUrl', 'workEmail', 'employeeId', 'department', 'phone', 'location', 'title']) {
+			if (!(k in body)) continue;
+			const v = body[k];
+			if (v === null || v === '') { next[k] = null; continue; }
+			// Photos may be pasted URLs or canvas-resized data URLs from the
+			// card editor — the resize keeps them well under the cap.
+			next[k] = String(v).slice(0, k === 'photoUrl' ? 300000 : 300);
+		}
+		if ('bio' in body) next.bio = body.bio === null || body.bio === '' ? null : String(body.bio).slice(0, 2000);
+		if ('verified' in body) next.verified = Boolean(body.verified);
+		if ('skills' in body) {
+			const arr = Array.isArray(body.skills) ? body.skills : String(body.skills || '').split(',');
+			next.skills = arr.map((x) => String(x).trim().slice(0, 40)).filter(Boolean).slice(0, 20);
+		}
+		if ('socials' in body) {
+			const soc = body.socials;
+			const mapped = soc && typeof soc === 'object'
+				? Object.fromEntries(Object.entries(soc).slice(0, 8)
+					.map(([kk, vv]) => [String(kk).slice(0, 40), String(vv).trim().slice(0, 300)])
+					.filter(([, vv]) => vv))
+				: {};
+			next.socials = Object.keys(mapped).length ? mapped : null;
+		}
+		if ('emergencyContact' in body) {
+			const ec = body.emergencyContact && typeof body.emergencyContact === 'object' ? body.emergencyContact : {};
+			const ecName = String(ec.name || '').trim().slice(0, 80);
+			const ecPhone = String(ec.phone || '').trim().slice(0, 40);
+			next.emergencyContact = ecName || ecPhone ? { name: ecName, phone: ecPhone } : null;
+		}
+		await supabaseRest(`/rest/v1/users?id=eq.${encodeURIComponent(user.id)}`, {
+			method: 'PATCH',
+			body: { user_settings: { ...base, staff: next } },
+			prefer: 'return=representation',
+			query: { select: 'id' },
+		});
+		res.json({ ok: true, staff: next });
 	} catch (err) { next(err); }
 });
 

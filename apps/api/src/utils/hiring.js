@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto';
 import logger from './logger.js';
 import { supabaseRest } from './supabaseClient.js';
+import { deriveEmployeeNo } from './employeeNo.js';
 
 // ── Employee auto-provisioning (hiring pipeline) ─────────────────────
 // Shared by the admin one-click Hire endpoint and the public apply flow
@@ -98,6 +99,10 @@ export async function provisionEmployee({ name, email, posting, staffMeta }) {
 			staff: {
 				...(baseSettings?.staff && typeof baseSettings.staff === 'object' ? baseSettings.staff : {}),
 				hired: true,
+				// Registered once and kept across re-hires; deterministic from
+				// the application id (or the auth id where no application row
+				// exists yet) so it matches the web-side fallback.
+				employeeId: baseSettings?.staff?.employeeId || deriveEmployeeNo(staffMeta?.appId || authId),
 				title: posting?.title || staffMeta?.title || null,
 				arrangement: staffMeta?.arrangement || null,
 				workCountry: staffMeta?.workCountry || null,

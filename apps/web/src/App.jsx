@@ -74,6 +74,7 @@ const AdminWallet = lazy(() => import('./pages/AdminPortal').then((m) => ({ defa
 const AdminCompany = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminCompany })));
 const AdminTvAds = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminTvAds })));
 const AdminAirdrops = lazy(() => import('./pages/AdminAirdrops'));
+const StaffPortal = lazy(() => import('./pages/StaffPortal'));
 const PricingPage = lazy(() => import('./pages/ExtraPages').then((m) => ({ default: m.PricingPage })));
 const UserApiKeysPage = lazy(() => import('./pages/UserApiKeysPage'));
 const GuidesPage = lazy(() => import('./pages/PublicInfoPages').then((m) => ({ default: m.GuidesPage })));
@@ -96,6 +97,8 @@ const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
 const StakingPage = lazy(() => import('./pages/StakingPage'));
 const MentorsPage = lazy(() => import('./pages/MentorsPage'));
 const PaperPage = lazy(() => import('./pages/PaperPage'));
+const StaffBioPage = lazy(() => import('./pages/StaffBioPage'));
+const StaffIdCardsPage = lazy(() => import('./pages/StaffIdCardsPage'));
 
 // Legacy routes merged into Terminal Pro (?symbol= is preserved).
 function SymbolRedirect({ to }) {
@@ -166,6 +169,15 @@ function AdminProtected({ children }) {
     // Subscribers cannot access the admin portal.
     if (user?.role !== 'admin') return <Navigate to="/app" replace />;
     return children;
+}
+
+function StaffProtected({ children }) {
+  const { isAuthed, isAuthReady, user } = useAuth();
+  if (!isAuthReady) return <PageFallback />;
+  if (!isAuthed) return <Navigate to="/login" replace />;
+  // Only staff (teacher/trader accountType) can access staff portal
+  if (user?.accountType !== 'teacher' && user?.accountType !== 'trader') return <Navigate to="/app" replace />;
+  return children;
 }
 
 // No free trial: paid plan + card required before entering the trading app.
@@ -313,6 +325,8 @@ function RoutesWithBoundary() {
                     <Route path="/refund" element={<RefundPage />} />
                     <Route path="/faq" element={<FaqPage />} />
                     <Route path="/tbc" element={<TokenPage />} />
+                    {/* Public staff profile — opened by scanning an ID-card QR */}
+                    <Route path="/staff/:id" element={<StaffBioPage />} />
                     {/* Merged surfaces — old deep links land in their new home */}
                     <Route path="/app/tbc" element={<Navigate to="/app/wallet?tab=crypto" replace />} />
                     <Route path="/app/defi" element={<Navigate to="/app/wallet?tab=crypto" replace />} />
@@ -366,6 +380,7 @@ function RoutesWithBoundary() {
                     <Route path="/admin" element={<AdminProtected><AdminDashboard /></AdminProtected>} />
                     <Route path="/admin/users" element={<AdminProtected><AdminUsers /></AdminProtected>} />
                     <Route path="/admin/employees" element={<AdminProtected><AdminEmployees /></AdminProtected>} />
+                    <Route path="/admin/staff-id-cards" element={<AdminProtected><StaffIdCardsPage /></AdminProtected>} />
                     <Route path="/admin/analytics" element={<AdminProtected><AdminAnalytics /></AdminProtected>} />
                     <Route path="/admin/billing" element={<AdminProtected><AdminBilling /></AdminProtected>} />
                     <Route path="/admin/content" element={<AdminProtected><AdminContent /></AdminProtected>} />
@@ -380,6 +395,7 @@ function RoutesWithBoundary() {
                     <Route path="/admin/mentors" element={<AdminProtected><AdminMentors /></AdminProtected>} />
                     <Route path="/admin/wallet" element={<AdminProtected><AdminWallet /></AdminProtected>} />
                     <Route path="/admin/company" element={<AdminProtected><AdminCompany /></AdminProtected>} />
+                    <Route path="/staff/*" element={<StaffProtected><StaffPortal /></StaffProtected>} />
                 </Routes>
             </Suspense>
         </ErrorBoundary>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Users, Settings, FileText, CreditCard, LibraryBig, BarChart3,
+  LayoutDashboard, Users, Settings, FileText, CreditCard, IdCard, LibraryBig, BarChart3,
   LogOut, Menu, Shield, X, Plug, Key, Package, User, ChevronDown, MonitorPlay, Briefcase, Gift,
   GraduationCap, Wallet, UserRound, Building2
 } from 'lucide-react';
@@ -29,6 +29,7 @@ const NAV = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/users', label: 'User Management', icon: Users },
   { to: '/admin/employees', label: 'Employees', icon: UserRound },
+  { to: '/admin/staff-id-cards', label: 'ID Cards', icon: IdCard },
   { to: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/admin/billing', label: 'Billing & Revenue', icon: CreditCard },
   { to: '/admin/airdrops', label: 'Airdrops', icon: Gift },
