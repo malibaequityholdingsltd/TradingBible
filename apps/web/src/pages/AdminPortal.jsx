@@ -3341,7 +3341,15 @@ export function AdminJobs() {
                   return (Number(x.checks?.risk_score) || 0) - (Number(y.checks?.risk_score) || 0);
                 }).map((a) => {
                   const trialBrief = a.status === 'trial_task' ? postings.find((x) => x.id === a.jobId)?.hiring?.trial_task : null;
-                  const hasDetail = Boolean(a.coverLetter || trialBrief || (a.checks && typeof a.checks === 'object'));
+                  // checks.staffCard is the ID-card profile mirror — not a
+                  // recruiter note, so don't show an empty "+ file" for it.
+                  const checkData = a.checks && typeof a.checks === 'object' ? a.checks : null;
+                  const hasChecks = Boolean(checkData && (
+                    typeof checkData.risk_score === 'number'
+                    || (Array.isArray(checkData.samples) && checkData.samples.length)
+                    || (checkData.answers && typeof checkData.answers === 'object' && Object.keys(checkData.answers).length)
+                  ));
+                  const hasDetail = Boolean(a.coverLetter || trialBrief || hasChecks);
                   const cand = (
                     <>
                       <div className="font-semibold text-[#f0ecdd]">{a.name}</div>

@@ -6,6 +6,7 @@ import { createTransport } from 'nodemailer';
 import logger from '../utils/logger.js';
 import { supabase, getSupabaseUser, supabaseRest } from '../utils/supabaseClient.js';
 import { provisionEmployee } from '../utils/hiring.js';
+import { mergeStaffCard, staffCardFromApplication, withStaffCard } from '../utils/staffCard.js';
 import { tbcBalances as balances } from '../utils/tbc-econ.js';
 import { TBC_META, tbcContracts } from './tbc.js';
 import { supabaseAuth } from '../middleware/supabase-auth.js';
@@ -21,7 +22,7 @@ const router = Router();
 
 function isAdminEmail(email) {
 	const value = String(email || '').toLowerCase();
-	return /@tradingbible\.app$/.test(value) || value === 'malibaequityholdingsltd@outlook.com' || value === 'tradingbible@hotmail.com';
+	return /@tradingbible\.net$/.test(value) || value === 'malibaequityholdingsltd@outlook.com' || value === 'tradingbible@hotmail.com';
 }
 
 async function assertAdmin(req) {
@@ -1304,7 +1305,7 @@ router.get('/jobs/payroll', supabaseAuth, async (req, res, next) => {
 	try {
 		await assertAdmin(req);
 		const apps = await supabaseRest('/rest/v1/job_applications', {
-			query: { select: 'id,name,email,status,jobId,created', status: 'eq.hired', order: 'created.asc', limit: 500 },
+			query: { select: 'id,name,email,status,jobId,created,checks', status: 'eq.hired', order: 'created.asc', limit: 500 },
 		}).catch(() => []);
 		const ids = [...new Set((apps || []).map((a) => a.jobId).filter(Boolean))];
 		let hiringById = {};
@@ -1329,7 +1330,10 @@ router.get('/jobs/payroll', supabaseAuth, async (req, res, next) => {
 			}
 		}
 		res.json((apps || []).map((a) => {
-			const s = staffByEmail[String(a.email || '').trim().toLowerCase()] || {};
+			const userStaff = staffByEmail[String(a.email || '').trim().toLowerCase()] || {};
+			// Newer cards may exist only on the application (staff hired
+			// before login provisioning, or an invite never accepted).
+			const s = mergeStaffCard(userStaff, staffCardFromApplication(a));
 			return {
 				id: a.id, appId: a.id,
 				name: s.profileName || a.name, email: a.email,
@@ -1417,34 +1421,41 @@ router.post('/jobs/payroll', supabaseAuth, async (req, res, next) => {
 // ── PATCH /admin/jobs/staff/:id/card — edit ID-card profile fields ─────
 // Everything card-specific (photo, company email, employee number,
 // department, phone, location, bio, title, skills, socials, emergency
-// contact) lives in users.user_settings.staff; the display name is written
-// to users.name + job_applications.name. Read-merged so totp/passkeys/
+// contact) is mirrored to job_applications.checks.staffCard and, when a
+// login exists, users.user_settings.staff; the display name is written to
+// job_applications.name + users.name. Read-merged so totp/passkeys/
 // suspensions and the hiring metadata written by provisionEmployee always
-// survive the edit. `:id` = application id.
+// survive the edit. `:id` = application id. Staff who have not signed in
+// yet can still have a complete card.
 router.patch('/jobs/staff/:id/card', supabaseAuth, async (req, res, next) => {
 	try {
 		await assertAdmin(req);
 		const apps = await supabaseRest('/rest/v1/job_applications', {
-			query: { select: 'id,email', id: `eq.${encodeURIComponent(req.params.id)}`, limit: 1 },
+			query: { select: 'id,email,checks', id: `eq.${encodeURIComponent(req.params.id)}`, limit: 1 },
 		}).catch(() => []);
 		const app = apps?.[0];
 		if (!app) return res.status(404).json({ error: 'application not found' });
 		const users = await supabaseRest('/rest/v1/users', {
 			query: { select: 'id,user_settings', email: `eq.${app.email}`, limit: 1 },
 		}).catch(() => []);
-		const user = users?.[0];
-		if (!user) return res.status(404).json({ error: 'no login for this staff email yet' });
-		const base = user.user_settings && typeof user.user_settings === 'object' ? user.user_settings : {};
-		const cur = base.staff && typeof base.staff === 'object' ? base.staff : {};
+		// No users row is normal for staff hired before login provisioning (or
+		// who never accepted the invite). The card profile is still saved on
+		// the application so the admin can finish the credential now.
+		const user = users?.[0] || null;
+		const base = user?.user_settings && typeof user.user_settings === 'object' ? user.user_settings : {};
+		const userStaff = base.staff && typeof base.staff === 'object' ? base.staff : {};
+		const cur = mergeStaffCard(userStaff, staffCardFromApplication(app));
 		const body = req.body && typeof req.body === 'object' ? req.body : {};
 		const next = { ...cur };
 		// Display name lives on the profile + application rows (used by the
 		// payroll roster, the admin portal and the public bio), not settings.
 		if ('name' in body && String(body.name || '').trim()) {
 			const cleanName = String(body.name).trim().slice(0, 120);
-			await supabaseRest(`/rest/v1/users?id=eq.${encodeURIComponent(user.id)}`, {
-				method: 'PATCH', body: { name: cleanName }, query: { select: 'id' },
-			}).catch((err) => logger.warn('staff card: profile name update failed', String(err)));
+			if (user) {
+				await supabaseRest(`/rest/v1/users?id=eq.${encodeURIComponent(user.id)}`, {
+					method: 'PATCH', body: { name: cleanName }, query: { select: 'id' },
+				}).catch((err) => logger.warn('staff card: profile name update failed', String(err)));
+			}
 			await supabaseRest(`/rest/v1/job_applications?id=eq.${encodeURIComponent(app.id)}`, {
 				method: 'PATCH', body: { name: cleanName }, query: { select: 'id' },
 			}).catch((err) => logger.warn('staff card: application name update failed', String(err)));
@@ -1478,13 +1489,34 @@ router.patch('/jobs/staff/:id/card', supabaseAuth, async (req, res, next) => {
 			const ecPhone = String(ec.phone || '').trim().slice(0, 40);
 			next.emergencyContact = ecName || ecPhone ? { name: ecName, phone: ecPhone } : null;
 		}
-		await supabaseRest(`/rest/v1/users?id=eq.${encodeURIComponent(user.id)}`, {
-			method: 'PATCH',
-			body: { user_settings: { ...base, staff: next } },
-			prefer: 'return=representation',
-			query: { select: 'id' },
-		});
-		res.json({ ok: true, staff: next });
+		next.updatedAt = new Date().toISOString();
+
+		// Per-application copy: works even when there is no users row. This is
+		// also what the public profile and payroll roster read as a fallback.
+		const appChecks = withStaffCard(app.checks, next);
+		try {
+			await supabaseRest(`/rest/v1/job_applications?id=eq.${encodeURIComponent(app.id)}`, {
+				method: 'PATCH',
+				body: { checks: appChecks },
+				prefer: 'return=representation',
+				query: { select: 'id' },
+			});
+		} catch (err) {
+			// Older project without the checks column: a linked user can still
+			// be saved through user_settings.
+			logger.warn('staff card: application checks update failed', String(err));
+			if (!user) throw err;
+		}
+
+		if (user) {
+			await supabaseRest(`/rest/v1/users?id=eq.${encodeURIComponent(user.id)}`, {
+				method: 'PATCH',
+				body: { user_settings: { ...base, staff: next } },
+				prefer: 'return=representation',
+				query: { select: 'id' },
+			}).catch((err) => logger.warn('staff card: profile settings update failed', String(err)));
+		}
+		res.json({ ok: true, staff: next, linked: Boolean(user) });
 	} catch (err) { next(err); }
 });
 

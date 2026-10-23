@@ -994,6 +994,51 @@ html.light .cb-scope .border-white\/\[0\.07\] { border-color: #e4ded0 !important
 html.light .cb-scope .bg-black\/25 { border-color: #e4ded0 !important; }
 html.light .cb-scope .cb-modal-backdrop { background: rgba(45,52,64,0.45) !important; }
 
+/* ─── EMPLOYEE ID CARDS CONSOLE ──────────────────────────────────── */
+/* The credential studio has its own layered surfaces; keep every label
+   readable in both themes instead of relying on the global text remap. */
+.tb-idc-hero {
+  background: linear-gradient(135deg, #141207 0%, #0c0c12 52%, #08080d 100%);
+}
+html.light .tb-idc-hero {
+  background: linear-gradient(135deg, #fffdf7 0%, #f8f3e7 52%, #f1ebdd 100%);
+}
+html.light .tb-idc .text-\[\#d4af37\],
+html.light .tb-idc .text-\[\#e8c95a\] { color: #8a6714 !important; }
+html.light .tb-idc .bg-white\/\[0\.01\],
+html.light .tb-idc .bg-white\/\[0\.015\],
+html.light .tb-idc .bg-white\/\[0\.07\] { background-color: rgba(60, 55, 40, 0.045) !important; }
+html.light .tb-idc .border-white\/\[0\.06\],
+html.light .tb-idc .border-white\/\[0\.07\] { border-color: #e4ded0 !important; }
+html.light .tb-idc ::placeholder { color: #7a7466 !important; }
+
+/* ─── PUBLIC STAFF BIO ───────────────────────────────────────────── */
+/* The scanned credential is a dark mirror of the physical card. Keep it
+   dark and legible even when the visitor's account theme is light. */
+html.light .tb-bio { color-scheme: dark; color: #f0ecdd !important; }
+html.light .tb-bio .text-\[\#f0ecdd\] { color: #f0ecdd !important; }
+html.light .tb-bio .text-\[\#f4f1e6\] { color: #f4f1e6 !important; }
+html.light .tb-bio .text-\[\#e6e1d2\] { color: #e6e1d2 !important; }
+html.light .tb-bio .text-\[\#d6d1c2\] { color: #d6d1c2 !important; }
+html.light .tb-bio .text-\[\#c9c4b4\] { color: #c9c4b4 !important; }
+html.light .tb-bio .text-\[\#8a8577\] { color: #8a8577 !important; }
+html.light .tb-bio .text-\[\#6a665a\] { color: #6a665a !important; }
+html.light .tb-bio .text-\[\#5c584c\] { color: #5c584c !important; }
+html.light .tb-bio .text-\[\#d6c47a\] { color: #d6c47a !important; }
+html.light .tb-bio .text-\[\#e8c95a\] { color: #e8c95a !important; }
+html.light .tb-bio .text-\[\#8a7a3a\] { color: #8a7a3a !important; }
+html.light .tb-bio .text-\[\#d4af37\] { color: #d4af37 !important; }
+html.light .tb-bio .text-emerald-300 { color: #6ee7b7 !important; }
+html.light .tb-bio .bg-white\/\[0\.02\] { background-color: rgba(255,255,255,0.02) !important; }
+html.light .tb-bio .bg-white\/\[0\.03\] { background-color: rgba(255,255,255,0.03) !important; }
+html.light .tb-bio .bg-white\/\[0\.04\] { background-color: rgba(255,255,255,0.04) !important; }
+html.light .tb-bio .bg-white\/\[0\.05\] { background-color: rgba(255,255,255,0.05) !important; }
+html.light .tb-bio .bg-white\/5,
+html.light .tb-bio .hover\:bg-white\/5:hover { background-color: rgba(255,255,255,0.05) !important; }
+html.light .tb-bio .bg-white\/10 { background-color: rgba(255,255,255,0.10) !important; }
+html.light .tb-bio .border-white\/\[0\.07\] { border-color: rgba(255,255,255,0.07) !important; }
+html.light .tb-bio .border-white\/10 { border-color: rgba(255,255,255,0.10) !important; }
+
 /* ─── LIGHT THEME: REMAP HARDCODED DARK PALETTE ──────────────────── */
 /* The app styles mostly use fixed dark hexes; these overrides keep every
    text level and surface readable on the warm ivory light theme. */

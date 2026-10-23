@@ -6,6 +6,7 @@
 - [Admin Analytics](/admin/analytics): TradingBible application page.
 - [Admin Api Keys](/admin/api-keys): TradingBible application page.
 - [Admin Billing](/admin/billing): TradingBible application page.
+- [Admin Company](/admin/company): TradingBible application page.
 - [Admin Content](/admin/content): TradingBible application page.
 - [Admin Dashboard](/admin): TradingBible application page.
 - [Admin Employees](/admin/employees): TradingBible application page.
@@ -60,6 +61,9 @@
 - [Security](/app/security): TradingBible application page.
 - [Signals](/app/signals): TradingBible application page.
 - [Signup](/signup): TradingBible application page.
+- [Staff Id Cards](/admin/staff-id-cards): TradingBible application page.
+- [Staff Portal](/staff/*): TradingBible application page.
+- [Staff Profile Gate](/staff/:id): TradingBible application page.
 - [Staking](/app/staking): TradingBible application page.
 - [Student Dashboard](/student): TradingBible application page.
 - [Symbol Redirect](/app/charts): TradingBible application page.

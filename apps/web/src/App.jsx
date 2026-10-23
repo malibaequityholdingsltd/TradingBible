@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Route, Routes, BrowserRouter as Router, Navigate, useLocation } from 'react-router-dom';
+import { Route, Routes, BrowserRouter as Router, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
@@ -180,6 +180,17 @@ function StaffProtected({ children }) {
   return children;
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// `/staff/:id` is the public QR profile, but the staff portal also lives under
+// `/staff/*` (terminal, journal, analytics…). Only UUID-shaped ids open the
+// public profile so the portal's tool routes keep working.
+function StaffProfileGate() {
+  const { id } = useParams();
+  if (UUID_RE.test(id || '')) return <StaffBioPage />;
+  return <StaffProtected><StaffPortal /></StaffProtected>;
+}
+
 // No free trial: paid plan + card required before entering the trading app.
 // Billing + profile stay open so new users can pay and manage their account.
 function PaidProtected({ children }) {
@@ -254,7 +265,8 @@ function MaintenanceGate({ children }) {
 
 function AppChrome() {
     const { pathname } = useLocation();
-    const hideTicker = ['/login', '/signup', '/reset', '/onboarding'].includes(pathname);
+    const isPublicStaffProfile = /^\/staff\/[0-9a-f-]{36}\/?$/i.test(pathname);
+    const hideTicker = ['/login', '/signup', '/reset', '/onboarding'].includes(pathname) || isPublicStaffProfile;
     // SI coach + TV widgets live here (above the per-route error boundary)
     // so they mount ONCE and survive page navigation without reloading
     // videos, chats, drag positions or panel state. App routes only —
@@ -326,7 +338,7 @@ function RoutesWithBoundary() {
                     <Route path="/faq" element={<FaqPage />} />
                     <Route path="/tbc" element={<TokenPage />} />
                     {/* Public staff profile — opened by scanning an ID-card QR */}
-                    <Route path="/staff/:id" element={<StaffBioPage />} />
+                    <Route path="/staff/:id" element={<StaffProfileGate />} />
                     {/* Merged surfaces — old deep links land in their new home */}
                     <Route path="/app/tbc" element={<Navigate to="/app/wallet?tab=crypto" replace />} />
                     <Route path="/app/defi" element={<Navigate to="/app/wallet?tab=crypto" replace />} />

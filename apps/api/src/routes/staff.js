@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { supabaseRest } from '../utils/supabaseClient.js';
 import { deriveEmployeeNo } from '../utils/employeeNo.js';
+import { mergeStaffCard, staffCardFromApplication } from '../utils/staffCard.js';
 
 // ── Public staff bios (scanned from printed ID card QR codes) ─────────
 // No auth: anyone who scans a physical card opens the public profile.
@@ -16,7 +17,7 @@ router.get('/:id', async (req, res, next) => {
 		// Primary key: job application id (that's what payroll returns and
 		// what the QR code encodes).
 		let app = (await supabaseRest('/rest/v1/job_applications', {
-			query: { select: 'id,name,email,status,created,jobId', id: `eq.${id}`, limit: 1 },
+			query: { select: 'id,name,email,status,created,jobId,checks', id: `eq.${id}`, limit: 1 },
 		}).catch(() => []))?.[0] || null;
 
 		// Fallback: a user id was scanned → resolve their hired application
@@ -27,7 +28,7 @@ router.get('/:id', async (req, res, next) => {
 			}).catch(() => []))?.[0] || null;
 			if (user?.email) {
 				app = (await supabaseRest('/rest/v1/job_applications', {
-					query: { select: 'id,name,email,status,created,jobId', email: `eq.${user.email}`, status: 'eq.hired', order: 'created.asc', limit: 1 },
+					query: { select: 'id,name,email,status,created,jobId,checks', email: `eq.${user.email}`, status: 'eq.hired', order: 'created.asc', limit: 1 },
 				}).catch(() => []))?.[0] || null;
 			}
 		}
@@ -45,10 +46,13 @@ router.get('/:id', async (req, res, next) => {
 		const profile = (await supabaseRest('/rest/v1/users', {
 			query: { select: 'user_settings', email: `eq.${app.email}`, limit: 1 },
 		}).catch(() => []))?.[0] || null;
-		const s = profile?.user_settings && typeof profile.user_settings === 'object'
+		const userStaff = profile?.user_settings && typeof profile.user_settings === 'object'
 			&& profile.user_settings.staff && typeof profile.user_settings.staff === 'object'
 			? profile.user_settings.staff
 			: {};
+		// Card edits made before this employee had a login live on the
+		// application's checks.staffCard; merge the freshest copy.
+		const s = mergeStaffCard(userStaff, staffCardFromApplication(app));
 
 		res.set('Cache-Control', 'public, max-age=120');
 		res.json({

@@ -53,6 +53,7 @@
     "framer-motion": "^11.15.0",
     "html-to-image": "^1.11.13",
     "input-otp": "^1.4.2",
+    "jspdf": "^3.0.4",
     "lightweight-charts": "^5.2.0",
     "lucide-react": "^0.469.0",
     "next-themes": "^0.4.6",
