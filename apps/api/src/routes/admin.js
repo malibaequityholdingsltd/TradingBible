@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { createHash, randomBytes } from 'crypto';
 import { readFileSync } from 'fs';
+import path from 'path';
 import Stripe from 'stripe';
 import { createTransport } from 'nodemailer';
 import logger from '../utils/logger.js';
@@ -10,6 +11,7 @@ import { mergeStaffCard, staffCardFromApplication, withStaffCard } from '../util
 import { tbcBalances as balances } from '../utils/tbc-econ.js';
 import { TBC_META, tbcContracts } from './tbc.js';
 import { supabaseAuth } from '../middleware/supabase-auth.js';
+import { findTbcDocument, internalTbcDocuments, publicTbcDocuments, tbcDocumentRoot, toAdminDocument } from '../data/tbc-documents.js';
 
 let API_VERSION = '1.1.0';
 try {
@@ -41,6 +43,66 @@ async function assertAdmin(req) {
 	err.status = 403;
 	throw err;
 }
+
+// ---------------------------------------------------------------------------
+// TBC legal & governance vault
+// The 26 corporate instruments contain confidential issuer information (EIN,
+// registered office, signature blocks). They are deliberately kept outside
+// the web bundle and streamed only after an admin session is verified.
+// ---------------------------------------------------------------------------
+const TBC_DOC_SLUG = /^[a-z0-9-]+$/;
+
+function tbcVaultDoc(slug) {
+	if (!TBC_DOC_SLUG.test(String(slug || ''))) return null;
+	return findTbcDocument(slug);
+}
+
+router.get('/tbc-documents', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const documents = [...internalTbcDocuments, ...publicTbcDocuments].map(toAdminDocument);
+		res.setHeader('Cache-Control', 'private, no-store');
+		res.json({
+			issuer: 'TradingBible LLC',
+			jurisdiction: 'Delaware, United States',
+			updated: 'October 2026',
+			documents,
+		});
+	} catch (err) {
+		next(err);
+	}
+});
+
+router.get('/tbc-documents/:slug/file', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const doc = tbcVaultDoc(req.params.slug);
+		if (!doc) return res.status(404).json({ error: 'Document not found' });
+		res.setHeader('Content-Type', 'application/pdf');
+		res.setHeader('Content-Disposition', `inline; filename="${doc.slug}.pdf"`);
+		res.setHeader('Cache-Control', 'private, no-store');
+		res.setHeader('X-Content-Type-Options', 'nosniff');
+		return res.sendFile(path.join(tbcDocumentRoot, doc.pdf), (err) => {
+			if (err && !res.headersSent) next(err);
+		});
+	} catch (err) {
+		next(err);
+	}
+});
+
+router.get('/tbc-documents/:slug/docx', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const doc = tbcVaultDoc(req.params.slug);
+		if (!doc) return res.status(404).json({ error: 'Document not found' });
+		res.setHeader('Cache-Control', 'private, no-store');
+		return res.download(path.join(tbcDocumentRoot, doc.docx), `${doc.slug}.docx`, (err) => {
+			if (err && !res.headersSent) next(err);
+		});
+	} catch (err) {
+		next(err);
+	}
+});
 
 // GET /api/admin/users — full user list via service role (RLS bypass).
 // Browser `useUsers` falls back here when the `users` table is RLS-blocked.
@@ -350,6 +412,7 @@ router.get('/wallet/overview', supabaseAuth, async (req, res, next) => {
 		const contracts = tbcContracts();
 		const tbcSupply = {
 			maxSupply,
+			tokenIssued: process.env.TBC_TOKEN_ISSUED === 'true',
 			issuedTbc: Math.round(sums.issuedTbc * 100) / 100,
 			circulatingTbc: Math.round(sums.circulatingTbc * 100) / 100,
 			remainingTbc: Math.round((maxSupply - sums.issuedTbc) * 100) / 100,
@@ -549,7 +612,7 @@ export const COMPANY_DEFAULTS = {
 		plans: 'Pro $19.99/mo (journal/analytics/risk) · Elite SI $49.99/mo (SI reports/coaching/integrations) · Professional $99/mo (API/webhooks/white-label). VERIFIED current checkout prices. Stripe, no free trial, card required. 14-day money-back on first subscription.',
 		lines: 'Subscriptions + developer licensing + chart widgets + institutional software + ads + education/mentorship + affiliates + eligible prop-firm services. Future brokerage commissions/spreads/fees ONLY after legal + regulatory clearance.',
 		tractionNote: 'NO verified revenue, profit, valuation, MRR, customer, or growth figures supplied — all pending confirmation, never estimated as achievements. (ARPU ~$36.89 illustrative only.)',
-		payouts: 'CFD withdrawals every 14 days to TBC wallet (80% standard → 90% scaling; 1-step fixed 90%). First funded payout refunds entry fee in TBC.',
+		payouts: 'CFD withdrawals every 14 days to TBC credit wallet (80% standard → 90% scaling; 1-step fixed 90%). First funded payout refunds entry fee in TBC credits.',
 	},
 	compliance: {
 		kyc: 'Passkeys · session management · KYC-gated profiles (frozen after verification) · suspend/close lifecycle · AML/KYC, sanctions screening, SoF, transaction monitoring, withdrawal approvals, reconciliation, complaint handling.',

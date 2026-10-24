@@ -3,7 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Settings, FileText, CreditCard, IdCard, LibraryBig, BarChart3,
   LogOut, Menu, Shield, X, Plug, Key, Package, User, ChevronDown, MonitorPlay, Briefcase, Gift,
-  GraduationCap, Wallet, UserRound, Building2
+  GraduationCap, Wallet, UserRound, Building2, Coins
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import pb from '@/lib/pocketbaseClient';
@@ -33,6 +33,8 @@ const NAV = [
   { to: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/admin/billing', label: 'Billing & Revenue', icon: CreditCard },
   { to: '/admin/airdrops', label: 'Airdrops', icon: Gift },
+  { to: '/admin/tbc', label: 'TBC Control Center', icon: Coins },
+  { to: '/admin/legal-vault', label: 'TBC Legal Vault', icon: Shield },
   { to: '/admin/content', label: 'Content', icon: LibraryBig },
   { to: '/admin/reports', label: 'Reports & Logs', icon: FileText },
   { to: '/admin/tv', label: 'TradingBible TV', icon: MonitorPlay },

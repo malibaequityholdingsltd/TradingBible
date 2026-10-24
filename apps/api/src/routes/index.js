@@ -12,6 +12,7 @@ import authSendEmail, { authSendEmailStatus } from './auth-send-email.js';
 import { intraday, daily, weekly, monthly } from './market-series.js';
 import walletRouter from './wallet.js';
 import tbcRouter from './tbc.js';
+import tbcDocumentsRouter from './tbc-documents.js';
 import challengesRouter from './challenges.js';
 import backtestRouter from './backtest.js';
 import ecosystemRouter from './ecosystem.js';
@@ -52,6 +53,7 @@ export default () => {
     router.get('/weekly', weekly);
     router.get('/monthly', monthly);
     router.use('/wallet', walletRouter);
+    router.use('/tbc/documents', tbcDocumentsRouter);
     router.use('/tbc', tbcRouter);
     router.use('/challenges', challengesRouter);
     router.use('/backtest', backtestRouter);

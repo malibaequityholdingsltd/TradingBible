@@ -16,6 +16,8 @@
 - [Admin Plugins](/admin/plugins): TradingBible application page.
 - [Admin Reports](/admin/reports): TradingBible application page.
 - [Admin Settings](/admin/settings): TradingBible application page.
+- [Admin Tbc](/admin/tbc): TradingBible application page.
+- [Admin Tbc Documents](/admin/legal-vault): TradingBible application page.
 - [Admin Tv Ads](/admin/tv): TradingBible application page.
 - [Admin Users](/admin/users): TradingBible application page.
 - [Admin Wallet](/admin/wallet): TradingBible application page.
@@ -67,9 +69,11 @@
 - [Staking](/app/staking): TradingBible application page.
 - [Student Dashboard](/student): TradingBible application page.
 - [Symbol Redirect](/app/charts): TradingBible application page.
+- [Tbc App](/app/tbc/:tab): TradingBible application page.
+- [Tbc Chain](/developers/tbc): TradingBible application page.
+- [Tbc Public](/tbc/faqs): TradingBible application page.
 - [Terminal Premium](/app/terminal-pro): TradingBible application page.
 - [Terms](/terms): TradingBible application page.
-- [Token](/tbc): TradingBible application page.
 - [Tv](/tv): TradingBible application page.
 - [User Api Keys](/app/api-keys): TradingBible application page.
 - [Wallet](/app/wallet): TradingBible application page.

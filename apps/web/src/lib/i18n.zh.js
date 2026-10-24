@@ -70,6 +70,7 @@ export default {
     'nav.propfirms': '自营公司',
     'nav.funded': '注资',
     'nav.wallet': '钱包',
+    'nav.tbc': 'TBC',
     'nav.guide': '专业指南',
     'nav.challenges': '挑战赛',
     'nav.paper': '模拟',

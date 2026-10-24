@@ -70,6 +70,7 @@ export default {
     'nav.propfirms': 'प्रॉप फर्म',
     'nav.funded': 'फंडेड',
     'nav.wallet': 'वॉलेट',
+    'nav.tbc': 'TBC',
     'nav.guide': 'प्रो गाइड',
     'nav.challenges': 'चुनौतियां',
     'nav.paper': 'पेपर',

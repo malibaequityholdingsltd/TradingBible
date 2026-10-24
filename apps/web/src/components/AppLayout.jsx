@@ -65,6 +65,7 @@ const NAV_GROUPS = [
       { to: '/tv', labelKey: 'nav.tv', icon: MonitorPlay, tint: IOS.red },
       { to: '/app/signals', labelKey: 'nav.signals', icon: Radar, tint: IOS.orange },
       { to: '/app/staking', labelKey: 'nav.staking', icon: Coins, tint: IOS.green },
+      { to: '/app/tbc', labelKey: 'nav.tbc', icon: Coins, tint: IOS.yellow, glyph: '#3a2f00' },
       { to: '/leaderboard', labelKey: 'nav.leaderboard', icon: Medal, tint: IOS.purple },
       { to: '/app/alerts', labelKey: 'nav.alerts', icon: Bell, tint: IOS.pink },
       { to: '/app/economic-calendar', labelKey: 'nav.economic', icon: CalendarClock, tint: IOS.indigo },

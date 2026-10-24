@@ -52,13 +52,13 @@ export default function EvaluationsPanel() {
   const pendingPayoutFor = (attemptId) => payouts.some((p) => p.kind === 'payout_request' && p.status === 'pending' && String(p.reference || '').startsWith(`payout_req:${attemptId}:`));
 
   const requestPayout = async (id) => {
-    if (!window.confirm('Request your payout now? It goes to your TBC wallet once the desk approves — entry fee refunded in TBC on your first payout.')) return;
+    if (!window.confirm('Request your payout now? It goes to your TBC credit wallet once the desk approves — entry fee refunded in TBC credits on your first payout.')) return;
     setBusy(`payout:${id}`);
     try {
       const res = await fetch(`${API_SERVER_URL}/challenges/payout/request`, { method: 'POST', headers: headers(), body: JSON.stringify({ attemptId: id }) });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'request failed');
-      toast({ title: 'Payout requested', description: `$${data.payout?.toLocaleString()} on its way — desk review, then straight to your TBC wallet.` });
+      toast({ title: 'Payout requested', description: `$${data.payout?.toLocaleString()} on its way — desk review, then straight to your TBC credit wallet.` });
       await load();
     } catch (e) { toast({ variant: 'destructive', title: 'Payout request failed', description: e.message }); }
     finally { setBusy(''); }
@@ -122,7 +122,7 @@ export default function EvaluationsPanel() {
                   )}
                   {a.status === 'passed' && (
                     <div className="mt-2.5">
-                      <p className="flex items-center gap-1.5 text-xs text-emerald-400"><BadgeDollarSign className="h-3.5 w-3.5" /> Passed — {pendingPayoutFor(a.id) ? 'payout requested, desk is reviewing.' : 'request your payout to your TBC wallet.'}</p>
+                      <p className="flex items-center gap-1.5 text-xs text-emerald-400"><BadgeDollarSign className="h-3.5 w-3.5" /> Passed — {pendingPayoutFor(a.id) ? 'payout requested, desk is reviewing.' : 'request your payout to your TBC credit wallet.'}</p>
                       {!pendingPayoutFor(a.id) && (
                         <GoldButton disabled={busy === `payout:${a.id}`} onClick={() => requestPayout(a.id)} className="mt-2 !px-4 !py-2 !text-xs">
                           {busy === `payout:${a.id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Request payout'}

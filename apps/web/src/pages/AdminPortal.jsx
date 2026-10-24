@@ -506,7 +506,7 @@ export function AdminDashboard() {
             </span>
             <div className="min-w-0">
               <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Command Deck</h2>
-              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Live business snapshot — growth, money, TBC economy and system health.</p>
+              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Live business snapshot — growth, money, TBC credits and system health.</p>
             </div>
           </div>
           {!loading && (
@@ -599,15 +599,18 @@ export function AdminDashboard() {
             <Stat icon={DollarSign} label="Academy Revenue" value={`$${stats.academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="One-time, lifetime" color="#f472b6" />
           </div>
 
-          {sectionHead('03', 'TBC economy', supply?.onChainDeployed ? 'On-chain live' : 'Off-chain credits · 1 TBC = 1 KWD')}
-          <div className="mb-6 grid gap-3 grid-cols-2 xl:grid-cols-4">
-            <Stat icon={Coins} label="TBC Total Supply" value={supply ? Number(supply.maxSupply).toLocaleString() : '—'} sub={supply?.onChainDeployed ? 'Fixed · on-chain live' : 'Fixed 100M · off-chain credits'} color="#d4af37" />
-            <Stat icon={Coins} label="TBC Issued" value={supply ? Number(supply.issuedTbc ?? 0).toLocaleString() : '—'} sub="Credits ever issued" color="#f59e0b" />
-            <Stat icon={Coins} label="TBC Circulating" value={supply ? Number(supply.circulatingTbc).toLocaleString() : '—'} sub="Net held by users" color="#38bdf8" />
-            <Stat icon={Coins} label="TBC Remaining" value={supply ? Number(supply.remainingTbc).toLocaleString() : '—'} sub="Unissued vs 100M cap" color="#10b981" />
+          {sectionHead('03', 'TBC credits & proposed token', supply?.tokenIssued ? 'Token issued' : 'Off-chain credits · 1 TBC = 1 KWD')}
+          <div className="mb-3 rounded-xl border border-amber-400/20 bg-amber-400/[0.05] px-4 py-3 text-xs leading-relaxed text-[#c9c4b4]">
+            <b className="text-amber-300">Keep these separate.</b> TBC platform credits are off-chain accounting used for eligible services. The proposed TBC token has not been issued, and the 100M figure is a proposal — not circulating supply.
           </div>
           <div className="mb-6 grid gap-3 grid-cols-2 xl:grid-cols-4">
-            <Stat icon={Coins} label="TBC Volume 30d" value={money ? `${Math.round(money.inTbc30d + money.outTbc30d).toLocaleString()} TBC` : '—'} sub="In + out, all TBC flows" color="#d4af37" />
+            <Stat icon={Coins} label="Proposed token max" value={supply ? Number(supply.maxSupply).toLocaleString() : '—'} sub="Proposal only · not issued" color="#d4af37" />
+            <Stat icon={Coins} label="TBC credits recorded" value={supply ? Number(supply.issuedTbc ?? 0).toLocaleString() : '—'} sub="Off-chain credits ever issued" color="#f59e0b" />
+            <Stat icon={Coins} label="TBC credits held" value={supply ? Number(supply.circulatingTbc).toLocaleString() : '—'} sub="Net user credit balance" color="#38bdf8" />
+            <Stat icon={Coins} label="Token status" value={supply?.tokenIssued ? 'Issued' : 'Not issued'} sub="No on-chain supply reported" color="#10b981" />
+          </div>
+          <div className="mb-6 grid gap-3 grid-cols-2 xl:grid-cols-4">
+            <Stat icon={Coins} label="TBC credit volume 30d" value={money ? `${Math.round(money.inTbc30d + money.outTbc30d).toLocaleString()} TBC` : '—'} sub="In + out, off-chain credits" color="#d4af37" />
           </div>
 
           {sectionHead('04', 'Platform', 'Health + latest users')}
@@ -1270,7 +1273,7 @@ export function AdminBilling() {
   };
 
   const payChallenge = async (a) => {
-    if (!window.confirm(`Pay pass reward for ${a.userEmail || a.owner} (${a.product_name}) to their TBC wallet?`)) return;
+    if (!window.confirm(`Pay pass reward for ${a.userEmail || a.owner} (${a.product_name}) to their TBC credit wallet?`)) return;
     setBusy(`chalpay:${a.id}`);
     try {
       const r = await adminCall(`/challenges/admin/payout/${a.id}`, {});
@@ -1444,7 +1447,7 @@ export function AdminBilling() {
         </Collapse>
 
         <Collapse title="TradingBible Funded — Attempts" sub="Pass rewards, one click" defaultOpen={false}>
-          <p className="mb-3 text-xs text-[#8a8577]">Passed attempts pay the product pass reward to the trader's TBC wallet. One click.</p>
+          <p className="mb-3 text-xs text-[#8a8577]">Passed attempts pay the product pass reward to the trader's TBC credit wallet. One click.</p>
           <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] text-sm tabular-nums">
             <thead className="sticky top-0 z-10">
@@ -3066,7 +3069,7 @@ export function AdminJobs() {
       .filter((x) => x.tbc > 0);
     if (!payments.length) { toast({ variant: 'destructive', title: 'Nothing to pay', description: 'Enter a TBC amount per person first.' }); return; }
     const total = payments.reduce((n, x) => n + x.tbc, 0);
-    if (!window.confirm(`Pay ${total} TBC to ${payments.length} staff from YOUR TBC balance? They cash out via Convert → bank.`)) return;
+    if (!window.confirm(`Pay ${total} TBC to ${payments.length} staff from YOUR TBC credit balance? They cash out via Convert → bank.`)) return;
     setPayBusy(true);
     try {
       const res = await call('/payroll', { method: 'POST', body: { payments } });
@@ -3442,7 +3445,7 @@ export function AdminJobs() {
             <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
             <button onClick={loadRoster} className="text-[11px] text-[#8a8577] hover:text-[#e9e7df]">Refresh</button>
           </div>
-          <p className="mb-2 text-[11px] leading-relaxed text-[#6a665a]">Salary deposited directly to TBC wallet. They cash out via Convert → bank withdrawal.</p>
+          <p className="mb-2 text-[11px] leading-relaxed text-[#6a665a]">Salary deposited directly to the TBC credit wallet. They cash out via Convert → bank withdrawal.</p>
           <div className="overflow-x-auto -mx-2 px-2">
             <table className="w-full min-w-[480px] text-sm">
               <thead>

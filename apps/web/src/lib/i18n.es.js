@@ -70,6 +70,7 @@ export default {
     'nav.propfirms': 'Firma prop',
     'nav.funded': 'Fondeado',
     'nav.wallet': 'Cartera',
+    'nav.tbc': 'TBC',
     'nav.guide': 'Guía Pro',
     'nav.challenges': 'Retos',
     'nav.paper': 'Papel',

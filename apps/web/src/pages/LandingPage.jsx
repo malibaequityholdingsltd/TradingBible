@@ -21,7 +21,7 @@ const LOGO = TRADINGBIBLE_LOGO;
 const STATS = [
   { value: '20+', label: 'Broker integrations' },
   { value: '147', label: 'Trading lessons' },
-  { value: '100M', label: 'TBC fixed supply' },
+  { value: '0 TBC', label: 'Tokens issued · 100M max proposed' },
   { value: '24/7', label: 'SI coaching' },
 ];
 
@@ -32,8 +32,8 @@ const FEATURES = [
   { icon: Plug, title: 'Named brokers & wallet', body: 'Binance, Deriv, easyMarkets, Interactive Brokers, Alpaca and Coinbase over API and MT5 bridge — plus self-custody wallets with live balances. Live accounts only, never demos.' },
   { icon: CircleDot, title: '3D bubble heatmaps', body: 'The whole market as living bubbles across 5 markets plus an All view — size by move or volume, drag them, search any pair, switch color themes.' },
   { icon: GraduationCap, title: 'Lifetime academy', body: '6 paths, 147 lessons, 8 live webinars a week with SI-written lessons, graded quizzes and 1-on-1 tutoring. $150 once — yours forever.' },
-  { icon: Trophy, title: 'Funded evaluations', body: 'Two-step, one-step and dollar-ruled futures programs to $400K in firm capital. One live seat per size, payouts to your TBC wallet, entry fee refunded.' },
-  { icon: Wallet, title: 'TBC brand money', body: 'Entries, signals, mentorship and academy settle in TBC from your till — convert, swap, buy or receive it first. Plans stay on card, never TBC.' },
+  { icon: Trophy, title: 'Funded evaluations', body: 'Two-step, one-step and dollar-ruled futures programs to $400K in firm capital. One live seat per size, payouts to your TBC credit wallet, entry fee refunded.' },
+  { icon: Wallet, title: 'TBC platform credits', body: 'Entries, signals, mentorship and academy settle in existing off-chain TBC credits from your balance. The proposed TBC token is separate and not issued. Plans stay on card, never TBC credits.' },
   { icon: Bell, title: 'Price alerts', body: 'Set alerts on any of 250+ symbols and get pinged the moment your level hits — never stare at a screen again.' },
   { icon: FlaskConical, title: 'Backtester + paper trading', body: 'Prove a strategy on historical data, then forward-test it with paper money before risking a cent.' },
   { icon: Waves, title: 'Order flow + risk tools', body: 'Footprint-grade order-flow views plus position sizing, risk/reward, breakeven and expectancy calculators built in.' },
@@ -54,7 +54,7 @@ const FAQS = [
   { q: 'What does the SI Coach actually do?', a: 'Your 24/7 SI mentor: it reviews every synced trade for quality, risk and discipline, detects recurring mistakes (widened stops, revenge trading, overtrading), grades your discipline and answers questions grounded in your real history — try “What is my biggest mistake?”.' },
   { q: 'How does the Academy work?', a: 'One $150 lifetime payment unlocks the full school: 6 paths including Forex Mastery A–Z, Crypto Mastery A–Z and Order Flow Mastery (147 topics from pips and wallets to funding rates and prop-firm challenges), an SI that writes every lesson and grades every quiz, a 1-on-1 tutor inside each lesson, 8 live webinars a week and a certificate per path. Admins enter free.' },
   { q: 'What do Professional-tier API and white-label include?', a: 'Professional ($99/mo) unlocks the REST API with personal keys and webhooks, team seats, unlimited brokers, white-label presets for your own brand, white-glove onboarding and a dedicated success manager — built for funds and prop desks.' },
-  { q: 'Is there a community, and can I get 1-on-1 help?', a: 'Yes — the community forum ranks members by real contribution, the public leaderboard shows verified activity with no fake P&L, and you can book vetted mentors for 1-on-1 sessions settled in TBC. Webinars, guides and the blog keep free education flowing.' },
+  { q: 'Is there a community, and can I get 1-on-1 help?', a: 'Yes — the community forum ranks members by real contribution, the public leaderboard shows verified activity with no fake P&L, and you can book vetted mentors for 1-on-1 sessions settled in TBC credits. Webinars, guides and the blog keep free education flowing.' },
 ];
 
 function Nav({ homeTo, isAuthed, platformName }) {

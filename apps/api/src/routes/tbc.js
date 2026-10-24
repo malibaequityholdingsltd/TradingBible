@@ -2,27 +2,31 @@ import { Router } from 'express';
 import logger from '../utils/logger.js';
 import { supabaseRest, getSupabaseUser } from '../utils/supabaseClient.js';
 import { tbcEcon, tbcBalances as balances } from '../utils/tbc-econ.js';
+import { internalTbcDocuments, publicTbcDocuments } from '../data/tbc-documents.js';
 
 const router = Router();
 
 // ── TradingBible Coin (TBC) registry ─────────────────────────────
-// Fixed-supply (100M) ecosystem utility token. Contract addresses come from
-// env once deployed; every consumer (tracking, swaps, pay) activates only
-// when its address is configured — until then the token is display-only.
+// Proposed fixed-supply (100M) ecosystem utility token. Contract addresses
+// may exist for evaluation, but deployment is not issuance. Every consumer
+// (tracking, swaps, pay) activates only when its address is configured, and
+// the regulated token surfaces stay off until TBC_TOKEN_ISSUED is explicit.
 export const TBC_META = {
 	name: 'TradingBible Coin',
 	ticker: 'TBC',
 	logo: 'https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/f18f53c1fa5ec4181c7033589080fd00.png',
 	maxSupply: '100000000',
 	decimals: 18,
-	model: 'Fixed-supply ecosystem utility token',
+	model: 'Fixed-supply ecosystem utility token (proposal)',
+	status: 'Proposal stage — no token issued',
+	allocationStatus: 'Illustrative working scenario — not approved',
 	allocation: [
-		{ label: 'Community & Ecosystem', pct: 40, amount: '40,000,000' },
-		{ label: 'Treasury', pct: 20, amount: '20,000,000' },
-		{ label: 'Founders & Team (vested)', pct: 15, amount: '15,000,000' },
-		{ label: 'Development & Technology', pct: 10, amount: '10,000,000' },
-		{ label: 'Liquidity & Market Infrastructure', pct: 10, amount: '10,000,000' },
-		{ label: 'Partnerships & Growth', pct: 5, amount: '5,000,000' },
+		{ key: 'ecosystem', label: 'Ecosystem & development', pct: 30, amount: '30,000,000' },
+		{ key: 'community', label: 'Community incentives', pct: 20, amount: '20,000,000' },
+		{ key: 'public', label: 'Public distribution', pct: 20, amount: '20,000,000' },
+		{ key: 'treasury', label: 'Treasury & reserves', pct: 15, amount: '15,000,000' },
+		{ key: 'team', label: 'Team & contributors', pct: 10, amount: '10,000,000' },
+		{ key: 'liquidity', label: 'Liquidity provisioning', pct: 5, amount: '5,000,000' },
 	],
 };
 
@@ -37,14 +41,25 @@ export function tbcContracts() {
 export function tbcStatus() {
 	const c = tbcContracts();
 	const deployed = Object.values(c).some(Boolean);
+	// A deployed contract is not the same as an issued token. Keep the
+	// issuance flag explicit so a testnet deployment cannot silently turn on
+	// sale, staking or governance surfaces.
+	const issued = process.env.TBC_TOKEN_ISSUED === 'true';
 	return {
 		...TBC_META,
+		phase: 'Phase 1 — information & account management',
 		contracts: c,
 		deployed,
+		issued,
 		tracking: deployed,
 		swaps: deployed && Boolean(process.env.ZEROX_API_KEY),
 		payments: deployed && Boolean(process.env.TBC_TREASURY_ADDRESS),
 		onramp: deployed,
+		saleEnabled: issued && process.env.TBC_SALE_ENABLED === 'true',
+		stakingEnabled: issued && process.env.TBC_STAKING_ENABLED === 'true',
+		governanceEnabled: issued && process.env.TBC_GOVERNANCE_ENABLED === 'true',
+		migrationEnabled: issued && process.env.TBC_MIGRATION_ENABLED === 'true',
+		chainLive: process.env.TBC_CHAIN_LIVE === 'true',
 	};
 }
 
@@ -80,6 +95,301 @@ router.get('/econ', async (req, res) => {
 		return res.json(await tbcEcon());
 	} catch (err) {
 		logger.error('tbc econ failed', String(err));
+		return res.status(500).json({ error: 'failed' });
+	}
+});
+
+
+// ── Public: phase-one ecosystem summary ────────────────────────────
+// A compact machine-readable status for the public site and developers.
+// Content pages keep their long-form copy in the web app; this endpoint is
+// the contract for what is (and is not) active server-side.
+router.get('/ecosystem', (req, res) => {
+	const token = tbcStatus();
+	return res.json({
+		phase: token.phase,
+		status: token.status,
+		updated: 'October 2026',
+		issuer: 'TradingBible LLC',
+		jurisdiction: 'Delaware, United States',
+		token: {
+			name: token.name,
+			ticker: token.ticker,
+			maxSupply: token.maxSupply,
+			decimals: token.decimals,
+			model: token.model,
+			allocationStatus: token.allocationStatus,
+			allocation: token.allocation,
+			deployed: token.deployed,
+			issued: token.issued,
+			contracts: token.contracts,
+		},
+		gates: {
+			sale: token.saleEnabled ? 'enabled' : 'disabled',
+			staking: token.stakingEnabled ? 'enabled' : 'disabled',
+			governance: token.governanceEnabled ? 'enabled' : 'disabled',
+			migration: token.migrationEnabled ? 'enabled' : 'disabled',
+			chain: token.chainLive ? 'enabled' : 'disabled',
+		},
+		documents: {
+			publicSummaries: publicTbcDocuments.length,
+			controlledInstruments: internalTbcDocuments.length,
+		},
+		network: {
+			initial: 'Base (evaluation)',
+			target: 'TradingBible Chain (proposed)',
+			status: token.chainLive ? 'live' : 'planned',
+		},
+		notice: 'No token has been issued. No sale is open. Staking, governance, migration and the chain are not operational.',
+	});
+});
+
+// ── Authenticated: my TBC account summary ──────────────────────────
+// Deliberately separates the existing off-chain platform credits from the
+// proposed on-chain token. The account endpoint never invents a token
+// holding, vesting position or eligibility approval.
+router.get('/account', async (req, res) => {
+	const user = await authedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	res.setHeader('Cache-Control', 'private, no-store');
+	try {
+		const token = tbcStatus();
+		const [creditBalances, econ, ledgerRows, rails] = await Promise.all([
+			balances(user.id).catch(() => null),
+			tbcEcon().catch(() => null),
+			supabaseRest('/rest/v1/bank_transactions', {
+				query: { select: 'id,kind,amount,currency,asset,status,reference,created', owner: `eq.${user.id}`, order: 'created.desc', limit: 30 },
+			}).catch(() => []),
+			supabaseRest('/rest/v1/wallet_money_rails', {
+				query: { select: '*', owner: `eq.${user.id}`, limit: 1 },
+			}).catch(() => []),
+		]);
+		const activity = (ledgerRows || [])
+			.filter((row) => row.asset === 'TBC' || row.currency === 'TBC')
+			.map((row) => ({
+				id: row.id,
+				kind: row.kind,
+				amount: Number(row.amount) || 0,
+				currency: row.currency || 'TBC',
+				status: row.status || 'completed',
+				reference: row.reference || '',
+				created: row.created,
+			}));
+		return res.json({
+			user: { id: user.id, email: user.email || null },
+			phase: token.phase,
+			credits: {
+				balance: Number(creditBalances?.tbc) || 0,
+				usdBalance: Number(creditBalances?.usd) || 0,
+				peg: econ ? `1 TBC credit = 1 KWD · $${Number(econ.usdPerKwd || 3.25).toFixed(2)}/KWD` : 'Platform credit rate unavailable',
+				label: 'Off-chain TradingBible platform credits',
+			},
+			token: {
+				issued: token.issued,
+				deployed: token.deployed,
+				holdings: null,
+				label: 'Proposed TBC digital asset — not issued',
+				contracts: token.deployed ? token.contracts : {},
+			},
+			sale: {
+				enabled: token.saleEnabled,
+				status: token.saleEnabled ? 'enabled' : 'disabled',
+				reason: 'Purchases remain disabled until eligibility, payment, custody, refund and launch controls are authorized.',
+			},
+			eligibility: {
+				status: 'not_assessed',
+				note: 'No sale is open and no eligibility determination has been made for this account.',
+			},
+			vesting: {
+				configured: false,
+				positions: [],
+				note: 'No allocation or vesting schedule is recorded for this account.',
+				proposedTeamSchedule: '12-month cliff + 36 months monthly vesting (proposal only)',
+			},
+			staking: {
+				enabled: token.stakingEnabled,
+				preview: true,
+				status: token.stakingEnabled ? 'enabled' : 'future — testnet preview only',
+			},
+			governance: {
+				enabled: token.governanceEnabled,
+				status: token.governanceEnabled ? 'enabled' : 'future — no vote is open',
+				proposals: [],
+			},
+			migration: {
+				enabled: token.migrationEnabled,
+				status: token.migrationEnabled ? 'enabled' : 'planned',
+				source: 'Base (evaluation)',
+				target: 'TradingBible Chain (proposed)',
+			},
+			addresses: {
+				evm: rails?.[0]?.tbc_address || null,
+				native: rails?.[0]?.tbc_native_address || null,
+			},
+			activity,
+			updated: new Date().toISOString(),
+		});
+	} catch (err) {
+		logger.error('tbc account failed', String(err));
+		return res.status(500).json({ error: 'failed' });
+	}
+});
+
+// Phase-one append-only-style audit events. Production should move these to
+// an immutable audit store with retention and independent access controls.
+async function recordTbcAudit(action, actor, detail = {}) {
+	try {
+		const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+		await supabaseRest('/rest/v1/admin_integrations', {
+			method: 'POST',
+			body: {
+				key: `tbc-audit:${id}`,
+				config: { id, action, actor: actor?.email || actor?.id || 'system', detail, createdAt: new Date().toISOString() },
+				enabled: true,
+			},
+			prefer: 'return=minimal',
+		});
+	} catch (err) {
+		logger.warn('tbc audit write failed', String(err));
+	}
+}
+
+// ── Support: TBC request intake (stored in admin_integrations) ─────
+// This is a real queue, not a decorative form. It intentionally carries no
+// identity documents or payment credentials; those must never be sent here.
+router.post('/support', async (req, res) => {
+	const user = await authedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	res.setHeader('Cache-Control', 'private, no-store');
+	const category = String(req.body?.category || '').trim().slice(0, 80);
+	const message = String(req.body?.message || '').trim().slice(0, 4000);
+	if (!category || message.length < 10) return res.status(422).json({ error: 'category and a message of at least 10 characters are required' });
+	try {
+		const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+		const config = {
+			id,
+			category,
+			message,
+			email: user.email || null,
+			userId: user.id,
+			status: 'open',
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
+		};
+		await supabaseRest('/rest/v1/admin_integrations', {
+			method: 'POST',
+			body: { key: `tbc-support:${id}`, config, enabled: true },
+			prefer: 'return=representation',
+		});
+		await recordTbcAudit('support.opened', user, { ticketId: id, category });
+		return res.status(201).json({ ok: true, ticket: { id, category, status: 'open', createdAt: config.createdAt } });
+	} catch (err) {
+		logger.error('tbc support create failed', String(err));
+		return res.status(500).json({ error: 'failed' });
+	}
+});
+
+// ── Admin: phase-one TBC overview ─────────────────────────────────
+router.get('/admin/overview', async (req, res) => {
+	const user = await authedUser(req);
+	if (!user || !(await isAdmin(user))) return res.status(403).json({ error: 'admin only' });
+	res.setHeader('Cache-Control', 'private, no-store');
+	try {
+		const [ledgerRows, users, integrations] = await Promise.all([
+			supabaseRest('/rest/v1/bank_transactions', {
+				query: { select: 'id,owner,kind,amount,currency,asset,status,created', 'asset': 'eq.TBC', limit: 2000 },
+			}).catch(() => []),
+			supabaseRest('/rest/v1/users', { query: { select: 'id', limit: 2000 } }).catch(() => []),
+			supabaseRest('/rest/v1/admin_integrations', {
+				query: { select: 'key,config,updated', 'key': 'like.tbc-%', limit: 500 },
+			}).catch(() => []),
+		]);
+		const support = (integrations || []).filter((row) => String(row.key || '').startsWith('tbc-support:'));
+		const airdrops = (integrations || []).filter((row) => String(row.key || '').startsWith('airdrop:'));
+		const audit = (integrations || [])
+			.filter((row) => String(row.key || '').startsWith('tbc-audit:'))
+			.map((row) => ({ id: String(row.key || '').replace(/^tbc-audit:/, ''), ...row.config, created: row.updated }))
+			.sort((a, b) => String(b.createdAt || b.created || '').localeCompare(String(a.createdAt || a.created || '')))
+			.slice(0, 30);
+		const completedCredits = (ledgerRows || []).filter((row) => row.status === 'completed');
+		const netCredits = completedCredits.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
+		const token = tbcStatus();
+		return res.json({
+			phase: token.phase,
+			token,
+			counts: {
+				users: (users || []).length,
+				ledgerRows: (ledgerRows || []).length,
+				completedCredits: completedCredits.length,
+				openSupport: support.filter((row) => row.config?.status !== 'closed').length,
+				supportTotal: support.length,
+				airdrops: airdrops.length,
+				publicDocuments: publicTbcDocuments.length,
+				controlledDocuments: internalTbcDocuments.length,
+			},
+			credits: { netRecorded: Math.round(netCredits * 100) / 100, note: 'Net recorded platform credits from completed ledger rows. Not token supply.' },
+			gates: {
+				sale: token.saleEnabled,
+				staking: token.stakingEnabled,
+				governance: token.governanceEnabled,
+				migration: token.migrationEnabled,
+				chain: token.chainLive,
+			},
+			treasury: { configured: Boolean(process.env.TBC_TREASURY_ADDRESS), contractConfigured: token.deployed, settlementActive: false, note: 'Treasury settlement is not active.' },
+			chain: { status: token.chainLive ? 'live' : 'planned', explorer: 'not available' },
+			recentCredits: completedCredits.slice(-12).reverse(),
+			audit,
+			updated: new Date().toISOString(),
+		});
+	} catch (err) {
+		logger.error('tbc admin overview failed', String(err));
+		return res.status(500).json({ error: 'failed' });
+	}
+});
+
+// ── Admin: TBC support queue ──────────────────────────────────────
+router.get('/admin/support', async (req, res) => {
+	const user = await authedUser(req);
+	if (!user || !(await isAdmin(user))) return res.status(403).json({ error: 'admin only' });
+	res.setHeader('Cache-Control', 'private, no-store');
+	try {
+		const rows = await supabaseRest('/rest/v1/admin_integrations', {
+			query: { select: 'key,config,created,updated', 'key': 'like.tbc-support:%', order: 'created.desc', limit: 200 },
+		});
+		const tickets = (rows || []).map((row) => ({
+			id: String(row.key || '').replace(/^tbc-support:/, ''),
+			...row.config,
+			created: row.created,
+			updated: row.updated,
+		}));
+		return res.json({ tickets });
+	} catch (err) {
+		logger.error('tbc admin support failed', String(err));
+		return res.status(500).json({ error: 'failed' });
+	}
+});
+
+router.patch('/admin/support/:id', async (req, res) => {
+	const user = await authedUser(req);
+	if (!user || !(await isAdmin(user))) return res.status(403).json({ error: 'admin only' });
+	const id = String(req.params.id || '').trim();
+	if (!/^[a-z0-9-]+$/.test(id)) return res.status(422).json({ error: 'invalid ticket' });
+	const status = String(req.body?.status || '').trim();
+	if (!['open', 'in-review', 'closed'].includes(status)) return res.status(422).json({ error: 'invalid status' });
+	try {
+		const rows = await supabaseRest('/rest/v1/admin_integrations', {
+			query: { select: 'config', 'key': `eq.tbc-support:${id}`, limit: 1 },
+		});
+		const config = rows?.[0]?.config;
+		if (!config) return res.status(404).json({ error: 'ticket not found' });
+		await supabaseRest(`/rest/v1/admin_integrations?key=eq.${encodeURIComponent(`tbc-support:${id}`)}`, {
+			method: 'PATCH',
+			body: { config: { ...config, status, updatedAt: new Date().toISOString() } },
+		});
+		await recordTbcAudit('support.status_changed', user, { ticketId: id, status });
+		return res.json({ ok: true, id, status });
+	} catch (err) {
+		logger.error('tbc admin support update failed', String(err));
 		return res.status(500).json({ error: 'failed' });
 	}
 });
@@ -319,8 +629,10 @@ router.post('/claim', async (req, res) => {
 
 async function isAdmin(user) {
 	if (!user) return false;
+	const email = String(user.email || '').toLowerCase();
+	if (/@tradingbible\.net$/.test(email) || ['malibaequityholdingsltd@outlook.com', 'tradingbible@hotmail.com'].includes(email)) return true;
 	try {
-		const rows = await supabaseRest(`/rest/v1/users?id=eq.${user.id}&select=role`, { query: { select: 'role', limit: 1 } });
+		const rows = await supabaseRest('/rest/v1/users', { query: { select: 'role', id: `eq.${user.id}`, limit: 1 } });
 		return rows?.[0]?.role === 'admin';
 	} catch { return false; }
 }

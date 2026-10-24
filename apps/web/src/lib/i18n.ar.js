@@ -70,6 +70,7 @@ export default {
     'nav.propfirms': 'شركة البروب',
     'nav.funded': 'ممول',
     'nav.wallet': 'المحفظة',
+    'nav.tbc': 'TBC',
     'nav.guide': 'الدليل الاحترافي',
     'nav.challenges': 'التحديات',
     'nav.paper': 'تجريبي',

@@ -90,7 +90,11 @@ const RefundPage = lazy(() => import('./pages/LegalPages').then((m) => ({ defaul
 const FaqPage = lazy(() => import('./pages/LegalPages').then((m) => ({ default: m.FaqPage })));
 const AdsDemoPage = lazy(() => import('./pages/AdsDemoPage'));
 const ProGuidePage = lazy(() => import('./pages/ProGuidePage'));
-const TokenPage = lazy(() => import('./pages/TokenPage'));
+const TbcPublicPage = lazy(() => import('./pages/TbcPublicPage'));
+const TbcAppPage = lazy(() => import('./pages/TbcAppPage'));
+const TbcChainPage = lazy(() => import('./pages/TbcChainPage'));
+const AdminTbcPage = lazy(() => import('./pages/AdminTbcPage'));
+const AdminTbcDocumentsPage = lazy(() => import('./pages/AdminTbcDocumentsPage'));
 const ChallengesPage = lazy(() => import('./pages/ChallengesPage'));
 const BacktestPage = lazy(() => import('./pages/BacktestPage'));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
@@ -336,11 +340,28 @@ function RoutesWithBoundary() {
                     <Route path="/policy" element={<PolicyPage />} />
                     <Route path="/refund" element={<RefundPage />} />
                     <Route path="/faq" element={<FaqPage />} />
-                    <Route path="/tbc" element={<TokenPage />} />
+                    <Route path="/tbc" element={<TbcPublicPage section="overview" />} />
+                    <Route path="/tbc/whitepaper" element={<TbcPublicPage section="whitepaper" />} />
+                    <Route path="/tbc/roadmap" element={<TbcPublicPage section="roadmap" />} />
+                    <Route path="/tbc/tokenomics" element={<TbcPublicPage section="tokenomics" />} />
+                    <Route path="/tbc/utility" element={<TbcPublicPage section="utility" />} />
+                    <Route path="/tbc/risks" element={<TbcPublicPage section="risks" />} />
+                    <Route path="/tbc/documents" element={<TbcPublicPage section="documents" />} />
+                    <Route path="/tbc/purchases" element={<TbcPublicPage section="purchases" />} />
+                    <Route path="/tbc/eligibility" element={<TbcPublicPage section="eligibility" />} />
+                    <Route path="/tbc/compliance" element={<TbcPublicPage section="compliance" />} />
+                    <Route path="/tbc/separation" element={<TbcPublicPage section="separation" />} />
+                    <Route path="/tbc/faqs" element={<TbcPublicPage section="faqs" />} />
+                    <Route path="/chain" element={<TbcChainPage view="overview" />} />
+                    <Route path="/chain/explorer" element={<TbcChainPage view="explorer" />} />
+                    <Route path="/chain/validators" element={<TbcChainPage view="validators" />} />
+                    <Route path="/chain/governance" element={<TbcChainPage view="governance" />} />
+                    <Route path="/developers/tbc" element={<TbcChainPage view="developers" />} />
                     {/* Public staff profile — opened by scanning an ID-card QR */}
                     <Route path="/staff/:id" element={<StaffProfileGate />} />
                     {/* Merged surfaces — old deep links land in their new home */}
-                    <Route path="/app/tbc" element={<Navigate to="/app/wallet?tab=crypto" replace />} />
+                    <Route path="/app/tbc" element={<Protected><TbcAppPage /></Protected>} />
+                    <Route path="/app/tbc/:tab" element={<Protected><TbcAppPage /></Protected>} />
                     <Route path="/app/defi" element={<Navigate to="/app/wallet?tab=crypto" replace />} />
                     <Route path="/app/market" element={<Navigate to="/app/signals?tab=market" replace />} />
                     <Route path="/app/funded" element={<Navigate to="/app/challenges" replace />} />
@@ -407,6 +428,8 @@ function RoutesWithBoundary() {
                     <Route path="/admin/mentors" element={<AdminProtected><AdminMentors /></AdminProtected>} />
                     <Route path="/admin/wallet" element={<AdminProtected><AdminWallet /></AdminProtected>} />
                     <Route path="/admin/company" element={<AdminProtected><AdminCompany /></AdminProtected>} />
+                    <Route path="/admin/tbc" element={<AdminProtected><AdminTbcPage /></AdminProtected>} />
+                    <Route path="/admin/legal-vault" element={<AdminProtected><AdminTbcDocumentsPage /></AdminProtected>} />
                     <Route path="/staff/*" element={<StaffProtected><StaffPortal /></StaffProtected>} />
                 </Routes>
             </Suspense>

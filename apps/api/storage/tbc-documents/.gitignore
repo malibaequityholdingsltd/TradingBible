@@ -1,0 +1,18 @@
+# The five public summaries below are versioned with the code.
+# The 26 corporate and governance instruments contain confidential issuer
+# information (tax identifiers, registered office, signature blocks), so they
+# must be provisioned server-side and never committed to the public repository.
+
+pdf/*.pdf
+!pdf/tbc-whitepaper.pdf
+!pdf/tbc-supply-allocation-vesting.pdf
+!pdf/tbc-purchases-payments-custody-refunds.pdf
+!pdf/tbc-jurisdictions-purchaser-eligibility.pdf
+!pdf/tbc-brokerage-platform-separation.pdf
+
+docx/*.docx
+!docx/tbc-whitepaper.docx
+!docx/tbc-supply-allocation-vesting.docx
+!docx/tbc-purchases-payments-custody-refunds.docx
+!docx/tbc-jurisdictions-purchaser-eligibility.docx
+!docx/tbc-brokerage-platform-separation.docx

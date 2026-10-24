@@ -90,7 +90,7 @@ export const COMPANY_DEFAULTS = {
     plans: 'Pro $19.99/mo (journal/analytics/risk) · Elite SI $49.99/mo (SI reports/coaching/integrations) · Professional $99/mo (API/webhooks/white-label). VERIFIED current checkout prices. Stripe, no free trial, card required. 14-day money-back on first subscription.',
     lines: 'Subscriptions + developer licensing + chart widgets + institutional software + ads + education/mentorship + affiliates + eligible prop-firm services. Future brokerage commissions/spreads/fees ONLY after legal + regulatory clearance.',
     tractionNote: 'NO verified revenue, profit, valuation, MRR, customer, or growth figures supplied — all pending confirmation, never estimated as achievements. (ARPU ~$36.89 illustrative only.)',
-    payouts: 'CFD withdrawals every 14 days to TBC wallet (80% standard → 90% scaling; 1-step fixed 90%). First funded payout refunds entry fee in TBC.',
+    payouts: 'CFD withdrawals every 14 days to TBC credit wallet (80% standard → 90% scaling; 1-step fixed 90%). First funded payout refunds entry fee in TBC credits.',
   },
   compliance: {
     kyc: 'Passkeys · session management · KYC-gated profiles (frozen after verification) · suspend/close lifecycle · AML/KYC, sanctions screening, SoF, transaction monitoring, withdrawal approvals, reconciliation, complaint handling.',

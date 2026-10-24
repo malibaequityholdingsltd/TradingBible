@@ -77,7 +77,7 @@ const FAQ = [
   { q: 'What is the Best-Day / consistency rule?', a: 'A consistency gate, not a breach. On 1-step CFD your best day must be ≤50% of your winning-days profit; on futures ≤40% (Growth) or ≤50% (Pro) of total profit. Exceeding it never ends the attempt — you keep trading until the numbers show steadiness.' },
   { q: 'What happens if I break a loss rail?', a: 'Breaching the max daily loss or max loss ends that attempt — the dashboard shows exactly which rail broke and when. Consistency gates never end attempts. You can start fresh any time.' },
   { q: 'Do I get the entry fee back?', a: 'Yes on CFD lines: your first funded payout includes a full refund of the entry fee. Passing costs you nothing in the end.' },
-  { q: 'How and when do I get paid?', a: 'CFD: withdraw every 14 days to your TBC wallet — 80% standard split, rising to 90% through scaling (1-step pays a fixed 90%). Hit Request payout on a passed evaluation and the desk approves straight to your TBC wallet; your first payout refunds the entry fee in TBC. Futures Sim-Funded: up to 90% with its own payout rhythm.' },
+  { q: 'How and when do I get paid?', a: 'CFD: withdraw every 14 days to your TBC credit wallet — 80% standard split, rising to 90% through scaling (1-step pays a fixed 90%). Hit Request payout on a passed evaluation and the desk approves straight to your TBC credit wallet; your first payout refunds the entry fee in TBC credits. Futures Sim-Funded: up to 90% with its own payout rhythm.' },
   { q: 'Can I use bots or EAs?', a: 'In evaluation, expert advisors and trade copiers are allowed on your own accounts. Once funded, all trading is manual — bots, EAs, algos and copiers are banned, and bot trading on a funded account ends it.' },
   { q: 'Do I need my own broker for evaluations?', a: 'No. Evaluations trade on your own dedicated TradingBible account inside the terminal, on live market prices — entry, management and funding are all in-house. Connecting an outside broker is optional, only if you want its fills journaled too.' },
   { q: 'Can I buy two of the same account size?', a: 'No — one live seat per balance. You can hold 200K, 100K, 50K and 25K at the same time, but never two live 200Ks. A same-size rebuy opens only after that contract breaches or pays out — the checkout blocks doubles automatically.' },
@@ -219,7 +219,7 @@ export default function ChallengesPage() {
               Earn the seat.<br /><span className="text-[#d4af37]">Keep the split.</span>
             </h1>
             <p className="relative mt-3 max-w-xl text-sm leading-relaxed text-[#8a8577]">
-              Two-step CFD, one-step CFD or dollar-ruled futures — traded and evaluated inside TradingBible on live prices, paid to your TBC wallet.
+              Two-step CFD, one-step CFD or dollar-ruled futures — traded and evaluated inside TradingBible on live prices, paid to your TBC credit wallet.
             </p>
             <div className="relative mt-5 flex flex-wrap gap-2.5">
               <button onClick={() => document.getElementById('tickets')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90">
@@ -293,7 +293,7 @@ export default function ChallengesPage() {
                 </button>
               ))}
             </div>
-            <span className="hidden text-center font-mono text-[11px] text-[#5f5b50] lg:inline">One live seat per size · payouts to TBC wallet</span>
+            <span className="hidden text-center font-mono text-[11px] text-[#5f5b50] lg:inline">One live seat per size · payouts to TBC credit wallet</span>
           </div>
         )}
 
@@ -475,7 +475,7 @@ export default function ChallengesPage() {
           {[
             { icon: BadgeDollarSign, t: `Keep ${line === 'one-step' ? 'a fixed 90%' : `${heroSplit}–90%`}`, s: line === 'one-step' ? 'One-step pays a flat 90% from the first withdrawal — performance is the only variable.' : line === 'futures' ? 'Sim-Funded keeps up to 90% across up to 3 seats and $450K combined capital.' : `Start at ${heroSplit}% from day one. Consistent traders scale toward 90% — the firm only wins when you win.` },
             { icon: TrendingUp, t: line === 'futures' ? 'Scale to $450K' : 'Scale to $400K', s: line === 'futures' ? 'Add seats up to 3 Sim-Funded accounts. More steady profit, more capital — reviewed on record, not on promises.' : 'Every 4 months of disciplined growth adds 25% more capital, up to $400K. No extra fee, no re-evaluation — automatic review.' },
-            { icon: CalendarClock, t: line === 'futures' ? 'Fast payouts' : 'Paid every 14 days', s: line === 'futures' ? 'Withdraw to your TBC wallet on the Sim-Funded rhythm, from the first eligible window.' : 'Withdraw to your TBC wallet on a 14-day cycle. Your first payout also refunds the full entry fee.' },
+            { icon: CalendarClock, t: line === 'futures' ? 'Fast payouts' : 'Paid every 14 days', s: line === 'futures' ? 'Withdraw to your TBC credit wallet on the Sim-Funded rhythm, from the first eligible window.' : 'Withdraw to your TBC credit wallet on a 14-day cycle. Your first payout also refunds the full entry fee.' },
           ].map((b) => (
             <div key={b.t} className="flex gap-3.5 p-6">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]"><b.icon className="h-5 w-5" /></span>
