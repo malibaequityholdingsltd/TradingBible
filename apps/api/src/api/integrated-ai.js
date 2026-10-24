@@ -587,6 +587,7 @@ async function streamOpenAiCompatible({ systemPrompt, userMessage, baseUrl, apiK
 				{ role: 'user', content: text || 'Hello' },
 			],
 			...(maxTokens && { max_tokens: Number(maxTokens) }),
+			...(process.env.OPENAI_REASONING_EFFORT && { reasoning_effort: process.env.OPENAI_REASONING_EFFORT }),
 		}),
 	});
 
