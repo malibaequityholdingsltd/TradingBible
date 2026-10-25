@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Twitter, Facebook, Linkedin, Instagram, Youtube, LineChart } from 'lucide-react';
+import { Twitter, Facebook, Linkedin, Instagram, Youtube, LineChart, Lock, ShieldCheck } from 'lucide-react';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
 import { homeRouteForUser } from '@/lib/homeRoute';
@@ -22,43 +22,43 @@ const COLUMNS = [
   {
     headingKey: 'fot.h_product',
     links: [
-      { labelKey: 'fot.l_trading_journal', to: '/app/journal' },
-      { labelKey: 'fot.l_ai_coach', to: '/app/coach' },
-      { labelKey: 'fot.l_dashboard', to: '/app' },
-      { labelKey: 'fot.l_broker_integrations', to: '/app/brokers' },
-      { labelKey: 'fot.l_market_data', to: '/app/terminal-pro' },
-      { labelKey: 'fot.l_performance_analytics', to: '/app/analytics' },
+      { labelKey: 'fot.l_trading_journal', to: '/app/journal', member: true },
+      { labelKey: 'fot.l_ai_coach', to: '/app/coach', member: true },
+      { labelKey: 'fot.l_dashboard', to: '/app', member: true },
+      { labelKey: 'fot.l_broker_integrations', to: '/app/brokers', member: true },
+      { labelKey: 'fot.l_market_data', to: '/app/terminal-pro', member: true },
+      { labelKey: 'fot.l_performance_analytics', to: '/app/analytics', member: true },
     ],
   },
   {
     headingKey: 'fot.h_tools',
     links: [
-      { labelKey: 'fot.l_features_overview', to: '/about' },
+      { labelKey: 'fot.l_features_overview', to: '/about#features' },
       { labelKey: 'fot.l_pricing', to: '/pricing' },
-      { labelKey: 'fot.l_tbc', to: '/tbc' },
-      { labelKey: 'fot.l_plans_comparison', to: '/pricing' },
-      { labelKey: 'fot.l_api_access', to: '/app/api-docs' },
-      { labelKey: 'fot.l_premium_features', to: '/pricing' },
+      { labelKey: 'fot.l_tbc', to: '/tbc', badge: 'Proposed' },
+      { labelKey: 'fot.l_plans_comparison', to: '/pricing#plans' },
+      { labelKey: 'fot.l_api_access', to: '/app/api-docs', member: true, badge: 'Pro' },
+      { labelKey: 'fot.l_premium_features', to: '/pricing#plans' },
     ],
   },
   {
     headingKey: 'fot.h_trading',
     links: [
-      { labelKey: 'fot.l_trading_overview', to: '/app/terminal-pro' },
-      { labelKey: 'fot.l_broker_connections', to: '/app/brokers' },
-      { labelKey: 'fot.l_strategy_analysis', to: '/app/analytics' },
-      { labelKey: 'fot.l_risk_management', to: '/app/tools' },
-      { labelKey: 'fot.l_trade_history', to: '/app/journal' },
+      { labelKey: 'fot.l_trading_overview', to: '/app/terminal-pro', member: true },
+      { labelKey: 'fot.l_broker_connections', to: '/app/brokers', member: true },
+      { labelKey: 'fot.l_strategy_analysis', to: '/app/analytics', member: true },
+      { labelKey: 'fot.l_risk_management', to: '/app/tools', member: true },
+      { labelKey: 'fot.l_trade_history', to: '/app/journal', member: true },
     ],
   },
   {
     headingKey: 'fot.h_community',
     links: [
-      { labelKey: 'fot.l_social_network', to: '/app/community' },
-      { labelKey: 'fot.l_refer_a_friend', to: '/app/affiliate' },
-      { labelKey: 'fot.l_trading_community', to: '/app/community' },
-      { labelKey: 'fot.l_discussion_forums', to: '/app/community' },
-      { labelKey: 'fot.l_moderators', to: '/app/community' },
+      { labelKey: 'fot.l_social_network', to: '/app/community', member: true },
+      { labelKey: 'fot.l_refer_a_friend', to: '/app/affiliate', member: true },
+      { labelKey: 'fot.l_trading_community', to: '/app/community', member: true },
+      { labelKey: 'fot.l_discussion_forums', to: '/app/community', member: true },
+      { labelKey: 'fot.l_moderators', to: '/about#team' },
     ],
   },
   {
@@ -66,16 +66,16 @@ const COLUMNS = [
     links: [
       { labelKey: 'fot.l_trading_guides', to: '/guides' },
       { labelKey: 'fot.l_video_tutorials', to: '/academy' },
-      { labelKey: 'fot.l_academy_courses', to: '/app/academy' },
+      { labelKey: 'fot.l_academy_courses', to: '/app/academy', member: true },
       { labelKey: 'fot.l_webinars', to: '/webinars' },
-      { labelKey: 'fot.l_learning_resources', to: '/academy' },
+      { labelKey: 'fot.l_learning_resources', to: '/guides' },
     ],
   },
   {
     headingKey: 'fot.h_company',
     links: [
       { labelKey: 'fot.l_about_tradingbible', to: '/about' },
-      { labelKey: 'fot.l_our_mission', to: '/about' },
+      { labelKey: 'fot.l_our_mission', to: '/about#mission' },
       { labelKey: 'fot.l_blog', to: '/blog' },
       { labelKey: 'fot.l_help_center', to: '/faq' },
       { labelKey: 'fot.l_careers', to: '/careers' },
@@ -88,8 +88,8 @@ const COLUMNS = [
       { labelKey: 'fot.l_terms_of_service', to: '/terms' },
       { labelKey: 'fot.l_privacy_policy', to: '/policy' },
       { labelKey: 'fot.l_refund_policy', to: '/refund' },
-      { labelKey: 'fot.l_cookie_policy', to: '/policy' },
-      { labelKey: 'fot.l_security', to: '/app/security' },
+      { labelKey: 'fot.l_cookie_policy', to: '/policy#cookies' },
+      { labelKey: 'fot.l_security', to: '/security' },
     ],
   },
 ];
@@ -113,28 +113,35 @@ export default function Footer() {
   const first = words.slice(0, -1).join(' ');
   const last = words[words.length - 1] || '';
 
+  const memberHref = (to) => {
+    if (!isAuthed) return `/login?next=${encodeURIComponent(to)}`;
+    return to;
+  };
+
   return (
-    <footer className="border-t border-[#d4af37]/10 bg-[#0a0a0f] tabular-nums antialiased">
-      <div className="mx-auto max-w-[96rem] px-6 pt-12 pb-8">
-        {/* Brand + blurb + socials */}
-        <div className="flex flex-col gap-8 border-b border-[#d4af37]/10 pb-8 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-sm">
-            <Link to={homeTo} className="mb-4 flex items-center gap-2.5">
-              <img src={LOGO} alt={`${brand} logo`} className="h-8 w-8 rounded-[10px] border border-[#d4af37]/20 bg-[#0c0c11] object-contain" />
-              <span className="font-semibold tracking-tight text-[#f0ecdd]">{first ? `${first} ` : ''}<span className="gold-text">{last}</span></span>
+    <footer className="at-scope tb-footer relative overflow-hidden border-t border-[var(--at-line)] bg-[var(--at-bg1)] text-[var(--at-ink)]">
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--at-line-strong)] to-transparent" />
+      <div className="mx-auto max-w-[96rem] px-6 pb-8 pt-12">
+        <div className="grid gap-8 border-b border-[var(--at-line-soft)] pb-8 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
+          <div className="max-w-xl">
+            <Link to={homeTo} className="mb-4 inline-flex items-center gap-2.5">
+              <img src={LOGO} alt={`${brand} logo`} className="h-9 w-9 rounded-[11px] border border-[var(--at-line)] bg-[var(--at-panel)] object-contain p-0.5" />
+              <span className="font-semibold tracking-tight text-[var(--at-ink)]">
+                {first ? `${first} ` : ''}<span className="text-[var(--at-gold)]">{last}</span>
+              </span>
             </Link>
-            <p className="text-sm leading-relaxed text-[#8a8577]">
+            <p className="max-w-md text-sm leading-relaxed text-[var(--at-mut)]">
               {t('fot.blurb')}
             </p>
             <div className="mt-4 flex items-start gap-3">
-              <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-10 w-10 shrink-0 rounded-[10px] border border-[#d4af37]/20 bg-[#0c0c11] object-contain" />
-              <p className="text-xs leading-relaxed text-[#6a665a]">
-                TradingBible is owned and operated by <span className="text-[#c9c4b4]">TradingBible LLC</span>.
+              <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-10 w-10 shrink-0 rounded-[10px] border border-[var(--at-line)] bg-[var(--at-panel)] object-contain p-0.5" />
+              <p className="text-xs leading-relaxed text-[var(--at-mut-2)]">
+                TradingBible is owned and operated by <span className="font-semibold text-[var(--at-ink-2)]">TradingBible LLC</span>.
                 <br />Registered in Delaware, USA. c/o Delaware Registered Agent, Inc.
                 <br />{t('fot.mission')}
               </p>
             </div>
-            <div className="mt-5 flex items-center gap-2">
+            <div className="mt-5 flex flex-wrap items-center gap-2">
               {SOCIALS.map(({ label, icon: Icon, href }) => (
                 <a
                   key={label}
@@ -142,7 +149,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noreferrer noopener"
                   aria-label={label}
-                  className="grid h-8 w-8 place-items-center rounded-[10px] border border-[#d4af37]/20 text-[#8a8577] transition hover:border-[#d4af37]/50 hover:text-[#d4af37]"
+                  className="grid h-8 w-8 place-items-center rounded-[10px] border border-[var(--at-line)] bg-[var(--at-panel)] text-[var(--at-mut)] transition hover:-translate-y-0.5 hover:border-[var(--at-line-strong)] hover:text-[var(--at-gold)]"
                 >
                   <Icon className="h-4 w-4" strokeWidth={1.9} />
                 </a>
@@ -150,22 +157,40 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="glass shrink-0 rounded-[10px] p-5 tabular-nums lg:w-80">
-            <div className="mb-1 flex items-center gap-2 text-[#d4af37]"><LineChart className="h-4 w-4" /><span className="text-sm font-semibold">{t('foot.startEdge')}</span></div>
-            <p className="mb-4 text-xs tabular-nums text-[#8a8577]">{t('foot.paidNote', null, 'Paid plans only. No free trial. Cancel anytime.')}</p>
-            <Link to="/signup" className="block rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-center text-sm font-semibold tabular-nums text-[#0a0a0f] transition hover:opacity-90">{t('foot.createAcct')}</Link>
-          </div>
+          <aside className="rounded-2xl border border-[var(--at-line)] bg-[var(--at-panel)] p-5 shadow-[var(--at-shadow)]">
+            <div className="flex items-center gap-2 text-[var(--at-gold)]">
+              <LineChart className="h-4 w-4" />
+              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.16em]">{t('foot.startEdge')}</span>
+            </div>
+            <p className="mt-2 text-xs leading-relaxed text-[var(--at-mut)]">{t('foot.paidNote', null, 'Paid plans only. No free trial. Cancel anytime.')}</p>
+            <Link
+              to={isAuthed ? '/pricing' : '/signup'}
+              className="mt-4 flex min-h-[42px] items-center justify-center rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 text-sm font-bold text-[#121006] shadow-[0_12px_30px_-16px_rgba(212,175,55,0.8)] transition hover:brightness-105"
+            >
+              {t('foot.createAcct')}
+            </Link>
+            <div className="mt-4 grid gap-1.5 border-t border-[var(--at-line-soft)] pt-3 text-[10px] text-[var(--at-mut-2)]">
+              <span className="flex items-center gap-1.5"><ShieldCheck className="h-3 w-3 text-[var(--at-green)]" /> Broker data is read-only by default.</span>
+              <span className="flex items-center gap-1.5"><Lock className="h-3 w-3 text-[var(--at-gold)]" /> TBC token operations remain disabled.</span>
+            </div>
+          </aside>
         </div>
 
-        {/* Link columns */}
-        <div className="grid grid-cols-2 gap-x-6 gap-y-8 py-10 sm:grid-cols-3 lg:grid-cols-7 lg:gap-x-5">
+        <div className="grid grid-cols-2 gap-x-5 gap-y-8 py-9 sm:grid-cols-3 lg:grid-cols-7">
           {COLUMNS.map((col) => (
             <div key={col.headingKey}>
-              <h4 className="mb-3.5 text-[11px] font-bold uppercase tracking-[0.16em] text-[#d4af37] tabular-nums">{t(col.headingKey)}</h4>
-              <ul className="space-y-2">
-                {col.links.map((l) => (
-                  <li key={l.labelKey}>
-                    <Link to={l.to} className="text-[13px] leading-6 text-[#8a8577] transition hover:text-[#e9e7df]">{t(l.labelKey)}</Link>
+              <h4 className="mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--at-gold)]">{t(col.headingKey)}</h4>
+              <ul className="space-y-1.5">
+                {col.links.map((link) => (
+                  <li key={`${col.headingKey}-${link.labelKey}`}>
+                    <Link
+                      to={link.member ? memberHref(link.to) : link.to}
+                      className="tb-footer-link group inline-flex items-start gap-1.5 text-[12.5px] leading-6 text-[var(--at-mut)] transition hover:text-[var(--at-ink)]"
+                    >
+                      <span>{t(link.labelKey)}</span>
+                      {link.member && <Lock className="mt-1.5 h-2.5 w-2.5 shrink-0 text-[var(--at-mut-2)] group-hover:text-[var(--at-gold)]" />}
+                      {link.badge && <span className="mt-1.5 rounded-full border border-[var(--at-line)] bg-[var(--at-gold-soft)] px-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.08em] text-[var(--at-gold)]">{link.badge}</span>}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -173,24 +198,35 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Legal disclaimer strip */}
-        <div className="border-t border-[#d4af37]/10 py-6">
-          <p className="max-w-4xl text-xs leading-relaxed tabular-nums text-[#6a665a]">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-3 py-2.5">
+          <span className="at-chip at-chip--gold">TBC token · proposed</span>
+          <span className="at-chip">Platform credits · 1 credit = 1 KWD</span>
+          <span className="at-chip">Brokerage deposits · separate</span>
+          <span className="at-chip">Signature execution · DocuSign</span>
+          <span className="ml-auto text-[10px] leading-relaxed text-[var(--at-mut-2)]">
+            No token sale, transfer, staking, governance, migration or chain activation is live.
+          </span>
+        </div>
+
+        <div className="mt-6 border-t border-[var(--at-line-soft)] py-5">
+          <p className="max-w-4xl text-[11px] leading-relaxed text-[var(--at-mut-2)]">
             TradingBible provides trade journaling, analytics, and SI-generated insights for educational and record-keeping purposes only. Nothing on this platform constitutes financial, investment, or trading advice. Trading financial instruments carries substantial risk of loss and is not suitable for every investor. Past performance and SI-generated observations are not indicative of future results. Always conduct your own due diligence and consult a licensed financial advisor before making trading decisions.
           </p>
         </div>
 
-        {/* Copyright row */}
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-[#d4af37]/10 pt-6 text-[13px] tabular-nums text-[#8a8577] sm:flex-row">
-          <div className="flex items-center gap-2"><img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 rounded-[6px] border border-[#d4af37]/20 bg-[#0c0c11] object-contain" /> TradingBible</div>
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-            <Link to="/terms" className="hover:text-[#e9e7df]">{t('fot.terms')}</Link>
-            <Link to="/policy" className="hover:text-[#e9e7df]">{t('fot.privacy')}</Link>
-            <Link to="/refund" className="hover:text-[#e9e7df]">{t('fot.refunds')}</Link>
-            <Link to="/faq" className="hover:text-[#e9e7df]">{t('fot.faq')}</Link>
-            <Link to="/pricing" className="hover:text-[#e9e7df]">{t('fot.pricing')}</Link>
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-[var(--at-line-soft)] pt-5 text-[12px] text-[var(--at-mut)] sm:flex-row">
+          <div className="flex items-center gap-2">
+            <img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 rounded-[6px] border border-[var(--at-line)] bg-[var(--at-panel)] object-contain p-0.5" />
+            <span>TradingBible</span>
+          </div>
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-2">
+            <Link to="/terms" className="transition hover:text-[var(--at-ink)]">{t('fot.terms')}</Link>
+            <Link to="/policy" className="transition hover:text-[var(--at-ink)]">{t('fot.privacy')}</Link>
+            <Link to="/refund" className="transition hover:text-[var(--at-ink)]">{t('fot.refunds')}</Link>
+            <Link to="/faq" className="transition hover:text-[var(--at-ink)]">{t('fot.faq')}</Link>
+            <Link to="/pricing" className="transition hover:text-[var(--at-ink)]">{t('fot.pricing')}</Link>
             {settings.supportEmail && (
-              <a href={`mailto:${settings.supportEmail}`} className="hover:text-[#e9e7df]">{settings.supportEmail}</a>
+              <a href={`mailto:${settings.supportEmail}`} className="transition hover:text-[var(--at-ink)]">{settings.supportEmail}</a>
             )}
           </div>
           <div>© {new Date().getFullYear()} TradingBible LLC · {t('fot.rights')}</div>

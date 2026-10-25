@@ -671,8 +671,10 @@ export default function TvPage() {
         </div>
       )}
 
-      {/* ── Widget shortcut (bottom-left): leave the page, continue in the floating TV */}
-      <div className="fixed bottom-4 left-4 z-30 flex items-center gap-2">
+      {/* ── Widget shortcut (bottom-left): leave the page, continue in the floating TV.
+          The floating widget is intentionally hidden on phones, so this
+          shortcut is desktop/tablet-only. */}
+      <div className="fixed bottom-4 left-4 z-30 hidden items-center gap-2 sm:flex">
         <button
           onClick={() => {
             try {

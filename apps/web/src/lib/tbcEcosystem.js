@@ -366,7 +366,7 @@ export const TBC_DEVELOPER_ENDPOINTS = [
   { method: 'GET', path: '/tbc/econ', desc: 'Platform credit configuration and rate.', auth: 'Public' },
   { method: 'GET', path: '/tbc/ecosystem', desc: 'Phase, proposed supply, feature gates and document counts.', auth: 'Public' },
   { method: 'GET', path: '/tbc/documents', desc: 'Public TBC summary document metadata.', auth: 'Public' },
-  { method: 'GET', path: '/tbc/documents/:slug/file', desc: 'Public summary PDF (inline).', auth: 'Public' },
+  { method: 'GET', path: '/tbc/documents/:slug/docx', desc: 'Read-only Word summary download.', auth: 'Public' },
   { method: 'GET', path: '/tbc/account', desc: 'Credits, activity, eligibility and proposed-token status for the signed-in user.', auth: 'Bearer' },
   { method: 'POST', path: '/tbc/support', desc: 'Open a support request routed to the TBC admin queue.', auth: 'Bearer' },
 ];

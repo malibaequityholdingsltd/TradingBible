@@ -102,7 +102,7 @@ export default function AboutPage() {
       </section>
 
       {/* Mission & Vision */}
-      <section className="mx-auto grid max-w-[96rem] grid-cols-1 gap-4 px-6 pb-6 sm:gap-5 lg:grid-cols-2">
+      <section id="mission" className="mx-auto grid max-w-[96rem] grid-cols-1 gap-4 px-6 pb-6 sm:gap-5 lg:grid-cols-2 scroll-mt-28">
         <Card className="group relative overflow-hidden rounded-2xl p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-8">
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-[#f4e6a8]/70 via-[#d4af37]/60 to-transparent" />
           <div className="mb-5 grid h-12 w-12 place-items-center rounded-xl border border-[#d4af37]/20 bg-gradient-to-b from-[#d4af37]/20 to-[#d4af37]/[0.06] text-[#e8c95a] shadow-[0_8px_20px_-8px_rgba(212,175,55,0.5),inset_0_1px_0_rgba(255,255,255,0.12)]"><Target className="h-6 w-6" /></div>
@@ -130,7 +130,7 @@ export default function AboutPage() {
       </section>
 
       {/* What we provide */}
-      <section className="relative mx-auto max-w-[96rem] px-6 py-10">
+      <section id="features" className="relative mx-auto max-w-[96rem] px-6 py-10 scroll-mt-28">
         <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-px w-[min(70rem,90%)] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#d4af37]/20 to-transparent" />
         <div className="mb-8 text-center sm:mb-10">
           <h2 className="text-3xl font-extrabold tracking-[-0.02em] sm:text-4xl">{t('abt.provideA')} <span className="tb-gold-text">{t('abt.provideB')}</span></h2>
@@ -167,7 +167,7 @@ export default function AboutPage() {
       </section>
 
       {/* Team */}
-      <section className="relative mx-auto max-w-[96rem] px-6 py-10">
+      <section id="team" className="relative mx-auto max-w-[96rem] px-6 py-10 scroll-mt-28">
         <div className="mb-8 text-center sm:mb-10">
           <h2 className="text-3xl font-extrabold tracking-[-0.02em] sm:text-4xl">{t('abt.team')} <span className="tb-gold-text">{t('abt.teamB')}</span></h2>
           <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-[#a8a394]">{t('abt.teamSub')}</p>

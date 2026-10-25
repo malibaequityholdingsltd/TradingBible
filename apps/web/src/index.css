@@ -2048,3 +2048,50 @@ html.light .term-stage * { color-scheme: dark; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ─── RIGHT-TO-LEFT (Arabic) ───────────────────────────────────── */
+/* The document direction is set by I18nProvider. Keep prices, tickers and
+   chart axes left-to-right; mirror only directional chrome. */
+html[dir='rtl'] #tb-ticker,
+html[dir='rtl'] .term-stage,
+html[dir='rtl'] .tv-stage-text {
+  direction: ltr;
+}
+html[dir='rtl'] .font-mono,
+html[dir='rtl'] .tabular-nums,
+html[dir='rtl'] .at-num,
+html[dir='rtl'] .tv-progress {
+  unicode-bidi: isolate;
+}
+html[dir='rtl'] .lucide-arrow-right,
+html[dir='rtl'] .lucide-arrow-left,
+html[dir='rtl'] .lucide-chevron-right,
+html[dir='rtl'] .lucide-chevron-left,
+html[dir='rtl'] .lucide-arrow-up-right {
+  transform: scaleX(-1);
+}
+html[dir='rtl'] .tb-drawer {
+  border-right: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+}
+html.light[dir='rtl'] .tb-drawer {
+  border-left-color: rgba(34, 38, 44, 0.11);
+}
+html[dir='rtl'] .tb-dock,
+html[dir='rtl'] .tb-admin-dock,
+html[dir='rtl'] .tb-term-tabs {
+  direction: rtl;
+}
+html[dir='rtl'] .tb-app-shell .at-hero,
+html[dir='rtl'] .tb-admin-shell .at-hero,
+html[dir='rtl'] .at-page {
+  text-align: right;
+}
+/* English copy embedded in an RTL page keeps its own punctuation order while
+   still aligning to the RTL start edge. Arabic copy is unaffected. */
+html[dir='rtl'] :where(h1, h2, h3, h4, h5, h6, p, li, dt, dd, label, th, td) {
+  unicode-bidi: plaintext;
+}
+html[dir='rtl'] :where(input, textarea)::placeholder {
+  unicode-bidi: plaintext;
+}

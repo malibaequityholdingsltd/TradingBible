@@ -9,559 +9,2226 @@
       "slug": "tbc-whitepaper",
       "number": "P-01",
       "title": "TBC Whitepaper & Utility Roadmap",
-      "subtitle": "Issuer overview \u00b7 functional design \u00b7 delivery milestones",
+      "subtitle": "Issuer overview · functional design · delivery milestones",
       "category": "Whitepaper",
       "summary": "The proposed TBC utility model, network approach and phased development gates. No functionality is represented as live.",
-      "status": "Proposal \u2014 not approved",
+      "status": "Proposal — not approved",
       "visibility": "public",
       "classification": "Public summary",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer representative + professional reviewer",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/tbc-whitepaper.pdf",
       "docx": "docx/tbc-whitepaper.docx",
       "pdfBytes": 135039,
-      "docxBytes": 171121
+      "docxBytes": 171132,
+      "docxProtected": "docx-protected/tbc-whitepaper.docx",
+      "signers": [
+        {
+          "id": "pub-issuer",
+          "label": "Issuer Representative — Malik Nlem",
+          "party": "Malik Nlem",
+          "capacity": "Issuer Representative",
+          "required": true,
+          "anchor": "ISSUER REPRESENTATIVE",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "0",
+              "yOffset": "-18",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Printed name: Malik Nlem",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "58",
+              "yOffset": "0",
+              "width": "170",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "40",
+              "yOffset": "18",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        },
+        {
+          "id": "pub-reviewer",
+          "label": "Professional Reviewer",
+          "party": "Professional Reviewer",
+          "capacity": "Independent professional reviewer",
+          "required": true,
+          "anchor": "PROFESSIONAL REVIEWER",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "-18",
+              "width": "185",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Name: __________________________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "220",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "220",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "18",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        }
+      ]
     },
     {
       "slug": "tbc-supply-allocation-vesting",
       "number": "P-02",
       "title": "TBC Supply, Allocation & Vesting",
-      "subtitle": "Economic framework \u00b7 proposed distribution controls",
+      "subtitle": "Economic framework · proposed distribution controls",
       "category": "Economics",
       "summary": "An illustrative 100M supply distribution and proposed 12-month cliff / 36-month vesting framework for review. Not an approved allocation.",
-      "status": "Illustrative \u2014 not approved",
+      "status": "Illustrative — not approved",
       "visibility": "public",
       "classification": "Public summary",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer representative + professional reviewer",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/tbc-supply-allocation-vesting.pdf",
       "docx": "docx/tbc-supply-allocation-vesting.docx",
       "pdfBytes": 133574,
-      "docxBytes": 170644
+      "docxBytes": 170655,
+      "docxProtected": "docx-protected/tbc-supply-allocation-vesting.docx",
+      "signers": [
+        {
+          "id": "pub-issuer",
+          "label": "Issuer Representative — Malik Nlem",
+          "party": "Malik Nlem",
+          "capacity": "Issuer Representative",
+          "required": true,
+          "anchor": "ISSUER REPRESENTATIVE",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "0",
+              "yOffset": "-18",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Printed name: Malik Nlem",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "58",
+              "yOffset": "0",
+              "width": "170",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "40",
+              "yOffset": "18",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        },
+        {
+          "id": "pub-reviewer",
+          "label": "Professional Reviewer",
+          "party": "Professional Reviewer",
+          "capacity": "Independent professional reviewer",
+          "required": true,
+          "anchor": "PROFESSIONAL REVIEWER",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "-18",
+              "width": "185",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Name: __________________________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "220",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "220",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "18",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        }
+      ]
     },
     {
       "slug": "tbc-purchases-payments-custody-refunds",
       "number": "P-03",
       "title": "Website Purchases, Payments, Custody & Refunds",
-      "subtitle": "Proposed transaction journey \u00b7 control architecture",
+      "subtitle": "Proposed transaction journey · control architecture",
       "category": "Purchase controls",
       "summary": "The proposed purchaser journey, payment and settlement controls, custody model and refund handling. Purchases are disabled.",
-      "status": "Proposed \u2014 not live",
+      "status": "Proposed — not live",
       "visibility": "public",
       "classification": "Public summary",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer representative + professional reviewer",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/tbc-purchases-payments-custody-refunds.pdf",
       "docx": "docx/tbc-purchases-payments-custody-refunds.docx",
       "pdfBytes": 125670,
-      "docxBytes": 170739
+      "docxBytes": 170750,
+      "docxProtected": "docx-protected/tbc-purchases-payments-custody-refunds.docx",
+      "signers": [
+        {
+          "id": "pub-issuer",
+          "label": "Issuer Representative — Malik Nlem",
+          "party": "Malik Nlem",
+          "capacity": "Issuer Representative",
+          "required": true,
+          "anchor": "ISSUER REPRESENTATIVE",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "0",
+              "yOffset": "-18",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Printed name: Malik Nlem",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "58",
+              "yOffset": "0",
+              "width": "170",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "40",
+              "yOffset": "18",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        },
+        {
+          "id": "pub-reviewer",
+          "label": "Professional Reviewer",
+          "party": "Professional Reviewer",
+          "capacity": "Independent professional reviewer",
+          "required": true,
+          "anchor": "PROFESSIONAL REVIEWER",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "-18",
+              "width": "185",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Name: __________________________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "220",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "220",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "18",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        }
+      ]
     },
     {
       "slug": "tbc-jurisdictions-purchaser-eligibility",
       "number": "P-04",
       "title": "Jurisdictions & Purchaser Eligibility",
-      "subtitle": "Geographic scope \u00b7 purchaser classification \u00b7 access controls",
+      "subtitle": "Geographic scope · purchaser classification · access controls",
       "category": "Eligibility",
       "summary": "Market-by-market access assessment for the US, Nigeria, the EEA, the UK, Canada and other markets. No market is cleared.",
-      "status": "Assessment only \u2014 not cleared",
+      "status": "Assessment only — not cleared",
       "visibility": "public",
       "classification": "Public summary",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer representative + professional reviewer",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/tbc-jurisdictions-purchaser-eligibility.pdf",
       "docx": "docx/tbc-jurisdictions-purchaser-eligibility.docx",
       "pdfBytes": 128875,
-      "docxBytes": 170577
+      "docxBytes": 170588,
+      "docxProtected": "docx-protected/tbc-jurisdictions-purchaser-eligibility.docx",
+      "signers": [
+        {
+          "id": "pub-issuer",
+          "label": "Issuer Representative — Malik Nlem",
+          "party": "Malik Nlem",
+          "capacity": "Issuer Representative",
+          "required": true,
+          "anchor": "ISSUER REPRESENTATIVE",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "0",
+              "yOffset": "-18",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Printed name: Malik Nlem",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "58",
+              "yOffset": "0",
+              "width": "170",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "40",
+              "yOffset": "18",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        },
+        {
+          "id": "pub-reviewer",
+          "label": "Professional Reviewer",
+          "party": "Professional Reviewer",
+          "capacity": "Independent professional reviewer",
+          "required": true,
+          "anchor": "PROFESSIONAL REVIEWER",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "-18",
+              "width": "185",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Name: __________________________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "220",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "220",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "18",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        }
+      ]
     },
     {
       "slug": "tbc-brokerage-platform-separation",
       "number": "P-05",
       "title": "Brokerage & Platform Separation",
-      "subtitle": "Trading software \u00b7 future broker business \u00b7 regulated activity boundaries",
+      "subtitle": "Trading software · future broker business · regulated activity boundaries",
       "category": "Regulatory boundary",
       "summary": "The boundary between TradingBible software, token issuance and any future regulated brokerage activity.",
-      "status": "Boundary policy \u2014 not a licence",
+      "status": "Boundary policy — not a licence",
       "visibility": "public",
       "classification": "Public summary",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer representative + professional reviewer",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/tbc-brokerage-platform-separation.pdf",
       "docx": "docx/tbc-brokerage-platform-separation.docx",
       "pdfBytes": 133669,
-      "docxBytes": 170820
+      "docxBytes": 170831,
+      "docxProtected": "docx-protected/tbc-brokerage-platform-separation.docx",
+      "signers": [
+        {
+          "id": "pub-issuer",
+          "label": "Issuer Representative — Malik Nlem",
+          "party": "Malik Nlem",
+          "capacity": "Issuer Representative",
+          "required": true,
+          "anchor": "ISSUER REPRESENTATIVE",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "0",
+              "yOffset": "-18",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Printed name: Malik Nlem",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "58",
+              "yOffset": "0",
+              "width": "170",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Capacity: ________________________",
+              "xOffset": "40",
+              "yOffset": "18",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        },
+        {
+          "id": "pub-reviewer",
+          "label": "Professional Reviewer",
+          "party": "Professional Reviewer",
+          "capacity": "Independent professional reviewer",
+          "required": true,
+          "anchor": "PROFESSIONAL REVIEWER",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "-18",
+              "width": "185",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Name: __________________________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "220",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "220",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Professional capacity: _______________________",
+              "xOffset": "0",
+              "yOffset": "18",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        }
+      ]
     },
     {
       "slug": "sole-member-consent-manager-authorization",
       "number": "01",
       "title": "Sole Member Written Consent and Manager Authorization",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Corporate authority",
       "summary": "Authorizes investigation and professional engagement; does not authorize a public sale.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/sole-member-consent-manager-authorization.pdf",
       "docx": "docx/sole-member-consent-manager-authorization.docx",
       "pdfBytes": 114091,
-      "docxBytes": 169641
+      "docxBytes": 169652,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Sole Member",
+          "party": "Malik Nlem",
+          "capacity": "Sole Member",
+          "required": true,
+          "anchor": "Malik Nlem — Sole Member",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Malik Nlem — Manager (separate capacity, if required)",
+          "party": "Malik Nlem",
+          "capacity": "Manager (separate capacity, if required)",
+          "required": false,
+          "anchor": "Malik Nlem — Manager (separate capacity, if required)",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/sole-member-consent-manager-authorization.docx"
     },
     {
       "slug": "corporate-issuer-beneficial-ownership-profile",
       "number": "02",
       "title": "Corporate Issuer and Beneficial Ownership Profile",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Corporate authority",
       "summary": "Issuer identity, ownership, registered office and corporate-record certification inputs.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/corporate-issuer-beneficial-ownership-profile.pdf",
       "docx": "docx/corporate-issuer-beneficial-ownership-profile.docx",
       "pdfBytes": 114369,
-      "docxBytes": 169677
+      "docxBytes": 169688,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Sole Member / Certifying Manager",
+          "party": "Malik Nlem",
+          "capacity": "Sole Member / Certifying Manager",
+          "required": true,
+          "anchor": "Malik Nlem — Sole Member / Certifying Manager",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Corporate Records Preparer (if appointed)",
+          "party": "Corporate Records Preparer (if appointed)",
+          "capacity": "",
+          "required": false,
+          "anchor": "Corporate Records Preparer (if appointed)",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/corporate-issuer-beneficial-ownership-profile.docx"
     },
     {
       "slug": "instruction-engagement-regulatory-counsel",
       "number": "03",
       "title": "Instruction and Engagement Letter to Regulatory Counsel",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Corporate authority",
       "summary": "Scope of counsel engagement and information instructions for the TBC review.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/instruction-engagement-regulatory-counsel.pdf",
       "docx": "docx/instruction-engagement-regulatory-counsel.docx",
       "pdfBytes": 114981,
-      "docxBytes": 169601
+      "docxBytes": 169612,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Authorized Client Signatory",
+          "party": "Malik Nlem",
+          "capacity": "Authorized Client Signatory",
+          "required": true,
+          "anchor": "Malik Nlem — Authorized Client Signatory",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "U.S. Regulatory Counsel — Engagement Acknowledgment",
+          "party": "U.S. Regulatory Counsel",
+          "capacity": "Engagement Acknowledgment",
+          "required": true,
+          "anchor": "U.S. Regulatory Counsel — Engagement Acknowledgment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Nigerian Regulatory Counsel — Engagement Acknowledgment (if separately engaged)",
+          "party": "Nigerian Regulatory Counsel",
+          "capacity": "Engagement Acknowledgment (if separately engaged)",
+          "required": false,
+          "anchor": "Nigerian Regulatory Counsel — Engagement Acknowledgment (if",
+          "tabOffsetsPx": {
+            "signature": 30,
+            "printedName": 60,
+            "title": 91,
+            "date": 121
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/instruction-engagement-regulatory-counsel.docx"
     },
     {
       "slug": "tbc-whitepaper-instrument",
       "number": "04",
-      "title": "TBC Whitepaper \u2014 Project, Utility and Network Framework",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "title": "TBC Whitepaper — Project, Utility and Network Framework",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Token & economics",
       "summary": "The controlled whitepaper instrument covering utility, network architecture and release gates.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/tbc-whitepaper-instrument.pdf",
       "docx": "docx/tbc-whitepaper-instrument.docx",
       "pdfBytes": 122635,
-      "docxBytes": 170205
+      "docxBytes": 170216,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Issuer Approval",
+          "party": "Malik Nlem",
+          "capacity": "Issuer Approval",
+          "required": true,
+          "anchor": "Malik Nlem — Issuer Approval",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Technical Lead — Technical Content Approval",
+          "party": "Technical Lead",
+          "capacity": "Technical Content Approval",
+          "required": true,
+          "anchor": "Technical Lead — Technical Content Approval",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Legal Counsel — Legal Review Acknowledgment",
+          "party": "Legal Counsel",
+          "capacity": "Legal Review Acknowledgment",
+          "required": true,
+          "anchor": "Legal Counsel — Legal Review Acknowledgment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/tbc-whitepaper-instrument.docx"
     },
     {
       "slug": "tokenomics-vesting-instrument",
       "number": "05",
       "title": "Token Supply, Allocation and Vesting Instrument",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Token & economics",
       "summary": "Supply policy, illustrative allocation and proposed vesting controls.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/tokenomics-vesting-instrument.pdf",
       "docx": "docx/tokenomics-vesting-instrument.docx",
       "pdfBytes": 117671,
-      "docxBytes": 169727
+      "docxBytes": 169738,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Issuer Approval",
+          "party": "Malik Nlem",
+          "capacity": "Issuer Approval",
+          "required": true,
+          "anchor": "Malik Nlem — Issuer Approval",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Finance Lead — Allocation Verification",
+          "party": "Finance Lead",
+          "capacity": "Allocation Verification",
+          "required": true,
+          "anchor": "Finance Lead — Allocation Verification",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Blockchain Lead — Supply / Vesting Verification",
+          "party": "Blockchain Lead",
+          "capacity": "Supply / Vesting Verification",
+          "required": true,
+          "anchor": "Blockchain Lead — Supply / Vesting Verification",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s4",
+          "label": "Legal Counsel — Legal Review Acknowledgment",
+          "party": "Legal Counsel",
+          "capacity": "Legal Review Acknowledgment",
+          "required": true,
+          "anchor": "Legal Counsel — Legal Review Acknowledgment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/tokenomics-vesting-instrument.docx"
     },
     {
       "slug": "offering-purchaser-agreement",
       "number": "06",
       "title": "Token Offering and Purchaser Agreement",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Token & economics",
       "summary": "Draft purchaser agreement and offering terms, subject to legal and regulatory clearance.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/offering-purchaser-agreement.pdf",
       "docx": "docx/offering-purchaser-agreement.docx",
       "pdfBytes": 117208,
-      "docxBytes": 169739
+      "docxBytes": 169750,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "TradingBible LLC — Authorized Signatory",
+          "party": "TradingBible LLC",
+          "capacity": "Authorized Signatory",
+          "required": true,
+          "anchor": "TradingBible LLC — Authorized Signatory",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Token Purchaser — Signature / Electronic Acceptance",
+          "party": "Token Purchaser",
+          "capacity": "Signature / Electronic Acceptance",
+          "required": false,
+          "anchor": "Token Purchaser — Signature / Electronic Acceptance",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Legal Counsel — Document Review Acknowledgment (not purchaser-party signature)",
+          "party": "Legal Counsel",
+          "capacity": "Document Review Acknowledgment (not purchaser-party signature)",
+          "required": false,
+          "anchor": "Legal Counsel — Document Review Acknowledgment (not",
+          "tabOffsetsPx": {
+            "signature": 30,
+            "printedName": 61,
+            "title": 91,
+            "date": 121
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/offering-purchaser-agreement.docx"
     },
     {
       "slug": "digital-asset-risk-factor-disclosure",
       "number": "07",
       "title": "Digital Asset Risk Factor Disclosure",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Token & economics",
       "summary": "Risk factors for token utility, liquidity, custody, technology and regulatory treatment.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/digital-asset-risk-factor-disclosure.pdf",
       "docx": "docx/digital-asset-risk-factor-disclosure.docx",
       "pdfBytes": 114107,
-      "docxBytes": 169619
+      "docxBytes": 169630,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "TradingBible LLC — Disclosure Approval",
+          "party": "TradingBible LLC",
+          "capacity": "Disclosure Approval",
+          "required": true,
+          "anchor": "TradingBible LLC — Disclosure Approval",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Legal Counsel — Risk Disclosure Review",
+          "party": "Legal Counsel",
+          "capacity": "Risk Disclosure Review",
+          "required": true,
+          "anchor": "Legal Counsel — Risk Disclosure Review",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Purchaser — Acknowledgment (if required)",
+          "party": "Purchaser",
+          "capacity": "Acknowledgment (if required)",
+          "required": false,
+          "anchor": "Purchaser — Acknowledgment (if required)",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/digital-asset-risk-factor-disclosure.docx"
     },
     {
       "slug": "treasury-use-proceeds-financial-controls",
       "number": "08",
       "title": "Treasury, Use of Proceeds and Financial Controls Policy",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Operations & controls",
       "summary": "Segregation of funds, treasury authorization, reporting and proceeds controls.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/treasury-use-proceeds-financial-controls.pdf",
       "docx": "docx/treasury-use-proceeds-financial-controls.docx",
       "pdfBytes": 111721,
-      "docxBytes": 169535
+      "docxBytes": 169546,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Policy Adoption",
+          "party": "Malik Nlem",
+          "capacity": "Policy Adoption",
+          "required": true,
+          "anchor": "Malik Nlem — Policy Adoption",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Finance Lead — Control Owner Acceptance",
+          "party": "Finance Lead",
+          "capacity": "Control Owner Acceptance",
+          "required": true,
+          "anchor": "Finance Lead — Control Owner Acceptance",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/treasury-use-proceeds-financial-controls.docx"
     },
     {
       "slug": "aml-cdd-sanctions-framework",
       "number": "09",
       "title": "AML, Customer Due Diligence and Sanctions Framework",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Compliance",
       "summary": "Customer due diligence, beneficial ownership, sanctions and escalation controls.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/aml-cdd-sanctions-framework.pdf",
       "docx": "docx/aml-cdd-sanctions-framework.docx",
       "pdfBytes": 114838,
-      "docxBytes": 169621
+      "docxBytes": 169632,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Policy Adoption",
+          "party": "Malik Nlem",
+          "capacity": "Policy Adoption",
+          "required": true,
+          "anchor": "Malik Nlem — Policy Adoption",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Compliance / AML Officer — Responsibility Acceptance",
+          "party": "Compliance / AML Officer",
+          "capacity": "Responsibility Acceptance",
+          "required": true,
+          "anchor": "Compliance / AML Officer — Responsibility Acceptance",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Legal Counsel — Regulatory Review Acknowledgment",
+          "party": "Legal Counsel",
+          "capacity": "Regulatory Review Acknowledgment",
+          "required": true,
+          "anchor": "Legal Counsel — Regulatory Review Acknowledgment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/aml-cdd-sanctions-framework.docx"
     },
     {
       "slug": "privacy-personal-data-protection-notice",
       "number": "10",
       "title": "Privacy and Personal Data Protection Notice",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Compliance",
       "summary": "Notice covering personal data collected in the proposed distribution process.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/privacy-personal-data-protection-notice.pdf",
       "docx": "docx/privacy-personal-data-protection-notice.docx",
       "pdfBytes": 111599,
-      "docxBytes": 169495
+      "docxBytes": 169506,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "TradingBible LLC — Notice Approval",
+          "party": "TradingBible LLC",
+          "capacity": "Notice Approval",
+          "required": true,
+          "anchor": "TradingBible LLC — Notice Approval",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Privacy Lead — Implementation Acknowledgment",
+          "party": "Privacy Lead",
+          "capacity": "Implementation Acknowledgment",
+          "required": true,
+          "anchor": "Privacy Lead — Implementation Acknowledgment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Privacy Counsel — Review Acknowledgment (if appointed)",
+          "party": "Privacy Counsel",
+          "capacity": "Review Acknowledgment (if appointed)",
+          "required": false,
+          "anchor": "Privacy Counsel — Review Acknowledgment (if appointed)",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/privacy-personal-data-protection-notice.docx"
     },
     {
       "slug": "jurisdiction-access-sales-restrictions-register",
       "number": "11",
       "title": "Jurisdiction Access and Sales Restrictions Register",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Compliance",
       "summary": "Controlled register of market access decisions and sales restrictions.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/jurisdiction-access-sales-restrictions-register.pdf",
       "docx": "docx/jurisdiction-access-sales-restrictions-register.docx",
       "pdfBytes": 115145,
-      "docxBytes": 169606
+      "docxBytes": 169617,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Market Access Approval",
+          "party": "Malik Nlem",
+          "capacity": "Market Access Approval",
+          "required": true,
+          "anchor": "Malik Nlem — Market Access Approval",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Compliance Officer — Restriction Verification",
+          "party": "Compliance Officer",
+          "capacity": "Restriction Verification",
+          "required": true,
+          "anchor": "Compliance Officer — Restriction Verification",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "U.S. Regulatory Counsel — U.S. Jurisdiction Assessment",
+          "party": "U.S. Regulatory Counsel",
+          "capacity": "U.S. Jurisdiction Assessment",
+          "required": true,
+          "anchor": "U.S. Regulatory Counsel — U.S. Jurisdiction Assessment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s4",
+          "label": "Nigerian Regulatory Counsel — Nigeria Assessment",
+          "party": "Nigerian Regulatory Counsel",
+          "capacity": "Nigeria Assessment",
+          "required": true,
+          "anchor": "Nigerian Regulatory Counsel — Nigeria Assessment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/jurisdiction-access-sales-restrictions-register.docx"
     },
     {
       "slug": "regulatory-classification-filing-decision",
       "number": "12",
       "title": "Regulatory Classification and Filing Decision Record",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Compliance",
       "summary": "Decision record for classification, filings and jurisdictional approaches.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/regulatory-classification-filing-decision.pdf",
       "docx": "docx/regulatory-classification-filing-decision.docx",
       "pdfBytes": 112267,
-      "docxBytes": 169516
+      "docxBytes": 169527,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Decision Approval",
+          "party": "Malik Nlem",
+          "capacity": "Decision Approval",
+          "required": true,
+          "anchor": "Malik Nlem — Decision Approval",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "U.S. Regulatory Counsel — Legal Assessment",
+          "party": "U.S. Regulatory Counsel",
+          "capacity": "Legal Assessment",
+          "required": true,
+          "anchor": "U.S. Regulatory Counsel — Legal Assessment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Nigerian Regulatory Counsel — Legal Assessment",
+          "party": "Nigerian Regulatory Counsel",
+          "capacity": "Legal Assessment",
+          "required": true,
+          "anchor": "Nigerian Regulatory Counsel — Legal Assessment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/regulatory-classification-filing-decision.docx"
     },
     {
       "slug": "token-bridge-blockchain-technical-spec",
       "number": "13",
       "title": "Token, Bridge and Blockchain Technical Specification",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Token & economics",
       "summary": "Technical design for token issuance, bridge accounting and chain migration.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/token-bridge-blockchain-technical-spec.pdf",
       "docx": "docx/token-bridge-blockchain-technical-spec.docx",
       "pdfBytes": 114529,
-      "docxBytes": 169731
+      "docxBytes": 169742,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Company Acceptance",
+          "party": "Malik Nlem",
+          "capacity": "Company Acceptance",
+          "required": true,
+          "anchor": "Malik Nlem — Company Acceptance",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Blockchain / CTO Lead — Technical Certification",
+          "party": "Blockchain / CTO Lead",
+          "capacity": "Technical Certification",
+          "required": true,
+          "anchor": "Blockchain / CTO Lead — Technical Certification",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Security Lead — Security Review Acknowledgment",
+          "party": "Security Lead",
+          "capacity": "Security Review Acknowledgment",
+          "required": true,
+          "anchor": "Security Lead — Security Review Acknowledgment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/token-bridge-blockchain-technical-spec.docx"
     },
     {
       "slug": "security-incident-management-recovery",
       "number": "14",
       "title": "Security Incident Management and Recovery Policy",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Operations & controls",
       "summary": "Incident response, escalation, recovery and evidence-preservation controls.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/security-incident-management-recovery.pdf",
       "docx": "docx/security-incident-management-recovery.docx",
       "pdfBytes": 114371,
-      "docxBytes": 169538
+      "docxBytes": 169549,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Policy Adoption",
+          "party": "Malik Nlem",
+          "capacity": "Policy Adoption",
+          "required": true,
+          "anchor": "Malik Nlem — Policy Adoption",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Security Lead — Incident Response Ownership",
+          "party": "Security Lead",
+          "capacity": "Incident Response Ownership",
+          "required": true,
+          "anchor": "Security Lead — Incident Response Ownership",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Compliance Lead — Escalation Acknowledgment",
+          "party": "Compliance Lead",
+          "capacity": "Escalation Acknowledgment",
+          "required": true,
+          "anchor": "Compliance Lead — Escalation Acknowledgment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/security-incident-management-recovery.docx"
     },
     {
       "slug": "conflicts-insider-conduct-market-integrity",
       "number": "15",
       "title": "Conflicts of Interest, Insider Conduct and Market Integrity Policy",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Compliance",
       "summary": "Conflicts review, insider conduct, market integrity and disclosure controls.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/conflicts-insider-conduct-market-integrity.pdf",
       "docx": "docx/conflicts-insider-conduct-market-integrity.docx",
       "pdfBytes": 112517,
-      "docxBytes": 169504
+      "docxBytes": 169515,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Policy Adoption",
+          "party": "Malik Nlem",
+          "capacity": "Policy Adoption",
+          "required": true,
+          "anchor": "Malik Nlem — Policy Adoption",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Compliance Officer — Administration Acceptance",
+          "party": "Compliance Officer",
+          "capacity": "Administration Acceptance",
+          "required": true,
+          "anchor": "Compliance Officer — Administration Acceptance",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Covered Team Member — Individual Acknowledgment (repeat per person)",
+          "party": "Covered Team Member",
+          "capacity": "Individual Acknowledgment (repeat per person)",
+          "required": false,
+          "anchor": "Covered Team Member — Individual Acknowledgment (repeat per",
+          "tabOffsetsPx": {
+            "signature": 30,
+            "printedName": 60,
+            "title": 91,
+            "date": 121
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/conflicts-insider-conduct-market-integrity.docx"
     },
     {
       "slug": "regulatory-correspondence-submission-letter",
       "number": "16",
       "title": "Regulatory Correspondence and Submission Letter",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Compliance",
       "summary": "Controlled correspondence and submission letter for regulatory engagement.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/regulatory-correspondence-submission-letter.pdf",
       "docx": "docx/regulatory-correspondence-submission-letter.docx",
       "pdfBytes": 112517,
-      "docxBytes": 169457
+      "docxBytes": 169468,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Authorized Applicant Signatory",
+          "party": "Malik Nlem",
+          "capacity": "Authorized Applicant Signatory",
+          "required": true,
+          "anchor": "Malik Nlem — Authorized Applicant Signatory",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Filing Counsel — Signature if Authorized or Required",
+          "party": "Filing Counsel",
+          "capacity": "Signature if Authorized or Required",
+          "required": true,
+          "anchor": "Filing Counsel — Signature if Authorized or Required",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/regulatory-correspondence-submission-letter.docx"
     },
     {
       "slug": "token-sale-launch-authorization-control",
       "number": "17",
       "title": "Token Sale Launch Authorization and Control Certificate",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Corporate authority",
       "summary": "Launch authorization gate requiring legal, technical, treasury and operational sign-off.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/token-sale-launch-authorization-control.pdf",
       "docx": "docx/token-sale-launch-authorization-control.docx",
       "pdfBytes": 117449,
-      "docxBytes": 169557
+      "docxBytes": 169568,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Final Launch Authorization",
+          "party": "Malik Nlem",
+          "capacity": "Final Launch Authorization",
+          "required": true,
+          "anchor": "Malik Nlem — Final Launch Authorization",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "U.S. Regulatory Counsel — Legal Clearance Assessment",
+          "party": "U.S. Regulatory Counsel",
+          "capacity": "Legal Clearance Assessment",
+          "required": true,
+          "anchor": "U.S. Regulatory Counsel — Legal Clearance Assessment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Nigerian Regulatory Counsel — Legal Clearance Assessment",
+          "party": "Nigerian Regulatory Counsel",
+          "capacity": "Legal Clearance Assessment",
+          "required": true,
+          "anchor": "Nigerian Regulatory Counsel — Legal Clearance Assessment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s4",
+          "label": "Compliance Lead — Controls Verification",
+          "party": "Compliance Lead",
+          "capacity": "Controls Verification",
+          "required": true,
+          "anchor": "Compliance Lead — Controls Verification",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s5",
+          "label": "Security Lead — Technical Readiness",
+          "party": "Security Lead",
+          "capacity": "Technical Readiness",
+          "required": true,
+          "anchor": "Security Lead — Technical Readiness",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s6",
+          "label": "Finance / Custody Lead — Reconciliation Verification",
+          "party": "Finance / Custody Lead",
+          "capacity": "Reconciliation Verification",
+          "required": true,
+          "anchor": "Finance / Custody Lead — Reconciliation Verification",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/token-sale-launch-authorization-control.docx"
     },
     {
       "slug": "regulatory-exhibits-evidence-index",
       "number": "18",
       "title": "Regulatory Exhibits and Evidence Assembly Index",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Corporate authority",
       "summary": "Index of exhibits, evidence and supporting records for the TBC file.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/regulatory-exhibits-evidence-index.pdf",
       "docx": "docx/regulatory-exhibits-evidence-index.docx",
       "pdfBytes": 116302,
-      "docxBytes": 169457
+      "docxBytes": 169468,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Legal Filing Coordinator — Exhibit Verification",
+          "party": "Legal Filing Coordinator",
+          "capacity": "Exhibit Verification",
+          "required": true,
+          "anchor": "Legal Filing Coordinator — Exhibit Verification",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Legal Counsel — Filing Package Review",
+          "party": "Legal Counsel",
+          "capacity": "Filing Package Review",
+          "required": true,
+          "anchor": "Legal Counsel — Filing Package Review",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Malik Nlem — Company Approval (if required)",
+          "party": "Malik Nlem",
+          "capacity": "Company Approval (if required)",
+          "required": false,
+          "anchor": "Malik Nlem — Company Approval (if required)",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/regulatory-exhibits-evidence-index.docx"
     },
     {
       "slug": "direct-website-token-distribution-procedure",
       "number": "19",
       "title": "Direct Website Token Distribution Operating Procedure",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Operations & controls",
       "summary": "Operating procedure for any permitted direct website distribution.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/direct-website-token-distribution-procedure.pdf",
       "docx": "docx/direct-website-token-distribution-procedure.docx",
       "pdfBytes": 113821,
-      "docxBytes": 169566
+      "docxBytes": 169577,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Procedure Adoption",
+          "party": "Malik Nlem",
+          "capacity": "Procedure Adoption",
+          "required": true,
+          "anchor": "Malik Nlem — Procedure Adoption",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Website Operations Lead — Implementation Acceptance",
+          "party": "Website Operations Lead",
+          "capacity": "Implementation Acceptance",
+          "required": true,
+          "anchor": "Website Operations Lead — Implementation Acceptance",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Compliance Officer — Access Control Acceptance",
+          "party": "Compliance Officer",
+          "capacity": "Access Control Acceptance",
+          "required": true,
+          "anchor": "Compliance Officer — Access Control Acceptance",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/direct-website-token-distribution-procedure.docx"
     },
     {
       "slug": "website-tbc-sale-terms-conditions",
       "number": "20",
       "title": "Website TBC Sale Terms and Conditions",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Operations & controls",
       "summary": "Draft sale terms, purchaser acknowledgments and website conditions.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/website-tbc-sale-terms-conditions.pdf",
       "docx": "docx/website-tbc-sale-terms-conditions.docx",
       "pdfBytes": 113927,
-      "docxBytes": 169644
+      "docxBytes": 169655,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "TradingBible LLC — Terms Approval",
+          "party": "TradingBible LLC",
+          "capacity": "Terms Approval",
+          "required": true,
+          "anchor": "TradingBible LLC — Terms Approval",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Token Purchaser — Electronic Acceptance (separate transaction record)",
+          "party": "Token Purchaser",
+          "capacity": "Electronic Acceptance (separate transaction record)",
+          "required": false,
+          "anchor": "Token Purchaser — Electronic Acceptance (separate",
+          "tabOffsetsPx": {
+            "signature": 30,
+            "printedName": 61,
+            "title": 91,
+            "date": 121
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Legal Counsel — Legal Review Acknowledgment",
+          "party": "Legal Counsel",
+          "capacity": "Legal Review Acknowledgment",
+          "required": true,
+          "anchor": "Legal Counsel — Legal Review Acknowledgment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/website-tbc-sale-terms-conditions.docx"
     },
     {
       "slug": "digital-asset-website-disclosure-marketing",
       "number": "21",
       "title": "Digital Asset Website Disclosure and Marketing Standard",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Compliance",
       "summary": "Disclosure, marketing and communications standards for the website.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/digital-asset-website-disclosure-marketing.pdf",
       "docx": "docx/digital-asset-website-disclosure-marketing.docx",
       "pdfBytes": 113525,
-      "docxBytes": 169494
+      "docxBytes": 169505,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Standard Adoption",
+          "party": "Malik Nlem",
+          "capacity": "Standard Adoption",
+          "required": true,
+          "anchor": "Malik Nlem — Standard Adoption",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Marketing Lead — Compliance Acknowledgment",
+          "party": "Marketing Lead",
+          "capacity": "Compliance Acknowledgment",
+          "required": true,
+          "anchor": "Marketing Lead — Compliance Acknowledgment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Compliance / Legal Reviewer — Review Acknowledgment",
+          "party": "Compliance / Legal Reviewer",
+          "capacity": "Review Acknowledgment",
+          "required": true,
+          "anchor": "Compliance / Legal Reviewer — Review Acknowledgment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/digital-asset-website-disclosure-marketing.docx"
     },
     {
       "slug": "customer-complaints-refunds-dispute-resolution",
       "number": "22",
       "title": "Customer Complaints, Refunds and Dispute Resolution Procedure",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Operations & controls",
       "summary": "Complaint handling, refund assessment and dispute-resolution procedure.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/customer-complaints-refunds-dispute-resolution.pdf",
       "docx": "docx/customer-complaints-refunds-dispute-resolution.docx",
       "pdfBytes": 112435,
-      "docxBytes": 169503
+      "docxBytes": 169514,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Procedure Adoption",
+          "party": "Malik Nlem",
+          "capacity": "Procedure Adoption",
+          "required": true,
+          "anchor": "Malik Nlem — Procedure Adoption",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Customer Support Lead — Implementation Acceptance",
+          "party": "Customer Support Lead",
+          "capacity": "Implementation Acceptance",
+          "required": true,
+          "anchor": "Customer Support Lead — Implementation Acceptance",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Legal / Compliance Lead — Review Acknowledgment",
+          "party": "Legal / Compliance Lead",
+          "capacity": "Review Acknowledgment",
+          "required": true,
+          "anchor": "Legal / Compliance Lead — Review Acknowledgment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/customer-complaints-refunds-dispute-resolution.docx"
     },
     {
       "slug": "payments-custody-wallets-escrow-governance",
       "number": "23",
       "title": "Payments, Custody, Wallets and Escrow Governance",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Operations & controls",
       "summary": "Payment providers, custody, wallet controls, escrow and reconciliation.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/payments-custody-wallets-escrow-governance.pdf",
       "docx": "docx/payments-custody-wallets-escrow-governance.docx",
       "pdfBytes": 114829,
-      "docxBytes": 169551
+      "docxBytes": 169562,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Governance Approval",
+          "party": "Malik Nlem",
+          "capacity": "Governance Approval",
+          "required": true,
+          "anchor": "Malik Nlem — Governance Approval",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Finance / Treasury Lead — Control Acceptance",
+          "party": "Finance / Treasury Lead",
+          "capacity": "Control Acceptance",
+          "required": true,
+          "anchor": "Finance / Treasury Lead — Control Acceptance",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Custody / Security Lead — Technical Control Acceptance",
+          "party": "Custody / Security Lead",
+          "capacity": "Technical Control Acceptance",
+          "required": true,
+          "anchor": "Custody / Security Lead — Technical Control Acceptance",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s4",
+          "label": "Legal / Compliance Lead — Review Acknowledgment",
+          "party": "Legal / Compliance Lead",
+          "capacity": "Review Acknowledgment",
+          "required": true,
+          "anchor": "Legal / Compliance Lead — Review Acknowledgment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/payments-custody-wallets-escrow-governance.docx"
     },
     {
       "slug": "regulatory-filing-register-application-control",
       "number": "24",
       "title": "Regulatory Filing Register and Application Control Sheet",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Compliance",
       "summary": "Register of filings, applications, owners and evidence status.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/regulatory-filing-register-application-control.pdf",
       "docx": "docx/regulatory-filing-register-application-control.docx",
       "pdfBytes": 114869,
-      "docxBytes": 169447
+      "docxBytes": 169458,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Legal Filing Coordinator — Register Verification",
+          "party": "Legal Filing Coordinator",
+          "capacity": "Register Verification",
+          "required": true,
+          "anchor": "Legal Filing Coordinator — Register Verification",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Regulatory Counsel — Filing Assessment",
+          "party": "Regulatory Counsel",
+          "capacity": "Filing Assessment",
+          "required": true,
+          "anchor": "Regulatory Counsel — Filing Assessment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Malik Nlem — Applicant Approval (if required)",
+          "party": "Malik Nlem",
+          "capacity": "Applicant Approval (if required)",
+          "required": false,
+          "anchor": "Malik Nlem — Applicant Approval (if required)",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/regulatory-filing-register-application-control.docx"
     },
     {
       "slug": "tbc-utility-ecosystem-integration-schedule",
       "number": "25",
       "title": "TBC Utility, Ecosystem Integration and Future Development Schedule",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Token & economics",
       "summary": "Utility integration schedule and dependencies for future ecosystem services.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/tbc-utility-ecosystem-integration-schedule.pdf",
       "docx": "docx/tbc-utility-ecosystem-integration-schedule.docx",
       "pdfBytes": 123285,
-      "docxBytes": 169995
+      "docxBytes": 170006,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Roadmap Approval",
+          "party": "Malik Nlem",
+          "capacity": "Roadmap Approval",
+          "required": true,
+          "anchor": "Malik Nlem — Roadmap Approval",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 75,
+            "date": 105
+          }
+        },
+        {
+          "id": "s2",
+          "label": "CTO / Blockchain Lead — Technical Feasibility Review",
+          "party": "CTO / Blockchain Lead",
+          "capacity": "Technical Feasibility Review",
+          "required": true,
+          "anchor": "CTO / Blockchain Lead — Technical Feasibility Review",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 75,
+            "date": 105
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Finance Lead — Economic Assumptions Review",
+          "party": "Finance Lead",
+          "capacity": "Economic Assumptions Review",
+          "required": true,
+          "anchor": "Finance Lead — Economic Assumptions Review",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 75,
+            "date": 105
+          }
+        },
+        {
+          "id": "s4",
+          "label": "Legal Counsel — Regulatory Implications Review",
+          "party": "Legal Counsel",
+          "capacity": "Regulatory Implications Review",
+          "required": true,
+          "anchor": "Legal Counsel — Regulatory Implications Review",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 75,
+            "date": 105
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/tbc-utility-ecosystem-integration-schedule.docx"
     },
     {
       "slug": "execution-approval-supporting-evidence-register",
       "number": "26",
       "title": "Execution, Approval and Supporting Evidence Register",
-      "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
+      "subtitle": "Corporate & digital asset governance · controlled instrument",
       "category": "Corporate authority",
       "summary": "Approval, signature, version and evidence register for all instruments.",
-      "status": "Draft \u2014 signature block open",
+      "status": "Draft — signature block open",
       "visibility": "internal",
-      "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "classification": "Confidential — internal / counsel",
+      "version": "Corrected layout · October 2026",
       "signatureFields": "Issuer / manager + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Open \u2014 not executed",
+      "signatureStatus": "Open — not executed",
       "pdf": "pdf/execution-approval-supporting-evidence-register.pdf",
       "docx": "docx/execution-approval-supporting-evidence-register.docx",
       "pdfBytes": 115090,
-      "docxBytes": 169466
+      "docxBytes": 169477,
+      "signers": [
+        {
+          "id": "s1",
+          "label": "Malik Nlem — Register Authorization",
+          "party": "Malik Nlem",
+          "capacity": "Register Authorization",
+          "required": true,
+          "anchor": "Malik Nlem — Register Authorization",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s2",
+          "label": "Corporate Records Custodian — Record Certification",
+          "party": "Corporate Records Custodian",
+          "capacity": "Record Certification",
+          "required": true,
+          "anchor": "Corporate Records Custodian — Record Certification",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        },
+        {
+          "id": "s3",
+          "label": "Legal Counsel — Execution Review Acknowledgment",
+          "party": "Legal Counsel",
+          "capacity": "Execution Review Acknowledgment",
+          "required": true,
+          "anchor": "Legal Counsel — Execution Review Acknowledgment",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 45,
+            "title": 76,
+            "date": 106
+          }
+        }
+      ],
+      "docxProtected": "docx-protected/execution-approval-supporting-evidence-register.docx"
     }
   ]
 }

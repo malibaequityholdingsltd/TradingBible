@@ -310,7 +310,7 @@ export default function AppLayout({ children, title }) {
   );
 
   return (
-    <div className="min-h-screen bg-transparent pt-[var(--header-h)] tabular-nums antialiased">
+    <div className="tb-app-shell min-h-screen bg-transparent pt-[var(--header-h)] tabular-nums antialiased">
       <aside className="tb-drawer fixed bottom-0 left-0 top-[calc(var(--header-h)+var(--apphead))] z-30 hidden w-[248px] flex-col border-r border-white/5 bg-[#0a0a0f]/80 backdrop-blur-xl lg:block">{SideContent}</aside>
       {open && <div className="fixed inset-x-0 bottom-0 top-[calc(var(--header-h)+var(--apphead))] z-40 hidden bg-black/70 backdrop-blur-sm sm:block lg:hidden" onClick={() => setOpen(false)} />}
       <aside className={`tb-drawer fixed bottom-0 left-0 top-[calc(var(--header-h)+var(--apphead))] z-40 hidden w-[248px] flex-col border-r border-white/5 bg-[#0a0a0f]/95 backdrop-blur-xl transition-transform sm:flex lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}>{SideContent}</aside>

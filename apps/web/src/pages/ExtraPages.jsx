@@ -374,7 +374,7 @@ export function PricingPage() {
             <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-white/[0.07] bg-white/[0.02] px-4 py-1.5 text-sm text-[#8a8577] backdrop-blur-md">{t('bill.walletBalance')} <span className="font-mono font-bold text-[#f0ecdd]">${walletBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></p>
           )}
         </div>
-        <div className="mx-auto grid max-w-6xl items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+        <div id="plans" className="mx-auto grid max-w-6xl scroll-mt-28 items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {PLANS.map((raw) => {
             const p = translatePlan(t, raw);
             return (

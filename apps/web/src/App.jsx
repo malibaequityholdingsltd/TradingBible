@@ -41,6 +41,7 @@ const RiskToolsPage = lazy(() => import('./pages/RiskToolsPage'));
 const CommunityPage = lazy(() => import('./pages/CommunityPage'));
 const AcademyPage = lazy(() => import('./pages/AcademyPage'));
 const SecurityPage = lazy(() => import('./pages/SecurityPage'));
+const SecurityInfoPage = lazy(() => import('./pages/SecurityInfoPage'));
 const ApiDocsPage = lazy(() => import('./pages/ApiDocsPage'));
 
 const BrandingPage = lazy(() => import('./pages/BrandingPage'));
@@ -340,6 +341,7 @@ function RoutesWithBoundary() {
                     <Route path="/policy" element={<PolicyPage />} />
                     <Route path="/refund" element={<RefundPage />} />
                     <Route path="/faq" element={<FaqPage />} />
+                    <Route path="/security" element={<SecurityInfoPage />} />
                     <Route path="/tbc" element={<TbcPublicPage section="overview" />} />
                     <Route path="/tbc/whitepaper" element={<TbcPublicPage section="whitepaper" />} />
                     <Route path="/tbc/roadmap" element={<TbcPublicPage section="roadmap" />} />
@@ -437,6 +439,17 @@ function RoutesWithBoundary() {
     );
 }
 
+
+// The landing page keeps its original light/dark imagery. Every signed-in
+// dashboard and operator surface now uses a clean mineral canvas instead of
+// the photographic backdrop, so cards and charts never look like a website
+// pasted over a picture.
+function AppBackdrop() {
+    const { pathname } = useLocation();
+    if (pathname !== '/' && pathname !== '/home') return null;
+    return <div id="app-bg" aria-hidden="true" />;
+}
+
 function App() {
     return (
         <I18nProvider>
@@ -444,8 +457,8 @@ function App() {
         <AuthProvider>
           <NotificationsProvider>
           <AdProvider options={{ apiUrl: '/hcgi/api/ads', abTestingOptions: { getToken: () => pb.authStore.token } }}>
-            <div id="app-bg" aria-hidden="true" />
             <Router>
+                <AppBackdrop />
                 <MaintenanceGate>
                     <RootRedirect />
                     <AppChrome />

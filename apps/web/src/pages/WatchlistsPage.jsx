@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n';
 import { txt, numOrNull } from '@/lib/safeRender';
 import { SYMBOL_GROUPS, ALL_SYMBOLS } from '@/lib/symbols';
 import { Card, SectionHead, EmptyState, GoldButton, GhostButton } from '@/components/ui-kit';
+import { AtBadge, AtHero } from '@/components/AtelierUI';
 
 const DEFAULTS = [
   { name: 'Favorites', symbols: ['BTCUSD', 'AAPL', 'XAUUSD', 'GBPJPY', 'SOLUSD'] },
@@ -115,12 +116,40 @@ export default function WatchlistsPage() {
 
   const toggleCompare = (sym) => setCompare((c) => c.includes(sym) ? c.filter((x) => x !== sym) : c.length < 4 ? [...c, sym] : c);
 
+  const totalTracked = lists.reduce((n, list) => n + (Array.isArray(list.symbols) ? list.symbols.length : 0), 0);
+
   return (
     <AppLayout title={t('nav.watchlists')}>
-      {loading ? (
-        <Card className="flex items-center justify-center gap-2 py-20 text-sm text-[#8a8577]"><Loader2 className="h-4 w-4 animate-spin" /> {t('wl.loading')}</Card>
-      ) : (
-        <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
+      <div className="at-page at-scope at-enter pb-10">
+        <AtHero
+          eyebrow="Market desk · member workspace"
+          icon={LineChart}
+          title={<>Your market <em>lens.</em></>}
+          description="Keep the instruments that matter in focused lists, then move from signal to chart without losing the thread."
+          status={[
+            { label: 'Watchlists', value: lists.length, tone: 'gold' },
+            { label: 'Tracked symbols', value: totalTracked },
+            { label: 'Price feed', value: status === 'live' ? 'Live' : 'Connecting', tone: status === 'live' ? 'green' : 'amber' },
+          ]}
+          statusTitle="Desk state"
+          actions={(
+            <>
+              <GoldButton onClick={() => setCreating(true)} className="!min-h-[40px] !px-4"><Plus className="h-4 w-4" /> New watchlist</GoldButton>
+              <GhostButton to="/app/terminal-pro" className="!min-h-[40px] !px-4"><LineChart className="h-4 w-4" /> Terminal Pro</GhostButton>
+            </>
+          )}
+          bottom={(
+            <div className="flex flex-wrap items-center gap-2">
+              <AtBadge tone="gold">Personal lists</AtBadge>
+              <AtBadge>Live quotes</AtBadge>
+              <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Changes save automatically</span>
+            </div>
+          )}
+        />
+        {loading ? (
+          <Card className="mt-5 flex items-center justify-center gap-2 py-20 text-sm text-[#8a8577]"><Loader2 className="h-4 w-4 animate-spin" /> {t('wl.loading')}</Card>
+        ) : (
+        <div className="mt-5 grid gap-4 lg:grid-cols-[250px_1fr]">
           {/* Sidebar of lists */}
           <Card className="p-3">
             <SectionHead title={t('wl.lists')} right={<button onClick={() => setCreating((v) => !v)} className="grid h-6 w-6 place-items-center rounded-md bg-[#d4af37]/15 text-[#d4af37] hover:bg-[#d4af37]/25"><Plus className="h-3.5 w-3.5" /></button>} />
@@ -204,7 +233,8 @@ export default function WatchlistsPage() {
                           const pos = (numOrNull(r.changePercent) ?? 0) >= 0;
                           return (
                             <tr key={r.symbol} className="border-t border-white/5 hover:bg-white/[0.02]">
-                              <td className="py-2.5"><div className="font-mono font-semibold text-[#f0ecdd]">{r.symbol}</div><div className="text-[10px] text-[#8a8577]">{r.name}</div></td>                              <td className="py-2.5 text-right font-mono text-[#e9e7df]">{fmt(r.price)}</td>
+                              <td className="py-2.5"><div className="font-mono font-semibold text-[#f0ecdd]">{r.symbol}</div><div className="text-[10px] text-[#8a8577]">{r.name}</div></td>
+                              <td className="py-2.5 text-right font-mono text-[#e9e7df]">{fmt(r.price)}</td>
                               <td className={`py-2.5 text-right font-mono ${pos ? 'text-emerald-400' : 'text-red-400'}`}>
                                 <div className="flex items-center justify-end gap-1">{pos ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}{(() => { const c = numOrNull(r.changePercent); return c == null ? '—%' : `${c >= 0 ? '+' : ''}${c}%`; })()}</div>
                                 <div className="text-[10px] opacity-80">{pos ? '+' : ''}{fmt(r.change)}</div>
@@ -228,8 +258,9 @@ export default function WatchlistsPage() {
             ) : <EmptyState icon={Star} title={t('wl.selectCreate')} />}
           </Card>
         </div>
-      )}
-      {picker && active && <SymbolPicker existing={symbols} onAdd={(s) => addSymbol(active.id, s)} onClose={() => setPicker(false)} />}
+        )}
+        {picker && active && <SymbolPicker existing={symbols} onAdd={(s) => addSymbol(active.id, s)} onClose={() => setPicker(false)} />}
+      </div>
     </AppLayout>
   );
 }

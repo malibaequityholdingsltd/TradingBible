@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 
-const UPDATED = 'August 2025';
+const UPDATED = 'October 2026';
 
 function LegalShell({ title, subtitle, children }) {
   const { user, isAuthed } = useAuth();
@@ -46,9 +46,9 @@ function LegalShell({ title, subtitle, children }) {
   );
 }
 
-function Section({ heading, children }) {
+function Section({ id, heading, children }) {
   return (
-    <section>
+    <section id={id} className={id ? 'scroll-mt-28' : undefined}>
       <h2 className="mb-3 text-xl font-semibold text-[#f0ecdd]">{heading}</h2>
       <Card>
         <div className="space-y-3 text-sm leading-relaxed text-[#b3ae9e]">{children}</div>
@@ -97,7 +97,7 @@ export function TermsPage() {
         <p>We may suspend or terminate your account at any time for violation of these Terms, suspected fraud, or legal requirement. You may close your account at any time from your profile settings. Sections that by their nature should survive termination (including IP, disclaimers, liability, indemnity, and governing law) will survive.</p>
       </Section>
       <Section heading="13. Governing law and dispute resolution">
-        <p>These Terms are governed by the laws of England and Wales, without regard to conflict-of-law rules. The courts of England and Wales shall have exclusive jurisdiction, save that we may seek injunctive relief in any competent court. Before commencing formal proceedings, the parties agree to attempt good-faith resolution by contacting legal@tradingbible.app. Nothing in this section affects mandatory consumer-protection rights available to you in your country of residence.</p>
+        <p>These Terms are governed by the laws of the State of Delaware, United States, without regard to conflict-of-law rules. The state and federal courts located in Delaware shall have exclusive jurisdiction, save that we may seek injunctive relief in any competent court. Before commencing formal proceedings, the parties agree to attempt good-faith resolution by contacting legal@tradingbible.app. Nothing in this section affects mandatory consumer-protection rights available to you in your country of residence.</p>
       </Section>
       <Section heading="14. Changes and contact">
         <p>We may update these Terms from time to time; material changes will be notified in-app or by email, and continued use constitutes acceptance. Questions about these Terms can be sent to legal@tradingbible.app or to TradingBible LLC, the operator of TradingBible.</p>
@@ -133,7 +133,7 @@ export function PolicyPage() {
       <Section heading="8. Security">
         <p>We apply row-level access controls, encryption in transit and at rest, isolated per-user data, and protected APIs. No system is perfectly secure, but we work continuously to safeguard your information and will notify you and regulators of qualifying breaches as required by law.</p>
       </Section>
-      <Section heading="9. Cookies">
+      <Section id="cookies" heading="9. Cookies">
         <p>We use essential cookies and similar technologies to keep you signed in and to secure and operate the Service, and limited analytics to improve it. You can control non-essential cookies through your browser settings.</p>
       </Section>
       <Section heading="10. Children">

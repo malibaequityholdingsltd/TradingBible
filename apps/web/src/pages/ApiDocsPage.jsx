@@ -103,7 +103,7 @@ requests.post(
           <Section icon={Code2} title="Endpoints">
             <div className="space-y-2">
               {ENDPOINTS.map((e) => (
-                <div key={e.p} className="rounded-xl bg-white/[0.03] p-3">
+                <div key={`${e.m} ${e.p}`} className="rounded-xl bg-white/[0.03] p-3">
                   <div className="flex items-center gap-2"><span className="rounded px-1.5 py-0.5 font-mono text-[10px] font-bold" style={{ background: `${MCOLOR[e.m]}1a`, color: MCOLOR[e.m] }}>{e.m}</span><span className="font-mono text-xs text-[#e9e7df]">{e.p}</span></div>
                   <p className="mt-1 text-xs text-[#8a8577]">{e.d}</p>
                 </div>

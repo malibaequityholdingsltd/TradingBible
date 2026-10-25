@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, ArrowRight, User, KeyRound, BookOpen, ShieldCheck, LineChart, Bot, Sparkles, Loader2, Link2, Phone, CalendarDays } from 'lucide-react';
 import { MARKETS, EXPERIENCE, GOALS } from '@/lib/mockData';
 import { useAuth } from '@/hooks/useAuth';
@@ -372,6 +372,9 @@ function DiscordLogo() {
 
 export function LoginPage() {
   const nav = useNavigate();
+  const location = useLocation();
+  const requestedNext = new URLSearchParams(location.search).get('next') || '';
+  const nextPath = requestedNext.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '';
   const { requestOTP, loginWithCode, loginWithProvider, user, isAuthed, isAuthReady, logout } = useAuth();
   const { settings } = usePlatformSettings();
   const { t } = useI18n();
@@ -405,14 +408,14 @@ export function LoginPage() {
 
   const finishLogin = (auth) => {
     notifyLogin();
-    nav(homeRouteForUser(auth?.record), { replace: true });
+    nav(nextPath || homeRouteForUser(auth?.record), { replace: true });
   };
 
   useEffect(() => {
     if (isAuthReady && isAuthed) {
-      nav(homeRouteForUser(user), { replace: true });
+      nav(nextPath || homeRouteForUser(user), { replace: true });
     }
-  }, [isAuthReady, isAuthed, nav, user]);
+  }, [isAuthReady, isAuthed, nav, nextPath, user]);
 
   useEffect(() => {
     const existing = Math.max(readOtpCooldownUntil(email), readGlobalOtpCooldownUntil());

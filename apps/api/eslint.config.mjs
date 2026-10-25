@@ -6,7 +6,7 @@ export default [
 	{ ignores: ['node_modules/**'] },
 	js.configs.recommended,
 	{
-		files: ['**/*.js'],
+		files: ['**/*.{js,mjs}'],
 		plugins: { import: importPlugin },
 		languageOptions: {
 			ecmaVersion: 'latest',

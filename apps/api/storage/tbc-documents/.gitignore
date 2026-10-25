@@ -1,3 +1,6 @@
+# Runtime execution register (recipient emails, envelope IDs, approval notes)
+.execution/
+
 # The five public summaries below are versioned with the code.
 # The 26 corporate and governance instruments contain confidential issuer
 # information (tax identifiers, registered office, signature blocks), so they
@@ -16,3 +19,12 @@ docx/*.docx
 !docx/tbc-purchases-payments-custody-refunds.docx
 !docx/tbc-jurisdictions-purchaser-eligibility.docx
 !docx/tbc-brokerage-platform-separation.docx
+
+# Read-only download copies. Public summaries are versioned; controlled
+# instruments remain server-side only.
+docx-protected/*.docx
+!docx-protected/tbc-whitepaper.docx
+!docx-protected/tbc-supply-allocation-vesting.docx
+!docx-protected/tbc-purchases-payments-custody-refunds.docx
+!docx-protected/tbc-jurisdictions-purchaser-eligibility.docx
+!docx-protected/tbc-brokerage-platform-separation.docx

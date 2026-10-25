@@ -6,7 +6,8 @@ import {
   Timer, TriangleAlert, Vote, Wallet, Workflow,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { Card, EmptyState, GhostButton, GoldButton, Note, PageHero, SectionHead, Stat, StatGrid, Tabs } from '@/components/ui-kit';
+import { AtAlert, AtBadge, AtButton, AtHero, AtTabs } from '@/components/AtelierUI';
+import { Card, EmptyState, GhostButton, GoldButton, Note, SectionHead, Stat, StatGrid } from '@/components/ui-kit';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import pb from '@/lib/pocketbaseClient';
@@ -135,31 +136,46 @@ export default function TbcAppPage() {
 
   return (
     <AppLayout title="TBC">
-      <div className="tb-page !max-w-[1440px]">
-        <PageHero
-          kickerIcon={Coins}
-          kicker="TradingBible Coin · account"
-          title="Your TBC"
-          accent="control room"
-          subtitle="A single place for platform credits, the proposed token status, eligibility, vesting, staking, governance and support. Phase 1 deliberately does not sell, mint or stake anything."
-          stats={[
-            { label: 'Platform credits', value: credits ? fmtTbc(credits.balance) : '—' },
-            { label: 'Proposed token', value: tokenStatus?.issued ? 'Issued' : 'Not issued' },
-            { label: 'Eligibility', value: 'Not assessed' },
-            { label: 'Public sale', value: account?.sale?.enabled ? 'Enabled' : 'Disabled' },
+      <div className="tb-page at-page at-scope at-enter !max-w-[1440px]">
+        <AtHero
+          eyebrow="TradingBible Coin · account"
+          icon={Coins}
+          title={<>Your TBC <em>control room.</em></>}
+          description="One place for platform credits, proposed-token status, eligibility, vesting, staking, governance and support. Phase 1 deliberately does not sell, mint or stake anything."
+          status={[
+            { label: 'Platform credits', value: credits ? fmtTbc(credits.balance) : '—', tone: 'gold' },
+            { label: 'Proposed token', value: tokenStatus?.issued ? 'Issued' : 'Not issued', tone: tokenStatus?.issued ? 'green' : 'amber' },
+            { label: 'Eligibility', value: 'Not assessed', tone: 'amber' },
+            { label: 'Public sale', value: account?.sale?.enabled ? 'Enabled' : 'Disabled', tone: account?.sale?.enabled ? 'green' : 'amber' },
           ]}
-          actions={<><GhostButton to="/tbc">Public TBC hub</GhostButton><GhostButton to="/tbc/documents">Documents</GhostButton></>}
+          statusTitle="Account state"
+          statusNote="Platform credits and the proposed token are separate. No token has been issued, no sale is open, and no eligibility decision has been made for this account."
+          actions={(
+            <>
+              <AtButton to="/tbc" variant="quiet" icon={Globe2}>Public TBC hub</AtButton>
+              <AtButton to="/tbc/documents" variant="outline" icon={FileText}>Documents</AtButton>
+            </>
+          )}
+          bottom={(
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-semibold text-[var(--at-mut)]">
+              <span className="flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5 text-[var(--at-green)]" /> Server-gated account</span>
+              <span className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-[var(--at-gold)]" /> No token issuance</span>
+              <span className="flex items-center gap-2"><Wallet className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Credits spend in-app</span>
+              <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">{TBC_PROPOSAL.phase}</span>
+            </div>
+          )}
         />
 
-        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-[10px] border border-amber-400/20 bg-amber-400/[0.05] px-3 py-2 text-[11px] leading-relaxed text-[#c9c4b4]">
-          <TriangleAlert className="h-3.5 w-3.5 shrink-0 text-amber-300" />
-          <span><strong className="text-amber-200">Proposal stage.</strong> No token has been issued, no sale is open, and no eligibility decision has been made for this account.</span>
-          <Link to="/tbc/risks" className="ml-auto shrink-0 font-semibold text-[#d4af37] hover:underline">Read risks</Link>
+        <div className="mt-3">
+          <AtAlert icon={TriangleAlert} tone="amber">
+            <b className="text-[var(--at-ink)]">Proposal stage.</b> No token has been issued, no sale is open, and no eligibility decision has been made for this account.{' '}
+            <Link to="/tbc/risks" className="font-semibold text-[var(--at-gold)] underline underline-offset-2">Read risks</Link>
+          </AtAlert>
         </div>
 
-        <div className="mt-4"><Tabs tabs={TABS} active={active} onChange={goTab} /></div>
+        <div className="mt-3"><AtTabs tabs={TABS} active={active} onChange={goTab} /></div>
 
-        {loading && <div className="mt-4 grid place-items-center rounded-[10px] border border-white/[0.06] bg-[#0b0b10] py-14 text-sm text-[#8a8577]"><span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin text-[#d4af37]" /> Loading your TBC account…</span></div>}
+        {loading && <div className="at-card mt-4 grid place-items-center py-14 text-sm text-[var(--at-mut)]"><span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin text-[var(--at-gold)]" /> Loading your TBC account…</span></div>}
         {error && !loading && <div className="mt-4"><Note icon={TriangleAlert} tone="warning">{error} <button type="button" onClick={load} className="ml-1 font-bold text-[#d4af37] underline">Retry</button></Note></div>}
 
         {!loading && !error && active === 'overview' && <Overview account={account} modules={modules} onRetry={load} />}

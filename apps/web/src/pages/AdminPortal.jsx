@@ -16,6 +16,10 @@ import {
   LineChart, Line, PieChart, Pie, Cell, Legend
 } from 'recharts';
 import AdminLayout from '@/components/AdminLayout';
+import {
+  AtAlert, AtBadge, AtButton, AtHero, AtLink, AtMetric, AtPanel, AtProgress,
+  AtRing, AtSectionHeading, AtSparkline, AtTabs,
+} from '@/components/AtelierUI';
 import pb from '@/lib/pocketbaseClient';
 import { displayName, displayInitial } from '@/lib/displayName';
 import { notifyPlatformSettingsChanged } from '@/lib/platformSettings';
@@ -485,199 +489,302 @@ export function AdminDashboard() {
     })();
   }, []);
 
-  const sectionHead = (n, title, sub) => (
-    <div className="mb-3 flex items-end justify-between">
-      <div className="flex items-baseline gap-2">
-        <span className="font-mono text-[11px] font-bold text-[#d4af37]">{n}</span>
-        <h3 className="text-sm font-bold uppercase tracking-[0.14em] text-[#f0ecdd]">{title}</h3>
-      </div>
-      {sub && <span className="text-[11px] text-[#6a665a]">{sub}</span>}
-    </div>
-  );
+  const todayLabel = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+  const verifiedRate = stats.total ? Math.round((stats.verified / stats.total) * 100) : 0;
+  const planTone = (plan) => (planKey(plan) === 'pro' ? 'blue' : planKey(plan) === 'elite' ? 'gold' : planKey(plan) === 'professional' ? 'violet' : 'muted');
 
   return (
     <AdminLayout title="Admin Dashboard">
-      <section className="tb-hero mb-5 overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
-              <LayoutDashboard className="h-6 w-6" />
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Command Deck</h2>
-              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Live business snapshot — growth, money, TBC credits and system health.</p>
-            </div>
-          </div>
-          {!loading && (
-            <div className="flex shrink-0 items-stretch gap-6 rounded-2xl border border-[#d4af37]/15 bg-[#0f0f14] px-5 py-3">
-              <div>
-                <div className="text-[10px] uppercase tracking-[0.16em] text-[#8a8577]">MRR</div>
-                <div className="font-mono text-xl font-extrabold text-[#10b981]">${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
-              </div>
-              <div className="w-px bg-white/10" />
-              <div>
-                <div className="text-[10px] uppercase tracking-[0.16em] text-[#8a8577]">Customers</div>
-                <div className="font-mono text-xl font-extrabold text-[#f0ecdd]">{stats.customers.toLocaleString()}</div>
-              </div>
-              <div className="w-px bg-white/10" />
-              <div>
-                <div className="text-[10px] uppercase tracking-[0.16em] text-[#8a8577]">Users</div>
-                <div className="font-mono text-xl font-extrabold text-[#f0ecdd]">{stats.total.toLocaleString()}</div>
-              </div>
+      <div className="at-page at-scope at-enter">
+        <AtHero
+          eyebrow={`Operator brief · ${todayLabel}`}
+          icon={LayoutDashboard}
+          title={<>Business, <em>in focus.</em></>}
+          description="One operating picture for the company: subscriber growth, money movement, TBC platform credits, system health and the newest accounts. Live where the data is live; explicitly blank where it is not."
+          status={[
+            { label: 'MRR', value: `$${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, tone: 'gold' },
+            { label: 'Customers', value: stats.customers.toLocaleString(), tone: 'green' },
+            { label: 'Registered users', value: stats.total.toLocaleString() },
+            { label: 'Token status', value: supply?.tokenIssued ? 'Issued' : 'Not issued', tone: supply?.tokenIssued ? 'green' : 'amber' },
+          ]}
+          statusTitle="Today at a glance"
+          statusNote="Plan values are calculated from active subscriber records. Token status is separate from the off-chain TBC credit ledger."
+          actions={(
+            <>
+              <AtButton to="/admin/users" variant="gold" icon={Users}>User management</AtButton>
+              <AtButton to="/admin/tbc" variant="outline" icon={Coins}>TBC control center</AtButton>
+              <AtButton to="/admin/billing" variant="quiet" icon={CreditCard}>Billing</AtButton>
+            </>
+          )}
+          bottom={(
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-semibold text-[var(--at-mut)]">
+              <span className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-[var(--at-green)] shadow-[0_0_8px_var(--at-green)]" /> {loading ? 'Syncing live records' : 'Live platform data'}</span>
+              <span className="flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Admin-only surface</span>
+              <span className="hidden items-center gap-2 sm:flex"><Activity className="h-3.5 w-3.5 text-[var(--at-gold)]" /> {stats.trades.toLocaleString()} journaled trades</span>
+              <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Refreshed {new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
           )}
-        </div>
-      </section>
-      {loading ? <Spinner /> : (
-        <>
-          {sectionHead('01', 'Growth', `${stats.verified} verified`)}
-          <div className="mb-6 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
-            <Stat icon={Users} label="Total Users" value={stats.total.toLocaleString()} sub={`${stats.verified} verified`} trend="up" />
-            <Stat icon={CreditCard} label="Paid Subscribers" value={stats.paid.toLocaleString()} sub={`${stats.total - stats.paid} without a plan`} color="#3b82f6" />
-            <Stat icon={Users} label="Paying Customers" value={stats.customers.toLocaleString()} sub={`${stats.paid} subs + ${stats.academyBuyers} academy (unique)`} color="#10b981" />
-            <Stat icon={GraduationCap} label="Academy Students" value={stats.academyBuyers.toLocaleString()} sub="Lifetime access" color="#38bdf8" />
-            <Stat icon={Activity} label="Total Trades" value={stats.trades.toLocaleString()} sub="Across all users" color="#a855f7" />
-          </div>
+        />
 
-          <div className="mb-6 grid gap-4 lg:grid-cols-5">
-            <div className="glass rounded-2xl p-4 sm:p-5 lg:col-span-3">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-semibold text-[#f0ecdd]">User Growth</h3>
-                <Badge color="gold">{growth.length} months</Badge>
-              </div>
-              {growth.length ? (
-                <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={growth} margin={{ left: -12, right: 8 }}>
-                    <defs>
-                      <linearGradient id="ug" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={GOLD} stopOpacity={0.4} />
-                        <stop offset="100%" stopColor={GOLD} stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="m" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
-                    <Tooltip contentStyle={{ background: '#0f0f14', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, fontSize: 12 }} />
-                    <Area type="monotone" dataKey="users" name="Total Users" stroke={GOLD} strokeWidth={2} fill="url(#ug)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : <p className="py-10 text-center text-sm text-[#8a8577]">No growth data yet.</p>}
+        {loading ? (
+          <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+            {[1, 2, 3, 4, 5].map((n) => <div key={n} className="at-kpi animate-pulse bg-[var(--at-soft)]" />)}
+          </div>
+        ) : (
+          <>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+              <AtMetric icon={Users} label="Total users" value={stats.total.toLocaleString()} note={`${stats.verified} verified · ${verifiedRate}% of accounts`} />
+              <AtMetric icon={CreditCard} label="Paid subscribers" value={stats.paid.toLocaleString()} note={`${Math.max(0, stats.total - stats.paid).toLocaleString()} accounts without a plan`} />
+              <AtMetric icon={DollarSign} label="Monthly recurring" value={`$${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note="Estimated from active plan prices" tone="text-[var(--at-green)]" />
+              <AtMetric icon={GraduationCap} label="Academy students" value={stats.academyBuyers.toLocaleString()} note={`$${stats.academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })} lifetime revenue`} />
+              <AtMetric icon={Activity} label="Journaled trades" value={stats.trades.toLocaleString()} note="Across all member accounts" />
             </div>
 
-            <div className="flex flex-col gap-4 lg:col-span-2">
-              {milestones.map(m => (
-                <div key={m.label} className="glass flex-1 rounded-2xl p-4 sm:p-5">
-                  <div className="mb-3 flex items-center justify-between">
-                    <h3 className="font-semibold text-[#f0ecdd]">{m.label} <span className="text-xs font-normal text-[#8a8577]">({m.monthsLive != null ? `Month ${m.monthsLive} of 12` : '—'})</span></h3>
-                    <Badge color="gold">Loan model</Badge>
-                  </div>
-                  <div className="space-y-3">
+            <div className="mt-6">
+              <AtSectionHeading
+                index="01"
+                title="Growth & trajectory"
+                sub="Cumulative registrations against the illustrative operating plan."
+                action={<AtBadge tone="gold">{growth.length} months of data</AtBadge>}
+              />
+              <div className="grid gap-3 lg:grid-cols-5">
+                <AtPanel
+                  className="lg:col-span-3"
+                  title="User growth"
+                  sub="Cumulative registered accounts by month."
+                  action={<AtLink to="/admin/analytics">Analytics</AtLink>}
+                >
+                  {growth.length ? (
+                    <div className="h-[224px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={growth} margin={{ top: 8, left: -18, right: 6, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="atGrowth" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor={GOLD} stopOpacity={0.34} />
+                              <stop offset="100%" stopColor={GOLD} stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <XAxis dataKey="m" tick={{ fill: 'var(--at-mut)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                          <YAxis tick={{ fill: 'var(--at-mut)', fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} width={44} />
+                          <Tooltip
+                            contentStyle={{ background: 'var(--at-panel)', border: '1px solid var(--at-line)', borderRadius: 10, fontSize: 11, color: 'var(--at-ink)' }}
+                            labelStyle={{ color: 'var(--at-mut)', fontSize: 10 }}
+                            itemStyle={{ color: 'var(--at-gold)', fontSize: 11 }}
+                          />
+                          <Area type="monotone" dataKey="users" name="Total users" stroke={GOLD} strokeWidth={2} fill="url(#atGrowth)" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : <div className="grid h-[224px] place-items-center text-xs text-[var(--at-mut)]">No growth data yet.</div>}
+                  <div className="mt-3 grid grid-cols-3 gap-2 border-t border-[var(--at-line-soft)] pt-3">
                     <div>
-                      <div className="mb-1 flex items-center justify-between text-xs text-[#8a8577]">
-                        <span>Users</span><span className="font-mono text-[#f0ecdd]">{stats.total.toLocaleString()} / {m.users.toLocaleString()}</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-white/8"><div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25]" style={{ width: `${m.uPct}%` }} /></div>
+                      <div className="text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">New this month</div>
+                      <div className="mt-1 font-mono text-sm font-semibold text-[var(--at-ink)]">{growth.length ? growth[growth.length - 1].new.toLocaleString() : '—'}</div>
                     </div>
                     <div>
-                      <div className="mb-1 flex items-center justify-between text-xs text-[#8a8577]">
-                        <span>MRR</span><span className="font-mono text-[#f0ecdd]">${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })} / ${m.mrr.toLocaleString()}</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-white/8"><div className="h-full rounded-full bg-gradient-to-r from-[#10b981] to-[#059669]" style={{ width: `${m.rPct}%` }} /></div>
+                      <div className="text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Verified</div>
+                      <div className="mt-1 font-mono text-sm font-semibold text-[var(--at-green)]">{verifiedRate}%</div>
+                    </div>
+                    <div>
+                      <div className="text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Growth trend</div>
+                      <div className="mt-1"><AtSparkline data={growth.map((g) => g.new)} height={22} color="var(--at-gold)" /></div>
                     </div>
                   </div>
+                </AtPanel>
+
+                <div className="space-y-3 lg:col-span-2">
+                  {milestones.map((m) => (
+                    <AtPanel
+                      key={m.label}
+                      title={m.label}
+                      sub={m.monthsLive != null ? `Operating month ${m.monthsLive} · illustrative loan model` : 'Illustrative loan model'}
+                      action={<AtBadge tone="amber">Model</AtBadge>}
+                    >
+                      <div className="flex items-center gap-4">
+                        <AtRing value={m.uPct} size={62} label={`${m.uPct}%`} />
+                        <div className="min-w-0 flex-1 space-y-3">
+                          <div>
+                            <div className="mb-1 flex items-center justify-between gap-2 text-[10px] text-[var(--at-mut)]">
+                              <span>Users</span>
+                              <span className="font-mono text-[var(--at-ink-2)]">{stats.total.toLocaleString()} / {m.users.toLocaleString()}</span>
+                            </div>
+                            <AtProgress value={m.uPct} />
+                          </div>
+                          <div>
+                            <div className="mb-1 flex items-center justify-between gap-2 text-[10px] text-[var(--at-mut)]">
+                              <span>MRR</span>
+                              <span className="font-mono text-[var(--at-ink-2)]">${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })} / ${m.mrr.toLocaleString()}</span>
+                            </div>
+                            <AtProgress value={m.rPct} tone="green" />
+                          </div>
+                        </div>
+                      </div>
+                    </AtPanel>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
 
-          {sectionHead('02', 'Money', 'Subscriptions + ledger')}
-          <div className="mb-6 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
-            <Stat icon={DollarSign} label="Est. MRR" value={`$${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="Monthly recurring" trend="up" color="#10b981" />
-            <Stat icon={Activity} label="Ledger In 30d" value={money ? `$${Math.round(money.inUsd30d).toLocaleString()}` : '—'} sub="All USD inflows, incl. non-sub" color="#10b981" />
-            <Stat icon={DollarSign} label="Ledger In All-Time" value={money ? `$${Math.round(money.inUsd).toLocaleString()}` : '—'} sub="USD inflows since launch" color="#3b82f6" />
-            <Stat icon={Wallet} label="Pending Payouts" value={money ? `$${Math.round(money.pendingUsd).toLocaleString()}` : '—'} sub="Awaiting release (USD)" color="#fb923c" />
-            <Stat icon={DollarSign} label="Academy Revenue" value={`$${stats.academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="One-time, lifetime" color="#f472b6" />
-          </div>
+            <div className="mt-6">
+              <AtSectionHeading
+                index="02"
+                title="Money & ledger"
+                sub="Subscriptions, settlement and the separate TBC credit economy."
+                action={<AtLink to="/admin/billing">Open billing</AtLink>}
+              />
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+                <AtMetric icon={DollarSign} label="Est. MRR" value={`$${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note="Monthly recurring revenue" tone="text-[var(--at-green)]" />
+                <AtMetric icon={Activity} label="Ledger in · 30d" value={money ? `$${Math.round(money.inUsd30d).toLocaleString()}` : '—'} note="All USD inflows, incl. non-subscription" />
+                <AtMetric icon={DollarSign} label="Ledger in · all time" value={money ? `$${Math.round(money.inUsd).toLocaleString()}` : '—'} note="USD inflows since launch" />
+                <AtMetric icon={Wallet} label="Pending payouts" value={money ? `$${Math.round(money.pendingUsd).toLocaleString()}` : '—'} note="Awaiting release" tone="text-[var(--at-amber)]" />
+                <AtMetric icon={GraduationCap} label="Academy revenue" value={`$${stats.academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note="One-time lifetime access" />
+              </div>
 
-          {sectionHead('03', 'TBC credits & proposed token', supply?.tokenIssued ? 'Token issued' : 'Off-chain credits · 1 TBC = 1 KWD')}
-          <div className="mb-3 rounded-xl border border-amber-400/20 bg-amber-400/[0.05] px-4 py-3 text-xs leading-relaxed text-[#c9c4b4]">
-            <b className="text-amber-300">Keep these separate.</b> TBC platform credits are off-chain accounting used for eligible services. The proposed TBC token has not been issued, and the 100M figure is a proposal — not circulating supply.
-          </div>
-          <div className="mb-6 grid gap-3 grid-cols-2 xl:grid-cols-4">
-            <Stat icon={Coins} label="Proposed token max" value={supply ? Number(supply.maxSupply).toLocaleString() : '—'} sub="Proposal only · not issued" color="#d4af37" />
-            <Stat icon={Coins} label="TBC credits recorded" value={supply ? Number(supply.issuedTbc ?? 0).toLocaleString() : '—'} sub="Off-chain credits ever issued" color="#f59e0b" />
-            <Stat icon={Coins} label="TBC credits held" value={supply ? Number(supply.circulatingTbc).toLocaleString() : '—'} sub="Net user credit balance" color="#38bdf8" />
-            <Stat icon={Coins} label="Token status" value={supply?.tokenIssued ? 'Issued' : 'Not issued'} sub="No on-chain supply reported" color="#10b981" />
-          </div>
-          <div className="mb-6 grid gap-3 grid-cols-2 xl:grid-cols-4">
-            <Stat icon={Coins} label="TBC credit volume 30d" value={money ? `${Math.round(money.inTbc30d + money.outTbc30d).toLocaleString()} TBC` : '—'} sub="In + out, off-chain credits" color="#d4af37" />
-          </div>
+              <div className="mt-3 grid gap-3 lg:grid-cols-[.85fr_1.15fr]">
+                <AtPanel
+                  title="Settlement snapshot"
+                  sub="Platform money movement, not token supply."
+                  action={<AtBadge tone={money ? 'green' : 'amber'}>{money ? 'Connected' : 'Awaiting data'}</AtBadge>}
+                >
+                  <div className="space-y-3">
+                    {[
+                      { label: 'Monthly ledger inflow', value: money ? `$${Math.round(money.inUsd30d).toLocaleString()}` : '—', note: 'Last 30 days' },
+                      { label: 'Pending payouts', value: money ? `$${Math.round(money.pendingUsd).toLocaleString()}` : '—', note: 'Requires release review' },
+                      { label: 'Academy lifetime revenue', value: `$${stats.academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, note: `${stats.academyBuyers} students` },
+                      { label: 'Paying customers', value: stats.customers.toLocaleString(), note: `${stats.paid} subscriptions + ${stats.academyBuyers} academy` },
+                    ].map((row) => (
+                      <div key={row.label} className="flex items-baseline justify-between gap-3 border-b border-[var(--at-line-soft)] pb-3 last:border-0 last:pb-0">
+                        <div>
+                          <div className="text-[11px] font-semibold text-[var(--at-ink)]">{row.label}</div>
+                          <div className="mt-0.5 text-[9px] text-[var(--at-mut-2)]">{row.note}</div>
+                        </div>
+                        <div className="shrink-0 font-mono text-[13px] font-semibold text-[var(--at-ink)]">{row.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                </AtPanel>
 
-          {sectionHead('04', 'Platform', 'Health + latest users')}
-          <div className="mb-5 grid gap-4 lg:grid-cols-3">
-            <div className="glass rounded-2xl p-4 sm:p-5">
-              <h3 className="mb-4 font-semibold text-[#f0ecdd]">System Health</h3>
-              <div className="space-y-2">
-                {sysHealth.map(({ label, status, detail, icon: Icon }) => (
-                  <div key={label} className="flex items-center justify-between rounded-lg bg-white/[0.03] px-3 py-2">
-                    <div className="flex items-center gap-2 text-sm text-[#c9c4b4]">
-                      <Icon className="h-3.5 w-3.5 shrink-0 text-[#8a8577]" />
-                      <span className="truncate">{label}{detail ? <span className="text-[#6a665a]"> · {detail}</span> : ''}</span>
+                <AtPanel
+                  eyebrow="Two ledgers, never merged"
+                  title="TBC credits & proposed token"
+                  sub="The off-chain platform credit is live. The proposed token is not."
+                  action={<AtBadge tone={supply?.tokenIssued ? 'green' : 'amber'}>{supply?.tokenIssued ? 'Token issued' : 'Token not issued'}</AtBadge>}
+                >
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="rounded-xl border border-[var(--at-line)] bg-[var(--at-gold-soft)] p-3">
+                      <AtBadge tone="gold">Off-chain credit · live</AtBadge>
+                      <div className="mt-3 font-mono text-2xl font-semibold tracking-[-0.05em] text-[var(--at-ink)]">{supply ? Number(supply.circulatingTbc).toLocaleString() : '—'}</div>
+                      <div className="mt-0.5 text-[9px] text-[var(--at-mut)]">TBC credits currently held</div>
+                      <div className="mt-3 space-y-1.5 border-t border-[var(--at-line-soft)] pt-2 text-[9px] text-[var(--at-mut)]">
+                        <div className="flex justify-between gap-2"><span>Credits ever issued</span><span className="font-mono text-[var(--at-ink-2)]">{supply ? Number(supply.issuedTbc ?? 0).toLocaleString() : '—'}</span></div>
+                        <div className="flex justify-between gap-2"><span>30-day volume</span><span className="font-mono text-[var(--at-ink-2)]">{money ? Math.round(money.inTbc30d + money.outTbc30d).toLocaleString() : '—'}</span></div>
+                        <div className="flex justify-between gap-2"><span>Peg</span><span className="font-mono text-[var(--at-ink-2)]">1 TBC = 1 KWD</span></div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <div className={`h-1.5 w-1.5 rounded-full ${status === 'ok' ? 'bg-emerald-400 animate-pulse' : status === 'unknown' ? 'bg-[#6a665a]' : 'bg-red-400'}`} />
-                      <span className={`text-xs ${status === 'ok' ? 'text-emerald-400' : status === 'unknown' ? 'text-[#6a665a]' : 'text-red-400'}`}>{status === 'ok' ? 'Online' : status === 'unknown' ? '…' : 'Off'}</span>
+                    <div className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3">
+                      <AtBadge tone="muted">Proposed token · not issued</AtBadge>
+                      <div className="mt-3 font-mono text-2xl font-semibold tracking-[-0.05em] text-[var(--at-mut)]">{supply ? Number(supply.maxSupply).toLocaleString() : '—'}</div>
+                      <div className="mt-0.5 text-[9px] text-[var(--at-mut-2)]">Proposed maximum supply</div>
+                      <div className="mt-3 space-y-1.5 border-t border-[var(--at-line-soft)] pt-2 text-[9px] text-[var(--at-mut)]">
+                        <div className="flex justify-between gap-2"><span>On-chain supply</span><span className="font-mono text-[var(--at-mut-2)]">None</span></div>
+                        <div className="flex justify-between gap-2"><span>Sale</span><span className="font-mono text-[var(--at-mut-2)]">Disabled</span></div>
+                        <div className="flex justify-between gap-2"><span>Allocation</span><span className="font-mono text-[var(--at-mut-2)]">Illustrative</span></div>
+                      </div>
                     </div>
                   </div>
+                  <div className="mt-3">
+                    <AtAlert icon={Coins} tone="amber">
+                      Never present the illustrative 30/20/20/15/10/5 split as actual supply. Credit balances are platform accounting, not token transfers.
+                    </AtAlert>
+                  </div>
+                </AtPanel>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <AtSectionHeading
+                index="03"
+                title="Operations"
+                sub="Infrastructure posture and the newest accounts."
+                action={<AtButton to="/admin/reports" variant="quiet" size="sm" iconRight={ExternalLink}>Reports & logs</AtButton>}
+              />
+              <div className="grid gap-3 lg:grid-cols-3">
+                <AtPanel title="System health" sub="Configured services and live connectivity." action={<AtBadge tone={sysHealth.every((s) => s.status === 'ok') ? 'green' : 'amber'}>{sysHealth.filter((s) => s.status === 'ok').length}/{sysHealth.length} online</AtBadge>}>
+                  <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                    {sysHealth.map(({ label, status, detail, icon: Icon }) => (
+                      <div key={label} className="flex min-w-0 items-center gap-2 rounded-lg border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-2.5 py-2">
+                        <Icon className="h-3.5 w-3.5 shrink-0 text-[var(--at-gold)]" />
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-[10px] font-semibold text-[var(--at-ink-2)]">{label}</div>
+                          {detail && <div className="truncate text-[8px] text-[var(--at-mut-2)]">{detail}</div>}
+                        </div>
+                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${status === 'ok' ? 'bg-[var(--at-green)] shadow-[0_0_7px_var(--at-green)]' : status === 'unknown' ? 'bg-[var(--at-mut-2)]' : 'bg-[var(--at-red)]'}`} />
+                      </div>
+                    ))}
+                  </div>
+                </AtPanel>
+
+                <AtPanel
+                  className="lg:col-span-2"
+                  title="Recent registrations"
+                  sub="Latest eight accounts, newest first."
+                  action={<AtLink to="/admin/users">All users</AtLink>}
+                  flush
+                  bodyClassName="!p-0"
+                >
+                  <div className="at-table-wrap !rounded-none !border-0 !bg-transparent">
+                    <table className="at-table min-w-[520px]">
+                      <thead>
+                        <tr><th>User</th><th>Plan</th><th>Verified</th><th>Joined</th></tr>
+                      </thead>
+                      <tbody>
+                        {recent.map((u) => (
+                          <tr key={u.id}>
+                            <td>
+                              <div className="flex items-center gap-2.5">
+                                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-[var(--at-line)] bg-[var(--at-gold-soft)] text-[10px] font-bold text-[var(--at-gold)]">{displayInitial(u)}</span>
+                                <div className="min-w-0">
+                                  <div className="max-w-[150px] truncate text-[11px] font-semibold !text-[var(--at-ink)] sm:max-w-none">{displayName(u)}</div>
+                                  <div className="max-w-[150px] truncate text-[9px] !text-[var(--at-mut)] sm:max-w-none">{u.email}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td><AtBadge tone={planTone(u.plan)}>{planLabel(u.plan)}</AtBadge></td>
+                            <td>
+                              {u.verified
+                                ? <span className="flex items-center gap-1 text-[10px] text-[var(--at-green)]"><CheckCircle className="h-3.5 w-3.5" /> Yes</span>
+                                : <span className="flex items-center gap-1 text-[10px] text-[var(--at-mut-2)]"><XCircle className="h-3.5 w-3.5" /> No</span>}
+                            </td>
+                            <td className="font-mono text-[9px]">{(u.created || '').slice(0, 10)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </AtPanel>
+              </div>
+
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                {[
+                  { to: '/admin/users', icon: Users, title: 'Manage users', sub: 'Plans, roles and verification' },
+                  { to: '/admin/tbc', icon: Coins, title: 'Review TBC gates', sub: 'Read-only control room' },
+                  { to: '/admin/legal-vault', icon: ShieldCheck, title: 'Open legal vault', sub: '31 controlled instruments' },
+                  { to: '/admin/company', icon: Building2, title: 'Company Bible', sub: 'The single source of truth' },
+                ].map(({ to, icon: Icon, title, sub }) => (
+                  <Link key={to} to={to} className="at-card at-card--hover flex items-center gap-3 p-3.5">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[var(--at-line)] bg-[var(--at-gold-soft)] text-[var(--at-gold)]"><Icon className="h-4 w-4" /></span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[11px] font-semibold text-[var(--at-ink)]">{title}</span>
+                      <span className="block truncate text-[9px] text-[var(--at-mut)]">{sub}</span>
+                    </span>
+                  </Link>
                 ))}
               </div>
             </div>
+          </>
+        )}
+      </div>
 
-            <div className="glass rounded-2xl p-4 sm:p-5 lg:col-span-2">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-semibold text-[#f0ecdd]">Recent Registrations</h3>
-                <span className="text-xs text-[#8a8577]">Latest 8</span>
-              </div>
-              <div className="overflow-x-auto -mx-2 px-2">
-                <table className="w-full min-w-[420px] text-sm">
-                  <thead>
-                    <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
-                      <th className="pb-2 font-medium">User</th>
-                      <th className="pb-2 font-medium">Plan</th>
-                      <th className="pb-2 font-medium hidden sm:table-cell">Verified</th>
-                      <th className="pb-2 font-medium">Joined</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recent.map(u => (
-                      <tr key={u.id} className="border-b border-white/5">
-                        <td className="py-2.5">
-                          <div className="flex items-center gap-2">
-                            <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#d4af37]/10 text-xs font-bold text-[#d4af37]">
-                              {displayInitial(u)}
-                            </div>
-                            <div className="min-w-0">
-                              <div className="text-[#e9e7df] truncate max-w-[100px] sm:max-w-none">{displayName(u)}</div>
-                              <div className="text-xs text-[#8a8577] truncate max-w-[120px] sm:max-w-none">{u.email}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-2.5">{planBadge(u.plan)}</td>
-                        <td className="py-2.5 hidden sm:table-cell">
-                          {u.verified
-                            ? <span className="flex items-center gap-1 text-xs text-emerald-400"><CheckCircle className="h-3.5 w-3.5" /> Yes</span>
-                            : <span className="flex items-center gap-1 text-xs text-[#8a8577]"><XCircle className="h-3.5 w-3.5" /> No</span>}
-                        </td>
-                        <td className="py-2.5 font-mono text-xs text-[#8a8577]">{(u.created || '').slice(0, 10)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
     </AdminLayout>
   );
 }
@@ -1021,34 +1128,43 @@ export function AdminAnalytics() {
 
   return (
     <AdminLayout title="Analytics">
-      <section className="tb-hero mb-5 overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-        <div className="relative flex min-w-0 items-center gap-4">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
-            <BarChart3 className="h-6 w-6" />
-          </span>
-          <div className="min-w-0">
-            <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Analytics</h2>
-            <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Growth, conversion, revenue — subscriptions plus one-time academy sales.</p>
+      <div className="at-page at-scope at-enter pb-10">
+      <AtHero
+        eyebrow="Command desk · admin analytics"
+        icon={BarChart3}
+        title={<>Growth, <em>measured.</em></>}
+        description="Acquisition, conversion, recurring revenue and the one-time academy line — read from live platform records."
+        status={[
+          { label: 'Registered users', value: users.length.toLocaleString(), tone: 'gold' },
+          { label: 'Paid conversion', value: `${users.length ? Math.round(paid.length / users.length * 100) : 0}%`, tone: 'green' },
+          { label: 'Est. MRR', value: `$${mrr.toFixed(0)}`, tone: undefined },
+        ]}
+        statusTitle="Current position"
+        actions={<AtBadge tone="gold">Live platform records · not a forecast</AtBadge>}
+        bottom={(
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="at-live-dot" />
+            <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--at-mut)]">Live metrics</span>
+            <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Users · plans · academy · forecast</span>
           </div>
-        </div>
-      </section>
+        )}
+      />
       {loading ? <Spinner /> : (
         <>
-          <div className="mb-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
-            <Stat icon={Users} label="Total Users" value={users.length} sub="Registered" />
-            <Stat icon={UserCheck} label="Verified" value={users.filter(u => u.verified).length} sub="Email confirmed" color="#10b981" />
-            <Stat icon={Crown} label="Paid" value={paid.length} sub={`${users.length ? Math.round(paid.length / users.length * 100) : 0}% conversion`} color={GOLD} />
-            <Stat icon={TrendingUp} label="Est. MRR" value={`$${mrr.toFixed(0)}`} sub="Monthly recurring" color="#a855f7" />
+          <div className="mb-4 mt-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
+            <AtMetric icon={Users} label="Total users" value={users.length} note="Registered" />
+            <AtMetric icon={UserCheck} label="Verified" value={users.filter(u => u.verified).length} note="Email confirmed" tone="text-[var(--at-green)]" />
+            <AtMetric icon={Crown} label="Paid" value={paid.length} note={`${users.length ? Math.round(paid.length / users.length * 100) : 0}% conversion`} tone="text-[var(--at-gold)]" />
+            <AtMetric icon={TrendingUp} label="Est. MRR" value={`$${mrr.toFixed(0)}`} note="Monthly recurring" />
           </div>
 
           <div className="mb-5 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
-            <Stat icon={GraduationCap} label="Academy Students" value={academyBuyers.toLocaleString()} sub="Lifetime access" color="#38bdf8" />
-            <Stat icon={DollarSign} label="Academy Revenue" value={`$${academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="One-time, lifetime" color="#f472b6" />
-            <Stat icon={UserCheck} label="Est. Churn" value={`${(churn * 100).toFixed(1)}%`} sub="Canceled / ever subscribed" color={churn > 0.3 ? '#ef4444' : '#10b981'} />
-            <Stat icon={DollarSign} label="ARPU" value={`$${arpu.toFixed(2)}`} sub="MRR per paid user" color="#3b82f6" />
-            <Stat icon={Crown} label="LTV : CAC" value={ltvCac != null ? `${ltvCac.toFixed(1)}x` : '—'} sub={`LTV $${(ltv ?? 0).toFixed(0)} / CAC $${CAC}`} color={ltvCac >= 3 ? '#10b981' : '#ef4444'} />
-            <Stat icon={Target} label="Plan Fit" value={forecastRows.length && mrr > 0 ? `${Math.round(mrr / PLAN_FORECAST[0].mrr * 100)}%` : '—'} sub="Live MRR vs M1 target" color={GOLD} />
+            <AtMetric icon={GraduationCap} label="Academy students" value={academyBuyers.toLocaleString()} note="Lifetime access" />
+            <AtMetric icon={DollarSign} label="Academy revenue" value={`$${academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note="One-time, lifetime" />
+            <AtMetric icon={UserCheck} label="Est. churn" value={`${(churn * 100).toFixed(1)}%`} note="Canceled / ever subscribed" tone={churn > 0.3 ? 'text-[var(--at-red)]' : 'text-[var(--at-green)]'} />
+            <AtMetric icon={DollarSign} label="ARPU" value={`$${arpu.toFixed(2)}`} note="MRR per paid user" />
+            <AtMetric icon={Crown} label="LTV : CAC" value={ltvCac != null ? `${ltvCac.toFixed(1)}x` : '—'} note={`LTV $${(ltv ?? 0).toFixed(0)} / CAC $${CAC}`} tone={ltvCac >= 3 ? 'text-[var(--at-green)]' : 'text-[var(--at-amber)]'} />
+            <AtMetric icon={Target} label="Plan fit" value={forecastRows.length && mrr > 0 ? `${Math.round(mrr / PLAN_FORECAST[0].mrr * 100)}%` : '—'} note="Live MRR vs M1 target" tone="text-[var(--at-gold)]" />
           </div>
 
           <div className="mb-5 grid gap-4 lg:grid-cols-2">
@@ -1157,6 +1273,7 @@ export function AdminAnalytics() {
           )}
         </>
       )}
+      </div>
     </AdminLayout>
   );
 }
@@ -1314,25 +1431,34 @@ export function AdminBilling() {
 
   return (
     <AdminLayout title="Billing & Revenue">
-      <section className="tb-hero mb-5 overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-        <div className="relative flex min-w-0 items-center gap-4">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
-            <CreditCard className="h-6 w-6" />
-          </span>
-          <div className="min-w-0">
-            <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Billing & Revenue</h2>
-            <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Subscriptions, one-time academy sales, refunds and payouts.</p>
+      <div className="at-page at-scope at-enter pb-10">
+      <AtHero
+        eyebrow="Revenue desk · admin"
+        icon={CreditCard}
+        title={<>Money, <em>reconciled.</em></>}
+        description="Subscriptions, one-time academy sales, refunds and payouts. Estimates are clearly separated from Stripe-confirmed totals."
+        status={[
+          { label: live?.configured ? 'Live MRR' : 'Est. MRR', value: `$${(live?.configured ? live.mrr : mrr).toLocaleString(undefined, { maximumFractionDigits: 0 })}`, tone: 'gold' },
+          { label: 'Paid subscribers', value: paid.length, tone: 'green' },
+          { label: 'Academy buyers', value: academyBuyers.toLocaleString(), tone: undefined },
+        ]}
+        statusTitle="Revenue snapshot"
+        actions={<AtBadge tone={live?.configured ? 'green' : 'amber'}>{live?.configured ? 'Stripe live' : 'Estimate · Stripe not connected'}</AtBadge>}
+        bottom={(
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="at-live-dot" />
+            <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--at-mut)]">Billing controls</span>
+            <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Subscriptions · academy · payouts</span>
           </div>
-        </div>
-      </section>
-      <div className="mb-5 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
-        <Stat icon={DollarSign} label={live?.configured ? 'Live MRR' : 'Est. MRR'} value={`$${(live?.configured ? live.mrr : mrr).toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub={live?.configured ? `Stripe live · ${live.activeCount} active` : 'Monthly recurring (est)'} trend="up" color="#10b981" />
-        <Stat icon={TrendingUp} label="Est. ARR" value={`$${arr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="Annual recurring" trend="up" color={GOLD} />
-        <Stat icon={CreditCard} label="Paid Subscribers" value={paid.length} sub={`$${paid.length ? (mrr / paid.length).toFixed(2) : 0} ARPU`} color="#3b82f6" />
-        <Stat icon={Users} label="No Plan" value={noPlan.length} sub={`${users.length ? Math.round(noPlan.length / users.length * 100) : 0}% of total`} color="#a855f7" />
-        <Stat icon={GraduationCap} label="Academy Sales" value={academyBuyers.toLocaleString()} sub="Lifetime access" color="#38bdf8" />
-        <Stat icon={DollarSign} label="Academy Revenue" value={`$${academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} sub="One-time, lifetime" color="#f472b6" />
+        )}
+      />
+      <div className="mb-5 mt-5 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+        <AtMetric icon={DollarSign} label={live?.configured ? 'Live MRR' : 'Est. MRR'} value={`$${(live?.configured ? live.mrr : mrr).toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note={live?.configured ? `Stripe live · ${live.activeCount} active` : 'Monthly recurring (est)'} tone="text-[var(--at-green)]" />
+        <AtMetric icon={TrendingUp} label="Est. ARR" value={`$${arr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note="Annual recurring" />
+        <AtMetric icon={CreditCard} label="Paid subscribers" value={paid.length} note={`$${paid.length ? (mrr / paid.length).toFixed(2) : 0} ARPU`} />
+        <AtMetric icon={Users} label="No plan" value={noPlan.length} note={`${users.length ? Math.round(noPlan.length / users.length * 100) : 0}% of total`} />
+        <AtMetric icon={GraduationCap} label="Academy sales" value={academyBuyers.toLocaleString()} note="Lifetime access" />
+        <AtMetric icon={DollarSign} label="Academy revenue" value={`$${academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note="One-time, lifetime" />
       </div>
 
       {planBreakdown.length > 0 && (
@@ -1535,6 +1661,7 @@ export function AdminBilling() {
             ) : <p className="text-sm text-[#8a8577]">No Stripe payments found for this user.</p>}
           </div>
         )}
+      </div>
     </AdminLayout>
   );
 }
@@ -2030,26 +2157,28 @@ export function AdminContent() {
   const [tab, setTab] = useState('signals');
   return (
     <AdminLayout title="Content Management">
-      <section className="tb-hero mb-5 overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-        <div className="relative flex min-w-0 items-center gap-4">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
-            <LibraryBig className="h-6 w-6" />
-          </span>
-          <div className="min-w-0">
-            <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Content Management</h2>
-            <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Signals, forum, academy courses, webinars and certificates.</p>
+      <div className="at-page at-scope at-enter pb-10">
+      <AtHero
+        eyebrow="Publishing desk · admin"
+        icon={LibraryBig}
+        title={<>The content <em>library.</em></>}
+        description="Signals, forum, academy courses, webinars, site copy and certificates — one publishing surface with explicit release state."
+        status={[
+          { label: 'Surfaces', value: CONTENT_TABS.length, tone: 'gold' },
+          { label: 'Editing mode', value: 'Admin only', tone: undefined },
+          { label: 'Publishing', value: 'Review required', tone: 'amber' },
+        ]}
+        statusTitle="Publishing state"
+        actions={<AtBadge tone="gold">Changes flow to member and public surfaces</AtBadge>}
+        bottom={(
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="at-live-dot" />
+            <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--at-mut)]">Live catalog controls</span>
+            <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Signals · forum · copy · programs</span>
           </div>
-        </div>
-      </section>
-      <div className="mb-6 flex flex-wrap gap-1 rounded-[10px] border border-white/10 bg-black/30 p-1 w-fit max-w-full overflow-x-auto">
-        {CONTENT_TABS.map(({ id, label, icon: Icon }) => (
-          <button key={id} onClick={() => setTab(id)}
-            className={`flex items-center gap-1.5 whitespace-nowrap rounded-[8px] px-3 py-2 text-[13px] font-bold transition ${tab === id ? 'bg-gradient-to-b from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_4px_14px_-6px_rgba(212,175,55,0.6)]' : 'text-[#8a8577] hover:bg-white/5 hover:text-[#e9e7df]'}`}>
-            <Icon className="h-3.5 w-3.5" /><span className="hidden sm:inline">{label}</span>
-          </button>
-        ))}
-      </div>
+        )}
+      />
+      <AtTabs tabs={CONTENT_TABS} active={tab} onChange={setTab} className="mb-6 mt-5 w-fit max-w-full" />
 
       {tab === 'signals' && <SignalsTab />}
       {tab === 'forum' && <ForumTab />}
@@ -2134,6 +2263,7 @@ export function AdminContent() {
             { key: 'snippet', label: 'Notes', type: 'textarea', default: '', full: true },
           ]} />
       )}
+      </div>
     </AdminLayout>
   );
 }
@@ -3003,6 +3133,18 @@ export function AdminJobs() {
 
   const resetForm = () => { setForm({ title: '', department: 'Academy', employmentType: 'full-time', location: 'Remote', description: '', requirements: '' }); setEditingId(null); };
 
+  const seedCompanyRoles = async () => {
+    if (!window.confirm('Add every missing company role from the operating plan? Existing postings are not changed.')) return;
+    setBusy(true);
+    try {
+      const res = await call('/seed-company', { method: 'POST' });
+      toast({ title: `Company roles seeded`, description: `${res?.inserted || 0} added · ${res?.skipped || 0} skipped · ${res?.total || 0} in plan` });
+      load();
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Seed failed', description: err.message });
+    } finally { setBusy(false); }
+  };
+
   const savePosting = async () => {
     if (!form.title.trim()) return toast({ variant: 'destructive', title: 'Title required' });
     setBusy(true);
@@ -3067,9 +3209,9 @@ export function AdminJobs() {
     const payments = Object.entries(payAmounts)
       .map(([email, v]) => ({ email, tbc: Number(v) }))
       .filter((x) => x.tbc > 0);
-    if (!payments.length) { toast({ variant: 'destructive', title: 'Nothing to pay', description: 'Enter a TBC amount per person first.' }); return; }
+    if (!payments.length) { toast({ variant: 'destructive', title: 'Nothing to allocate', description: 'Enter a platform-credit amount per person first.' }); return; }
     const total = payments.reduce((n, x) => n + x.tbc, 0);
-    if (!window.confirm(`Pay ${total} TBC to ${payments.length} staff from YOUR TBC credit balance? They cash out via Convert → bank.`)) return;
+    if (!window.confirm(`Allocate ${total} existing platform credits to ${payments.length} staff from YOUR credit balance? This is not a token issuance or fiat salary payment.`)) return;
     setPayBusy(true);
     try {
       const res = await call('/payroll', { method: 'POST', body: { payments } });
@@ -3189,31 +3331,43 @@ export function AdminJobs() {
 
   return (
     <AdminLayout title="Jobs & Hiring">
-      {/* ── Pipeline header ── */}
-      <div className="glass mb-4 rounded-2xl p-4 sm:p-5">
-        <div className="flex flex-wrap items-center gap-2">
-          {[
-            ['Openings', postings.filter((p) => p.status === 'open').length],
-            ['Applicants', apps.filter((a) => a.status !== 'hired' && a.status !== 'rejected').length],
-            ['Probation', trials.length],
-            ['Staff', roster.length],
-          ].map(([label, n], i, arr) => (
-            <div key={label} className="flex min-w-0 flex-1 items-center gap-2">
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-[10px] bg-[#d4af37]/12 font-mono text-xs font-extrabold text-[#d4af37]">{i + 1}</span>
-              <span className="min-w-0">
-                <span className="block truncate text-xs font-bold text-[#f0ecdd]">{label}</span>
-                <span className="block font-mono text-[11px] tabular-nums text-[#8a8577]">{n}</span>
-              </span>
-              {i < arr.length - 1 && <span className="mx-1 hidden h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent sm:block" aria-hidden />}
-            </div>
-          ))}
-          <button onClick={() => { load(); loadRoster(); loadTrials(); }} className="ml-auto rounded-[10px] border border-[#d4af37]/25 px-3 py-2 text-xs text-[#d4af37]"><RefreshCw className="h-3.5 w-3.5" /></button>
-        </div>
+      <div className="at-page at-scope at-enter pb-10">
+      <AtHero
+        eyebrow="People desk · admin"
+        icon={Users}
+        title={<>Build the <em>team.</em></>}
+        description="Publish openings, review real applications, clear probation and allocate existing platform credits — with the lawful-hiring gate enforced server-side."
+        status={[
+          { label: 'Openings', value: postings.filter((p) => p.status === 'open').length, tone: 'gold' },
+          { label: 'Applicants', value: apps.filter((a) => a.status !== 'hired' && a.status !== 'rejected').length, tone: 'green' },
+          { label: 'Probation', value: trials.length, tone: trials.length ? 'amber' : undefined },
+          { label: 'Staff', value: roster.length },
+        ]}
+        statusTitle="Hiring pipeline"
+        actions={(
+          <div className="flex flex-wrap items-center gap-2">
+            <AtButton onClick={seedCompanyRoles} disabled={busy} variant="outline" size="sm" icon={Sparkles}>Seed company roles</AtButton>
+            <AtButton onClick={() => { load(); loadRoster(); loadTrials(); }} variant="quiet" size="sm" icon={RefreshCw}>Refresh desk</AtButton>
+          </div>
+        )}
+        bottom={(
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="at-live-dot" />
+            <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--at-mut)]">Hiring controls live</span>
+            <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Openings · applications · probation · payroll</span>
+          </div>
+        )}
+      />
+      <div className="mb-4 mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <AtMetric index="01" label="Open openings" value={postings.filter((p) => p.status === 'open').length} note="Published and collecting" />
+        <AtMetric index="02" label="Active applicants" value={apps.filter((a) => a.status !== 'hired' && a.status !== 'rejected').length} note="In review" tone="text-[var(--at-green)]" />
+        <AtMetric index="03" label="On probation" value={trials.length} note="Awaiting confirmation" tone={trials.length ? 'text-[var(--at-amber)]' : undefined} />
+        <AtMetric index="04" label="Employed staff" value={roster.length} note="Hired through this desk" />
       </div>
 
-      <div className="grid items-start gap-4 xl:grid-cols-5">
+      <div className="grid min-w-0 items-start gap-4 xl:grid-cols-5">
         {/* ── Left: posting form + openings ── */}
-        <div className="glass rounded-2xl p-4 sm:p-5 xl:col-span-2">
+        <div className="glass min-w-0 w-full rounded-2xl p-4 sm:p-5 xl:col-span-2">
           <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">{editingId ? 'Edit opening' : 'New opening'}</h3>
           <div className="mt-3 space-y-2">
             <input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="e.g. Trading Coach (Forex)" className={input} />
@@ -3249,7 +3403,7 @@ export function AdminJobs() {
                     <div className="truncate text-[13px] font-semibold text-[#f0ecdd]">{p.title}</div>
                     <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] text-[#6a665a]">
                       <span className="truncate">{p.department} · {p.employmentType} · {p.location}</span>
-                      {Number(p.hiring?.salary_tbc) > 0 && <span className="font-mono font-bold text-[#d4af37]">{p.hiring.salary_tbc} TBC/{p.hiring.salary_freq === 'weekly' ? 'wk' : 'mo'}</span>}
+                      {Number(p.hiring?.salary_tbc) > 0 && <span className="font-mono font-bold text-[#d4af37]">{p.hiring.salary_tbc} credits/{p.hiring.salary_freq === 'weekly' ? 'wk' : 'mo'}</span>}
                       {appCountFor(p.id) > 0 && <span className="rounded bg-[#38bdf8]/10 px-1 font-mono font-bold text-[#38bdf8]">{appCountFor(p.id)} applying</span>}
                       {p.auto_accept === true && <span className="rounded bg-emerald-400/10 px-1 font-mono font-bold uppercase text-emerald-300">auto</span>}
                     </div>
@@ -3274,7 +3428,7 @@ export function AdminJobs() {
                     <textarea value={hiringDraft.trial_task} onChange={(e) => setHiringDraft({ ...hiringDraft, trial_task: e.target.value })} placeholder="e.g. Record a 5-min XAUUSD breakdown…" className={`${input} min-h-[56px]`} />
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#d4af37]">Salary TBC</div>
+                        <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#d4af37]">Proposed platform credit</div>
                         <div className="flex gap-2">
                           <input type="number" min="0" value={hiringDraft.salary_tbc} onChange={(e) => setHiringDraft({ ...hiringDraft, salary_tbc: e.target.value })} placeholder="e.g. 300" className={`${input} min-w-0 flex-1`} />
                           <select value={hiringDraft.salary_freq} onChange={(e) => setHiringDraft({ ...hiringDraft, salary_freq: e.target.value })} className={`${input} !w-24`}>
@@ -3302,7 +3456,7 @@ export function AdminJobs() {
         </div>
 
         {/* ── Right: applicant pipeline ── */}
-        <div className="glass rounded-2xl p-4 sm:p-5 xl:col-span-3">
+        <div className="glass min-w-0 w-full rounded-2xl p-4 sm:p-5 xl:col-span-3">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Applicants ({apps.length})</h3>
             {hiredCreds && <button onClick={() => setHiredCreds(null)} className="text-[11px] text-[#8a8577] hover:text-[#e9e7df]">Dismiss hire notice</button>}
@@ -3441,18 +3595,18 @@ export function AdminJobs() {
           </div>
 
           <div className="mb-2 mt-6 flex items-center gap-3">
-            <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">TBC payroll ({roster.length})</h3>
+            <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Platform credit payroll ({roster.length})</h3>
             <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
             <button onClick={loadRoster} className="text-[11px] text-[#8a8577] hover:text-[#e9e7df]">Refresh</button>
           </div>
-          <p className="mb-2 text-[11px] leading-relaxed text-[#6a665a]">Salary deposited directly to the TBC credit wallet. They cash out via Convert → bank withdrawal.</p>
+          <p className="mb-2 text-[11px] leading-relaxed text-[#6a665a]">These are existing off-chain platform credits, not the proposed TBC token. They are not a fiat salary or evidence that any token has been issued. Cash compensation is handled separately through payroll or an employer of record.</p>
           <div className="overflow-x-auto -mx-2 px-2">
             <table className="w-full min-w-[480px] text-sm">
               <thead>
                 <tr className="text-left text-[10px] uppercase tracking-wider text-[#5f5b50]">
                   <th className="pb-2 font-semibold">Staff</th>
-                  <th className="pb-2 font-semibold">Contract</th>
-                  <th className="pb-2 text-right font-semibold">Pay (TBC)</th>
+                  <th className="pb-2 font-semibold">Contract credit</th>
+                  <th className="pb-2 text-right font-semibold">Allocate (credits)</th>
                 </tr>
               </thead>
               <tbody className="[&_tr]:border-t [&_tr]:border-white/5">
@@ -3462,7 +3616,7 @@ export function AdminJobs() {
                       <div className="truncate text-sm font-semibold text-[#f0ecdd]">{r.name || r.email}</div>
                       <div className="truncate font-mono text-[11px] text-[#6a665a]">{r.email} · {r.title}</div>
                     </td>
-                    <td className="whitespace-nowrap px-2 py-2 font-mono text-[11px] text-[#8a8577]">{Number(r.salary_tbc) > 0 ? `${r.salary_tbc} TBC/${r.salary_freq === 'weekly' ? 'wk' : 'mo'}` : '—'}</td>
+                    <td className="whitespace-nowrap px-2 py-2 font-mono text-[11px] text-[#8a8577]">{Number(r.salary_tbc) > 0 ? `${r.salary_tbc} credits/${r.salary_freq === 'weekly' ? 'wk' : 'mo'}` : '—'}</td>
                     <td className="py-2 pl-2 text-right">
                       <input type="number" min="0" value={payAmounts[r.email] ?? ''} onChange={(e) => setPayAmounts({ ...payAmounts, [r.email]: e.target.value })} placeholder="0" className={`${input} !w-24 !py-1.5 text-right font-mono`} />
                     </td>
@@ -3474,12 +3628,12 @@ export function AdminJobs() {
           </div>
           {roster.length > 0 && (
             <button onClick={runPayroll} disabled={payBusy} className="mt-3 w-full rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-50">
-              {payBusy ? 'Paying…' : 'Run payroll (TBC)'}
+              {payBusy ? 'Allocating…' : 'Allocate platform credits'}
             </button>
           )}
           {payResult && (
             <div className="mt-2 rounded-[10px] border border-[#d4af37]/20 bg-black/20 p-3 text-xs">
-              <div className="font-bold text-[#f0ecdd]">Run {payResult.run}: {payResult.paid} paid · {payResult.failed} failed · {payResult.total} TBC</div>
+              <div className="font-bold text-[#f0ecdd]">Run {payResult.run}: {payResult.paid} credited · {payResult.failed} failed · {payResult.total} platform credits</div>
               {(payResult.results || []).filter((x) => !x.ok).map((x) => (
                 <div key={x.email} className="mt-1 text-red-300">{x.email}: {x.error}</div>
               ))}
@@ -3538,6 +3692,7 @@ export function AdminJobs() {
           </div>
         </div>
       )}
+      </div>
     </AdminLayout>
   );
 }
@@ -3765,21 +3920,44 @@ export function AdminTvAds() {
 
   return (
     <AdminLayout title="TradingBible TV">
-      <section className="tb-hero mb-5 overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-        <div className="relative flex flex-wrap items-center gap-4">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
-            <MonitorPlay className="h-6 w-6" />
-          </span>
-          <div className="min-w-0">
-            <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">TV Broadcasts</h2>
-            <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Rotating ad feed shown in the floating TradingBible TV widget (bottom-left bubble).</p>
+      <div className="at-page at-scope at-enter">
+      <AtHero
+        eyebrow="Broadcast operations · TradingBible TV"
+        icon={MonitorPlay}
+        title={<>Broadcast <em>control.</em></>}
+        description="Programme the rotating ad feed, live channel guide and experiments behind TradingBible TV. Settings apply to the floating widget and the full-screen member stage."
+        status={[
+          { label: 'Broadcasts', value: ads.length, tone: 'gold' },
+          { label: 'Live now', value: ads.filter((ad) => ad.enabled !== false).length, tone: 'green' },
+          { label: 'Manual channels', value: channels.filter((ch) => !ch.builtin).length },
+          { label: 'Experiments', value: expReports.length, tone: 'gold' },
+        ]}
+        statusTitle="Broadcast state"
+        statusNote="A broadcast only appears when it is live and its placement matches the current surface. Built-in desks always ship with the app."
+        actions={(
+          <>
+            <AtButton onClick={saveSettings} variant="gold" icon={Save} disabled={busy}>Save TV settings</AtButton>
+            <AtButton to="/tv" variant="outline" icon={MonitorPlay}>Open member TV</AtButton>
+          </>
+        )}
+        bottom={(
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-semibold text-[var(--at-mut)]">
+            <span className="flex items-center gap-2"><span className="at-live-dot" /> Broadcast console</span>
+            <span className="flex items-center gap-2"><TestTube className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Client-side experiment assignment</span>
+            <span className="flex items-center gap-2"><Users className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Member and admin surfaces</span>
+            <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Rotation {settings.rotationSeconds}s</span>
           </div>
-        </div>
-      </section>
+        )}
+      />
+
+      <div className="mt-3 mb-5">
+        <AtAlert icon={MonitorPlay}>
+          This console controls <b className="text-[var(--at-ink)]">advertising and live channels</b>, not TBC token issuance. Advertiser creative should never be mistaken for a financial promotion or a promise of returns.
+        </AtAlert>
+      </div>
 
       {/* TV settings */}
-      <div className="glass mb-6 rounded-2xl p-5">
+      <div className="at-card mb-5 p-4 sm:p-5">
         <h3 className="mb-4 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Settings2 className="h-4 w-4 text-[#d4af37]" /> TV Settings</h3>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div><label className={label}>Rotation (seconds)</label>
@@ -3798,7 +3976,7 @@ export function AdminTvAds() {
       </div>
 
       {/* Create / edit form */}
-      <div className="glass mb-6 rounded-2xl p-5">
+      <div className="at-card mb-5 p-4 sm:p-5">
         <h3 className="mb-4 font-semibold text-[#f0ecdd]">{editing ? `Edit broadcast — ${editing.title || editing.key}` : 'New broadcast'}</h3>
         <form onSubmit={saveAd} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div><label className={label}>Title *</label><input required className={input} value={form.title} onChange={setF('title')} placeholder="e.g. Acme Trading Summit" /></div>
@@ -3877,9 +4055,9 @@ export function AdminTvAds() {
       </div>
 
       {/* Ad list */}
-      <div className="glass overflow-hidden rounded-2xl">
+      <div className="at-card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-sm">
+          <table className="at-table w-full min-w-[720px]">
             <thead>
               <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
                 <th className="px-5 py-3">Broadcast</th>
@@ -3935,9 +4113,9 @@ export function AdminTvAds() {
       </div>
 
       {/* Experiments — server-aggregated A/B results */}
-      <div className="glass mt-6 overflow-hidden rounded-2xl">
-        <div className="border-b border-[#d4af37]/12 px-5 py-3.5">
-          <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><TestTube className="h-4 w-4 text-[#d4af37]" /> Experiments</h3>
+      <div className="at-card mt-5 overflow-hidden">
+        <div className="border-b border-[var(--at-line)] px-5 py-3.5">
+          <h3 className="flex items-center gap-2 font-semibold text-[var(--at-ink)]"><TestTube className="h-4 w-4 text-[var(--at-gold)]" /> Experiments</h3>
           <p className="mt-0.5 text-xs text-[#8a8577]">Exposures and conversions mirrored from clients. Assignment stays client-side; counts aggregate here across devices.</p>
         </div>
         {!expLoaded ? (
@@ -3987,8 +4165,8 @@ export function AdminTvAds() {
       </div>
 
       {/* Live channels — manual channel guide for TV widget + TV page */}
-      <div className="glass mt-6 rounded-2xl p-5">
-        <h3 className="mb-1 font-semibold text-[#f0ecdd]">{chEditing ? `Edit channel — ${chEditing.config?.title || chEditing.key}` : 'New live channel'}</h3>
+      <div className="at-card mt-5 p-4 sm:p-5">
+        <h3 className="mb-1 font-semibold text-[var(--at-ink)]">{chEditing ? `Edit channel — ${chEditing.config?.title || chEditing.key}` : 'New live channel'}</h3>
         <p className="mb-4 text-xs text-[#8a8577]">Channels appear in the floating TV widget and on the TV page after the 10 built-in desks. Use an embed URL (e.g. a YouTube <span className="font-mono">/embed/live_stream</span>) for instant in-player playback, otherwise the channel page loads in the player.</p>
         <form onSubmit={saveChannel} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div><label className={label}>Title *</label><input required className={input} value={chForm.title} onChange={setCF('title')} placeholder="e.g. Bloomberg Europe" /></div>
@@ -4020,9 +4198,9 @@ export function AdminTvAds() {
         </form>
       </div>
 
-      <div className="glass mt-6 overflow-hidden rounded-2xl">
+      <div className="at-card mt-5 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-sm">
+          <table className="at-table w-full min-w-[640px]">
             <thead>
               <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
                 <th className="px-5 py-3">Channel</th>
@@ -4062,6 +4240,7 @@ export function AdminTvAds() {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </AdminLayout>
   );
@@ -4194,8 +4373,8 @@ export function AdminEmployees() {
     <AdminLayout title="Employees">
       <div className="grid gap-3 grid-cols-2 xl:grid-cols-4">
         <Stat icon={Users} label="Employed Staff" value={roster.length.toLocaleString()} sub="Hired via Jobs & Hiring" color="#10b981" />
-        <Stat icon={Wallet} label="Monthly Payroll" value={`${roster.reduce((n, r) => n + (String(r.salary_freq) === 'monthly' ? Number(r.salary_tbc) || 0 : 0), 0).toLocaleString()} TBC`} sub="Monthly contracts only" color="#d4af37" />
-        <Stat icon={DollarSign} label="Total Paid Out" value={`${Math.round(totalPaidAll).toLocaleString()} TBC`} sub="All payroll runs, all time" color="#10b981" />
+        <Stat icon={Wallet} label="Monthly platform credits" value={`${roster.reduce((n, r) => n + (String(r.salary_freq) === 'monthly' ? Number(r.salary_tbc) || 0 : 0), 0).toLocaleString()} credits`} sub="Existing off-chain credits · not token" color="#d4af37" />
+        <Stat icon={DollarSign} label="Credits allocated" value={`${Math.round(totalPaidAll).toLocaleString()} credits`} sub="All allocation runs, all time" color="#10b981" />
         <Stat icon={Bot} label="AI Work Records" value={aiWork.length.toLocaleString()} sub="$0 · never payroll" color="#38bdf8" />
       </div>
       <div className="glass mt-4 rounded-2xl p-4 sm:p-5">
@@ -4218,10 +4397,10 @@ export function AdminEmployees() {
                 <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
                   <th className="pb-2 font-medium">Name</th>
                   <th className="pb-2 font-medium">Title</th>
-                  <th className="pb-2 font-medium">Salary</th>
+                  <th className="pb-2 font-medium">Contract credit</th>
                   <th className="pb-2 font-medium">Hired</th>
-                  <th className="pb-2 font-medium">Last paid</th>
-                  <th className="pb-2 font-medium">Total paid</th>
+                  <th className="pb-2 font-medium">Last allocated</th>
+                  <th className="pb-2 font-medium">Total credits</th>
                   <th className="pb-2 font-medium text-right">Runs</th>
                 </tr>
               </thead>
@@ -4235,10 +4414,10 @@ export function AdminEmployees() {
                         <div className="font-mono text-[11px] text-[#6a665a]">{r.email}</div>
                       </td>
                       <td className="py-2.5 text-[#c9c4b4]">{r.title || 'Opening'}</td>
-                      <td className="py-2.5 font-mono text-xs text-[#d4af37]">{Number(r.salary_tbc) > 0 ? `${r.salary_tbc} TBC/${r.salary_freq === 'weekly' ? 'wk' : 'mo'}` : '$0'}</td>
+                      <td className="py-2.5 font-mono text-xs text-[#d4af37]">{Number(r.salary_tbc) > 0 ? `${r.salary_tbc} credits/${r.salary_freq === 'weekly' ? 'wk' : 'mo'}` : '—'}</td>
                       <td className="py-2.5 font-mono text-xs text-[#8a8577]">{r.hiredAt ? String(r.hiredAt).slice(0, 10) : '—'}</td>
                       <td className="py-2.5 font-mono text-xs text-[#8a8577]">{h?.lastPaidAt ? String(h.lastPaidAt).slice(0, 10) : 'Never'}</td>
-                      <td className="py-2.5 font-mono text-xs text-[#f0ecdd]">{h ? `${Math.round(Number(h.totalPaidTbc) || 0).toLocaleString()} TBC` : '0 TBC'}</td>
+                      <td className="py-2.5 font-mono text-xs text-[#f0ecdd]">{h ? `${Math.round(Number(h.totalPaidTbc) || 0).toLocaleString()} credits` : '0 credits'}</td>
                       <td className="py-2.5 text-right font-mono text-xs text-[#8a8577]">{h?.runs ?? 0}</td>
                     </tr>
                   );
@@ -4512,32 +4691,28 @@ export function AdminSettings() {
 
   return (
     <AdminLayout title="System Settings">
-      <section className="tb-hero mb-5 overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
-              <Settings2 className="h-6 w-6" />
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">System Settings</h2>
-              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Platform, features, billing and security — changes save automatically.</p>
-            </div>
+      <div className="at-page at-scope at-enter pb-10">
+      <AtHero
+        eyebrow="Control room · admin"
+        icon={Settings2}
+        title={<>The platform, <em>tuned.</em></>}
+        description="Identity, access, feature visibility, plan gates and security. Every change autosaves to the platform settings record."
+        status={[
+          { label: 'Autosave', value: saveState === 'error' ? 'Failed' : saveState === 'saving' ? 'Saving' : 'On', tone: saveState === 'error' ? 'amber' : 'green' },
+          { label: 'Feature flags', value: Object.keys(features).length, tone: 'gold' },
+          { label: 'Plan gates', value: Object.keys(settings.planGates || {}).length, tone: undefined },
+        ]}
+        statusTitle="Configuration state"
+        actions={<AtBadge tone={saveState === 'error' ? 'amber' : saveState === 'saving' ? 'gold' : 'green'}>{saveState === 'saving' ? 'Saving changes…' : saveState === 'error' ? 'Save failed' : 'All changes saved'}</AtBadge>}
+        bottom={(
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`h-1.5 w-1.5 rounded-full ${saveState === 'error' ? 'bg-red-400' : 'bg-emerald-400 animate-pulse'}`} />
+            <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--at-mut)]">Autosave enabled</span>
+            <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">General · features · security</span>
           </div>
-          <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${saveState === 'error' ? 'border-red-500/40 text-red-400' : saveState === 'saving' ? 'border-[#d4af37]/40 text-[#d4af37]' : 'border-emerald-500/30 text-emerald-300'}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${saveState === 'error' ? 'bg-red-400' : saveState === 'saving' ? 'bg-[#d4af37] animate-pulse' : 'bg-emerald-400'}`} />
-            {saveState === 'saving' ? 'Saving…' : saveState === 'error' ? 'Save failed' : saveState === 'idle' ? 'Autosave on' : 'All changes saved'}
-          </span>
-        </div>
-      </section>
-      <div className="flex flex-wrap gap-1 mb-6 rounded-[10px] border border-white/10 bg-black/30 p-1 w-fit max-w-full overflow-x-auto">
-        {TABS.map(({ id, label, icon: Icon }) => (
-          <button key={id} onClick={() => setTab(id)}
-            className={`flex items-center gap-1.5 whitespace-nowrap rounded-[8px] px-3 py-2 text-[13px] font-bold transition ${tab === id ? 'bg-gradient-to-b from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_4px_14px_-6px_rgba(212,175,55,0.6)]' : 'text-[#8a8577] hover:bg-white/5 hover:text-[#e9e7df]'}`}>
-            <Icon className="h-3.5 w-3.5" /><span className="hidden sm:inline">{label}</span>
-          </button>
-        ))}
-      </div>
+        )}
+      />
+      <AtTabs tabs={TABS} active={tab} onChange={setTab} className="mb-6 mt-5 w-fit max-w-full" />
 
       {tab === 'general' && (
         <form onSubmit={save} className="grid items-start gap-4 xl:grid-cols-2">
@@ -4654,6 +4829,7 @@ export function AdminSettings() {
           <button onClick={() => toast({ title: 'Security settings saved' })} className="flex items-center gap-2 rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-bold text-[#0a0a0f] hover:brightness-105"><Save className="h-4 w-4" /> Save</button>
         </div>
       )}
+      </div>
     </AdminLayout>
   );
 }
@@ -4879,20 +5055,20 @@ export function AdminCompany() {
     const match = needle && `${k} ${v}`.toLowerCase().includes(needle);
     const href = kind === 'email' || kind === 'url' ? openHref(kind, v) : null;
     const swatches = kind !== 'code' ? hexesOf(v) : [];
-    const base = 'w-full rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm leading-relaxed text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
+    const base = 'at-input';
     return (
-      <div key={k} id={`cb-field-${secId}-${k}`} className={`scroll-mt-32 rounded-[12px] border p-3.5 transition ${match ? 'border-[#d4af37]/60 bg-[#d4af37]/[0.05]' : 'border-white/[0.06] bg-black/25 hover:border-[#d4af37]/25'}`}>
+      <div key={k} id={`cb-field-${secId}-${k}`} className={`scroll-mt-32 rounded-xl border p-3.5 transition ${match ? 'border-[var(--at-line-strong)] bg-[var(--at-gold-soft)]' : 'border-[var(--at-line-soft)] bg-[var(--at-soft)] hover:border-[var(--at-line)]'}`}>
         <div className="mb-2 flex flex-wrap items-center gap-2">
-          <label className="text-[11px] font-bold uppercase tracking-wider text-[#c9c4b4]">{prettyLabel(k)}</label>
-          <span className="rounded-full bg-white/[0.05] px-2 py-0.5 font-mono text-[10px] text-[#6a665a]">{kind}</span>
-          {String(v ?? '').trim() === '' && <span className="rounded-full bg-red-400/10 px-2 py-0.5 text-[10px] font-bold text-red-400">empty</span>}
+          <label className="text-[10px] font-bold uppercase tracking-[0.10em] text-[var(--at-ink-2)]">{prettyLabel(k)}</label>
+          <span className="at-chip at-chip--plain !min-h-0 !py-1">{kind}</span>
+          {String(v ?? '').trim() === '' && <AtBadge tone="red">empty</AtBadge>}
           {href && (
             <a href={href} target={kind === 'url' ? '_blank' : undefined} rel="noreferrer"
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline">
+              className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--at-gold)] hover:underline">
               {kind === 'email' ? 'Send mail' : 'Open link'} <ExternalLink className="h-3 w-3" />
             </a>
           )}
-          <span className="ml-auto font-mono text-[10px] text-[#6a665a]">{String(v ?? '').length} chars</span>
+          <span className="ml-auto font-mono text-[9px] text-[var(--at-mut-2)]">{String(v ?? '').length} chars</span>
         </div>
         {kind === 'text' || kind === 'email' || kind === 'url' ? (
           <input value={String(v ?? '')} onChange={(e) => setField(secId, k, e.target.value)} className={base} />
@@ -4900,14 +5076,14 @@ export function AdminCompany() {
           <textarea value={String(v ?? '')} onChange={(e) => setField(secId, k, e.target.value)}
             rows={kind === 'code' ? 5 : String(v || '').length > 300 ? 5 : 3}
             spellCheck={false}
-            className={`${base} ${kind === 'code' ? 'font-mono text-[12px] text-[#e8c95a]' : ''}`} />
+            className={`${base} at-textarea ${kind === 'code' ? 'font-mono !text-[var(--at-gold-bright)]' : ''}`} />
         )}
         {swatches.length > 0 && (
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             {swatches.map((hex, i) => (
-              <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 py-0.5 pl-0.5 pr-2.5">
-                <span className="h-5 w-5 rounded-full border border-white/20" style={{ background: hex }} />
-                <span className="font-mono text-[10px] text-[#c9c4b4]">{hex}</span>
+              <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-[var(--at-line-soft)] bg-[var(--at-soft)] py-0.5 pl-0.5 pr-2.5">
+                <span className="h-5 w-5 rounded-full border border-[var(--at-line-soft)]" style={{ background: hex }} />
+                <span className="font-mono text-[9px] text-[var(--at-ink-2)]">{hex}</span>
               </span>
             ))}
           </div>
@@ -4918,213 +5094,190 @@ export function AdminCompany() {
 
   return (
     <AdminLayout title="Company Bible">
-      {/* ── Hero ── */}
-      <section className="cb-scope relative mb-5 overflow-hidden rounded-2xl border border-[#d4af37]/20 bg-gradient-to-br from-[#141309] via-[#0c0c11] to-[#0a0a0f] p-5 sm:p-7">
-        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#d4af37]/15 blur-[110px]" />
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
-        <div className="relative flex flex-wrap items-start justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/10 text-[#d4af37] shadow-[0_0_30px_rgba(212,175,55,0.25)]">
-              <LibraryBig className="h-7 w-7" />
-            </span>
+      <div className="at-page at-scope at-enter">
+        <AtHero
+          eyebrow="Institutional memory · admin only"
+          icon={LibraryBig}
+          title={<>The company <em>bible.</em></>}
+          description="Every company and brand fact in one governed record: identity, legal, holdings, brand, contacts, leadership, markets, product, money, compliance and roadmap. Nothing is hidden from this page. SI reads the same row as truth."
+          status={[
+            { label: 'Fields complete', value: `${totals.filled} / ${totals.fields}`, tone: 'gold' },
+            { label: 'Coverage', value: `${totalPct}%`, tone: totalPct >= 80 ? 'green' : 'amber' },
+            { label: 'Autosave', value: saveState === 'saving' ? 'Saving…' : saveState === 'error' ? 'Error' : 'On', tone: saveState === 'error' ? 'amber' : 'green' },
+            { label: 'Source', value: stored ? `Server · ${source}` : 'Defaults', tone: stored ? 'green' : 'amber' },
+          ]}
+          statusTitle="Record state"
+          statusNote="Edits save to admin_integrations · key company:profile about 900ms after typing stops. The SI context and this page read the same record."
+          actions={(
+            <>
+              <AtButton onClick={copyBrief} variant="gold" icon={copied ? Check : Copy}>{copied ? 'SI brief copied' : 'Copy SI brief'}</AtButton>
+              <AtButton onClick={exportJSON} variant="outline" icon={Download}>Export JSON</AtButton>
+            </>
+          )}
+          bottom={(
+            <div className="flex w-full flex-col gap-2.5 sm:flex-row sm:items-center">
+              <div className="relative min-w-0 flex-1">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--at-gold)]" />
+                <input
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Search everything A–Z — TB, TBC, DUNS, MT5, Nasdaq, support@…"
+                  className="at-input !pl-9 !bg-transparent"
+                />
+                {q && <button onClick={() => setQ('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[var(--at-mut)] hover:text-[var(--at-ink)]">Clear</button>}
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <AtBadge tone={saveState === 'error' ? 'red' : saveState === 'saving' ? 'gold' : 'green'}>{saveState === 'saving' ? 'Saving' : saveState === 'error' ? 'Save failed' : 'Autosaved'}</AtBadge>
+                <AtBadge tone={loaded ? 'green' : 'amber'}>{!loaded ? 'Loading server truth' : loadError ? loadError : 'Live record'}</AtBadge>
+              </div>
+            </div>
+          )}
+        />
+
+        {searchHits ? (
+          <AtPanel
+            className="mt-5"
+            title={`${searchHits.length} match${searchHits.length === 1 ? '' : 'es'} for “${q}”`}
+            sub="Jump straight to the field, then edit in place."
+            action={<AtButton onClick={() => setQ('')} variant="quiet" size="sm">Clear search</AtButton>}
+          >
+            <div className="grid gap-2 md:grid-cols-2">
+              {searchHits.map((h, i) => (
+                <button key={i} onClick={() => jumpTo(h.sec, h.key)} className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3 text-left transition hover:border-[var(--at-line-strong)] hover:bg-[var(--at-gold-soft)]">
+                  <div className="font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--at-gold)]">{h.label} · {prettyLabel(h.key)}</div>
+                  <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-[var(--at-ink-2)]">{h.value}</p>
+                  <span className="mt-1.5 inline-flex items-center gap-1 text-[9px] font-semibold text-[var(--at-mut)]">Jump to field <ExternalLink className="h-2.5 w-2.5" /></span>
+                </button>
+              ))}
+            </div>
+            {searchHits.length === 0 && <p className="py-4 text-center text-xs text-[var(--at-mut)]">Nothing matches. Clear the search to browse sections.</p>}
+          </AtPanel>
+        ) : (
+          <div className="mt-5 grid items-start gap-4 xl:grid-cols-[264px_minmax(0,1fr)]">
+            <aside className="xl:sticky xl:top-[92px]">
+              <div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1 xl:grid xl:gap-1 xl:overflow-visible xl:pb-0">
+                {COMPANY_SECTIONS_UI.map((sec) => {
+                  const active = tab === sec.id;
+                  const n = Object.keys(profile[sec.id] || {}).length;
+                  const f = filledCount(profile[sec.id]);
+                  const Icon = sec.icon;
+                  const pct = n ? Math.round((f / n) * 100) : 0;
+                  return (
+                    <button
+                      key={sec.id}
+                      onClick={() => setTab(sec.id)}
+                      className={`flex min-w-[162px] items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition xl:min-w-0 ${active ? 'border-[var(--at-line-strong)] bg-[var(--at-gold-soft)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]' : 'border-[var(--at-line-soft)] bg-[var(--at-soft)] hover:border-[var(--at-line)]'}`}
+                    >
+                      <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg border ${active ? 'border-[var(--at-line)] bg-[var(--at-gold-soft)] text-[var(--at-gold)]' : 'border-[var(--at-line-soft)] bg-[var(--at-soft)] text-[var(--at-mut)]'}`}>
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className={`block truncate text-[12px] font-semibold ${active ? 'text-[var(--at-ink)]' : 'text-[var(--at-ink-2)]'}`}>{sec.label}</span>
+                        <span className="mt-1 flex items-center gap-1.5">
+                          <span className="h-0.5 flex-1 overflow-hidden rounded-full bg-[var(--at-soft-2)]"><span className="block h-full rounded-full bg-[var(--at-gold)]" style={{ width: `${pct}%` }} /></span>
+                          <span className="font-mono text-[8px] text-[var(--at-mut-2)]">{f}/{n}</span>
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <AtPanel className="mt-3 hidden xl:block" eyebrow="SI context" title="SI reads this record" sub="The same fields power every assistant answer about the company.">
+                <p className="line-clamp-5 whitespace-pre-wrap font-mono text-[9px] leading-relaxed text-[var(--at-mut)]">{buildContextText(profile).slice(0, 220)}…</p>
+                <AtButton onClick={copyBrief} variant="outline" size="sm" icon={copied ? Check : Copy} className="mt-3 w-full">{copied ? 'Copied' : 'Copy full brief'}</AtButton>
+              </AtPanel>
+            </aside>
+
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Company Bible <span className="tb-gold-text">A–Z</span></h2>
-                <span className="rounded-full bg-[#d4af37]/15 px-2.5 py-0.5 text-[11px] font-bold text-[#d4af37]">{totals.filled}/{totals.fields} fields · {totalPct}%</span>
-              </div>
-              <p className="mt-1 max-w-2xl text-xs leading-relaxed text-[#8a8577] sm:text-sm">
-                Every company & brand fact in one place — identity, legal, holdings, brand, markets, money, compliance, roadmap.
-                Nothing hidden. SI reads this as truth. Edits autosave.
-              </p>
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
-                <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-semibold ${saveState === 'error' ? 'border-red-500/40 text-red-400' : saveState === 'saving' ? 'border-[#d4af37]/40 text-[#d4af37]' : 'border-emerald-500/30 text-emerald-300'}`}>
-                  <span className={`h-1.5 w-1.5 rounded-full ${saveState === 'error' ? 'bg-red-400' : saveState === 'saving' ? 'animate-pulse bg-[#d4af37]' : 'bg-emerald-400'}`} />
-                  {saveState === 'saving' ? 'Saving…' : saveState === 'error' ? 'Save failed' : saveState === 'idle' ? 'Autosave on' : 'All changes saved ✓'}
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-2.5 py-1 font-semibold text-[#8a8577]">
-                  {stored ? `Stored on server · via ${source}` : 'Defaults · not stored yet'}
-                </span>
-                {!loaded
-                  ? <span className="text-[#8a8577]">Loading server truth…</span>
-                  : loadError
-                    ? <span className="max-w-full truncate text-amber-400" title={loadError}>{loadError}</span>
-                    : <span className="text-emerald-400">Live ✓</span>}
-              </div>
-            </div>
-          </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <button onClick={exportJSON} className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-[#d4af37]/30 px-3.5 text-xs font-bold text-[#d4af37] hover:bg-[#d4af37]/10">
-              <Download className="h-3.5 w-3.5" /> Export JSON
-            </button>
-            <button onClick={copyBrief} className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3.5 text-xs font-bold text-[#0a0a0f] hover:brightness-105">
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />} {copied ? 'Copied!' : 'Copy SI brief'}
-            </button>
-          </div>
-        </div>
-        <div className="relative mt-4">
-          <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
-            <div className="h-full rounded-full bg-gradient-to-r from-[#a67c1e] via-[#d4af37] to-[#f4e6a8] transition-all" style={{ width: `${totalPct}%` }} />
-          </div>
-        </div>
-        <div className="relative mt-3 flex items-center gap-2 rounded-xl border border-[#d4af37]/20 bg-[#0f0f14]/90 px-3 py-2">
-          <Search className="h-4 w-4 shrink-0 text-[#d4af37]" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search everything A–Z — try TB, TBC, DUNS, MT5, Nasdaq, support@…" className="w-full bg-transparent py-1 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none" />
-          {q && <button onClick={() => setQ('')} className="shrink-0 text-[11px] font-bold text-[#8a8577] hover:text-[#e9e7df]">Clear</button>}
-        </div>
-      </section>
-
-      {searchHits ? (
-        <div className="cb-scope glass rounded-[12px] p-4 sm:p-5">
-          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">
-            {searchHits.length} match{searchHits.length === 1 ? '' : 'es'} for “{q}”
-          </h3>
-          <div className="mt-3 space-y-2">
-            {searchHits.map((h, i) => (
-              <button key={i} onClick={() => jumpTo(h.sec, h.key)} className="block w-full rounded-xl border border-white/[0.06] bg-black/25 p-3 text-left transition hover:border-[#d4af37]/35">
-                <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">{h.label} · {prettyLabel(h.key)}</div>
-                <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-[#c9c4b4]">{h.value}</p>
-                <span className="mt-1 inline-block text-[11px] font-semibold text-[#8a8577]">Jump to field →</span>
-              </button>
-            ))}
-            {searchHits.length === 0 && <p className="py-4 text-center text-xs text-[#8a8577]">Nothing matches. Clear the search to browse sections.</p>}
-          </div>
-        </div>
-      ) : (
-        <div className="cb-scope grid items-start gap-4 xl:grid-cols-[264px_minmax(0,1fr)]">
-          {/* ── Section rail ── */}
-          <div className="xl:sticky xl:top-32">
-            <div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1 xl:grid xl:gap-1 xl:overflow-visible xl:pb-0">
-              {COMPANY_SECTIONS_UI.map((sec) => {
-                const active = tab === sec.id;
-                const n = Object.keys(profile[sec.id] || {}).length;
-                const f = filledCount(profile[sec.id]);
-                const Icon = sec.icon;
-                return (
-                  <button key={sec.id} onClick={() => setTab(sec.id)}
-                    className={`flex min-w-[150px] items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition xl:min-w-0 ${active ? 'border-[#d4af37]/50 bg-[#d4af37]/[0.09] shadow-[0_0_20px_rgba(212,175,55,0.12)]' : 'border-white/[0.06] bg-black/25 hover:border-[#d4af37]/25'}`}>
-                    <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${active ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'bg-white/[0.04] text-[#8a8577]'}`}>
-                      <Icon className="h-4 w-4" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className={`block truncate text-[13px] font-bold ${active ? 'text-[#f0ecdd]' : 'text-[#c9c4b4]'}`}>{sec.label}</span>
-                      <span className="block font-mono text-[10px] text-[#6a665a]">{f}/{n} filled</span>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            {/* SI brief card */}
-            <div className="mt-3 hidden rounded-xl border border-[#d4af37]/20 bg-[#0c0c11]/90 p-3.5 xl:block">
-              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-[#d4af37]">
-                <Sparkles className="h-3.5 w-3.5" /> SI reads this
-              </div>
-              <p className="mt-1.5 font-mono text-[10px] leading-relaxed text-[#6a665a]">
-                {buildContextText(profile).slice(0, 220)}…
-              </p>
-              <button onClick={copyBrief} className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/30 px-2 py-2 text-[11px] font-bold text-[#d4af37] hover:bg-[#d4af37]/10">
-                {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />} {copied ? 'Copied!' : 'Copy full SI brief'}
-              </button>
-            </div>
-          </div>
-
-          {/* ── Section detail ── */}
-          <div className="min-w-0">
-            <div className="glass rounded-[12px] p-4 sm:p-6">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#d4af37]/15 text-[#d4af37]">
-                    <SecIcon className="h-5 w-5" />
-                  </span>
-                  <div className="min-w-0">
-                    <h3 className="text-base font-extrabold text-[#f0ecdd] sm:text-lg">{secMeta.label}</h3>
-                    <p className="mt-0.5 text-xs leading-relaxed text-[#8a8577]">{secMeta.blurb}</p>
+              <AtPanel className="min-w-0" bodyClassName="!p-0">
+                <div className="p-4 sm:p-6">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[var(--at-line)] bg-[var(--at-gold-soft)] text-[var(--at-gold)]">
+                        <SecIcon className="h-5 w-5" />
+                      </span>
+                      <div className="min-w-0">
+                        <h2 className="at-section-title">{secMeta.label}</h2>
+                        <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-[var(--at-mut)]">{secMeta.blurb}</p>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <AtBadge tone={secFilled === secKeys.length ? 'green' : 'gold'}>{secFilled}/{secKeys.length} filled</AtBadge>
+                      <AtButton onClick={() => resetSection(tab)} variant="quiet" size="sm" icon={RotateCcw}>Reset</AtButton>
+                    </div>
                   </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <span className="rounded-full bg-white/[0.05] px-2.5 py-1 font-mono text-[11px] text-[#8a8577]">{secFilled}/{secKeys.length}</span>
-                  <button onClick={() => resetSection(tab)} title="Reset this section to defaults"
-                    className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-2.5 py-1.5 text-[11px] font-semibold text-[#8a8577] hover:border-red-400/40 hover:text-red-400">
-                    <RotateCcw className="h-3 w-3" /> Reset
-                  </button>
-                </div>
-              </div>
-              <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/[0.06]">
-                <div className="h-full rounded-full bg-gradient-to-r from-[#a67c1e] to-[#f4e6a8]" style={{ width: `${secKeys.length ? Math.round((secFilled / secKeys.length) * 100) : 0}%` }} />
-              </div>
+                  <AtProgress className="mt-4" value={secKeys.length ? Math.round((secFilled / secKeys.length) * 100) : 0} />
 
-              {/* Holdings banner: TB vs TBC at a glance */}
-              {tab === 'holdings' && (
-                <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-                  <div className="rounded-xl border border-[#d4af37]/40 bg-[#d4af37]/[0.07] p-4">
-                    <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#d4af37]">Stock · requested</div>
-                    <div className="mt-1 font-mono text-2xl font-black text-[#f0ecdd]">{holdings.ticker || 'TB'}</div>
-                    <p className="mt-1 text-[11px] leading-relaxed text-[#c9c4b4]">{holdings.tickerStatus || ''}</p>
+                  {tab === 'holdings' && (
+                    <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+                      <div className="rounded-xl border border-[var(--at-line-strong)] bg-[var(--at-gold-soft)] p-4">
+                        <div className="text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--at-gold)]">Stock · requested</div>
+                        <div className="mt-1 font-mono text-2xl font-bold text-[var(--at-ink)]">{holdings.ticker || 'TB'}</div>
+                        <p className="mt-1 text-[10px] leading-relaxed text-[var(--at-mut)]">{holdings.tickerStatus || ''}</p>
+                      </div>
+                      <div className="rounded-xl border border-violet-400/25 bg-violet-400/[0.06] p-4">
+                        <div className="text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--at-violet)]">Coin · proposed</div>
+                        <div className="mt-1 font-mono text-2xl font-bold text-[var(--at-ink)]">{holdings.coin || 'TBC'}</div>
+                        <p className="mt-1 line-clamp-3 text-[10px] leading-relaxed text-[var(--at-mut)]">{holdings.coinStatus || ''}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {tab === 'monetization' && profile.monetization?.plans && (
+                    <div className="mt-4 flex flex-wrap gap-1.5">
+                      {String(profile.monetization.plans).split('·').map((p, i) => (
+                        <AtBadge key={i} tone="gold">{p.trim()}</AtBadge>
+                      ))}
+                    </div>
+                  )}
+
+                  {tab === 'roadmap' && profile.roadmap?.phases && (
+                    <ol className="mt-4 space-y-0">
+                      {String(profile.roadmap.phases).split('→').map((p, i, arr) => (
+                        <li key={i} className="relative flex gap-3 pb-3 last:pb-0">
+                          {i < arr.length - 1 && <span aria-hidden className="absolute left-[13px] top-7 h-[calc(100%-1.4rem)] w-px bg-[var(--at-line)]" />}
+                          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[var(--at-line-strong)] bg-[var(--at-gold-soft)] font-mono text-[9px] font-bold text-[var(--at-gold)]">{String(i + 1).padStart(2, '0')}</span>
+                          <p className="pt-1 text-[11px] leading-relaxed text-[var(--at-ink-2)]">{p.trim()}</p>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+
+                  <div className="mt-5 space-y-3">
+                    {secKeys.map((k) => renderField(tab, k, profile[tab]?.[k]))}
                   </div>
-                  <div className="rounded-xl border border-violet-400/30 bg-violet-400/[0.06] p-4">
-                    <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-violet-300">Coin · proposed</div>
-                    <div className="mt-1 font-mono text-2xl font-black text-[#f0ecdd]">{holdings.coin || 'TBC'}</div>
-                    <p className="mt-1 line-clamp-3 text-[11px] leading-relaxed text-[#c9c4b4]">{holdings.coinStatus || ''}</p>
-                  </div>
+
+                  <p className="mt-4 border-t border-[var(--at-line-soft)] pt-3 text-[10px] leading-relaxed text-[var(--at-mut)]">
+                    Stored in <span className="font-mono text-[var(--at-gold)]">admin_integrations · key company:profile</span>. The widget, this page and SI read the same row. Autosave runs 900ms after typing stops.
+                  </p>
                 </div>
-              )}
-
-              {/* Money banner: plan prices at a glance */}
-              {tab === 'monetization' && profile.monetization?.plans && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {String(profile.monetization.plans).split('·').map((p, i) => (
-                    <span key={i} className="rounded-full border border-[#d4af37]/30 bg-[#d4af37]/[0.07] px-3 py-1.5 font-mono text-[11px] font-bold text-[#e8c95a]">{p.trim()}</span>
-                  ))}
-                </div>
-              )}
-
-              {/* Roadmap banner: phase timeline */}
-              {tab === 'roadmap' && profile.roadmap?.phases && (
-                <ol className="mt-4 space-y-0">
-                  {String(profile.roadmap.phases).split('→').map((p, i, arr) => (
-                    <li key={i} className="relative flex gap-3 pb-3 last:pb-0">
-                      {i < arr.length - 1 && <span aria-hidden className="absolute left-[13px] top-7 h-[calc(100%-1.4rem)] w-px bg-[#d4af37]/25" />}
-                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[#d4af37]/40 bg-[#d4af37]/10 font-mono text-[10px] font-bold text-[#d4af37]">{String(i + 1).padStart(2, '0')}</span>
-                      <p className="pt-1 text-[12px] leading-relaxed text-[#c9c4b4]">{p.trim()}</p>
-                    </li>
-                  ))}
-                </ol>
-              )}
-
-              <div className="mt-4 space-y-3">
-                {secKeys.map((k) => renderField(tab, k, profile[tab]?.[k]))}
-              </div>
-              <p className="mt-4 border-t border-white/[0.06] pt-3 text-[11px] leading-relaxed text-[#6a665a]">
-                Stored in <span className="font-mono text-[#8a8577]">admin_integrations · key company:profile</span> — the widget, this page, and SI all read the same row. Edits autosave 900ms after you stop typing.
-              </p>
+              </AtPanel>
             </div>
           </div>
-        </div>
-      )}
-      {/* ── Designed reset confirmation (no native browser popup) ── */}
+        )}
+      </div>
+
       {confirmReset && (
-        <div className="cb-scope fixed inset-0 z-[90] grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={`Reset ${confirmReset}`}>
-          <div className="cb-modal-backdrop absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setConfirmReset(null)} />
-          <div className="glass relative w-full max-w-sm overflow-hidden rounded-2xl border-[#d4af37]/30 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
-            <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
+        <div className="at-scope fixed inset-0 z-[90] grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={`Reset ${confirmReset}`}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setConfirmReset(null)} />
+          <div className="at-card relative w-full max-w-sm overflow-hidden p-5 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
+            <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
             <div className="flex items-center gap-3">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-red-400/30 bg-red-500/10 text-red-400">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[var(--at-red)]/30 bg-[var(--at-red)]/10 text-[var(--at-red)]">
                 <RotateCcw className="h-5 w-5" />
               </span>
               <div className="min-w-0">
-                <h4 className="text-sm font-extrabold text-[#f0ecdd]">Reset “{confirmReset}”?</h4>
-                <p className="text-[11px] text-[#8a8577]">{Object.keys(profile[confirmReset] || {}).length} fields return to bundled defaults</p>
+                <h4 className="text-sm font-semibold text-[var(--at-ink)]">Reset “{confirmReset}”?</h4>
+                <p className="text-[10px] text-[var(--at-mut)]">{Object.keys(profile[confirmReset] || {}).length} fields return to bundled defaults</p>
               </div>
             </div>
-            <p className="mt-3 text-xs leading-relaxed text-[#c9c4b4]">
+            <p className="mt-3 text-[11px] leading-relaxed text-[var(--at-mut)]">
               Your edits in this section will be replaced and saved immediately. Every other section stays untouched.
             </p>
             <div className="mt-4 grid grid-cols-2 gap-2">
-              <button onClick={() => setConfirmReset(null)} className="min-h-[44px] rounded-xl border border-white/10 px-4 text-sm font-bold text-[#c9c4b4] transition hover:border-[#d4af37]/40 hover:text-[#f0ecdd]">
-                Keep my edits
-              </button>
-              <button onClick={doResetSection} className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#f87171] to-[#dc2626] px-4 text-sm font-bold text-white transition hover:brightness-110">
-                Reset section
-              </button>
+              <AtButton onClick={() => setConfirmReset(null)} variant="quiet">Keep my edits</AtButton>
+              <AtButton onClick={doResetSection} variant="danger">Reset section</AtButton>
             </div>
           </div>
         </div>

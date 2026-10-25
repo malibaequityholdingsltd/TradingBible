@@ -9,15 +9,17 @@ import AppLayout from '@/components/AppLayout';
 import { useI18n } from '@/lib/i18n';
 import { fmtMoney } from '@/lib/mockData';
 import { useTrades, computeStats } from '@/hooks/useTrades';
-import { PageHero, Card, SectionHead, Stat, StatGrid, EmptyState, GoldButton } from '@/components/ui-kit';
+import { Card, SectionHead, EmptyState, GoldButton } from '@/components/ui-kit';
+import { AtBadge, AtHero, AtMetric } from '@/components/AtelierUI';
+import { useTheme } from '@/hooks/useTheme';
 
 const GOLD = '#d4af37';
 const GREEN = '#34d399';
 const RED = '#e06666';
 
-const TT = ({ active, payload, label, prefix = '', suffix = '' }) => active && payload?.length ? (
-  <div className="rounded-lg border border-[#d4af37]/30 bg-[#0f0f14] px-3 py-2 text-xs">
-    <div className="text-[#8a8577]">{label}</div>
+const TT = ({ active, payload, label, prefix = '', suffix = '', light = false }) => active && payload?.length ? (
+  <div className="rounded-lg border border-[#d4af37]/30 px-3 py-2 text-xs" style={{ background: light ? '#fffdf8' : '#0f0f14' }}>
+    <div className={light ? 'text-[#6b675c]' : 'text-[#8a8577]'}>{label}</div>
     {payload.map((p) => (
       <div key={p.dataKey} className="font-mono" style={{ color: p.color || GOLD }}>{prefix}{Number(p.value).toLocaleString()}{suffix}</div>
     ))}
@@ -26,6 +28,10 @@ const TT = ({ active, payload, label, prefix = '', suffix = '' }) => active && p
 
 export default function AnalyticsPage() {
   const { t } = useI18n();
+  const { theme } = useTheme();
+  const light = theme === 'light';
+  const GRID = light ? '#e4ded0' : '#1c1c22';
+  const TXT = light ? '#6b675c' : '#6a665a';
   const { trades, loading } = useTrades();
   const DOW = [t('ana.mon'), t('ana.tue'), t('ana.wed'), t('ana.thu'), t('ana.fri'), t('ana.sat'), t('ana.sun')];
   const stats = computeStats(trades);
@@ -63,11 +69,24 @@ export default function AnalyticsPage() {
     return { drawdown, monthlyReturns, buckets, dow, donut, wins, losses };
   }, [stats, trades, t]);
 
-  if (loading) return <AppLayout title={t('ana.pageTitle')}><div className="tb-page"><div className="tb-card py-20 text-center text-sm text-[#8a8577]">{t('ana.loading')}</div></div></AppLayout>;
+  if (loading) return <AppLayout title={t('ana.pageTitle')}><div className="at-page at-scope"><div className="at-card py-20 text-center text-sm text-[var(--at-mut)]">{t('ana.loading')}</div></div></AppLayout>;
 
   if (!stats) return (
     <AppLayout title={t('ana.pageTitle')}>
-      <div className="tb-page">
+      <div className="at-page at-scope at-enter">
+        <AtHero
+          eyebrow="Performance desk · member"
+          icon={BarChart3}
+          title={<>{t('ana.pageTitle')}</>}
+          description={t('ana.noDataSub')}
+          status={[
+            { label: 'Trades', value: '0', tone: 'amber' },
+            { label: 'Broker', value: 'Not connected', tone: 'amber' },
+            { label: 'Analytics', value: 'Waiting for data', tone: undefined },
+          ]}
+          statusTitle="Data state"
+          actions={<GoldButton to="/app/brokers">{t('ana.connectBroker')}</GoldButton>}
+        />
         <EmptyState
           icon={Plug}
           title={t('ana.noDataTitle')}
@@ -82,15 +101,34 @@ export default function AnalyticsPage() {
 
   return (
     <AppLayout title={t('ana.pageTitle')}>
-      <div className="tb-page">
-        <PageHero kickerIcon={BarChart3} kicker={t('ana.pageTitle')} title={t('ana.pageTitle')} subtitle={t('ana.equitySub')} />
-
-        <StatGrid cols={4}>
-          <Stat label={t('ana.winRate')} value={`${stats.winRate}%`} />
-          <Stat label={t('ana.profitFactor')} value={stats.profitFactor.toFixed(2)} />
-          <Stat label={t('ana.maxDd')} value={`${stats.drawdown}%`} />
-          <Stat label={t('ana.totalTrades')} value={stats.totalTrades} />
-        </StatGrid>
+      <div className="at-page at-scope at-enter pb-10">
+        <AtHero
+          eyebrow="Performance desk · member"
+          icon={BarChart3}
+          title={<>Read the <em>edge.</em></>}
+          description={t('ana.equitySub')}
+          status={[
+            { label: 'Win rate', value: `${stats.winRate}%`, tone: 'gold' },
+            { label: 'Profit factor', value: stats.profitFactor.toFixed(2), tone: stats.profitFactor >= 1 ? 'green' : 'amber' },
+            { label: 'Max drawdown', value: `${stats.drawdown}%`, tone: stats.drawdown > 15 ? 'amber' : undefined },
+            { label: 'Trades', value: stats.totalTrades },
+          ]}
+          statusTitle="Performance snapshot"
+          actions={<AtBadge tone="gold">Every chart is drawn from your logged trades</AtBadge>}
+          bottom={(
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <span className="at-live-dot" />
+              <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--at-mut)]">Live journal data</span>
+              <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Equity · drawdown · consistency</span>
+            </div>
+          )}
+        />
+        <div className="mb-5 mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
+          <AtMetric label={t('ana.winRate')} value={`${stats.winRate}%`} note="Closed trades" tone="text-[var(--at-green)]" />
+          <AtMetric label={t('ana.profitFactor')} value={stats.profitFactor.toFixed(2)} note="Gross win / loss" />
+          <AtMetric label={t('ana.maxDd')} value={`${stats.drawdown}%`} note="Peak-to-trough" tone="text-[var(--at-amber)]" />
+          <AtMetric label={t('ana.totalTrades')} value={stats.totalTrades} note="Journal entries" />
+        </div>
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
           <Card className="p-4 sm:p-6 lg:col-span-2">
@@ -98,10 +136,10 @@ export default function AnalyticsPage() {
             <ResponsiveContainer width="100%" height={260}>
               <AreaChart data={stats.equity} margin={{ left: -12, right: 8 }}>
                 <defs><linearGradient id="eqg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={GOLD} stopOpacity={0.4} /><stop offset="100%" stopColor={GOLD} stopOpacity={0} /></linearGradient></defs>
-                <CartesianGrid stroke="#1c1c22" vertical={false} />
-                <XAxis dataKey="day" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip content={<TT prefix="$" />} />
+                <CartesianGrid stroke={GRID} vertical={false} />
+                <XAxis dataKey="day" tick={{ fill: TXT, fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: TXT, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                <Tooltip content={<TT prefix="$" light={light} />} />
                 <Area type="monotone" dataKey="equity" stroke={GOLD} strokeWidth={2} fill="url(#eqg)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -111,9 +149,9 @@ export default function AnalyticsPage() {
             <SectionHead title={t('ana.wlSplit')} sub={t('ana.wlSub', { w: derived.wins, l: derived.losses })} />
             <ResponsiveContainer width="100%" height={260}>
               <RadialBarChart innerRadius="55%" outerRadius="100%" data={derived.donut} startAngle={90} endAngle={-270}>
-                <RadialBar background={{ fill: '#1c1c22' }} dataKey="value" cornerRadius={8} />
+                <RadialBar background={{ fill: light ? '#e4ded0' : '#1c1c22' }} dataKey="value" cornerRadius={8} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: 12, color: '#8a8577' }} />
-                <Tooltip content={<TT />} />
+                <Tooltip content={<TT light={light} />} />
               </RadialBarChart>
             </ResponsiveContainer>
           </Card>
@@ -125,10 +163,10 @@ export default function AnalyticsPage() {
             <ResponsiveContainer width="100%" height={240}>
               <AreaChart data={derived.drawdown} margin={{ left: -12, right: 8 }}>
                 <defs><linearGradient id="ddg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={RED} stopOpacity={0} /><stop offset="100%" stopColor={RED} stopOpacity={0.45} /></linearGradient></defs>
-                <CartesianGrid stroke="#1c1c22" vertical={false} />
-                <XAxis dataKey="day" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
-                <Tooltip content={<TT suffix="%" />} />
+                <CartesianGrid stroke={GRID} vertical={false} />
+                <XAxis dataKey="day" tick={{ fill: TXT, fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: TXT, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
+                <Tooltip content={<TT suffix="%" light={light} />} />
                 <Area type="monotone" dataKey="dd" stroke={RED} strokeWidth={2} fill="url(#ddg)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -138,9 +176,9 @@ export default function AnalyticsPage() {
             <SectionHead title={t('ana.monthlyRet')} sub={t('ana.monthlyRetSub')} />
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={derived.monthlyReturns} margin={{ left: -18, right: 8 }}>
-                <CartesianGrid stroke="#1c1c22" vertical={false} />
-                <XAxis dataKey="m" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
+                <CartesianGrid stroke={GRID} vertical={false} />
+                <XAxis dataKey="m" tick={{ fill: TXT, fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: TXT, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
                 <Tooltip content={<TT suffix="%" />} cursor={{ fill: 'rgba(212,175,55,0.06)' }} />
                 <Bar dataKey="ret" radius={[4, 4, 0, 0]}>{derived.monthlyReturns.map((e, i) => <Cell key={i} fill={e.ret >= 0 ? GREEN : RED} />)}</Bar>
               </BarChart>
@@ -151,10 +189,10 @@ export default function AnalyticsPage() {
             <SectionHead title={t('ana.wlTrend')} sub={t('ana.wlTrendSub')} />
             <ResponsiveContainer width="100%" height={240}>
               <LineChart data={derived.buckets} margin={{ left: -18, right: 8 }}>
-                <CartesianGrid stroke="#1c1c22" vertical={false} />
-                <XAxis dataKey="b" tick={{ fill: '#6a665a', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 100]} tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
-                <Tooltip content={<TT suffix="%" />} />
+                <CartesianGrid stroke={GRID} vertical={false} />
+                <XAxis dataKey="b" tick={{ fill: TXT, fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 100]} tick={{ fill: TXT, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
+                <Tooltip content={<TT suffix="%" light={light} />} />
                 <Line type="monotone" dataKey="winRate" stroke={GOLD} strokeWidth={2.5} dot={{ r: 3, fill: GOLD }} />
               </LineChart>
             </ResponsiveContainer>

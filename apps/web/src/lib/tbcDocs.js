@@ -27,10 +27,6 @@ export function usePublicTbcDocuments() {
   return { documents, meta, loading, error, reload: load };
 }
 
-export function publicPdfUrl(slug) {
-  return `${API_SERVER_URL}/tbc/documents/${encodeURIComponent(slug)}/file`;
-}
-
 export function publicDocxUrl(slug) {
   return `${API_SERVER_URL}/tbc/documents/${encodeURIComponent(slug)}/docx`;
 }

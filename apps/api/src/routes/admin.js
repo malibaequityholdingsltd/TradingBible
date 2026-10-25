@@ -12,6 +12,8 @@ import { tbcBalances as balances } from '../utils/tbc-econ.js';
 import { TBC_META, tbcContracts } from './tbc.js';
 import { supabaseAuth } from '../middleware/supabase-auth.js';
 import { findTbcDocument, internalTbcDocuments, publicTbcDocuments, tbcDocumentRoot, toAdminDocument } from '../data/tbc-documents.js';
+import { executedDocxPath, hasExecutedDocx } from '../services/tbc-executed-docx.js';
+import { companyJobs } from '../data/company-jobs.js';
 
 let API_VERSION = '1.1.0';
 try {
@@ -24,10 +26,10 @@ const router = Router();
 
 function isAdminEmail(email) {
 	const value = String(email || '').toLowerCase();
-	return /@tradingbible\.net$/.test(value) || value === 'malibaequityholdingsltd@outlook.com' || value === 'tradingbible@hotmail.com';
+	return /@tradingbible\.(?:app|net)$/i.test(value) || value === 'malibaequityholdingsltd@outlook.com' || value === 'tradingbible@hotmail.com';
 }
 
-async function assertAdmin(req) {
+export async function assertAdmin(req) {
 	const token = req.headers.authorization?.split(' ')?.[1];
 	const user = await getSupabaseUser(token);
 	if (!user) {
@@ -73,30 +75,16 @@ router.get('/tbc-documents', supabaseAuth, async (req, res, next) => {
 	}
 });
 
-router.get('/tbc-documents/:slug/file', supabaseAuth, async (req, res, next) => {
-	try {
-		await assertAdmin(req);
-		const doc = tbcVaultDoc(req.params.slug);
-		if (!doc) return res.status(404).json({ error: 'Document not found' });
-		res.setHeader('Content-Type', 'application/pdf');
-		res.setHeader('Content-Disposition', `inline; filename="${doc.slug}.pdf"`);
-		res.setHeader('Cache-Control', 'private, no-store');
-		res.setHeader('X-Content-Type-Options', 'nosniff');
-		return res.sendFile(path.join(tbcDocumentRoot, doc.pdf), (err) => {
-			if (err && !res.headersSent) next(err);
-		});
-	} catch (err) {
-		next(err);
-	}
-});
-
 router.get('/tbc-documents/:slug/docx', supabaseAuth, async (req, res, next) => {
 	try {
 		await assertAdmin(req);
 		const doc = tbcVaultDoc(req.params.slug);
 		if (!doc) return res.status(404).json({ error: 'Document not found' });
+		const executed = await hasExecutedDocx(doc.slug);
 		res.setHeader('Cache-Control', 'private, no-store');
-		return res.download(path.join(tbcDocumentRoot, doc.docx), `${doc.slug}.docx`, (err) => {
+		res.setHeader('X-TBC-Document-State', executed ? 'executed' : 'source');
+		const file = executed ? executedDocxPath(doc.slug) : path.join(tbcDocumentRoot, doc.docxProtected || doc.docx);
+		return res.download(file, `${doc.slug}-${executed ? 'executed' : 'readonly'}.docx`, { dotfiles: 'allow' }, (err) => {
 			if (err && !res.headersSent) next(err);
 		});
 	} catch (err) {
@@ -1172,6 +1160,44 @@ router.post('/jobs/postings', supabaseAuth, async (req, res, next) => {
 			prefer: 'return=representation', query: { select: '*' },
 		});
 		res.status(201).json(created?.[0] || {});
+	} catch (err) { next(err); }
+});
+
+// POST /admin/jobs/seed-company — idempotent company-wide hiring plan.
+// Adds only missing role titles; never edits or closes an existing posting.
+router.post('/jobs/seed-company', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const existing = await supabaseRest('/rest/v1/job_postings', {
+			query: { select: 'id,title', limit: 500 },
+		});
+		const have = new Set((existing || []).map((row) => String(row.title || '').trim().toLowerCase()));
+		const missing = companyJobs.filter((job) => !have.has(String(job.title).trim().toLowerCase()));
+		const inserted = [];
+		for (const job of missing) {
+			try {
+				const row = await supabaseRest('/rest/v1/job_postings', {
+					method: 'POST',
+					body: {
+						title: job.title,
+						department: job.department,
+						employmentType: job.employmentType,
+						location: job.location,
+						description: job.description,
+						requirements: job.requirements,
+						status: 'open',
+						auto_accept: false,
+						hiring: job.hiring,
+					},
+					prefer: 'return=representation',
+					query: { select: 'id,title' },
+				});
+				inserted.push(row?.[0] || { title: job.title });
+			} catch (err) {
+				logger.warn('company role seed skipped', job.title, String(err));
+			}
+		}
+		res.status(201).json({ inserted: inserted.length, skipped: missing.length - inserted.length, total: companyJobs.length, rows: inserted });
 	} catch (err) { next(err); }
 });
 

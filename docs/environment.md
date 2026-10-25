@@ -23,10 +23,19 @@ Both apps load `.env` from their own directory (`node --env-file=.env` for the A
 
 | Variable | Required | Description |
 |---|---|---|
-| `SMTP_HOST` `SMTP_PORT` | yes | SMTP server (Hostinger: `smtp.hostinger.com:465`) |
-| `SMTP_USER` `SMTP_PASS` | yes | Mailbox credentials |
+| `SMTP_HOST` `SMTP_PORT` | yes | SMTP server (Hostinger: `smtp.hostinger.com:465`, SSL) |
+| `SMTP_USER` `SMTP_PASS` | yes | Mailbox credentials (`support@tradingbible.app`) |
 | `SMTP_FROM_EMAIL` | | Sender address (defaults to `SMTP_USER`) |
 | `SMTP_FROM_NAME` | | Display name (default "TradingBible") |
+
+Verify the mailbox and send one delivery test:
+
+```bash
+cd apps/api
+npm run smtp:test -- you@example.com
+```
+
+The domain has an active SPF record and `p=none` DMARC. For inbox placement, enable DKIM for `tradingbible.app` in the Hostinger email panel (the `hostingermail._domainkey` record is currently absent) and keep the From address on the same domain. Never send production mail from a mismatched domain.
 
 ## Market data providers
 

@@ -7,8 +7,9 @@ import {
 } from 'lucide-react';
 import TbcPublicShell, { TbcProposalNotice } from '@/components/TbcPublicShell';
 import TbcDocumentViewer from '@/components/TbcDocumentViewer';
-import { Card, GhostButton, GoldButton, Note, PageHero, SectionHead } from '@/components/ui-kit';
-import { publicDocxUrl, publicPdfUrl, usePublicTbcDocuments } from '@/lib/tbcDocs';
+import { AtBadge, AtButton, AtHero, AtPanel } from '@/components/AtelierUI';
+import { Card, GhostButton, GoldButton, Note, SectionHead } from '@/components/ui-kit';
+import { publicDocxUrl, usePublicTbcDocuments } from '@/lib/tbcDocs';
 import { useAuth } from '@/hooks/useAuth';
 import {
   TBC_ALLOCATION, TBC_ELIGIBILITY_SIGNALS, TBC_FAQS, TBC_JURISDICTIONS, TBC_MODULES,
@@ -71,6 +72,9 @@ function ModuleGrid({ limit }) {
 }
 
 function DocumentCard({ doc, onRead }) {
+  const execution = doc.execution;
+  const signed = execution?.signed === true;
+  const executionLabel = signed ? 'Executed copy' : execution?.state && execution.state !== 'not_prepared' ? execution.label : '';
   return (
     <Card className="flex h-full flex-col p-4">
       <div className="flex items-start gap-2.5">
@@ -81,20 +85,23 @@ function DocumentCard({ doc, onRead }) {
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="font-mono text-[10px] text-[#6a665a]">{doc.number}</span>
             <Pill status={doc.status?.toLowerCase().includes('proposal') ? 'gated' : 'planned'}>{doc.status}</Pill>
+            {executionLabel && <Pill status={signed ? 'live' : 'planned'}>{executionLabel}</Pill>}
           </div>
           <h3 className="mt-1 text-sm font-bold leading-snug text-[#f0ecdd]">{doc.title}</h3>
           <p className="mt-1 text-[11px] leading-relaxed text-[#8a8577]">{doc.summary}</p>
+          {signed && (
+            <p className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-emerald-300">
+              <ShieldCheck className="h-3 w-3" /> Signed record served automatically
+            </p>
+          )}
         </div>
       </div>
       <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-3">
         <button type="button" onClick={() => onRead?.(doc)} className="inline-flex min-h-[34px] items-center gap-1 rounded-lg bg-[#d4af37]/10 px-2.5 text-[11px] font-bold text-[#d4af37] hover:bg-[#d4af37]/15">
-          <BookOpen className="h-3.5 w-3.5" /> Read
+          <BookOpen className="h-3.5 w-3.5" /> {signed ? 'Read executed' : 'Read'}
         </button>
-        <a href={publicPdfUrl(doc.slug)} download={`${doc.slug}.pdf`} className="inline-flex min-h-[34px] items-center gap-1 rounded-lg border border-white/10 px-2.5 text-[11px] font-semibold text-[#c9c4b4] hover:border-[#d4af37]/30 hover:text-[#f0ecdd]">
-          <Download className="h-3.5 w-3.5" /> PDF
-        </a>
-        <a href={publicDocxUrl(doc.slug)} className="inline-flex min-h-[34px] items-center gap-1 rounded-lg border border-white/10 px-2.5 text-[11px] font-semibold text-[#c9c4b4] hover:border-[#d4af37]/30 hover:text-[#f0ecdd]">
-          <FileText className="h-3.5 w-3.5" /> DOCX
+        <a href={publicDocxUrl(doc.slug)} download={`${doc.slug}-${signed ? 'executed' : 'readonly'}.docx`} className="inline-flex min-h-[34px] items-center gap-1 rounded-lg border border-white/10 px-2.5 text-[11px] font-semibold text-[#c9c4b4] hover:border-[#d4af37]/30 hover:text-[#f0ecdd]">
+          <FileText className="h-3.5 w-3.5" /> {signed ? 'Executed DOCX' : 'Read-only DOCX'}
         </a>
       </div>
     </Card>
@@ -111,6 +118,45 @@ function DocumentLibrary({ documents, loading, error, onRead, limit }) {
 
 function SectionLink({ to, children }) {
   return <Link to={to} className="inline-flex items-center gap-1 text-xs font-bold text-[#d4af37] hover:underline">{children} <ArrowRight className="h-3.5 w-3.5" /></Link>;
+}
+
+/* Every TBC section keeps the same disclosure-first masthead. The shared
+ * AtHero gives the section pages the same editorial rhythm as the overview
+ * without changing any page's data or action logic. */
+function PageHero({ kicker, kickerIcon, title, accent, subtitle, stats, actions }) {
+  const status = stats?.length
+    ? stats.map((item, index) => ({ ...item, tone: index === 0 ? 'gold' : undefined }))
+    : [
+        { label: 'Token issued', value: '0 TBC', tone: 'amber' },
+        { label: 'Public sale', value: 'Disabled', tone: 'amber' },
+        { label: 'Staking / governance', value: 'Disabled', tone: 'amber' },
+        { label: 'Current stage', value: TBC_PROPOSAL.phase, tone: 'gold' },
+      ];
+  return (
+    <AtHero
+      eyebrow={kicker}
+      icon={kickerIcon}
+      title={(
+        <>
+          {title}
+          {accent && <><br /><em>{accent}</em></>}
+        </>
+      )}
+      description={subtitle}
+      status={status}
+      statusTitle={stats?.length ? 'At a glance' : 'Disclosure state'}
+      statusNote="No token has been issued. No sale, staking, governance or migration is open. Every regulated function requires written legal, technical and security approval."
+      actions={actions}
+      bottom={(
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <AtBadge tone="amber">Proposal · phase 01</AtBadge>
+          <span className="text-[9px] font-semibold uppercase tracking-[0.13em] text-[var(--at-mut)]">Information surface only</span>
+          <span className="text-[9px] font-semibold uppercase tracking-[0.13em] text-[var(--at-mut)]">Not a brokerage deposit</span>
+          <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.13em] text-[var(--at-mut-2)]">Updated {TBC_PROPOSAL.updated}</span>
+        </div>
+      )}
+    />
+  );
 }
 
 function Roadmap({ full = false }) {
@@ -166,25 +212,27 @@ export default function TbcPublicPage({ section = 'overview' }) {
 
   return (
     <TbcPublicShell active={section}>
-      <TbcDocumentViewer
-        open={Boolean(selectedDoc)}
-        doc={selectedDoc}
-        pdfUrl={selectedDoc ? publicPdfUrl(selectedDoc.slug) : ''}
-        docxUrl={selectedDoc ? publicDocxUrl(selectedDoc.slug) : ''}
-        onClose={() => setSelectedDoc(null)}
-      />
-      {section === 'overview' && <Overview docs={documents} docsLoading={docsLoading} docsError={docsError} onRead={setSelectedDoc} />}
-      {section === 'whitepaper' && <Whitepaper whitepaper={whitepaper} docsLoading={docsLoading} onRead={setSelectedDoc} />}
-      {section === 'tokenomics' && <Tokenomics />}
-      {section === 'utility' && <Utility />}
-      {section === 'roadmap' && <RoadmapPage />}
-      {section === 'documents' && <Documents docs={documents} loading={docsLoading} error={docsError} onRead={setSelectedDoc} />}
-      {section === 'purchases' && <Purchases />}
-      {section === 'eligibility' && <Eligibility />}
-      {section === 'compliance' && <Compliance />}
-      {section === 'separation' && <Separation />}
-      {section === 'risks' && <Risks />}
-      {section === 'faqs' && <Faqs />}
+      <div className="at-scope at-enter">
+        <TbcDocumentViewer
+          open={Boolean(selectedDoc)}
+          doc={selectedDoc}
+          docxUrl={selectedDoc ? publicDocxUrl(selectedDoc.slug) : ''}
+          onDownloadDocx={selectedDoc ? () => { window.location.href = publicDocxUrl(selectedDoc.slug); } : undefined}
+          onClose={() => setSelectedDoc(null)}
+        />
+        {section === 'overview' && <Overview docs={documents} docsLoading={docsLoading} docsError={docsError} onRead={setSelectedDoc} />}
+        {section === 'whitepaper' && <Whitepaper whitepaper={whitepaper} docsLoading={docsLoading} onRead={setSelectedDoc} />}
+        {section === 'tokenomics' && <Tokenomics />}
+        {section === 'utility' && <Utility />}
+        {section === 'roadmap' && <RoadmapPage />}
+        {section === 'documents' && <Documents docs={documents} loading={docsLoading} error={docsError} onRead={setSelectedDoc} />}
+        {section === 'purchases' && <Purchases />}
+        {section === 'eligibility' && <Eligibility />}
+        {section === 'compliance' && <Compliance />}
+        {section === 'separation' && <Separation />}
+        {section === 'risks' && <Risks />}
+        {section === 'faqs' && <Faqs />}
+      </div>
     </TbcPublicShell>
   );
 }
@@ -192,7 +240,7 @@ export default function TbcPublicPage({ section = 'overview' }) {
 function Overview({ docs, docsLoading, docsError, onRead }) {
   return (
     <>
-      <div className="pt-6 sm:pt-9">
+      <div className="pt-3 sm:pt-5">
         <PageHero
           kickerIcon={Coins}
           kicker="TradingBible Coin · Phase 1"
@@ -216,11 +264,14 @@ function Overview({ docs, docsLoading, docsError, onRead }) {
           ['Not selling', 'The purchase journey is visible, but payment collection is off.'],
           ['Not a brokerage deposit', 'TBC and any future brokerage business are separate.'],
           ['Not a promise', 'No returns, listing, liquidity or transferability is guaranteed.'],
-        ].map(([title, body]) => (
-          <Card key={title} className="p-3.5">
-            <div className="flex items-center gap-2 text-xs font-bold text-[#f0ecdd]"><CheckCircle2 className="h-3.5 w-3.5 text-[#d4af37]" /> {title}</div>
-            <p className="mt-1 text-[11px] leading-relaxed text-[#8a8577]">{body}</p>
-          </Card>
+        ].map(([title, body], index) => (
+          <div key={title} className="at-card relative overflow-hidden p-4">
+            <span className="at-index">0{index + 1}</span>
+            <div className="mt-3 flex items-center gap-2 text-[12px] font-semibold text-[var(--at-ink)]">
+              <CheckCircle2 className="h-3.5 w-3.5 text-[var(--at-gold)]" /> {title}
+            </div>
+            <p className="mt-1.5 text-[10px] leading-relaxed text-[var(--at-mut)]">{body}</p>
+          </div>
         ))}
       </div>
 
@@ -301,8 +352,8 @@ function Overview({ docs, docsLoading, docsError, onRead }) {
 function Whitepaper({ whitepaper, docsLoading, onRead }) {
   return (
     <>
-      <div className="pt-6 sm:pt-9">
-        <PageHero kickerIcon={BookOpen} kicker="Official summary · P-01" title="TBC Whitepaper" accent="& Utility Roadmap" subtitle="Issuer overview, functional design and delivery milestones. Read the current draft, or download the PDF and Word original." actions={<><GoldButton to="/app/tbc">Open dashboard <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/tbc/documents">Document library</GhostButton></>} />
+      <div className="pt-3 sm:pt-5">
+        <PageHero kickerIcon={BookOpen} kicker="Official summary · P-01" title="TBC Whitepaper" accent="& Utility Roadmap" subtitle="Issuer overview, functional design and delivery milestones. Read the current draft in the Word reader, or download a read-only Word copy." actions={<><GoldButton to="/app/tbc">Open dashboard <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/tbc/documents">Document library</GhostButton></>} />
       </div>
       <div className="mt-4"><TbcProposalNotice /></div>
       <div className="mt-5 grid gap-4 lg:grid-cols-[1.35fr_.65fr]">
@@ -313,10 +364,23 @@ function Whitepaper({ whitepaper, docsLoading, onRead }) {
             {whitepaper && <span className="ml-auto font-mono text-[10px] text-[#6a665a]">{whitepaper.version}</span>}
           </div>
           {docsLoading && <div className="grid h-[62vh] place-items-center text-sm text-[#8a8577]">Loading document…</div>}
-          {!docsLoading && whitepaper && <iframe title="TBC Whitepaper PDF" src={publicPdfUrl(whitepaper.slug)} className="h-[68vh] w-full border-0 bg-white" />}
+          {!docsLoading && whitepaper && (
+            <div className="relative grid h-[58vh] place-items-center overflow-hidden bg-[#26262b] p-6 text-center">
+              <div aria-hidden className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(212,175,55,0.16),transparent_58%)]" />
+              <div className="relative max-w-sm">
+                <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/10 text-[#d4af37]"><FileText className="h-7 w-7" /></span>
+                <div className="mt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-[#d4af37]">Word document · read-only</div>
+                <h3 className="mt-2 text-lg font-bold text-[#f0ecdd]">{whitepaper.title}</h3>
+                <p className="mt-2 text-xs leading-relaxed text-[#8a8577]">Opens in the secure Word reader. The downloaded copy has editing restricted; no PDF copy is distributed.</p>
+                <button type="button" onClick={() => onRead(whitepaper)} className="mt-4 inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 text-xs font-bold text-[#121006]">
+                  <BookOpen className="h-4 w-4" /> Open Word reader
+                </button>
+              </div>
+            </div>
+          )}
           {!docsLoading && !whitepaper && <div className="p-5"><Note icon={TriangleAlert}>The whitepaper is not available from the document service right now. Please try again shortly.</Note></div>}
           <div className="flex flex-wrap items-center gap-2 border-t border-white/[0.07] p-3">
-            {whitepaper && <><a href={publicPdfUrl(whitepaper.slug)} download className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-[#d4af37] px-3 text-xs font-bold text-[#0a0a0f]"><Download className="h-3.5 w-3.5" /> Download PDF</a><a href={publicDocxUrl(whitepaper.slug)} className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-white/10 px-3 text-xs font-semibold text-[#c9c4b4]"><FileText className="h-3.5 w-3.5" /> Download DOCX</a><button type="button" onClick={() => onRead(whitepaper)} className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-white/10 px-3 text-xs font-semibold text-[#c9c4b4]"><BookOpen className="h-3.5 w-3.5" /> Open viewer</button></>}
+            {whitepaper && <><button type="button" onClick={() => onRead(whitepaper)} className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-[#d4af37] px-3 text-xs font-bold text-[#0a0a0f]"><BookOpen className="h-3.5 w-3.5" /> Read in Word</button><a href={publicDocxUrl(whitepaper.slug)} download={`${whitepaper.slug}-readonly.docx`} className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-white/10 px-3 text-xs font-semibold text-[#c9c4b4]"><Download className="h-3.5 w-3.5" /> Read-only DOCX</a></>}
           </div>
         </Card>
         <div className="space-y-3">
@@ -346,7 +410,7 @@ function Whitepaper({ whitepaper, docsLoading, onRead }) {
 function Tokenomics() {
   return (
     <>
-      <div className="pt-6 sm:pt-9">
+      <div className="pt-3 sm:pt-5">
         <PageHero kickerIcon={Layers} kicker="Economics · proposal only" title="100 million TBC," accent="one controlled supply picture" subtitle="The corrected working scenario gives 30% to ecosystem and development, 20% to community incentives, 20% to public distribution, 15% to treasury, 10% to team and 5% to liquidity. None of this is an adopted allocation or issued supply." actions={<GoldButton to="/tbc/whitepaper">Read the whitepaper <ArrowRight className="h-4 w-4" /></GoldButton>} />
       </div>
       <div className="mt-4"><TbcProposalNotice /></div>
@@ -379,7 +443,7 @@ function ActivityIcon(props) {
 function Utility() {
   return (
     <>
-      <div className="pt-6 sm:pt-9">
+      <div className="pt-3 sm:pt-5">
         <PageHero kickerIcon={Sparkles} kicker="Utility center · proposal" title="Useful first," accent="not speculative first" subtitle="TBC is intended to pay for eligible TradingBible services. Each utility must be delivered, priced, lawful and tested before it can be marked available." actions={<GoldButton to="/tbc/documents">Read the documents <ArrowRight className="h-4 w-4" /></GoldButton>} />
       </div>
       <div className="mt-4"><TbcProposalNotice /></div>
@@ -395,7 +459,7 @@ function Utility() {
 function RoadmapPage() {
   return (
     <>
-      <div className="pt-6 sm:pt-9">
+      <div className="pt-3 sm:pt-5">
         <PageHero kickerIcon={Timer} kicker="Delivery roadmap" title="Eight phases," accent="each with an evidence gate" subtitle="The sequence is deliberate: information and account management first; compliance, testing and audits before any authorized distribution; chain and migration last." actions={<GoldButton to="/tbc/documents">Read the plan <ArrowRight className="h-4 w-4" /></GoldButton>} />
       </div>
       <div className="mt-4"><TbcProposalNotice /></div>
@@ -414,14 +478,14 @@ function Documents({ docs, loading, error, onRead }) {
   const { user } = useAuth();
   return (
     <>
-      <div className="pt-6 sm:pt-9">
+      <div className="pt-3 sm:pt-5">
         <PageHero kickerIcon={FileText} kicker="Public document library" title="Read the source," accent="not the marketing" subtitle="Five corrected public summaries covering the whitepaper, supply and vesting, purchases and custody, jurisdiction eligibility, and platform separation. The 26 controlled corporate instruments are available only in the admin vault." actions={<GoldButton to="/app/tbc">Open dashboard <ArrowRight className="h-4 w-4" /></GoldButton>} />
       </div>
       <div className="mt-4"><TbcProposalNotice /></div>
       <div className="mt-5"><DocumentLibrary documents={docs} loading={loading} error={error} onRead={onRead} /></div>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Card className="p-4"><SectionHead icon={ShieldCheck} title="Controlled legal vault" /><p className="text-xs leading-relaxed text-[#8a8577]">The 26 corporate and governance instruments include confidential issuer information such as tax identifiers, registered-office details and signature blocks. They are streamed only to an authenticated administrator — not bundled into the public site.</p><div className="mt-3">{user?.role === 'admin' ? <Link to="/admin/legal-vault" className="text-xs font-bold text-[#d4af37] hover:underline">Administrator legal vault →</Link> : <span className="text-[10px] text-[#6a665a]">Access is limited to authenticated administrators.</span>}</div></Card>
-        <Card className="p-4"><SectionHead icon={BookOpen} title="How to read a controlled document" /><div className="space-y-1.5 text-[11px] leading-relaxed text-[#8a8577]">{['Check the document number, version and date.', 'Read the status and signature block: a reviewer acknowledgment is not regulatory approval.', 'Download the PDF for the controlled layout; use DOCX only for review or execution.', 'Report a suspected outdated or altered copy to support.'].map((x) => <div key={x} className="flex gap-2"><GoldDot />{x}</div>)}</div></Card>
+        <Card className="p-4"><SectionHead icon={BookOpen} title="How to read a controlled document" /><div className="space-y-1.5 text-[11px] leading-relaxed text-[#8a8577]">{['Check the document number, version and date.', 'Read the status and signature block: a reviewer acknowledgment is not regulatory approval.', 'Open the Word reader for the controlled layout; downloads are read-only DOCX copies.', 'Report a suspected outdated or altered copy to support.'].map((x) => <div key={x} className="flex gap-2"><GoldDot />{x}</div>)}</div></Card>
       </div>
     </>
   );
@@ -430,7 +494,7 @@ function Documents({ docs, loading, error, onRead }) {
 function Purchases() {
   return (
     <>
-      <div className="pt-6 sm:pt-9">
+      <div className="pt-3 sm:pt-5">
         <PageHero kickerIcon={Lock} kicker="Purchase controls" title="Designed now," accent="disabled until authorized" subtitle="The eight-step journey is documented so the controls can be built and tested. Payment collection remains off until legal, compliance, custody, payment provider, refund and launch requirements are satisfied." actions={<GoldButton to="/tbc/eligibility">Check eligibility <ArrowRight className="h-4 w-4" /></GoldButton>} />
       </div>
       <div className="mt-4 rounded-[10px] border border-red-400/20 bg-red-400/[0.06] px-4 py-3 text-xs leading-relaxed text-[#e9c4c4]"><span className="font-bold text-red-300">Sale disabled.</span> No TBC purchase is possible on this website. Anyone offering a TBC sale, presale, allocation or guaranteed return is not authorized by TradingBible LLC.</div>
@@ -448,7 +512,7 @@ function Purchases() {
 function Eligibility() {
   return (
     <>
-      <div className="pt-6 sm:pt-9">
+      <div className="pt-3 sm:pt-5">
         <PageHero kickerIcon={Globe2} kicker="Jurisdictions & eligibility" title="No market is cleared," accent="and no checkbox decides" subtitle="TradingBible wishes to evaluate access in the United States, Nigeria and additional international markets. Intent to serve a country is not permission to market or sell tokens there." actions={<GoldButton to="/tbc/purchases">Purchase controls <ArrowRight className="h-4 w-4" /></GoldButton>} />
       </div>
       <div className="mt-4"><TbcProposalNotice /></div>
@@ -476,7 +540,7 @@ function FingerprintIcon(props) {
 function Compliance() {
   return (
     <>
-      <div className="pt-6 sm:pt-9">
+      <div className="pt-3 sm:pt-5">
         <PageHero
           kickerIcon={ShieldCheck}
           kicker="Compliance & access · proposal"
@@ -550,7 +614,7 @@ function Compliance() {
 function Separation() {
   return (
     <>
-      <div className="pt-6 sm:pt-9">
+      <div className="pt-3 sm:pt-5">
         <PageHero kickerIcon={Workflow} kicker="Brokerage & platform separation" title="Software is not brokerage," accent="and TBC is not a deposit" subtitle="TradingBible software, the proposed TBC issuance and any future regulated brokerage business are separate workstreams with separate legal, accounting and technology controls." actions={<GoldButton to="/tbc/documents">Read the separation paper <ArrowRight className="h-4 w-4" /></GoldButton>} />
       </div>
       <div className="mt-4"><TbcProposalNotice /></div>
@@ -578,7 +642,7 @@ function Building2Icon(props) {
 function Risks() {
   return (
     <>
-      <div className="pt-6 sm:pt-9">
+      <div className="pt-3 sm:pt-5">
         <PageHero kickerIcon={TriangleAlert} kicker="Risk factors · summary" title="Read the risks," accent="then decide" subtitle="TBC is a proposal with significant legal, technical, market and operational uncertainty. This page is a summary; the full risk disclosure and offering documents control." actions={<GoldButton to="/tbc/documents">Read the source documents <ArrowRight className="h-4 w-4" /></GoldButton>} />
       </div>
       <div className="mt-4"><TbcProposalNotice /></div>
@@ -593,7 +657,7 @@ function Risks() {
 function Faqs() {
   return (
     <>
-      <div className="pt-6 sm:pt-9">
+      <div className="pt-3 sm:pt-5">
         <PageHero kickerIcon={BookOpen} kicker="Frequently asked questions" title="Straight answers," accent="including the uncomfortable ones" subtitle="What TBC is, what it is not, and what must happen before any regulated function can open." actions={<GoldButton to="/tbc/documents">Source documents <ArrowRight className="h-4 w-4" /></GoldButton>} />
       </div>
       <div className="mt-5 space-y-2">

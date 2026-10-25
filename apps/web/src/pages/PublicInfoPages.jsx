@@ -4,6 +4,7 @@ import Footer from '@/components/Footer';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { AdSlot } from '@/lib/ads/components.jsx';
 import { Card, EmptyState, GhostButton, GoldButton, PageHero } from '@/components/ui-kit';
+import { AtBadge, AtHero } from '@/components/AtelierUI';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
@@ -170,31 +171,48 @@ export const CareersPage = () => {
   const samplesRequired = openJob?.hiring?.samples_required === true;
 
   return (
-    <div className="min-h-screen bg-[#07070a] px-6 pt-24 pb-16 sm:pt-28">
-      <div className="mx-auto max-w-[96rem]">
-        <Link to={homeTo} className="mb-10 flex items-center gap-2.5">
+    <div className="at-shell min-h-screen bg-transparent text-[var(--at-ink)]">
+      <div className="at-page at-scope at-enter px-4 pb-16 pt-[calc(var(--header-h)+34px)] sm:px-6 sm:pt-[calc(var(--header-h)+46px)]">
+        <Link to={homeTo} className="mb-8 inline-flex items-center gap-2.5">
           <img src={TRADINGBIBLE_LOGO} alt="TradingBible logo" className="h-9 w-9 rounded-lg object-contain" />
-          <span className="font-semibold">Trading<span className="tb-gold-text">Bible</span></span>
+          <span className="text-sm font-semibold text-[var(--at-ink)]">Trading<span className="text-[var(--at-gold)]">Bible</span></span>
         </Link>
-        <div className="mb-10 max-w-2xl">
-          <PageHero
-            kicker={t('pub.carKicker', null, 'TradingBible Academy')}
-            title={t('pub.carTitle')}
-            subtitle={t('pub.carDesc')}
-          />
-        </div>
+        <AtHero
+          eyebrow={t('pub.carKicker', null, 'TradingBible Academy')}
+          title={<>{t('pub.carTitle')}</>}
+          description={t('pub.carDesc')}
+          status={[
+            { label: 'Open roles', value: jobs.length, tone: 'gold' },
+            { label: 'Hiring model', value: 'Remote-first', tone: undefined },
+            { label: 'Review', value: 'Human reviewed', tone: 'green' },
+          ]}
+          statusTitle="Hiring board"
+          actions={<AtBadge tone="gold">Applications reviewed by a person, not a keyword filter</AtBadge>}
+          bottom={(
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="at-live-dot" />
+              <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--at-mut)]">Open applications</span>
+              <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">TradingBible Academy</span>
+            </div>
+          )}
+        />
+        <div className="mt-6">
         {jobs.length === 0 ? (
           <EmptyState title={t('job.noOpenings')} />
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2">
             {jobs.map((j) => (
-              <Card hover key={j.id} className="flex flex-col">
+              <Card hover key={j.id} className="at-card flex flex-col">
                 <div className="text-xs font-medium uppercase tracking-[0.2em] text-[#d4af37]">{j.department} · {j.employmentType} · {j.location}</div>
-                <h3 className="mt-2 text-xl font-semibold text-[#f0ecdd]">{j.title}</h3>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-[#8a8577]">{j.description}</p>
-                {j.requirements && <p className="mt-2 text-xs text-[#6a665a]">{t('job.requirements')}: {j.requirements}</p>}
+                <h3 className="mt-2 text-xl font-semibold text-[var(--at-ink)]">{j.title}</h3>
+                <p className="mt-2 flex-1 whitespace-pre-line text-sm leading-relaxed text-[var(--at-mut)]">{j.description}</p>
+                {j.requirements && <p className="mt-2 text-xs leading-relaxed text-[var(--at-mut-2)]">{t('job.requirements')}: {j.requirements}</p>}
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  <span className="rounded-full bg-[#d4af37]/10 px-2 py-0.5 text-[10px] font-bold text-[#d4af37]">{t('job.paidTbc', null, 'Paid in TBC')}{Number(j.hiring?.salary_tbc) > 0 ? ` · ${j.hiring.salary_tbc} TBC/${j.hiring.salary_freq === 'weekly' ? 'wk' : 'mo'}` : ''}</span>
+                  <span className="rounded-full bg-[#d4af37]/10 px-2 py-0.5 text-[10px] font-bold text-[#d4af37]">
+                    {Number(j.hiring?.salary_tbc) > 0
+                      ? `USD base + proposed TBC allocation (not issued) · ${j.hiring.salary_tbc} platform credit/mo`
+                      : 'USD base + proposed TBC allocation (not issued)'}
+                  </span>
                   {j.hiring?.closes_at && !Number.isNaN(Date.parse(j.hiring.closes_at)) && (
                     <span className="rounded-full bg-sky-400/10 px-2 py-0.5 text-[10px] font-bold text-sky-300">{t('job.closesAt', null, 'Apply by')} {String(j.hiring.closes_at).slice(0, 10)}</span>
                   )}
@@ -205,19 +223,19 @@ export const CareersPage = () => {
                     <p className="mt-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-center text-sm text-emerald-400">{t('job.applied')}</p>
                   ) : (
                     <form onSubmit={apply} className="mt-3 space-y-2">
-                      <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder={t('job.namePh')} required className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
-                      <input value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder={t('job.emailPh')} type="email" required className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
-                      <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} placeholder={t('job.phonePh')} className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
-                      <textarea value={form.coverLetter} onChange={(e) => setForm((p) => ({ ...p, coverLetter: e.target.value }))} placeholder={t('job.coverPh')} className="min-h-[100px] w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
+                      <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder={t('job.namePh')} required className="w-full rounded-xl border border-[var(--at-line)] bg-[var(--at-panel)] px-4 py-3 text-sm text-[var(--at-ink)] outline-none focus:border-[var(--at-line-strong)]" />
+                      <input value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder={t('job.emailPh')} type="email" required className="w-full rounded-xl border border-[var(--at-line)] bg-[var(--at-panel)] px-4 py-3 text-sm text-[var(--at-ink)] outline-none focus:border-[var(--at-line-strong)]" />
+                      <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} placeholder={t('job.phonePh')} className="w-full rounded-xl border border-[var(--at-line)] bg-[var(--at-panel)] px-4 py-3 text-sm text-[var(--at-ink)] outline-none focus:border-[var(--at-line-strong)]" />
+                      <textarea value={form.coverLetter} onChange={(e) => setForm((p) => ({ ...p, coverLetter: e.target.value }))} placeholder={t('job.coverPh')} className="min-h-[100px] w-full rounded-xl border border-[var(--at-line)] bg-[var(--at-panel)] px-4 py-3 text-sm text-[var(--at-ink)] outline-none focus:border-[var(--at-line-strong)]" />
                       {screeningQs.map((q, i) => (
                         <div key={i}>
                           <div className="mb-1 text-xs font-semibold text-[#d4af37]">{q?.q || `Question ${i + 1}`}{q?.required !== false ? ' *' : ''}</div>
-                          <textarea value={form.answers[i] || ''} onChange={(e) => setForm((p) => ({ ...p, answers: { ...p.answers, [i]: e.target.value } }))} required={q?.required !== false} placeholder={t('job.answerPh', null, 'Your answer…')} className="min-h-[64px] w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
+                          <textarea value={form.answers[i] || ''} onChange={(e) => setForm((p) => ({ ...p, answers: { ...p.answers, [i]: e.target.value } }))} required={q?.required !== false} placeholder={t('job.answerPh', null, 'Your answer…')} className="min-h-[64px] w-full rounded-xl border border-[var(--at-line)] bg-[var(--at-panel)] px-4 py-3 text-sm text-[var(--at-ink)] outline-none focus:border-[var(--at-line-strong)]" />
                         </div>
                       ))}
                       <div>
                         <div className="mb-1 text-xs font-semibold text-[#d4af37]">{t('job.samplesPh', null, 'Links to your work (portfolio, profile, samples)')}{samplesRequired ? ' *' : ''}</div>
-                        <textarea value={form.samples} onChange={(e) => setForm((p) => ({ ...p, samples: e.target.value }))} required={samplesRequired} placeholder="https://…" className="min-h-[56px] w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm text-[#f0ecdd] outline-none focus:border-[#d4af37]/40" />
+                        <textarea value={form.samples} onChange={(e) => setForm((p) => ({ ...p, samples: e.target.value }))} required={samplesRequired} placeholder="https://…" className="min-h-[56px] w-full rounded-xl border border-[var(--at-line)] bg-[var(--at-panel)] px-4 py-3 text-sm text-[var(--at-ink)] outline-none focus:border-[var(--at-line-strong)]" />
                       </div>
                       {/* Honeypot: invisible to humans, irresistible to bots. */}
                       <div aria-hidden style={{ position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' }}>
@@ -232,6 +250,7 @@ export const CareersPage = () => {
             ))}
           </div>
         )}
+        </div>
       </div>
       <Footer />
     </div>

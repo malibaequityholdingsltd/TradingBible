@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import path from 'path';
 import { findTbcDocument, publicTbcDocuments, tbcDocumentRoot, toPublicDocument } from '../data/tbc-documents.js';
+import { getExecution, getPublicExecution } from '../services/tbc-execution.js';
+import { executedDocxPath, hasExecutedDocx, writeExecutedDocx } from '../services/tbc-executed-docx.js';
 
 const router = Router();
 const SLUG = /^[a-z0-9-]+$/;
@@ -18,47 +20,59 @@ function publicDoc(slug, res) {
 	return doc;
 }
 
-function sendPdf(req, res, next, doc) {
-	const file = path.join(tbcDocumentRoot, doc.pdf);
-	res.setHeader('Content-Type', 'application/pdf');
-	res.setHeader('Content-Disposition', `inline; filename="${doc.slug}.pdf"`);
-	res.setHeader('Cache-Control', 'public, max-age=3600');
-	res.setHeader('X-Content-Type-Options', 'nosniff');
-	res.sendFile(file, (err) => {
-		if (err && !res.headersSent) next(err);
-	});
+async function docxFor(doc) {
+	const execution = await getExecution(doc.slug);
+	if (execution?.state === 'executed') {
+		if (!(await hasExecutedDocx(doc.slug))) {
+			try { await writeExecutedDocx(doc, execution); } catch { /* serve the source below */ }
+		}
+		if (await hasExecutedDocx(doc.slug)) return { path: executedDocxPath(doc.slug), executed: true };
+	}
+	return { path: path.join(tbcDocumentRoot, doc.docxProtected || doc.docx), executed: false };
 }
 
-router.get('/', (_req, res) => {
-	res.setHeader('Cache-Control', 'public, max-age=300');
-	res.json({
-		issuer: 'TradingBible LLC',
-		jurisdiction: 'Delaware, United States',
-		updated: 'October 2026',
-		notice: 'TBC is at proposal stage. These documents are not an offer, solicitation, or evidence of a live token sale.',
-		documents: publicTbcDocuments.map(toPublicDocument),
-	});
+router.get('/', async (_req, res, next) => {
+	try {
+		const documents = await Promise.all(publicTbcDocuments.map(async (doc) => (
+			toPublicDocument(doc, await getPublicExecution(doc.slug))
+		)));
+		res.setHeader('Cache-Control', 'public, max-age=30, must-revalidate');
+		res.json({
+			issuer: 'TradingBible LLC',
+			jurisdiction: 'Delaware, United States',
+			updated: 'October 2026',
+			notice: 'TBC is at proposal stage. These documents are not an offer, solicitation, or evidence of a live token sale. Once an instrument is executed, the library serves the execution-record DOCX automatically.',
+			documents,
+		});
+	} catch (err) {
+		next(err);
+	}
 });
 
-router.get('/:slug', (req, res) => {
-	const doc = publicDoc(req.params.slug, res);
-	if (!doc) return;
-	res.setHeader('Cache-Control', 'public, max-age=300');
-	res.json({ document: toPublicDocument(doc) });
+router.get('/:slug', async (req, res, next) => {
+	try {
+		const doc = publicDoc(req.params.slug, res);
+		if (!doc) return;
+		res.setHeader('Cache-Control', 'public, max-age=30, must-revalidate');
+		res.json({ document: toPublicDocument(doc, await getPublicExecution(doc.slug)) });
+	} catch (err) {
+		next(err);
+	}
 });
 
-router.get('/:slug/file', (req, res, next) => {
-	const doc = publicDoc(req.params.slug, res);
-	if (!doc) return;
-	sendPdf(req, res, next, doc);
-});
-
-router.get('/:slug/docx', (req, res, next) => {
-	const doc = publicDoc(req.params.slug, res);
-	if (!doc) return;
-	res.download(path.join(tbcDocumentRoot, doc.docx), `${doc.slug}.docx`, (err) => {
-		if (err && !res.headersSent) next(err);
-	});
+router.get('/:slug/docx', async (req, res, next) => {
+	try {
+		const doc = publicDoc(req.params.slug, res);
+		if (!doc) return;
+		const served = await docxFor(doc);
+		res.setHeader('Cache-Control', 'private, no-store');
+		res.setHeader('X-TBC-Document-State', served.executed ? 'executed' : 'source');
+		res.download(served.path, `${doc.slug}-${served.executed ? 'executed' : 'readonly'}.docx`, { dotfiles: 'allow' }, (err) => {
+			if (err && !res.headersSent) next(err);
+		});
+	} catch (err) {
+		next(err);
+	}
 });
 
 export default router;

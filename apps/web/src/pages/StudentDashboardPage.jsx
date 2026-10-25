@@ -107,16 +107,20 @@ export default function StudentDashboardPage() {
     );
   }
 
-  const answeredIds = new Set((scope.submissions || []).map((s) => s.assessmentId).filter(Boolean));
-  const pending = (scope.assessments || []).filter((a) => !answeredIds.has(a.id));
+  const safeScope = scope && !Array.isArray(scope) ? scope : {};
+  const submissions = Array.isArray(safeScope.submissions) ? safeScope.submissions : [];
+  const assessments = Array.isArray(safeScope.assessments) ? safeScope.assessments : [];
+  const certificates = Array.isArray(safeScope.certificates) ? safeScope.certificates : [];
+  const answeredIds = new Set(submissions.map((s) => s.assessmentId).filter(Boolean));
+  const pending = assessments.filter((a) => !answeredIds.has(a.id));
 
   return (
-    <AppLayout title={`${scope.schoolName} · ${t('sch.stPortal')}`}>
+    <AppLayout title={`${safeScope.schoolName || 'Academy'} · ${t('sch.stPortal')}`}>
       <StatGrid cols={4}>
         <Stat label={t('sch.myExams')} value={pending.length} />
-        <Stat label={t('sch.myGrades')} value={scope.submissions.length} />
-        <Stat label={t('sch.myCerts')} value={scope.certificates.length} />
-        <Stat label={scope.student?.classroom || t('sch.general')} value={scope.student?.name} />
+        <Stat label={t('sch.myGrades')} value={submissions.length} />
+        <Stat label={t('sch.myCerts')} value={certificates.length} />
+        <Stat label={safeScope.student?.classroom || t('sch.general')} value={safeScope.student?.name} />
       </StatGrid>
 
       <div className="grid gap-5 lg:grid-cols-2">
@@ -149,8 +153,8 @@ export default function StudentDashboardPage() {
           <Card className="p-5">
             <SectionHead icon={FileCheck2} title={t('sch.myGrades')} />
             <div className="mt-3 space-y-2">
-              {scope.submissions.length === 0 && <EmptyState icon={FileCheck2} title={t('sch.noSubs')} />}
-              {scope.submissions.map((s) => (
+              {submissions.length === 0 && <EmptyState icon={FileCheck2} title={t('sch.noSubs')} />}
+              {submissions.map((s) => (
                 <div key={s.id} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
                   <div className="font-medium text-[#f0ecdd]">{s.assessmentTitle}</div>
                   <div className="text-xs text-[#8a8577] capitalize">{t(`sch.st_${s.status || 'submitted'}`, null, s.status || 'submitted')}{s.score != null ? ` · ${t('sch.score')}: ${s.score}` : ''}</div>
@@ -163,8 +167,8 @@ export default function StudentDashboardPage() {
           <Card className="p-5">
             <SectionHead icon={Award} title={t('sch.myCerts')} />
             <div className="mt-3 space-y-2">
-              {scope.certificates.length === 0 && <EmptyState icon={Award} title={t('sch.dCerts')} />}
-              {scope.certificates.map((c) => (
+              {certificates.length === 0 && <EmptyState icon={Award} title={t('sch.dCerts')} />}
+              {certificates.map((c) => (
                 <div key={c.id} className="rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] p-3">
                   <div className="font-medium text-[#f0ecdd]">{c.title}</div>
                   <div className="text-xs text-[#8a8577]">{c.issuedAt ? c.issuedAt.slice(0, 10) : ''}</div>

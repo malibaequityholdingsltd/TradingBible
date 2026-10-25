@@ -25,6 +25,7 @@ import securityRouter from './security.js';
 import supportRouter from './support.js';
 import adsRouter from './ads.js';
 import adminRouter from './admin.js';
+import legalVaultRouter, { docusignWebhook } from './legal-vault.js';
 import academyRouter from './academy.js';
 import digestRouter from './digest.js';
 import dunsRouter from './duns.js';
@@ -66,6 +67,8 @@ export default () => {
     router.use('/security', securityRouter);
     router.use('/support', supportRouter);
     router.use('/ads', adsRouter);
+    router.use('/admin/legal-vault', legalVaultRouter);
+    router.post('/webhooks/docusign', docusignWebhook);
     router.use('/admin', adminRouter);
     router.use('/admin/digest', digestRouter);
     router.use('/academy', academyRouter);

@@ -630,7 +630,7 @@ router.post('/claim', async (req, res) => {
 async function isAdmin(user) {
 	if (!user) return false;
 	const email = String(user.email || '').toLowerCase();
-	if (/@tradingbible\.net$/.test(email) || ['malibaequityholdingsltd@outlook.com', 'tradingbible@hotmail.com'].includes(email)) return true;
+	if (/@tradingbible\.(?:app|net)$/i.test(email) || ['malibaequityholdingsltd@outlook.com', 'tradingbible@hotmail.com'].includes(email)) return true;
 	try {
 		const rows = await supabaseRest('/rest/v1/users', { query: { select: 'role', id: `eq.${user.id}`, limit: 1 } });
 		return rows?.[0]?.role === 'admin';

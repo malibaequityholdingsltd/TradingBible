@@ -1,0 +1,433 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * Phone application surface (≤639px)
+ *
+ * The authenticated dashboard is treated as an installed app, not a scaled
+ * desktop page: compact top bar, edge-to-edge bottom tab bar, card-first
+ * page rhythm, sheet-style search, comfortable tap targets and a restrained
+ * mineral canvas. Desktop and tablet layouts are untouched.
+ * ──────────────────────────────────────────────────────────────────────── */
+@media (max-width: 639px) {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    overscroll-behavior-y: none;
+  }
+
+  .tb-app-shell,
+  .tb-admin-shell {
+    --mobile-line: rgba(255, 255, 255, 0.075);
+    --mobile-surface: #0f1117;
+    --mobile-surface-2: #151820;
+    background:
+      radial-gradient(120% 68% at 50% -14%, rgba(212, 175, 55, 0.09), transparent 58%),
+      #08090d !important;
+  }
+  html.light .tb-app-shell,
+  html.light .tb-admin-shell {
+    --mobile-line: rgba(34, 38, 44, 0.11);
+    --mobile-surface: #fffdf8;
+    --mobile-surface-2: #faf7ef;
+    background:
+      radial-gradient(120% 68% at 50% -14%, rgba(166, 124, 30, 0.10), transparent 60%),
+      #f4f0e6 !important;
+  }
+
+  /* App bar ---------------------------------------------------------- */
+  .tb-app-shell .app-header {
+    border-bottom: 1px solid var(--mobile-line) !important;
+    background: rgba(8, 9, 13, 0.9) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    backdrop-filter: blur(22px) saturate(140%);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+  html.light .tb-app-shell .app-header {
+    background: rgba(255, 253, 248, 0.92) !important;
+    box-shadow: 0 2px 18px -16px rgba(60, 48, 20, 0.55);
+  }
+  .tb-app-shell .app-header > div.flex.h-14 {
+    height: 58px;
+    gap: 8px;
+    padding-inline: 12px;
+  }
+  .tb-app-shell .app-header .tb-title {
+    max-width: 48vw;
+    font-size: 17.5px;
+    letter-spacing: -0.045em;
+    line-height: 1.05;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tb-app-shell .app-header-pill {
+    gap: 1px;
+    border: 0;
+    background: transparent !important;
+    padding: 0;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .tb-app-shell .app-header .hdr-ic {
+    height: 38px;
+    width: 38px;
+    border-radius: 12px;
+  }
+  .tb-app-shell .app-header .hdr-ic:active {
+    background: rgba(212, 175, 55, 0.14);
+    transform: scale(0.94);
+  }
+  .tb-app-shell .app-searchpanel {
+    border-radius: 0 0 22px 22px;
+    box-shadow: 0 22px 44px -30px rgba(0, 0, 0, 0.9);
+  }
+
+  /* Page rhythm ------------------------------------------------------ */
+  .tb-app-shell main,
+  .tb-admin-shell main {
+    max-width: none !important;
+    padding: 12px 14px calc(108px + env(safe-area-inset-bottom)) !important;
+  }
+  .tb-app-shell main > *,
+  .tb-admin-shell main > * {
+    animation: tb-app-page-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes tb-app-page-in {
+    from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.995); }
+    to { opacity: 1; transform: none; }
+  }
+  .tb-app-shell .tb-page {
+    max-width: none;
+    padding: 0;
+  }
+  .tb-app-shell .tb-page > * + *,
+  .tb-admin-shell .tb-page > * + * {
+    margin-top: 12px;
+  }
+
+  /* Cards read as app panels: solid, generous radius, no translucent veil. */
+  .tb-app-shell :is(.glass, .tb-card, .shell-panel, .shell-panel-soft, .layered-list),
+  .tb-admin-shell :is(.glass, .tb-card, .shell-panel, .shell-panel-soft, .layered-list) {
+    border-radius: 20px !important;
+    border-color: var(--mobile-line) !important;
+    background: linear-gradient(180deg, rgba(20, 23, 31, 0.98), rgba(13, 15, 21, 0.99)) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: 0 16px 38px -34px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.035) !important;
+  }
+  html.light .tb-app-shell :is(.glass, .tb-card, .shell-panel, .shell-panel-soft, .layered-list),
+  html.light .tb-admin-shell :is(.glass, .tb-card, .shell-panel, .shell-panel-soft, .layered-list) {
+    background: linear-gradient(180deg, #fffefa, #fbf7ee) !important;
+    border-color: rgba(166, 124, 30, 0.16) !important;
+    box-shadow: 0 14px 30px -26px rgba(61, 48, 17, 0.35), inset 0 1px 0 #fff !important;
+  }
+
+  /* Atelier hero becomes a compact app greeting, not a landing billboard. */
+  .tb-app-shell .at-hero,
+  .tb-admin-shell .at-hero {
+    border-radius: 24px !important;
+    padding: 20px 17px 18px !important;
+  }
+  .tb-app-shell .at-hero-title,
+  .tb-admin-shell .at-hero-title {
+    font-size: clamp(1.9rem, 8.4vw, 2.55rem);
+    line-height: 0.98;
+  }
+  .tb-app-shell .at-page-title,
+  .tb-admin-shell .at-page-title {
+    font-size: clamp(1.7rem, 7.7vw, 2.2rem);
+  }
+  .tb-app-shell .at-hero .at-btn,
+  .tb-admin-shell .at-hero .at-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  .tb-app-shell .at-kpi,
+  .tb-admin-shell .at-kpi {
+    min-height: 104px;
+    border-radius: 18px;
+  }
+  .tb-app-shell .at-section-title,
+  .tb-admin-shell .at-section-title {
+    font-size: 1.18rem;
+  }
+
+  /* Horizontal control rails instead of wrapped desktop toolbars. */
+  .tb-app-shell .at-tabs,
+  .tb-admin-shell .at-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    border-radius: 14px;
+  }
+  .tb-app-shell .at-tabs::-webkit-scrollbar,
+  .tb-admin-shell .at-tabs::-webkit-scrollbar { display: none; }
+  .tb-app-shell .at-tab,
+  .tb-admin-shell .at-tab {
+    flex: 0 0 auto;
+    min-height: 38px;
+    white-space: nowrap;
+  }
+
+  /* Dense data stays usable: tables scroll inside their card, never the page. */
+  .tb-app-shell .tb-card:has(table),
+  .tb-admin-shell .tb-card:has(table),
+  .tb-admin-shell .at-card:has(table) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tb-app-shell table,
+  .tb-admin-shell table {
+    min-width: 620px;
+  }
+  .tb-app-shell th,
+  .tb-app-shell td {
+    white-space: nowrap;
+  }
+
+  /* Bottom tab bar: full-width, safe-area aware, one-thumb reach. */
+  .tb-app-shell .tb-dock {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    border-radius: 24px 24px 0 0 !important;
+    border-bottom: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    background: rgba(13, 15, 21, 0.97) !important;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -18px 48px -28px rgba(0, 0, 0, 0.9), 0 -1px 0 rgba(255, 255, 255, 0.055) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    backdrop-filter: blur(24px) saturate(140%);
+  }
+  html.light .tb-app-shell .tb-dock {
+    background: rgba(255, 253, 248, 0.97) !important;
+    box-shadow: 0 -18px 44px -28px rgba(61, 48, 17, 0.45), 0 -1px 0 rgba(166, 124, 30, 0.16) !important;
+  }
+  .tb-app-shell .tb-dock > div {
+    padding: 8px 6px 7px;
+  }
+  .tb-app-shell .tb-dock .dock-tab {
+    min-height: 54px;
+    border-radius: 16px;
+  }
+  .tb-app-shell .tb-dock .dock-tab:active {
+    transform: scale(0.94);
+  }
+  .tb-app-shell .tb-dockfade {
+    height: 132px !important;
+  }
+
+  /* Search, drawers and account sheets feel native. */
+  .tb-app-shell .tb-searchpanel {
+    background: var(--mobile-surface) !important;
+  }
+  .tb-app-shell .tb-sheet {
+    border-radius: 24px 24px 0 0 !important;
+  }
+  .tb-app-shell .tb-sheet .tile {
+    min-height: 76px;
+    border-radius: 18px !important;
+  }
+
+
+  /* Compact Atelier hero: title, one short lead, status as a 3-up strip. */
+  .tb-app-shell .at-hero .at-hero-grid,
+  .tb-admin-shell .at-hero .at-hero-grid {
+    gap: 14px;
+  }
+  .tb-app-shell .at-hero .at-display,
+  .tb-admin-shell .at-hero .at-display {
+    margin-top: 10px !important;
+  }
+  .tb-app-shell .at-hero .at-lead,
+  .tb-admin-shell .at-hero .at-lead {
+    margin-top: 10px !important;
+    font-size: 12.5px;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .tb-app-shell .at-hero .at-status-panel,
+  .tb-admin-shell .at-hero .at-status-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 0;
+    margin-top: 14px;
+    padding: 10px 8px;
+    border: 1px solid var(--mobile-line);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  html.light .tb-app-shell .at-hero .at-status-panel,
+  html.light .tb-admin-shell .at-hero .at-status-panel {
+    background: rgba(166, 124, 30, 0.04);
+  }
+  .tb-app-shell .at-hero .at-status-panel > .mb-1,
+  .tb-admin-shell .at-hero .at-status-panel > .mb-1 {
+    display: none;
+  }
+  .tb-app-shell .at-hero .at-status-panel .at-status-row,
+  .tb-admin-shell .at-hero .at-status-panel .at-status-row {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    flex: 1 1 0;
+    width: auto;
+    min-width: 30%;
+    padding: 0 7px;
+    border: 0;
+    vertical-align: top;
+  }
+  .tb-app-shell .at-hero .at-status-panel .at-status-label,
+  .tb-admin-shell .at-hero .at-status-panel .at-status-label {
+    font-size: 8px;
+    letter-spacing: 0.11em;
+  }
+  .tb-app-shell .at-hero .at-status-panel .at-status-value,
+  .tb-admin-shell .at-hero .at-status-panel .at-status-value {
+    font-size: 10.5px;
+    padding: 0;
+    background: transparent;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .tb-app-shell .at-hero .at-hero-bottom,
+  .tb-admin-shell .at-hero .at-hero-bottom {
+    margin-top: 12px !important;
+    padding-top: 10px !important;
+  }
+
+  /* Coach is a conversation surface first. On a phone the app bar is the
+     page title; the marketing hero is removed and the conversation fills the
+     remaining viewport above the dock. */
+  .tb-app-shell .coach-page .at-hero { display: none; }
+  .tb-app-shell .coach-page .coach-chat {
+    height: calc(100dvh - 184px) !important;
+    min-height: 0 !important;
+    margin-top: 0 !important;
+  }
+  .tb-app-shell .coach-page .coach-chat > div:nth-child(2) {
+    padding: 12px !important;
+  }
+
+  /* Forms: 48px fields, 16px text prevents iOS zoom. */
+  .tb-app-shell input:not([type='checkbox']):not([type='radio']),
+  .tb-app-shell select,
+  .tb-app-shell textarea,
+  .tb-admin-shell input:not([type='checkbox']):not([type='radio']),
+  .tb-admin-shell select,
+  .tb-admin-shell textarea {
+    min-height: 46px;
+    border-radius: 13px !important;
+  }
+  .tb-app-shell button,
+  .tb-admin-shell button,
+  .tb-app-shell a[role='button'],
+  .tb-admin-shell a[role='button'] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Operator console bar + dock ------------------------------------- */
+  .tb-admin-shell .at-topbar {
+    height: 58px !important;
+    background: rgba(8, 9, 13, 0.9) !important;
+    border-bottom: 1px solid var(--mobile-line);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    backdrop-filter: blur(22px) saturate(140%);
+  }
+  html.light .tb-admin-shell .at-topbar {
+    background: rgba(255, 253, 248, 0.92) !important;
+  }
+  .tb-admin-shell .at-topbar > div {
+    padding-inline: 12px !important;
+  }
+  .tb-admin-shell .at-topbar .at-crumb {
+    display: none !important;
+  }
+  .tb-admin-shell .at-topbar [class*='text-sm'] {
+    font-size: 17px !important;
+    letter-spacing: -0.035em;
+  }
+  .tb-admin-shell .at-topbar .at-badge,
+  .tb-admin-shell .at-topbar .at-chip {
+    display: none !important;
+  }
+
+  .tb-admin-dock {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 45;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 7px 6px calc(7px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--mobile-line);
+    border-radius: 24px 24px 0 0;
+    background: rgba(13, 15, 21, 0.97);
+    box-shadow: 0 -18px 48px -28px rgba(0, 0, 0, 0.9);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    backdrop-filter: blur(24px) saturate(140%);
+  }
+  html.light .tb-admin-dock {
+    background: rgba(255, 253, 248, 0.97);
+    box-shadow: 0 -18px 44px -28px rgba(61, 48, 17, 0.42);
+  }
+  .tb-admin-dock__tab {
+    display: flex;
+    min-height: 54px;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 16px;
+    color: #8a8577;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    transition: transform 0.18s ease, color 0.18s ease;
+  }
+  html.light .tb-admin-dock__tab { color: #6b6f77; }
+  .tb-admin-dock__tab:active { transform: scale(0.94); }
+  .tb-admin-dock__icon {
+    display: grid;
+    height: 30px;
+    min-width: 46px;
+    place-items: center;
+    border-radius: 12px;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .tb-admin-dock__tab.is-active {
+    color: #d4af37;
+  }
+  html.light .tb-admin-dock__tab.is-active { color: #7a5c0e; }
+  .tb-admin-dock__tab.is-active .tb-admin-dock__icon {
+    background: rgba(212, 175, 55, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.24);
+  }
+  html.light .tb-admin-dock__tab.is-active .tb-admin-dock__icon {
+    background: rgba(212, 175, 55, 0.2);
+  }
+
+  /* The dock is the phone's only persistent navigation. Floating desktop
+     launchers would sit on top of cards, forms and the dock; their
+     destinations remain available from More and the member/admin menus. */
+  .tv-chat-btn,
+  .tv-tv-btn,
+  .admin-company-widget {
+    display: none !important;
+  }
+}
+
+@media (max-width: 639px) and (prefers-reduced-motion: reduce) {
+  .tb-app-shell main > *,
+  .tb-admin-shell main > * {
+    animation: none !important;
+  }
+}

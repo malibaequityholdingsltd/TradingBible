@@ -16,7 +16,7 @@ export function findTbcDocument(slug) {
 	return tbcDocuments.find((doc) => doc.slug === slug) || null;
 }
 
-export function toPublicDocument(doc) {
+export function toPublicDocument(doc, execution = null) {
 	if (!doc) return null;
 	return {
 		slug: doc.slug,
@@ -28,9 +28,11 @@ export function toPublicDocument(doc) {
 		status: doc.status,
 		version: doc.version,
 		signatureFields: doc.signatureFields,
-		signatureStatus: doc.signatureStatus,
-		pdfBytes: doc.pdfBytes,
+		signatureStatus: execution && execution.state !== 'not_prepared' ? execution.label : doc.signatureStatus,
+		execution: execution && execution.state !== 'not_prepared' ? execution : null,
 		docxBytes: doc.docxBytes,
+		downloadFormat: 'docx',
+		readOnlyDownload: true,
 	};
 }
 
@@ -39,7 +41,9 @@ export function toAdminDocument(doc) {
 		...toPublicDocument(doc),
 		visibility: doc.visibility,
 		classification: doc.classification,
-		pdfBytes: doc.pdfBytes,
 		docxBytes: doc.docxBytes,
+		downloadFormat: 'docx',
+		readOnlyDownload: true,
+		signers: Array.isArray(doc.signers) ? doc.signers : [],
 	};
 }

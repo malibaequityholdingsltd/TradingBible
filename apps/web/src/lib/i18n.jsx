@@ -1877,7 +1877,10 @@ export function I18nProvider({ children }) {
 
   useEffect(() => {
     try {
+      const rtl = lang === 'ar';
       document.documentElement.lang = lang;
+      document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+      document.documentElement.classList.toggle('tb-rtl', rtl);
     } catch { /* ignore */ }
   }, [lang]);
 

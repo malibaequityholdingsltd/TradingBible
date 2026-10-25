@@ -5,7 +5,7 @@ module.exports = {
       cwd: '/var/www/tradingbible/apps/api',
       script: 'src/main.js',
       interpreter: 'node',
-      interpreter_args: '--env-file=.env',
+      interpreter_args: '--env-file=/var/www/tradingbible/apps/api/.env',
       instances: 1,
       autorestart: true,
       watch: false,

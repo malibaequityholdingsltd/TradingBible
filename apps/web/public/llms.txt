@@ -61,6 +61,7 @@
 - [Reset](/reset): TradingBible application page.
 - [Risk Tools](/app/tools): TradingBible application page.
 - [Security](/app/security): TradingBible application page.
+- [Security Info](/security): TradingBible application page.
 - [Signals](/app/signals): TradingBible application page.
 - [Signup](/signup): TradingBible application page.
 - [Staff Id Cards](/admin/staff-id-cards): TradingBible application page.

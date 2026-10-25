@@ -335,7 +335,7 @@ function Front({ staff, bioUrl }) {
           </div>
           <div style={{ textAlign: 'right', lineHeight: 1.5, flexShrink: 0 }}>
             <div style={{ fontFamily: DISPLAY, fontSize: 10, fontWeight: 700, color: '#e6dfcc', whiteSpace: 'nowrap' }}>TradingBible LLC · Delaware</div>
-            <div style={{ fontFamily: DISPLAY, fontSize: 8, fontWeight: 700, color: GOLD_LIGHT, letterSpacing: 0.7, whiteSpace: 'nowrap' }}>TRADINGBIBLE.NET</div>
+            <div style={{ fontFamily: DISPLAY, fontSize: 8, fontWeight: 700, color: GOLD_LIGHT, letterSpacing: 0.7, whiteSpace: 'nowrap' }}>TRADINGBIBLE.APP</div>
           </div>
         </div>
       </div>

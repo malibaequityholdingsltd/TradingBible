@@ -1,19 +1,27 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Gift, Loader2, Camera, Lock, Plus } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  CalendarDays, Camera, Coins, Gift, Loader2, Lock, Plus, RefreshCw,
+  Sparkles, TriangleAlert, Users,
+} from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
-import { Card, GoldButton, GhostButton } from '@/components/ui-kit';
+import {
+  AtAlert, AtBadge, AtButton, AtEmpty, AtHero, AtMetric, AtPanel, AtProgress,
+  AtSectionHeading,
+} from '@/components/AtelierUI';
 import { useToast } from '@/hooks/use-toast';
 import pb from '@/lib/pocketbaseClient';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 
-const input = 'w-full rounded-[10px] border border-white/10 bg-black/30 px-3 py-2 text-[13px] text-[#e9e7df] placeholder-[#6a665a] outline-none backdrop-blur-md transition focus:border-[#d4af37]/50 min-h-[38px] [html.light_&]:border-black/[0.08] [html.light_&]:bg-white [html.light_&]:text-[#1a1d21]';
-const check = 'flex min-h-[38px] items-center gap-2 rounded-[10px] border border-white/10 bg-white/[0.02] px-3 py-2 text-[13px] text-[#c9c4b4] cursor-pointer backdrop-blur-md transition hover:border-[#d4af37]/30 [html.light_&]:border-black/[0.08] [html.light_&]:bg-white [html.light_&]:text-[#5b574a]';
+const EMPTY = {
+  title: '', amountPerUser: '100', maxRecipients: '500', challengePassed: false,
+  academy: false, minReferrals: '', minTrades: '', registeredBefore: '',
+};
+
+const nf = (value) => Number(value || 0).toLocaleString();
 
 function headers() {
   return { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' };
 }
-
-const EMPTY = { title: '', amountPerUser: '100', maxRecipients: '500', challengePassed: false, academy: false, minReferrals: '', minTrades: '', registeredBefore: '' };
 
 export default function AdminAirdrops() {
   const { toast } = useToast();
@@ -27,7 +35,7 @@ export default function AdminAirdrops() {
       const res = await fetch(`${API_SERVER_URL}/tbc/admin/airdrops`, { headers: headers() });
       const d = await res.json().catch(() => ({}));
       if (res.ok) setList(d.airdrops || []);
-    } catch { /* ignore */ }
+    } catch { /* keep the last good list */ }
     finally { setLoading(false); }
   }, []);
 
@@ -90,88 +98,228 @@ export default function AdminAirdrops() {
     finally { setBusy(''); }
   };
 
+  const stats = useMemo(() => {
+    const open = list.filter((a) => a.status === 'open').length;
+    const recipients = list.reduce((sum, a) => sum + Number(a.recipients || 0), 0);
+    const claimed = list.reduce((sum, a) => sum + Number(a.claimed || 0), 0);
+    return { open, recipients, claimed, campaigns: list.length };
+  }, [list]);
+
   return (
     <AdminLayout title="Airdrops">
-      <div className="tb-page !max-w-[1200px]">
-        <div className="flex flex-wrap items-center gap-3 rounded-[10px] border border-white/10 bg-white/[0.02] px-4 py-3 backdrop-blur-md [html.light_&]:border-black/[0.08] [html.light_&]:bg-white [html.light_&]:shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[10px] border border-[#d4af37]/25 bg-[#d4af37]/[0.07] text-[#d4af37]"><Gift className="h-4 w-4" /></span>
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#d4af37]">TBC Airdrops</p>
-            <h1 className="truncate text-[18px] font-semibold tracking-[-0.02em] text-[#f0ecdd] [html.light_&]:text-[#1a1d21] sm:text-[20px]">Eligibility → snapshot → claim</h1>
-          </div>
-          <span className="shrink-0 rounded-[10px] border border-white/10 bg-black/30 px-2 py-1 font-mono text-[11px] tabular-nums text-[#8a8577] [html.light_&]:border-black/[0.08] [html.light_&]:bg-black/[0.03]">{list.length} campaigns</span>
+      <div className="at-page at-scope at-enter">
+        <AtHero
+          eyebrow="TBC credit campaigns · eligibility engine"
+          icon={Gift}
+          title={<>Airdrop <em>studio.</em></>}
+          description="Draft a campaign, snapshot the audience, then let eligible accounts claim TBC platform credits. Claims are off-chain accounting entries — not token transfers — and every snapshot is additive."
+          status={[
+            { label: 'Campaigns', value: stats.campaigns, tone: 'gold' },
+            { label: 'Open now', value: stats.open, tone: stats.open ? 'green' : undefined },
+            { label: 'Recipients', value: nf(stats.recipients) },
+            { label: 'Credits claimed', value: nf(stats.claimed), tone: 'gold' },
+          ]}
+          statusTitle="Campaign posture"
+          statusNote="A campaign only becomes claimable after an explicit eligibility snapshot. Re-snapshotting adds new recipients and never double-counts claimed users."
+          actions={(
+            <>
+              <AtButton onClick={load} variant="quiet" icon={RefreshCw}>Refresh book</AtButton>
+              <AtButton to="/admin/tbc" variant="outline" icon={Coins}>TBC control center</AtButton>
+            </>
+          )}
+          bottom={(
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-semibold text-[var(--at-mut)]">
+              <span className="flex items-center gap-2"><Users className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Snapshot-based eligibility</span>
+              <span className="flex items-center gap-2"><Coins className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Off-chain TBC credits</span>
+              <span className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-[var(--at-gold)]" /> No token issuance</span>
+              <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">1 TBC credit = 1 KWD</span>
+            </div>
+          )}
+        />
+
+        <div className="mt-3">
+          <AtAlert icon={TriangleAlert} tone="amber">
+            Airdrops issue <b className="text-[var(--at-ink)]">platform credits</b> for eligible services. They do not mint, promise or deliver the proposed TBC token. On-chain claim rails are not active.
+          </AtAlert>
         </div>
 
-        <Card className="mt-2.5 p-3 sm:p-4">
-          <div className="flex items-center gap-1.5 text-[13px] font-semibold tracking-[-0.01em] text-[#f0ecdd] [html.light_&]:text-[#1a1d21]"><Plus className="h-3.5 w-3.5 text-[#d4af37]" /> New campaign</div>
-          <form onSubmit={create} className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <input className={input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Campaign title (e.g. Genesis traders)" />
-            <div className="grid grid-cols-2 gap-2">
-              <input className={`${input} font-mono tabular-nums`} type="number" min="1" value={form.amountPerUser} onChange={(e) => setForm({ ...form, amountPerUser: e.target.value })} placeholder="TBC per user" />
-              <input className={`${input} font-mono tabular-nums`} type="number" min="1" value={form.maxRecipients} onChange={(e) => setForm({ ...form, maxRecipients: e.target.value })} placeholder="Max recipients" />
-            </div>
-            <label className={check}><input type="checkbox" checked={form.challengePassed} onChange={(e) => setForm({ ...form, challengePassed: e.target.checked })} className="h-4 w-4 shrink-0 accent-[#d4af37]" /> Passed a challenge</label>
-            <label className={check}><input type="checkbox" checked={form.academy} onChange={(e) => setForm({ ...form, academy: e.target.checked })} className="h-4 w-4 shrink-0 accent-[#d4af37]" /> Owns Academy</label>
-            <input className={`${input} font-mono tabular-nums`} type="number" min="0" value={form.minReferrals} onChange={(e) => setForm({ ...form, minReferrals: e.target.value })} placeholder="Min referrals (0 = any)" />
-            <input className={`${input} font-mono tabular-nums`} type="number" min="0" value={form.minTrades} onChange={(e) => setForm({ ...form, minTrades: e.target.value })} placeholder="Min journaled trades (0 = any)" />
-            <div className="sm:col-span-2">
-              <input className={`${input} tabular-nums`} type="date" value={form.registeredBefore} onChange={(e) => setForm({ ...form, registeredBefore: e.target.value })} aria-label="Registered before" />
-            </div>
-            <div className="sm:col-span-2">
-              <GoldButton disabled={busy === 'create'} className="!px-4 !text-[13px]">{busy === 'create' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create draft'}</GoldButton>
-            </div>
-          </form>
-        </Card>
+        <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <AtMetric icon={Gift} label="Campaigns" value={stats.campaigns} note="Draft + open + closed" />
+          <AtMetric icon={Sparkles} label="Open campaigns" value={stats.open} note={stats.open ? 'Accepting claims' : 'No campaign open'} tone={stats.open ? 'text-[var(--at-green)]' : ''} />
+          <AtMetric icon={Users} label="Eligible recipients" value={nf(stats.recipients)} note="Across every campaign" />
+          <AtMetric icon={Coins} label="Credits claimed" value={nf(stats.claimed)} note="Off-chain credit entries" tone="text-[var(--at-gold)]" />
+        </div>
 
-        {loading ? (
-          <Card className="mt-2.5 p-4"><p className="text-[13px] text-[#8a8577] [html.light_&]:text-[#6b675c]">Loading campaigns…</p></Card>
-        ) : list.length === 0 ? (
-          <Card className="mt-2.5 p-4"><p className="text-[13px] text-[#8a8577] [html.light_&]:text-[#6b675c]">No campaigns yet — draft the first above.</p></Card>
-        ) : (
-          <Card className="mt-2.5 overflow-hidden p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] border-collapse text-left">
-                <thead className="sticky top-0 z-10">
-                  <tr className="border-b border-white/10 bg-white/[0.02] backdrop-blur-md [html.light_&]:border-black/[0.08] [html.light_&]:bg-black/[0.02]">
-                    <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a8577] [html.light_&]:text-[#6b675c]">Campaign</th>
-                    <th className="px-3 py-2 text-right text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a8577] [html.light_&]:text-[#6b675c]">Per user</th>
-                    <th className="px-3 py-2 text-right text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a8577] [html.light_&]:text-[#6b675c]">Recipients</th>
-                    <th className="px-3 py-2 text-right text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a8577] [html.light_&]:text-[#6b675c]">Claimed</th>
-                    <th className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a8577] [html.light_&]:text-[#6b675c]">Status</th>
-                    <th className="px-3 py-2 text-right text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a8577] [html.light_&]:text-[#6b675c]">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {list.map((a) => (
-                    <tr key={a.id} className="border-b border-white/[0.06] transition last:border-0 hover:bg-white/[0.02] [html.light_&]:border-black/[0.06]">
-                      <td className="max-w-[220px] truncate px-3 py-2.5 text-[13px] font-semibold tracking-[-0.01em] text-[#f0ecdd] [html.light_&]:text-[#1a1d21]">{a.title}</td>
-                      <td className="whitespace-nowrap px-3 py-2.5 text-right font-mono text-[13px] tabular-nums text-[#d4af37] [html.light_&]:text-[#8a6d1b]">{Number(a.amountPerUser).toLocaleString()} TBC <span className="text-[#8a8577] [html.light_&]:text-[#6b675c]">/ user</span></td>
-                      <td className="whitespace-nowrap px-3 py-2.5 text-right font-mono text-[13px] tabular-nums text-[#e9e7df] [html.light_&]:text-[#1a1d21]">{a.recipients} <span className="font-sans text-[11px] text-[#8a8577] [html.light_&]:text-[#6b675c]">recipients</span></td>
-                      <td className="whitespace-nowrap px-3 py-2.5 text-right font-mono text-[13px] tabular-nums text-[#8a8577] [html.light_&]:text-[#6b675c]">{a.claimed} <span className="font-sans text-[11px]">claimed</span></td>
-                      <td className="whitespace-nowrap px-3 py-2.5">
-                        <span className={`inline-flex shrink-0 items-center rounded-[10px] border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] tabular-nums ${a.status === 'open' ? 'border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-400' : a.status === 'closed' ? 'border-white/10 bg-white/[0.04] text-[#8a8577] [html.light_&]:border-black/[0.08] [html.light_&]:bg-black/[0.04]' : 'border-[#d4af37]/25 bg-[#d4af37]/[0.07] text-[#d4af37] [html.light_&]:text-[#8a6d1b]'}`}>{a.status}</span>
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-2.5">
-                        <div className="flex justify-end gap-1.5">
-                          {a.status !== 'closed' && (
-                            <GoldButton disabled={busy === `snap:${a.id}`} onClick={() => snapshot(a.id)} className="!min-h-[32px] !px-3 !py-1.5 !text-xs">
-                              {busy === `snap:${a.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Camera className="h-3.5 w-3.5" /> Snapshot{a.status === 'open' ? ' again' : ' & open'}</>}
-                            </GoldButton>
-                          )}
-                          {a.status === 'open' && (
-                            <GhostButton disabled={busy === `close:${a.id}`} onClick={() => close(a.id)} className="!min-h-[32px] !px-3 !py-1.5 !text-xs"><Lock className="h-3.5 w-3.5" /> Close</GhostButton>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        )}
-        <p className="mt-2.5 rounded-[10px] border border-white/10 bg-white/[0.02] px-3 py-2.5 text-[11px] leading-relaxed text-[#6a665a] backdrop-blur-md [html.light_&]:border-black/[0.08] [html.light_&]:bg-white [html.light_&]:text-[#5b574a]">Claims land as spendable TBC till credit instantly; the treasury claim rails carry them on-chain at token launch. Re-snapshotting only adds new recipients — claimed users are never double-counted.</p>
+        <div className="mt-6 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
+          <div className="min-w-0">
+            <AtSectionHeading
+              index="01"
+              title="Campaign book"
+              sub="Eligibility, snapshot state and claim progress in one view."
+              action={<AtBadge tone="gold">{list.length} total</AtBadge>}
+            />
+
+            {loading ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map((n) => <div key={n} className="at-card h-36 animate-pulse bg-[var(--at-soft)]" />)}
+              </div>
+            ) : list.length === 0 ? (
+              <div className="at-card"><AtEmpty icon={Gift} title="No campaigns yet" sub="Draft the first campaign in the composer. It stays a draft until you snapshot eligibility." /></div>
+            ) : (
+              <div className="space-y-2">
+                {list.map((a) => <CampaignCard key={a.id} campaign={a} busy={busy} onSnapshot={snapshot} onClose={close} />)}
+              </div>
+            )}
+          </div>
+
+          <aside className="xl:sticky xl:top-[92px]">
+            <AtPanel
+              eyebrow="Composer"
+              title="Draft a campaign"
+              sub="Eligibility is evaluated server-side at snapshot time."
+              action={<AtBadge tone="amber">Draft first</AtBadge>}
+            >
+              <form onSubmit={create} className="space-y-3">
+                <label className="block">
+                  <span className="at-label">Campaign title</span>
+                  <input className="at-input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Genesis traders" />
+                </label>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="block">
+                    <span className="at-label">TBC per user</span>
+                    <input className="at-input font-mono" type="number" min="1" value={form.amountPerUser} onChange={(e) => setForm({ ...form, amountPerUser: e.target.value })} />
+                  </label>
+                  <label className="block">
+                    <span className="at-label">Max recipients</span>
+                    <input className="at-input font-mono" type="number" min="1" value={form.maxRecipients} onChange={(e) => setForm({ ...form, maxRecipients: e.target.value })} />
+                  </label>
+                </div>
+
+                <div>
+                  <span className="at-label">Eligibility</span>
+                  <div className="space-y-1.5">
+                    <label className="at-check"><input type="checkbox" checked={form.challengePassed} onChange={(e) => setForm({ ...form, challengePassed: e.target.checked })} /> Passed a challenge</label>
+                    <label className="at-check"><input type="checkbox" checked={form.academy} onChange={(e) => setForm({ ...form, academy: e.target.checked })} /> Owns Academy</label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="block">
+                    <span className="at-label">Min referrals</span>
+                    <input className="at-input font-mono" type="number" min="0" value={form.minReferrals} onChange={(e) => setForm({ ...form, minReferrals: e.target.value })} placeholder="0 = any" />
+                  </label>
+                  <label className="block">
+                    <span className="at-label">Min trades</span>
+                    <input className="at-input font-mono" type="number" min="0" value={form.minTrades} onChange={(e) => setForm({ ...form, minTrades: e.target.value })} placeholder="0 = any" />
+                  </label>
+                </div>
+
+                <label className="block">
+                  <span className="at-label">Registered before</span>
+                  <div className="relative">
+                    <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--at-mut-2)]" />
+                    <input className="at-input !pl-9" type="date" value={form.registeredBefore} onChange={(e) => setForm({ ...form, registeredBefore: e.target.value })} />
+                  </div>
+                </label>
+
+                <div className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut)]">Maximum budget</span>
+                    <span className="font-mono text-[11px] font-bold text-[var(--at-gold)]">
+                      {nf(Number(form.amountPerUser) * (Number(form.maxRecipients) || 0))} TBC
+                    </span>
+                  </div>
+                  <AtProgress className="mt-2" value={0} />
+                  <p className="mt-2 text-[9px] leading-relaxed text-[var(--at-mut-2)]">Illustrative ceiling only. Credits are created on claim, within the platform ledger.</p>
+                </div>
+
+                <AtButton type="submit" disabled={busy === 'create'} variant="gold" icon={busy === 'create' ? Loader2 : Plus} className="w-full">
+                  {busy === 'create' ? 'Creating draft…' : 'Create draft'}
+                </AtButton>
+              </form>
+            </AtPanel>
+          </aside>
+        </div>
+
+        <div className="mt-5">
+          <AtAlert icon={Coins}>
+            Claims land as spendable TBC credit instantly. The proposed token is not issued, and treasury claim rails are not active. Re-snapshotting only adds new recipients — claimed users are never double-counted.
+          </AtAlert>
+        </div>
       </div>
     </AdminLayout>
+  );
+}
+
+function CampaignCard({ campaign: a, busy, onSnapshot, onClose }) {
+  const recipients = Number(a.recipients || 0);
+  const claimed = Number(a.claimed || 0);
+  const pct = recipients ? Math.min(100, Math.round((claimed / recipients) * 100)) : 0;
+  const statusTone = a.status === 'open' ? 'green' : a.status === 'closed' ? 'muted' : 'amber';
+  const criteria = a.criteria || {};
+  const tags = [
+    criteria.challengePassed && 'Challenge passed',
+    criteria.academy && 'Academy',
+    Number(criteria.minReferrals) > 0 && `${criteria.minReferrals}+ referrals`,
+    Number(criteria.minTrades) > 0 && `${criteria.minTrades}+ trades`,
+    criteria.registeredBefore && `Before ${String(criteria.registeredBefore).slice(0, 10)}`,
+  ].filter(Boolean);
+
+  return (
+    <article className="at-card at-card--hover overflow-hidden">
+      <div className="p-4">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <AtBadge tone={statusTone}>{a.status || 'draft'}</AtBadge>
+              <span className="font-mono text-[9px] text-[var(--at-mut-2)]">{a.id}</span>
+            </div>
+            <h3 className="mt-2 text-[15px] font-semibold tracking-[-0.025em] text-[var(--at-ink)]">{a.title}</h3>
+          </div>
+          <div className="text-right">
+            <div className="font-mono text-[15px] font-bold text-[var(--at-gold)]">{nf(a.amountPerUser)} <span className="text-[9px] font-medium text-[var(--at-mut)]">TBC / user</span></div>
+            <div className="mt-0.5 text-[9px] text-[var(--at-mut-2)]">Campaign allocation</div>
+          </div>
+        </div>
+
+        {tags.length > 0 && <div className="at-tag-row mt-3">{tags.map((tag) => <AtBadge key={tag} plain>{tag}</AtBadge>)}</div>}
+
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-3 py-2">
+            <div className="text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Recipients</div>
+            <div className="mt-1 font-mono text-[13px] font-semibold text-[var(--at-ink)]">{nf(recipients)}</div>
+          </div>
+          <div className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-3 py-2">
+            <div className="text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Claimed</div>
+            <div className="mt-1 font-mono text-[13px] font-semibold text-[var(--at-ink)]">{nf(claimed)}</div>
+          </div>
+          <div className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-3 py-2">
+            <div className="text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Ceiling</div>
+            <div className="mt-1 font-mono text-[13px] font-semibold text-[var(--at-ink)]">{nf(Number(a.amountPerUser) * Number(a.maxRecipients || 0))}</div>
+          </div>
+        </div>
+
+        <div className="mt-3">
+          <div className="mb-1.5 flex items-center justify-between text-[9px] text-[var(--at-mut)]">
+            <span>Claim progress</span>
+            <span className="font-mono text-[var(--at-ink-2)]">{pct}%</span>
+          </div>
+          <AtProgress value={pct} tone={pct >= 100 ? 'green' : 'gold'} />
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-1.5 border-t border-[var(--at-line-soft)] pt-3">
+          {a.status !== 'closed' && (
+            <AtButton onClick={() => onSnapshot(a.id)} disabled={busy === `snap:${a.id}`} variant="gold" size="sm" icon={busy === `snap:${a.id}` ? Loader2 : Camera}>
+              {a.status === 'open' ? 'Snapshot again' : 'Snapshot & open'}
+            </AtButton>
+          )}
+          {a.status === 'open' && (
+            <AtButton onClick={() => onClose(a.id)} disabled={busy === `close:${a.id}`} variant="quiet" size="sm" icon={Lock}>Close campaign</AtButton>
+          )}
+          {a.status === 'closed' && <span className="text-[9px] text-[var(--at-mut-2)]">Campaign closed. No further claims.</span>}
+        </div>
+      </div>
+    </article>
   );
 }

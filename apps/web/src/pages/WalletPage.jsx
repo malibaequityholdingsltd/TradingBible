@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTbc } from '@/lib/tbc';
 import { useToast } from '@/hooks/use-toast';
 import { Card, SectionHead, EmptyState, GoldButton, GhostButton, Skeleton, Note } from '@/components/ui-kit';
+import { AtBadge, AtButton, AtHero, AtMetric, AtPanel, AtProgress, AtTabs } from '@/components/AtelierUI';
 import TbcCard from '@/components/TbcCard';
 import AirdropClaim from '@/components/AirdropClaim';
 import { TbcSign, TbcMoney } from '@/components/TbcSign';
@@ -37,15 +38,19 @@ function shortAddr(a) {
 function CryptoWidget({ id, num, title, sub, open, onToggle, actions, children }) {
 	return (
 		<div id={id} className="scroll-mt-24 overflow-hidden rounded-3xl border border-white/8 bg-black/20">
-			<button onClick={onToggle} aria-expanded={open} className="flex w-full items-center gap-3 p-4 text-left sm:p-5">
-				<span className="shrink-0 font-mono text-[11px] font-bold text-[#5f5b50]">{num}</span>
-				<span className="min-w-0 flex-1">
-					<span className="block truncate text-sm font-bold text-[#f0ecdd]">{title}</span>
-					{sub ? <span className="mt-0.5 block truncate text-xs text-[#8a8577]">{sub}</span> : null}
-				</span>
+			<div className="flex w-full items-center gap-2 p-4 sm:p-5">
+				<button onClick={onToggle} aria-expanded={open} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+					<span className="shrink-0 font-mono text-[11px] font-bold text-[#5f5b50]">{num}</span>
+					<span className="min-w-0 flex-1">
+						<span className="block truncate text-sm font-bold text-[#f0ecdd]">{title}</span>
+						{sub ? <span className="mt-0.5 block truncate text-xs text-[#8a8577]">{sub}</span> : null}
+					</span>
+				</button>
 				{actions}
-				<ChevronDown className={`h-4 w-4 shrink-0 text-[#d4af37] transition ${open ? 'rotate-180' : ''}`} />
-			</button>
+				<button onClick={onToggle} aria-label={open ? 'Collapse section' : 'Expand section'} aria-expanded={open} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#d4af37] hover:bg-[#d4af37]/10">
+					<ChevronDown className={`h-4 w-4 transition ${open ? 'rotate-180' : ''}`} />
+				</button>
+			</div>
 			{open && <div className="border-t border-white/5 p-4 sm:p-5">{children}</div>}
 		</div>
 	);
@@ -420,33 +425,39 @@ export default function WalletPage() {
 
 	return (
 		<AppLayout title={t('nav.wallet')}>
-			<div className="tb-page">
-				{/* ── Teller bar ── */}
-			<div className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-3xl border border-[#d4af37]/25 bg-[#0c0c11]/95 px-5 py-4 sm:px-6">
-				<span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/15 text-[#d4af37]"><Wallet className="h-5 w-5" /></span>
-				<div className="min-w-0">
-					<p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#d4af37]">My Wallet · TBC only spends</p>
-					<h1 className="truncate text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">
-						<span className="text-[#d4af37]"><TbcMoney amount={tbcBalance} /></span>
-						<span className="ml-2 align-middle text-[11px] font-semibold uppercase tracking-wider text-[#5f5b50]">in the till · cash {fmtMoney(walletBalance)} for plans</span>
-					</h1>
-				</div>
-				<div className="ml-auto flex flex-wrap items-center gap-2">
-					<GoldButton onClick={() => { setBankTab('money'); setShowDep(true); }} className="!min-h-[44px] !px-5 !py-2.5 !text-xs"><Plus className="h-4 w-4" /> Top up</GoldButton>
-					<GhostButton onClick={reload} disabled={syncing} className="!min-h-[44px] !px-4 !py-2.5 !text-xs"><RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} /> Refresh</GhostButton>
-				</div>
-			</div>
+			<div className="at-page at-scope at-enter">
+				<AtHero
+					eyebrow="Member treasury · 1 TBC = 1 KWD"
+					icon={Wallet}
+					title={<>Your <em>wallet.</em></>}
+					description="Two balances, one clear rule: cash pays for plans, and TBC platform credits pay for the things you use inside TradingBible. This is off-chain account money — not the proposed TBC token."
+					status={[
+						{ label: 'TBC in the till', value: <TbcMoney amount={tbcBalance} />, tone: 'gold' },
+						{ label: 'Cash for plans', value: fmtMoney(walletBalance) },
+						{ label: 'Identity', value: kycStatus === 'verified' ? 'Verified' : kycStatus === 'pending' ? 'Pending' : 'Not verified', tone: kycStatus === 'verified' ? 'green' : 'amber' },
+						{ label: 'Bank link', value: connectStatus === 'active' ? 'Connected' : 'Not connected', tone: connectStatus === 'active' ? 'green' : 'amber' },
+					]}
+					statusTitle="Account state"
+					statusNote="TBC credits are platform accounting entries. The proposed TBC token is not issued and cannot be bought, sold, staked or transferred here."
+					actions={(
+						<>
+							<AtButton onClick={() => { setBankTab('money'); setShowDep(true); }} variant="gold" icon={Plus}>Top up cash</AtButton>
+							<AtButton onClick={reload} disabled={syncing} variant="quiet" icon={RefreshCw}>Refresh balances</AtButton>
+						</>
+					)}
+					bottom={(
+						<div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-semibold text-[var(--at-mut)]">
+							<span className="flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5 text-[var(--at-green)]" /> Ledger-backed balances</span>
+							<span className="flex items-center gap-2"><CreditCard className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Plans pay by cash or card</span>
+							<span className="flex items-center gap-2"><Coins className="h-3.5 w-3.5 text-[var(--at-gold)]" /> TBC spends in-app only</span>
+							<span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Non-custodial crypto tracking</span>
+						</div>
+					)}
+				/>
 
-			{/* ── Bank tabs ── */}
-			<div className="flex gap-1 overflow-x-auto rounded-2xl border border-white/[0.07] bg-black/30 p-1.5">
-				{BANK_TABS.map((tb) => (
-					<button key={tb.id} onClick={() => setBankTab(tb.id)}
-						className={`flex min-h-[44px] flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-3 text-[13px] font-bold transition ${bankTab === tb.id ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
-						<tb.icon className="h-4 w-4" />
-						{tb.label}
-					</button>
-				))}
-			</div>
+				<div className="mt-4">
+					<AtTabs tabs={BANK_TABS} active={bankTab} onChange={setBankTab} />
+				</div>
 
 			{bankTab === 'accounts' && (
 			<>
@@ -456,28 +467,43 @@ export default function WalletPage() {
 				<span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
 				<GhostButton onClick={() => setBankTab('send')} className="!px-3 !py-2 !text-xs"><Send className="h-4 w-4" /> {t('wal.sendMoney')}</GhostButton>
 			</div>
-			<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-				<div className="relative overflow-hidden rounded-3xl border border-[#d4af37]/30 bg-[#d4af37]/[0.06] p-5 transition-all duration-200 hover:-translate-y-0.5">
-					<div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-[#d4af37]/10 blur-2xl" />
-					<div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-[#d4af37]"><Wallet className="h-3.5 w-3.5" /> Till · TBC</div>
-					<div className="mt-1.5 text-[26px] font-extrabold leading-none text-[#f0ecdd]"><TbcMoney amount={tbcBalance} /></div>
-					<div className="mt-1 font-mono text-[11px] tracking-wider text-[#6a665a]">
+			<div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+				<div className="at-card relative overflow-hidden p-5">
+					<span aria-hidden className="at-watermark !right-4 !top-1 !text-[4.4rem]">TBC</span>
+					<div className="flex items-center justify-between gap-2">
+						<AtBadge tone="gold">Only money that spends</AtBadge>
+						<Wallet className="h-4 w-4 text-[var(--at-gold)]" />
+					</div>
+					<div className="mt-4 font-display text-[28px] font-semibold leading-none tracking-[-0.05em] text-[var(--at-ink)]"><TbcMoney amount={tbcBalance} /></div>
+					<div className="mt-1.5 font-mono text-[10px] tracking-wider text-[var(--at-mut-2)]">
 						{(() => { const a = accounts.find((x) => x.asset === 'TBC'); return a?.number ? `${a.number} ···· ${a.last4}` : t('wal.noAcctNum'); })()}
 					</div>
-					<p className="mt-1.5 text-[11px] leading-relaxed text-[#8a8577]">Only money that spends — entries, signals, mentorship.</p>
+					<p className="mt-2 text-[10px] leading-relaxed text-[var(--at-mut)]">Entries, signals, mentorship and eligible services. Credits never pay for a subscription.</p>
 				</div>
-				<div className="relative overflow-hidden rounded-3xl border border-emerald-400/25 bg-emerald-400/[0.05] p-5 transition-all duration-200 hover:-translate-y-0.5">
-					<div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-emerald-400"><CreditCard className="h-3.5 w-3.5" /> Cash · Plans</div>
-					<div className="mt-1.5 font-mono text-[26px] font-extrabold leading-none text-[#f0ecdd]">{fmtMoney(walletBalance)}</div>
-					<div className="mt-1 font-mono text-[11px] tracking-wider text-[#6a665a]">
+				<div className="at-card relative overflow-hidden p-5">
+					<span aria-hidden className="at-watermark !right-4 !top-1 !text-[4.4rem]">USD</span>
+					<div className="flex items-center justify-between gap-2">
+						<AtBadge tone="green">Plans pay here</AtBadge>
+						<CreditCard className="h-4 w-4 text-[var(--at-green)]" />
+					</div>
+					<div className="mt-4 font-display text-[28px] font-semibold leading-none tracking-[-0.05em] text-[var(--at-ink)]">{fmtMoney(walletBalance)}</div>
+					<div className="mt-1.5 font-mono text-[10px] tracking-wider text-[var(--at-mut-2)]">
 						{(() => { const a = accounts.find((x) => x.asset !== 'TBC'); return a?.number ? `${a.number} ···· ${a.last4}` : t('wal.noAcctNum'); })()}
 					</div>
-					<p className="mt-1.5 text-[11px] leading-relaxed text-[#8a8577]">Plans pay by card/cash only — never TBC.</p>
+					<p className="mt-2 text-[10px] leading-relaxed text-[var(--at-mut)]">Cash and card cover subscriptions. TBC is never accepted as payment for a plan.</p>
 				</div>
-				<div className="rounded-3xl border border-white/10 bg-black/30 p-5 transition-all duration-200 hover:-translate-y-0.5">
-					<div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-[#8a8577]"><Landmark className="h-3.5 w-3.5" /> Way out · Bank</div>
-					<div className="mt-1.5 font-mono text-[26px] font-extrabold leading-none text-[#f0ecdd]">{connectStatus === 'active' ? 'Ready' : kycStatus === 'verified' ? 'Almost' : 'Locked'}</div>
-					<p className="mt-1.5 text-[11px] leading-relaxed text-[#8a8577]">{connectStatus === 'active' ? 'Payouts flow straight to your bank.' : 'Verify + connect to open withdrawals.'}</p>
+				<div className="at-card relative overflow-hidden p-5">
+					<div className="flex items-center justify-between gap-2">
+						<AtBadge tone={connectStatus === 'active' ? 'green' : 'amber'}>{connectStatus === 'active' ? 'Payout ready' : 'Payout locked'}</AtBadge>
+						<Landmark className="h-4 w-4 text-[var(--at-gold)]" />
+					</div>
+					<div className="mt-4 font-display text-[28px] font-semibold leading-none tracking-[-0.05em] text-[var(--at-ink)]">{connectStatus === 'active' ? 'Ready' : kycStatus === 'verified' ? 'Almost' : 'Locked'}</div>
+					<div className="mt-1.5 text-[10px] text-[var(--at-mut-2)]">Bank withdrawal rail</div>
+					<div className="mt-3 flex items-center gap-2">
+						<AtProgress className="flex-1" value={connectStatus === 'active' ? 100 : kycStatus === 'verified' ? 66 : 25} tone={connectStatus === 'active' ? 'green' : 'gold'} />
+						<span className="font-mono text-[9px] text-[var(--at-mut-2)]">{connectStatus === 'active' ? '100%' : kycStatus === 'verified' ? '66%' : '25%'}</span>
+					</div>
+					<p className="mt-2 text-[10px] leading-relaxed text-[var(--at-mut)]">{connectStatus === 'active' ? 'Payouts flow to your verified bank account.' : 'Verify identity, then connect a bank to open withdrawals.'}</p>
 				</div>
 			</div>
 			</>
