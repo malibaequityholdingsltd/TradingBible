@@ -915,24 +915,8 @@ export default function AcademyPage() {
 	return (
 		<AppLayout title={t('aca.page')}>
 			<div className="tb-page">
-		{/* Portal hero — redesigned */}
-		<section className="tb-hero overflow-hidden">
-			<div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-			<div aria-hidden className="pointer-events-none absolute -bottom-28 -left-16 h-64 w-64 rounded-full bg-[#38bdf8]/10 blur-[100px]" />
-			<div className="relative">
-				<p className="inline-flex items-center gap-2 rounded-full border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#d4af37]">
-					<Sparkles className="h-3.5 w-3.5" />
-					SI-driven Forex + Crypto Academy
-				</p>
-				<h2 className="mt-4 max-w-3xl text-3xl font-extrabold leading-[1.05] tracking-tight text-[#f0ecdd] sm:text-4xl lg:text-[2.75rem]">
-					Pick a desk, <span className="tb-gold-text">master every topic</span>
-				</h2>
-				<p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#b8b3a3] sm:text-[15px]">
-					Your SI builds each path around you, writes every lesson, grades every quiz and tutors you 1-on-1 — from first pip and first satoshi to funded-desk execution.
-				</p>
-
-				{/* Stat tiles */}
-				<div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-2.5 lg:grid-cols-5">
+		<section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4 sm:p-5">
+			<div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-2.5 lg:grid-cols-5">
 					{[
 						{ label: 'paths', value: totals.paths, color: '#d4af37' },
 						{ label: 'Forex', value: forexCount, color: '#38bdf8' },
@@ -985,7 +969,6 @@ export default function AcademyPage() {
 						))}
 					</div>
 				</div>
-			</div>
 		</section>
 
 			<ErrorBoundary fallback={null}>

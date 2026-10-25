@@ -13,6 +13,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import ThemePickerDialog from '@/components/ThemePickerDialog';
 import { BrandWordmark, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { IosIcon } from '@/components/IosIcon';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { meetsPlan } from '@/lib/entitlements';
 import { isAdminPreview, exitAdminPreview } from '@/lib/adminPreview';
@@ -96,34 +97,7 @@ function Brand({ homeTo, platformName, tagline }) {
   );
 }
 
-function NavItem({ to, labelKey, icon: Icon, end, locked, t, onNav, tint, glyph }) {
-  const inner = (
-    <>
-      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] shadow-[0_1px_6px_rgba(0,0,0,0.35)] transition group-hover:brightness-110" style={{ background: tint || 'rgba(255,255,255,0.06)', color: glyph || '#fff' }}>
-        <Icon className="h-4 w-4" strokeWidth={2} />
-      </span>
-      <span className="min-w-0 flex-1 truncate text-left text-[13px] font-medium tabular-nums">{t(labelKey)}</span>
-      {locked && <Crown className="h-3.5 w-3.5 shrink-0 text-[#d4af37]" />}
-    </>
-  );
-  const cls = 'tbl-row group flex min-h-[44px] w-full items-center gap-2.5 rounded-[10px] px-2.5 py-2 tabular-nums transition-all';
-  if (locked) {
-    return (
-      <button onClick={onNav} className={`${cls} text-[#8a8577]/70 hover:bg-white/[0.04] hover:text-[#e9e7df]`}>
-        {inner}
-      </button>
-    );
-  }
-  return (
-    <NavLink to={to} end={end} onClick={onNav}
-      className={({ isActive }) => `${cls} ${isActive ? 'tbl-row--active bg-[#d4af37]/[0.12] font-semibold text-[#f0ecdd] shadow-[inset_0_1px_0_rgba(244,230,168,0.12)] ring-1 ring-inset ring-[#d4af37]/25' : 'text-[#8a8577] hover:bg-white/[0.04] hover:text-[#e9e7df]'}`}>
-      {inner}
-    </NavLink>
-  );
-}
-
 export default function AppLayout({ children, title }) {
-  const [open, setOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [tutorial, setTutorial] = useState(false);
@@ -190,23 +164,8 @@ export default function AppLayout({ children, title }) {
     updateProfile({ tutorialDone: true }).catch(() => {});
     setTutorial(false);
   };
-  const closeDrawer = () => setOpen(false);
-
-  // Keep the sidebar list scroll across page changes (each page mounts a
-  // fresh sidebar, which used to snap the list back to Dashboard every time)
-  useEffect(() => {
-    const key = 'tb:nav-scroll';
-    let y = 0;
-    try { y = parseInt(sessionStorage.getItem(key) || '0', 10) || 0; } catch { /* ignore */ }
-    const scrollers = Array.from(document.querySelectorAll('[data-nav-scroll]'));
-    scrollers.forEach((el) => { if (y > 0) el.scrollTop = y; });
-    const onScroll = (e) => {
-      try { sessionStorage.setItem(key, String(e.target.scrollTop)); } catch { /* ignore */ }
-    };
-    scrollers.forEach((el) => el.addEventListener('scroll', onScroll, { passive: true }));
-    return () => scrollers.forEach((el) => el.removeEventListener('scroll', onScroll));
-  }, []);
-  const goPricing = () => { setOpen(false); nav('/pricing'); };
+  const goPricing = () => nav('/pricing');
+  const menuIcon = (Icon, tone) => <IosIcon icon={Icon} size="2xs" tone={tone} />;
 
   // Phone dock tabs: Dashboard · Terminal · Signals · TV · More.
   // Same lock + feature rules as the sidebar. Everything else lives
@@ -219,10 +178,10 @@ export default function AppLayout({ children, title }) {
     return false;
   };
   const MAIN_TABS = [
-    { to: '/app', icon: LayoutDashboard, label: t('nav.dashboard'), end: true },
-    { to: '/app/terminal-pro', icon: SquareTerminal, label: t('dock.terminal', null, 'Terminal') },
-    { to: '/app/wallet', icon: Landmark, label: t('nav.wallet'), center: true },
-    { to: '/app/challenges', icon: Trophy, label: t('nav.challenges') },
+    { to: '/app', icon: LayoutDashboard, label: t('nav.dashboard'), end: true, tint: IOS.blue },
+    { to: '/app/terminal-pro', icon: SquareTerminal, label: t('dock.terminal', null, 'Terminal'), tint: IOS.indigo },
+    { to: '/app/wallet', icon: Landmark, label: t('nav.wallet'), center: true, tint: '#D4AF37', glyph: '#1C1C1E' },
+    { to: '/app/challenges', icon: Trophy, label: t('nav.challenges'), tint: IOS.orange },
   ]
     .filter((m) => {
       const feature = featureForRoute(m.to);
@@ -260,61 +219,78 @@ export default function AppLayout({ children, title }) {
       locked: (it.requiresSubscriber && !isSubscriber) || (it.requiredPlan && !meetsPlan(user, it.requiredPlan)),
     }));
 
-  const SideContent = (
-    <div className="flex h-full flex-col tabular-nums">
-      <nav data-nav-scroll className="tbl-cascade nice-scroll flex-1 space-y-4 overflow-y-auto px-2 pb-4 pt-3">
-        {NAV_GROUPS.map((group) => {
-          const items = group.items
-            .filter((it) => !it.hidden)
-            .filter((it) => !it.adminOnly || isAdmin)
-            .filter((it) => {
-              const feature = featureForRoute(it.to);
-              return !feature || features[feature] !== false || isAdmin;
-            });
-          if (!items.length) return null;
+  const footerItems = [
+    ...visibleItems([{ to: '/app', labelKey: 'nav.dashboard', icon: LayoutDashboard, end: true, tint: IOS.blue }]),
+    ...NAV_GROUPS.flatMap((group) => visibleItems(group.items)),
+  ];
+
+  const FooterNav = (
+    <footer className="app-nav-footer fixed inset-x-0 bottom-0 z-40 hidden backdrop-blur-xl lg:block">
+      <nav
+        aria-label="App sections"
+        style={{ paddingBottom: 'max(6px, env(safe-area-inset-bottom))' }}
+        className="mx-auto flex w-full max-w-[96rem] items-stretch justify-center px-2 pt-1.5 sm:px-3 xl:px-5 2xl:px-8"
+      >
+        {footerItems.map((it) => {
+          const label = t(it.labelKey);
+          const base = 'app-nav-footer-link group relative flex h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg px-0.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]/60';
+          const tile = (
+            <span className="relative">
+              <IosIcon
+                icon={it.icon}
+                tint={it.tint}
+                glyph={it.glyph}
+                tone={it.tint ? undefined : 'blue'}
+                size="sm"
+                className={`transition-transform duration-200 ${it.locked ? 'opacity-55 saturate-[0.7]' : 'group-hover:-translate-y-0.5 group-hover:scale-105'}`}
+              />
+              {it.locked && <Crown className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full bg-[#0a0a0f] p-[2px] text-[#d4af37] ring-1 ring-[#d4af37]/40" />}
+            </span>
+          );
+          const labelEl = <span className="hidden max-w-full truncate px-0.5 text-[8px] font-semibold leading-none xl:block">{label}</span>;
+          const tooltip = (
+            <span className="pointer-events-none absolute bottom-[calc(100%+3px)] left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md border border-[#d4af37]/25 bg-[#0a0a0f] px-2 py-1 text-[10px] font-semibold text-[#f0ecdd] opacity-0 shadow-lg transition group-hover:opacity-100 group-focus-visible:opacity-100">
+              {label}{it.locked ? ' · upgrade' : ''}
+            </span>
+          );
+          if (it.locked) {
+            return (
+              <button
+                key={it.to}
+                type="button"
+                onClick={goPricing}
+                title={`${label} — upgrade required`}
+                aria-label={`${label} — upgrade required`}
+                className={base}
+              >
+                {tooltip}
+                {tile}
+                {labelEl}
+              </button>
+            );
+          }
           return (
-            <div key={group.labelKey} className="space-y-1">
-              <div className="px-2.5 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#5f5b50] tabular-nums">{t(group.labelKey)}</div>
-              {items.map((it) => {
-                const locked = (it.requiresSubscriber && !isSubscriber) || (it.requiredPlan && !meetsPlan(user, it.requiredPlan));
-                return (
-                  <NavItem
-                    key={it.to}
-                    to={it.to}
-                    labelKey={it.labelKey}
-                    icon={it.icon}
-                    end={it.end}
-                    locked={locked}
-                    t={t}
-                    onNav={locked ? goPricing : closeDrawer}
-                    tint={it.tint}
-                    glyph={it.glyph}
-                  />
-                );
-              })}
-            </div>
+            <NavLink
+              key={it.to}
+              to={it.to}
+              end={it.end}
+              title={label}
+              aria-label={label}
+              className={({ isActive }) => `${base} ${isActive ? 'app-nav-footer-link--active' : ''}`}
+            >
+              {tooltip}
+              {tile}
+              {labelEl}
+            </NavLink>
           );
         })}
       </nav>
-      {!isSubscriber && !isAdmin && (
-        <div className="m-2 rounded-[10px] border border-[#d4af37]/20 bg-gradient-to-b from-[#d4af37]/[0.08] to-transparent p-3.5 tabular-nums">
-          <div className="flex items-center gap-2 text-[#d4af37]"><Crown className="h-4 w-4" /><span className="text-xs font-bold">{t('app.upgrade')}</span></div>
-          <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{t('bill.noPlanYet', null, 'Subscribe to unlock the full terminal.')}</p>
-          <button onClick={() => nav('/app/billing')} className="mt-3 min-h-[44px] w-full rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-xs font-bold tabular-nums text-[#0a0a0f] transition hover:opacity-90">{t('app.upgrade')}</button>
-        </div>
-      )}
-      <div className="border-t border-white/5 px-2 py-2.5">
-        <button onClick={() => { closeDrawer(); nav('/app'); }} className="group flex min-h-[44px] w-full items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-sm tabular-nums text-[#8a8577] transition hover:bg-white/5 hover:text-[#e9e7df]"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] shadow-[0_1px_6px_rgba(0,0,0,0.35)] transition group-hover:brightness-110" style={{ background: IOS.blue, color: '#fff' }}><LayoutDashboard className="h-4 w-4" strokeWidth={2} /></span>{t('nav.dashboard')}</button>
-      </div>
-    </div>
+    </footer>
   );
 
   return (
     <div className="tb-app-shell min-h-screen bg-transparent pt-[var(--header-h)] tabular-nums antialiased">
-      <aside className="tb-drawer fixed bottom-0 left-0 top-[calc(var(--header-h)+var(--apphead))] z-30 hidden w-[248px] flex-col border-r border-white/5 bg-[#0a0a0f]/80 backdrop-blur-xl lg:block">{SideContent}</aside>
-      {open && <div className="fixed inset-x-0 bottom-0 top-[calc(var(--header-h)+var(--apphead))] z-40 hidden bg-black/70 backdrop-blur-sm sm:block lg:hidden" onClick={() => setOpen(false)} />}
-      <aside className={`tb-drawer fixed bottom-0 left-0 top-[calc(var(--header-h)+var(--apphead))] z-40 hidden w-[248px] flex-col border-r border-white/5 bg-[#0a0a0f]/95 backdrop-blur-xl transition-transform sm:flex lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}>{SideContent}</aside>
-      <div className="lg:pl-[248px]">
+      <div>
         {/* Phone header: solid two-row bar (compact row + full-width
             search). sm+ keeps the single-row translucent bar. */}
         <header className="app-header fixed inset-x-0 left-0 right-0 top-[var(--header-h)] z-[35] w-full border-b border-white/[0.06] bg-[#0a0a0f] tabular-nums sm:bg-[#0a0a0f]/90 sm:backdrop-blur-2xl">
@@ -322,11 +298,8 @@ export default function AppLayout({ children, title }) {
           <div aria-hidden className="app-header-hairline pointer-events-none absolute inset-x-0 bottom-0 h-px" />
           <div aria-hidden className="app-header-sheen pointer-events-none absolute inset-0 overflow-hidden" />
           <div className="flex h-14 w-full items-center justify-between gap-2 px-1 sm:gap-3 sm:px-2">
-          {/* Left: menu + brand + page */}
+          {/* Left: brand + page */}
           <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2">
-            <button className="hidden h-9 w-9 shrink-0 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-white/5 hover:text-[#d4af37] sm:grid lg:hidden" aria-label={t('app.openNav')} onClick={() => setOpen(true)}>
-              <Menu className="h-5 w-5" />
-            </button>
             <img src={TRADINGBIBLE_LOGO} alt="" aria-hidden className="h-8 w-8 shrink-0 rounded-[10px] border border-[#d4af37]/25 bg-[#0c0c11] object-contain gold-glow sm:hidden" onError={e => { e.currentTarget.style.display = 'none'; }} />
             <Link to={homeRouteForUser(user)} className="group hidden items-center gap-2.5 sm:flex" aria-label="TradingBible home">
               <span className="relative">
@@ -341,7 +314,7 @@ export default function AppLayout({ children, title }) {
               <span className="text-xl font-black leading-none tracking-tight text-[#f0ecdd]">Trading<span className="gold-text">Bible</span></span>
             </Link>
             <span aria-hidden className="hidden h-6 w-px bg-white/10 xl:block" />
-            <h1 className="hidden min-w-0 truncate text-sm font-semibold text-[#c9c4b4] xl:block">{title}</h1>
+            <h1 className="hidden min-w-0 truncate text-sm font-semibold text-[#c9c4b4] sm:block">{title}</h1>
             <div className="min-w-0 sm:hidden">
               <h1 className="tb-title truncate text-lg font-bold tracking-tight text-[#f0ecdd]">{title}</h1>
             </div>
@@ -360,18 +333,18 @@ export default function AppLayout({ children, title }) {
             {/* Phones: search is an overlay toggled here, not a fixed row */}
             <button onClick={() => setSearchOpen((o) => !o)} aria-label={t('nav.search', null, 'Search')} aria-expanded={searchOpen}
               className="hdr-ic grid h-9 w-9 shrink-0 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] sm:hidden">
-              <Search className="h-4 w-4" />
+              <IosIcon icon={Search} size="sm" tone="blue" />
             </button>
             <span className="hidden sm:contents"><ThemeSwitcher inline /></span>
             <span className="hidden sm:contents"><LanguageSwitcher /></span>
             {canSeeSignals && (
               <button onClick={() => nav('/app/alerts')} className="hdr-ic relative grid h-9 w-9 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37]" title={t('app.alerts')}>
-                <Bell className="h-4 w-4" />
+                <IosIcon icon={Bell} size="sm" tone="pink" />
                 {unseen > 0 && <span className="absolute right-1 top-1 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-red-500 px-1 text-[8px] font-bold tabular-nums text-white">{unseen > 9 ? '9+' : unseen}</span>}
               </button>
             )}
             <button onClick={() => setTutorial(true)} aria-label={t('app.help')} title={t('app.help')} className="hidden h-9 w-9 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] sm:grid">
-              <HelpCircle className="h-4 w-4" />
+              <IosIcon icon={HelpCircle} size="sm" tone="teal" />
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -386,43 +359,43 @@ export default function AppLayout({ children, title }) {
                 <DropdownMenuLabel className="px-3 py-2 text-xs uppercase tracking-[0.18em] text-[#8a8577]">{t('app.account')}</DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-white/5" />
                 <DropdownMenuItem onClick={() => nav('/app/profile')} className="min-h-[44px] cursor-pointer gap-2.5">
-                  <User className="h-4 w-4 text-[#d4af37]" /> {t('nav.profile')}
+                  {menuIcon(User, 'blue')} {t('nav.profile')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => nav('/app/billing')} className="min-h-[44px] cursor-pointer gap-2.5">
-                  <CreditCard className="h-4 w-4 text-[#d4af37]" /> {t('nav.billing')}
+                  {menuIcon(CreditCard, 'green')} {t('nav.billing')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => nav('/app/affiliate')} className="min-h-[44px] cursor-pointer gap-2.5">
-                  <Share2 className="h-4 w-4 text-[#d4af37]" /> {t('nav.affiliate')}
+                  {menuIcon(Share2, 'purple')} {t('nav.affiliate')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => nav('/app/security')} className="min-h-[44px] cursor-pointer gap-2.5">
-                  <Settings className="h-4 w-4 text-[#d4af37]" /> {t('app.settings')}
+                  {menuIcon(Settings, 'gray')} {t('app.settings')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => nav('/app/branding')} className="min-h-[44px] cursor-pointer gap-2.5">
-                  <Palette className="h-4 w-4 text-[#d4af37]" /> {t('nav.branding')}
+                  {menuIcon(Palette, 'pink')} {t('nav.branding')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setThemeOpen(true)} className="min-h-[44px] cursor-pointer gap-2.5">
-                  <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full ring-1 ring-white/20" style={{ background: presetAccent }} />
+                  <span className="grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[6px] ring-1 ring-white/25" style={{ background: presetAccent }} />
                   <span className="flex-1">{t('brd.themes', null, 'App theme')} · {(WL_PRESETS.find((pr) => pr.id === presetId)?.label || t('brd.custom', null, 'Custom')).split(' ').slice(-1)}</span>
                   <span className="font-mono text-[11px] text-[#5f5b50]">›</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => nav('/app/api-keys')} className="min-h-[44px] cursor-pointer gap-2.5">
-                  <KeyRound className="h-4 w-4 text-[#d4af37]" /> {t('nav.apikeys')}
+                  {menuIcon(KeyRound, 'orange')} {t('nav.apikeys')}
                 </DropdownMenuItem>
                 {isAdmin && (
                   <DropdownMenuItem onClick={() => nav('/admin')} className="min-h-[44px] cursor-pointer gap-2.5">
-                    <Building2 className="h-4 w-4 text-[#d4af37]" /> {t('app.admin')}
+                    {menuIcon(Building2, 'red')} {t('app.admin')}
                   </DropdownMenuItem>
                 )}
                 {/* Phones only: theme + language live here — the compact
                     header row and the removed side list have no room. */}
                 <DropdownMenuSeparator className="bg-white/5 sm:hidden" />
                 <DropdownMenuItem onClick={toggleTheme} className="min-h-[44px] cursor-pointer gap-2.5 sm:hidden">
-                  {isLight ? <Moon className="h-4 w-4 text-[#d4af37]" /> : <Sun className="h-4 w-4 text-[#d4af37]" />}
+                  {menuIcon(isLight ? Moon : Sun, 'yellow')}
                   {isLight ? t('app.darkMode', null, 'Dark mode') : t('app.lightMode', null, 'Light mode')}
                 </DropdownMenuItem>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="min-h-[44px] gap-2.5 sm:hidden">
-                    <Languages className="h-4 w-4 text-[#d4af37]" />
+                    {menuIcon(Languages, 'cyan')}
                     <span className="flex-1 text-left">{t('lang.switcher', null, 'Language')} · {String(lang || 'auto').toUpperCase()}</span>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent side="left" align="start" className="tb-avatarmenu max-h-[50vh] w-48 overflow-y-auto border-[#d4af37]/15 bg-[#111113] text-[#e9e7df]">
@@ -440,7 +413,7 @@ export default function AppLayout({ children, title }) {
                 </DropdownMenuSub>
                 <DropdownMenuSeparator className="bg-white/5" />
                 <DropdownMenuItem onClick={signOut} className="min-h-[44px] cursor-pointer gap-2.5 text-red-400 focus:text-red-300">
-                  <LogOut className="h-4 w-4" /> {t('app.signout')}
+                  {menuIcon(LogOut, 'red')} {t('app.signout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -455,13 +428,13 @@ export default function AppLayout({ children, title }) {
                 <div className="min-w-0 flex-1"><GlobalSearch autoFocus onNavigate={() => setSearchOpen(false)} /></div>
                 <button onClick={() => setSearchOpen(false)} aria-label={t('c.close', null, 'Close')}
                   className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] border border-white/10 text-[#8a8577] transition hover:text-[#e9e7df]">
-                  <X className="h-4 w-4" />
+                  <IosIcon icon={X} size="2xs" tone="gray" />
                 </button>
               </div>
             </div>
           )}
         </header>
-        <main className="mx-auto w-full max-w-[96rem] px-4 pb-24 pt-[calc(var(--apphead)+0.75rem)] sm:px-5 sm:pb-5 sm:pt-[92px] lg:px-7 lg:pt-[100px] xl:px-8 xl:pt-[104px] 2xl:px-12">
+        <main className="mx-auto w-full max-w-[96rem] px-4 pb-24 pt-[calc(var(--apphead)+0.75rem)] sm:px-5 sm:pt-[92px] lg:px-7 lg:pt-[100px] xl:px-8 xl:pt-[104px] 2xl:px-12">
           {isAdmin && isAdminPreview() && (
             <div className="admin-frost mb-2 flex items-center justify-between gap-3 rounded-[10px] border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-4 py-2 tabular-nums">
               <span className="text-xs text-[#d4af37]">{t('misc.adminPreview')}</span>
@@ -470,39 +443,38 @@ export default function AppLayout({ children, title }) {
           )}
           {children}
         </main>
+        {FooterNav}
         {/* Phone dock: 5 thumb tabs. Everything else lives in More —
             no side list on phones. Tablets/desktops untouched. */}
         {/* Phone dock backdrop: solid fade so page text never shows
             around or below the floating dock while scrolling. */}
-        <div aria-hidden className="tb-dockfade pointer-events-none fixed inset-x-0 bottom-0 z-30 h-36 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/95 to-transparent sm:hidden" />
-        <nav aria-label="App sections" className="tb-dock fixed inset-x-4 bottom-3 z-40 rounded-[10px] border border-[#d4af37]/15 bg-[#101016] tabular-nums shadow-[0_12px_32px_rgba(0,0,0,0.55),0_0_20px_rgba(212,175,55,0.06)] ring-1 ring-inset ring-white/[0.06] sm:hidden">
+        <div aria-hidden className="tb-dockfade pointer-events-none fixed inset-x-0 bottom-0 z-30 h-36 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/95 to-transparent lg:hidden" />
+        <nav aria-label="App sections" className="tb-dock fixed inset-x-4 bottom-3 z-40 rounded-[10px] border border-[#d4af37]/15 bg-[#101016] tabular-nums shadow-[0_12px_32px_rgba(0,0,0,0.55),0_0_20px_rgba(212,175,55,0.06)] ring-1 ring-inset ring-white/[0.06] lg:hidden">
           <div className="flex px-2 pb-2 pt-2">
             {MAIN_TABS.map((m) => {
               const Icon = m.icon;
-              // Center hero action: raised gold circle breaking above the
-              // dock line (TV/SI bubble style). Every cell shares one
-              // geometry — fixed h-7 icon box + label — so all five
+              // Center hero action: a raised gold iOS tile breaking above
+              // the dock line. Every cell shares one geometry so all five
               // labels sit on the exact same baseline by construction.
               if (m.center) {
-                const circleAt = 'absolute left-1/2 top-[-38px] -translate-x-1/2 dock-float';
-                const circleBase = 'dock-ring relative grid h-[72px] w-[72px] place-items-center rounded-full bg-gradient-to-br text-[#0a0a0f] ring-4 ring-[#101016] transition active:scale-90';
+                const circleAt = 'absolute left-1/2 top-[-30px] -translate-x-1/2 dock-float';
                 return (
                   <div key={m.to} className="flex min-h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1.5">
                     <span className="relative grid h-8 w-full shrink-0 place-items-center">
                       {m.locked ? (
-                        <button onClick={goPricing} aria-label={m.label} className={circleAt}>
-                          <span className={`${circleBase} from-[#f4e6a8] to-[#c99a25] shadow-[0_10px_26px_rgba(212,175,55,0.45)]`}>
-                            <Icon className="h-7 w-7" strokeWidth={2} />
-                            <span className="absolute bottom-1 right-1 grid h-5 w-5 place-items-center rounded-full bg-[#0a0a0f] ring-2 ring-[#d4af37]" title="Locked">
+                        <button onClick={goPricing} aria-label={m.label} title={`${m.label} — upgrade required`} className={circleAt}>
+                          <span className="relative block">
+                            <IosIcon icon={Icon} tint={m.tint} glyph={m.glyph} size="xl" className="opacity-60 saturate-[0.7] ring-4 ring-[#101016]" />
+                            <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-[#0a0a0f] ring-2 ring-[#d4af37]">
                               <Crown className="h-3 w-3 text-[#d4af37]" />
                             </span>
                           </span>
                         </button>
                       ) : (
-                        <NavLink to={m.to} aria-label={m.label} className={circleAt}>
+                        <NavLink to={m.to} aria-label={m.label} title={m.label} className={circleAt}>
                           {({ isActive }) => (
-                            <span className={`${circleBase} from-[#f4e6a8] to-[#c99a25] ${isActive ? 'dock-glow' : 'shadow-[0_10px_26px_rgba(212,175,55,0.45)]'}`}>
-                              <Icon className="h-7 w-7" strokeWidth={2.1} />
+                            <span className={`block rounded-[16px] ${isActive ? 'dock-glow' : ''}`}>
+                              <IosIcon icon={Icon} tint={m.tint} glyph={m.glyph} size="xl" className="ring-4 ring-[#101016]" />
                             </span>
                           )}
                         </NavLink>
@@ -512,25 +484,26 @@ export default function AppLayout({ children, title }) {
                 );
               }
               const btn = 'dock-tab ios-spring flex min-h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-[10px] tabular-nums';
-              const pill = 'grid h-8 min-w-[52px] shrink-0 place-items-center rounded-[10px] px-4 transition';
-              const lbl = 'truncate text-[10px] font-semibold tabular-nums leading-none';
+              const pill = 'relative grid h-9 min-w-[48px] shrink-0 place-items-center rounded-[11px] transition';
+              const lbl = 'max-w-full truncate text-[10px] font-semibold tabular-nums leading-none';
               if (m.locked) {
                 return (
-                  <button key={m.to} onClick={goPricing} aria-label={m.label} className={`${btn} text-[#8a8577]/70`}>
+                  <button key={m.to} onClick={goPricing} aria-label={m.label} title={`${m.label} — upgrade required`} className={`${btn} text-[#8a8577]/70`}>
                     <span className={`${pill} text-[#8a8577]/70`}>
-                      <Icon className="h-[22px] w-[22px]" strokeWidth={1.9} />
+                      <IosIcon icon={Icon} tint={m.tint} glyph={m.glyph} size="sm" className="opacity-55 saturate-[0.7]" />
+                      <Crown className="absolute right-0.5 top-0.5 h-3 w-3 rounded-full bg-[#0a0a0f] p-[1.5px] text-[#d4af37] ring-1 ring-[#d4af37]/40" />
                     </span>
                     <span className={`${lbl} text-[#8a8577]/70`}>{m.label}</span>
                   </button>
                 );
               }
               return (
-                <NavLink key={m.to} to={m.to} end={m.end} aria-label={m.label}
+                <NavLink key={m.to} to={m.to} end={m.end} aria-label={m.label} title={m.label}
                   className={`${btn}`}>
                   {({ isActive }) => (
                     <>
-                      <span key={isActive ? 'on' : 'off'} className={`${pill} ${isActive ? 'pill-on dock-pop bg-[#d4af37]/[0.14] text-[#d4af37] shadow-[inset_0_0_10px_rgba(212,175,55,0.12)] ring-1 ring-inset ring-[#d4af37]/25' : 'text-[#8a8577]'}`}>
-                        <Icon className="h-[22px] w-[22px]" strokeWidth={1.9} />
+                      <span key={isActive ? 'on' : 'off'} className={`${pill} ${isActive ? 'dock-pop bg-[#d4af37]/[0.12] ring-1 ring-inset ring-[#d4af37]/25' : ''}`}>
+                        <IosIcon icon={Icon} tint={m.tint} glyph={m.glyph} size="sm" className={isActive ? 'ring-2 ring-[#d4af37]/65' : ''} />
                       </span>
                       <span className={`${lbl} ${isActive ? 'lbl-on text-[#d4af37]' : 'text-[#8a8577]'}`}>{m.label}</span>
                     </>
@@ -539,11 +512,10 @@ export default function AppLayout({ children, title }) {
               );
             })}
             <button onClick={() => setMoreOpen((o) => !o)} aria-label={t('dock.more', null, 'More')} aria-expanded={moreOpen}
+              title={t('dock.more', null, 'More')}
               className="dock-tab ios-spring flex min-h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-2xl">
-              <span className={`grid h-8 min-w-[52px] shrink-0 place-items-center rounded-[10px] px-4 transition ${moreActive ? 'pill-on bg-[#d4af37]/[0.14] text-[#d4af37] shadow-[inset_0_0_10px_rgba(212,175,55,0.12)] ring-1 ring-inset ring-[#d4af37]/25' : 'text-[#8a8577]'}`}>
-                <span className={`grid place-items-center transition-transform duration-300 ${moreOpen ? 'rotate-90' : ''}`}>
-                  {moreOpen ? <X className="h-[22px] w-[22px]" strokeWidth={1.9} /> : <Menu className="h-[22px] w-[22px]" strokeWidth={1.9} />}
-                </span>
+              <span className={`${'relative grid h-9 min-w-[48px] shrink-0 place-items-center rounded-[11px] transition'} ${moreActive ? 'bg-[#d4af37]/[0.12] ring-1 ring-inset ring-[#d4af37]/25' : ''}`}>
+                <IosIcon icon={moreOpen ? X : Menu} size="sm" tone={moreActive ? 'yellow' : 'gray'} className={moreActive ? 'ring-2 ring-[#d4af37]/65' : ''} />
               </span>
               <span className={`truncate text-[10px] font-semibold leading-none ${moreActive ? 'lbl-on text-[#d4af37]' : 'text-[#8a8577]'}`}>{t('dock.more', null, 'More')}</span>
             </button>
@@ -551,7 +523,7 @@ export default function AppLayout({ children, title }) {
         </nav>
         {/* Phone More sheet: the full list, grouped, one tap away. */}
         {moreOpen && (
-          <div className="fixed inset-0 z-50 sm:hidden" role="dialog" aria-modal="true" aria-label={t('dock.more', null, 'More')}>
+          <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={t('dock.more', null, 'More')}>
             <div className="dock-fade absolute inset-0 bg-black/70" onClick={() => setMoreOpen(false)} />
             <div className="tb-sheet dock-sheet-up absolute inset-x-0 bottom-0 max-h-[78vh] overflow-y-auto rounded-t-[10px] border-t border-[#d4af37]/20 bg-[#0a0a0f] px-4 tabular-nums pb-[env(safe-area-inset-bottom)]">
               <div className="sticky top-0 bg-[#0a0a0f] pb-2 pt-2.5">
@@ -590,9 +562,7 @@ export default function AppLayout({ children, title }) {
                           const label = t(it.labelKey);
                           const tile = 'tile ios-spring flex min-h-[80px] flex-col items-center justify-center gap-1.5 rounded-[10px] border px-1 py-3 text-center tabular-nums';
                           const iosTile = (
-                            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] shadow-[0_1px_6px_rgba(0,0,0,0.35)]" style={{ background: it.tint || 'rgba(255,255,255,0.06)', color: it.glyph || '#fff' }}>
-                              <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
-                            </span>
+                            <IosIcon icon={Icon} tint={it.tint} glyph={it.glyph} size="sm" className="shadow-[0_1px_6px_rgba(0,0,0,0.35)]" />
                           );
                           if (it.locked) {
                             return (

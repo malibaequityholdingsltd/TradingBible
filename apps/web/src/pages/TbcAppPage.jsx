@@ -6,7 +6,7 @@ import {
   Timer, TriangleAlert, Vote, Wallet, Workflow,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { AtAlert, AtBadge, AtButton, AtHero, AtTabs } from '@/components/AtelierUI';
+import { AtAlert, AtBadge, AtButton, AtPageBar, AtTabs } from '@/components/AtelierUI';
 import { Card, EmptyState, GhostButton, GoldButton, Note, SectionHead, Stat, StatGrid } from '@/components/ui-kit';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -137,32 +137,18 @@ export default function TbcAppPage() {
   return (
     <AppLayout title="TBC">
       <div className="tb-page at-page at-scope at-enter !max-w-[1440px]">
-        <AtHero
-          eyebrow="TradingBible Coin · account"
-          icon={Coins}
-          title={<>Your TBC <em>control room.</em></>}
-          description="One place for platform credits, proposed-token status, eligibility, vesting, staking, governance and support. Phase 1 deliberately does not sell, mint or stake anything."
-          status={[
-            { label: 'Platform credits', value: credits ? fmtTbc(credits.balance) : '—', tone: 'gold' },
-            { label: 'Proposed token', value: tokenStatus?.issued ? 'Issued' : 'Not issued', tone: tokenStatus?.issued ? 'green' : 'amber' },
-            { label: 'Eligibility', value: 'Not assessed', tone: 'amber' },
-            { label: 'Public sale', value: account?.sale?.enabled ? 'Enabled' : 'Disabled', tone: account?.sale?.enabled ? 'green' : 'amber' },
+        <AtPageBar
+          meta={[
+            `Credits ${credits ? fmtTbc(credits.balance) : '—'}`,
+            tokenStatus?.issued ? 'Token issued' : 'Token not issued',
+            'Eligibility not assessed',
+            account?.sale?.enabled ? 'Sale enabled' : 'Sale disabled',
           ]}
-          statusTitle="Account state"
-          statusNote="Platform credits and the proposed token are separate. No token has been issued, no sale is open, and no eligibility decision has been made for this account."
           actions={(
             <>
-              <AtButton to="/tbc" variant="quiet" icon={Globe2}>Public TBC hub</AtButton>
+              <AtButton to="/tbc" variant="quiet" icon={Globe2}>Public hub</AtButton>
               <AtButton to="/tbc/documents" variant="outline" icon={FileText}>Documents</AtButton>
             </>
-          )}
-          bottom={(
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-semibold text-[var(--at-mut)]">
-              <span className="flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5 text-[var(--at-green)]" /> Server-gated account</span>
-              <span className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-[var(--at-gold)]" /> No token issuance</span>
-              <span className="flex items-center gap-2"><Wallet className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Credits spend in-app</span>
-              <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">{TBC_PROPOSAL.phase}</span>
-            </div>
           )}
         />
 

@@ -197,6 +197,69 @@ html.light .at-shell::after {
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Page bar ───────────────────────────────────────────────────── */
+.at-pagebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 2px 2px 15px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--at-line-soft);
+}
+.at-pagebar-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+.at-pagebar-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-top: 5px;
+  color: var(--at-mut);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+.at-pagebar-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.at-pagebar-meta-item + .at-pagebar-meta-item::before {
+  content: "";
+  width: 3px;
+  height: 3px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--at-gold);
+  opacity: 0.55;
+}
+.at-pagebar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+.at-pagebar-extra { margin-top: 10px; }
+.at-pagebar--toolbar { padding-bottom: 10px; margin-bottom: 14px; }
+@media (max-width: 639px) {
+  .at-pagebar { align-items: flex-start; flex-direction: column; gap: 12px; padding-bottom: 13px; margin-bottom: 14px; }
+  .at-pagebar-main { width: 100%; }
+  .at-pagebar-actions { width: 100%; justify-content: flex-start; }
+  .at-pagebar-actions > * { flex: 1 1 auto; }
+}
+
 /* ── Hero ───────────────────────────────────────────────────────── */
 .at-hero {
   position: relative;

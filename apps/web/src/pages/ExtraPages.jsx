@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plug, Check, RefreshCw, CreditCard, Crown, ArrowRight, Building2, Wallet, Search, KeyRound, X } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { PageHero, GoldButton, GhostButton } from '@/components/ui-kit';
+import { GoldButton, GhostButton } from '@/components/ui-kit';
 import { PLANS, fmtMoney, translatePlan, BROKER_REGISTRY, PROP_FIRM_REGISTRY, CONNECTION_TYPES, getProviderById } from '@/lib/mockData';
 import pb from '@/lib/pocketbaseClient';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
@@ -223,7 +223,6 @@ const forex = filtered.filter((p) => p.kind?.toLowerCase().includes('forex') || 
   return (
     <AppLayout title={t('nav.brokers')}>
       <div className="tb-page">
-        <PageHero kickerIcon={Plug} kicker="Live sync • read-only by default" title="Connect account" subtitle="Connect a broker to sync balances and trades automatically. More brokers coming soon — your keys stay encrypted and are never used for trading." />
         <div className="tb-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8a8577]" />

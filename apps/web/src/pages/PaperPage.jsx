@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlaskConical, Loader2, Plus, Trash2, Trophy, Crosshair, RotateCcw, Zap, History, AlertTriangle } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import PromptDialog from '@/components/PromptDialog';
-import { PageHero, Card, GoldButton, GhostButton, EmptyState, Note } from '@/components/ui-kit';
+import { PageBar, Card, GoldButton, GhostButton, EmptyState, Note } from '@/components/ui-kit';
 import { useToast } from '@/hooks/use-toast';
 import { useQuotes } from '@/hooks/useQuotes';
 import pb from '@/lib/pocketbaseClient';
@@ -175,18 +175,13 @@ export default function PaperPage() {
   return (
     <AppLayout title="Paper Trading">
       <div className="tb-page">
-        <PageHero
-          kickerIcon={FlaskConical}
-          kicker="Paper Trading"
-          title="Reps without"
-          accent="the risk"
-          subtitle="$100,000 virtual per account. Live-quote entries, stop-loss and take-profit that settle themselves, one-tap live closes, and contest boards."
-          stats={[
-            { label: 'Realized P&L', value: `${totals.realized >= 0 ? '+' : ''}$${totals.realized.toLocaleString()}`, color: totals.realized >= 0 ? '#34d399' : '#e06666' },
-            { label: 'Win rate', value: `${totals.winRate}%` },
-            { label: 'Open', value: totals.open },
+        <PageBar
+          meta={[
+            `$${totals.realized >= 0 ? '+' : ''}${totals.realized.toLocaleString()} realized`,
+            `${totals.winRate}% win rate`,
+            `${totals.open} open`,
           ]}
-          actions={totals.open > 0 ? <GoldButton onClick={settleAll} disabled={busy === 'settle'} className="!px-4 !py-2 !text-xs"><Zap className="h-4 w-4" /> {busy === 'settle' ? 'Settling…' : 'Settle stops/targets at live'}</GoldButton> : null}
+          actions={totals.open > 0 ? <GoldButton onClick={settleAll} disabled={busy === 'settle'} className="!px-4 !py-2 !text-xs"><Zap className="h-4 w-4" /> {busy === 'settle' ? 'Settling…' : 'Settle at live'}</GoldButton> : null}
         />
 
         {needsSetup && (

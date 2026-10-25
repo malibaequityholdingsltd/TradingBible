@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTbc } from '@/lib/tbc';
 import { useToast } from '@/hooks/use-toast';
 import { Card, SectionHead, EmptyState, GoldButton, GhostButton, Skeleton, Note } from '@/components/ui-kit';
-import { AtBadge, AtButton, AtHero, AtMetric, AtPanel, AtProgress, AtTabs } from '@/components/AtelierUI';
+import { AtBadge, AtButton, AtPageBar, AtMetric, AtPanel, AtProgress, AtTabs } from '@/components/AtelierUI';
 import TbcCard from '@/components/TbcCard';
 import AirdropClaim from '@/components/AirdropClaim';
 import { TbcSign, TbcMoney } from '@/components/TbcSign';
@@ -426,32 +426,13 @@ export default function WalletPage() {
 	return (
 		<AppLayout title={t('nav.wallet')}>
 			<div className="at-page at-scope at-enter">
-				<AtHero
-					eyebrow="Member treasury · 1 TBC = 1 KWD"
-					icon={Wallet}
-					title={<>Your <em>wallet.</em></>}
-					description="Two balances, one clear rule: cash pays for plans, and TBC platform credits pay for the things you use inside TradingBible. This is off-chain account money — not the proposed TBC token."
-					status={[
-						{ label: 'TBC in the till', value: <TbcMoney amount={tbcBalance} />, tone: 'gold' },
-						{ label: 'Cash for plans', value: fmtMoney(walletBalance) },
-						{ label: 'Identity', value: kycStatus === 'verified' ? 'Verified' : kycStatus === 'pending' ? 'Pending' : 'Not verified', tone: kycStatus === 'verified' ? 'green' : 'amber' },
-						{ label: 'Bank link', value: connectStatus === 'active' ? 'Connected' : 'Not connected', tone: connectStatus === 'active' ? 'green' : 'amber' },
-					]}
-					statusTitle="Account state"
-					statusNote="TBC credits are platform accounting entries. The proposed TBC token is not issued and cannot be bought, sold, staked or transferred here."
+				<AtPageBar
+					meta={['1 TBC = 1 KWD']}
 					actions={(
 						<>
 							<AtButton onClick={() => { setBankTab('money'); setShowDep(true); }} variant="gold" icon={Plus}>Top up cash</AtButton>
-							<AtButton onClick={reload} disabled={syncing} variant="quiet" icon={RefreshCw}>Refresh balances</AtButton>
+							<AtButton onClick={reload} disabled={syncing} variant="quiet" icon={RefreshCw}>Refresh</AtButton>
 						</>
-					)}
-					bottom={(
-						<div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-semibold text-[var(--at-mut)]">
-							<span className="flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5 text-[var(--at-green)]" /> Ledger-backed balances</span>
-							<span className="flex items-center gap-2"><CreditCard className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Plans pay by cash or card</span>
-							<span className="flex items-center gap-2"><Coins className="h-3.5 w-3.5 text-[var(--at-gold)]" /> TBC spends in-app only</span>
-							<span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Non-custodial crypto tracking</span>
-						</div>
 					)}
 				/>
 

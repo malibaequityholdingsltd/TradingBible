@@ -8,7 +8,7 @@ import { useI18n } from '@/lib/i18n';
 import { txt, numOrNull } from '@/lib/safeRender';
 import { SYMBOL_GROUPS, ALL_SYMBOLS } from '@/lib/symbols';
 import { Card, SectionHead, EmptyState, GoldButton, GhostButton } from '@/components/ui-kit';
-import { AtBadge, AtHero } from '@/components/AtelierUI';
+import { AtPageBar } from '@/components/AtelierUI';
 
 const DEFAULTS = [
   { name: 'Favorites', symbols: ['BTCUSD', 'AAPL', 'XAUUSD', 'GBPJPY', 'SOLUSD'] },
@@ -121,29 +121,17 @@ export default function WatchlistsPage() {
   return (
     <AppLayout title={t('nav.watchlists')}>
       <div className="at-page at-scope at-enter pb-10">
-        <AtHero
-          eyebrow="Market desk · member workspace"
-          icon={LineChart}
-          title={<>Your market <em>lens.</em></>}
-          description="Keep the instruments that matter in focused lists, then move from signal to chart without losing the thread."
-          status={[
-            { label: 'Watchlists', value: lists.length, tone: 'gold' },
-            { label: 'Tracked symbols', value: totalTracked },
-            { label: 'Price feed', value: status === 'live' ? 'Live' : 'Connecting', tone: status === 'live' ? 'green' : 'amber' },
+        <AtPageBar
+          meta={[
+            `${lists.length} lists`,
+            `${totalTracked} tracked symbols`,
+            status === 'live' ? 'Live quotes' : 'Connecting',
           ]}
-          statusTitle="Desk state"
           actions={(
             <>
               <GoldButton onClick={() => setCreating(true)} className="!min-h-[40px] !px-4"><Plus className="h-4 w-4" /> New watchlist</GoldButton>
               <GhostButton to="/app/terminal-pro" className="!min-h-[40px] !px-4"><LineChart className="h-4 w-4" /> Terminal Pro</GhostButton>
             </>
-          )}
-          bottom={(
-            <div className="flex flex-wrap items-center gap-2">
-              <AtBadge tone="gold">Personal lists</AtBadge>
-              <AtBadge>Live quotes</AtBadge>
-              <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Changes save automatically</span>
-            </div>
           )}
         />
         {loading ? (

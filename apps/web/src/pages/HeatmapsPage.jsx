@@ -4,7 +4,7 @@ import AppLayout from '@/components/AppLayout';
 import MarketHeatmap from '@/components/MarketHeatmap';
 import ChartPanel from '@/components/ChartPanel';
 import AddToWatchlist from '@/components/AddToWatchlist';
-import { PageHero, Card, GoldButton, GhostButton } from '@/components/ui-kit';
+import { PageBar, Card, GoldButton, GhostButton } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
 
 export default function HeatmapsPage() {
@@ -25,11 +25,7 @@ export default function HeatmapsPage() {
   return (
     <AppLayout title={t('nav.heatmaps')}>
       <div className="tb-page">
-        <PageHero
-          kicker={t('nav.heatmaps')}
-          kickerIcon={Grid2x2}
-          title={t('mkt.liveHeat')}
-          subtitle={t('mkt.heatSub')}
+        <PageBar
           actions={
             <GhostButton to="/app/terminal-pro?view=heatmap" className="!px-3.5 !py-2 !text-xs">Terminal Pro</GhostButton>
           }

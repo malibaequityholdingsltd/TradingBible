@@ -11,7 +11,7 @@ import DashboardWidgets from '@/components/DashboardWidgets';
 import AccountBalances from '@/components/AccountBalances';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { AdSlot } from '@/lib/ads/components.jsx';
-import { PageHero, Card, StatGrid, EmptyState, GoldButton, GhostButton, SectionHead, Skeleton, CardSkeleton } from '@/components/ui-kit';
+import { PageBar, Card, StatGrid, EmptyState, GoldButton, GhostButton, SectionHead, Skeleton, CardSkeleton } from '@/components/ui-kit';
 
 const GOLD = '#d4af37';
 
@@ -110,17 +110,7 @@ export default function DashboardPage() {
   return (
     <AppLayout title={t('nav.dashboard')}>
       <div className="tb-page">
-        <PageHero
-          kickerIcon={LayoutDashboard}
-          kicker={t('nav.dashboard')}
-          title={t('dash.perfPnl')}
-          accent={fmtMoney(stats.balance - 100000)}
-          subtitle={t('dash.syncedN', { n: stats.totalTrades })}
-          stats={[
-            { label: t('dash.winRate'), value: `${stats.winRate}%`, color: stats.winRate >= 50 ? '#34d399' : '#fb7185' },
-            { label: t('dash.profitFactor'), value: stats.profitFactor.toFixed(2), color: '#d4af37' },
-            { label: t('dash.traderScore'), value: `${stats.traderScore}/100`, color: '#f0ecdd' },
-          ]}
+        <PageBar
           actions={
             <>
               <GoldButton to="/app/journal" className="min-h-[40px] px-4 py-2 text-xs"><PlusCircle className="h-4 w-4" /> {t('jou.newTrade', null, 'New trade')}</GoldButton>

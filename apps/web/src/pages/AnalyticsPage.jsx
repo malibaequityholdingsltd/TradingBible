@@ -10,7 +10,7 @@ import { useI18n } from '@/lib/i18n';
 import { fmtMoney } from '@/lib/mockData';
 import { useTrades, computeStats } from '@/hooks/useTrades';
 import { Card, SectionHead, EmptyState, GoldButton } from '@/components/ui-kit';
-import { AtBadge, AtHero, AtMetric } from '@/components/AtelierUI';
+import { AtMetric } from '@/components/AtelierUI';
 import { useTheme } from '@/hooks/useTheme';
 
 const GOLD = '#d4af37';
@@ -74,19 +74,6 @@ export default function AnalyticsPage() {
   if (!stats) return (
     <AppLayout title={t('ana.pageTitle')}>
       <div className="at-page at-scope at-enter">
-        <AtHero
-          eyebrow="Performance desk · member"
-          icon={BarChart3}
-          title={<>{t('ana.pageTitle')}</>}
-          description={t('ana.noDataSub')}
-          status={[
-            { label: 'Trades', value: '0', tone: 'amber' },
-            { label: 'Broker', value: 'Not connected', tone: 'amber' },
-            { label: 'Analytics', value: 'Waiting for data', tone: undefined },
-          ]}
-          statusTitle="Data state"
-          actions={<GoldButton to="/app/brokers">{t('ana.connectBroker')}</GoldButton>}
-        />
         <EmptyState
           icon={Plug}
           title={t('ana.noDataTitle')}
@@ -102,28 +89,7 @@ export default function AnalyticsPage() {
   return (
     <AppLayout title={t('ana.pageTitle')}>
       <div className="at-page at-scope at-enter pb-10">
-        <AtHero
-          eyebrow="Performance desk · member"
-          icon={BarChart3}
-          title={<>Read the <em>edge.</em></>}
-          description={t('ana.equitySub')}
-          status={[
-            { label: 'Win rate', value: `${stats.winRate}%`, tone: 'gold' },
-            { label: 'Profit factor', value: stats.profitFactor.toFixed(2), tone: stats.profitFactor >= 1 ? 'green' : 'amber' },
-            { label: 'Max drawdown', value: `${stats.drawdown}%`, tone: stats.drawdown > 15 ? 'amber' : undefined },
-            { label: 'Trades', value: stats.totalTrades },
-          ]}
-          statusTitle="Performance snapshot"
-          actions={<AtBadge tone="gold">Every chart is drawn from your logged trades</AtBadge>}
-          bottom={(
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <span className="at-live-dot" />
-              <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--at-mut)]">Live journal data</span>
-              <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Equity · drawdown · consistency</span>
-            </div>
-          )}
-        />
-        <div className="mb-5 mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <div className="mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
           <AtMetric label={t('ana.winRate')} value={`${stats.winRate}%`} note="Closed trades" tone="text-[var(--at-green)]" />
           <AtMetric label={t('ana.profitFactor')} value={stats.profitFactor.toFixed(2)} note="Gross win / loss" />
           <AtMetric label={t('ana.maxDd')} value={`${stats.drawdown}%`} note="Peak-to-trough" tone="text-[var(--at-amber)]" />

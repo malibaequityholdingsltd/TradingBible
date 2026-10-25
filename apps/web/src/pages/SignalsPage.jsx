@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom';
 import { Radar, ArrowUpRight, ArrowDownRight, Minus, Save, Loader2, Store } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { PageHero, Card, Tabs, Stat, StatGrid, EmptyState, GhostButton, GoldButton } from '@/components/ui-kit';
+import { Card, Tabs, Stat, StatGrid, EmptyState, GhostButton, GoldButton } from '@/components/ui-kit';
 import { useToast } from '@/hooks/use-toast';
 import { TbcMoney } from '@/components/TbcSign';
 import { txt, numOrNull } from '@/lib/safeRender';
@@ -257,11 +257,6 @@ export default function SignalsPage() {
   return (
     <AppLayout title={t('nav.signals')}>
       <div className="tb-page">
-        <PageHero
-          kicker={t('nav.signals')}
-          kickerIcon={Radar}
-          title={t('nav.signals')}
-        />
         <StatGrid cols={5}>
           <Stat label={t('sig.tracked')} value={saved.length} />
           <Stat label={t('sig.closed')} value={closed.length} />

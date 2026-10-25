@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { txt } from '@/lib/safeRender';
-import { PageHero, GoldButton, GhostButton, EmptyState, Card } from '@/components/ui-kit';
+import { GoldButton, GhostButton, EmptyState, Card } from '@/components/ui-kit';
 import EvaluationsPanel from '@/components/EvaluationsPanel';
 
 const FIELD_DEFS = [
@@ -177,8 +177,6 @@ export default function JournalPage() {
   return (
     <AppLayout title={t('nav.journal')}>
       <div className="tb-page">
-        <PageHero kickerIcon={BookOpen} kicker={t('nav.journal')} title={t('nav.journal')} />
-
         <div className="tb-scroll-row items-center">
           <div className="flex min-w-[150px] flex-1 items-center gap-2 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2">
             <Search className="h-4 w-4 shrink-0 text-[#8a8577]" />

@@ -212,7 +212,7 @@ export default function AdminLayout({ children, title }) {
                   <span>TradingBible</span><span className="text-[var(--at-mut-2)]">/</span><b>Admin</b>
                 </div>
                 <div className="flex min-w-0 items-center gap-2">
-                  <span className="truncate text-sm font-semibold tracking-[-0.02em] text-[var(--at-ink)] sm:text-[15px]">{title || 'Admin Dashboard'}</span>
+                  <h1 className="truncate text-sm font-semibold tracking-[-0.02em] text-[var(--at-ink)] sm:text-[15px]">{title || 'Admin Dashboard'}</h1>
                   <AtBadge tone="gold" className="hidden md:inline-flex">Live workspace</AtBadge>
                 </div>
               </div>

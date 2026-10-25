@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { PageHero, Card, GoldButton, GhostButton } from '@/components/ui-kit';
+import { PageBar, Card, GoldButton, GhostButton } from '@/components/ui-kit';
 import { useTrades, computeStats } from '@/hooks/useTrades';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useWallet } from '@/hooks/useWallet';
@@ -131,20 +131,16 @@ export default function ProGuidePage() {
   return (
     <AppLayout title="Pro Guide">
       <div className="tb-page">
-        <PageHero
-          kickerIcon={Compass}
-          kicker="Pro Guide"
-          title="From signup to"
-          accent="funded-desk ready"
-          subtitle="Twenty-four missions across the full portal. Auto-detected steps check themselves; the rest take one tap."
+        <PageBar
+          meta={[`${doneCount}/${all.length} missions`]}
         >
-          <div className="mt-4 flex items-center gap-4">
-            <div className="h-2.5 w-48 overflow-hidden rounded-full bg-white/10 sm:w-64">
+          <div className="mt-3 flex items-center gap-3">
+            <div className="h-2 w-48 overflow-hidden rounded-full bg-white/10 sm:w-64">
               <div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] transition-all duration-700" style={{ width: `${pct}%` }} />
             </div>
-            <span className="font-mono text-sm font-bold text-[#d4af37]">{doneCount}/{all.length} · {pct}%</span>
+            <span className="font-mono text-xs font-bold text-[#d4af37]">{pct}%</span>
           </div>
-        </PageHero>
+        </PageBar>
 
         {pct === 100 && (
           <Card className="flex flex-wrap items-center gap-3 border-[#d4af37]/40 p-5">

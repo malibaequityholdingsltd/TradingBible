@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Calculator, Scale, Flame, Target, ShieldCheck, Plus, Trash2, Crosshair, Wallet, History } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useI18n } from '@/lib/i18n';
-import { PageHero, Card, GhostButton, Note } from '@/components/ui-kit';
+import { PageBar, Card, GhostButton, Note } from '@/components/ui-kit';
 import SymbolSearchPicker from '@/components/SymbolSearchPicker';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useTrades, computeStats } from '@/hooks/useTrades';
@@ -261,18 +261,8 @@ export default function RiskToolsPage() {
   return (
     <AppLayout title={t('risk.pageTitle')}>
       <div className="tb-page">
-        <PageHero
-          kickerIcon={ShieldCheck}
-          kicker={t('risk.pageTitle')}
-          title="Size every trade"
-          accent="like a professional"
-          subtitle="Live-price position sizing, payoff math against your real journal stats, drawdown rails, and portfolio heat — the four numbers that decide whether you survive."
-          stats={actuals ? [
-            { label: 'Journal win rate', value: `${actuals.winRate}%` },
-            { label: 'Profit factor', value: actuals.profitFactor, color: '#d4af37' },
-            { label: 'Trades', value: actuals.totalTrades },
-          ] : []}
-          actions={<GhostButton to="/app/journal" className="!px-4 !py-2 !text-xs"><History className="h-4 w-4" /> Log trades to sharpen these</GhostButton>}
+        <PageBar
+          actions={<GhostButton to="/app/journal" className="!px-4 !py-2 !text-xs"><History className="h-4 w-4" /> Open journal</GhostButton>}
         />
         <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
           <PositionSizer />

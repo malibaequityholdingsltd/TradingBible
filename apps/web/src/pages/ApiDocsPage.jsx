@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Code2, Copy, Check, Terminal, KeyRound, Webhook, ChevronDown } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { PageHero } from '@/components/ui-kit';
 
 function Code({ children }) {
   const [copied, setCopied] = useState(false);
@@ -45,15 +44,6 @@ export default function ApiDocsPage() {
   return (
     <AppLayout title="API Documentation">
       <div className="tb-page">
-      <PageHero
-        kicker="Developer API"
-        kickerIcon={Code2}
-        title="TradingBible REST API"
-        accent="v1"
-        subtitle="Integrate your trade data, analytics and broker connections into third-party tools, dashboards and bots. All requests are authenticated with a bearer API key and return JSON."
-        stats={[{ label: 'Base URL', value: 'https://api.tradingbible.app' }]}
-      />
-
       <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <Section icon={KeyRound} title="Authentication">

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Bell, Plus, Trash2, Pause, Play, Loader2, ArrowUp, ArrowDown, Percent, History, X, Volume2, Mail, Smartphone } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { PageHero, Card, Tabs, Stat, StatGrid, EmptyState, GoldButton, GhostButton, CardSkeleton } from '@/components/ui-kit';
+import { PageBar, Card, Tabs, Stat, StatGrid, EmptyState, GoldButton, GhostButton, CardSkeleton } from '@/components/ui-kit';
 import { useAlerts } from '@/hooks/useAlerts';
 import { txt, numOrNull } from '@/lib/safeRender';
 import { useQuotes } from '@/hooks/useQuotes';
@@ -83,10 +83,7 @@ export default function AlertsPage() {
   return (
     <AppLayout title={t('nav.alerts')}>
       <div className="tb-page">
-        <PageHero
-          kicker={t('nav.alerts')}
-          kickerIcon={Bell}
-          title={t('nav.alerts')}
+        <PageBar
           actions={<GoldButton onClick={() => setCreating(true)} className="min-h-[36px] px-4 py-2 text-sm"><Plus className="h-4 w-4" /> {t('al.newBtn')}</GoldButton>}
         />
         <StatGrid cols={4}>

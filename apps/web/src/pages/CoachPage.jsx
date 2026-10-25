@@ -4,7 +4,6 @@ import AppLayout from '@/components/AppLayout';
 import { useI18n } from '@/lib/i18n';
 import { useIntegratedAi } from '@/hooks/use-integrated-ai';
 import { Card, SectionHead } from '@/components/ui-kit';
-import { AtBadge, AtHero } from '@/components/AtelierUI';
 
 const SUGGESTED_KEYS = ['coach.s1', 'coach.s2', 'coach.s3', 'coach.s4'];
 
@@ -30,28 +29,7 @@ export default function CoachPage() {
   return (
     <AppLayout title={t('nav.coach')}>
       <div className="at-page at-scope at-enter coach-page pb-10">
-        <AtHero
-          eyebrow="Private workstation · member"
-          icon={Bot}
-          title={<>{t('coach.tradingCoach')}</>}
-          description={t('coach.howBody')}
-          status={[
-            { label: 'Coach', value: t('coach.online'), tone: 'green' },
-            { label: 'Mode', value: 'Private session', tone: 'gold' },
-            { label: 'Context', value: 'Your journal', tone: undefined },
-          ]}
-          statusTitle="Session state"
-          actions={<AtBadge tone="gold">Local model · no public feed</AtBadge>}
-          bottom={(
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="at-live-dot" />
-              <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--at-mut)]">{t('coach.online')}</span>
-              <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Conversation history is yours</span>
-            </div>
-          )}
-        />
-
-        <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <div className="coach-chat at-card flex h-[calc(100dvh-24rem)] min-h-[460px] flex-col overflow-hidden lg:col-span-2">
             <div className="flex items-center gap-2 border-b border-[var(--at-line-soft)] px-4 py-3 sm:px-5 sm:py-4">
               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[var(--at-line)] bg-[var(--at-gold-soft)] text-[var(--at-gold)]"><Bot className="h-4 w-4" /></div>

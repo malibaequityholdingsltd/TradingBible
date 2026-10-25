@@ -15,6 +15,7 @@ import { homeRouteForUser } from '@/lib/homeRoute';
 import { useI18n } from '@/lib/i18n';
 import { usePlatformSettings } from '@/lib/platformSettings';
 import { Card, GhostButton, GoldButton, Kicker, StatGrid, Stat } from '@/components/ui-kit';
+import { IosIcon } from '@/components/IosIcon';
 
 const LOGO = TRADINGBIBLE_LOGO;
 
@@ -102,8 +103,8 @@ function Nav({ homeTo, isAuthed, platformName }) {
               <Link to="/login" className="hidden rounded-full px-4 py-2 text-sm font-medium text-[#c9c4b4] transition-colors hover:bg-white/5 hover:text-[#e9e7df] sm:block">{t('land.login')}</Link>
               <GoldButton to="/pricing" className="hidden px-5 py-2.5 text-base sm:inline-flex"><span>{t('land.viewPricing')}</span></GoldButton>
               <Link to="/pricing" className="grid h-9 place-items-center whitespace-nowrap rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 text-[13px] font-bold text-[#0a0a0f] sm:hidden">{t('land.viewPricing')}</Link>
-              <button onClick={() => setMenuOpen((o) => !o)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60 md:hidden" aria-label={t('nav.menu')} aria-expanded={menuOpen}>
-                {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              <button onClick={() => setMenuOpen((o) => !o)} className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] transition hover:scale-105 active:scale-95 md:hidden" aria-label={t('nav.menu')} aria-expanded={menuOpen}>
+                <IosIcon icon={menuOpen ? X : Menu} size="sm" tone="gray" />
               </button>
             </>
           )}
@@ -200,7 +201,7 @@ export default function LandingPage() {
             <motion.div key={f.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: Math.min(i, 5) * 0.06 }}>
               <Card hover className="group relative h-full overflow-hidden rounded-2xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#d4af37]/30 hover:shadow-[0_24px_60px_-28px_rgba(212,175,55,0.35)]">
                 <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                <div className="mb-4 grid h-11 w-11 place-items-center rounded-xl border border-[#d4af37]/20 bg-gradient-to-b from-[#d4af37]/20 to-[#d4af37]/[0.06] text-[#e8c95a] shadow-[0_8px_20px_-8px_rgba(212,175,55,0.5),inset_0_1px_0_rgba(255,255,255,0.12)]"><f.icon className="h-5 w-5" /></div>
+                <IosIcon icon={f.icon} size="lg" seed={f.title} className="mb-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-105" />
                 <h3 className="mb-2 text-[1.05rem] font-semibold tracking-tight text-[#f0ecdd]">{f.title}</h3>
                 <p className="text-sm leading-relaxed text-[#8a8577]">{f.body}</p>
               </Card>
@@ -224,7 +225,7 @@ export default function LandingPage() {
                 <Card className="relative h-full overflow-hidden rounded-2xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-7">
                   <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-[#f4e6a8]/70 via-[#d4af37]/70 to-transparent" />
                   <div className="flex items-center gap-3">
-                    <span className="grid h-10 w-10 place-items-center rounded-full border border-[#d4af37]/30 bg-[#d4af37]/10 font-mono text-sm font-bold text-[#e8c95a]">{i + 1}</span>
+                    <IosIcon size="md" tone={['blue', 'purple', 'green'][i] || 'blue'}>{i + 1}</IosIcon>
                     <div className="tb-gold-text font-mono text-sm font-bold tracking-[0.2em]">{s.n}</div>
                   </div>
                   <h3 className="mt-4 text-lg font-semibold tracking-tight text-[#f0ecdd]">{s.title}</h3>

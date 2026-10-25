@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import {
-  AtAlert, AtBadge, AtButton, AtEmpty, AtHero, AtMetric, AtPanel, AtProgress,
+  AtAlert, AtBadge, AtButton, AtEmpty, AtPageBar, AtMetric, AtPanel, AtProgress,
   AtSectionHeading,
 } from '@/components/AtelierUI';
 import { useToast } from '@/hooks/use-toast';
@@ -108,32 +108,18 @@ export default function AdminAirdrops() {
   return (
     <AdminLayout title="Airdrops">
       <div className="at-page at-scope at-enter">
-        <AtHero
-          eyebrow="TBC credit campaigns · eligibility engine"
-          icon={Gift}
-          title={<>Airdrop <em>studio.</em></>}
-          description="Draft a campaign, snapshot the audience, then let eligible accounts claim TBC platform credits. Claims are off-chain accounting entries — not token transfers — and every snapshot is additive."
-          status={[
-            { label: 'Campaigns', value: stats.campaigns, tone: 'gold' },
-            { label: 'Open now', value: stats.open, tone: stats.open ? 'green' : undefined },
-            { label: 'Recipients', value: nf(stats.recipients) },
-            { label: 'Credits claimed', value: nf(stats.claimed), tone: 'gold' },
+        <AtPageBar
+          meta={[
+            `${stats.campaigns} campaigns`,
+            `${stats.open} open`,
+            `${nf(stats.recipients)} recipients`,
+            `${nf(stats.claimed)} credits claimed`,
           ]}
-          statusTitle="Campaign posture"
-          statusNote="A campaign only becomes claimable after an explicit eligibility snapshot. Re-snapshotting adds new recipients and never double-counts claimed users."
           actions={(
             <>
-              <AtButton onClick={load} variant="quiet" icon={RefreshCw}>Refresh book</AtButton>
-              <AtButton to="/admin/tbc" variant="outline" icon={Coins}>TBC control center</AtButton>
+              <AtButton onClick={load} variant="quiet" icon={RefreshCw}>Refresh</AtButton>
+              <AtButton to="/admin/tbc" variant="outline" icon={Coins}>TBC</AtButton>
             </>
-          )}
-          bottom={(
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-semibold text-[var(--at-mut)]">
-              <span className="flex items-center gap-2"><Users className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Snapshot-based eligibility</span>
-              <span className="flex items-center gap-2"><Coins className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Off-chain TBC credits</span>
-              <span className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-[var(--at-gold)]" /> No token issuance</span>
-              <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">1 TBC credit = 1 KWD</span>
-            </div>
           )}
         />
 

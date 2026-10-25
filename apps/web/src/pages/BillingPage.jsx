@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Crown, Check, CreditCard, RefreshCw, XCircle, RotateCcw, ArrowUpRight, ShieldCheck, Receipt, AlertTriangle, Wallet } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { Card, EmptyState, GhostButton, GoldButton, Note, PageHero, SectionHead } from '@/components/ui-kit';
+import { Card, EmptyState, GhostButton, GoldButton, Note, PageBar, SectionHead } from '@/components/ui-kit';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { PLANS, translatePlan } from '@/lib/mockData';
@@ -121,27 +121,15 @@ export default function BillingPage() {
   return (
     <AppLayout title={t('nav.billing')}>
       <div className="tb-page">
-      <section className="tb-hero overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
-              <Crown className="h-6 w-6" />
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">{t('nav.billing')}</h2>
-              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">{t('bill.manage')}</p>
-            </div>
-          </div>
-          {stripeEnv && (
-            <span className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${stripeEnv === 'live' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#d4af37]/15 text-[#d4af37]'}`}>
-              <span className={`h-1.5 w-1.5 rounded-full ${stripeEnv === 'live' ? 'bg-emerald-400' : 'bg-[#d4af37]'}`} />
-              {stripeEnv === 'live' ? t('bill.stripeLive') : t('bill.stripeTest')}
-              {stripeEnv !== 'live' && <span className="hidden font-normal text-[#8a8577] sm:inline">· {t('bill.testMode')}</span>}
-            </span>
-          )}
-        </div>
-      </section>
+      <PageBar
+        actions={stripeEnv ? (
+          <span className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${stripeEnv === 'live' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#d4af37]/15 text-[#d4af37]'}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${stripeEnv === 'live' ? 'bg-emerald-400' : 'bg-[#d4af37]'}`} />
+            {stripeEnv === 'live' ? t('bill.stripeLive') : t('bill.stripeTest')}
+            {stripeEnv !== 'live' && <span className="hidden font-normal text-[#8a8577] sm:inline">· {t('bill.testMode')}</span>}
+          </span>
+        ) : null}
+      />
 
       {isAdmin && !configured && (
         <Note icon={AlertTriangle}>

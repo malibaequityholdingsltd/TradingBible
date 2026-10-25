@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Coins, Loader2, Lock, Percent, ShieldCheck, Timer, Users, Zap } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import PromptDialog from '@/components/PromptDialog';
-import { PageHero, Card, GoldButton, GhostButton, Note } from '@/components/ui-kit';
+import { Card, GoldButton, GhostButton, Note } from '@/components/ui-kit';
 import { useToast } from '@/hooks/use-toast';
 import {
   STAKING_PARAMS, getValidators, getStakingAccount,
@@ -55,14 +55,6 @@ export default function StakingPage() {
   return (
     <AppLayout title="Staking">
       <div className="tb-page !max-w-[1400px]">
-        <PageHero
-          kickerIcon={Coins}
-          kicker="TBC Staking · Testnet preview"
-          title="Put TBC"
-          accent="to work"
-          subtitle={`Delegate to validators, earn illustrative rewards, unbond over ${STAKING_PARAMS.unbondingDays} days. Live staking opens with the network — positions shown here are a working preview.`}
-        />
-
         <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
           <Stat label="My bonded" value={`${account.bonded.toLocaleString()} TBC`} tone="text-[#d4af37]" />
           <Stat label="Est. rewards" value={`${account.rewards.toLocaleString()} TBC`} tone="text-emerald-400" />

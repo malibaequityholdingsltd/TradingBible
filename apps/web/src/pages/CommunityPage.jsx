@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { MessageSquare, Trophy, Plus, Send, X } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { Card, EmptyState, GoldButton, PageHero, Tabs } from '@/components/ui-kit';
+import { Card, EmptyState, GoldButton, PageBar, Tabs } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
 import pb from '@/lib/pocketbaseClient';
 import { useAuth } from '@/hooks/useAuth';
@@ -121,10 +121,7 @@ function Forum() {
 
   return (
     <div>
-      <PageHero
-        kicker={t('com.kicker')}
-        kickerIcon={MessageSquare}
-        subtitle={t('com.desc')}
+      <PageBar
         actions={(
           <GoldButton onClick={() => setCreating(!creating)}><Plus className="h-4 w-4" /> {t('com.newThread')}</GoldButton>
         )}

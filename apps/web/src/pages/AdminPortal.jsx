@@ -17,7 +17,7 @@ import {
 } from 'recharts';
 import AdminLayout from '@/components/AdminLayout';
 import {
-  AtAlert, AtBadge, AtButton, AtHero, AtLink, AtMetric, AtPanel, AtProgress,
+  AtAlert, AtBadge, AtButton, AtPageBar, AtLink, AtMetric, AtPanel, AtProgress,
   AtRing, AtSectionHeading, AtSparkline, AtTabs,
 } from '@/components/AtelierUI';
 import pb from '@/lib/pocketbaseClient';
@@ -496,33 +496,13 @@ export function AdminDashboard() {
   return (
     <AdminLayout title="Admin Dashboard">
       <div className="at-page at-scope at-enter">
-        <AtHero
-          eyebrow={`Operator brief · ${todayLabel}`}
-          icon={LayoutDashboard}
-          title={<>Business, <em>in focus.</em></>}
-          description="One operating picture for the company: subscriber growth, money movement, TBC platform credits, system health and the newest accounts. Live where the data is live; explicitly blank where it is not."
-          status={[
-            { label: 'MRR', value: `$${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, tone: 'gold' },
-            { label: 'Customers', value: stats.customers.toLocaleString(), tone: 'green' },
-            { label: 'Registered users', value: stats.total.toLocaleString() },
-            { label: 'Token status', value: supply?.tokenIssued ? 'Issued' : 'Not issued', tone: supply?.tokenIssued ? 'green' : 'amber' },
-          ]}
-          statusTitle="Today at a glance"
-          statusNote="Plan values are calculated from active subscriber records. Token status is separate from the off-chain TBC credit ledger."
+        <AtPageBar
           actions={(
             <>
-              <AtButton to="/admin/users" variant="gold" icon={Users}>User management</AtButton>
-              <AtButton to="/admin/tbc" variant="outline" icon={Coins}>TBC control center</AtButton>
+              <AtButton to="/admin/users" variant="gold" icon={Users}>Users</AtButton>
+              <AtButton to="/admin/tbc" variant="outline" icon={Coins}>TBC</AtButton>
               <AtButton to="/admin/billing" variant="quiet" icon={CreditCard}>Billing</AtButton>
             </>
-          )}
-          bottom={(
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-semibold text-[var(--at-mut)]">
-              <span className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-[var(--at-green)] shadow-[0_0_8px_var(--at-green)]" /> {loading ? 'Syncing live records' : 'Live platform data'}</span>
-              <span className="flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Admin-only surface</span>
-              <span className="hidden items-center gap-2 sm:flex"><Activity className="h-3.5 w-3.5 text-[var(--at-gold)]" /> {stats.trades.toLocaleString()} journaled trades</span>
-              <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Refreshed {new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</span>
-            </div>
           )}
         />
 
@@ -911,18 +891,6 @@ export function AdminUsers() {
 
   return (
     <AdminLayout title="User Management">
-      <section className="tb-hero mb-5 overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-        <div className="relative flex min-w-0 items-center gap-4">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
-            <Users className="h-6 w-6" />
-          </span>
-          <div className="min-w-0">
-            <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">User Management</h2>
-            <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">{users.length.toLocaleString()} accounts · search, filter, edit roles, export or moderate.</p>
-          </div>
-        </div>
-      </section>
       {editing && <EditUserModal user={editing} userSource={source} onClose={() => setEditing(null)} onSaved={onSaved} />}
       {viewing && <UserDetailModal user={viewing} onClose={() => setViewing(null)} />}
 
@@ -1129,26 +1097,6 @@ export function AdminAnalytics() {
   return (
     <AdminLayout title="Analytics">
       <div className="at-page at-scope at-enter pb-10">
-      <AtHero
-        eyebrow="Command desk · admin analytics"
-        icon={BarChart3}
-        title={<>Growth, <em>measured.</em></>}
-        description="Acquisition, conversion, recurring revenue and the one-time academy line — read from live platform records."
-        status={[
-          { label: 'Registered users', value: users.length.toLocaleString(), tone: 'gold' },
-          { label: 'Paid conversion', value: `${users.length ? Math.round(paid.length / users.length * 100) : 0}%`, tone: 'green' },
-          { label: 'Est. MRR', value: `$${mrr.toFixed(0)}`, tone: undefined },
-        ]}
-        statusTitle="Current position"
-        actions={<AtBadge tone="gold">Live platform records · not a forecast</AtBadge>}
-        bottom={(
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="at-live-dot" />
-            <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--at-mut)]">Live metrics</span>
-            <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Users · plans · academy · forecast</span>
-          </div>
-        )}
-      />
       {loading ? <Spinner /> : (
         <>
           <div className="mb-4 mt-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
@@ -1432,27 +1380,7 @@ export function AdminBilling() {
   return (
     <AdminLayout title="Billing & Revenue">
       <div className="at-page at-scope at-enter pb-10">
-      <AtHero
-        eyebrow="Revenue desk · admin"
-        icon={CreditCard}
-        title={<>Money, <em>reconciled.</em></>}
-        description="Subscriptions, one-time academy sales, refunds and payouts. Estimates are clearly separated from Stripe-confirmed totals."
-        status={[
-          { label: live?.configured ? 'Live MRR' : 'Est. MRR', value: `$${(live?.configured ? live.mrr : mrr).toLocaleString(undefined, { maximumFractionDigits: 0 })}`, tone: 'gold' },
-          { label: 'Paid subscribers', value: paid.length, tone: 'green' },
-          { label: 'Academy buyers', value: academyBuyers.toLocaleString(), tone: undefined },
-        ]}
-        statusTitle="Revenue snapshot"
-        actions={<AtBadge tone={live?.configured ? 'green' : 'amber'}>{live?.configured ? 'Stripe live' : 'Estimate · Stripe not connected'}</AtBadge>}
-        bottom={(
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="at-live-dot" />
-            <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--at-mut)]">Billing controls</span>
-            <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Subscriptions · academy · payouts</span>
-          </div>
-        )}
-      />
-      <div className="mb-5 mt-5 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+      <div className="mb-5 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
         <AtMetric icon={DollarSign} label={live?.configured ? 'Live MRR' : 'Est. MRR'} value={`$${(live?.configured ? live.mrr : mrr).toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note={live?.configured ? `Stripe live · ${live.activeCount} active` : 'Monthly recurring (est)'} tone="text-[var(--at-green)]" />
         <AtMetric icon={TrendingUp} label="Est. ARR" value={`$${arr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note="Annual recurring" />
         <AtMetric icon={CreditCard} label="Paid subscribers" value={paid.length} note={`$${paid.length ? (mrr / paid.length).toFixed(2) : 0} ARPU`} />
@@ -2158,27 +2086,7 @@ export function AdminContent() {
   return (
     <AdminLayout title="Content Management">
       <div className="at-page at-scope at-enter pb-10">
-      <AtHero
-        eyebrow="Publishing desk · admin"
-        icon={LibraryBig}
-        title={<>The content <em>library.</em></>}
-        description="Signals, forum, academy courses, webinars, site copy and certificates — one publishing surface with explicit release state."
-        status={[
-          { label: 'Surfaces', value: CONTENT_TABS.length, tone: 'gold' },
-          { label: 'Editing mode', value: 'Admin only', tone: undefined },
-          { label: 'Publishing', value: 'Review required', tone: 'amber' },
-        ]}
-        statusTitle="Publishing state"
-        actions={<AtBadge tone="gold">Changes flow to member and public surfaces</AtBadge>}
-        bottom={(
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="at-live-dot" />
-            <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--at-mut)]">Live catalog controls</span>
-            <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Signals · forum · copy · programs</span>
-          </div>
-        )}
-      />
-      <AtTabs tabs={CONTENT_TABS} active={tab} onChange={setTab} className="mb-6 mt-5 w-fit max-w-full" />
+      <AtTabs tabs={CONTENT_TABS} active={tab} onChange={setTab} className="mb-6 w-fit max-w-full" />
 
       {tab === 'signals' && <SignalsTab />}
       {tab === 'forum' && <ForumTab />}
@@ -2607,23 +2515,7 @@ export function AdminIntegrations() {
 
   return (
     <AdminLayout title="Integrations">
-      <section className="tb-hero mb-5 overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
-              <Plug className="h-6 w-6" />
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Third-Party Integrations</h2>
-              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">Live server status first — keys live in server .env, this page tests and stores reference copies.</p>
-            </div>
-          </div>
-          <button onClick={load} className="flex shrink-0 items-center gap-2 rounded-xl border border-[#d4af37]/15 px-3 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/40">
-            <RefreshCw className="h-4 w-4" /> Refresh
-          </button>
-        </div>
-      </section>
+      <AtPageBar actions={<AtButton onClick={load} variant="quiet" size="sm" icon={RefreshCw}>Refresh</AtButton>} />
 
       {loading ? <Spinner /> : (
         <>
@@ -2776,24 +2668,10 @@ export function AdminApiKeys() {
         </div>
       )}
 
-      <section className="tb-hero mb-5 overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
-              <Key className="h-6 w-6" />
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">API Key Management</h2>
-              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">{keys.length} key{keys.length !== 1 ? 's' : ''} total</p>
-            </div>
-          </div>
-          <button onClick={() => setShowModal(true)}
-            className="flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90">
-            <Plus className="h-4 w-4" /> Generate Key
-          </button>
-        </div>
-      </section>
+      <AtPageBar
+        meta={[`${keys.length} key${keys.length !== 1 ? 's' : ''}`]}
+        actions={<AtButton onClick={() => setShowModal(true)} variant="gold" size="sm" icon={Plus}>Generate key</AtButton>}
+      />
 
       {/* Create modal */}
       {showModal && (
@@ -3023,25 +2901,11 @@ export function AdminPlugins() {
 
   return (
     <AdminLayout title="Plugins">
-      <section className="tb-hero mb-5 overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
-              <Package className="h-6 w-6" />
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">Plugin Management</h2>
-              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">{plugins.filter(p => p.enabled).length} of {plugins.length} plugins active</p>
-            </div>
-          </div>
-          <button onClick={handleUpload} disabled={uploading}
-            className="flex shrink-0 items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2.5 text-sm text-[#d4af37] hover:border-[#d4af37]/50">
-            {uploading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Upload Plugin
-          </button>
-        </div>
-        <input ref={fileRef} type="file" accept=".json,application/json" onChange={handleManifestFile} className="hidden" />
-      </section>
+      <AtPageBar
+        meta={[`${plugins.filter(p => p.enabled).length} of ${plugins.length} active`]}
+        actions={<AtButton onClick={handleUpload} disabled={uploading} variant="quiet" size="sm" icon={uploading ? RefreshCw : Upload}>{uploading ? 'Uploading…' : 'Upload plugin'}</AtButton>}
+      />
+      <input ref={fileRef} type="file" accept=".json,application/json" onChange={handleManifestFile} className="hidden" />
 
       {loading ? <Spinner /> : (
         <div className="space-y-2">
@@ -3332,30 +3196,12 @@ export function AdminJobs() {
   return (
     <AdminLayout title="Jobs & Hiring">
       <div className="at-page at-scope at-enter pb-10">
-      <AtHero
-        eyebrow="People desk · admin"
-        icon={Users}
-        title={<>Build the <em>team.</em></>}
-        description="Publish openings, review real applications, clear probation and allocate existing platform credits — with the lawful-hiring gate enforced server-side."
-        status={[
-          { label: 'Openings', value: postings.filter((p) => p.status === 'open').length, tone: 'gold' },
-          { label: 'Applicants', value: apps.filter((a) => a.status !== 'hired' && a.status !== 'rejected').length, tone: 'green' },
-          { label: 'Probation', value: trials.length, tone: trials.length ? 'amber' : undefined },
-          { label: 'Staff', value: roster.length },
-        ]}
-        statusTitle="Hiring pipeline"
+      <AtPageBar
         actions={(
-          <div className="flex flex-wrap items-center gap-2">
-            <AtButton onClick={seedCompanyRoles} disabled={busy} variant="outline" size="sm" icon={Sparkles}>Seed company roles</AtButton>
-            <AtButton onClick={() => { load(); loadRoster(); loadTrials(); }} variant="quiet" size="sm" icon={RefreshCw}>Refresh desk</AtButton>
-          </div>
-        )}
-        bottom={(
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="at-live-dot" />
-            <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--at-mut)]">Hiring controls live</span>
-            <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Openings · applications · probation · payroll</span>
-          </div>
+          <>
+            <AtButton onClick={seedCompanyRoles} disabled={busy} variant="outline" size="sm" icon={Sparkles}>Seed roles</AtButton>
+            <AtButton onClick={() => { load(); loadRoster(); loadTrials(); }} variant="quiet" size="sm" icon={RefreshCw}>Refresh</AtButton>
+          </>
         )}
       />
       <div className="mb-4 mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -3921,32 +3767,12 @@ export function AdminTvAds() {
   return (
     <AdminLayout title="TradingBible TV">
       <div className="at-page at-scope at-enter">
-      <AtHero
-        eyebrow="Broadcast operations · TradingBible TV"
-        icon={MonitorPlay}
-        title={<>Broadcast <em>control.</em></>}
-        description="Programme the rotating ad feed, live channel guide and experiments behind TradingBible TV. Settings apply to the floating widget and the full-screen member stage."
-        status={[
-          { label: 'Broadcasts', value: ads.length, tone: 'gold' },
-          { label: 'Live now', value: ads.filter((ad) => ad.enabled !== false).length, tone: 'green' },
-          { label: 'Manual channels', value: channels.filter((ch) => !ch.builtin).length },
-          { label: 'Experiments', value: expReports.length, tone: 'gold' },
-        ]}
-        statusTitle="Broadcast state"
-        statusNote="A broadcast only appears when it is live and its placement matches the current surface. Built-in desks always ship with the app."
+      <AtPageBar
         actions={(
           <>
-            <AtButton onClick={saveSettings} variant="gold" icon={Save} disabled={busy}>Save TV settings</AtButton>
-            <AtButton to="/tv" variant="outline" icon={MonitorPlay}>Open member TV</AtButton>
+            <AtButton onClick={saveSettings} variant="gold" icon={Save} disabled={busy}>Save settings</AtButton>
+            <AtButton to="/tv" variant="outline" icon={MonitorPlay}>Open TV</AtButton>
           </>
-        )}
-        bottom={(
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-semibold text-[var(--at-mut)]">
-            <span className="flex items-center gap-2"><span className="at-live-dot" /> Broadcast console</span>
-            <span className="flex items-center gap-2"><TestTube className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Client-side experiment assignment</span>
-            <span className="flex items-center gap-2"><Users className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Member and admin surfaces</span>
-            <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Rotation {settings.rotationSeconds}s</span>
-          </div>
         )}
       />
 
@@ -4692,27 +4518,7 @@ export function AdminSettings() {
   return (
     <AdminLayout title="System Settings">
       <div className="at-page at-scope at-enter pb-10">
-      <AtHero
-        eyebrow="Control room · admin"
-        icon={Settings2}
-        title={<>The platform, <em>tuned.</em></>}
-        description="Identity, access, feature visibility, plan gates and security. Every change autosaves to the platform settings record."
-        status={[
-          { label: 'Autosave', value: saveState === 'error' ? 'Failed' : saveState === 'saving' ? 'Saving' : 'On', tone: saveState === 'error' ? 'amber' : 'green' },
-          { label: 'Feature flags', value: Object.keys(features).length, tone: 'gold' },
-          { label: 'Plan gates', value: Object.keys(settings.planGates || {}).length, tone: undefined },
-        ]}
-        statusTitle="Configuration state"
-        actions={<AtBadge tone={saveState === 'error' ? 'amber' : saveState === 'saving' ? 'gold' : 'green'}>{saveState === 'saving' ? 'Saving changes…' : saveState === 'error' ? 'Save failed' : 'All changes saved'}</AtBadge>}
-        bottom={(
-          <div className="flex flex-wrap items-center gap-2">
-            <span className={`h-1.5 w-1.5 rounded-full ${saveState === 'error' ? 'bg-red-400' : 'bg-emerald-400 animate-pulse'}`} />
-            <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--at-mut)]">Autosave enabled</span>
-            <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">General · features · security</span>
-          </div>
-        )}
-      />
-      <AtTabs tabs={TABS} active={tab} onChange={setTab} className="mb-6 mt-5 w-fit max-w-full" />
+      <AtTabs tabs={TABS} active={tab} onChange={setTab} className="mb-6 w-fit max-w-full" />
 
       {tab === 'general' && (
         <form onSubmit={save} className="grid items-start gap-4 xl:grid-cols-2">
@@ -5095,44 +4901,31 @@ export function AdminCompany() {
   return (
     <AdminLayout title="Company Bible">
       <div className="at-page at-scope at-enter">
-        <AtHero
-          eyebrow="Institutional memory · admin only"
-          icon={LibraryBig}
-          title={<>The company <em>bible.</em></>}
-          description="Every company and brand fact in one governed record: identity, legal, holdings, brand, contacts, leadership, markets, product, money, compliance and roadmap. Nothing is hidden from this page. SI reads the same row as truth."
-          status={[
-            { label: 'Fields complete', value: `${totals.filled} / ${totals.fields}`, tone: 'gold' },
-            { label: 'Coverage', value: `${totalPct}%`, tone: totalPct >= 80 ? 'green' : 'amber' },
-            { label: 'Autosave', value: saveState === 'saving' ? 'Saving…' : saveState === 'error' ? 'Error' : 'On', tone: saveState === 'error' ? 'amber' : 'green' },
-            { label: 'Source', value: stored ? `Server · ${source}` : 'Defaults', tone: stored ? 'green' : 'amber' },
-          ]}
-          statusTitle="Record state"
-          statusNote="Edits save to admin_integrations · key company:profile about 900ms after typing stops. The SI context and this page read the same record."
+        <AtPageBar
           actions={(
             <>
-              <AtButton onClick={copyBrief} variant="gold" icon={copied ? Check : Copy}>{copied ? 'SI brief copied' : 'Copy SI brief'}</AtButton>
+              <AtButton onClick={copyBrief} variant="gold" icon={copied ? Check : Copy}>{copied ? 'Copied' : 'Copy SI brief'}</AtButton>
               <AtButton onClick={exportJSON} variant="outline" icon={Download}>Export JSON</AtButton>
             </>
           )}
-          bottom={(
-            <div className="flex w-full flex-col gap-2.5 sm:flex-row sm:items-center">
-              <div className="relative min-w-0 flex-1">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--at-gold)]" />
-                <input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search everything A–Z — TB, TBC, DUNS, MT5, Nasdaq, support@…"
-                  className="at-input !pl-9 !bg-transparent"
-                />
-                {q && <button onClick={() => setQ('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[var(--at-mut)] hover:text-[var(--at-ink)]">Clear</button>}
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <AtBadge tone={saveState === 'error' ? 'red' : saveState === 'saving' ? 'gold' : 'green'}>{saveState === 'saving' ? 'Saving' : saveState === 'error' ? 'Save failed' : 'Autosaved'}</AtBadge>
-                <AtBadge tone={loaded ? 'green' : 'amber'}>{!loaded ? 'Loading server truth' : loadError ? loadError : 'Live record'}</AtBadge>
-              </div>
+        >
+          <div className="at-pagebar-extra flex w-full flex-col gap-2.5 sm:flex-row sm:items-center">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--at-gold)]" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search everything A–Z — TB, TBC, DUNS, MT5, Nasdaq, support@…"
+                className="at-input !pl-9 !bg-transparent"
+              />
+              {q && <button onClick={() => setQ('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[var(--at-mut)] hover:text-[var(--at-ink)]">Clear</button>}
             </div>
-          )}
-        />
+            <div className="flex flex-wrap items-center gap-1.5">
+              <AtBadge tone={saveState === 'error' ? 'red' : saveState === 'saving' ? 'gold' : 'green'}>{saveState === 'saving' ? 'Saving' : saveState === 'error' ? 'Save failed' : 'Autosaved'}</AtBadge>
+              <AtBadge tone={loaded ? 'green' : 'amber'}>{!loaded ? 'Loading' : loadError ? loadError : 'Live record'}</AtBadge>
+            </div>
+          </div>
+        </AtPageBar>
 
         {searchHits ? (
           <AtPanel

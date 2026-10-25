@@ -76,6 +76,93 @@ html.light .funded-start-btn {
   .ios-spring:active { transform: none; }
 }
 
+/* ── iOS app-icon tiles ─────────────────────────────────────────────
+   Every navigation, feature and empty-state icon uses the same vivid
+   squircle: Apple-palette fill, glossy top light, inner ring and a crisp
+   glyph. The tint is supplied by the IosIcon component. */
+.ios-icon {
+  --ios-size: 40px;
+  position: relative;
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: var(--ios-size);
+  height: var(--ios-size);
+  overflow: hidden;
+  border-radius: calc(var(--ios-size) * 0.28);
+  background-color: var(--ios-tint, #0A84FF);
+  background-image:
+    linear-gradient(155deg,
+      color-mix(in srgb, var(--ios-tint, #0A84FF) 78%, white) 0%,
+      var(--ios-tint, #0A84FF) 42%,
+      color-mix(in srgb, var(--ios-tint, #0A84FF) 76%, black) 100%);
+  box-shadow:
+    0 3px 8px -2px rgba(0, 0, 0, 0.42),
+    0 1px 1px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.16);
+  isolation: isolate;
+  transform: translateZ(0);
+  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.22s ease;
+}
+.ios-icon::before {
+  content: '';
+  position: absolute;
+  inset: 1px 1px 47% 1px;
+  z-index: 0;
+  border-radius: calc(var(--ios-size) * 0.24);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.06));
+  pointer-events: none;
+}
+.ios-icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.14);
+  pointer-events: none;
+}
+.ios-icon > .ios-icon-glyph {
+  position: relative;
+  z-index: 2;
+  width: 52%;
+  height: 52%;
+  color: var(--ios-glyph, #fff);
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.22));
+}
+.ios-icon > .ios-icon-content {
+  position: relative;
+  z-index: 2;
+  color: var(--ios-glyph, #fff);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: calc(var(--ios-size) * 0.34);
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+.ios-icon--2xs { --ios-size: 18px; border-radius: 6px; }
+.ios-icon--xs { --ios-size: 24px; border-radius: 7px; }
+.ios-icon--sm { --ios-size: 32px; border-radius: 9px; }
+.ios-icon--md { --ios-size: 40px; border-radius: 11px; }
+.ios-icon--lg { --ios-size: 48px; border-radius: 14px; }
+.ios-icon--xl { --ios-size: 56px; border-radius: 16px; }
+.ios-icon--2xl { --ios-size: 64px; border-radius: 18px; }
+.ios-icon--plain { box-shadow: none; }
+.ios-icon--plain::after { display: none; }
+html.light .ios-icon {
+  box-shadow:
+    0 3px 8px -3px rgba(60, 55, 40, 0.34),
+    0 1px 1px rgba(60, 55, 40, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.46),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ios-icon { transition: none; }
+}
+
 /* ── Living buttons: a light glide sweeps across on hover, both modes. ── */
 .btn-sheen { position: relative; overflow: hidden; isolation: isolate; }
 .btn-sheen::after {
@@ -217,6 +304,68 @@ main > *, .tb-enter { animation: tb-rise 0.35s var(--tb-ease) both; }
 @media (prefers-reduced-motion: reduce) {
   .tb-page > *, main > *, .tb-enter, .tb-hero::after { animation: none; }
 }
+
+.tb-pagebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.1rem 0.1rem 0.8rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.16);
+}
+.tb-pagebar-main {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+  flex: 1;
+}
+.tb-pagebar-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.6rem;
+  margin-top: 0.25rem;
+  color: var(--tb-muted);
+  font-family: var(--tb-font-mono, ui-monospace, monospace);
+  font-size: 0.56rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.tb-pagebar-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.tb-pagebar-meta-item + .tb-pagebar-meta-item::before {
+  content: "";
+  width: 3px;
+  height: 3px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--tb-gold);
+  opacity: 0.55;
+}
+.tb-pagebar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+.tb-pagebar-extra { margin-top: 0.55rem; }
+.tb-pagebar--toolbar { padding-bottom: 0.65rem; }
+@media (max-width: 639px) {
+  .tb-pagebar { align-items: flex-start; flex-direction: column; gap: 0.7rem; }
+  .tb-pagebar-main { width: 100%; }
+  .tb-pagebar-actions { width: 100%; justify-content: flex-start; }
+  .tb-pagebar-actions > * { flex: 1 1 auto; }
+}
+html.light .tb-pagebar { border-color: #e4ded0; }
 
 .tb-hero {
   position: relative;

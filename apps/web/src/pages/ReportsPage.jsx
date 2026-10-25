@@ -8,7 +8,7 @@ import { useTrades, computeStats } from '@/hooks/useTrades';
 import { displayName } from '@/lib/displayName';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { PageHero, SectionHead, StatGrid, EmptyState, GoldButton, GhostButton } from '@/components/ui-kit';
+import { PageBar, SectionHead, StatGrid, EmptyState, GoldButton, GhostButton } from '@/components/ui-kit';
 
 const input = 'w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
 
@@ -282,11 +282,7 @@ export default function ReportsPage() {
     <AppLayout title={t('rep.pageTitle')}>
       <style>{reportStyles}</style>
       <div className="tb-page">
-        <PageHero
-          kickerIcon={FileBarChart}
-          kicker={t('rep.kicker')}
-          title={t('rep.pageTitle')}
-          subtitle={t('rep.desc')}
+        <PageBar
           actions={
             <>
               <GoldButton onClick={exportPdf} disabled={exporting} aria-busy={exporting} className="disabled:cursor-wait disabled:opacity-60">

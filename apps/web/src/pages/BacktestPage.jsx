@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FlaskConical, Play, Loader2 } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import AppLayout from '@/components/AppLayout';
-import { PageHero, Card, GoldButton } from '@/components/ui-kit';
+import { Card, GoldButton } from '@/components/ui-kit';
 import { useToast } from '@/hooks/use-toast';
 import pb from '@/lib/pocketbaseClient';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
@@ -67,13 +67,6 @@ export default function BacktestPage() {
   return (
     <AppLayout title="Backtest Lab">
       <div className="tb-page">
-        <PageHero
-          kickerIcon={FlaskConical}
-          kicker="Backtest Lab"
-          title="Prove the edge"
-          accent="before risking capital"
-          subtitle="SMA-cross and RSI mean-reversion over any price history. Paste closes or run a preset regime."
-        />
         <Card className="p-5">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <select className={input} value={strategy} onChange={(e) => setStrategy(e.target.value)}>

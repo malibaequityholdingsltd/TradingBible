@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Trophy, Medal } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { PageHero, Card, GoldButton, EmptyState } from '@/components/ui-kit';
+import { PageBar, Card, GoldButton, EmptyState } from '@/components/ui-kit';
 import { useToast } from '@/hooks/use-toast';
 import pb from '@/lib/pocketbaseClient';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
@@ -41,12 +41,7 @@ export default function LeaderboardPage() {
   return (
     <AppLayout title="Leaderboard">
       <div className="tb-page">
-        <PageHero
-          kickerIcon={Trophy}
-          kicker="Verified Leaderboard"
-          title="Proof, not"
-          accent="promises"
-          subtitle="Ranked by realized journal P&L from opted-in traders. No screenshots, no claims — fills only."
+        <PageBar
           actions={<GoldButton onClick={() => setJoinOpen(true)} className="!px-4 !py-2 !text-xs">Join the board</GoldButton>}
         />
         {loading ? (

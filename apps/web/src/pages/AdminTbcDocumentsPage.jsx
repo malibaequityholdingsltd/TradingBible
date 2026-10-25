@@ -7,7 +7,7 @@ import AdminLayout from '@/components/AdminLayout';
 import TbcDocumentViewer from '@/components/TbcDocumentViewer';
 import TbcExecutionPanel from '@/components/TbcExecutionPanel';
 import {
-  AtAlert, AtBadge, AtButton, AtEmpty, AtHero, AtPanel, AtSectionHeading,
+  AtAlert, AtBadge, AtButton, AtEmpty, AtPageBar, AtPanel, AtSectionHeading,
 } from '@/components/AtelierUI';
 import pb from '@/lib/pocketbaseClient';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
@@ -130,32 +130,18 @@ export default function AdminTbcDocumentsPage() {
   return (
     <AdminLayout title="TBC Legal Vault">
       <div className="at-page at-scope at-enter">
-        <AtHero
-          eyebrow="Controlled instruments · admin authenticated"
-          icon={ShieldCheck}
-          title={<>The legal <em>vault.</em></>}
-          description="The 26 corporate and governance instruments plus the five public summaries. Files are streamed only after an admin session is verified; nothing here is bundled into the public site or exposed by a public route."
-          status={[
-            { label: 'Total documents', value: counts.all || '—', tone: 'gold' },
-            { label: 'Controlled', value: counts.controlled || '—', tone: 'amber' },
-            { label: 'Public summaries', value: counts.public || '—', tone: 'green' },
-            { label: 'Execution', value: 'DocuSign', tone: 'gold' },
+        <AtPageBar
+          meta={[
+            `${counts.all || '—'} documents`,
+            `${counts.controlled || '—'} controlled`,
+            `${counts.public || '—'} public`,
+            'DocuSign',
           ]}
-          statusTitle="Vault posture"
-          statusNote="Confidential instruments may contain tax identifiers, registered-office details, ownership information and signature blocks."
           actions={(
             <>
-              <AtButton to="/admin/tbc" variant="quiet" icon={Lock}>TBC control center</AtButton>
+              <AtButton to="/admin/tbc" variant="quiet" icon={Lock}>TBC</AtButton>
               <AtButton to="/tbc/documents" variant="outline" icon={FileText}>Public library</AtButton>
             </>
-          )}
-          bottom={(
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-semibold text-[var(--at-mut)]">
-              <span className="flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5 text-[var(--at-green)]" /> Admin-authenticated endpoint</span>
-              <span className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Files outside the web bundle</span>
-              <span className="flex items-center gap-2"><FileText className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Read-only DOCX reader</span>
-              <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Corrected layout · October 2026</span>
-            </div>
           )}
         />
 

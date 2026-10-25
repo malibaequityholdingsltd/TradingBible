@@ -119,24 +119,8 @@ export default function BrandingPage() {
   return (
     <AppLayout title={t('brd.pageTitle')}>
       <div className="tb-page !max-w-[1400px]">
-        {/* ── Studio hero ── */}
-        <div className="relative overflow-hidden rounded-3xl border border-[#d4af37]/25 bg-[#0c0c11]/95">
-          <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_120%_at_15%_0%,rgba(212,175,55,0.14),transparent_60%)]" />
-          <div className="relative flex flex-wrap items-center gap-4 p-6 sm:p-7">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/15 text-[#d4af37]"><Building2 className="h-6 w-6" /></span>
-            <div className="min-w-0 flex-1 basis-64">
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">White-label · Rebrand studio</p>
-              <h1 className="mt-1 text-2xl font-extrabold text-[#f0ecdd] sm:text-3xl">Your brand, everywhere.</h1>
-              <p className="mt-1 max-w-xl text-[13px] text-[#8a8577]">Name, logo, brand colors and text colors apply live across the app the moment you pick them. Save to keep them on your account.</p>
-            </div>
-            <span className="flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-[11px] font-bold text-emerald-400">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> Live applied
-            </span>
-          </div>
-        </div>
-
         {/* ── Presets ── */}
-        <div className="mt-4 rounded-3xl border border-white/8 bg-black/20 p-5 sm:p-6">
+        <div className="rounded-3xl border border-white/8 bg-black/20 p-5 sm:p-6">
           <div className="flex items-center gap-2 text-sm font-bold text-[#f0ecdd]"><Sparkles className="h-4 w-4 text-[#d4af37]" /> One-click themes</div>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
             {WL_PRESETS.map((p) => (

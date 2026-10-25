@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { IosIcon } from '@/components/IosIcon';
 
 // TradingBible UI kit — Phase 1 of the full-app rewrite.
 // One shared language for every page: hero, cards, stats, tabs, buttons.
@@ -9,11 +10,33 @@ import { Link } from 'react-router-dom';
 // light (html.light) = clean ivory.
 
 export function Kicker({ icon: Icon, children }) {
+	const seed = typeof children === 'string' ? children : 'kicker';
 	return (
-		<span className="tb-kicker inline-flex items-center gap-1.5 rounded-[10px] border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-2 py-[3px] text-[10px] font-semibold uppercase tracking-[0.14em] text-[#d4af37] [html.light_&]:border-[#b8912a]/30 [html.light_&]:bg-[#d4af37]/[0.1] [html.light_&]:text-[#8a6d1b]">
-			{Icon && <Icon className="h-3 w-3 shrink-0" />}
+		<span className="tb-kicker inline-flex items-center gap-2 rounded-[10px] border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-2 py-[3px] text-[10px] font-semibold uppercase tracking-[0.14em] text-[#d4af37] [html.light_&]:border-[#b8912a]/30 [html.light_&]:bg-[#d4af37]/[0.1] [html.light_&]:text-[#8a6d1b]">
+			{Icon && <IosIcon icon={Icon} size="2xs" seed={seed} />}
 			{children}
 		</span>
+	);
+}
+
+export function PageBar({ meta = [], actions, children, className = '' }) {
+	const hasContext = meta.length > 0 || Boolean(children);
+	return (
+		<header className={`tb-pagebar ${hasContext ? '' : 'tb-pagebar--toolbar'} ${className}`}>
+			{hasContext && (
+				<div className="tb-pagebar-main">
+					<div className="min-w-0">
+						{meta.length > 0 && (
+							<div className="tb-pagebar-meta">
+								{meta.map((item, i) => <span key={i} className="tb-pagebar-meta-item">{item}</span>)}
+							</div>
+						)}
+						{children}
+					</div>
+				</div>
+			)}
+			{actions && <div className="tb-pagebar-actions">{actions}</div>}
+		</header>
 	);
 }
 
@@ -54,8 +77,8 @@ export function Card({ hover, className = '', children, ...rest }) {
 export function SectionHead({ icon: Icon, title, sub, right }) {
 	return (
 		<div className="mb-2.5 flex flex-wrap items-center justify-between gap-1.5">
-			<div className="flex min-w-0 items-center gap-1.5">
-				{Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-[#d4af37] [html.light_&]:text-[#9a7a1e]" />}
+			<div className="flex min-w-0 items-center gap-2">
+				{Icon && <IosIcon icon={Icon} size="xs" seed={title} />}
 				<h3 className="truncate text-[13px] font-semibold tracking-[-0.01em] text-[#f0ecdd] [html.light_&]:text-[#1a1d21]">{title}</h3>
 			</div>
 			{right}
@@ -104,7 +127,7 @@ export function Tabs({ tabs, active, onChange }) {
 					onClick={() => onChange(tb.id)}
 					className={`flex min-h-[38px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[10px] ios-spring px-3 text-[13px] font-semibold transition-all duration-150 ${active === tb.id ? 'tab-active border border-transparent bg-gradient-to-r from-[#e8c95a] via-[#d4af37] to-[#b8912a] text-[#0a0a0f] shadow-[0_2px_10px_-4px_rgba(212,175,55,0.5)]' : 'border border-white/[0.08] bg-white/[0.02] text-[#8a8577] hover:-translate-y-px hover:border-[#d4af37]/30 hover:bg-white/[0.04] hover:text-[#e9e7df] active:translate-y-0 [html.light_&]:border-black/[0.08] [html.light_&]:bg-white [html.light_&]:text-[#5b574a] [html.light_&]:hover:border-[#b8912a]/40 [html.light_&]:hover:bg-[#fffdf0] [html.light_&]:hover:text-[#1a1d21]'}`}
 				>
-					{tb.icon && <tb.icon className="h-3.5 w-3.5 shrink-0" />}
+					{tb.icon && <IosIcon icon={tb.icon} size="2xs" seed={tb.label} />}
 					<span className="truncate">{tb.label}</span>
 				</button>
 			))}
@@ -130,11 +153,9 @@ export function EmptyState({ icon: Icon, title, sub, action }) {
 	return (
 		<div className="tb-card flex flex-col items-center rounded-[10px] px-5 py-7 text-center [html.light_&]:border-black/[0.07] [html.light_&]:bg-[#fffdf6]">
 			{Icon && (
-				<div className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-white/[0.08] bg-white/[0.03] [html.light_&]:border-black/[0.08] [html.light_&]:bg-black/[0.03]">
-					<Icon className="h-4 w-4 text-[#6a665a] [html.light_&]:text-[#8a8577]" />
-				</div>
+				<IosIcon icon={Icon} size="xl" seed={title} />
 			)}
-			<p className="mt-2 text-[13px] font-semibold tracking-[-0.01em] text-[#f0ecdd] [html.light_&]:text-[#1a1d21]">{title}</p>
+			<p className="mt-3 text-[13px] font-semibold tracking-[-0.01em] text-[#f0ecdd] [html.light_&]:text-[#1a1d21]">{title}</p>
 			{sub && <p className="mt-1 max-w-md text-xs leading-relaxed text-[#8a8577] [html.light_&]:text-[#6b675c]">{sub}</p>}
 			{action && <div className="mt-2.5">{action}</div>}
 		</div>
@@ -146,8 +167,8 @@ export function Note({ icon: Icon, children, tone = 'gold' }) {
 		? 'border-sky-400/20 bg-sky-400/[0.05] text-[#8a8577] [html.light_&]:border-sky-600/20 [html.light_&]:bg-sky-50 [html.light_&]:text-[#475569]'
 		: 'border-[#d4af37]/20 bg-[#d4af37]/[0.05] text-[#8a8577] [html.light_&]:border-[#b8912a]/25 [html.light_&]:bg-[#fffdf0] [html.light_&]:text-[#5b574a]';
 	return (
-		<div className={`flex items-start gap-1.5 rounded-[10px] border px-3 py-2.5 text-xs leading-relaxed backdrop-blur-md ${styles}`}>
-			{Icon && <Icon className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${tone === 'blue' ? 'text-[#38bdf8] [html.light_&]:text-[#0284c7]' : 'text-[#d4af37] [html.light_&]:text-[#9a7a1e]'}`} />}
+		<div className={`flex items-start gap-2 rounded-[10px] border px-3 py-2.5 text-xs leading-relaxed backdrop-blur-md ${styles}`}>
+			{Icon && <IosIcon icon={Icon} size="2xs" tone={tone === 'blue' ? 'blue' : 'yellow'} className="mt-0.5" />}
 			<div className="min-w-0 flex-1">{children}</div>
 		</div>
 	);

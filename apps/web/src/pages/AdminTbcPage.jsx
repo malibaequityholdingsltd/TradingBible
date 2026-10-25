@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import {
-  AtAlert, AtBadge, AtButton, AtEmpty, AtHero, AtLink, AtMetric, AtPanel,
+  AtAlert, AtBadge, AtButton, AtEmpty, AtPageBar, AtLink, AtMetric, AtPanel,
   AtProgress, AtSectionHeading, AtTabs,
 } from '@/components/AtelierUI';
 import { useToast } from '@/hooks/use-toast';
@@ -156,33 +156,19 @@ export default function AdminTbcPage() {
   return (
     <AdminLayout title="TBC Control Center">
       <div className="at-page at-scope at-enter">
-        <AtHero
-          eyebrow="Ecosystem control · phase 01"
-          icon={Coins}
-          title={<>TBC control <em>room.</em></>}
-          description="The operational truth for a token that is not yet issued. Monitor the credit ledger, regulated-function gates, document control and support from one read-only surface. No browser switch can activate a regulated function."
-          status={[
-            { label: 'Proposed supply', value: TBC_PROPOSAL.supplyLabel, tone: 'gold' },
-            { label: 'Token issued', value: '0 TBC', tone: 'amber' },
-            { label: 'Public sale', value: gates.sale ? 'Enabled' : 'Disabled', tone: gates.sale ? 'green' : 'amber' },
-            { label: 'Active gates', value: `${activeGates} / 6`, tone: activeGates ? 'green' : 'gold' },
+        <AtPageBar
+          meta={[
+            `Proposed supply ${TBC_PROPOSAL.supplyLabel}`,
+            'Token issued 0 TBC',
+            `Sale ${gates.sale ? 'enabled' : 'disabled'}`,
+            `${activeGates}/6 gates active`,
           ]}
-          statusTitle="Live control state"
-          statusNote="Gates are environment variables, evaluated server-side on every request. A deployed contract alone never enables sale, staking, governance or migration."
           actions={(
             <>
-              <AtButton to="/admin/legal-vault" variant="gold" icon={ShieldCheck}>Open legal vault</AtButton>
-              <AtButton to="/admin/airdrops" variant="outline" icon={Users}>Airdrop studio</AtButton>
-              <AtButton to="/admin/wallet" variant="quiet" icon={Wallet}>Wallet & staking</AtButton>
+              <AtButton to="/admin/legal-vault" variant="gold" icon={ShieldCheck}>Legal vault</AtButton>
+              <AtButton to="/admin/airdrops" variant="outline" icon={Users}>Airdrops</AtButton>
+              <AtButton to="/admin/wallet" variant="quiet" icon={Wallet}>Wallet</AtButton>
             </>
-          )}
-          bottom={(
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-              <span className="flex items-center gap-2 text-[10px] font-semibold text-[var(--at-mut)]"><ShieldCheck className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Read-only operations</span>
-              <span className="flex items-center gap-2 text-[10px] font-semibold text-[var(--at-mut)]"><Lock className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Server-side gates</span>
-              <span className="flex items-center gap-2 text-[10px] font-semibold text-[var(--at-mut)]"><Users className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Separation of duties</span>
-              <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--at-mut-2)]">Refreshed {fmtDate(overview?.generatedAt || new Date().toISOString())}</span>
-            </div>
           )}
         />
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Languages, Check } from 'lucide-react';
 import { useI18n, SUPPORTED_LANGS } from '@/lib/i18n';
+import { IosIcon } from '@/components/IosIcon';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,9 +22,9 @@ export default function LanguageSwitcher({ className = '' }) {
         <button
           aria-label={t('lang.switcher')}
           title={`${t('lang.switcher')} · ${lang.toUpperCase()}`}
-          className={`grid h-9 w-9 place-items-center rounded-full text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] ${className}`}
+          className={`grid h-9 w-9 place-items-center rounded-[10px] transition hover:scale-105 active:scale-95 ${className}`}
         >
-          <Languages className="h-4 w-4" />
+          <IosIcon icon={Languages} size="sm" tone="cyan" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="z-[80] max-h-[70vh] w-44 overflow-y-auto border-[#d4af37]/15 bg-[#111113] text-[#e9e7df]">

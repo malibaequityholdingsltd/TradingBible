@@ -600,16 +600,7 @@ function CardsConsole() {
           <div aria-hidden className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-[#d4af37]/[0.13] blur-[100px]" />
           <div aria-hidden className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-[#3b82f6]/[0.06] blur-[90px]" />
           <div className="relative px-5 pb-5 pt-5 sm:px-7 sm:pb-6 sm:pt-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[#d4af37]">
-                  <IdCard className="h-3.5 w-3.5" /> Credential studio
-                </div>
-                <h1 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-[28px]">Employee ID cards</h1>
-                <p className="mt-1 max-w-xl text-xs leading-relaxed text-[#8a8577] sm:text-sm">
-                  Driver's-license style credentials with a scannable QR profile. Every detail is editable and print-ready at CR80 size.
-                </p>
-              </div>
+            <div className="flex flex-wrap items-center justify-end gap-4">
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   to="/admin/employees"

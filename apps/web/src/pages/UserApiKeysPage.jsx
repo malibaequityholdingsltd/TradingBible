@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Copy, KeyRound, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { Card, EmptyState, GoldButton, SectionHead } from '@/components/ui-kit';
+import { Card, EmptyState, GoldButton, PageBar, SectionHead } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
 import pb from '@/lib/pocketbaseClient';
 import { useToast } from '@/hooks/use-toast';
@@ -87,24 +87,9 @@ export default function UserApiKeysPage() {
   return (
     <AppLayout title={t('uak.pageTitle')}>
       <div className="tb-page">
-      <section className="tb-hero overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
-              <KeyRound className="h-6 w-6" />
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">{t('uak.pageTitle')}</h2>
-              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">{t('uak.createSub')}</p>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 font-mono text-[11px] text-emerald-300">{activeCount} active</span>
-            {revokedCount > 0 && <span className="rounded-full border border-red-400/25 bg-red-400/10 px-2.5 py-1 font-mono text-[11px] text-red-300">{revokedCount} revoked</span>}
-          </div>
-        </div>
-      </section>
+      <PageBar
+        meta={[`${activeCount} active`, ...(revokedCount > 0 ? [`${revokedCount} revoked`] : [])]}
+      />
 
       <Card>
         <SectionHead icon={Plus} title={t('uak.createTitle')} />

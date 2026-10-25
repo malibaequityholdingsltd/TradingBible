@@ -1,6 +1,7 @@
 import React, { useId } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
+import { IosIcon } from '@/components/IosIcon';
 
 /* Atelier v2 primitives. These are presentation-only: no data fetching and
  * no behaviour that could conflict with the legacy ui-kit. */
@@ -37,9 +38,30 @@ export function AtBadge({ tone = 'muted', plain = false, className = '', childre
 export function AtEyebrow({ icon: Icon, children, className = '' }) {
   return (
     <span className={`at-eyebrow ${className}`}>
-      {Icon && <Icon className="h-3.5 w-3.5" strokeWidth={1.8} />}
+      {Icon && <IosIcon icon={Icon} size="2xs" seed={typeof children === 'string' ? children : 'eyebrow'} />}
       {children}
     </span>
+  );
+}
+
+export function AtPageBar({ meta = [], actions, children, className = '' }) {
+  const hasContext = meta.length > 0 || Boolean(children);
+  return (
+    <header className={`at-pagebar ${hasContext ? '' : 'at-pagebar--toolbar'} ${className}`}>
+      {hasContext && (
+        <div className="at-pagebar-main">
+          <div className="min-w-0">
+            {meta.length > 0 && (
+              <div className="at-pagebar-meta">
+                {meta.map((item, i) => <span key={i} className="at-pagebar-meta-item">{item}</span>)}
+              </div>
+            )}
+            {children}
+          </div>
+        </div>
+      )}
+      {actions && <div className="at-pagebar-actions">{actions}</div>}
+    </header>
   );
 }
 
@@ -83,7 +105,7 @@ export function AtMetric({ icon: Icon, label, value, note, tone = '', index }) {
       <div className="at-kpi-top">
         <span className="at-kpi-label">{label}</span>
         {Icon ? (
-          <span className="at-kpi-icon"><Icon className="h-3.5 w-3.5" strokeWidth={1.9} /></span>
+          <IosIcon icon={Icon} size="xs" seed={label} />
         ) : index ? <span className="at-index">{index}</span> : null}
       </div>
       <div className={`at-kpi-value ${tone}`}>{value}</div>
@@ -139,7 +161,7 @@ export function AtTabs({ tabs, active, onChange, className = '' }) {
             onClick={() => onChange(tab.id)}
             className={`at-tab ${active === tab.id ? 'is-active' : ''}`}
           >
-            {Icon && <Icon className="h-3.5 w-3.5" strokeWidth={1.9} />}
+            {Icon && <IosIcon icon={Icon} size="2xs" seed={tab.label} />}
             {tab.label}
             {tab.count != null && <span className="ml-0.5 font-mono text-[9px] opacity-70">{tab.count}</span>}
           </button>
@@ -153,7 +175,7 @@ export function AtAlert({ icon: Icon, tone = 'gold', children, className = '' })
   const toneCls = tone === 'amber' ? 'at-alert--amber' : tone === 'red' ? 'at-alert--red' : tone === 'green' ? 'at-alert--green' : '';
   return (
     <div className={`at-alert ${toneCls} ${className}`}>
-      {Icon && <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[var(--at-gold)]" strokeWidth={1.9} />}
+      {Icon && <IosIcon icon={Icon} size="xs" tone={tone === 'red' ? 'red' : tone === 'amber' ? 'orange' : tone === 'green' ? 'green' : 'yellow'} className="mt-0.5" />}
       <div className="min-w-0 flex-1">{children}</div>
     </div>
   );
@@ -171,7 +193,7 @@ export function AtProgress({ value, tone = 'gold', className = '' }) {
 export function AtEmpty({ icon: Icon, title, sub, action }) {
   return (
     <div className="at-empty">
-      {Icon && <span className="at-empty-icon"><Icon className="h-5 w-5" strokeWidth={1.7} /></span>}
+      {Icon && <IosIcon icon={Icon} size="xl" seed={title} />}
       <p className="text-sm font-semibold text-[var(--at-ink)]">{title}</p>
       {sub && <p className="max-w-sm text-[11px] leading-relaxed text-[var(--at-mut)]">{sub}</p>}
       {action && <div className="mt-2">{action}</div>}

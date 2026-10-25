@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Banknote, Copy, Check, Link2, RefreshCw, Share2 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { Card, EmptyState, GhostButton, GoldButton, PageHero, SectionHead, Stat, StatGrid } from '@/components/ui-kit';
+import { Card, EmptyState, GhostButton, GoldButton, PageBar, SectionHead, Stat, StatGrid } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 import { affiliateStats, registerAffiliate, claimAffiliatePayout } from '@/lib/affiliate';
@@ -95,29 +95,19 @@ export default function AffiliatePage() {
   return (
     <AppLayout title={t('afl.pageTitle')}>
       <div className="tb-page">
-      <section className="tb-hero overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#d4af37]/15 blur-[100px]" />
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
-              <Share2 className="h-6 w-6" />
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-2xl">{t('afl.pageTitle')}</h2>
-              <p className="mt-1 text-xs leading-relaxed text-[#8a8577] sm:text-sm">{t('afl.desc', { pct: (data?.rate || 15) * 100 })}</p>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            {lastSync && <span className="hidden text-[11px] text-[#6a665a] sm:inline">Synced {lastSync.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
+      <PageBar
+        meta={lastSync ? [`Synced ${lastSync.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`] : []}
+        actions={(
+          <>
             <button type="button" onClick={loadQuiet} aria-label="Refresh stats" title="Refresh stats" className="grid h-9 w-9 place-items-center rounded-full border border-white/10 text-[#8a8577] transition hover:border-[#d4af37]/40 hover:text-[#d4af37]">
               <RefreshCw className="h-4 w-4" />
             </button>
             {data?.code && (
               <span className="rounded-full border border-[#d4af37]/30 bg-[#d4af37]/10 px-3 py-1.5 font-mono text-xs font-bold tracking-wider text-[#d4af37]">REF:{refCode.toUpperCase()}</span>
             )}
-          </div>
-        </div>
-      </section>
+          </>
+        )}
+      />
 
       {loading ? (
         <Card><div className="flex items-center justify-center gap-2 py-10 text-sm text-[#8a8577]"><RefreshCw className="h-4 w-4 animate-spin" />{t('afl.loading')}</div></Card>

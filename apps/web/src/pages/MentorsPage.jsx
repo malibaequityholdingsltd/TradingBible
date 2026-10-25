@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { GraduationCap, Loader2, CalendarClock } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import PromptDialog from '@/components/PromptDialog';
-import { PageHero, Card, GoldButton, GhostButton, EmptyState } from '@/components/ui-kit';
+import { Card, GoldButton, GhostButton, EmptyState } from '@/components/ui-kit';
 import { useToast } from '@/hooks/use-toast';
 import pb from '@/lib/pocketbaseClient';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
@@ -94,13 +94,6 @@ export default function MentorsPage() {
   return (
     <AppLayout title="Mentors">
       <div className="tb-page">
-        <PageHero
-          kickerIcon={GraduationCap}
-          kicker="Mentorship"
-          title="Learn 1-on-1 from"
-          accent="verified traders"
-          subtitle="Book hourly sessions with profitable members. Mentors keep 85%, paid from your wallet."
-        />
         <Card className="p-5">
           <h3 className="text-sm font-semibold text-[#f0ecdd]">Become a mentor</h3>
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">

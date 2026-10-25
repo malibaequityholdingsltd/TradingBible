@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { CalendarDays, Clock, Filter, Globe, AlertTriangle, RefreshCw, CalendarClock } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { PageHero, Card, Tabs, EmptyState, GhostButton } from '@/components/ui-kit';
+import { PageBar, Card, Tabs, EmptyState, GhostButton } from '@/components/ui-kit';
 import { useI18n } from '@/lib/i18n';
 import { txt } from '@/lib/safeRender';
 import apiServerClient from '@/lib/apiServerClient';
@@ -118,10 +118,7 @@ export default function EconomicCalendarPage() {
   return (
     <AppLayout title={t('nav.economic')}>
       <div className="tb-page">
-        <PageHero
-          kicker={t('nav.economic')}
-          kickerIcon={CalendarClock}
-          title={t('nav.economic')}
+        <PageBar
           actions={<GhostButton onClick={fetchEvents} className="min-h-[36px] px-2.5 py-1.5 text-xs"><RefreshCw className="h-3.5 w-3.5" /> {t('c.refresh')}</GhostButton>}
         />
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#6a665a]">
