@@ -326,7 +326,7 @@ export default function LiveChart({
               ))}
             </div>
           )}
-          {!tvMode && <button onClick={() => setPickerOpen(true)} className="rounded-lg border border-[#d4af37]/15 px-2.5 py-1 text-[11px] text-[#c9c4b4] hover:text-[#e9e7df]">Indicators ({indicators.length})</button>}
+          {!tvMode && <button onClick={() => setPickerOpen(true)} className="shrink-0 whitespace-nowrap rounded-lg border border-[#d4af37]/15 px-2.5 py-1 text-[11px] text-[#c9c4b4] hover:text-[#e9e7df]">Indicators ({indicators.length})</button>}
           <AddToWatchlist symbol={symbol} />
           <div className="ml-auto flex items-center gap-1.5">
             {/* Terminal actions live here in fullscreen — the floating
@@ -347,19 +347,19 @@ export default function LiveChart({
           <div className={`mb-2 flex items-center gap-1.5 ${terminalChrome ? 'no-scrollbar flex-nowrap overflow-x-auto' : 'flex-wrap'}`}>
             {TOOLS.map((t) => (
               <button key={t.id} onClick={() => { setTool(t.id); setPending(null); }} title={t.label}
-                className={`rounded-lg border p-1.5 transition ${tool === t.id ? 'border-[#d4af37]/50 bg-[#d4af37]/15 text-[#d4af37]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'}`}>
+                className={`shrink-0 rounded-lg border p-1.5 transition ${tool === t.id ? 'border-[#d4af37]/50 bg-[#d4af37]/15 text-[#d4af37]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'}`}>
                 <t.icon className="h-3.5 w-3.5" />
               </button>
             ))}
             <div className="mx-1 h-4 w-px bg-[#d4af37]/15" />
             <button onClick={removeSelected} disabled={!selected} title={t('lc.delSel')}
-              className={`rounded-lg border border-[#d4af37]/15 p-1.5 ${selected ? 'text-red-400 hover:bg-red-400/10' : 'text-[#5f5b50]'}`}><Trash2 className="h-3.5 w-3.5" /></button>
-            <button onClick={() => dz.update([])} title={t('lc.clearAll')} className="rounded-lg border border-[#d4af37]/15 px-2 py-1 text-[11px] text-[#8a8577] hover:text-[#e9e7df]">{t('lc.clear')}</button>
+              className={`shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 ${selected ? 'text-red-400 hover:bg-red-400/10' : 'text-[#5f5b50]'}`}><Trash2 className="h-3.5 w-3.5" /></button>
+            <button onClick={() => dz.update([])} title={t('lc.clearAll')} className="shrink-0 whitespace-nowrap rounded-lg border border-[#d4af37]/15 px-2 py-1 text-[11px] text-[#8a8577] hover:text-[#e9e7df]">{t('lc.clear')}</button>
             {dz.saveError
               ? <span className="ml-1 text-[11px] text-amber-400">{dz.saveError}</span>
               : dz.drawings.length > 0 && <span className="ml-1 text-[11px] text-emerald-400">✓ saved ({dz.drawings.length})</span>}
             <div className="relative">
-              <button onClick={() => setTplOpen((o) => !o)} className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 px-2 py-1 text-[11px] text-[#c9c4b4] hover:text-[#e9e7df]"><BookMarked className="h-3.5 w-3.5" /> Templates</button>
+              <button onClick={() => setTplOpen((o) => !o)} className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border border-[#d4af37]/15 px-2 py-1 text-[11px] text-[#c9c4b4] hover:text-[#e9e7df]"><BookMarked className="h-3.5 w-3.5" /> Templates</button>
               {tplOpen && (
                 <>
                   <div className="fixed inset-0 z-20" onClick={() => setTplOpen(false)} />

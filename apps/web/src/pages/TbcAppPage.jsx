@@ -136,7 +136,7 @@ export default function TbcAppPage() {
 
   return (
     <AppLayout title="TBC">
-      <div className="tb-page at-page at-scope at-enter !max-w-[1440px]">
+      <div className="tb-page at-page at-scope at-enter">
         <AtPageBar
           meta={[
             `Credits ${credits ? fmtTbc(credits.balance) : '—'}`,

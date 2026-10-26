@@ -54,7 +54,7 @@ export default function StakingPage() {
 
   return (
     <AppLayout title="Staking">
-      <div className="tb-page !max-w-[1400px]">
+      <div className="tb-page">
         <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
           <Stat label="My bonded" value={`${account.bonded.toLocaleString()} TBC`} tone="text-[#d4af37]" />
           <Stat label="Est. rewards" value={`${account.rewards.toLocaleString()} TBC`} tone="text-emerald-400" />

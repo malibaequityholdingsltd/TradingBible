@@ -1,19 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Code2, Palette, CreditCard, HelpCircle, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, MonitorPlay, Compass, FlaskConical, Medal, Briefcase, SquareTerminal, Star, Coins, Sun, Moon, Languages, Check, X, Search } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Code2, Palette, CreditCard, HelpCircle, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, Compass, FlaskConical, Medal, Briefcase, SquareTerminal, Star, Coins, Check, X, Search } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { avatarUrl } from '@/lib/avatar';
 import { displayInitial } from '@/lib/displayName';
 import { useNotifications } from '@/hooks/useNotifications';
-import { useI18n, SUPPORTED_LANGS } from '@/lib/i18n';
-import { useTheme } from '@/hooks/useTheme';
+import { useI18n } from '@/lib/i18n';
 import OnboardingTutorial from '@/components/OnboardingTutorial';
 import GlobalSearch from '@/components/GlobalSearch';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
-import ThemeSwitcher from '@/components/ThemeSwitcher';
 import ThemePickerDialog from '@/components/ThemePickerDialog';
+import ThemeSwitcher from '@/components/ThemeSwitcher';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { BrandWordmark, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
-import { IosIcon } from '@/components/IosIcon';
+import { IosIcon, IOS_TINTS as IOS } from '@/components/IosIcon';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { meetsPlan } from '@/lib/entitlements';
 import { isAdminPreview, exitAdminPreview } from '@/lib/adminPreview';
@@ -26,18 +25,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
 
-// iOS Settings-style tile tints: one solid rounded tile + white glyph per
-// item. The gold row highlight stays brand; tiles stay Apple-palette.
-const IOS = {
-  blue: '#0A84FF', orange: '#FF9F0A', purple: '#BF5AF2', green: '#30D158',
-  gray: '#8E8E93', teal: '#64D2FF', pink: '#FF375F', red: '#FF453A',
-  indigo: '#5E5CE6', brown: '#AC8E68', yellow: '#FFD60A',
-};
+// Muted tint set for navigation glyphs. The glyph carries the colour;
+// surfaces stay quiet so the navigation reads as one system.
 const NAV_GROUPS = [
   {
     labelKey: 'nav.trade',
@@ -62,13 +53,11 @@ const NAV_GROUPS = [
   {
     labelKey: 'nav.markets',
     items: [
-      { to: '/app/watchlists', labelKey: 'nav.watchlists', icon: Star, tint: IOS.yellow, glyph: '#3a2f00' },
-      { to: '/tv', labelKey: 'nav.tv', icon: MonitorPlay, tint: IOS.red },
+      { to: '/app/watchlists', labelKey: 'nav.watchlists', icon: Star, tint: IOS.gold },
       { to: '/app/signals', labelKey: 'nav.signals', icon: Radar, tint: IOS.orange },
       { to: '/app/staking', labelKey: 'nav.staking', icon: Coins, tint: IOS.green },
-      { to: '/app/tbc', labelKey: 'nav.tbc', icon: Coins, tint: IOS.yellow, glyph: '#3a2f00' },
+      { to: '/app/tbc', labelKey: 'nav.tbc', icon: Coins, tint: IOS.gold },
       { to: '/leaderboard', labelKey: 'nav.leaderboard', icon: Medal, tint: IOS.purple },
-      { to: '/app/alerts', labelKey: 'nav.alerts', icon: Bell, tint: IOS.pink },
       { to: '/app/economic-calendar', labelKey: 'nav.economic', icon: CalendarClock, tint: IOS.indigo },
     ],
   },
@@ -128,9 +117,7 @@ export default function AppLayout({ children, title }) {
   const loc = useLocation();
   const { user, logout, updateProfile } = useAuth();
   const { unseen } = useNotifications();
-  const { t, lang, setLang } = useI18n();
-  const { theme, toggleTheme } = useTheme();
-  const isLight = theme === 'light';
+  const { t } = useI18n();
   const { features } = usePlatformSettings();
   const initial = displayInitial(user);
   const signOut = () => { logout(); nav('/'); };
@@ -167,9 +154,8 @@ export default function AppLayout({ children, title }) {
   const goPricing = () => nav('/pricing');
   const menuIcon = (Icon, tone) => <IosIcon icon={Icon} size="2xs" tone={tone} />;
 
-  // Phone dock tabs: Dashboard · Terminal · Signals · TV · More.
-  // Same lock + feature rules as the sidebar. Everything else lives
-  // in the More sheet — no side list on phones.
+  // Phone dock: Terminal · Wallet · Dashboard (raised centre) · Challenges · More.
+  // Everything else lives in the More sheet — no side list on phones.
   const lockFor = (to) => {
     for (const g of NAV_GROUPS) {
       const it = (g.items || []).find((i) => i.to === to);
@@ -178,9 +164,9 @@ export default function AppLayout({ children, title }) {
     return false;
   };
   const MAIN_TABS = [
-    { to: '/app', icon: LayoutDashboard, label: t('nav.dashboard'), end: true, tint: IOS.blue },
     { to: '/app/terminal-pro', icon: SquareTerminal, label: t('dock.terminal', null, 'Terminal'), tint: IOS.indigo },
-    { to: '/app/wallet', icon: Landmark, label: t('nav.wallet'), center: true, tint: '#D4AF37', glyph: '#1C1C1E' },
+    { to: '/app/wallet', icon: Landmark, label: t('nav.wallet'), tint: IOS.teal },
+    { to: '/app', icon: LayoutDashboard, label: t('nav.dashboard'), end: true, center: true, tint: IOS.gold },
     { to: '/app/challenges', icon: Trophy, label: t('nav.challenges'), tint: IOS.orange },
   ]
     .filter((m) => {
@@ -203,10 +189,8 @@ export default function AppLayout({ children, title }) {
     return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
   }, [moreOpen]);
 
-  // Phone-only bottom dock: the FULL sidebar list (Dashboard first, then
-  // every group, same visibility + lock rules) as thumb-sized docks. The
-  // side list is gone on phones — the dock IS the navigation there.
-  // Tablets/desktops are untouched — the dock renders below sm only.
+  // Phone-only bottom dock: the core tabs, with Dashboard raised at the
+  // centre. Tablets and desktops use the footer row instead.
   const visibleItems = (items) => (items || [])
     .filter((it) => !it.hidden)
     .filter((it) => !it.adminOnly || isAdmin)
@@ -219,71 +203,104 @@ export default function AppLayout({ children, title }) {
       locked: (it.requiresSubscriber && !isSubscriber) || (it.requiredPlan && !meetsPlan(user, it.requiredPlan)),
     }));
 
-  const footerItems = [
-    ...visibleItems([{ to: '/app', labelKey: 'nav.dashboard', icon: LayoutDashboard, end: true, tint: IOS.blue }]),
-    ...NAV_GROUPS.flatMap((group) => visibleItems(group.items)),
-  ];
+  const footerItems = NAV_GROUPS.flatMap((group) => visibleItems(group.items));
+  const footerSplit = Math.ceil(footerItems.length / 2);
+  const footerLeft = footerItems.slice(0, footerSplit);
+  const footerRight = footerItems.slice(footerSplit);
+
+  const dashboardLabel = t('nav.dashboard');
+  const dashboardActive = loc.pathname === '/app' || loc.pathname === '/app/';
+  const renderDashboardOrb = (compact = false) => (
+    <div className={`nav-dashboard-slot ${compact ? 'nav-dashboard-slot--compact' : ''}`}>
+      <NavLink
+        to="/app"
+        end
+        aria-label={dashboardLabel}
+        aria-current={dashboardActive ? 'page' : undefined}
+        className="nav-dashboard-orb"
+      >
+        <span aria-hidden className="nav-dashboard-halo" />
+        <span aria-hidden className="nav-dashboard-orbit" />
+        <IosIcon
+          icon={LayoutDashboard}
+          size="2xl"
+          tint={IOS.gold}
+          glyph="#1C1C1E"
+          className="nav-dashboard-icon"
+        />
+        <span aria-hidden className="nav-dashboard-spark" />
+      </NavLink>
+    </div>
+  );
+
+  const renderFooterItem = (it, index) => {
+    const label = t(it.labelKey);
+    const base = 'app-nav-footer-link group relative flex h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg px-0.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]/60';
+    const tile = (
+      <span className="relative">
+        <IosIcon
+          icon={it.icon}
+          tint={IOS.gold}
+          glyph="#1C1C1E"
+          size="md"
+          className={`nav-medallion ${it.locked ? 'opacity-60 saturate-[0.7]' : ''}`}
+        />
+        {it.locked && <Crown className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full bg-[#0a0a0f] p-[2px] text-[#d4af37] ring-1 ring-[#d4af37]/40" />}
+      </span>
+    );
+    const labelEl = <span className="app-nav-footer-label hidden max-w-full truncate px-0.5 text-[8px] font-semibold leading-none xl:block">{label}</span>;
+    const tooltip = (
+      <span className="pointer-events-none absolute bottom-[calc(100%+3px)] left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md border border-[#d4af37]/25 bg-[#0a0a0f] px-2 py-1 text-[10px] font-semibold text-[#f0ecdd] opacity-0 shadow-lg transition group-hover:opacity-100 group-focus-visible:opacity-100 xl:hidden">
+        {label}{it.locked ? ' · upgrade' : ''}
+      </span>
+    );
+    if (it.locked) {
+      return (
+        <button
+          key={it.to}
+          type="button"
+          onClick={goPricing}
+          aria-label={`${label} — upgrade required`}
+          className={base}
+          style={{ '--nav-i': index }}
+        >
+          {tooltip}
+          {tile}
+          {labelEl}
+        </button>
+      );
+    }
+    return (
+      <NavLink
+        key={it.to}
+        to={it.to}
+        end={it.end}
+        aria-label={label}
+        style={{ '--nav-i': index }}
+        className={({ isActive }) => `${base} ${isActive ? 'app-nav-footer-link--active' : ''}`}
+      >
+        {tooltip}
+        {tile}
+        {labelEl}
+      </NavLink>
+    );
+  };
 
   const FooterNav = (
     <footer className="app-nav-footer fixed inset-x-0 bottom-0 z-40 hidden backdrop-blur-xl lg:block">
+      <span aria-hidden className="app-nav-footer-sheen" />
       <nav
         aria-label="App sections"
         style={{ paddingBottom: 'max(6px, env(safe-area-inset-bottom))' }}
-        className="mx-auto flex w-full max-w-[96rem] items-stretch justify-center px-2 pt-1.5 sm:px-3 xl:px-5 2xl:px-8"
+        className="relative z-[1] mx-auto flex w-full max-w-none items-stretch justify-center px-2 pt-1.5 sm:px-3 xl:px-5 2xl:px-8"
       >
-        {footerItems.map((it) => {
-          const label = t(it.labelKey);
-          const base = 'app-nav-footer-link group relative flex h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg px-0.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]/60';
-          const tile = (
-            <span className="relative">
-              <IosIcon
-                icon={it.icon}
-                tint={it.tint}
-                glyph={it.glyph}
-                tone={it.tint ? undefined : 'blue'}
-                size="sm"
-                className={`transition-transform duration-200 ${it.locked ? 'opacity-55 saturate-[0.7]' : 'group-hover:-translate-y-0.5 group-hover:scale-105'}`}
-              />
-              {it.locked && <Crown className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full bg-[#0a0a0f] p-[2px] text-[#d4af37] ring-1 ring-[#d4af37]/40" />}
-            </span>
-          );
-          const labelEl = <span className="hidden max-w-full truncate px-0.5 text-[8px] font-semibold leading-none xl:block">{label}</span>;
-          const tooltip = (
-            <span className="pointer-events-none absolute bottom-[calc(100%+3px)] left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md border border-[#d4af37]/25 bg-[#0a0a0f] px-2 py-1 text-[10px] font-semibold text-[#f0ecdd] opacity-0 shadow-lg transition group-hover:opacity-100 group-focus-visible:opacity-100">
-              {label}{it.locked ? ' · upgrade' : ''}
-            </span>
-          );
-          if (it.locked) {
-            return (
-              <button
-                key={it.to}
-                type="button"
-                onClick={goPricing}
-                title={`${label} — upgrade required`}
-                aria-label={`${label} — upgrade required`}
-                className={base}
-              >
-                {tooltip}
-                {tile}
-                {labelEl}
-              </button>
-            );
-          }
-          return (
-            <NavLink
-              key={it.to}
-              to={it.to}
-              end={it.end}
-              title={label}
-              aria-label={label}
-              className={({ isActive }) => `${base} ${isActive ? 'app-nav-footer-link--active' : ''}`}
-            >
-              {tooltip}
-              {tile}
-              {labelEl}
-            </NavLink>
-          );
-        })}
+        <div className="flex min-w-0 flex-1 items-stretch justify-end">
+          {footerLeft.map((it, i) => renderFooterItem(it, i))}
+        </div>
+        {renderDashboardOrb()}
+        <div className="flex min-w-0 flex-1 items-stretch justify-start">
+          {footerRight.map((it, i) => renderFooterItem(it, i + footerSplit))}
+        </div>
       </nav>
     </footer>
   );
@@ -300,7 +317,7 @@ export default function AppLayout({ children, title }) {
           <div className="flex h-14 w-full items-center justify-between gap-2 px-1 sm:gap-3 sm:px-2">
           {/* Left: brand + page */}
           <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2">
-            <img src={TRADINGBIBLE_LOGO} alt="" aria-hidden className="h-8 w-8 shrink-0 rounded-[10px] border border-[#d4af37]/25 bg-[#0c0c11] object-contain gold-glow sm:hidden" onError={e => { e.currentTarget.style.display = 'none'; }} />
+            <img src={TRADINGBIBLE_LOGO} alt="" aria-hidden className="app-header-mobile-logo h-8 w-8 shrink-0 rounded-[10px] border border-[#d4af37]/25 bg-[#0c0c11] object-contain gold-glow sm:hidden" onError={e => { e.currentTarget.style.display = 'none'; }} />
             <Link to={homeRouteForUser(user)} className="group hidden items-center gap-2.5 sm:flex" aria-label="TradingBible home">
               <span className="relative">
                 <img
@@ -327,24 +344,24 @@ export default function AppLayout({ children, title }) {
             </div>
           </div>
 
-          {/* Right: unified action cluster (theme/lang hidden on phones — they live in the drawer) */}
+          {/* Right: unified action cluster — theme and language stay one tap away at every width. */}
           <div className="flex min-w-0 flex-1 items-center justify-end">
           <div className="app-header-pill flex shrink-0 items-center gap-1 rounded-[10px] border border-white/[0.06] bg-white/[0.02] p-1 tabular-nums backdrop-blur-md sm:gap-1.5 sm:p-1.5">
             {/* Phones: search is an overlay toggled here, not a fixed row */}
             <button onClick={() => setSearchOpen((o) => !o)} aria-label={t('nav.search', null, 'Search')} aria-expanded={searchOpen}
               className="hdr-ic grid h-9 w-9 shrink-0 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] sm:hidden">
-              <IosIcon icon={Search} size="sm" tone="blue" />
+              <IosIcon icon={Search} size="sm" tone="theme" />
             </button>
-            <span className="hidden sm:contents"><ThemeSwitcher inline /></span>
-            <span className="hidden sm:contents"><LanguageSwitcher /></span>
+            <ThemeSwitcher inline className="hdr-ic hover:bg-[#d4af37]/10" />
+            <LanguageSwitcher className="hdr-ic hover:bg-[#d4af37]/10" />
             {canSeeSignals && (
               <button onClick={() => nav('/app/alerts')} className="hdr-ic relative grid h-9 w-9 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37]" title={t('app.alerts')}>
-                <IosIcon icon={Bell} size="sm" tone="pink" />
+                <IosIcon icon={Bell} size="sm" tone="theme" />
                 {unseen > 0 && <span className="absolute right-1 top-1 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-red-500 px-1 text-[8px] font-bold tabular-nums text-white">{unseen > 9 ? '9+' : unseen}</span>}
               </button>
             )}
             <button onClick={() => setTutorial(true)} aria-label={t('app.help')} title={t('app.help')} className="hidden h-9 w-9 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] sm:grid">
-              <IosIcon icon={HelpCircle} size="sm" tone="teal" />
+              <IosIcon icon={HelpCircle} size="sm" tone="theme" />
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -352,7 +369,7 @@ export default function AppLayout({ children, title }) {
                   <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-[10px] bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] text-sm font-bold tabular-nums text-[#0a0a0f] ring-1 ring-[#d4af37]/40">
                     {avatar ? <img src={avatar} alt="avatar" className="h-full w-full object-cover" /> : initial}
                   </span>
-                  <ChevronDown className="h-3.5 w-3.5 text-[#8a8577]" />
+                  <ChevronDown className="h-3.5 w-3.5 text-[#d4af37]" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" sideOffset={8} className="tb-avatarmenu w-56 rounded-[10px] border-[#d4af37]/15 bg-[#111113] tabular-nums text-[#e9e7df]">
@@ -386,31 +403,6 @@ export default function AppLayout({ children, title }) {
                     {menuIcon(Building2, 'red')} {t('app.admin')}
                   </DropdownMenuItem>
                 )}
-                {/* Phones only: theme + language live here — the compact
-                    header row and the removed side list have no room. */}
-                <DropdownMenuSeparator className="bg-white/5 sm:hidden" />
-                <DropdownMenuItem onClick={toggleTheme} className="min-h-[44px] cursor-pointer gap-2.5 sm:hidden">
-                  {menuIcon(isLight ? Moon : Sun, 'yellow')}
-                  {isLight ? t('app.darkMode', null, 'Dark mode') : t('app.lightMode', null, 'Light mode')}
-                </DropdownMenuItem>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="min-h-[44px] gap-2.5 sm:hidden">
-                    {menuIcon(Languages, 'cyan')}
-                    <span className="flex-1 text-left">{t('lang.switcher', null, 'Language')} · {String(lang || 'auto').toUpperCase()}</span>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent side="left" align="start" className="tb-avatarmenu max-h-[50vh] w-48 overflow-y-auto border-[#d4af37]/15 bg-[#111113] text-[#e9e7df]">
-                    <DropdownMenuItem onClick={() => setLang('auto')} className="min-h-[44px] cursor-pointer gap-2.5">
-                      <span className="flex-1">{t('lang.auto', null, 'Auto')}</span>
-                      {(() => { try { return !localStorage.getItem('tb_lang'); } catch { return false; } })() && <Check className="h-4 w-4 text-[#d4af37]" />}
-                    </DropdownMenuItem>
-                    {SUPPORTED_LANGS.map((l) => (
-                      <DropdownMenuItem key={l.code} onClick={() => setLang(l.code)} className="min-h-[44px] cursor-pointer gap-2.5">
-                        <span className="flex-1">{l.label}</span>
-                        {lang === l.code && <Check className="h-4 w-4 text-[#d4af37]" />}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
                 <DropdownMenuSeparator className="bg-white/5" />
                 <DropdownMenuItem onClick={signOut} className="min-h-[44px] cursor-pointer gap-2.5 text-red-400 focus:text-red-300">
                   {menuIcon(LogOut, 'red')} {t('app.signout')}
@@ -434,7 +426,7 @@ export default function AppLayout({ children, title }) {
             </div>
           )}
         </header>
-        <main className="mx-auto w-full max-w-[96rem] px-4 pb-24 pt-[calc(var(--apphead)+0.75rem)] sm:px-5 sm:pt-[92px] lg:px-7 lg:pt-[100px] xl:px-8 xl:pt-[104px] 2xl:px-12">
+        <main className="mx-auto w-full max-w-none px-1.5 pb-24 pt-[calc(var(--apphead)+0.75rem)] sm:px-2 sm:pt-[92px] lg:px-2 lg:pt-[100px] xl:px-2.5 xl:pt-[104px] 2xl:px-3">
           {isAdmin && isAdminPreview() && (
             <div className="admin-frost mb-2 flex items-center justify-between gap-3 rounded-[10px] border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-4 py-2 tabular-nums">
               <span className="text-xs text-[#d4af37]">{t('misc.adminPreview')}</span>
@@ -451,46 +443,21 @@ export default function AppLayout({ children, title }) {
         <div aria-hidden className="tb-dockfade pointer-events-none fixed inset-x-0 bottom-0 z-30 h-36 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/95 to-transparent lg:hidden" />
         <nav aria-label="App sections" className="tb-dock fixed inset-x-4 bottom-3 z-40 rounded-[10px] border border-[#d4af37]/15 bg-[#101016] tabular-nums shadow-[0_12px_32px_rgba(0,0,0,0.55),0_0_20px_rgba(212,175,55,0.06)] ring-1 ring-inset ring-white/[0.06] lg:hidden">
           <div className="flex px-2 pb-2 pt-2">
-            {MAIN_TABS.map((m) => {
+            {MAIN_TABS.map((m, idx) => {
               const Icon = m.icon;
-              // Center hero action: a raised gold iOS tile breaking above
-              // the dock line. Every cell shares one geometry so all five
-              // labels sit on the exact same baseline by construction.
+              // Dashboard is the raised hero: a gold medallion that breaks
+              // above the dock line, with its own orbit + halo motion.
               if (m.center) {
-                const circleAt = 'absolute left-1/2 top-[-30px] -translate-x-1/2 dock-float';
-                return (
-                  <div key={m.to} className="flex min-h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1.5">
-                    <span className="relative grid h-8 w-full shrink-0 place-items-center">
-                      {m.locked ? (
-                        <button onClick={goPricing} aria-label={m.label} title={`${m.label} — upgrade required`} className={circleAt}>
-                          <span className="relative block">
-                            <IosIcon icon={Icon} tint={m.tint} glyph={m.glyph} size="xl" className="opacity-60 saturate-[0.7] ring-4 ring-[#101016]" />
-                            <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-[#0a0a0f] ring-2 ring-[#d4af37]">
-                              <Crown className="h-3 w-3 text-[#d4af37]" />
-                            </span>
-                          </span>
-                        </button>
-                      ) : (
-                        <NavLink to={m.to} aria-label={m.label} title={m.label} className={circleAt}>
-                          {({ isActive }) => (
-                            <span className={`block rounded-[16px] ${isActive ? 'dock-glow' : ''}`}>
-                              <IosIcon icon={Icon} tint={m.tint} glyph={m.glyph} size="xl" className="ring-4 ring-[#101016]" />
-                            </span>
-                          )}
-                        </NavLink>
-                      )}
-                    </span>
-                  </div>
-                );
+                return <React.Fragment key={m.to}>{renderDashboardOrb(true)}</React.Fragment>;
               }
-              const btn = 'dock-tab ios-spring flex min-h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-[10px] tabular-nums';
-              const pill = 'relative grid h-9 min-w-[48px] shrink-0 place-items-center rounded-[11px] transition';
+              const btn = 'dock-tab ios-spring flex min-h-[64px] min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-[10px] tabular-nums';
+              const pill = 'relative grid h-11 min-w-[52px] shrink-0 place-items-center rounded-[12px] transition';
               const lbl = 'max-w-full truncate text-[10px] font-semibold tabular-nums leading-none';
               if (m.locked) {
                 return (
-                  <button key={m.to} onClick={goPricing} aria-label={m.label} title={`${m.label} — upgrade required`} className={`${btn} text-[#8a8577]/70`}>
+                  <button key={m.to} onClick={goPricing} aria-label={`${m.label} — upgrade required`} style={{ '--nav-i': idx }} className={`${btn} text-[#8a8577]/70`}>
                     <span className={`${pill} text-[#8a8577]/70`}>
-                      <IosIcon icon={Icon} tint={m.tint} glyph={m.glyph} size="sm" className="opacity-55 saturate-[0.7]" />
+                      <IosIcon icon={Icon} tint={IOS.gold} glyph="#1C1C1E" size="md" className="nav-medallion opacity-60 saturate-[0.7]" />
                       <Crown className="absolute right-0.5 top-0.5 h-3 w-3 rounded-full bg-[#0a0a0f] p-[1.5px] text-[#d4af37] ring-1 ring-[#d4af37]/40" />
                     </span>
                     <span className={`${lbl} text-[#8a8577]/70`}>{m.label}</span>
@@ -498,26 +465,25 @@ export default function AppLayout({ children, title }) {
                 );
               }
               return (
-                <NavLink key={m.to} to={m.to} end={m.end} aria-label={m.label} title={m.label}
-                  className={`${btn}`}>
+                <NavLink key={m.to} to={m.to} end={m.end} aria-label={m.label}
+                  style={{ '--nav-i': idx }} className={`${btn}`}>
                   {({ isActive }) => (
                     <>
-                      <span key={isActive ? 'on' : 'off'} className={`${pill} ${isActive ? 'dock-pop bg-[#d4af37]/[0.12] ring-1 ring-inset ring-[#d4af37]/25' : ''}`}>
-                        <IosIcon icon={Icon} tint={m.tint} glyph={m.glyph} size="sm" className={isActive ? 'ring-2 ring-[#d4af37]/65' : ''} />
+                      <span key={isActive ? 'on' : 'off'} className={`${pill} ${isActive ? 'dock-pop' : ''}`}>
+                        <IosIcon icon={Icon} tint={IOS.gold} glyph="#1C1C1E" size="md" className="nav-medallion" />
                       </span>
-                      <span className={`${lbl} ${isActive ? 'lbl-on text-[#d4af37]' : 'text-[#8a8577]'}`}>{m.label}</span>
+                      <span className={`${lbl} ${isActive ? 'lbl-on' : 'text-[#8a8577]'}`}>{m.label}</span>
                     </>
                   )}
                 </NavLink>
               );
             })}
             <button onClick={() => setMoreOpen((o) => !o)} aria-label={t('dock.more', null, 'More')} aria-expanded={moreOpen}
-              title={t('dock.more', null, 'More')}
-              className="dock-tab ios-spring flex min-h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-2xl">
-              <span className={`${'relative grid h-9 min-w-[48px] shrink-0 place-items-center rounded-[11px] transition'} ${moreActive ? 'bg-[#d4af37]/[0.12] ring-1 ring-inset ring-[#d4af37]/25' : ''}`}>
-                <IosIcon icon={moreOpen ? X : Menu} size="sm" tone={moreActive ? 'yellow' : 'gray'} className={moreActive ? 'ring-2 ring-[#d4af37]/65' : ''} />
+              style={{ '--nav-i': MAIN_TABS.length }} className="dock-tab ios-spring flex min-h-[64px] min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-2xl">
+              <span className="relative grid h-11 min-w-[52px] shrink-0 place-items-center rounded-[12px] transition">
+                <IosIcon icon={moreOpen ? X : Menu} tint={IOS.gold} glyph="#1C1C1E" size="md" className="nav-medallion" />
               </span>
-              <span className={`truncate text-[10px] font-semibold leading-none ${moreActive ? 'lbl-on text-[#d4af37]' : 'text-[#8a8577]'}`}>{t('dock.more', null, 'More')}</span>
+              <span className={`truncate text-[10px] font-semibold leading-none ${moreActive ? 'lbl-on' : 'text-[#8a8577]'}`}>{t('dock.more', null, 'More')}</span>
             </button>
           </div>
         </nav>

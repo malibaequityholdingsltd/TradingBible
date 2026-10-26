@@ -74,12 +74,14 @@ export function Card({ hover, className = '', children, ...rest }) {
 	);
 }
 
-export function SectionHead({ icon: Icon, title, sub, right }) {
+export function SectionHead({ title, sub, right }) {
+	// Section headings are typography, not decoration. Icons stay on primary
+	// navigation and actions; card headings remain quiet in both themes.
 	return (
 		<div className="mb-2.5 flex flex-wrap items-center justify-between gap-1.5">
-			<div className="flex min-w-0 items-center gap-2">
-				{Icon && <IosIcon icon={Icon} size="xs" seed={title} />}
-				<h3 className="truncate text-[13px] font-semibold tracking-[-0.01em] text-[#f0ecdd] [html.light_&]:text-[#1a1d21]">{title}</h3>
+			<div className="flex min-w-0 flex-col gap-0.5">
+				<h3 className="truncate text-[13px] font-semibold tracking-[-0.005em] text-[#f0ecdd] [html.light_&]:text-[#1a1d21]">{title}</h3>
+				{sub && <p className="truncate text-[11px] leading-relaxed text-[#8a8577]">{sub}</p>}
 			</div>
 			{right}
 		</div>
@@ -125,7 +127,7 @@ export function Tabs({ tabs, active, onChange }) {
 				<button
 					key={tb.id}
 					onClick={() => onChange(tb.id)}
-					className={`flex min-h-[38px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[10px] ios-spring px-3 text-[13px] font-semibold transition-all duration-150 ${active === tb.id ? 'tab-active border border-transparent bg-gradient-to-r from-[#e8c95a] via-[#d4af37] to-[#b8912a] text-[#0a0a0f] shadow-[0_2px_10px_-4px_rgba(212,175,55,0.5)]' : 'border border-white/[0.08] bg-white/[0.02] text-[#8a8577] hover:-translate-y-px hover:border-[#d4af37]/30 hover:bg-white/[0.04] hover:text-[#e9e7df] active:translate-y-0 [html.light_&]:border-black/[0.08] [html.light_&]:bg-white [html.light_&]:text-[#5b574a] [html.light_&]:hover:border-[#b8912a]/40 [html.light_&]:hover:bg-[#fffdf0] [html.light_&]:hover:text-[#1a1d21]'}`}
+					className={`flex min-h-[38px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[10px] ios-spring px-3 text-[13px] font-semibold transition-all duration-150 ${active === tb.id ? 'tab-active border border-transparent bg-gradient-to-r from-[#e8c95a] via-[#d4af37] to-[#b8912a] text-[#0a0a0f] shadow-[0_2px_10px_-4px_rgba(212,175,55,0.5)]' : 'border border-white/[0.08] bg-[#15151c] text-[#8a8577] hover:-translate-y-px hover:border-[#d4af37]/30 hover:bg-[#1d1c22] hover:text-[#e9e7df] active:translate-y-0 [html.light_&]:border-black/[0.08] [html.light_&]:bg-white [html.light_&]:text-[#5b574a] [html.light_&]:hover:border-[#b8912a]/40 [html.light_&]:hover:bg-[#fffdf0] [html.light_&]:hover:text-[#1a1d21]'}`}
 				>
 					{tb.icon && <IosIcon icon={tb.icon} size="2xs" seed={tb.label} />}
 					<span className="truncate">{tb.label}</span>
@@ -143,7 +145,7 @@ export function GoldButton({ to, href, onClick, className = '', children, ...res
 }
 
 export function GhostButton({ to, href, onClick, className = '', children, ...rest }) {
-	const cls = `btn-sheen ios-spring inline-flex min-h-[38px] max-w-full items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-[10px] border border-[#d4af37]/25 bg-white/[0.02] px-4 text-[13px] font-semibold text-[#d4af37] backdrop-blur-md transition-all duration-150 hover:-translate-y-px hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.08] hover:shadow-[0_2px_12px_-6px_rgba(212,175,55,0.5)] active:translate-y-0 [html.light_&]:border-[#b8912a]/30 [html.light_&]:bg-white [html.light_&]:text-[#8a6d1b] [html.light_&]:hover:bg-[#fffdf0] ${className}`;
+	const cls = `btn-sheen ios-spring inline-flex min-h-[38px] max-w-full items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-[10px] border border-[#d4af37]/25 bg-[#17150e] px-4 text-[13px] font-semibold text-[#d4af37] transition-all duration-150 hover:-translate-y-px hover:border-[#d4af37]/45 hover:bg-[#211d11] hover:shadow-[0_2px_12px_-6px_rgba(212,175,55,0.5)] active:translate-y-0 [html.light_&]:border-[#b8912a]/30 [html.light_&]:bg-[#fffdf7] [html.light_&]:text-[#8a6d1b] [html.light_&]:hover:bg-[#fff7df] ${className}`;
 	if (to) return <Link to={to} className={cls} {...rest}>{children}</Link>;
 	if (href) return <a href={href} className={cls} {...rest}>{children}</a>;
 	return <button onClick={onClick} className={cls} {...rest}>{children}</button>;

@@ -85,7 +85,7 @@
   .tb-app-shell main,
   .tb-admin-shell main {
     max-width: none !important;
-    padding: 12px 14px calc(108px + env(safe-area-inset-bottom)) !important;
+    padding: 10px 8px calc(108px + env(safe-area-inset-bottom)) !important;
   }
   .tb-app-shell main > *,
   .tb-admin-shell main > * {

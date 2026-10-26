@@ -708,14 +708,14 @@ export default function TvPage() {
         className={`relative z-10 bg-transparent px-5 pb-2 pt-4 transition-all duration-500 sm:px-8 ${uiHidden ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
       >
         {playChannel !== null ? (
-            <div className="mx-auto flex max-w-7xl items-center justify-center gap-3">
+            <div className="mx-auto flex max-w-none items-center justify-center gap-3">
               <span className="flex min-w-0 max-w-full items-center gap-2 truncate rounded-full border border-white/10 bg-black/60 px-4 py-2 text-[11px] font-semibold text-[#e9e7df] backdrop-blur-md">
                 <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-[#e50914]" />
                 <span className="truncate">LIVE TV · {liveChannels[playChannel].title}</span>
               </span>
             </div>
         ) : (
-          <div className="mx-auto flex max-w-7xl flex-col gap-3">
+          <div className="mx-auto flex max-w-none flex-col gap-3">
             <div className="flex items-center justify-between text-[11px] text-[#8a8577]">
               <span className="truncate">{settings.footerText && settings.footerText !== 'Advertise with TradingBible' ? settings.footerText : t('tv.advertise')}</span>
               <span className="hidden rounded-md bg-black/50 px-2 py-1 font-mono text-[10px] tracking-widest text-[#d4af37] backdrop-blur-sm sm:inline">{index + 1} / {ads.length}</span>

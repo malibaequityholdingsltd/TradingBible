@@ -207,7 +207,7 @@ export default function ChallengesPage() {
 
   return (
     <AppLayout title="Funded Challenges">
-      <div className="tb-page !max-w-[1400px]">
+      <div className="tb-page">
         {/* ── Split hero: manifesto left, featured ticket right ── */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_22rem]">
           <div className="relative overflow-hidden rounded-3xl border border-[#d4af37]/25 bg-[#0c0c11]/95 p-6 sm:p-9">

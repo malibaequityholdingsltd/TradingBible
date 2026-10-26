@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { Card, EmptyState, GoldButton } from '@/components/ui-kit';
+import { IosIcon } from '@/components/IosIcon';
 import { useI18n } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 
@@ -47,7 +48,7 @@ function Header() {
   const { t } = useI18n();
   return (
     <header className="fixed inset-x-0 top-[var(--header-h)] z-40 border-b border-[#d4af37]/10 bg-[#07070a]/70 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-[96rem] items-center justify-between px-6 py-4">
+      <div className="mx-auto flex max-w-none items-center justify-between px-6 py-4">
         <nav className="hidden items-center gap-8 text-sm text-[#8a8577] md:flex">
           <Link to="/" className="hover:text-[#e9e7df]">{t('abt.home')}</Link>
           <Link to="/about" className="text-[#e9e7df]">{t('abt.about')}</Link>
@@ -86,13 +87,13 @@ export default function AboutPage() {
       <Header />
 
       {/* Hero */}
-      <section className="relative mx-auto max-w-[96rem] overflow-hidden px-6 pb-16 pt-28 text-center sm:pt-36">
+      <section className="relative mx-auto max-w-none overflow-hidden px-6 pb-16 pt-28 text-center sm:pt-36">
         <div className="absolute inset-0 grain opacity-30" />
         <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[24rem] w-[52rem] max-w-none -translate-x-1/2 rounded-full bg-[#d4af37]/[0.08] blur-[130px]" />
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(212,175,55,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(212,175,55,0.05)_1px,transparent_1px)] bg-[size:54px_54px] [mask-image:radial-gradient(ellipse_60%_55%_at_50%_30%,black,transparent)]" />
         <div className="relative">
           <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="mx-auto mb-7 h-[4.5rem] w-[4.5rem] rounded-2xl object-contain gold-glow ring-1 ring-[#d4af37]/25" />
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#d4af37]/30 bg-[#0a0a0f]/70 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#e8c95a] shadow-[0_8px_28px_-12px_rgba(212,175,55,0.5)] backdrop-blur-md"><Globe className="h-3.5 w-3.5" /> {t('abt.heroKick')}</span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#d4af37]/30 bg-[#0a0a0f]/70 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#e8c95a] shadow-[0_8px_28px_-12px_rgba(212,175,55,0.5)] backdrop-blur-md"><IosIcon icon={Globe} size="2xs" tone="blue" /> {t('abt.heroKick')}</span>
           <h1 className="mx-auto mt-6 max-w-3xl text-balance text-4xl font-extrabold tracking-[-0.03em] sm:text-6xl sm:leading-[1.02]">{t('abt.aboutTitle')} <span className="tb-gold-text drop-shadow-[0_2px_24px_rgba(212,175,55,0.35)]">TradingBible</span></h1>
           <div aria-hidden className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[#d4af37]/60 to-transparent" />
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-relaxed text-[#a8a394] sm:text-lg sm:leading-relaxed">
@@ -102,23 +103,23 @@ export default function AboutPage() {
       </section>
 
       {/* Mission & Vision */}
-      <section id="mission" className="mx-auto grid max-w-[96rem] grid-cols-1 gap-4 px-6 pb-6 sm:gap-5 lg:grid-cols-2 scroll-mt-28">
+      <section id="mission" className="mx-auto grid max-w-none grid-cols-1 gap-4 px-6 pb-6 sm:gap-5 lg:grid-cols-2 scroll-mt-28">
         <Card className="group relative overflow-hidden rounded-2xl p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-8">
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-[#f4e6a8]/70 via-[#d4af37]/60 to-transparent" />
-          <div className="mb-5 grid h-12 w-12 place-items-center rounded-xl border border-[#d4af37]/20 bg-gradient-to-b from-[#d4af37]/20 to-[#d4af37]/[0.06] text-[#e8c95a] shadow-[0_8px_20px_-8px_rgba(212,175,55,0.5),inset_0_1px_0_rgba(255,255,255,0.12)]"><Target className="h-6 w-6" /></div>
+          <IosIcon icon={Target} size="lg" tone="blue" className="mb-5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-105" />
           <h2 className="text-xl font-bold tracking-tight text-[#f0ecdd]">{t('abt.mission')}</h2>
           <p className="mt-3 leading-relaxed text-[#a8a394]">{t('abt.missionB')}</p>
         </Card>
         <Card className="group relative overflow-hidden rounded-2xl p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-8">
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/60 to-[#f4e6a8]/70" />
-          <div className="mb-5 grid h-12 w-12 place-items-center rounded-xl border border-[#d4af37]/20 bg-gradient-to-b from-[#d4af37]/20 to-[#d4af37]/[0.06] text-[#e8c95a] shadow-[0_8px_20px_-8px_rgba(212,175,55,0.5),inset_0_1px_0_rgba(255,255,255,0.12)]"><Eye className="h-6 w-6" /></div>
+          <IosIcon icon={Eye} size="lg" tone="purple" className="mb-5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-105" />
           <h2 className="text-xl font-bold tracking-tight text-[#f0ecdd]">{t('abt.vision')}</h2>
           <p className="mt-3 leading-relaxed text-[#a8a394]">{t('abt.visionB')}</p>
         </Card>
       </section>
 
       {/* Ownership */}
-      <section className="mx-auto max-w-[96rem] px-6 py-6">
+      <section className="mx-auto max-w-none px-6 py-6">
         <Card className="relative flex flex-col items-start gap-5 overflow-hidden rounded-2xl p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:flex-row sm:items-center sm:p-8">
           <div aria-hidden className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-gradient-to-b from-[#f4e6a8] via-[#d4af37] to-transparent" />
           <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-16 w-16 shrink-0 rounded-2xl object-contain ring-1 ring-[#d4af37]/25" />
@@ -130,7 +131,7 @@ export default function AboutPage() {
       </section>
 
       {/* What we provide */}
-      <section id="features" className="relative mx-auto max-w-[96rem] px-6 py-10 scroll-mt-28">
+      <section id="features" className="relative mx-auto max-w-none px-6 py-10 scroll-mt-28">
         <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-px w-[min(70rem,90%)] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#d4af37]/20 to-transparent" />
         <div className="mb-8 text-center sm:mb-10">
           <h2 className="text-3xl font-extrabold tracking-[-0.02em] sm:text-4xl">{t('abt.provideA')} <span className="tb-gold-text">{t('abt.provideB')}</span></h2>
@@ -140,7 +141,7 @@ export default function AboutPage() {
           {PROVIDES.map((p) => (
             <Card hover key={p.tk} className="group relative overflow-hidden rounded-2xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#d4af37]/30 hover:shadow-[0_24px_60px_-28px_rgba(212,175,55,0.35)]">
               <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <div className="mb-4 grid h-10 w-10 place-items-center rounded-xl border border-[#d4af37]/20 bg-gradient-to-b from-[#d4af37]/20 to-[#d4af37]/[0.06] text-[#e8c95a]"><p.icon className="h-5 w-5" /></div>
+              <IosIcon icon={p.icon} size="md" seed={p.tk} className="mb-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-105" />
               <h3 className="font-semibold tracking-tight text-[#f0ecdd]">{t(p.tk)}</h3>
               <p className="mt-1.5 text-sm leading-relaxed text-[#8a8577]">{t(p.bk)}</p>
             </Card>
@@ -149,7 +150,7 @@ export default function AboutPage() {
       </section>
 
       {/* Markets covered */}
-      <section className="relative mx-auto max-w-[96rem] px-6 py-10">
+      <section className="relative mx-auto max-w-none px-6 py-10">
         <div className="mb-8 text-center sm:mb-10">
           <h2 className="text-3xl font-extrabold tracking-[-0.02em] sm:text-4xl">{t('abt.marketsA')} <span className="tb-gold-text">{t('abt.marketsB')}</span></h2>
           <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-[#a8a394]">{t('abt.marketsSub')}</p>
@@ -158,7 +159,7 @@ export default function AboutPage() {
           {MARKETS.map((m) => (
             <Card hover key={m.key} className="group relative overflow-hidden rounded-2xl p-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#d4af37]/30">
               <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/35 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-xl border border-[#d4af37]/20 bg-gradient-to-b from-[#d4af37]/20 to-[#d4af37]/[0.06] text-[#e8c95a]"><m.icon className="h-5 w-5" /></div>
+              <IosIcon icon={m.icon} size="md" seed={m.key} className="mx-auto mb-3 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-105" />
               <div className="font-semibold tracking-tight text-[#f0ecdd]">{t(m.key)}</div>
               <div className="mt-1.5 font-mono text-[11px] uppercase tracking-wider text-[#8a8577]">{m.pair}</div>
             </Card>
@@ -167,12 +168,12 @@ export default function AboutPage() {
       </section>
 
       {/* Team */}
-      <section id="team" className="relative mx-auto max-w-[96rem] px-6 py-10 scroll-mt-28">
+      <section id="team" className="relative mx-auto max-w-none px-6 py-10 scroll-mt-28">
         <div className="mb-8 text-center sm:mb-10">
           <h2 className="text-3xl font-extrabold tracking-[-0.02em] sm:text-4xl">{t('abt.team')} <span className="tb-gold-text">{t('abt.teamB')}</span></h2>
           <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-[#a8a394]">{t('abt.teamSub')}</p>
         </div>
-        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
+        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
           {TEAM.map((m) => (
             <Card hover key={m.name} className="group relative overflow-hidden rounded-2xl p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#d4af37]/30 hover:shadow-[0_24px_60px_-28px_rgba(212,175,55,0.35)]">
               <div className={`grid ${m.ratio || 'aspect-[3/4]'} w-full place-items-center overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#d4af37]/[0.1] via-[#0c0c11] to-[#0c0c11]`}>
@@ -192,7 +193,7 @@ export default function AboutPage() {
       </section>
 
       {/* Testimonials */}
-      <section className="relative mx-auto max-w-[96rem] px-6 py-10">
+      <section className="relative mx-auto max-w-none px-6 py-10">
         <div className="mb-8 text-center sm:mb-10">
           <h2 className="text-3xl font-extrabold tracking-[-0.02em] sm:text-4xl">{t('abt.trusted')} <span className="tb-gold-text">{t('abt.traders')}</span></h2>
         </div>
@@ -210,7 +211,7 @@ export default function AboutPage() {
       </section>
 
       {/* Contact Us */}
-      <section className="mx-auto max-w-[96rem] px-6 py-10">
+      <section className="mx-auto max-w-none px-6 py-10">
         <Card className="relative grid grid-cols-1 gap-8 overflow-hidden rounded-2xl p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-10 lg:grid-cols-2 lg:gap-12">
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/60 to-transparent" />
           <div>
@@ -224,7 +225,7 @@ export default function AboutPage() {
       </section>
 
       {/* CTA */}
-      <section className="relative mx-auto max-w-[96rem] px-6 pb-20">
+      <section className="relative mx-auto max-w-none px-6 pb-20">
         <div aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 h-[16rem] w-[44rem] max-w-[92vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d4af37]/[0.07] blur-[100px]" />
         <Card className="gold-glow relative flex flex-col items-center overflow-hidden rounded-3xl px-6 py-12 text-center sm:py-14">
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#e8c95a] to-transparent" />

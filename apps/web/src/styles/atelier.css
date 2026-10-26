@@ -18,9 +18,10 @@
   --at-ink-2: #d7d5cb;
   --at-mut: #8d908d;
   --at-mut-2: #656965;
-  --at-gold: #d4af37;
-  --at-gold-bright: #f2dfa0;
-  --at-gold-deep: #a67c1e;
+  --at-accent: var(--tb-gold, #d4af37);
+  --at-gold: var(--at-accent);
+  --at-gold-bright: var(--tb-gold-hi, #f2dfa0);
+  --at-gold-deep: var(--tb-gold-deep, #a67c1e);
   --at-green: #6ee7b7;
   --at-amber: #fbbf24;
   --at-red: #fb7185;
@@ -28,15 +29,15 @@
   --at-violet: #c4b5fd;
   --at-line: rgba(242, 223, 160, 0.11);
   --at-line-soft: rgba(255, 255, 255, 0.075);
-  --at-line-strong: rgba(212, 175, 55, 0.32);
+  --at-line-strong: color-mix(in srgb, var(--at-accent) 32%, transparent);
   --at-soft: rgba(255, 255, 255, 0.025);
   --at-soft-2: rgba(255, 255, 255, 0.055);
-  --at-gold-soft: rgba(212, 175, 55, 0.10);
+  --at-gold-soft: color-mix(in srgb, var(--at-accent) 10%, transparent);
   --at-rail-bg: linear-gradient(180deg, rgba(6, 7, 10, 0.99), rgba(8, 10, 14, 0.97));
   --at-card-bg: linear-gradient(180deg, rgba(19, 22, 29, 0.97), rgba(11, 13, 18, 0.99));
   --at-card-bg-hover: linear-gradient(180deg, rgba(24, 27, 35, 0.99), rgba(13, 16, 22, 0.99));
   --at-hero-bg:
-    radial-gradient(100% 130% at 100% 0%, rgba(212, 175, 55, 0.16), transparent 52%),
+    radial-gradient(100% 130% at 100% 0%, color-mix(in srgb, var(--at-accent) 16%, transparent), transparent 52%),
     radial-gradient(80% 120% at 0% 100%, rgba(63, 78, 108, 0.16), transparent 58%),
     linear-gradient(135deg, #0e1117 0%, #080a0e 54%, #0c0e13 100%);
   --at-topbar-bg: rgba(7, 8, 11, 0.82);
@@ -55,9 +56,10 @@ html.light .at-scope {
   --at-ink-2: #3e4245;
   --at-mut: #666860;
   --at-mut-2: #8b8c84;
-  --at-gold: #a67c1e;
-  --at-gold-bright: #7e5c12;
-  --at-gold-deep: #8d6918;
+  --at-accent: var(--tb-gold-deep, #a67c1e);
+  --at-gold: var(--at-accent);
+  --at-gold-bright: var(--tb-gold-deep, #7e5c12);
+  --at-gold-deep: var(--tb-gold-deep, #8d6918);
   --at-green: #047857;
   --at-amber: #a16207;
   --at-red: #be123c;
@@ -65,10 +67,10 @@ html.light .at-scope {
   --at-violet: #6d28d9;
   --at-line: rgba(126, 92, 18, 0.18);
   --at-line-soft: rgba(34, 38, 44, 0.10);
-  --at-line-strong: rgba(166, 124, 30, 0.34);
+  --at-line-strong: color-mix(in srgb, var(--at-accent) 34%, transparent);
   --at-soft: rgba(20, 24, 30, 0.028);
   --at-soft-2: rgba(20, 24, 30, 0.055);
-  --at-gold-soft: rgba(166, 124, 30, 0.09);
+  --at-gold-soft: color-mix(in srgb, var(--at-accent) 9%, transparent);
   --at-rail-bg: linear-gradient(180deg, #fbf8f0, #f5f0e4);
   --at-card-bg: linear-gradient(180deg, rgba(255, 253, 247, 0.98), rgba(250, 246, 237, 0.99));
   --at-card-bg-hover: linear-gradient(180deg, #fffefa, #fbf7ed);
@@ -94,7 +96,7 @@ html.light .at-shell { background: var(--at-bg1); }
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(880px 380px at 88% -60px, rgba(212, 175, 55, 0.08), transparent 64%),
+    radial-gradient(880px 380px at 88% -60px, color-mix(in srgb, var(--at-accent) 8%, transparent), transparent 64%),
     radial-gradient(760px 460px at -12% 22%, rgba(51, 76, 118, 0.10), transparent 62%);
 }
 .at-shell::after {
@@ -124,7 +126,7 @@ html.light .at-shell::after {
 
 .at-page {
   width: 100%;
-  max-width: 1560px;
+  max-width: none;
   margin-inline: auto;
 }
 
@@ -284,10 +286,10 @@ html.light .at-shell::after {
   width: 540px;
   height: 540px;
   border-radius: 999px;
-  border: 1px solid rgba(212, 175, 55, 0.16);
+  border: 1px solid color-mix(in srgb, var(--at-accent) 16%, transparent);
   box-shadow:
-    0 0 0 54px rgba(212, 175, 55, 0.025),
-    0 0 0 110px rgba(212, 175, 55, 0.018);
+    0 0 0 54px color-mix(in srgb, var(--at-accent) 2.5%, transparent),
+    0 0 0 110px color-mix(in srgb, var(--at-accent) 1.8%, transparent);
   pointer-events: none;
 }
 .at-hero::after {
@@ -381,7 +383,7 @@ html.light .at-card { box-shadow: 0 16px 46px -38px rgba(61, 48, 17, 0.5), inset
   transform: translateY(-3px);
   border-color: var(--at-line-strong);
   background: var(--at-card-bg-hover);
-  box-shadow: 0 34px 70px -46px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(212, 175, 55, 0.06);
+  box-shadow: 0 34px 70px -46px rgba(0, 0, 0, 0.95), 0 0 0 1px color-mix(in srgb, var(--at-accent) 6%, transparent);
 }
 .at-card--gold { border-color: var(--at-line-strong); }
 .at-card--flush { overflow: hidden; }
@@ -436,7 +438,7 @@ html.light .at-card { box-shadow: 0 16px 46px -38px rgba(61, 48, 17, 0.5), inset
   width: 110px;
   height: 110px;
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.10), transparent 68%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--at-accent) 10%, transparent), transparent 68%);
   pointer-events: none;
 }
 .at-kpi-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -536,34 +538,34 @@ html.light .at-card { box-shadow: 0 16px 46px -38px rgba(61, 48, 17, 0.5), inset
 .at-btn--sm { min-height: 32px; padding: 0 11px; font-size: 0.68rem; border-radius: 9px; }
 .at-btn--lg { min-height: 46px; padding: 0 21px; font-size: 0.82rem; }
 .at-btn--gold {
-  background: linear-gradient(135deg, #f7e8b0 0%, #d4af37 46%, #b4871e 100%);
+  background: linear-gradient(135deg, var(--tb-gold-hi, #f2dfa0) 0%, var(--at-accent) 46%, var(--tb-gold-deep, #a67c1e) 100%);
   border-color: rgba(255, 255, 255, 0.22);
   color: #121006;
-  box-shadow: 0 10px 26px -15px rgba(212, 175, 55, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.44);
+  box-shadow: 0 10px 26px -15px color-mix(in srgb, var(--at-accent) 80%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.44);
 }
-.at-btn--gold:hover { filter: brightness(1.045); box-shadow: 0 14px 32px -16px rgba(212, 175, 55, 0.9); }
+.at-btn--gold:hover { filter: brightness(1.045); box-shadow: 0 14px 32px -16px color-mix(in srgb, var(--at-accent) 90%, transparent); }
 .at-btn--outline {
   border-color: var(--at-line-strong);
-  background: var(--at-gold-soft);
+  background: color-mix(in srgb, var(--at-accent) 11%, var(--at-panel));
   color: var(--at-gold);
 }
-.at-btn--outline:hover { background: rgba(212, 175, 55, 0.16); border-color: rgba(212, 175, 55, 0.48); }
+.at-btn--outline:hover { background: color-mix(in srgb, var(--at-accent) 19%, var(--at-panel)); border-color: color-mix(in srgb, var(--at-accent) 48%, transparent); }
 .at-btn--quiet {
   border-color: var(--at-line-soft);
-  background: var(--at-soft);
+  background: var(--at-panel-2);
   color: var(--at-ink-2);
 }
-.at-btn--quiet:hover { border-color: var(--at-line-strong); color: var(--at-ink); background: var(--at-soft-2); }
+.at-btn--quiet:hover { border-color: var(--at-line-strong); color: var(--at-ink); background: color-mix(in srgb, var(--at-accent) 7%, var(--at-panel-2)); }
 html.light .at-btn--quiet { background: #fffdf8; }
 html.light .at-btn--quiet:hover { background: #f5efe2; }
 html.light .at-btn--outline { background: #fff8e7; }
 html.light .at-btn--outline:hover { background: #f9efd6; }
 .at-btn--danger {
-  border-color: rgba(251, 113, 133, 0.24);
-  background: rgba(251, 113, 133, 0.08);
+  border-color: rgba(251, 113, 133, 0.28);
+  background: color-mix(in srgb, #fb7185 13%, var(--at-panel));
   color: var(--at-red);
 }
-.at-btn--danger:hover { background: rgba(251, 113, 133, 0.14); }
+.at-btn--danger:hover { background: color-mix(in srgb, #fb7185 20%, var(--at-panel)); }
 .at-btn--icon { width: 40px; padding: 0; }
 
 /* ── Tabs ───────────────────────────────────────────────────────── */
@@ -635,7 +637,7 @@ html.light .at-textarea { background: #fffdf8; }
 .at-input::placeholder, .at-textarea::placeholder { color: var(--at-mut-2); }
 .at-input:focus, .at-select:focus, .at-textarea:focus {
   border-color: var(--at-line-strong);
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.10);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--at-accent) 10%, transparent);
   background: rgba(12, 15, 21, 0.8);
 }
 html.light .at-input:focus,
@@ -1015,7 +1017,7 @@ html.light .at-segmented { background: #f5f0e4; }
   inset-block: 0;
   right: -1px;
   width: 1px;
-  background: linear-gradient(180deg, transparent, rgba(212, 175, 55, 0.27) 18%, rgba(212, 175, 55, 0.07) 55%, transparent);
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--at-accent) 27%, transparent) 18%, color-mix(in srgb, var(--at-accent) 7%, transparent) 55%, transparent);
   pointer-events: none;
 }
 .at-rail-brand {
@@ -1032,8 +1034,8 @@ html.light .at-segmented { background: #f5f0e4; }
   height: 38px;
   border: 1px solid var(--at-line-strong);
   border-radius: 11px;
-  background: linear-gradient(145deg, rgba(212, 175, 55, 0.17), rgba(212, 175, 55, 0.03));
-  box-shadow: 0 0 24px -10px rgba(212, 175, 55, 0.5);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--at-accent) 17%, transparent), color-mix(in srgb, var(--at-accent) 3%, transparent));
+  box-shadow: 0 0 24px -10px color-mix(in srgb, var(--at-accent) 50%, transparent);
 }
 .at-rail-mark img { width: 27px; height: 27px; object-fit: contain; border-radius: 7px; }
 .at-rail-word { font-size: 1.03rem; font-weight: 800; letter-spacing: -0.045em; line-height: 1.05; }
@@ -1072,7 +1074,7 @@ html.light .at-segmented { background: #f5f0e4; }
 .at-navlink.is-active {
   color: var(--at-ink);
   border-color: var(--at-line);
-  background: linear-gradient(90deg, rgba(212, 175, 55, 0.14), rgba(212, 175, 55, 0.025));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--at-accent) 14%, transparent), color-mix(in srgb, var(--at-accent) 2.5%, transparent));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 .at-navlink.is-active::before {
@@ -1084,7 +1086,7 @@ html.light .at-segmented { background: #f5f0e4; }
   width: 2px;
   border-radius: 2px;
   background: var(--at-gold);
-  box-shadow: 0 0 14px rgba(212, 175, 55, 0.55);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--at-accent) 55%, transparent);
 }
 .at-navlink-icon {
   display: grid;
@@ -1107,7 +1109,7 @@ html.light .at-segmented { background: #f5f0e4; }
 .at-rail-foot {
   border-top: 1px solid var(--at-line-soft);
   padding: 12px;
-  background: linear-gradient(180deg, transparent, rgba(212, 175, 55, 0.035));
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--at-accent) 3.5%, transparent));
 }
 
 /* ── Top bar ────────────────────────────────────────────────────── */
@@ -1123,7 +1125,7 @@ html.light .at-segmented { background: #f5f0e4; }
   inset-inline: 0;
   bottom: -1px;
   height: 1px;
-  background: linear-gradient(90deg, rgba(212, 175, 55, 0.26), transparent 42%, rgba(212, 175, 55, 0.08));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--at-accent) 26%, transparent), transparent 42%, color-mix(in srgb, var(--at-accent) 8%, transparent));
   pointer-events: none;
 }
 .at-crumb {
@@ -1180,7 +1182,7 @@ html.light .at-scope textarea {
 .at-scope select:focus,
 .at-scope textarea:focus {
   border-color: var(--at-line-strong) !important;
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.10) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--at-accent) 10%, transparent) !important;
 }
 /* Legacy admin markup still carries a few fixed dark-theme colour utilities.
  * Remap the neutral ones so opted-in surfaces remain legible in light mode. */
@@ -1217,7 +1219,7 @@ html.light .at-scope textarea {
 /* ── TV-specific dark surface ───────────────────────────────────── */
 .at-tv-stage {
   background:
-    radial-gradient(70% 70% at 72% 20%, rgba(212, 175, 55, 0.08), transparent 60%),
+    radial-gradient(70% 70% at 72% 20%, color-mix(in srgb, var(--at-accent) 8%, transparent), transparent 60%),
     linear-gradient(180deg, #07080b, #05060a);
 }
 .at-live-dot {

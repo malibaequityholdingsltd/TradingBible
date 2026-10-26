@@ -204,7 +204,7 @@ export default function AdminLayout({ children, title }) {
         <header className="at-topbar fixed inset-x-0 left-0 right-0 top-[var(--header-h)] z-[35] h-16 w-full lg:left-[258px] lg:w-[calc(100%-258px)]">
           <div className="flex h-full w-full items-center gap-2 px-2.5 sm:gap-3 sm:px-4 lg:px-6">
             <div className="flex min-w-0 flex-1 items-center gap-2">
-              <button onClick={() => setOpen(true)} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[var(--at-line-soft)] text-[var(--at-mut)] transition hover:border-[var(--at-line)] hover:text-[var(--at-gold)] lg:hidden" aria-label="Open navigation">
+              <button onClick={() => setOpen(true)} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[var(--at-line-soft)] text-[var(--at-gold)] transition hover:border-[var(--at-line)] hover:text-[var(--at-gold)] lg:hidden" aria-label="Open navigation">
                 <Menu className="h-4 w-4" />
               </button>
               <div className="min-w-0">
@@ -228,7 +228,7 @@ export default function AdminLayout({ children, title }) {
               <div className="flex shrink-0 items-center gap-1 rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-1 sm:gap-1.5">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="relative hidden h-8 w-8 shrink-0 place-items-center rounded-lg text-[var(--at-mut)] transition hover:bg-[var(--at-gold-soft)] hover:text-[var(--at-gold)] sm:grid" aria-label="Staff directory" title="Staff">
+                    <button className="relative hidden h-8 w-8 shrink-0 place-items-center rounded-lg text-[var(--at-gold)] transition hover:bg-[var(--at-gold-soft)] hover:text-[var(--at-gold)] sm:grid" aria-label="Staff directory" title="Staff">
                       <Users className="h-3.5 w-3.5" />
                       {staff.length > 0 && (
                         <span className="absolute -right-0.5 -top-0.5 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-[var(--at-gold)] px-1 font-mono text-[8px] font-bold text-[#0a0a0f]">{staff.length}</span>
@@ -259,7 +259,7 @@ export default function AdminLayout({ children, title }) {
                 <span className="hidden sm:contents"><ThemeSwitcher inline /></span>
                 <span className="hidden sm:contents"><LanguageSwitcher /></span>
                 <button onClick={() => { enterAdminPreview(); nav('/app'); }} className="hidden h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[10px] font-semibold text-[var(--at-mut)] transition hover:bg-[var(--at-gold-soft)] hover:text-[var(--at-gold)] xl:flex">
-                  <LayoutDashboard className="h-3.5 w-3.5" /> View app
+                  <LayoutDashboard className="h-3.5 w-3.5 text-[var(--at-gold)]" /> View app
                 </button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -267,7 +267,7 @@ export default function AdminLayout({ children, title }) {
                       <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] text-[11px] font-bold tabular-nums text-[#0a0a0f] ring-1 ring-[#d4af37]/40">
                         {initial}
                       </span>
-                      <ChevronDown className="h-3 w-3 text-[var(--at-mut)]" />
+                      <ChevronDown className="h-3 w-3 text-[var(--at-gold)]" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" sideOffset={8} className="w-56 rounded-xl border-[#d4af37]/15 bg-[#111113] tabular-nums text-[#e9e7df]">
@@ -290,7 +290,7 @@ export default function AdminLayout({ children, title }) {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-[112rem] flex-1 px-3 pb-28 pt-[calc(4rem+1rem)] sm:px-5 sm:pb-8 lg:px-7 xl:px-9">
+        <main className="mx-auto w-full max-w-none flex-1 px-1.5 pb-28 pt-[calc(4rem+1rem)] sm:px-2 sm:pb-8 lg:px-3 xl:px-4">
           {children}
         </main>
 

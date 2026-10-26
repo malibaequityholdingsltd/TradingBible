@@ -13,9 +13,15 @@ import { meetsPlan } from '@/lib/entitlements';
 import YoutubePlayer from '@/components/YoutubePlayer';
 
 // ── Constants ──────────────────────────────────────────────────────
-const POS_KEY = 'tb:tv-btn-pos';
+const POS_KEY = 'tb:tv-btn-pos-v2';
+const MINI_POS_KEY = 'tb:tv-mini-pos-v2';
+const EXPANDED_POS_KEY = 'tb:tv-expanded-pos-v2';
 const BTN = 56;
 const MARGIN = 12;
+const MINI_W = 416;
+const MINI_H = 448;
+const EXPANDED_W = 900;
+const EXPANDED_H = 600;
 const DEFAULT_SETTINGS = {
   rotationSeconds: 12,
   headerText: 'TradingBible TV',
@@ -40,28 +46,51 @@ function tickerFloor() {
   return Math.round(h);
 }
 
-// Phone dock clearance: the bottom nav owns the lowest ~116px on phones —
-// no TV surface may rest or travel there (bubbles snap and drag above it).
+// Bottom navigation clearance. The phone dock is visible below 1024px and
+// the desktop footer row above it; measure whichever is actually on screen so
+// every TV surface stays above the bar at every breakpoint.
 function dockClear() {
   if (typeof window === 'undefined') return 0;
-  return window.innerWidth < 640 ? 116 : 0;
+  let clearance = 0;
+  for (const el of document.querySelectorAll('.tb-dock, .app-nav-footer')) {
+    const rect = el.getBoundingClientRect();
+    if (rect.height > 0 && rect.width > 0) {
+      clearance = Math.max(clearance, window.innerHeight - rect.top);
+    }
+  }
+  if (clearance > 0) return clearance;
+  return window.innerWidth >= 1024 ? 72 : 96;
+}
+
+function clampPanelPos(x, y, panelW, panelH) {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const top = tickerFloor();
+  const nav = dockClear();
+  const width = Math.min(panelW, Math.max(240, w - MARGIN * 2));
+  const height = Math.min(panelH, Math.max(220, h - top - nav - MARGIN * 2));
+  return {
+    x: Math.min(Math.max(x, MARGIN), Math.max(MARGIN, w - width - MARGIN)),
+    y: Math.min(Math.max(y, top), Math.max(top, h - height - nav - MARGIN)),
+  };
 }
 
 function snapToEdge(x, y) {
   const w = window.innerWidth;
   const h = window.innerHeight;
   const top = tickerFloor();
+  const bottom = h - BTN - MARGIN - dockClear();
   let cx = Math.min(Math.max(x, MARGIN), w - BTN - MARGIN);
-  let cy = Math.min(Math.max(y, top), h - BTN - MARGIN - dockClear());
+  let cy = Math.min(Math.max(y, top), bottom);
   const dl = cx - MARGIN;
   const dr = w - BTN - MARGIN - cx;
   const dt = cy - top;
-  const db = h - BTN - MARGIN - dockClear() - cy;
+  const db = bottom - cy;
   const min = Math.min(dl, dr, dt, db);
   if (min === dl) cx = MARGIN;
   else if (min === dr) cx = w - BTN - MARGIN;
   else if (min === dt) cy = top;
-  else cy = h - BTN - MARGIN;
+  else cy = bottom;
   return { x: cx, y: cy };
 }
 
@@ -70,11 +99,8 @@ function loadPos() {
     const raw = JSON.parse(localStorage.getItem(POS_KEY) || 'null');
     if (raw && typeof raw.x === 'number' && typeof raw.y === 'number') return snapToEdge(raw.x, raw.y);
   } catch { /* ignore */ }
-  // New users start bottom-right — clear of headers, heatmaps and content.
-  return snapToEdge(
-    Math.max(MARGIN, window.innerWidth - BTN - MARGIN),
-    Math.max(MARGIN, window.innerHeight - BTN - MARGIN),
-  );
+  // Mirror the SI launcher: TV starts bottom-left, clear of the bottom nav.
+  return snapToEdge(MARGIN, window.innerHeight - BTN - MARGIN - dockClear());
 }
 
 // ── TradingBible TV: draggable launcher + mini/zoomed live broadcast panel ──
@@ -111,28 +137,38 @@ export default function TvWidget() {
   // channel hops read as deliberate retunes instead of flicker.
   const [minSpinDone, setMinSpinDone] = useState(false);
   const tuneTimer = useRef(null);
+  const [viewport, setViewport] = useState(() => ({
+    w: typeof window !== 'undefined' ? window.innerWidth : 1024,
+    h: typeof window !== 'undefined' ? window.innerHeight : 768,
+  }));
   const [pos, setPos] = useState(() => (typeof window !== 'undefined' ? loadPos() : { x: 0, y: 0 }));
   const [dragging, setDragging] = useState(false);
   const [miniPos, setMiniPos] = useState(() => {
     try {
-      const raw = JSON.parse(localStorage.getItem('tb:tv-mini-pos') || 'null');
-      if (raw && typeof raw.x === 'number' && typeof raw.y === 'number') return { x: raw.x, y: Math.max(raw.y, tickerFloor()) };
+      const raw = JSON.parse(localStorage.getItem(MINI_POS_KEY) || 'null');
+      if (raw && typeof raw.x === 'number' && typeof raw.y === 'number') {
+        return clampPanelPos(raw.x, raw.y, MINI_W, MINI_H);
+      }
     } catch { /* ignore */ }
     // Default to center of screen for free-move from the start (never over the ticker)
     if (typeof window !== 'undefined') {
-      return {
-        x: window.innerWidth / 2 - 200,
-        y: Math.max(tickerFloor(), window.innerHeight / 2 - 272),
-      };
+      return clampPanelPos(
+        window.innerWidth / 2 - MINI_W / 2,
+        window.innerHeight / 2 - MINI_H / 2,
+        MINI_W,
+        MINI_H,
+      );
     }
     return { x: 0, y: 76 };
   });
   const [expandedPos, setExpandedPos] = useState(() => {
     try {
-      const raw = JSON.parse(localStorage.getItem('tb:tv-expanded-pos') || 'null');
-      if (raw && typeof raw.x === 'number' && typeof raw.y === 'number') return { x: raw.x, y: Math.max(raw.y, tickerFloor()) };
+      const raw = JSON.parse(localStorage.getItem(EXPANDED_POS_KEY) || 'null');
+      if (raw && typeof raw.x === 'number' && typeof raw.y === 'number') {
+        return clampPanelPos(raw.x, raw.y, EXPANDED_W, EXPANDED_H);
+      }
     } catch { /* ignore */ }
-    return { x: 12, y: tickerFloor() };
+    return clampPanelPos(MARGIN, tickerFloor(), EXPANDED_W, EXPANDED_H);
   });
   const [expandedDragging, setExpandedDragging] = useState(false);
   const expandedDragState = useRef({ active: false, moved: false, offX: 0, offY: 0 });
@@ -166,6 +202,36 @@ export default function TvWidget() {
   const channelIndexRef = useRef(channelIndex);
   channelIndexRef.current = channelIndex;
   const interactedRef = useRef(false);
+
+  // Keep every movable surface inside the viewport and above the bottom nav
+  // after rotations, window resizes and browser chrome changes.
+  useEffect(() => {
+    const syncViewport = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      setViewport({ w, h });
+      setPos((cur) => snapToEdge(cur.x, cur.y));
+      setMiniPos((cur) => clampPanelPos(
+        cur.x,
+        cur.y,
+        Math.min(MINI_W, w - MARGIN * 2),
+        Math.min(panelRef.current?.offsetHeight || MINI_H, h - tickerFloor() - dockClear() - MARGIN * 2),
+      ));
+      setExpandedPos((cur) => clampPanelPos(
+        cur.x,
+        cur.y,
+        Math.min(EXPANDED_W, w - MARGIN * 2),
+        Math.min(panelRef.current?.offsetHeight || EXPANDED_H, h - tickerFloor() - dockClear() - MARGIN * 2),
+      ));
+    };
+    syncViewport();
+    window.addEventListener('resize', syncViewport);
+    window.addEventListener('orientationchange', syncViewport);
+    return () => {
+      window.removeEventListener('resize', syncViewport);
+      window.removeEventListener('orientationchange', syncViewport);
+    };
+  }, []);
 
   // ── Data: channels + shared live broadcast state ──
   const liveChannels = useLiveChannels();
@@ -503,16 +569,6 @@ export default function TvWidget() {
     return () => window.removeEventListener('tb:open-tv', handler);
   }, [openTv, expanded, ordered, canWatch]);
 
-  useEffect(() => {
-    const onResize = () => setPos((p) => snapToEdge(p.x, p.y));
-    window.addEventListener('resize', onResize);
-    window.addEventListener('orientationchange', onResize);
-    return () => {
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('orientationchange', onResize);
-    };
-  }, []);
-
   // Go-live alerts: a desk flipping to live raises a tappable toast here
   // (the hook fires system notifications too when the bell is on).
   useEffect(() => {
@@ -565,25 +621,32 @@ export default function TvWidget() {
       if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
       const step = 20;
       const w = window.innerWidth; const h = window.innerHeight;
+      const nav = dockClear();
       if (expanded) {
-        const panelW = 900;
-        const panelH = 600;
+        const panelW = Math.min(EXPANDED_W, w - MARGIN * 2);
+        const panelH = Math.min(
+          panelRef.current?.offsetHeight || EXPANDED_H,
+          h - tickerFloor() - nav - MARGIN * 2,
+        );
         setExpandedPos((cur) => {
           let nx = cur.x;
           let ny = cur.y;
           switch (e.key) {
-            case 'ArrowLeft': nx = Math.max(12, cur.x - step); break;
-            case 'ArrowRight': nx = Math.min(w - panelW - 12, cur.x + step); break;
+            case 'ArrowLeft': nx = Math.max(MARGIN, cur.x - step); break;
+            case 'ArrowRight': nx = Math.min(w - panelW - MARGIN, cur.x + step); break;
             case 'ArrowUp': ny = Math.max(tickerFloor(), cur.y - step); break;
-            case 'ArrowDown': ny = Math.min(h - panelH - 12, cur.y + step); break;
+            case 'ArrowDown': ny = Math.min(h - panelH - nav - MARGIN, cur.y + step); break;
           }
           e.preventDefault();
           return { x: nx, y: ny };
         });
       } else {
         // Mini panel - move the panel position (clamp to measured size)
-        const panelW = 416; // 26rem
-        const panelH = panelRef.current?.offsetHeight || 448;
+        const panelW = Math.min(MINI_W, w - MARGIN * 2);
+        const panelH = Math.min(
+          panelRef.current?.offsetHeight || MINI_H,
+          h - tickerFloor() - nav - MARGIN * 2,
+        );
         setMiniPos((cur) => {
           const base = cur || { x: pos.x, y: pos.y };
           let nx = base.x;
@@ -592,7 +655,7 @@ export default function TvWidget() {
             case 'ArrowLeft': nx = Math.max(MARGIN, base.x - step); break;
             case 'ArrowRight': nx = Math.min(w - panelW - MARGIN, base.x + step); break;
             case 'ArrowUp': ny = Math.max(tickerFloor(), base.y - step); break;
-            case 'ArrowDown': ny = Math.min(h - panelH - MARGIN, base.y + step); break;
+            case 'ArrowDown': ny = Math.min(h - panelH - nav - MARGIN, base.y + step); break;
           }
           e.preventDefault();
           return { x: nx, y: ny };
@@ -663,12 +726,16 @@ export default function TvWidget() {
       const ny = p.clientY - expandedDragState.current.offY;
       if (Math.abs(nx - expandedPos.x) > 3 || Math.abs(ny - expandedPos.y) > 3) expandedDragState.current.moved = true;
       const w = window.innerWidth; const h = window.innerHeight;
-      // Keep panel on screen with some margin
-      const panelW = Math.min(900, w - 24);
-      const panelH = Math.min(600, h - 24);
+      const nav = dockClear();
+      // Keep the full panel on screen and above the bottom navigation.
+      const panelW = Math.min(EXPANDED_W, w - MARGIN * 2);
+      const panelH = Math.min(
+        panelRef.current?.offsetHeight || EXPANDED_H,
+        h - tickerFloor() - nav - MARGIN * 2,
+      );
       setExpandedPos({
-        x: Math.min(Math.max(nx, 12), w - panelW - 12),
-        y: Math.min(Math.max(ny, tickerFloor()), h - panelH - 12),
+        x: Math.min(Math.max(nx, MARGIN), w - panelW - MARGIN),
+        y: Math.min(Math.max(ny, tickerFloor()), Math.max(tickerFloor(), h - panelH - nav - MARGIN)),
       });
       if (e.cancelable) e.preventDefault();
     };
@@ -676,7 +743,7 @@ export default function TvWidget() {
       if (!expandedDragState.current.active) return;
       expandedDragState.current.active = false;
       setExpandedDragging(false);
-      try { localStorage.setItem('tb:tv-expanded-pos', JSON.stringify(expandedPos)); } catch { /* ignore */ }
+      try { localStorage.setItem(EXPANDED_POS_KEY, JSON.stringify(expandedPos)); } catch { /* ignore */ }
     };
     window.addEventListener('mousemove', move);
     window.addEventListener('mouseup', up);
@@ -701,11 +768,15 @@ export default function TvWidget() {
       const ny = p.clientY - miniDragState.current.offY;
       if (Math.abs(nx - miniPos.x) > 3 || Math.abs(ny - miniPos.y) > 3) miniDragState.current.moved = true;
       const w = window.innerWidth; const h = window.innerHeight;
-      const panelW = 416;
-      const panelH = panelRef.current?.offsetHeight || 448;
+      const nav = dockClear();
+      const panelW = Math.min(MINI_W, w - MARGIN * 2);
+      const panelH = Math.min(
+        panelRef.current?.offsetHeight || MINI_H,
+        h - tickerFloor() - nav - MARGIN * 2,
+      );
       setMiniPos({
-        x: Math.min(Math.max(nx, 12), w - panelW - 12),
-        y: Math.min(Math.max(ny, tickerFloor()), Math.max(tickerFloor(), h - panelH - dockClear())),
+        x: Math.min(Math.max(nx, MARGIN), w - panelW - MARGIN),
+        y: Math.min(Math.max(ny, tickerFloor()), Math.max(tickerFloor(), h - panelH - nav - MARGIN)),
       });
       if (e.cancelable) e.preventDefault();
     };
@@ -713,7 +784,7 @@ export default function TvWidget() {
       if (!miniDragState.current.active) return;
       miniDragState.current.active = false;
       document.body.classList.remove('tb-noselect');
-      try { localStorage.setItem('tb:tv-mini-pos', JSON.stringify(miniPos)); } catch { /* ignore */ }
+      try { localStorage.setItem(MINI_POS_KEY, JSON.stringify(miniPos)); } catch { /* ignore */ }
     };
     window.addEventListener('mousemove', move);
     window.addEventListener('mouseup', up);
@@ -731,14 +802,15 @@ export default function TvWidget() {
   const seconds = Math.max(4, Math.min(60, Number(settings.rotationSeconds) || 12));
 
   // Panel anchoring side (SI arrangement): bottom to the launcher's side.
-  const vw = typeof window !== 'undefined' ? window.innerWidth : 1024;
+  const vw = viewport.w;
+  const navClear = dockClear();
   const onLeft = pos.x < vw / 2;
-  // Zoomed theater top: measured below the live price ticker (which can wrap
-  // taller on small screens) — never covering the prices.
-  const tickerTop = typeof document !== 'undefined'
-    ? Math.round(document.getElementById('tb-ticker')?.getBoundingClientRect().height || 64) + 12
-    : 76;
-
+  const miniWidth = Math.min(MINI_W, Math.max(240, vw - MARGIN * 2));
+  const expandedWidth = Math.min(EXPANDED_W, Math.max(320, vw - MARGIN * 2));
+  const expandedHeight = Math.min(
+    EXPANDED_H,
+    Math.max(280, viewport.h - Math.max(expandedPos.y, tickerFloor()) - navClear - MARGIN),
+  );
   // Guide sections with live counts. Every desk always lists — confirmed
   // off-air ones sit dimmed in their own section, so visible rows always
   // add up to the channel count.
@@ -766,10 +838,31 @@ export default function TvWidget() {
           ref={panelRef}
           className={`tv-pop tv-widget-panel sheen-panel fixed flex h-auto max-h-[calc(100dvh-2rem)] w-[min(26rem,94vw)] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl ${expanded ? 'z-[90]' : 'z-[70]'}`}
           style={expanded
-            ? { left: expandedPos.x, top: expandedPos.y, right: 'auto', bottom: 'auto', width: '900px', height: '600px', maxWidth: 'calc(100vw - 24px)', maxHeight: 'calc(100vh - 24px)' }
+            ? {
+              left: expandedPos.x,
+              top: expandedPos.y,
+              right: 'auto',
+              bottom: 'auto',
+              width: expandedWidth,
+              height: expandedHeight,
+              maxWidth: `calc(100vw - ${MARGIN * 2}px)`,
+              maxHeight: `calc(100dvh - ${expandedPos.y + navClear + MARGIN}px)`,
+            }
             : (miniPos
-              ? { left: miniPos.x, top: miniPos.y, right: 'auto', bottom: 'auto', width: '26rem', maxWidth: '94vw', height: 'auto', maxHeight: '64dvh' }
-              : { bottom: (typeof window !== 'undefined' && window.innerWidth < 640) ? '7.5rem' : '0.75rem', [pos.x < (typeof window !== 'undefined' ? window.innerWidth : 1024) / 2 ? 'left' : 'right']: '0.75rem' })}
+              ? {
+                left: miniPos.x,
+                top: miniPos.y,
+                right: 'auto',
+                bottom: 'auto',
+                width: miniWidth,
+                maxWidth: `calc(100vw - ${MARGIN * 2}px)`,
+                height: 'auto',
+                maxHeight: `calc(100dvh - ${miniPos.y + navClear + MARGIN}px)`,
+              }
+              : {
+                bottom: `calc(${navClear + MARGIN}px)`,
+                [onLeft ? 'left' : 'right']: `${MARGIN}px`,
+              })}
         >
           {/* Gold top-edge accent + ambient glow + terminal scanlines */}
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />

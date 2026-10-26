@@ -307,7 +307,7 @@ export default function GlobalSearch({ autoFocus = false, onNavigate = null }) {
       <div
         className="app-search-trigger flex h-9 w-full min-w-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3.5 text-[#8a8577] transition focus-within:border-[#d4af37]/60 hover:border-[#d4af37]/40 hover:text-[#d4af37]"
       >
-        <Search className="h-3.5 w-3.5 shrink-0" />
+        <Search className="h-3.5 w-3.5 shrink-0 text-[#d4af37]" />
         <input
           ref={inputRef}
           value={q}

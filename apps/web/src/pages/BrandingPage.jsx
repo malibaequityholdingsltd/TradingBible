@@ -118,7 +118,7 @@ export default function BrandingPage() {
 
   return (
     <AppLayout title={t('brd.pageTitle')}>
-      <div className="tb-page !max-w-[1400px]">
+      <div className="tb-page">
         {/* ── Presets ── */}
         <div className="rounded-3xl border border-white/8 bg-black/20 p-5 sm:p-6">
           <div className="flex items-center gap-2 text-sm font-bold text-[#f0ecdd]"><Sparkles className="h-4 w-4 text-[#d4af37]" /> One-click themes</div>

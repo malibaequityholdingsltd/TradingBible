@@ -17,7 +17,7 @@ function PublicShell({ titleKey, descKey, pointKeys, adPlacementId }) {
 
   return (
     <div className="min-h-screen bg-[#07070a] px-6 pt-24 pb-16 sm:pt-28">
-      <div className="mx-auto max-w-[96rem]">
+      <div className="mx-auto max-w-none">
         <Link to={homeTo} className="mb-10 flex items-center gap-2.5">
           <img src={TRADINGBIBLE_LOGO} alt="TradingBible logo" className="h-9 w-9 rounded-lg object-contain" />
           <span className="font-semibold">Trading<span className="tb-gold-text">Bible</span></span>
@@ -61,7 +61,7 @@ export const GuidesPage = () => {
   const homeTo = homeRouteForUser(isAuthed ? user : null);
   return (
     <div className="min-h-screen bg-[#07070a] px-6 pt-24 pb-16 sm:pt-28">
-      <div className="mx-auto max-w-[96rem]">
+      <div className="mx-auto max-w-none">
         <Link to={homeTo} className="mb-10 flex items-center gap-2.5">
           <img src={TRADINGBIBLE_LOGO} alt="TradingBible logo" className="h-9 w-9 rounded-lg object-contain" />
           <span className="font-semibold">Trading<span className="tb-gold-text">Bible</span></span>

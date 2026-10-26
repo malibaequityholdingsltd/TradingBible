@@ -24,7 +24,7 @@ export default function LanguageSwitcher({ className = '' }) {
           title={`${t('lang.switcher')} · ${lang.toUpperCase()}`}
           className={`grid h-9 w-9 place-items-center rounded-[10px] transition hover:scale-105 active:scale-95 ${className}`}
         >
-          <IosIcon icon={Languages} size="sm" tone="cyan" />
+          <IosIcon icon={Languages} size="sm" tone="theme" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="z-[80] max-h-[70vh] w-44 overflow-y-auto border-[#d4af37]/15 bg-[#111113] text-[#e9e7df]">

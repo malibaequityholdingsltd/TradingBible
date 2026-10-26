@@ -78,7 +78,7 @@ function Nav({ homeTo, isAuthed, platformName }) {
 
   return (
     <header className={`fixed inset-x-0 top-[var(--header-h)] z-40 border-b border-[#d4af37]/15 bg-[#07070a] ${scrolled ? 'shadow-[0_8px_32px_rgba(0,0,0,0.35)]' : ''}`}>
-      <div className="mx-auto flex w-full max-w-[96rem] items-center justify-between gap-2 overflow-hidden px-3 py-3 sm:gap-4 sm:px-6 sm:py-4">
+      <div className="mx-auto flex w-full max-w-none items-center justify-between gap-2 overflow-hidden px-3 py-3 sm:gap-4 sm:px-6 sm:py-4">
         <Link to={homeTo} className="flex min-w-0 shrink-0 items-center gap-2.5">
           <img src={LOGO} alt={`${brand} logo`} className="h-9 w-9 shrink-0 rounded-xl object-contain gold-glow sm:h-10 sm:w-10" />
           <span className="hidden truncate text-xl font-extrabold tracking-tight text-[#e9e7df] sm:inline sm:text-2xl">{first ? `${first} ` : ''}<span className="tb-gold-text">{last}</span></span>
@@ -104,7 +104,7 @@ function Nav({ homeTo, isAuthed, platformName }) {
               <GoldButton to="/pricing" className="hidden px-5 py-2.5 text-base sm:inline-flex"><span>{t('land.viewPricing')}</span></GoldButton>
               <Link to="/pricing" className="grid h-9 place-items-center whitespace-nowrap rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 text-[13px] font-bold text-[#0a0a0f] sm:hidden">{t('land.viewPricing')}</Link>
               <button onClick={() => setMenuOpen((o) => !o)} className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] transition hover:scale-105 active:scale-95 md:hidden" aria-label={t('nav.menu')} aria-expanded={menuOpen}>
-                <IosIcon icon={menuOpen ? X : Menu} size="sm" tone="gray" />
+                <IosIcon icon={menuOpen ? X : Menu} size="sm" tone="theme" />
               </button>
             </>
           )}
@@ -190,7 +190,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="relative mx-auto w-full max-w-[96rem] scroll-mt-24 px-4 py-16 sm:px-6 sm:py-24">
+      <section id="features" className="relative mx-auto w-full max-w-none scroll-mt-24 px-4 py-16 sm:px-6 sm:py-24">
         <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-px w-[min(80rem,92%)] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#d4af37]/25 to-transparent" />
         <div className="mb-10 max-w-2xl sm:mb-14">
           <Kicker icon={Sparkles}>{t('land.featKick')}</Kicker>
@@ -213,7 +213,7 @@ export default function LandingPage() {
       {/* How it works */}
       <section className={`relative overflow-hidden border-y border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/60' : 'bg-[#0a0a0f]/60'} backdrop-blur-sm`}>
         <div aria-hidden className="pointer-events-none absolute -top-32 left-1/2 h-64 w-[52rem] max-w-none -translate-x-1/2 rounded-full bg-[#d4af37]/[0.07] blur-[100px]" />
-        <div className="relative mx-auto w-full max-w-[96rem] px-4 py-16 sm:px-6 sm:py-24">
+        <div className="relative mx-auto w-full max-w-none px-4 py-16 sm:px-6 sm:py-24">
           <div className="mb-10 max-w-2xl sm:mb-12">
             <Kicker>{t('land.howKick', null, 'How it works')}</Kicker>
             <h2 className="tb-h2 text-balance text-3xl tracking-[-0.02em] sm:text-5xl">{t('land.howTitle', null, 'Live in three steps')}</h2>
@@ -238,7 +238,7 @@ export default function LandingPage() {
       </section>
 
       {/* SI coach band */}
-      <section id="ai" className="relative mx-auto w-full max-w-[96rem] scroll-mt-24 px-4 py-16 sm:px-6 sm:py-24">
+      <section id="ai" className="relative mx-auto w-full max-w-none scroll-mt-24 px-4 py-16 sm:px-6 sm:py-24">
         <div aria-hidden className="pointer-events-none absolute right-[-10%] top-1/2 h-[26rem] w-[26rem] -translate-y-1/2 rounded-full bg-[#d4af37]/[0.05] blur-[110px]" />
         <div className="relative grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
           <div>
@@ -247,13 +247,13 @@ export default function LandingPage() {
             <p className="tb-sub">{t('land.aiSub')}</p>
             <div className="mt-8 space-y-3">
               {[t('land.q1'), t('land.q2'), t('land.q3'), t('land.q4')].map((q) => (
-                <div key={q} className="tb-card group flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-[#e9e7df] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-colors hover:border-[#d4af37]/30"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#d4af37]/12 font-mono text-xs font-bold text-[#e8c95a]">›</span><span className="leading-snug">{q}</span></div>
+                <div key={q} className="tb-card group flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-[#e9e7df] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-colors hover:border-[#d4af37]/30"><IosIcon icon={ArrowRight} size="2xs" tone="blue" /><span className="leading-snug">{q}</span></div>
               ))}
             </div>
           </div>
           <Card className="relative overflow-hidden rounded-2xl p-6 shadow-[0_32px_80px_-32px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-7">
             <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
-            <div className="mb-5 flex items-center gap-2.5 text-[#d4af37]"><span className="grid h-9 w-9 place-items-center rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/10"><Bot className="h-5 w-5" /></span><span className="font-semibold tracking-tight text-[#f0ecdd]">{t('land.revTitle')}</span></div>
+            <div className="mb-5 flex items-center gap-2.5 text-[#d4af37]"><IosIcon icon={Bot} size="md" tone="purple" /><span className="font-semibold tracking-tight text-[#f0ecdd]">{t('land.revTitle')}</span></div>
             {[[t('land.m1'), 92], [t('land.m2'), 78], [t('land.m3'), 85]].map(([l, v]) => (
               <div key={l} className="mb-4">
                 <div className="mb-1.5 flex justify-between text-sm"><span className="text-[#b3ae9e]">{l}</span><span className="font-mono font-semibold text-[#e8c95a]">{v}/100</span></div>
@@ -268,7 +268,7 @@ export default function LandingPage() {
       {/* Academy band */}
       <section id="academy" className={`relative scroll-mt-24 overflow-hidden border-y border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/60' : 'bg-[#0a0a0f]/60'} backdrop-blur-sm`}>
         <div aria-hidden className="pointer-events-none absolute -left-40 top-0 h-[22rem] w-[22rem] rounded-full bg-[#d4af37]/[0.06] blur-[110px]" />
-        <div className="relative mx-auto grid w-full max-w-[96rem] items-center gap-8 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-2 lg:gap-14">
+        <div className="relative mx-auto grid w-full max-w-none items-center gap-8 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-2 lg:gap-14">
           <div>
             <Kicker icon={GraduationCap}>{t('land.acadKick', null, 'TradingBible Academy')}</Kicker>
             <h2 className="tb-h2 text-balance text-3xl tracking-[-0.02em] sm:text-5xl sm:leading-[1.05]">{t('land.acadTitle', null, 'A school run by SI')}</h2>
@@ -287,7 +287,7 @@ export default function LandingPage() {
             ].map((c) => (
               <Card key={c.title} hover className="group relative overflow-hidden rounded-2xl p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#d4af37]/30">
                 <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/35 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                <span className="mb-3 grid h-10 w-10 place-items-center rounded-xl border border-[#d4af37]/20 bg-gradient-to-b from-[#d4af37]/20 to-[#d4af37]/[0.06] text-[#e8c95a]"><c.icon className="h-5 w-5" /></span>
+                <IosIcon icon={c.icon} size="md" seed={c.title} className="mb-3 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-105" />
                 <h3 className="font-semibold tracking-tight text-[#f0ecdd]">{c.title}</h3>
                 <p className="mt-1 text-sm leading-relaxed text-[#8a8577]">{c.body}</p>
               </Card>
@@ -297,7 +297,7 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials */}
-      <section className="relative mx-auto w-full max-w-[96rem] px-4 py-16 sm:px-6 sm:py-24">
+      <section className="relative mx-auto w-full max-w-none px-4 py-16 sm:px-6 sm:py-24">
         <div aria-hidden className="pointer-events-none absolute left-1/2 top-8 h-px w-[min(60rem,88%)] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#d4af37]/20 to-transparent" />
         <div className="mb-10 text-center sm:mb-12">
           <h2 className="tb-h2 mx-auto max-w-2xl text-3xl tracking-[-0.02em] sm:text-4xl">{t('land.trustedBy')}</h2>
@@ -324,12 +324,12 @@ export default function LandingPage() {
       {/* Pricing preview */}
       <section id="pricing" className={`relative scroll-mt-24 overflow-hidden border-t border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/60' : 'bg-[#0a0a0f]/60'} backdrop-blur-sm`}>
         <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[20rem] w-[54rem] max-w-none -translate-x-1/2 rounded-full bg-[#d4af37]/[0.07] blur-[120px]" />
-        <div className="relative mx-auto w-full max-w-[96rem] px-4 py-16 sm:px-6 sm:py-24">
+        <div className="relative mx-auto w-full max-w-none px-4 py-16 sm:px-6 sm:py-24">
           <div className="mb-10 text-center sm:mb-12">
             <h2 className="tb-h2 text-balance text-3xl tracking-[-0.02em] sm:text-5xl">{t('price.chooseEdge')}</h2>
             <p className="tb-sub mx-auto">{t('price.sub')}</p>
           </div>
-          <div className="mx-auto grid max-w-5xl items-stretch gap-5 md:grid-cols-3">
+          <div className="grid w-full items-stretch gap-5 md:grid-cols-3">
             {PLANS.map((raw) => {
               const p = translatePlan(t, raw);
               return (
@@ -349,7 +349,7 @@ export default function LandingPage() {
                   </div>
                   <div className="mt-5 flex items-end gap-1.5"><span className="tb-gold-text font-mono text-4xl font-bold tracking-tight">${p.price}</span><span className="mb-1.5 text-sm text-[#8a8577]">/{p.period}</span></div>
                   <div className="my-5 h-px bg-gradient-to-r from-[#d4af37]/30 via-[#d4af37]/10 to-transparent" />
-                  <ul className="flex-1 space-y-2.5 text-sm text-[#b3ae9e]">{p.features.slice(0, 4).map((f) => <li key={f} className="flex gap-2.5"><span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border border-[#d4af37]/25 bg-[#d4af37]/12"><Check className="h-3 w-3 text-[#e8c95a]" /></span><span className="leading-snug">{f}</span></li>)}</ul>
+                  <ul className="flex-1 space-y-2.5 text-sm text-[#b3ae9e]">{p.features.slice(0, 4).map((f) => <li key={f} className="flex gap-2.5"><IosIcon icon={Check} size="2xs" tone="green" className="mt-0.5" /><span className="leading-snug">{f}</span></li>)}</ul>
                   <Link to="/pricing" className={`mt-7 flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-bold transition active:scale-[0.98] ${p.highlight ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_12px_32px_-10px_rgba(212,175,55,0.7)] hover:brightness-105' : 'border border-[#d4af37]/25 text-[#e9e7df] hover:border-[#d4af37]/60 hover:bg-[#d4af37]/[0.06]'}`}>{p.cta} <ArrowRight className="h-4 w-4" /></Link>
                 </Card>
               );

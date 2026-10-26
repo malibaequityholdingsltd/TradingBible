@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { AreaChart, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 'recharts';
-import { TrendingUp, TrendingDown, Wallet, Target, Activity, ShieldAlert, Trophy, Percent, Plug, RefreshCw, Landmark, ArrowRight, LayoutDashboard, ListOrdered, LineChart, Grid2x2, MonitorPlay, PlusCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Plug, ArrowRight, LineChart, Grid2x2, MonitorPlay, PlusCircle } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { fmtMoney } from '@/lib/mockData';
 import { useI18n } from '@/lib/i18n';
@@ -12,6 +12,7 @@ import AccountBalances from '@/components/AccountBalances';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { AdSlot } from '@/lib/ads/components.jsx';
 import { PageBar, Card, StatGrid, EmptyState, GoldButton, GhostButton, SectionHead, Skeleton, CardSkeleton } from '@/components/ui-kit';
+import { IosIcon } from '@/components/IosIcon';
 
 const GOLD = '#d4af37';
 
@@ -34,7 +35,6 @@ function GuideBanner() {
   if (dismissed || pct === null || pct >= 24) return null;
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#d4af37]/25 bg-gradient-to-r from-[#d4af37]/[0.08] to-transparent p-4">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#d4af37]/15 text-[#d4af37]">✦</span>
       <div className="min-w-0 flex-1">
         <div className="text-sm font-semibold text-[#f0ecdd]">New here? Run the Pro Guide.</div>
         <div className="text-xs text-[#8a8577]">24 missions across the full portal — {pct}/24 done.</div>
@@ -45,14 +45,11 @@ function GuideBanner() {
   );
 }
 
-function DashStat({ icon: Icon, label, value, delta, positive }) {
+function DashStat({ label, value, delta, positive }) {
   return (
     <div className="tb-card tb-card-hover sheen-panel p-4 sm:p-5">
       <div className="flex items-center justify-between gap-2">
         <span className="truncate text-[11px] font-bold uppercase tracking-wider text-[#8a8577] sm:text-xs">{label}</span>
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#f4e6a8]/25 to-[#c99a25]/10 text-[#d4af37] ring-1 ring-[#d4af37]/25">
-          <Icon className="h-4 w-4" />
-        </span>
       </div>
       <div className="mt-3 truncate font-mono text-xl font-bold text-[#f0ecdd] sm:text-2xl">{value}</div>
       {delta && (
@@ -125,14 +122,14 @@ export default function DashboardPage() {
         <GuideBanner />
         <AccountBalances />
         <StatGrid cols={4}>
-          <DashStat icon={Wallet} label={t('dash.perfPnl')} value={fmtMoney(stats.balance - 100000)} delta={t('dash.syncedN', { n: stats.totalTrades })} positive={stats.balance >= 100000} />
-          <DashStat icon={Activity} label={t('dash.daily')} value={fmtMoney(stats.dailyPnl)} delta={t('dash.today')} positive={stats.dailyPnl >= 0} />
-          <DashStat icon={Activity} label={t('dash.weekly')} value={fmtMoney(stats.weeklyPnl)} delta={t('dash.last7')} positive={stats.weeklyPnl >= 0} />
-          <DashStat icon={Activity} label={t('dash.monthly')} value={fmtMoney(stats.monthlyPnl)} delta={t('dash.last30')} positive={stats.monthlyPnl >= 0} />
-          <DashStat icon={Percent} label={t('dash.winRate')} value={`${stats.winRate}%`} delta={stats.winRate >= 50 ? t('dash.aboveTarget') : t('dash.belowTarget')} positive={stats.winRate >= 50} />
-          <DashStat icon={Target} label={t('dash.profitFactor')} value={stats.profitFactor.toFixed(2)} delta={stats.profitFactor >= 1.5 ? t('dash.healthyEdge') : t('dash.needsWork')} positive={stats.profitFactor >= 1.5} />
-          <DashStat icon={ShieldAlert} label={t('dash.maxDd')} value={`${stats.drawdown}%`} delta={stats.drawdown > -10 ? t('dash.withinLimits') : t('dash.elevated')} positive={stats.drawdown > -10} />
-          <DashStat icon={Trophy} label={t('dash.traderScore')} value={`${stats.traderScore}/100`} delta={t('dash.aiComputed')} positive />
+          <DashStat label={t('dash.perfPnl')} value={fmtMoney(stats.balance - 100000)} delta={t('dash.syncedN', { n: stats.totalTrades })} positive={stats.balance >= 100000} />
+          <DashStat label={t('dash.daily')} value={fmtMoney(stats.dailyPnl)} delta={t('dash.today')} positive={stats.dailyPnl >= 0} />
+          <DashStat label={t('dash.weekly')} value={fmtMoney(stats.weeklyPnl)} delta={t('dash.last7')} positive={stats.weeklyPnl >= 0} />
+          <DashStat label={t('dash.monthly')} value={fmtMoney(stats.monthlyPnl)} delta={t('dash.last30')} positive={stats.monthlyPnl >= 0} />
+          <DashStat label={t('dash.winRate')} value={`${stats.winRate}%`} delta={stats.winRate >= 50 ? t('dash.aboveTarget') : t('dash.belowTarget')} positive={stats.winRate >= 50} />
+          <DashStat label={t('dash.profitFactor')} value={stats.profitFactor.toFixed(2)} delta={stats.profitFactor >= 1.5 ? t('dash.healthyEdge') : t('dash.needsWork')} positive={stats.profitFactor >= 1.5} />
+          <DashStat label={t('dash.maxDd')} value={`${stats.drawdown}%`} delta={stats.drawdown > -10 ? t('dash.withinLimits') : t('dash.elevated')} positive={stats.drawdown > -10} />
+          <DashStat label={t('dash.traderScore')} value={`${stats.traderScore}/100`} delta={t('dash.aiComputed')} positive />
         </StatGrid>
 
         {/* Command deck — every list, widget and desk, one tap away */}
@@ -143,9 +140,7 @@ export default function DashboardPage() {
               to={d.to}
               className="tb-card tb-card-hover sheen-panel group flex min-w-0 items-center gap-3 p-3.5 sm:p-4"
             >
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#f4e6a8]/25 to-[#c99a25]/10 text-[#d4af37] ring-1 ring-[#d4af37]/25 transition group-hover:scale-105">
-                <d.icon className="h-5 w-5" />
-              </span>
+              <IosIcon icon={d.icon} size="md" seed={d.key} className="transition group-hover:scale-105" />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-bold text-[#f0ecdd]">{t(d.key, null, d.fallback)}</span>
                 <span className="block truncate text-[11px] text-[#8a8577]">{d.blurb}</span>
@@ -198,7 +193,6 @@ export default function DashboardPage() {
         {isSubscriber && (
           <Link to="/app/wallet" className="tb-card tb-card-hover flex items-center justify-between gap-4 p-5">
             <div className="flex min-w-0 items-center gap-4">
-              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Landmark className="h-6 w-6" /></div>
               <div className="min-w-0">
                 <h3 className="font-semibold text-[#f0ecdd]">{t('nav.wallet')}</h3>
                 <p className="truncate text-sm text-[#8a8577]">{t('wal.subtitle')}</p>

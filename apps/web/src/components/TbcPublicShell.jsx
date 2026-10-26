@@ -48,7 +48,7 @@ export default function TbcPublicShell({ children, active = '', contained = true
   return (
     <div className="at-shell min-h-screen bg-transparent pt-[calc(var(--header-h)+126px)] text-[var(--at-ink)] md:pt-[calc(var(--header-h)+96px)]">
       <header className="fixed inset-x-0 top-[var(--header-h)] z-40 border-b border-[var(--at-line-soft)] bg-[var(--at-topbar-bg)] backdrop-blur-2xl">
-        <div className="mx-auto flex max-w-[96rem] items-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-6">
+        <div className="mx-auto flex max-w-none items-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-6">
           <Link to={homeTo} className="flex shrink-0 items-center gap-2.5" aria-label="TradingBible home">
             <span className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-xl border border-[var(--at-line-strong)] bg-[var(--at-gold-soft)]">
               <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-7 w-7 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
@@ -95,7 +95,7 @@ export default function TbcPublicShell({ children, active = '', contained = true
         </div>
 
         <div className="border-t border-[var(--at-line-soft)] bg-[var(--at-soft)] px-3 py-1.5 sm:px-6">
-          <div className="mx-auto flex max-w-[96rem] flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--at-mut)] sm:justify-start">
+          <div className="mx-auto flex max-w-none flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--at-mut)] sm:justify-start">
             <span className="text-[var(--at-gold)]">{TBC_PROPOSAL.phase}</span>
             <span>No token issued</span>
             <span className="hidden sm:inline">No sale open</span>
@@ -106,7 +106,7 @@ export default function TbcPublicShell({ children, active = '', contained = true
         <div aria-hidden className="h-px bg-gradient-to-r from-transparent via-[var(--at-gold)]/50 to-transparent" />
       </header>
 
-      <main className={contained ? 'mx-auto w-full max-w-[88rem] px-3 pb-16 sm:px-6' : 'pb-16'}>
+      <main className={contained ? 'mx-auto w-full max-w-none px-3 pb-16 sm:px-6' : 'pb-16'}>
         {children}
       </main>
       <Footer />

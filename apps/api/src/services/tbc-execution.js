@@ -1,16 +1,17 @@
 import { mkdir, readFile, rename, writeFile } from 'fs/promises';
 import path from 'path';
-import { randomBytes } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 import { findTbcDocument, tbcDocuments, tbcDocumentRoot } from '../data/tbc-documents.js';
 import { writeExecutedDocx } from './tbc-executed-docx.js';
+import { supabaseConfigured, supabaseRest } from '../utils/supabaseClient.js';
+import logger from '../utils/logger.js';
 
-// Durable execution register for the controlled legal instruments.
+// Durable execution register. Production uses Supabase (service-role only);
+// the JSON register remains as a local-development / outage fallback.
 //
-// It lives beside the source documents, outside the web bundle and outside
-// git. A JSON file is deliberate: the API runs as one process and the record
-// is small. It is NOT a substitute for an append-only, multi-party evidence
-// store; replace this adapter before production execution.
-
+// The current-state row lives in public.tbc_execution_records and every new
+// workflow event is appended to public.tbc_execution_events. The event table
+// is append-only and keeps a SHA-256 chain over each document's event stream.
 const STORE_DIR = path.join(tbcDocumentRoot, '.execution');
 const STORE_FILE = path.join(STORE_DIR, 'register.json');
 const VERSION = 1;
@@ -24,29 +25,102 @@ function emptyRegister() {
 	return { version: VERSION, updatedAt: null, documents: {} };
 }
 
-async function readRegister() {
-	try {
-		const raw = await readFile(STORE_FILE, 'utf8');
-		const parsed = JSON.parse(raw);
-		if (!parsed || typeof parsed !== 'object') return emptyRegister();
-		return {
-			version: VERSION,
-			updatedAt: parsed.updatedAt || null,
-			documents: parsed.documents && typeof parsed.documents === 'object' ? parsed.documents : {},
-		};
-	} catch (err) {
-		if (err?.code === 'ENOENT') return emptyRegister();
-		throw err;
-	}
+function readRegisterFile() {
+	return readFile(STORE_FILE, 'utf8')
+		.then((raw) => {
+			const parsed = JSON.parse(raw);
+			if (!parsed || typeof parsed !== 'object') return emptyRegister();
+			return {
+				version: VERSION,
+				updatedAt: parsed.updatedAt || null,
+				documents: parsed.documents && typeof parsed.documents === 'object' ? parsed.documents : {},
+			};
+		})
+		.catch((err) => {
+			if (err?.code === 'ENOENT') return emptyRegister();
+			throw err;
+		});
 }
 
-async function writeRegister(register) {
+async function writeRegisterFile(register) {
 	await mkdir(STORE_DIR, { recursive: true });
 	const next = { ...register, version: VERSION, updatedAt: new Date().toISOString() };
 	const tmp = `${STORE_FILE}.${process.pid}.${randomBytes(5).toString('hex')}.tmp`;
 	await writeFile(tmp, `${JSON.stringify(next, null, 2)}\n`, { mode: 0o600 });
 	await rename(tmp, STORE_FILE);
 	return next;
+}
+
+function executionFromRow(row) {
+	const payload = row?.payload && typeof row.payload === 'object' ? row.payload : {};
+	return {
+		...payload,
+		provider: row.provider || payload.provider || 'docusign',
+		envelopeId: row.envelope_id || payload.envelopeId || '',
+		providerStatus: row.provider_status || payload.providerStatus || '',
+		approvalStatus: row.approval_status || payload.approvalStatus || 'not_requested',
+		approvalNote: row.approval_note || payload.approvalNote || '',
+		approvalBy: row.approval_by || payload.approvalBy || '',
+		approvalAt: row.approval_at || payload.approvalAt || null,
+		completedAt: row.completed_at || payload.completedAt || null,
+		lastSyncedAt: row.last_synced_at || payload.lastSyncedAt || null,
+		createdAt: payload.createdAt || row.created_at || null,
+		recipients: Array.isArray(payload.recipients) ? payload.recipients : [],
+		events: Array.isArray(payload.events) ? payload.events : [],
+	};
+}
+
+function rowFromExecution(slug, execution) {
+	const doc = findTbcDocument(slug);
+	return {
+		slug,
+		document_number: doc?.number || execution.number || slug,
+		visibility: doc?.visibility || execution.visibility || 'internal',
+		envelope_id: execution.envelopeId || null,
+		provider: execution.provider || 'docusign',
+		provider_status: execution.providerStatus || null,
+		approval_status: execution.approvalStatus || 'not_requested',
+		approval_note: execution.approvalNote || null,
+		approval_by: execution.approvalBy || null,
+		approval_at: execution.approvalAt || null,
+		completed_at: execution.completedAt || null,
+		last_synced_at: execution.lastSyncedAt || null,
+		payload: execution,
+		updated_at: new Date().toISOString(),
+	};
+}
+
+function useDatabase() {
+	return supabaseConfigured();
+}
+
+async function readRegister() {
+	if (!useDatabase()) return readRegisterFile();
+	const rows = await supabaseRest('/rest/v1/tbc_execution_records', {
+		query: { select: '*', order: 'updated_at.asc', limit: 1000 },
+	});
+	const documents = {};
+	let updatedAt = null;
+	for (const row of Array.isArray(rows) ? rows : []) {
+		if (!row?.slug) continue;
+		documents[row.slug] = executionFromRow(row);
+		if (row.updated_at && (!updatedAt || row.updated_at > updatedAt)) updatedAt = row.updated_at;
+	}
+	return { version: VERSION, updatedAt, documents };
+}
+
+async function writeRegister(register) {
+	if (!useDatabase()) return writeRegisterFile(register);
+	const docs = Object.entries(register.documents || {});
+	if (!docs.length) return { ...register, version: VERSION, updatedAt: new Date().toISOString() };
+	const rows = docs.map(([slug, execution]) => rowFromExecution(slug, execution));
+	await supabaseRest('/rest/v1/tbc_execution_records', {
+		method: 'POST',
+		body: rows,
+		prefer: 'resolution=merge-duplicates,return=representation',
+		query: { on_conflict: 'slug' },
+	});
+	return { ...register, version: VERSION, updatedAt: new Date().toISOString() };
 }
 
 async function mutate(fn) {
@@ -58,6 +132,61 @@ async function mutate(fn) {
 	});
 	writeQueue = task.catch(() => {});
 	return task;
+}
+
+function eventHash({ slug, seq, event, prevHash, createdAt }) {
+	return createHash('sha256')
+		.update(JSON.stringify({
+			slug,
+			seq,
+			eventType: event.type,
+			actor: event.actor || null,
+			detail: event.detail || null,
+			payload: event.payload || {},
+			prevHash: prevHash || null,
+			createdAt,
+		}))
+		.digest('hex');
+}
+
+async function persistEvent(slug, event) {
+	if (!useDatabase() || !event?.type) return;
+	try {
+		const rows = await supabaseRest('/rest/v1/tbc_execution_events', {
+			query: { select: 'seq,event_type,created_at,hash', slug: `eq.${slug}`, order: 'seq.desc', limit: 20 },
+		});
+		const recent = Array.isArray(rows) ? rows : [];
+		const eventAt = Date.parse(event.at || '');
+		const duplicate = recent.some((row) => {
+			if (row.event_type !== event.type) return false;
+			const rowAt = Date.parse(row.created_at || '');
+			return Number.isFinite(eventAt) && Number.isFinite(rowAt) && Math.abs(rowAt - eventAt) < 1000;
+		});
+		if (duplicate) return;
+		const previous = recent[0] || null;
+		const seq = (Number(previous?.seq) || 0) + 1;
+		const createdAt = event.at || new Date().toISOString();
+		const hash = eventHash({ slug, seq, event, prevHash: previous?.hash || null, createdAt });
+		await supabaseRest('/rest/v1/tbc_execution_events', {
+			method: 'POST',
+			body: {
+				slug,
+				seq,
+				event_type: event.type,
+				actor: event.actor || null,
+				detail: event.detail || null,
+				payload: event.payload || {},
+				prev_hash: previous?.hash || null,
+				hash,
+				created_at: createdAt,
+			},
+			prefer: 'return=minimal',
+		});
+	} catch (err) {
+		// The current-state row is authoritative for the admin UI. An evidence
+		// append failure is logged and must not roll back a signature workflow.
+		logger.error('[tbc] execution event append failed', slug, String(err?.message || err));
+	}
 }
 
 function defaultSignersFor(doc) {
@@ -211,6 +340,7 @@ export async function saveRecipients(slug, recipients) {
 			routingOrder: Math.max(1, Math.min(99, Number(recipient.routingOrder) || 1)),
 		}));
 
+	let appendedEvent = null;
 	const { result } = await mutate((register) => {
 		const existing = register.documents[slug] || {};
 		const previous = new Map((existing.recipients || []).map((recipient) => [recipient.id, recipient]));
@@ -219,17 +349,19 @@ export async function saveRecipients(slug, recipients) {
 			const current = previous.get(fallback.id) || {};
 			return next ? { ...current, ...next } : { ...current, ...fallback };
 		});
+		appendedEvent = { at: new Date().toISOString(), type: 'workflow.saved', detail: `${merged.filter((r) => r.selected).length} signer(s) selected` };
 		register.documents[slug] = {
 			...existing,
 			recipients: merged,
 			updatedAt: new Date().toISOString(),
 			events: [
 				...(Array.isArray(existing.events) ? existing.events : []),
-				{ at: new Date().toISOString(), type: 'workflow.saved', detail: `${merged.filter((r) => r.selected).length} signer(s) selected` },
+				appendedEvent,
 			].slice(-100),
 		};
 		return summarizeExecution(doc, register.documents[slug]);
 	});
+	await persistEvent(slug, appendedEvent);
 	return result;
 }
 
@@ -240,9 +372,11 @@ export async function markEnvelopeCreated(slug, { envelopeId, providerStatus, re
 		err.status = 404;
 		throw err;
 	}
+	let appendedEvent = null;
 	const { result } = await mutate((register) => {
 		const existing = register.documents[slug] || {};
 		const now = new Date().toISOString();
+		appendedEvent = { at: now, type: 'docusign.envelope.created', detail: `Envelope ${envelopeId} · ${providerStatus}` };
 		register.documents[slug] = {
 			...existing,
 			provider: 'docusign',
@@ -258,22 +392,25 @@ export async function markEnvelopeCreated(slug, { envelopeId, providerStatus, re
 			}),
 			events: [
 				...(Array.isArray(existing.events) ? existing.events : []),
-				{ at: now, type: 'docusign.envelope.created', detail: `Envelope ${envelopeId} · ${providerStatus}` },
+				appendedEvent,
 			].slice(-100),
 		};
 		return summarizeExecution(doc, register.documents[slug]);
 	});
+	await persistEvent(slug, appendedEvent);
 	return result;
 }
 
 export async function updateProviderStatus(slug, { providerStatus, recipients, completedAt, eventType = 'docusign.sync', detail = '' }) {
 	const doc = findTbcDocument(slug);
 	if (!doc) return null;
+	let appendedEvent = null;
 	let result;
 	({ result } = await mutate((register) => {
 		const existing = register.documents[slug] || {};
 		const now = new Date().toISOString();
 		const status = String(providerStatus || existing.providerStatus || '').toLowerCase();
+		appendedEvent = { at: now, type: eventType, detail: detail || `Provider status: ${status || 'unknown'}` };
 		register.documents[slug] = {
 			...existing,
 			provider: 'docusign',
@@ -286,11 +423,12 @@ export async function updateProviderStatus(slug, { providerStatus, recipients, c
 			}),
 			events: [
 				...(Array.isArray(existing.events) ? existing.events : []),
-				{ at: now, type: eventType, detail: detail || `Provider status: ${status || 'unknown'}` },
+				appendedEvent,
 			].slice(-100),
 		};
 		return summarizeExecution(doc, register.documents[slug]);
 	}));
+	await persistEvent(slug, appendedEvent);
 	if (result?.state === 'executed') {
 		try {
 			await writeExecutedDocx(doc, result);
@@ -316,6 +454,7 @@ export async function recordApproval(slug, { status, note, actor }) {
 		err.status = 404;
 		throw err;
 	}
+	let appendedEvent = null;
 	const { result } = await mutate((register) => {
 		const existing = register.documents[slug] || {};
 		if (normalized !== 'not_requested' && displayStateFor(existing) !== 'executed' && !APPROVAL_STATES.has(existing.approvalStatus)) {
@@ -324,6 +463,7 @@ export async function recordApproval(slug, { status, note, actor }) {
 			throw err;
 		}
 		const now = new Date().toISOString();
+		appendedEvent = { at: now, type: 'approval.recorded', detail: `${normalized}${note ? ` · ${String(note).slice(0, 180)}` : ''}` };
 		register.documents[slug] = {
 			...existing,
 			approvalStatus: normalized,
@@ -332,11 +472,12 @@ export async function recordApproval(slug, { status, note, actor }) {
 			approvalAt: normalized === 'not_requested' ? null : now,
 			events: [
 				...(Array.isArray(existing.events) ? existing.events : []),
-				{ at: now, type: 'approval.recorded', detail: `${normalized}${note ? ` · ${String(note).slice(0, 180)}` : ''}` },
+				appendedEvent,
 			].slice(-100),
 		};
 		return summarizeExecution(doc, register.documents[slug]);
 	});
+	await persistEvent(slug, appendedEvent);
 	return result;
 }
 

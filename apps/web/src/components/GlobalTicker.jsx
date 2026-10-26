@@ -12,9 +12,8 @@ function fmtPrice(n) {
 // below are skeleton placeholders shown for a heartbeat before live data
 // arrives — never presented as prices (no change shown until live).
 const TICKER_SYMBOLS = [
-  'BTCUSD', 'ETHUSD', 'SOLUSD', 'EURUSD', 'GBPUSD', 'USDJPY', 'GBPJPY',
-  'AUDUSD', 'XAUUSD', 'XAGUSD', 'WTIUSD', 'NAS100', 'US30', 'SPX500',
-  'AAPL', 'NVDA', 'TSLA', 'MSFT',
+  'BTCUSD', 'ETHUSD', 'EURUSD', 'GBPUSD',
+  'XAUUSD', 'NAS100', 'SPX500', 'US30',
 ];
 
 // Slim top strip (36px + safe-area). Height comes from --header-h, which

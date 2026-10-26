@@ -211,3 +211,17 @@ comment on table public.tbc_execution_events is
   'Append-only hash-chained execution evidence. Never update or delete.';
 comment on table public.tbc_audit_events is
   'Append-only platform audit stream. Service-role only.';
+
+-- One evidence hash per document chain. Makes retried event appends idempotent.
+create unique index if not exists tbc_execution_events_slug_hash_idx
+  on public.tbc_execution_events (slug, hash);
+
+-- API access: service role only. RLS still denies anon/authenticated.
+grant select, insert, update, delete on public.tbc_execution_records to service_role;
+grant select, insert on public.tbc_execution_events to service_role;
+grant select, insert, update, delete on public.tbc_allocations to service_role;
+grant select, insert, update, delete on public.tbc_vesting_schedules to service_role;
+grant select, insert, update, delete on public.tbc_sale_orders to service_role;
+grant select, insert, update, delete on public.tbc_governance_proposals to service_role;
+grant select, insert, update, delete on public.tbc_governance_votes to service_role;
+grant select, insert on public.tbc_audit_events to service_role;

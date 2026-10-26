@@ -144,7 +144,7 @@ function StaffLayout({ children, title, user }) {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-[96rem] flex-1 px-4 pb-4 pt-[84px] sm:px-5 sm:pb-5 sm:pt-[92px] lg:px-7 lg:pt-[100px] xl:px-8 xl:pt-[104px] 2xl:px-12">
+        <main className="mx-auto w-full max-w-none flex-1 px-4 pb-4 pt-[84px] sm:px-5 sm:pb-5 sm:pt-[92px] lg:px-7 lg:pt-[100px] xl:px-8 xl:pt-[104px] 2xl:px-12">
           {children}
         </main>
       </div>

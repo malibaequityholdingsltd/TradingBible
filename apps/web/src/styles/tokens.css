@@ -5,6 +5,9 @@
 
 :root {
   --tb-gold: #d4af37;
+  /* Glyph colour for header/theme-tinted iOS icons; recalculated from the
+     active accent so light accents keep dark glyphs and dark accents white. */
+  --tb-theme-glyph: var(--tb-gold);
   --tb-gold-hi: #f4e6a8;
   --tb-gold-deep: #a67c1e;
   --tb-ink: #f0ecdd;
@@ -36,6 +39,7 @@
 }
 
 html.light {
+  --tb-theme-glyph: var(--tb-gold-deep);
   --tb-ink: #232830;
   --tb-body: #454d5c;
   --tb-muted: #545a65;
@@ -76,12 +80,14 @@ html.light .funded-start-btn {
   .ios-spring:active { transform: none; }
 }
 
-/* ── iOS app-icon tiles ─────────────────────────────────────────────
-   Every navigation, feature and empty-state icon uses the same vivid
-   squircle: Apple-palette fill, glossy top light, inner ring and a crisp
-   glyph. The tint is supplied by the IosIcon component. */
+/* ── App icon tiles: flat, tinted, contemporary ───────────────────
+   A quiet tinted surface with a hairline border and an accent glyph.
+   No gloss, no bevel, no dated gradient. The tint comes from IosIcon. */
 .ios-icon {
   --ios-size: 40px;
+  --ios-bg: color-mix(in srgb, var(--ios-tint, #5B8DEF) 6%, #121318);
+  --ios-line: color-mix(in srgb, var(--ios-tint, #5B8DEF) 24%, rgba(255,255,255,0.06));
+  --ios-ink: color-mix(in srgb, var(--ios-tint, #5B8DEF) 88%, #fff);
   position: relative;
   display: inline-grid;
   flex: 0 0 auto;
@@ -89,59 +95,45 @@ html.light .funded-start-btn {
   width: var(--ios-size);
   height: var(--ios-size);
   overflow: hidden;
-  border-radius: calc(var(--ios-size) * 0.28);
-  background-color: var(--ios-tint, #0A84FF);
-  background-image:
-    linear-gradient(155deg,
-      color-mix(in srgb, var(--ios-tint, #0A84FF) 78%, white) 0%,
-      var(--ios-tint, #0A84FF) 42%,
-      color-mix(in srgb, var(--ios-tint, #0A84FF) 76%, black) 100%);
-  box-shadow:
-    0 3px 8px -2px rgba(0, 0, 0, 0.42),
-    0 1px 1px rgba(0, 0, 0, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.34),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.16);
+  border: 1px solid var(--ios-line);
+  border-radius: calc(var(--ios-size) * 0.26);
+  background: var(--ios-bg);
+  box-shadow: 0 6px 16px -14px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.04);
   isolation: isolate;
   transform: translateZ(0);
-  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.22s ease;
+  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.22s ease, border-color 0.22s ease;
 }
-.ios-icon::before {
-  content: '';
-  position: absolute;
-  inset: 1px 1px 47% 1px;
-  z-index: 0;
-  border-radius: calc(var(--ios-size) * 0.24);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.06));
-  pointer-events: none;
-}
+.ios-icon::before { display: none; }
 .ios-icon::after {
   content: '';
   position: absolute;
   inset: 0;
   z-index: 1;
   border-radius: inherit;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   pointer-events: none;
 }
 .ios-icon > .ios-icon-glyph {
   position: relative;
   z-index: 2;
-  width: 52%;
-  height: 52%;
-  color: var(--ios-glyph, #fff);
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.22));
+  width: 50%;
+  height: 50%;
+  color: var(--ios-glyph, var(--ios-ink));
 }
 .ios-icon > .ios-icon-content {
   position: relative;
   z-index: 2;
-  color: var(--ios-glyph, #fff);
+  color: var(--ios-glyph, var(--ios-ink));
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: calc(var(--ios-size) * 0.34);
   font-weight: 800;
   line-height: 1;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+html.light .ios-icon {
+  --ios-bg: color-mix(in srgb, var(--ios-tint, #5B8DEF) 4%, #fffdf8);
+  --ios-line: color-mix(in srgb, var(--ios-tint, #5B8DEF) 16%, #e4ded0);
+  --ios-ink: color-mix(in srgb, var(--ios-tint, #5B8DEF) 60%, #15181d);
+  box-shadow: 0 1px 2px rgba(60, 55, 40, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 .ios-icon--2xs { --ios-size: 18px; border-radius: 6px; }
 .ios-icon--xs { --ios-size: 24px; border-radius: 7px; }
@@ -152,13 +144,6 @@ html.light .funded-start-btn {
 .ios-icon--2xl { --ios-size: 64px; border-radius: 18px; }
 .ios-icon--plain { box-shadow: none; }
 .ios-icon--plain::after { display: none; }
-html.light .ios-icon {
-  box-shadow:
-    0 3px 8px -3px rgba(60, 55, 40, 0.34),
-    0 1px 1px rgba(60, 55, 40, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.46),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-}
 @media (prefers-reduced-motion: reduce) {
   .ios-icon { transition: none; }
 }
@@ -262,7 +247,7 @@ html.light .sheen-panel::after {
 }
 .tb-page {
   width: 100%;
-  max-width: 96rem;
+  max-width: none;
   margin-inline: auto;
   display: flex;
   flex-direction: column;
@@ -273,12 +258,12 @@ html.light .sheen-panel::after {
     linear-gradient(180deg, rgba(20, 20, 26, 0.55), rgba(12, 12, 17, 0.55));
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 1.25rem;
-  padding: 0.875rem;
+  padding: 0.5rem;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 @media (min-width: 640px) {
-  .tb-page { padding: 1.25rem; }
+  .tb-page { padding: 0.75rem; }
 }
 html.light .tb-page {
   background:
@@ -633,4 +618,33 @@ html.light [data-force-dark] .tb-gold-text, html.light [data-force-dark] * .tb-g
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+
+/* Raised Dashboard medallion — deliberately circular and bigger than the
+   standard tile, so it breaks the bottom-bar line. */
+.nav-dashboard-icon {
+  --ios-size: 66px;
+  border: 0;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 32% 22%, #fbf0c4 0%, #e6c65b 32%, #c9a227 64%, #8f6c12 100%);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.55), inset 0 -10px 18px rgba(79, 55, 4, 0.28);
+}
+.nav-dashboard-icon::after { display: none; }
+.nav-dashboard-icon .ios-icon-glyph { width: 54%; height: 54%; }
+
+
+/* Small navigation medallions: the same gold coin language as the raised
+   Dashboard, scaled down so every item stays inside the bar row. */
+.nav-medallion {
+  --ios-size: 40px;
+  border: 0;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 32% 22%, #fbf0c4 0%, #e6c65b 32%, #c9a227 64%, #8f6c12 100%);
+  box-shadow: 0 4px 12px -8px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -6px 10px rgba(79, 55, 4, 0.22);
+}
+.nav-medallion::after { display: none; }
+.nav-medallion .ios-icon-glyph { width: 50%; height: 50%; filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.18)); }
+html.light .nav-medallion {
+  box-shadow: 0 3px 9px -6px rgba(90, 70, 20, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -5px 8px rgba(79, 55, 4, 0.18);
 }

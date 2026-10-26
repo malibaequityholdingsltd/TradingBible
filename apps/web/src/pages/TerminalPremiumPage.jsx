@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Card } from '@/components/ui-kit';
+import { IosIcon } from '@/components/IosIcon';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useAuth } from '@/hooks/useAuth';
 import pb from '@/lib/pocketbaseClient';
@@ -335,7 +336,7 @@ export default function TerminalPremiumPage() {
   return (
     <AppLayout title="Terminal Pro">
       <TradingBibleTerminal symbol={symbol} account={{ id: workspace.risk.accountId }} features={features} autosave restoreWorkspace>
-        <div ref={pageRef} className="tb-page tb-term !max-w-[1700px]">
+        <div ref={pageRef} className="tb-page tb-term">
           {/* ── Phone hero (phone only): one compact row so the chart fits the viewport ── */}
           <div className="flex items-center gap-2 rounded-2xl border border-[#d4af37]/25 bg-[#0c0c11]/95 px-2.5 py-2 sm:hidden">
             <div className="w-28 shrink-0"><SymbolSearchPicker value={symbol} onChange={(s) => { patch({ symbol: s }); log(`symbol → ${s}`); }} buttonClassName="w-full justify-between !py-1.5 font-mono !text-xs font-bold" /></div>
@@ -354,7 +355,7 @@ export default function TerminalPremiumPage() {
                 <CircleDot className="h-2.5 w-2.5" /> {status === 'live' ? 'LIVE' : status.toUpperCase()}
               </span>
             )}
-            <Link to="/app/alerts" aria-label="Alerts" className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 text-[#8a8577] hover:text-[#d4af37]"><Bell className="h-4 w-4" /></Link>
+            <Link to="/app/alerts" aria-label="Alerts" className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] transition hover:scale-105"><IosIcon icon={Bell} size="sm" tone="theme" /></Link>
           </div>
           {/* ── Desk command strip (sm+ only) ── */}
           <div className="term-panel no-scrollbar hidden items-center gap-2 overflow-x-auto rounded-2xl border border-[#d4af37]/25 bg-[#0c0c11]/95 px-3 py-2 sm:flex">
@@ -388,15 +389,15 @@ export default function TerminalPremiumPage() {
                   <CircleDot className="h-3.5 w-3.5" /> {status === 'live' ? 'LIVE' : status.toUpperCase()}
                 </span>
               )}
-              <Link to="/app/alerts" aria-label="Alerts" className="grid h-11 w-11 place-items-center rounded-xl border border-white/10 text-[#8a8577] hover:text-[#d4af37]"><Bell className="h-5 w-5" /></Link>
+              <Link to="/app/alerts" aria-label="Alerts" className="grid h-11 w-11 place-items-center rounded-[10px] transition hover:scale-105"><IosIcon icon={Bell} size="md" tone="theme" /></Link>
             </div>
           </div>
 
           {/* ── Desk grid: rail + stage ── */}
-          <div className="grid grid-cols-1 items-start gap-4 2xl:grid-cols-[21rem_minmax(0,1fr)]">
+          <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[20rem_minmax(0,1fr)] 2xl:grid-cols-[21rem_minmax(0,1fr)]">
             {/* Left instrument rail — snap deck on phones, grid on sm+ */}
-            <div className="no-scrollbar -mx-1 flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 2xl:grid-cols-1">
-              <Card className="term-panel w-[84vw] shrink-0 snap-center !p-4 sm:w-auto">
+            <div className="no-scrollbar -mx-1 flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 xl:grid-cols-1">
+              <Card className="term-panel w-[84vw] shrink-0 snap-center !p-3 sm:w-auto">
                 <SectionTitle right={<Link to="/app/watchlists" className="text-xs font-semibold text-[#d4af37] hover:underline">Manage</Link>}>
                   Watchlist · {managedList ? managedList.name : 'local'}
                 </SectionTitle>
@@ -434,25 +435,26 @@ export default function TerminalPremiumPage() {
                 <p className="term-help term-faint mt-2">{cloudStatus === 'synced' ? 'Workspace saved ✓' : cloudStatus === 'syncing' ? 'Saving workspace…' : 'Workspace autosaves on this device'}</p>
               </Card>
 
-              <Card className="term-panel w-[84vw] shrink-0 snap-center !p-4 sm:w-auto">
+              <Card className="term-panel w-[84vw] shrink-0 snap-center !p-3 sm:w-auto">
                 <SectionTitle right={workspace.risk.accountId ? <span className="font-mono text-xs text-[#d4af37]">filtered</span> : null}>Account</SectionTitle>
                 <AccountPanel accountId={workspace.risk.accountId} onSelect={(aid) => patch({ risk: { ...workspace.risk, accountId: aid } })} />
               </Card>
 
-              <Card className="term-panel w-[84vw] shrink-0 snap-center !p-4 sm:w-auto">
+              <Card className="term-panel w-[84vw] shrink-0 snap-center !p-3 sm:w-auto">
                 <SectionTitle>Risk</SectionTitle>
                 <RiskPanel price={price} balance={0} />
               </Card>
             </div>
 
             {/* Center stage — first on phones so the chart fills the viewport */}
-            <div className="order-first min-w-0 space-y-4 2xl:order-none">
-              <Card className="term-panel !p-4 sm:!p-5">
+            <div className="order-first min-w-0 space-y-4 xl:order-none">
+              <Card className="term-panel !p-3 sm:!p-4">
                 <div className="tb-term-tabs" role="tablist" aria-label="Terminal views">
                   {visibleTabs.map((t) => (
                     <button key={t.id} role="tab" aria-selected={centerTab === t.id} onClick={() => patch({ centerTab: t.id })}
+                      aria-label={t.label}
                       className={`tb-term-tab ${centerTab === t.id ? 'tb-term-tab--active' : ''}`}>
-                      <t.icon className="h-4 w-4" /> {t.label}
+                      <IosIcon icon={t.icon} size="2xs" seed={t.id} /> <span className="tb-term-tab-label">{t.label}</span>
                     </button>
                   ))}
                 </div>

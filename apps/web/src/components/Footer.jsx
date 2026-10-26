@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Twitter, Facebook, Linkedin, Instagram, Youtube, LineChart, Lock, ShieldCheck } from 'lucide-react';
+import { IosIcon } from '@/components/IosIcon';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
 import { homeRouteForUser } from '@/lib/homeRoute';
@@ -95,12 +96,12 @@ const COLUMNS = [
 ];
 
 const SOCIALS = [
-  { label: 'Twitter', icon: Twitter, href: 'https://twitter.com/tradingbible' },
-  { label: 'Facebook', icon: Facebook, href: 'https://facebook.com/tradingbible' },
-  { label: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com/company/tradingbible' },
-  { label: 'Instagram', icon: Instagram, href: 'https://instagram.com/tradingbible' },
-  { label: 'YouTube', icon: Youtube, href: 'https://youtube.com/@tradingbible' },
-  { label: 'TikTok', icon: TikTokIcon, href: 'https://tiktok.com/@tradingbible' },
+  { label: 'Twitter', icon: Twitter, href: 'https://twitter.com/tradingbible', tone: 'blue' },
+  { label: 'Facebook', icon: Facebook, href: 'https://facebook.com/tradingbible', tone: 'blue' },
+  { label: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com/company/tradingbible', tone: 'cyan' },
+  { label: 'Instagram', icon: Instagram, href: 'https://instagram.com/tradingbible', tone: 'pink' },
+  { label: 'YouTube', icon: Youtube, href: 'https://youtube.com/@tradingbible', tone: 'red' },
+  { label: 'TikTok', icon: TikTokIcon, href: 'https://tiktok.com/@tradingbible', tone: 'gray' },
 ];
 
 export default function Footer() {
@@ -121,7 +122,7 @@ export default function Footer() {
   return (
     <footer className="at-scope tb-footer relative overflow-hidden border-t border-[var(--at-line)] bg-[var(--at-bg1)] text-[var(--at-ink)]">
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--at-line-strong)] to-transparent" />
-      <div className="mx-auto max-w-[96rem] px-6 pb-8 pt-12">
+      <div className="mx-auto max-w-none px-6 pb-8 pt-12">
         <div className="grid gap-8 border-b border-[var(--at-line-soft)] pb-8 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
           <div className="max-w-xl">
             <Link to={homeTo} className="mb-4 inline-flex items-center gap-2.5">
@@ -142,16 +143,17 @@ export default function Footer() {
               </p>
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-2">
-              {SOCIALS.map(({ label, icon: Icon, href }) => (
+              {SOCIALS.map(({ label, icon: Icon, href, tone }) => (
                 <a
                   key={label}
                   href={href}
                   target="_blank"
                   rel="noreferrer noopener"
                   aria-label={label}
-                  className="grid h-8 w-8 place-items-center rounded-[10px] border border-[var(--at-line)] bg-[var(--at-panel)] text-[var(--at-mut)] transition hover:-translate-y-0.5 hover:border-[var(--at-line-strong)] hover:text-[var(--at-gold)]"
+                  title={label}
+                  className="rounded-[9px] transition hover:-translate-y-0.5"
                 >
-                  <Icon className="h-4 w-4" strokeWidth={1.9} />
+                  <IosIcon icon={Icon} size="sm" tone={tone} />
                 </a>
               ))}
             </div>
@@ -159,7 +161,7 @@ export default function Footer() {
 
           <aside className="rounded-2xl border border-[var(--at-line)] bg-[var(--at-panel)] p-5 shadow-[var(--at-shadow)]">
             <div className="flex items-center gap-2 text-[var(--at-gold)]">
-              <LineChart className="h-4 w-4" />
+              <IosIcon icon={LineChart} size="2xs" tone="blue" />
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.16em]">{t('foot.startEdge')}</span>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-[var(--at-mut)]">{t('foot.paidNote', null, 'Paid plans only. No free trial. Cancel anytime.')}</p>
@@ -170,8 +172,8 @@ export default function Footer() {
               {t('foot.createAcct')}
             </Link>
             <div className="mt-4 grid gap-1.5 border-t border-[var(--at-line-soft)] pt-3 text-[10px] text-[var(--at-mut-2)]">
-              <span className="flex items-center gap-1.5"><ShieldCheck className="h-3 w-3 text-[var(--at-green)]" /> Broker data is read-only by default.</span>
-              <span className="flex items-center gap-1.5"><Lock className="h-3 w-3 text-[var(--at-gold)]" /> TBC token operations remain disabled.</span>
+              <span className="flex items-center gap-1.5"><IosIcon icon={ShieldCheck} size="2xs" tone="green" /> Broker data is read-only by default.</span>
+              <span className="flex items-center gap-1.5"><IosIcon icon={Lock} size="2xs" tone="yellow" /> TBC token operations remain disabled.</span>
             </div>
           </aside>
         </div>

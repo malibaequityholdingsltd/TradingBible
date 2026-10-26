@@ -16,18 +16,18 @@ function LegalShell({ title, subtitle, children }) {
   return (
     <div className="min-h-screen bg-[#07070a] pt-[var(--header-h)] text-[#e9e7df]">
       <header className="border-b border-[#d4af37]/10 bg-[#07070a]/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[96rem] items-center justify-end px-6 py-4">
+        <div className="mx-auto flex max-w-none items-center justify-end px-6 py-4">
           <Link to={homeTo} className="flex items-center gap-1.5 text-sm text-[#8a8577] transition hover:text-[#e9e7df]"><ArrowLeft className="h-4 w-4" /> Back home</Link>
         </div>
       </header>
 
-      <div className="mx-auto max-w-[72rem] px-6 py-16">
+      <div className="mx-auto max-w-none px-4 py-12 sm:px-6 sm:py-16">
         <PageHero
           kicker={`Legal · Last updated ${UPDATED}`}
           title={title}
           subtitle={subtitle}
         />
-        <div className="mt-10 space-y-8">{children}</div>
+        <div className="mt-8 grid grid-cols-1 items-start gap-5 xl:grid-cols-2 xl:gap-6">{children}</div>
 
         <div className="mt-16 flex items-center gap-3 border-t border-[#d4af37]/10 pt-8">
           <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-11 w-11 rounded-lg object-contain" />

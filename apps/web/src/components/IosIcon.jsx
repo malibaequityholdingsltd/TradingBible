@@ -2,36 +2,37 @@ import React from 'react';
 
 /* One icon language for the whole product.
  *
- * iOS-style app tiles: a vivid squircle, a soft top gloss and a crisp white
- * glyph. Tints come from the Apple system palette so the nav, feature cards,
- * empty states and landing page all feel like the same operating system.
- * Pass `tone` for a named Apple colour, or `tint` for an exact hex. When
- * neither is supplied the seed (usually the label/title) picks a stable tint.
+ * A quiet tinted tile with a hairline edge and an accent glyph. Tints are
+ * muted so navigation and content icons feel related without turning into a
+ * rainbow of app-store badges. Pass `tone` for a named colour, `tint` for an
+ * exact hex, or a `seed` (usually the label) to pick a stable muted tint.
  */
 export const IOS_TINTS = {
-  blue: '#0A84FF',
-  orange: '#FF9F0A',
-  purple: '#BF5AF2',
-  green: '#30D158',
-  gray: '#8E8E93',
-  teal: '#64D2FF',
-  pink: '#FF375F',
-  red: '#FF453A',
-  indigo: '#5E5CE6',
-  brown: '#AC8E68',
-  yellow: '#FFD60A',
-  mint: '#63E6E2',
-  cyan: '#32ADE6',
-  sky: '#5AC8FA',
-  white: '#F2F2F7',
+  blue: '#5B8DEF',
+  orange: '#E8A44C',
+  purple: '#9B7EDE',
+  green: '#45BE96',
+  gray: '#8B93A1',
+  teal: '#4DB6AC',
+  pink: '#E8789A',
+  red: '#E56767',
+  indigo: '#6F7DE8',
+  brown: '#A98467',
+  yellow: '#DDB44A',
+  mint: '#63CDBD',
+  cyan: '#4FAFD1',
+  sky: '#6CB8E8',
+  white: '#D8DCE3',
+  gold: '#C6A14A',
+  amber: '#D99A3E',
+  warning: '#D98236',
+  theme: 'var(--tb-gold, #D4AF37)',
 };
 
 export const IOS_TONE_ORDER = [
   'blue', 'orange', 'purple', 'green', 'pink', 'teal',
   'indigo', 'red', 'mint', 'brown', 'yellow', 'cyan',
 ];
-
-const DARK_GLYPH_TONES = new Set(['yellow', 'mint', 'teal', 'gray', 'white']);
 
 export function iosToneFor(seed = '') {
   let hash = 0;
@@ -60,8 +61,11 @@ export function IosIcon({
 }) {
   const resolvedTone = tone && IOS_TINTS[tone] ? tone : (seed ? iosToneFor(seed) : 'blue');
   const color = tint || IOS_TINTS[resolvedTone] || IOS_TINTS.blue;
-  const darkGlyph = glyph === 'dark' || glyph === true || (!glyph && DARK_GLYPH_TONES.has(resolvedTone));
-  const glyphColor = darkGlyph ? '#1C1C1E' : (typeof glyph === 'string' && glyph.startsWith('#') ? glyph : '#FFFFFF');
+  const explicitGlyph = typeof glyph === 'string' && glyph.startsWith('#') ? glyph : null;
+  const glyphColor = explicitGlyph
+    || (glyph === 'dark' || glyph === true ? '#1C1C1E' : null)
+    || (glyph === 'light' ? '#FFFFFF' : null)
+    || (resolvedTone === 'theme' ? 'var(--tb-theme-glyph, var(--tb-gold))' : 'var(--ios-ink)');
 
   return (
     <span
