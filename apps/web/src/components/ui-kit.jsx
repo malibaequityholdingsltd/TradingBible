@@ -79,11 +79,11 @@ export function SectionHead({ title, sub, right }) {
 	// navigation and actions; card headings remain quiet in both themes.
 	return (
 		<div className="mb-2.5 flex flex-wrap items-center justify-between gap-1.5">
-			<div className="flex min-w-0 flex-col gap-0.5">
+			<div className="flex w-full min-w-0 flex-col gap-0.5 sm:w-auto sm:flex-1">
 				<h3 className="truncate text-[13px] font-semibold tracking-[-0.005em] text-[#f0ecdd] [html.light_&]:text-[#1a1d21]">{title}</h3>
 				{sub && <p className="truncate text-[11px] leading-relaxed text-[#8a8577]">{sub}</p>}
 			</div>
-			{right}
+			{right && <div className="shrink-0">{right}</div>}
 		</div>
 	);
 }

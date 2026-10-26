@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { ArrowRight, Coins, FileText, ShieldCheck } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { AtBadge, AtButton } from '@/components/AtelierUI';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
+import ThemeSwitcher from '@/components/ThemeSwitcher';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { TBC_PROPOSAL } from '@/lib/tbcEcosystem';
 
@@ -41,13 +43,25 @@ export function TbcProposalNotice({ compact = false }) {
 
 export default function TbcPublicShell({ children, active = '', contained = true }) {
   const { user, isAuthed } = useAuth();
+  const headerRef = useRef(null);
+  const [headerH, setHeaderH] = useState(0);
+
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const measure = () => setHeaderH(el.getBoundingClientRect().height);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const homeTo = homeRouteForUser(isAuthed ? user : null);
   const ctaTo = isAuthed ? (user?.role === 'admin' ? '/admin/tbc' : '/app/tbc') : '/signup';
   const ctaLabel = isAuthed ? 'Open TBC' : 'Create account';
 
   return (
-    <div className="at-shell min-h-screen bg-transparent pt-[calc(var(--header-h)+126px)] text-[var(--at-ink)] md:pt-[calc(var(--header-h)+96px)]">
-      <header className="fixed inset-x-0 top-[var(--header-h)] z-40 border-b border-[var(--at-line-soft)] bg-[var(--at-topbar-bg)] backdrop-blur-2xl">
+    <div className="at-shell min-h-screen bg-transparent text-[var(--at-ink)]" style={{ paddingTop: `calc(var(--header-h) + ${headerH ? headerH + 12 : 126}px)` }}>
+      <header ref={headerRef} className="fixed inset-x-0 top-[var(--header-h)] z-40 border-b border-[var(--at-line-soft)] bg-[var(--at-topbar-bg)] backdrop-blur-2xl">
         <div className="mx-auto flex max-w-none items-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-6">
           <Link to={homeTo} className="flex shrink-0 items-center gap-2.5" aria-label="TradingBible home">
             <span className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-xl border border-[var(--at-line-strong)] bg-[var(--at-gold-soft)]">
@@ -77,6 +91,8 @@ export default function TbcPublicShell({ children, active = '', contained = true
 
           <div className="ml-auto flex shrink-0 items-center gap-1.5">
             <span className="hidden xl:block"><AtBadge tone="amber">No token issued</AtBadge></span>
+            <ThemeSwitcher inline className="text-[var(--at-mut)] hover:bg-[var(--at-soft)]" />
+            <LanguageSwitcher className="text-[var(--at-mut)] hover:bg-[var(--at-soft)]" />
             <Link to="/tbc/documents" className="hidden items-center gap-1.5 rounded-lg border border-[var(--at-line-soft)] px-2.5 py-1.5 text-[10px] font-semibold text-[var(--at-mut)] transition hover:border-[var(--at-line)] hover:text-[var(--at-ink)] sm:flex">
               <FileText className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Documents
             </Link>
@@ -84,8 +100,8 @@ export default function TbcPublicShell({ children, active = '', contained = true
           </div>
         </div>
 
-        <div className="overflow-x-auto border-t border-[var(--at-line-soft)] px-3 py-1.5 lg:hidden">
-          <div className="flex min-w-max gap-0.5">
+        <div className="border-t border-[var(--at-line-soft)] px-3 py-1.5 lg:hidden">
+          <div className="flex flex-wrap gap-1">
             {PUBLIC_NAV.map((item) => (
               <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => `rounded-md px-2.5 py-1 text-[10px] font-semibold ${isActive ? 'bg-[var(--at-gold-soft)] text-[var(--at-gold)]' : 'text-[var(--at-mut)]'}`}>
                 {item.label}

@@ -2460,3 +2460,7 @@ html[dir='rtl'] :where(input, textarea)::placeholder {
 @media (max-width: 359px) {
   .app-header-mobile-logo { display: none; }
 }
+
+/* Floating launchers never overlap each other's open sheet. */
+body[data-si-open='1'] .tv-tv-btn,
+body[data-tv-open='1'] .tv-chat-btn { display: none !important; }

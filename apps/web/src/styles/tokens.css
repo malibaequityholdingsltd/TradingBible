@@ -439,20 +439,12 @@ html.light .tb-card {
 
 .tb-scroll-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  overflow-x: auto;
+  overflow-x: visible;
   padding-bottom: 0.25rem;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
-.tb-scroll-row::-webkit-scrollbar { display: none; }
-@media (min-width: 640px) {
-  .tb-scroll-row { flex-wrap: wrap; overflow-x: visible; }
-}
-.tb-scroll-row > * { flex-shrink: 0; }
-@media (min-width: 640px) {
-  .tb-scroll-row > * { flex-shrink: 1; }
-}
+.tb-scroll-row > * { flex-shrink: 1; min-width: 0; }
 
 .tb-grid-auto { display: grid; gap: 1rem; grid-template-columns: 1fr; }
 @media (min-width: 640px) { .tb-grid-auto { grid-template-columns: repeat(2, 1fr); } }

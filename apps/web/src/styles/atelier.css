@@ -211,10 +211,27 @@ html.light .at-shell::after {
 }
 .at-pagebar-main {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 3px;
   min-width: 0;
   flex: 1;
+}
+.at-pagebar-title {
+  margin-top: 3px;
+  color: var(--at-ink);
+  font-family: "Space Grotesk", "Sora", sans-serif;
+  font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+}
+.at-pagebar-sub {
+  margin-top: 2px;
+  max-width: 58ch;
+  color: var(--at-mut);
+  font-size: 11px;
+  line-height: 1.55;
 }
 .at-pagebar-meta {
   display: flex;

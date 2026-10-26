@@ -191,7 +191,7 @@ function Inner() {
       )}
       {!open && (
         <button onClick={() => setOpen(true)} aria-label="Open Company Bible" title="Company Bible — full brand A–Z"
-          className="cb-scope group fixed bottom-[145px] right-3 z-[70] grid h-14 w-14 place-items-center rounded-full border border-[#d4af37]/40 bg-gradient-to-br from-[#141309] to-[#0c0c11] shadow-[0_8px_28px_rgba(0,0,0,0.5),0_0_24px_rgba(212,175,55,0.25)] transition-transform hover:scale-105">
+          className="cb-scope group fixed bottom-[145px] right-3 z-[70] hidden h-14 w-14 place-items-center rounded-full border border-[#d4af37]/40 bg-gradient-to-br from-[#141309] to-[#0c0c11] shadow-[0_8px_28px_rgba(0,0,0,0.5),0_0_24px_rgba(212,175,55,0.25)] transition-transform hover:scale-105 sm:grid">
           <Building2 className="h-6 w-6 text-[#d4af37] transition group-hover:text-[#f4e6a8]" />
           <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-1 font-mono text-[9px] font-black text-[#0a0a0f]">A–Z</span>
           {stored && <span className="absolute -bottom-0.5 -left-0.5 h-3 w-3 rounded-full border-2 border-[#0a0a0f] bg-emerald-400" />}

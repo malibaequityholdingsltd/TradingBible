@@ -88,6 +88,7 @@ function Nav({ homeTo, isAuthed, platformName }) {
           <a href="#features" className={navLink}>{t('land.features')}</a>
           <a href="#academy" className={navLink}>{t('nav.academy')}</a>
           <Link to="/pricing" className={navLink}>{t('land.pricing')}</Link>
+          <Link to="/investors" className={navLink}>Investors</Link>
           <Link to="/tbc" className={navLink}>TBC</Link>
           <Link to="/about" className={navLink}>{t('land.about')}</Link>
         </nav>
@@ -117,6 +118,7 @@ function Nav({ homeTo, isAuthed, platformName }) {
             <a href="#features" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]">{t('land.features')}</a>
             <a href="#academy" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]">{t('nav.academy')}</a>
             <Link to="/pricing" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#8a8577] transition-colors hover:bg-white/5 hover:text-[#f0ecdd]">{t('land.pricing')}</Link>
+            <Link to="/investors" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#d4af37] transition-colors hover:bg-white/5">Investor relations <span className="ml-1 font-mono text-[9px] uppercase tracking-wider text-[#8a8577]">Pre-IPO</span></Link>
             <Link to="/tbc" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#d4af37] transition-colors hover:bg-white/5">TBC</Link>
             <Link to="/about" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#c9c4b4] transition-colors hover:bg-white/5 hover:text-[#e9e7df]">{t('land.about')}</Link>
             <Link to="/login" onClick={() => setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm font-medium text-[#c9c4b4] transition-colors hover:bg-white/5 hover:text-[#e9e7df]">{t('land.login')}</Link>

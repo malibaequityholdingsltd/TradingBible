@@ -178,6 +178,29 @@ export default function Footer() {
           </aside>
         </div>
 
+        <div className="border-y border-[var(--at-line-soft)] py-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--at-gold)]">TB investor relations</span>
+              <span className="rounded-md border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-amber)]">Pre-IPO · not publicly traded</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              {[
+                ['TB stock', '/stock/TB'],
+                ['Investor centre', '/investors'],
+                ['Financials', '/investors/financials'],
+                ['IPO readiness', '/investors/ipo'],
+                ['Governance', '/investors/governance'],
+                ['Shareholder portal', '/investors/shareholders'],
+                ['IR contact', '/investors/contact'],
+              ].map(([label, to]) => (
+                <Link key={to} to={to} className="text-[10px] font-semibold text-[var(--at-mut)] transition hover:text-[var(--at-gold)]">{label}</Link>
+              ))}
+            </div>
+          </div>
+          <p className="mt-2 text-[9px] leading-relaxed text-[var(--at-mut-2)]">TB is a proposed future ticker. No share price, market capitalisation, trading volume, listing approval or regulatory approval is presented. TB equity and TBC are separate instruments.</p>
+        </div>
+
         <div className="grid grid-cols-2 gap-x-5 gap-y-8 py-9 sm:grid-cols-3 lg:grid-cols-7">
           {COLUMNS.map((col) => (
             <div key={col.headingKey}>

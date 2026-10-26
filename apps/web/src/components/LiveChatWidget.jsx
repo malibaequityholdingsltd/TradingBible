@@ -6,6 +6,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { meetsPlan } from '@/lib/entitlements';
 import { useI18n } from '@/lib/i18n';
 import { useIntegratedAi } from '@/hooks/use-integrated-ai';
+import { measureNavClearance, watchNavClearance } from '@/lib/navClearance';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 
 const BTN = 56; // button size in px
@@ -70,10 +71,23 @@ export default function LiveChatWidget() {
   const { messages, isStreaming, sendMessage, clearMessages } = useIntegratedAi();
   const WELCOME = t('aiw.welcome');
   const [open, setOpen] = useState(false);
+  // Keep the other floating launcher out of an open SI sheet.
+  useEffect(() => {
+    document.body.dataset.siOpen = open ? '1' : '';
+    return () => { delete document.body.dataset.siOpen; };
+  }, [open]);
   const [tab, setTab] = useState('coach');
   const [text, setText] = useState('');
   const [unread, setUnread] = useState(false);
+  const [navClear, setNavClear] = useState(0);
   const scrollRef = useRef(null);
+
+  // Keep the launcher and chat panel clear of whichever bottom bar is live.
+  useEffect(() => {
+    const measure = () => setNavClear(measureNavClearance());
+    measure();
+    return watchNavClearance(measure);
+  }, []);
 
   useEffect(() => {
     const handler = () => setOpen(true);
@@ -114,13 +128,16 @@ export default function LiveChatWidget() {
   const visibleMessages = [{ from: 'agent', text: WELCOME }, ...messages.map((m) => ({ from: m.role === 'user' ? 'you' : 'agent', text: m.content, images: m.images }))];
   const isFirstRun = visibleMessages.length <= 1;
   const coachTag = `${t('aiw.coach')} · Muse Spark`;
+  const phone = typeof window !== 'undefined' && window.innerWidth < 640;
+  const launcherBottom = Math.max(78, navClear + MARGIN);
+  const panelBottom = phone ? 120 : Math.max(MARGIN, navClear + MARGIN);
 
   return (
     <div className="tv-widget-root">
       {open && (
         <div
-          className="tv-chat-panel tv-pop fixed z-[70] flex h-[34rem] max-h-[calc(100dvh-2rem)] w-[min(25rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl"
-          style={{ bottom: (typeof window !== 'undefined' && window.innerWidth < 640) ? '7.5rem' : '0.75rem', right: '0.75rem' }}
+          className="tv-chat-panel tv-pop fixed z-[45] flex h-[34rem] max-h-[calc(100dvh-2rem)] w-[min(25rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl"
+          style={{ bottom: panelBottom, right: MARGIN }}
         >
           {/* Gold top-edge accent + ambient glow + terminal scanlines */}
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
@@ -298,8 +315,9 @@ export default function LiveChatWidget() {
           onClick={() => setOpen(true)}
           aria-label={t('aiw.openLabel')}
           title={t('aiw.openTitle')}
-          className="tv-chat-btn fixed bottom-[78px] right-1 z-[70] grid place-items-center overflow-hidden rounded-full border transition-transform hover:scale-105"
+          className="tv-chat-btn fixed right-1 z-[45] grid place-items-center overflow-hidden rounded-full border transition-transform hover:scale-105"
           style={{
+            bottom: launcherBottom,
             height: BTN,
             width: BTN,
             backgroundColor: isLight ? '#fffdf9' : '#0c0c11',

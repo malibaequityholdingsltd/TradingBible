@@ -210,7 +210,38 @@ export default function WatchlistsPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="layered-list overflow-x-auto no-scrollbar">
+                  <>
+                  <div className="space-y-2 sm:hidden">
+                    {rows.map((r) => {
+                      const pos = (numOrNull(r.changePercent) ?? 0) >= 0;
+                      return (
+                        <div key={r.symbol} className="rounded-xl border border-[#d4af37]/12 bg-[#0f0f14]/60 p-3">
+                          <div className="flex items-start gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="font-mono text-sm font-semibold text-[#f0ecdd]">{r.symbol}</div>
+                              <div className="truncate text-[10px] text-[#8a8577]">{r.name}</div>
+                            </div>
+                            <div className="shrink-0 text-right">
+                              <div className="font-mono text-sm text-[#e9e7df]">{fmt(r.price)}</div>
+                              <div className={`font-mono text-[11px] font-semibold ${pos ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {(() => { const c = numOrNull(r.changePercent); return c == null ? '—%' : `${c >= 0 ? '+' : ''}${c}%`; })()}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-white/5 pt-2 text-[10px] text-[#8a8577]">
+                            <span>H {fmt(r.high)}</span>
+                            <span>L {fmt(r.low)}</span>
+                            <span>Vol {fmtVol(r.volume)}</span>
+                            <span className="ml-auto inline-flex items-center gap-2">
+                              <Link to={`/app/terminal-pro?symbol=${encodeURIComponent(r.symbol)}`} aria-label={`Open ${r.symbol} in Terminal Pro`} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37]"><LineChart className="h-4 w-4" /></Link>
+                              <button onClick={() => removeSymbol(active.id, r.symbol)} aria-label={`Remove ${r.symbol}`} className="grid h-8 w-8 place-items-center rounded-lg border border-red-400/20 text-red-400"><X className="h-4 w-4" /></button>
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="layered-list hidden overflow-x-auto no-scrollbar sm:block">
                     <table className="w-full min-w-[560px] text-sm">
                       <thead><tr className="text-left text-[11px] uppercase tracking-wider text-[#8a8577]">
                         <th className="py-2">{t('wl.thSymbol')}</th><th className="py-2 text-right">{t('wl.thPrice')}</th><th className="py-2 text-right">{t('wl.thChange')}</th>
@@ -241,6 +272,7 @@ export default function WatchlistsPage() {
                       </tbody>
                     </table>
                   </div>
+                  </>
                 )}
               </>
             ) : <EmptyState icon={Star} title={t('wl.selectCreate')} />}

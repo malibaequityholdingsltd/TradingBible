@@ -66,11 +66,11 @@ export default function EvaluationsPanel() {
 
   return (
     <div id="evaluations" className="scroll-mt-24">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2">
         <h3 className="flex items-center gap-2 whitespace-nowrap text-sm font-bold uppercase tracking-wide text-[#f0ecdd]"><Trophy className="h-4 w-4 text-[#d4af37]" /> My evaluations</h3>
-        <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+        <span className="hidden h-px min-w-6 flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent sm:block" />
         <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{attempts.length}</span>
-        <a href="/app/challenges" className="shrink-0 text-xs font-semibold text-[#d4af37] hover:underline">Get a ticket</a>
+        <a href="/app/challenges" className="ml-auto shrink-0 text-xs font-semibold text-[#d4af37] hover:underline">Get a ticket</a>
       </div>
       {attempts.length === 0 ? (
         <p className="mt-3 text-sm text-[#8a8577]">No evaluations yet — pick a ticket on the Challenges page to start.</p>

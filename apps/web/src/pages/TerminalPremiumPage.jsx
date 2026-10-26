@@ -396,8 +396,8 @@ export default function TerminalPremiumPage() {
           {/* ── Desk grid: rail + stage ── */}
           <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[20rem_minmax(0,1fr)] 2xl:grid-cols-[21rem_minmax(0,1fr)]">
             {/* Left instrument rail — snap deck on phones, grid on sm+ */}
-            <div className="no-scrollbar -mx-1 flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 xl:grid-cols-1">
-              <Card className="term-panel w-[84vw] shrink-0 snap-center !p-3 sm:w-auto">
+            <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <Card className="term-panel min-w-0 !p-3">
                 <SectionTitle right={<Link to="/app/watchlists" className="text-xs font-semibold text-[#d4af37] hover:underline">Manage</Link>}>
                   Watchlist · {managedList ? managedList.name : 'local'}
                 </SectionTitle>
@@ -435,12 +435,12 @@ export default function TerminalPremiumPage() {
                 <p className="term-help term-faint mt-2">{cloudStatus === 'synced' ? 'Workspace saved ✓' : cloudStatus === 'syncing' ? 'Saving workspace…' : 'Workspace autosaves on this device'}</p>
               </Card>
 
-              <Card className="term-panel w-[84vw] shrink-0 snap-center !p-3 sm:w-auto">
+              <Card className="term-panel min-w-0 !p-3">
                 <SectionTitle right={workspace.risk.accountId ? <span className="font-mono text-xs text-[#d4af37]">filtered</span> : null}>Account</SectionTitle>
                 <AccountPanel accountId={workspace.risk.accountId} onSelect={(aid) => patch({ risk: { ...workspace.risk, accountId: aid } })} />
               </Card>
 
-              <Card className="term-panel w-[84vw] shrink-0 snap-center !p-3 sm:w-auto">
+              <Card className="term-panel min-w-0 !p-3">
                 <SectionTitle>Risk</SectionTitle>
                 <RiskPanel price={price} balance={0} />
               </Card>
@@ -571,7 +571,7 @@ export default function TerminalPremiumPage() {
                 </div>
                 {/* Phone command bar (phone only): one compact row under the tabs */}
                 <div className="mt-2 rounded-2xl border border-[#d4af37]/25 bg-[#0c0c11]/95 p-1.5 sm:hidden">
-                  <div className="no-scrollbar flex items-center gap-1 overflow-x-auto">
+                  <div className="flex flex-wrap items-center gap-1">
                     {needsTF && TFS.map((tf) => (
                       <button key={tf} onClick={() => patch({ timeframe: tf })}
                         className={`min-h-[40px] shrink-0 whitespace-nowrap rounded-lg px-3 font-mono text-xs font-bold ${timeframe === tf ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577]'}`}>{tf}</button>

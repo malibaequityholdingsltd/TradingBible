@@ -94,6 +94,11 @@ const ProGuidePage = lazy(() => import('./pages/ProGuidePage'));
 const TbcPublicPage = lazy(() => import('./pages/TbcPublicPage'));
 const TbcAppPage = lazy(() => import('./pages/TbcAppPage'));
 const TbcChainPage = lazy(() => import('./pages/TbcChainPage'));
+const StockTbPage = lazy(() => import('./pages/StockTbPage'));
+const InvestorRelationsPage = lazy(() => import('./pages/InvestorRelationsPage'));
+const ShareholderPortalPage = lazy(() => import('./pages/ShareholderPortalPage'));
+const AdminInvestorRelationsPage = lazy(() => import('./pages/AdminInvestorRelationsPage'));
+const AdminEquityPage = lazy(() => import('./pages/AdminEquityPage'));
 const AdminTbcPage = lazy(() => import('./pages/AdminTbcPage'));
 const AdminTbcDocumentsPage = lazy(() => import('./pages/AdminTbcDocumentsPage'));
 const ChallengesPage = lazy(() => import('./pages/ChallengesPage'));
@@ -359,10 +364,21 @@ function RoutesWithBoundary() {
                     <Route path="/chain/validators" element={<TbcChainPage view="validators" />} />
                     <Route path="/chain/governance" element={<TbcChainPage view="governance" />} />
                     <Route path="/developers/tbc" element={<TbcChainPage view="developers" />} />
+                    <Route path="/stock" element={<Navigate to="/stock/TB" replace />} />
+                    <Route path="/stock/TB" element={<StockTbPage />} />
+                    <Route path="/investors" element={<InvestorRelationsPage section="overview" />} />
+                    <Route path="/investors/financials" element={<InvestorRelationsPage section="financials" />} />
+                    <Route path="/investors/governance" element={<InvestorRelationsPage section="governance" />} />
+                    <Route path="/investors/ipo" element={<InvestorRelationsPage section="ipo" />} />
+                    <Route path="/investors/news" element={<InvestorRelationsPage section="news" />} />
+                    <Route path="/investors/documents" element={<InvestorRelationsPage section="documents" />} />
+                    <Route path="/investors/contact" element={<InvestorRelationsPage section="contact" />} />
+                    <Route path="/investors/shareholders" element={<ShareholderPortalPage />} />
                     {/* Public staff profile — opened by scanning an ID-card QR */}
                     <Route path="/staff/:id" element={<StaffProfileGate />} />
                     {/* Merged surfaces — old deep links land in their new home */}
                     <Route path="/app/tbc" element={<Protected><TbcAppPage /></Protected>} />
+                    <Route path="/app/support" element={<Navigate to="/app/tbc/support" replace />} />
                     <Route path="/app/tbc/:tab" element={<Protected><TbcAppPage /></Protected>} />
                     <Route path="/app/defi" element={<Navigate to="/app/wallet?tab=crypto" replace />} />
                     <Route path="/app/market" element={<Navigate to="/app/signals?tab=market" replace />} />
@@ -431,6 +447,8 @@ function RoutesWithBoundary() {
                     <Route path="/admin/wallet" element={<AdminProtected><AdminWallet /></AdminProtected>} />
                     <Route path="/admin/company" element={<AdminProtected><AdminCompany /></AdminProtected>} />
                     <Route path="/admin/tbc" element={<AdminProtected><AdminTbcPage /></AdminProtected>} />
+                    <Route path="/admin/investor-relations" element={<AdminProtected><AdminInvestorRelationsPage /></AdminProtected>} />
+                    <Route path="/admin/equity" element={<AdminProtected><AdminEquityPage /></AdminProtected>} />
                     <Route path="/admin/legal-vault" element={<AdminProtected><AdminTbcDocumentsPage /></AdminProtected>} />
                     <Route path="/staff/*" element={<StaffProtected><StaffPortal /></StaffProtected>} />
                 </Routes>

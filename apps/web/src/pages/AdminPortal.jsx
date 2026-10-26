@@ -942,12 +942,12 @@ export function AdminUsers() {
       {loading ? <Spinner /> : (
         <>
           <div className="glass overflow-x-auto rounded-2xl">
-            <table className="w-full min-w-[600px] text-sm">
+            <table className="tb-mobile-actions w-full sm:min-w-[600px] text-sm">
               <thead>
                 <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
                   <th className="px-4 py-3"><input type="checkbox" checked={allPageSelected} onChange={toggleAll} className="h-4 w-4 accent-[#d4af37]" /></th>
                   <th className="px-4 py-3 font-medium">User</th>
-                  <th className="px-4 py-3 font-medium">Plan</th>
+                  <th className="px-4 py-3 font-medium hidden sm:table-cell">Plan</th>
                   <th className="px-4 py-3 font-medium hidden sm:table-cell">Role</th>
                   <th className="px-4 py-3 font-medium hidden md:table-cell">Status</th>
                   <th className="px-4 py-3 font-medium hidden lg:table-cell">Joined</th>
@@ -973,10 +973,11 @@ export function AdminUsers() {
                           {u.phone && (
                             <div className="truncate font-mono text-[11px] text-[#6a665a] max-w-[200px]">{u.phone}</div>
                           )}
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5 sm:hidden">{planBadge(u.plan)}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">{planBadge(u.plan)}</td>
+                    <td className="px-4 py-3 hidden sm:table-cell">{planBadge(u.plan)}</td>
                     <td className="px-4 py-3 hidden sm:table-cell">
                       {u.user_settings?.suspended && <Badge color="red"><Ban className="h-3 w-3" /> Suspended</Badge>}
                       {u.role === 'admin'
@@ -1427,12 +1428,30 @@ export function AdminBilling() {
 
       {loading ? <Spinner /> : (
         <Collapse title="Active Subscriptions" sub="Plans, status and actions" defaultOpen={true}>
-          <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-sm tabular-nums">
+          <div className="space-y-2 px-3 pb-3 sm:hidden">
+            {paid.length ? paid.map((u) => (
+              <div key={u.id} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14]/60 p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="truncate text-[#f0ecdd]">{displayName(u)}</div>
+                    <div className="truncate text-xs text-[#8a8577]">{u.email}</div>
+                  </div>
+                  <Badge color={u.subscriptionStatus === 'active' ? 'green' : 'muted'}>{u.subscriptionStatus || 'active'}</Badge>
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {planBadge(u.plan)}
+                  <button onClick={() => openPayments(u)} disabled={busy === `pay:${u.id}`} className="ml-auto rounded-lg border border-[#d4af37]/25 px-3 py-1.5 text-xs text-[#d4af37] disabled:opacity-60">Payments</button>
+                  <button onClick={() => cancelSub(u)} disabled={busy === `cancel:${u.id}`} className="rounded-lg border border-red-500/35 px-3 py-1.5 text-xs text-red-400 disabled:opacity-60">Cancel</button>
+                </div>
+              </div>
+            )) : <p className="py-6 text-center text-sm text-[#8a8577]">No paid subscriptions yet.</p>}
+          </div>
+          <div className="hidden overflow-x-auto sm:block">
+          <table className="tb-mobile-actions w-full sm:min-w-[560px] text-sm tabular-nums">
             <thead className="sticky top-0 z-10">
                 <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
                   <th className="px-5 py-2.5 font-semibold">User</th>
-                  <th className="px-5 py-2.5 font-semibold">Plan</th>
+                  <th className="px-5 py-2.5 font-semibold hidden sm:table-cell">Plan</th>
                   <th className="px-5 py-2.5 font-semibold hidden sm:table-cell">Status</th>
                   <th className="px-5 py-2.5 font-semibold hidden md:table-cell">Period End</th>
                   <th className="px-5 py-2.5 font-semibold hidden lg:table-cell">Sub ID</th>
@@ -1445,8 +1464,9 @@ export function AdminBilling() {
                     <td className="px-5 py-3">
                       <div className="text-[#f0ecdd] truncate max-w-[140px]">{displayName(u)}</div>
                       <div className="text-xs text-[#8a8577] truncate max-w-[160px]">{u.email}</div>
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5 sm:hidden">{planBadge(u.plan)}</div>
                     </td>
-                    <td className="px-5 py-3">{planBadge(u.plan)}</td>
+                    <td className="px-5 py-3 hidden sm:table-cell">{planBadge(u.plan)}</td>
                     <td className="px-5 py-3 hidden sm:table-cell"><Badge color={u.subscriptionStatus === 'active' ? 'green' : 'muted'}>{u.subscriptionStatus || 'active'}</Badge></td>
                     <td className="px-5 py-3 font-mono text-xs text-[#8a8577] hidden md:table-cell">{u.currentPeriodEnd ? u.currentPeriodEnd.slice(0, 10) : '—'}</td>
                     <td className="px-5 py-3 font-mono text-xs text-[#6a665a] max-w-[120px] truncate hidden lg:table-cell">{u.subscriptionId || '—'}</td>
@@ -2729,7 +2749,7 @@ export function AdminApiKeys() {
       {loading ? <Spinner /> : (
         <div className="glass overflow-hidden rounded-2xl">
           <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-sm">
+          <table className="tb-mobile-actions w-full min-w-[560px] text-sm">
             <thead>
               <tr className="border-b border-[#d4af37]/12 bg-white/[0.02] text-left text-[11px] font-bold uppercase tracking-[0.14em] text-[#8a8577]">
                 <th className="px-5 py-3.5">Name</th>
@@ -3447,7 +3467,7 @@ export function AdminJobs() {
           </div>
           <p className="mb-2 text-[11px] leading-relaxed text-[#6a665a]">These are existing off-chain platform credits, not the proposed TBC token. They are not a fiat salary or evidence that any token has been issued. Cash compensation is handled separately through payroll or an employer of record.</p>
           <div className="overflow-x-auto -mx-2 px-2">
-            <table className="w-full min-w-[480px] text-sm">
+            <table className="tb-mobile-actions w-full min-w-[480px] text-sm">
               <thead>
                 <tr className="text-left text-[10px] uppercase tracking-wider text-[#5f5b50]">
                   <th className="pb-2 font-semibold">Staff</th>
@@ -3883,7 +3903,7 @@ export function AdminTvAds() {
       {/* Ad list */}
       <div className="at-card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="at-table w-full min-w-[720px]">
+          <table className="tb-mobile-actions at-table w-full min-w-[720px]">
             <thead>
               <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
                 <th className="px-5 py-3">Broadcast</th>
@@ -4026,7 +4046,7 @@ export function AdminTvAds() {
 
       <div className="at-card mt-5 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="at-table w-full min-w-[640px]">
+          <table className="tb-mobile-actions at-table w-full min-w-[640px]">
             <thead>
               <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
                 <th className="px-5 py-3">Channel</th>
@@ -4948,7 +4968,7 @@ export function AdminCompany() {
         ) : (
           <div className="mt-5 grid items-start gap-4 xl:grid-cols-[264px_minmax(0,1fr)]">
             <aside className="xl:sticky xl:top-[92px]">
-              <div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1 xl:grid xl:gap-1 xl:overflow-visible xl:pb-0">
+              <div className="grid grid-cols-2 gap-1.5 pb-1 sm:grid-cols-3 xl:grid-cols-1">
                 {COMPANY_SECTIONS_UI.map((sec) => {
                   const active = tab === sec.id;
                   const n = Object.keys(profile[sec.id] || {}).length;
@@ -4959,7 +4979,7 @@ export function AdminCompany() {
                     <button
                       key={sec.id}
                       onClick={() => setTab(sec.id)}
-                      className={`flex min-w-[162px] items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition xl:min-w-0 ${active ? 'border-[var(--at-line-strong)] bg-[var(--at-gold-soft)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]' : 'border-[var(--at-line-soft)] bg-[var(--at-soft)] hover:border-[var(--at-line)]'}`}
+                      className={`flex min-w-0 items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition ${active ? 'border-[var(--at-line-strong)] bg-[var(--at-gold-soft)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]' : 'border-[var(--at-line-soft)] bg-[var(--at-soft)] hover:border-[var(--at-line)]'}`}
                     >
                       <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg border ${active ? 'border-[var(--at-line)] bg-[var(--at-gold-soft)] text-[var(--at-gold)]' : 'border-[var(--at-line-soft)] bg-[var(--at-soft)] text-[var(--at-mut)]'}`}>
                         <Icon className="h-4 w-4" />

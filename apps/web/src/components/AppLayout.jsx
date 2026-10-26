@@ -57,6 +57,7 @@ const NAV_GROUPS = [
       { to: '/app/signals', labelKey: 'nav.signals', icon: Radar, tint: IOS.orange },
       { to: '/app/staking', labelKey: 'nav.staking', icon: Coins, tint: IOS.green },
       { to: '/app/tbc', labelKey: 'nav.tbc', icon: Coins, tint: IOS.gold },
+      { to: '/investors', labelKey: 'nav.investors', label: 'Investor relations', icon: Landmark, tint: IOS.gold },
       { to: '/leaderboard', labelKey: 'nav.leaderboard', icon: Medal, tint: IOS.purple },
       { to: '/app/economic-calendar', labelKey: 'nav.economic', icon: CalendarClock, tint: IOS.indigo },
     ],
@@ -234,7 +235,7 @@ export default function AppLayout({ children, title }) {
   );
 
   const renderFooterItem = (it, index) => {
-    const label = t(it.labelKey);
+    const label = it.label || t(it.labelKey);
     const base = 'app-nav-footer-link group relative flex h-[58px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg px-0.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]/60';
     const tile = (
       <span className="relative">
@@ -489,7 +490,7 @@ export default function AppLayout({ children, title }) {
         </nav>
         {/* Phone More sheet: the full list, grouped, one tap away. */}
         {moreOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={t('dock.more', null, 'More')}>
+          <div className="fixed inset-0 z-[85] lg:hidden" role="dialog" aria-modal="true" aria-label={t('dock.more', null, 'More')}>
             <div className="dock-fade absolute inset-0 bg-black/70" onClick={() => setMoreOpen(false)} />
             <div className="tb-sheet dock-sheet-up absolute inset-x-0 bottom-0 max-h-[78vh] overflow-y-auto rounded-t-[10px] border-t border-[#d4af37]/20 bg-[#0a0a0f] px-4 tabular-nums pb-[env(safe-area-inset-bottom)]">
               <div className="sticky top-0 bg-[#0a0a0f] pb-2 pt-2.5">
@@ -525,7 +526,7 @@ export default function AppLayout({ children, title }) {
                       <div className="grid grid-cols-3 gap-2">
                         {items.map((it) => {
                           const Icon = it.icon;
-                          const label = t(it.labelKey);
+                          const label = it.label || t(it.labelKey);
                           const tile = 'tile ios-spring flex min-h-[80px] flex-col items-center justify-center gap-1.5 rounded-[10px] border px-1 py-3 text-center tabular-nums';
                           const iosTile = (
                             <IosIcon icon={Icon} tint={it.tint} glyph={it.glyph} size="sm" className="shadow-[0_1px_6px_rgba(0,0,0,0.35)]" />

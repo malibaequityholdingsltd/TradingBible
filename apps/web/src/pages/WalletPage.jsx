@@ -443,10 +443,10 @@ export default function WalletPage() {
 			{bankTab === 'accounts' && (
 			<>
 			{/* ── Accounts: one card per safe, balance + number together ── */}
-			<div className="mb-3 flex items-baseline gap-3">
+			<div className="mb-3 flex flex-wrap items-center gap-2">
 				<h3 className="whitespace-nowrap font-mono text-sm font-bold uppercase tracking-widest text-[#f0ecdd]">{t('wal.accounts')}</h3>
-				<span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
-				<GhostButton onClick={() => setBankTab('send')} className="!px-3 !py-2 !text-xs"><Send className="h-4 w-4" /> {t('wal.sendMoney')}</GhostButton>
+				<span className="hidden h-px min-w-6 flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent sm:block" />
+				<GhostButton onClick={() => setBankTab('send')} className="ml-auto !px-3 !py-2 !text-xs"><Send className="h-4 w-4" /> {t('wal.sendMoney')}</GhostButton>
 			</div>
 			<div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
 				<div className="at-card relative overflow-hidden p-5">

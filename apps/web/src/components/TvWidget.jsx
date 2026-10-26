@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MonitorPlay, X, Play, Pause, Volume2, VolumeX, Radio, ChevronLeft, ChevronRight, Loader2, ListVideo, Lock, Crown, WifiOff, Clock, Bell, BellRing, Search, Maximize, Minimize, Megaphone, ExternalLink } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
+import { measureNavClearance, watchNavClearance } from '@/lib/navClearance';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -50,16 +51,10 @@ function tickerFloor() {
 // the desktop footer row above it; measure whichever is actually on screen so
 // every TV surface stays above the bar at every breakpoint.
 function dockClear() {
-  if (typeof window === 'undefined') return 0;
-  let clearance = 0;
-  for (const el of document.querySelectorAll('.tb-dock, .app-nav-footer')) {
-    const rect = el.getBoundingClientRect();
-    if (rect.height > 0 && rect.width > 0) {
-      clearance = Math.max(clearance, window.innerHeight - rect.top);
-    }
-  }
-  if (clearance > 0) return clearance;
-  return window.innerWidth >= 1024 ? 72 : 96;
+  const clearance = measureNavClearance();
+  // Err on the side of clearing the taller dock when no nav is measurable
+  // yet (for example during the first paint or a tablet breakpoint swap).
+  return clearance > 0 ? clearance : 96;
 }
 
 function clampPanelPos(x, y, panelW, panelH) {
@@ -82,6 +77,9 @@ function snapToEdge(x, y) {
   const bottom = h - BTN - MARGIN - dockClear();
   let cx = Math.min(Math.max(x, MARGIN), w - BTN - MARGIN);
   let cy = Math.min(Math.max(y, top), bottom);
+  // Phone composition is fixed: TV left, SI right. Never restore or drag the
+  // TV bubble back over the SI bubble or off the left edge.
+  if (w < 640) return { x: MARGIN, y: cy };
   const dl = cx - MARGIN;
   const dr = w - BTN - MARGIN - cx;
   const dt = cy - top;
@@ -124,6 +122,11 @@ export default function TvWidget() {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const [open, setOpen] = useState(false);
+  // Keep the SI launcher out of an open TV sheet.
+  useEffect(() => {
+    document.body.dataset.tvOpen = open ? '1' : '';
+    return () => { delete document.body.dataset.tvOpen; };
+  }, [open]);
   const [view, setView] = useState('ads'); // ads | channels | player
   const [expanded, setExpanded] = useState(() => {
     try {
@@ -224,13 +227,13 @@ export default function TvWidget() {
         Math.min(panelRef.current?.offsetHeight || EXPANDED_H, h - tickerFloor() - dockClear() - MARGIN * 2),
       ));
     };
+
+    // A breakpoint can swap the desktop footer for the floating phone dock
+    // after the window resize event has already fired. Re-measure the live
+    // nav after layout and whenever either bar changes size so a launcher or
+    // panel never ends up sitting on top of it.
     syncViewport();
-    window.addEventListener('resize', syncViewport);
-    window.addEventListener('orientationchange', syncViewport);
-    return () => {
-      window.removeEventListener('resize', syncViewport);
-      window.removeEventListener('orientationchange', syncViewport);
-    };
+    return watchNavClearance(syncViewport);
   }, []);
 
   // ── Data: channels + shared live broadcast state ──
@@ -803,6 +806,7 @@ export default function TvWidget() {
 
   // Panel anchoring side (SI arrangement): bottom to the launcher's side.
   const vw = viewport.w;
+  const isPhone = vw < 640;
   const navClear = dockClear();
   const onLeft = pos.x < vw / 2;
   const miniWidth = Math.min(MINI_W, Math.max(240, vw - MARGIN * 2));
@@ -836,7 +840,7 @@ export default function TvWidget() {
       {open && (
         <div
           ref={panelRef}
-          className={`tv-pop tv-widget-panel sheen-panel fixed flex h-auto max-h-[calc(100dvh-2rem)] w-[min(26rem,94vw)] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl ${expanded ? 'z-[90]' : 'z-[70]'}`}
+          className={`tv-pop tv-widget-panel sheen-panel fixed flex h-auto max-h-[calc(100dvh-2rem)] w-[min(26rem,94vw)] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl ${expanded ? 'z-[90]' : 'z-[45]'}`}
           style={expanded
             ? {
               left: expandedPos.x,
@@ -848,7 +852,18 @@ export default function TvWidget() {
               maxWidth: `calc(100vw - ${MARGIN * 2}px)`,
               maxHeight: `calc(100dvh - ${expandedPos.y + navClear + MARGIN}px)`,
             }
-            : (miniPos
+            : (isPhone
+              ? {
+                left: MARGIN,
+                right: MARGIN,
+                top: 'auto',
+                bottom: `calc(${Math.max(74, navClear) + MARGIN}px + env(safe-area-inset-bottom))`,
+                width: 'auto',
+                maxWidth: 'none',
+                height: 'auto',
+                maxHeight: 'calc(100dvh - 200px)',
+              }
+              : miniPos
               ? {
                 left: miniPos.x,
                 top: miniPos.y,
@@ -872,8 +887,8 @@ export default function TvWidget() {
           {/* Header: avatar + title block + actions */}
           <div
             className="tv-widget-header relative flex items-center gap-2.5 border-b border-[#d4af37]/12 bg-[#0a0a0f]/70 px-3.5 py-2.5 backdrop-blur-md"
-            style={{ cursor: (expanded || miniPos) ? 'grab' : 'default' }}
-            onMouseDown={(expanded || miniPos) ? (e) => {
+            style={{ cursor: !isPhone && (expanded || miniPos) ? 'grab' : 'default' }}
+            onMouseDown={!isPhone && (expanded || miniPos) ? (e) => {
               if (expanded) {
                 const p = e.touches ? e.touches[0] : e;
                 expandedDragState.current = { active: true, moved: false, offX: p.clientX - expandedPos.x, offY: p.clientY - expandedPos.y };
@@ -883,7 +898,7 @@ export default function TvWidget() {
                 miniDragState.current = { active: true, moved: false, offX: p.clientX - miniPos.x, offY: p.clientY - miniPos.y };
               }
             } : undefined}
-            onTouchStart={(expanded || miniPos) ? (e) => {
+            onTouchStart={!isPhone && (expanded || miniPos) ? (e) => {
               const p = e.touches ? e.touches[0] : e;
               if (expanded) {
                 expandedDragState.current = { active: true, moved: false, offX: p.clientX - expandedPos.x, offY: p.clientY - expandedPos.y };
@@ -1225,12 +1240,15 @@ export default function TvWidget() {
           bottom-left buttons open the panel instead. */}
       {!open && !onTvPage && (
         <button
-          onMouseDown={onPointerDown}
-          onTouchStart={onPointerDown}
-          aria-label={t('aiw.openLabel')}
+          onClick={isPhone ? openTv : undefined}
+          onMouseDown={isPhone ? undefined : onPointerDown}
+          onTouchStart={isPhone ? undefined : onPointerDown}
+          aria-label={t('tv.openTv')}
           title={t('tv.openTv')}
-          className={`tv-tv-btn fixed z-[70] grid place-items-center overflow-hidden rounded-full border border-[#d4af37]/30 bg-[#0c0c11]/80 shadow-[0_8px_28px_rgba(0,0,0,0.5),0_0_0_1px_rgba(212,175,55,0.4)] ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]'}`}
-          style={{ left: pos.x, top: pos.y, height: BTN, width: BTN, touchAction: 'none' }}
+          className={`tv-tv-btn fixed z-[45] grid place-items-center overflow-hidden rounded-full border border-[#d4af37]/30 bg-[#0c0c11]/80 shadow-[0_8px_28px_rgba(0,0,0,0.5),0_0_0_1px_rgba(212,175,55,0.4)] ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]'}`}
+          style={isPhone
+            ? { left: MARGIN, bottom: `calc(${Math.max(74, navClear) + MARGIN}px + env(safe-area-inset-bottom))`, top: 'auto', height: BTN, width: BTN, touchAction: 'none' }
+            : { left: pos.x, top: pos.y, height: BTN, width: BTN, touchAction: 'none' }}
         >
           <img src={TRADINGBIBLE_LOGO} alt="TradingBible" draggable={false} className="relative h-10 w-10 select-none object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
           <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#0a0a0f] ${liveCount > 0 ? 'bg-[#e50914] shadow-[0_0_8px_rgba(229,9,20,0.9)] animate-pulse' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]'}`} />

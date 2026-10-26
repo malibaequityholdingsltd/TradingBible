@@ -10,7 +10,9 @@
 - [Admin Content](/admin/content): TradingBible application page.
 - [Admin Dashboard](/admin): TradingBible application page.
 - [Admin Employees](/admin/employees): TradingBible application page.
+- [Admin Equity](/admin/equity): TradingBible application page.
 - [Admin Integrations](/admin/integrations): TradingBible application page.
+- [Admin Investor Relations](/admin/investor-relations): TradingBible application page.
 - [Admin Jobs](/admin/jobs): TradingBible application page.
 - [Admin Mentors](/admin/mentors): TradingBible application page.
 - [Admin Plugins](/admin/plugins): TradingBible application page.
@@ -43,6 +45,7 @@
 - [Guides](/guides): TradingBible application page.
 - [Heatmaps](/app/heatmaps): TradingBible application page.
 - [Indicators](/app/indicators): TradingBible application page.
+- [Investor Relations](/investors/contact): TradingBible application page.
 - [Journal](/app/journal): TradingBible application page.
 - [Landing](/): TradingBible application page.
 - [Leaderboard](/leaderboard): TradingBible application page.
@@ -62,12 +65,14 @@
 - [Risk Tools](/app/tools): TradingBible application page.
 - [Security](/app/security): TradingBible application page.
 - [Security Info](/security): TradingBible application page.
+- [Shareholder Portal](/investors/shareholders): TradingBible application page.
 - [Signals](/app/signals): TradingBible application page.
 - [Signup](/signup): TradingBible application page.
 - [Staff Id Cards](/admin/staff-id-cards): TradingBible application page.
 - [Staff Portal](/staff/*): TradingBible application page.
 - [Staff Profile Gate](/staff/:id): TradingBible application page.
 - [Staking](/app/staking): TradingBible application page.
+- [Stock Tb](/stock/TB): TradingBible application page.
 - [Student Dashboard](/student): TradingBible application page.
 - [Symbol Redirect](/app/charts): TradingBible application page.
 - [Tbc App](/app/tbc/:tab): TradingBible application page.
