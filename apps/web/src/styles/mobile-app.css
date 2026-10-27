@@ -313,7 +313,8 @@
      remaining viewport above the dock. */
   .tb-app-shell .coach-page .at-hero { display: none; }
   .tb-app-shell .coach-page .coach-chat {
-    height: calc(100dvh - 184px) !important;
+    /* Header + page inset + floating dock + breathing room. */
+    height: calc(100dvh - 240px) !important;
     min-height: 0 !important;
     margin-top: 0 !important;
   }
@@ -441,18 +442,14 @@
      right, both on the same baseline just above the live dock. */
   .tv-tv-btn {
     left: 12px !important;
-    bottom: calc(86px + env(safe-area-inset-bottom)) !important;
     top: auto !important;
   }
   .tv-chat-btn {
     right: 12px !important;
-    bottom: calc(86px + env(safe-area-inset-bottom)) !important;
   }
   .tv-chat-panel {
     right: 8px !important;
     width: calc(100vw - 16px) !important;
-    max-height: calc(100dvh - 190px) !important;
-    bottom: calc(86px + env(safe-area-inset-bottom)) !important;
   }
   /* Admin company brief: floating button clears the dock; its sheet opens
      above the dock rather than behind it. */
@@ -509,4 +506,12 @@
     z-index: 3;
     background: var(--at-card-bg, #0c0c11);
   }
+}
+
+
+/* The phone dock is phone-only. Above 639px the operator rail/drawer owns
+   navigation; without this guard the raw nav renders as a vertical list at
+   the end of every admin page. */
+@media (min-width: 640px) {
+  .tb-admin-dock { display: none !important; }
 }

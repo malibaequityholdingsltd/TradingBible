@@ -17,6 +17,9 @@ import AlertMonitor from './components/AlertMonitor';
 import AmbientDepth from './components/AmbientDepth';
 import PwaStatus from './components/PwaStatus';
 import ErrorBoundary from './components/ErrorBoundary';
+import { AppChromeShell } from './components/AppLayout';
+import { AdminChromeShell } from './components/AdminLayout';
+import { InvestorChromeShell } from './components/InvestorShell';
 import { AdProvider } from './lib/ads/components.jsx';
 import pb from './lib/pocketbaseClient';
 // Heavy persistent widgets load after first paint — they mount once and
@@ -54,6 +57,9 @@ const AlertsPage = lazy(() => import('./pages/AlertsPage'));
 const SignalsPage = lazy(() => import('./pages/SignalsPage'));
 const EconomicCalendarPage = lazy(() => import('./pages/EconomicCalendarPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
+const PublicFeaturesPage = lazy(() => import('./pages/PublicFeaturePages').then((m) => ({ default: m.FeatureHubPage })));
+const PublicFeatureDetailPage = lazy(() => import('./pages/PublicFeaturePages').then((m) => ({ default: m.PublicFeaturePage })));
+const CommunityPublicPage = lazy(() => import('./pages/PublicFeaturePages').then((m) => ({ default: m.CommunityPublicPage })));
 const TvPage = lazy(() => import('./pages/TvPage'));
 const BrokersPage = lazy(() => import('./pages/ExtraPages').then((m) => ({ default: m.BrokersPage })));
 const SuspendedPage = lazy(() => import('./pages/SuspendedPage'));
@@ -312,6 +318,26 @@ function RootRedirect() {
     return <Navigate to={homeRouteForUser(user)} replace />;
 }
 
+// Keep the right chrome mounted while moving between sections in the same
+// product. The page body swaps inside a keyed error boundary; the rail,
+// header, footer and phone dock do not remount on every click.
+function PersistentChrome({ children }) {
+    const { pathname } = useLocation();
+    const isAdmin = pathname === '/admin' || pathname.startsWith('/admin/');
+    const isApp = pathname === '/app'
+        || pathname.startsWith('/app/')
+        || pathname === '/leaderboard'
+        || pathname === '/student';
+    const isCapital = pathname === '/stock'
+        || pathname === '/stock/TB'
+        || pathname === '/investors'
+        || pathname.startsWith('/investors/');
+    if (isAdmin) return <AdminChromeShell>{children}</AdminChromeShell>;
+    if (isApp) return <AppChromeShell>{children}</AppChromeShell>;
+    if (isCapital) return <InvestorChromeShell>{children}</InvestorChromeShell>;
+    return children;
+}
+
 // Remounts the page-level error boundary on navigation so one broken page
 // never poisons the rest of the app.
 function RoutesWithBoundary() {
@@ -330,11 +356,15 @@ function RoutesWithBoundary() {
         );
     }
     return (
+        <PersistentChrome>
         <ErrorBoundary key={pathname} showDetails={import.meta.env.DEV}>
             <Suspense fallback={<PageFallback />}>
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/pricing" element={<PricingPage />} />
+                    <Route path="/features" element={<PublicFeaturesPage />} />
+                    <Route path="/features/:slug" element={<PublicFeatureDetailPage />} />
+                    <Route path="/community" element={<CommunityPublicPage />} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/guides" element={<GuidesPage />} />
                     <Route path="/webinars" element={<WebinarsPage />} />
@@ -454,6 +484,7 @@ function RoutesWithBoundary() {
                 </Routes>
             </Suspense>
         </ErrorBoundary>
+        </PersistentChrome>
     );
 }
 

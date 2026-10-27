@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import InvestorShell, { InvestorNotice } from '@/components/InvestorShell';
 import { AtAlert, AtBadge, AtButton, AtEmpty, AtPanel, AtProgress } from '@/components/AtelierUI';
+import { CapPublicHead, CapRecordCard } from '@/components/CapitalUI';
 import { IrDocumentList, IrSectionHead, IrStatGrid } from '@/components/InvestorBits';
 import { useAuth } from '@/hooks/useAuth';
 import { useShareholderPortal, investorFetch } from '@/lib/investorApi';
@@ -174,28 +175,6 @@ function ApprovedPortal({ portal, reload }) {
 
   return (
     <>
-      <section className="ir-portal-hero">
-        <div>
-          <div className="ir-eyebrow">Verified shareholder · read-only</div>
-          <h1 className="ir-display mt-3 text-[clamp(2rem,5vw,4rem)]">Your ownership record.</h1>
-          <p className="ir-lead mt-4">Your identity and access have been approved. This page returns only your own positions, vesting terms, voting history and public documents. It does not execute a transfer, issuance or vote.</p>
-          <div className="ir-hero-meta">
-            <AtBadge tone="green"><BadgeCheck className="h-3 w-3" /> Verified</AtBadge>
-            <AtBadge tone="gold">Read-only</AtBadge>
-            <AtBadge tone="muted">Access approved {formatDate(shareholder.verified_at)}</AtBadge>
-          </div>
-        </div>
-        <div className="ir-status-panel">
-          <div className="ir-status-panel-head"><div><div className="ir-kicker">Account</div><div className="mt-1 text-xs font-semibold text-[var(--at-ink)]">{shareholder.legal_name}</div></div><UserRound className="h-4 w-4 text-[var(--at-gold)]" /></div>
-          <div className="ir-list">
-            <div className="ir-list-row !py-2"><div className="ir-list-main"><div className="ir-list-sub !mt-0">Email</div></div><div className="ir-list-side"><span className="text-[10px] font-semibold">{shareholder.email}</span></div></div>
-            <div className="ir-list-row !py-2"><div className="ir-list-main"><div className="ir-list-sub !mt-0">Holder type</div></div><div className="ir-list-side"><span className="text-[10px] font-semibold">{shareholder.entity_type}</span></div></div>
-            <div className="ir-list-row !py-2"><div className="ir-list-main"><div className="ir-list-sub !mt-0">Jurisdiction</div></div><div className="ir-list-side"><span className="text-[10px] font-semibold">{shareholder.jurisdiction || '—'}</span></div></div>
-            <div className="ir-list-row !py-2"><div className="ir-list-main"><div className="ir-list-sub !mt-0">Verification</div></div><div className="ir-list-side"><AtBadge tone="green">{shareholder.verification_status}</AtBadge></div></div>
-          </div>
-        </div>
-      </section>
-
       <section className="ir-sec">
         <IrStatGrid items={[
           { label: 'Active positions', value: String(totals.positions || 0), note: 'Verified ownership records.', badge: 'Own only', badgeTone: 'green' },
@@ -291,31 +270,25 @@ export default function ShareholderPortalPage() {
 
   return (
     <InvestorShell active="Shareholders">
-      <div className="ir-page">
-        <section className="ir-hero">
-          <div className="ir-hero-grid">
-            <div>
-              <div className="ir-eyebrow">TradingBible · Shareholder portal</div>
-              <h1 className="ir-display mt-4">Your record.<br /><em>Verified.</em></h1>
-              <p className="ir-lead mt-6">A private, read-only view of your own recorded positions, certificates, vesting terms and voting history. Access requires authentication and an administrator's identity verification. The portal never executes a transfer or changes ownership.</p>
-              <div className="ir-hero-meta"><AtBadge tone="gold">Read-only</AtBadge><AtBadge tone="amber">Identity verified</AtBadge><AtBadge tone="muted">No transfers or votes</AtBadge><AtBadge tone="blue">Own records only</AtBadge></div>
-              <div className="mt-6 flex flex-wrap gap-2">
-                {!isAuthed && <AtButton to="/login?next=%2Finvestors%2Fshareholders" variant="gold" icon={KeyRound}>Sign in to continue</AtButton>}
-                <AtButton to="/investors/contact" variant="outline" icon={Mail}>Contact IR</AtButton>
-              </div>
-            </div>
-            <aside className="ir-status-panel">
-              <div className="ir-status-panel-head"><div><div className="ir-kicker">Portal status</div><div className="mt-1 text-xs font-semibold text-[var(--at-ink)]">{!isAuthReady ? 'Checking session' : isAuthed ? (loading ? 'Checking access' : showApproved ? 'Verified access' : showPending ? 'Pending review' : 'Access not requested') : 'Not signed in'}</div></div><LockKeyhole className="h-4 w-4 text-[var(--at-gold)]" /></div>
-              <div className="ir-list">
-                {[['Authentication', isAuthed ? 'Signed in' : 'Required'], ['Verification', showApproved ? 'Verified' : showPending ? 'Pending' : 'Not started'], ['Ownership data', showApproved ? 'Visible' : 'Hidden'], ['Transfers', 'Not enabled'], ['Voting execution', 'Not enabled']].map(([label, value]) => (
-                  <div className="ir-list-row !py-2" key={label}><div className="ir-list-main"><div className="ir-list-sub !mt-0">{label}</div></div><div className="ir-list-side"><span className={`text-[10px] font-semibold ${value === 'Visible' || value === 'Verified' || value === 'Signed in' ? 'text-[var(--at-green)]' : 'text-[var(--at-ink-2)]'}`}>{value}</span></div></div>
-                ))}
-              </div>
-              <div className="ir-security-note"><ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--at-amber)]" /><span>No public page exposes an individual holding. No request changes legal ownership.</span></div>
-            </aside>
-          </div>
-        </section>
-        <div className="mt-4"><InvestorNotice /></div>
+      <div className="ir-page cap-page">
+        <CapPublicHead
+          title="Shareholder portal"
+          aside={(
+            <CapRecordCard
+              title="Portal access"
+              badge={showApproved ? 'Verified' : showPending ? 'In review' : isAuthed ? 'Signed in' : 'Sign in required'}
+              rows={[
+                ['Authentication', isAuthed ? 'Signed in' : 'Required'],
+                ['Verification', showApproved ? 'Verified' : showPending ? 'Pending' : 'Not started'],
+                ['Ownership data', showApproved ? 'Visible' : 'Hidden'],
+                ['Transfers', 'Not enabled'],
+                ['Voting execution', 'Not enabled'],
+              ]}
+              note="No public page exposes an individual holding. No request changes legal ownership."
+            />
+          )}
+        />
+        <div className="mt-2"><InvestorNotice /></div>
 
         {!isAuthReady || (isAuthed && loading) ? (
           <section className="ir-sec"><div className="ir-card flex items-center gap-2 text-[11px] text-[var(--at-mut)]"><Loader2 className="h-4 w-4 animate-spin" /> Checking your authenticated access…</div></section>

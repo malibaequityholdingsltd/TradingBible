@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Bot, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Code2, Palette, CreditCard, HelpCircle, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, Compass, FlaskConical, Medal, Briefcase, SquareTerminal, Star, Coins, Check, X, Search } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Code2, Palette, CreditCard, HelpCircle, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, Compass, FlaskConical, Medal, Briefcase, SquareTerminal, Star, Coins, X, Search } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { avatarUrl } from '@/lib/avatar';
 import { displayInitial } from '@/lib/displayName';
@@ -27,6 +27,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+// The portal chrome is mounted once by <PersistentChrome> and survives route
+// changes. Pages still render <AppLayout> for their title and content rhythm;
+// that inner instance hands the title to this mounted shell and renders only
+// its page body, so the header and dock never unmount between sections.
+const AppChromeTitleContext = createContext(null);
+
+export function AppChromeShell({ children }) {
+  const [title, setTitle] = useState('');
+  return (
+    <AppLayoutContent title={title || 'TradingBible'}>
+      <AppChromeTitleContext.Provider value={setTitle}>{children}</AppChromeTitleContext.Provider>
+    </AppLayoutContent>
+  );
+}
+
 // Muted tint set for navigation glyphs. The glyph carries the colour;
 // surfaces stay quiet so the navigation reads as one system.
 const NAV_GROUPS = [
@@ -46,7 +61,6 @@ const NAV_GROUPS = [
       { to: '/app/analytics', labelKey: 'nav.analytics', icon: BarChart3, tint: IOS.pink },
       { to: '/app/backtest', labelKey: 'nav.backtest', icon: FlaskConical, tint: IOS.indigo },
       { to: '/app/reports', labelKey: 'nav.reports', icon: FileText, requiresSubscriber: true, requiredPlan: 'elite', tint: IOS.red },
-      { to: '/app/coach', labelKey: 'nav.coach', icon: Bot, requiresSubscriber: true, requiredPlan: 'elite', tint: IOS.purple },
       { to: '/app/tools', labelKey: 'nav.tools', icon: Calculator, requiresSubscriber: true, tint: IOS.gray },
     ],
   },
@@ -88,6 +102,15 @@ function Brand({ homeTo, platformName, tagline }) {
 }
 
 export default function AppLayout({ children, title }) {
+  const setShellTitle = useContext(AppChromeTitleContext);
+  useLayoutEffect(() => {
+    if (setShellTitle) setShellTitle(title || '');
+  }, [setShellTitle, title]);
+  if (setShellTitle) return children;
+  return <AppLayoutContent title={title}>{children}</AppLayoutContent>;
+}
+
+function AppLayoutContent({ children, title }) {
   const [moreOpen, setMoreOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [tutorial, setTutorial] = useState(false);
@@ -504,19 +527,6 @@ export default function AppLayout({ children, title }) {
                 </div>
               </div>
               <div className="space-y-5 pb-4">
-                <div>
-                  <div className="px-1 pb-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#5f5b50] tabular-nums">{t('brd.themes', null, 'App theme')}</div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {WL_PRESETS.map((pr) => (
-                      <button key={pr.id} onClick={() => pickPreset(pr)} aria-label={pr.label}
-                        className={`flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-[10px] border px-1 py-2.5 text-center tabular-nums transition active:scale-95 ${presetId === pr.id ? 'border-[#d4af37]/50 bg-[#d4af37]/[0.07]' : 'border-white/5 text-[#8a8577]'}`}>
-                        <span className="grid h-7 w-7 place-items-center rounded-[10px] font-mono text-[10px] font-extrabold tabular-nums" style={{ background: pr.accentColor, color: pr.primaryColor }}>Aa</span>
-                        <span className="line-clamp-2 text-[10px] font-semibold leading-tight">{pr.label}{pr.id === 'tb-gold' && <span className="mt-0.5 block font-mono text-[8px] font-extrabold uppercase tracking-wider text-[#d4af37]">Default</span>}</span>
-                        {presetId === pr.id && <Check className="h-3 w-3 shrink-0 text-[#d4af37]" />}
-                      </button>
-                    ))}
-                  </div>
-                </div>
                 {NAV_GROUPS.map((group) => {
                   const items = visibleItems(group.items).filter((it) => !SHEET_SKIP.has(it.to));
                   if (!items.length) return null;

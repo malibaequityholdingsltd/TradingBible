@@ -37,6 +37,7 @@
 - [Challenges](/app/challenges): TradingBible application page.
 - [Coach](/app/coach): TradingBible application page.
 - [Community](/app/community): TradingBible application page.
+- [Community Public](/community): TradingBible application page.
 - [Contact](/contact): TradingBible application page.
 - [Dashboard](/app): TradingBible application page.
 - [Div](/__tvtest): TradingBible application page.
@@ -59,6 +60,8 @@
 - [Pricing](/pricing): TradingBible application page.
 - [Pro Guide](/app/guide): TradingBible application page.
 - [Profile](/app/profile): TradingBible application page.
+- [Public Feature Detail](/features/:slug): TradingBible application page.
+- [Public Features](/features): TradingBible application page.
 - [Refund](/refund): TradingBible application page.
 - [Reports](/app/reports): TradingBible application page.
 - [Reset](/reset): TradingBible application page.

@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useWallet } from '@/hooks/useWallet';
 import { openCheckout, getSubscription, switchPlan } from '@/lib/stripe';
 import Footer from '@/components/Footer';
+import PublicSiteShell, { PublicPageHead } from '@/components/PublicSiteShell';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { homeRouteForUser } from '@/lib/homeRoute';
 
@@ -359,20 +360,18 @@ export function PricingPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-x-clip bg-[#07070a] px-6 pt-24 pb-16 sm:pt-28">
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[28rem] w-[60rem] max-w-none -translate-x-1/2 rounded-full bg-[#d4af37]/[0.07] blur-[140px]" />
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[linear-gradient(to_right,rgba(212,175,55,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(212,175,55,0.05)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_0%,black,transparent)]" />
-      <div className="relative mx-auto max-w-none">
-        <Link to={homeTo} className="mb-10 inline-flex items-center gap-2.5 rounded-full border border-white/[0.07] bg-white/[0.02] py-1.5 pl-1.5 pr-4 backdrop-blur-md transition hover:border-[#d4af37]/30"><img src={TRADINGBIBLE_LOGO} alt="TradingBible logo" className="h-9 w-9 rounded-full object-contain ring-1 ring-[#d4af37]/25" /><span className="font-semibold tracking-tight">Trading<span className="gold-text">Bible</span></span></Link>
-        <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-14">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#d4af37]/30 bg-[#0a0a0f]/70 px-4 py-1.5 text-xs font-semibold tracking-wide text-[#e8c95a] shadow-[0_8px_28px_-12px_rgba(212,175,55,0.5)] backdrop-blur-md"><Crown className="h-3.5 w-3.5" /> {t('price.billedStripe')}</div>
-          <h1 className="text-balance text-4xl font-extrabold leading-[0.98] tracking-[-0.03em] sm:text-6xl">{t('price.chooseEdge')}</h1>
-          <div aria-hidden className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[#d4af37]/60 to-transparent" />
-          <p className="mx-auto mt-5 max-w-xl text-pretty text-base leading-relaxed text-[#a8a394]">{t('price.sub')}</p>
-          {isAuthed && (
-            <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-white/[0.07] bg-white/[0.02] px-4 py-1.5 text-sm text-[#8a8577] backdrop-blur-md">{t('bill.walletBalance')} <span className="font-mono font-bold text-[#f0ecdd]">${walletBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></p>
-          )}
-        </div>
+    <PublicSiteShell>
+      <PublicPageHead
+        eyebrow="Pricing · Paid plans"
+        title={<>One record. Three plans. <span className="tb-gold-text">No free trial.</span></>}
+        description={t('price.sub', null, 'Start with the plan that fits your desk. Every first payment is covered by a 14-day money-back guarantee, and you can cancel from your profile at any time.')}
+        meta={['Billed through Stripe', '14-day guarantee', 'Cancel anytime']}
+      >
+        {isAuthed && (
+          <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#d4af37]/20 bg-[#d4af37]/[0.05] px-4 py-1.5 text-sm text-[#8a8577]">{t('bill.walletBalance')} <span className="font-mono font-bold text-[#f0ecdd]">${walletBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></p>
+        )}
+      </PublicPageHead>
+      <div className="relative mx-auto w-full max-w-[84rem] px-5 py-10 sm:px-8 sm:py-14">
         <div id="plans" className="grid w-full scroll-mt-28 items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {PLANS.map((raw) => {
             const p = translatePlan(t, raw);
@@ -427,7 +426,6 @@ export function PricingPage() {
           <p className="text-xs leading-relaxed text-[#6a665a]">{t('price.guarantee', null, 'Every first payment is covered by a 14-day money-back guarantee. Cancel anytime from your profile — you keep access until the end of your billing period.')}</p>
         </div>
       </div>
-      <Footer />
-    </div>
+    </PublicSiteShell>
   );
 }

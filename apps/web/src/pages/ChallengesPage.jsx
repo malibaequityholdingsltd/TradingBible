@@ -2,6 +2,7 @@
 // Pick a ticket, pass the rails, get firm capital. All purchase + evaluation
 // logic is unchanged; only the presentation is the new floor layout.
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Trophy, Loader2, ArrowRight, ShieldCheck, BadgeDollarSign, Target, Wallet, Zap, CheckCircle2, XCircle, ChevronDown, TrendingUp, CalendarClock, Scale } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Card, GoldButton, EmptyState, Note } from '@/components/ui-kit';
@@ -544,12 +545,12 @@ export default function ChallengesPage() {
             <div className="mt-0.5 text-sm font-medium opacity-75">Practice free on paper first — then pick a ticket above and start.</div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <a href="/app/paper" className="inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-[#0a0a0f] px-6 text-sm font-bold text-[#f4e6a8] transition hover:opacity-90">
+            <Link to="/app/paper" className="inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-[#0a0a0f] px-6 text-sm font-bold text-[#f4e6a8] transition hover:opacity-90">
               Try it free on paper
-            </a>
-            <a href="/app/journal#evaluations" className="inline-flex min-h-[48px] items-center gap-2 rounded-xl border-2 border-[#0a0a0f]/25 px-6 text-sm font-bold transition hover:bg-black/5">
+            </Link>
+            <Link to="/app/journal#evaluations" className="inline-flex min-h-[48px] items-center gap-2 rounded-xl border-2 border-[#0a0a0f]/25 px-6 text-sm font-bold transition hover:bg-black/5">
               <Zap className="h-4 w-4" /> My attempts
-            </a>
+            </Link>
           </div>
         </div>
 

@@ -36,7 +36,7 @@ html.light body {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(7,7,10,0.80) 0%, rgba(7,7,10,0.88) 55%, rgba(7,7,10,0.94) 100%);
+  background: linear-gradient(180deg, rgba(7,7,10,0.58) 0%, rgba(7,7,10,0.70) 55%, rgba(7,7,10,0.82) 100%);
 }
 @media (min-width: 768px) {
   #app-bg {
@@ -47,18 +47,22 @@ html.light body {
   }
 }
 
-/* Light theme — device-specific, static, centered (soft warm ivory, muted so it never glares) */
-/* Light theme is a clean ivory field, not a photographic gold wash. */
+/* Light theme keeps the same bull/bear artwork on a warm ivory wash.
+   The image is device-specific and static, with a translucent veil so the
+   gold illustration stays visible without reducing text contrast. */
 html.light #app-bg {
-  background-image: none;
+  background-image: url('/backgrounds/light-mobile.jpg');
   background-color: #f6f3eb;
   filter: none;
 }
+@media (min-width: 768px) {
+  html.light #app-bg { background-image: url('/backgrounds/light-desktop.jpg'); }
+}
 html.light #app-bg::after {
   background:
-    radial-gradient(900px 520px at 82% -12%, rgba(198, 161, 74, 0.09), transparent 62%),
-    radial-gradient(760px 420px at -8% 0%, rgba(91, 141, 239, 0.035), transparent 62%),
-    linear-gradient(180deg, #faf8f2 0%, #f4f1e9 58%, #efebe1 100%);
+    radial-gradient(900px 520px at 82% -12%, rgba(198, 161, 74, 0.05), transparent 62%),
+    radial-gradient(760px 420px at -8% 0%, rgba(91, 141, 239, 0.025), transparent 62%),
+    linear-gradient(180deg, rgba(250,248,242,0.60) 0%, rgba(246,243,235,0.74) 55%, rgba(239,235,225,0.84) 100%);
 }
 
 /* Mobile optimization */
@@ -2461,6 +2465,9 @@ html[dir='rtl'] :where(input, textarea)::placeholder {
   .app-header-mobile-logo { display: none; }
 }
 
-/* Floating launchers never overlap each other's open sheet. */
-body[data-si-open='1'] .tv-tv-btn,
-body[data-tv-open='1'] .tv-chat-btn { display: none !important; }
+/* On phones the launchers share one lane, so an open sheet gets the slot.
+   Desktop keeps both tools available and visible at the same time. */
+@media (max-width: 1023px) {
+  body[data-si-open='1'] .tv-tv-btn,
+  body[data-tv-open='1'] .tv-chat-btn { display: none !important; }
+}

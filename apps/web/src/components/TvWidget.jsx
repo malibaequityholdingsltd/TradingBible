@@ -23,6 +23,9 @@ const MINI_W = 416;
 const MINI_H = 448;
 const EXPANDED_W = 900;
 const EXPANDED_H = 600;
+// SI panel is 25rem wide, anchored 12px from the right. Keep the TV panel
+// out of its lane when both are open on a wide desktop.
+const SI_DESKTOP_RESERVE = 25 * 16 + 12 + 12;
 const DEFAULT_SETTINGS = {
   rotationSeconds: 12,
   headerText: 'TradingBible TV',
@@ -63,42 +66,30 @@ function clampPanelPos(x, y, panelW, panelH) {
   const top = tickerFloor();
   const nav = dockClear();
   const width = Math.min(panelW, Math.max(240, w - MARGIN * 2));
-  const height = Math.min(panelH, Math.max(220, h - top - nav - MARGIN * 2));
+  const height = Math.min(panelH, Math.max(220, h - top - nav));
   return {
     x: Math.min(Math.max(x, MARGIN), Math.max(MARGIN, w - width - MARGIN)),
-    y: Math.min(Math.max(y, top), Math.max(top, h - height - nav - MARGIN)),
+    y: Math.min(Math.max(y, top), Math.max(top, h - height - nav)),
   };
 }
 
-function snapToEdge(x, y) {
+// The TV launcher is a bottom-line control: it may move horizontally, but
+// its bottom edge is tethered to the top edge of the live nav bar. This is
+// the same baseline as the SI launcher and keeps both visibly on the line.
+function snapToEdge(x) {
   const w = window.innerWidth;
-  const h = window.innerHeight;
-  const top = tickerFloor();
-  const bottom = h - BTN - MARGIN - dockClear();
-  let cx = Math.min(Math.max(x, MARGIN), w - BTN - MARGIN);
-  let cy = Math.min(Math.max(y, top), bottom);
-  // Phone composition is fixed: TV left, SI right. Never restore or drag the
-  // TV bubble back over the SI bubble or off the left edge.
-  if (w < 640) return { x: MARGIN, y: cy };
-  const dl = cx - MARGIN;
-  const dr = w - BTN - MARGIN - cx;
-  const dt = cy - top;
-  const db = bottom - cy;
-  const min = Math.min(dl, dr, dt, db);
-  if (min === dl) cx = MARGIN;
-  else if (min === dr) cx = w - BTN - MARGIN;
-  else if (min === dt) cy = top;
-  else cy = bottom;
-  return { x: cx, y: cy };
+  return {
+    x: Math.min(Math.max(x, MARGIN), w - BTN - MARGIN),
+    y: window.innerHeight - BTN - dockClear(),
+  };
 }
 
 function loadPos() {
   try {
     const raw = JSON.parse(localStorage.getItem(POS_KEY) || 'null');
-    if (raw && typeof raw.x === 'number' && typeof raw.y === 'number') return snapToEdge(raw.x, raw.y);
+    if (raw && typeof raw.x === 'number') return snapToEdge(raw.x);
   } catch { /* ignore */ }
-  // Mirror the SI launcher: TV starts bottom-left, clear of the bottom nav.
-  return snapToEdge(MARGIN, window.innerHeight - BTN - MARGIN - dockClear());
+  return snapToEdge(MARGIN);
 }
 
 // ── TradingBible TV: draggable launcher + mini/zoomed live broadcast panel ──
@@ -122,9 +113,11 @@ export default function TvWidget() {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const [open, setOpen] = useState(false);
-  // Keep the SI launcher out of an open TV sheet.
+  // Keep the SI launcher out of an open TV sheet on phones. Desktop allows
+  // both floating tools to stay open at once.
   useEffect(() => {
     document.body.dataset.tvOpen = open ? '1' : '';
+    window.dispatchEvent(new CustomEvent('tb:tv-toggle', { detail: { open } }));
     return () => { delete document.body.dataset.tvOpen; };
   }, [open]);
   const [view, setView] = useState('ads'); // ads | channels | player
@@ -218,13 +211,13 @@ export default function TvWidget() {
         cur.x,
         cur.y,
         Math.min(MINI_W, w - MARGIN * 2),
-        Math.min(panelRef.current?.offsetHeight || MINI_H, h - tickerFloor() - dockClear() - MARGIN * 2),
+        Math.min(panelRef.current?.offsetHeight || MINI_H, h - tickerFloor() - dockClear()),
       ));
       setExpandedPos((cur) => clampPanelPos(
         cur.x,
         cur.y,
         Math.min(EXPANDED_W, w - MARGIN * 2),
-        Math.min(panelRef.current?.offsetHeight || EXPANDED_H, h - tickerFloor() - dockClear() - MARGIN * 2),
+        Math.min(panelRef.current?.offsetHeight || EXPANDED_H, h - tickerFloor() - dockClear()),
       ));
     };
 
@@ -234,6 +227,27 @@ export default function TvWidget() {
     // panel never ends up sitting on top of it.
     syncViewport();
     return watchNavClearance(syncViewport);
+  }, []);
+
+  // Both floating tools may stay open together on desktop. If the SI sheet
+  // opens while TV is sitting in its lane, move TV to the left edge instead
+  // of hiding either tool.
+  useEffect(() => {
+    const onSiToggle = (event) => {
+      if (!event.detail?.open) return;
+      if (window.innerWidth < 1024) {
+        setOpen(false);
+        return;
+      }
+      const available = window.innerWidth - SI_DESKTOP_RESERVE;
+      const shift = (cur, width) => (
+        cur && cur.x + width > available ? { ...cur, x: MARGIN } : cur
+      );
+      setMiniPos((cur) => shift(cur, Math.min(MINI_W, window.innerWidth - MARGIN * 2)));
+      setExpandedPos((cur) => shift(cur, Math.min(EXPANDED_W, window.innerWidth - MARGIN * 2)));
+    };
+    window.addEventListener('tb:si-toggle', onSiToggle);
+    return () => window.removeEventListener('tb:si-toggle', onSiToggle);
   }, []);
 
   // ── Data: channels + shared live broadcast state ──
@@ -629,7 +643,7 @@ export default function TvWidget() {
         const panelW = Math.min(EXPANDED_W, w - MARGIN * 2);
         const panelH = Math.min(
           panelRef.current?.offsetHeight || EXPANDED_H,
-          h - tickerFloor() - nav - MARGIN * 2,
+          h - tickerFloor() - nav,
         );
         setExpandedPos((cur) => {
           let nx = cur.x;
@@ -638,7 +652,7 @@ export default function TvWidget() {
             case 'ArrowLeft': nx = Math.max(MARGIN, cur.x - step); break;
             case 'ArrowRight': nx = Math.min(w - panelW - MARGIN, cur.x + step); break;
             case 'ArrowUp': ny = Math.max(tickerFloor(), cur.y - step); break;
-            case 'ArrowDown': ny = Math.min(h - panelH - nav - MARGIN, cur.y + step); break;
+            case 'ArrowDown': ny = Math.min(h - panelH - nav, cur.y + step); break;
           }
           e.preventDefault();
           return { x: nx, y: ny };
@@ -648,7 +662,7 @@ export default function TvWidget() {
         const panelW = Math.min(MINI_W, w - MARGIN * 2);
         const panelH = Math.min(
           panelRef.current?.offsetHeight || MINI_H,
-          h - tickerFloor() - nav - MARGIN * 2,
+          h - tickerFloor() - nav,
         );
         setMiniPos((cur) => {
           const base = cur || { x: pos.x, y: pos.y };
@@ -658,7 +672,7 @@ export default function TvWidget() {
             case 'ArrowLeft': nx = Math.max(MARGIN, base.x - step); break;
             case 'ArrowRight': nx = Math.min(w - panelW - MARGIN, base.x + step); break;
             case 'ArrowUp': ny = Math.max(tickerFloor(), base.y - step); break;
-            case 'ArrowDown': ny = Math.min(h - panelH - nav - MARGIN, base.y + step); break;
+            case 'ArrowDown': ny = Math.min(h - panelH - nav, base.y + step); break;
           }
           e.preventDefault();
           return { x: nx, y: ny };
@@ -686,7 +700,7 @@ export default function TvWidget() {
       const w = window.innerWidth; const h = window.innerHeight;
       setPos({
         x: Math.min(Math.max(nx, MARGIN), w - BTN - MARGIN),
-        y: Math.min(Math.max(ny, tickerFloor()), h - BTN - MARGIN - dockClear()),
+        y: h - BTN - dockClear(),
       });
       if (e.cancelable) e.preventDefault();
     };
@@ -695,7 +709,7 @@ export default function TvWidget() {
       dragState.current.active = false;
       setDragging(false);
       setPos((cur) => {
-        const snapped = snapToEdge(cur.x, cur.y);
+        const snapped = snapToEdge(cur.x);
         try { localStorage.setItem(POS_KEY, JSON.stringify(snapped)); } catch { /* ignore */ }
         return snapped;
       });
@@ -734,11 +748,11 @@ export default function TvWidget() {
       const panelW = Math.min(EXPANDED_W, w - MARGIN * 2);
       const panelH = Math.min(
         panelRef.current?.offsetHeight || EXPANDED_H,
-        h - tickerFloor() - nav - MARGIN * 2,
+        h - tickerFloor() - nav,
       );
       setExpandedPos({
         x: Math.min(Math.max(nx, MARGIN), w - panelW - MARGIN),
-        y: Math.min(Math.max(ny, tickerFloor()), Math.max(tickerFloor(), h - panelH - nav - MARGIN)),
+        y: Math.min(Math.max(ny, tickerFloor()), Math.max(tickerFloor(), h - panelH - nav)),
       });
       if (e.cancelable) e.preventDefault();
     };
@@ -775,11 +789,11 @@ export default function TvWidget() {
       const panelW = Math.min(MINI_W, w - MARGIN * 2);
       const panelH = Math.min(
         panelRef.current?.offsetHeight || MINI_H,
-        h - tickerFloor() - nav - MARGIN * 2,
+        h - tickerFloor() - nav,
       );
       setMiniPos({
         x: Math.min(Math.max(nx, MARGIN), w - panelW - MARGIN),
-        y: Math.min(Math.max(ny, tickerFloor()), Math.max(tickerFloor(), h - panelH - nav - MARGIN)),
+        y: Math.min(Math.max(ny, tickerFloor()), Math.max(tickerFloor(), h - panelH - nav)),
       });
       if (e.cancelable) e.preventDefault();
     };
@@ -813,7 +827,7 @@ export default function TvWidget() {
   const expandedWidth = Math.min(EXPANDED_W, Math.max(320, vw - MARGIN * 2));
   const expandedHeight = Math.min(
     EXPANDED_H,
-    Math.max(280, viewport.h - Math.max(expandedPos.y, tickerFloor()) - navClear - MARGIN),
+    Math.max(280, viewport.h - Math.max(expandedPos.y, tickerFloor()) - navClear),
   );
   // Guide sections with live counts. Every desk always lists — confirmed
   // off-air ones sit dimmed in their own section, so visible rows always
@@ -850,18 +864,18 @@ export default function TvWidget() {
               width: expandedWidth,
               height: expandedHeight,
               maxWidth: `calc(100vw - ${MARGIN * 2}px)`,
-              maxHeight: `calc(100dvh - ${expandedPos.y + navClear + MARGIN}px)`,
+              maxHeight: `calc(100dvh - ${expandedPos.y + navClear}px)`,
             }
             : (isPhone
               ? {
                 left: MARGIN,
                 right: MARGIN,
                 top: 'auto',
-                bottom: `calc(${Math.max(74, navClear) + MARGIN}px + env(safe-area-inset-bottom))`,
+                bottom: navClear,
                 width: 'auto',
                 maxWidth: 'none',
                 height: 'auto',
-                maxHeight: 'calc(100dvh - 200px)',
+                maxHeight: `calc(100dvh - ${navClear + MARGIN * 2}px)`,
               }
               : miniPos
               ? {
@@ -872,10 +886,10 @@ export default function TvWidget() {
                 width: miniWidth,
                 maxWidth: `calc(100vw - ${MARGIN * 2}px)`,
                 height: 'auto',
-                maxHeight: `calc(100dvh - ${miniPos.y + navClear + MARGIN}px)`,
+                maxHeight: `calc(100dvh - ${miniPos.y + navClear}px)`,
               }
               : {
-                bottom: `calc(${navClear + MARGIN}px)`,
+                bottom: navClear,
                 [onLeft ? 'left' : 'right']: `${MARGIN}px`,
               })}
         >
@@ -1247,7 +1261,7 @@ export default function TvWidget() {
           title={t('tv.openTv')}
           className={`tv-tv-btn fixed z-[45] grid place-items-center overflow-hidden rounded-full border border-[#d4af37]/30 bg-[#0c0c11]/80 shadow-[0_8px_28px_rgba(0,0,0,0.5),0_0_0_1px_rgba(212,175,55,0.4)] ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab transition-transform hover:scale-105 hover:shadow-[0_10px_34px_rgba(212,175,55,0.5)]'}`}
           style={isPhone
-            ? { left: MARGIN, bottom: `calc(${Math.max(74, navClear) + MARGIN}px + env(safe-area-inset-bottom))`, top: 'auto', height: BTN, width: BTN, touchAction: 'none' }
+            ? { left: MARGIN, bottom: navClear, top: 'auto', height: BTN, width: BTN, touchAction: 'none' }
             : { left: pos.x, top: pos.y, height: BTN, width: BTN, touchAction: 'none' }}
         >
           <img src={TRADINGBIBLE_LOGO} alt="TradingBible" draggable={false} className="relative h-10 w-10 select-none object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />

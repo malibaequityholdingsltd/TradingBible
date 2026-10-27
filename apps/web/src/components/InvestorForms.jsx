@@ -3,7 +3,7 @@ import { ArrowRight, Bot, CheckCircle2, Loader2, Mail, Send, ShieldCheck, Sparkl
 import { AtBadge, AtButton, AtPanel } from '@/components/AtelierUI';
 import { investorFetch } from '@/lib/investorApi';
 import { useAuth } from '@/hooks/useAuth';
-import { TB_DISCLOSURE, TB_ISSUER } from '@/lib/investorRelations';
+import { TB_ISSUER } from '@/lib/investorRelations';
 
 export function InvestorSubscribeForm({ compact = false }) {
   const [email, setEmail] = useState('');
@@ -71,9 +71,6 @@ export function InvestorSubscribeForm({ compact = false }) {
           <div className="at-alert at-alert--red !px-3 !py-2.5 !text-[10px]">{error}</div>
         </div>
       )}
-      <p className="ir-field ir-field--full ir-disclosure !border-0 !pt-0">
-        {TB_DISCLOSURE}
-      </p>
     </form>
   );
 }

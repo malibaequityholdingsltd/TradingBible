@@ -1,242 +1,192 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Target, Eye, ArrowRight, LineChart, Bitcoin, Coins, Bot, GraduationCap,
-  ShieldCheck, BarChart3, Activity, Globe, TrendingUp, DollarSign, Mail, Quote, Star,
+  Activity, ArrowRight, BarChart3, Bitcoin, Bot, Coins, DollarSign, Eye,
+  Globe, GraduationCap, LineChart, Mail, Quote, ShieldCheck, Star, Target,
+  TrendingUp,
 } from 'lucide-react';
-import Footer from '@/components/Footer';
-import { Card, EmptyState, GoldButton } from '@/components/ui-kit';
+import { Card, GoldButton } from '@/components/ui-kit';
+import PublicSiteShell, {
+  PublicCTA, PublicCheckList, PublicNotice, PublicPageHead, PublicSection,
+} from '@/components/PublicSiteShell';
 import { IosIcon } from '@/components/IosIcon';
 import { useI18n } from '@/lib/i18n';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 
 const PROVIDES = [
-  { icon: BarChart3, tk: 'abt.p1t', bk: 'abt.p1b' },
-  { icon: Activity, tk: 'abt.p2t', bk: 'abt.p2b' },
-  { icon: Coins, tk: 'abt.p3t', bk: 'abt.p3b' },
-  { icon: Bitcoin, tk: 'abt.p4t', bk: 'abt.p4b' },
-  { icon: LineChart, tk: 'abt.p5t', bk: 'abt.p5b' },
-  { icon: Bot, tk: 'abt.p6t', bk: 'abt.p6b' },
-  { icon: Activity, tk: 'abt.p7t', bk: 'abt.p7b' },
-  { icon: ShieldCheck, tk: 'abt.p8t', bk: 'abt.p8b' },
-  { icon: GraduationCap, tk: 'abt.p9t', bk: 'abt.p9b' },
-  { icon: BarChart3, tk: 'abt.p10t', bk: 'abt.p10b' },
+  { icon: BarChart3, title: 'Trading journal', body: 'A live record of every fill, note and decision, synced from the broker instead of rebuilt by hand.', to: '/features/trading-journal' },
+  { icon: Bot, title: 'SI Coach', body: 'A review grounded in your own history: the repeated mistake, the risk leak and one adjustment for the next session.', to: '/features/si-coach' },
+  { icon: LineChart, title: 'Terminal & market data', body: 'Charts, order flow, heatmaps and TradingBible TV across five markets and 250+ symbols.', to: '/features/market-data' },
+  { icon: ShieldCheck, title: 'Risk tools', body: 'Position sizing, R-multiples, exposure context and alerts built into the workflow before the order.', to: '/features/risk-management' },
+  { icon: GraduationCap, title: 'Academy', body: 'Structured lessons on charts, risk, journaling and process — education, never signals or profit claims.', to: '/academy' },
+  { icon: Activity, title: 'Analytics & reports', body: 'Equity, drawdown, profit factor, expectancy and Trader Score, with exportable reports for a mentor or prop firm.', to: '/features/performance-analytics' },
 ];
 
 const MARKETS = [
-  { icon: Coins, key: 'abt.mkGold', pair: 'XAU/USD' },
-  { icon: Bitcoin, key: 'abt.mkBtc', pair: 'BTC/USD' },
-  { icon: DollarSign, key: 'abt.mkFx', pair: 'Major & minor pairs' },
-  { icon: Activity, key: 'abt.mkCrypto', pair: 'Digital assets' },
-  { icon: TrendingUp, key: 'abt.mkCmd', pair: 'Metals, energy, ags' },
-  { icon: BarChart3, key: 'abt.mkIdx', pair: 'Global stock indices' },
+  { icon: Coins, label: 'Metals', pair: 'XAU/USD · XAG/USD' },
+  { icon: Bitcoin, label: 'Crypto', pair: 'BTC/USD · major pairs' },
+  { icon: DollarSign, label: 'Forex', pair: 'Major & minor pairs' },
+  { icon: Activity, label: 'Digital assets', pair: 'Spot & on-chain balances' },
+  { icon: TrendingUp, label: 'Commodities', pair: 'Metals, energy, agriculture' },
+  { icon: BarChart3, label: 'Indices', pair: 'Global stock indices' },
 ];
 
 const TEAM = [
-  { name: 'Malik Nlem', key: 'abt.role1', img: '/images/malik-nlem-full.png', ratio: 'aspect-[3/4]' },
-  { name: 'Victor Okechukwu', key: 'abt.role2', img: '/images/victor-okechukwu-full.png', ratio: 'aspect-[3/4]' },
-  { name: 'Maliba SI', key: 'abt.role3' },
+  { name: 'Malik Nlem', role: 'Founder & CEO', img: '/images/malik-nlem-full.png' },
+  { name: 'Victor Okechukwu', role: 'Product & engineering', img: '/images/victor-okechukwu-full.png' },
+  { name: 'Maliba SI', role: 'SI review & education' },
 ];
 
 const TESTIMONIALS = [
-  { quote: 'TradingBible turned my scattered notes into a real edge. The SI coach flags mistakes I never noticed myself making.', qk: 'abt.tm1q', name: 'Sofia R.', role: 'Full-time forex trader', rk: 'abt.tm1r' },
-  { quote: 'The broker sync and analytics feel genuinely institutional. It is the first journal that keeps up with my volume.', qk: 'abt.tm2q', name: 'Daniel K.', role: 'Crypto swing trader', rk: 'abt.tm2r' },
-  { quote: 'Discipline scoring changed how I trade. Fewer revenge trades, tighter risk, calmer sessions.', qk: 'abt.tm3q', name: 'Aisha B.', role: 'Prop firm trader', rk: 'abt.tm3r' },
+  { quote: 'TradingBible turned my scattered notes into a real process. The SI review flags mistakes I never noticed myself making.', name: 'Sofia R.', role: 'Full-time forex trader' },
+  { quote: 'The broker sync and analytics feel genuinely institutional. It is the first journal that keeps up with my volume.', name: 'Daniel K.', role: 'Crypto swing trader' },
+  { quote: 'Discipline scoring changed how I review. Fewer revenge trades, tighter risk, calmer sessions.', name: 'Aisha B.', role: 'Prop firm trader' },
 ];
-
-function Header() {
-  const { t } = useI18n();
-  return (
-    <header className="fixed inset-x-0 top-[var(--header-h)] z-40 border-b border-[#d4af37]/10 bg-[#07070a]/70 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-none items-center justify-between px-6 py-4">
-        <nav className="hidden items-center gap-8 text-sm text-[#8a8577] md:flex">
-          <Link to="/" className="hover:text-[#e9e7df]">{t('abt.home')}</Link>
-          <Link to="/about" className="text-[#e9e7df]">{t('abt.about')}</Link>
-          <Link to="/pricing" className="hover:text-[#e9e7df]">{t('abt.pricing')}</Link>
-        </nav>
-        <GoldButton to="/pricing">{t('land.viewPricing')}</GoldButton>
-      </div>
-    </header>
-  );
-}
-
-function ContactForm() {
-  const { t } = useI18n();
-  const [sent, setSent] = React.useState(false);
-  const [form, setForm] = React.useState({ name: '', email: '', message: '' });
-  const inp = 'w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none focus:border-[#d4af37]/50';
-  if (sent) {
-    return (
-      <EmptyState icon={ShieldCheck} title={t('abt.msgSent')} />
-    );
-  }
-  return (
-    <form onSubmit={(e) => { e.preventDefault(); setSent(true); }} className="space-y-3">
-      <input required className={inp} placeholder={t('abt.yourName')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-      <input required type="email" className={inp} placeholder={t('abt.emailAddr')} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-      <textarea required rows={4} className={inp} placeholder={t('abt.howHelp')} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
-      <GoldButton className="w-full">{t('abt.sendMsg')}</GoldButton>
-    </form>
-  );
-}
 
 export default function AboutPage() {
   const { t } = useI18n();
   return (
-    <div className="min-h-screen bg-[#07070a] pt-[var(--header-h)] text-[#e9e7df]">
-      <Header />
+    <PublicSiteShell>
+      <PublicPageHead
+        eyebrow={t('abt.heroKick', null, 'Company · About TradingBible')}
+        title={<>A record-first <span className="tb-gold-text">trading company.</span></>}
+        description="TradingBible is a private, pre-IPO company building a platform where the trade, the decision and the review live in one record. We are not a broker, an adviser or a signal service — and we do not pretend otherwise."
+        meta={['Private company', 'Pre-IPO', 'TB proposed ticker']}
+        actions={<><GoldButton to="/features">Explore the platform <ArrowRight className="h-4 w-4" /></GoldButton><GhostLink /></>}
+      />
 
-      {/* Hero */}
-      <section className="relative mx-auto max-w-none overflow-hidden px-6 pb-16 pt-28 text-center sm:pt-36">
-        <div className="absolute inset-0 grain opacity-30" />
-        <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[24rem] w-[52rem] max-w-none -translate-x-1/2 rounded-full bg-[#d4af37]/[0.08] blur-[130px]" />
-        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(212,175,55,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(212,175,55,0.05)_1px,transparent_1px)] bg-[size:54px_54px] [mask-image:radial-gradient(ellipse_60%_55%_at_50%_30%,black,transparent)]" />
-        <div className="relative">
-          <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="mx-auto mb-7 h-[4.5rem] w-[4.5rem] rounded-2xl object-contain gold-glow ring-1 ring-[#d4af37]/25" />
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#d4af37]/30 bg-[#0a0a0f]/70 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#e8c95a] shadow-[0_8px_28px_-12px_rgba(212,175,55,0.5)] backdrop-blur-md"><IosIcon icon={Globe} size="2xs" tone="blue" /> {t('abt.heroKick')}</span>
-          <h1 className="mx-auto mt-6 max-w-3xl text-balance text-4xl font-extrabold tracking-[-0.03em] sm:text-6xl sm:leading-[1.02]">{t('abt.aboutTitle')} <span className="tb-gold-text drop-shadow-[0_2px_24px_rgba(212,175,55,0.35)]">TradingBible</span></h1>
-          <div aria-hidden className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[#d4af37]/60 to-transparent" />
-          <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-relaxed text-[#a8a394] sm:text-lg sm:leading-relaxed">
-            {t('abt.heroSub')}
-          </p>
+      <PublicSection id="mission" eyebrow="Mission & vision" title="Make the review as real as the trade.">
+        <div className="grid gap-3 lg:grid-cols-2">
+          <Card className="rounded-xl p-5 sm:p-6">
+            <div className="flex items-center gap-2.5">
+              <IosIcon icon={Target} size="md" tone="blue" />
+              <h2 className="text-lg font-bold tracking-tight text-[#f0ecdd]">{t('abt.mission', null, 'Our mission')}</h2>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-[#8a8577]">{t('abt.missionB', null, 'Give every serious trader the record, context and review that used to be available only to a professional desk — without inventing performance, hiding risk or selling a shortcut.')}</p>
+          </Card>
+          <Card className="rounded-xl p-5 sm:p-6">
+            <div className="flex items-center gap-2.5">
+              <IosIcon icon={Eye} size="md" tone="purple" />
+              <h2 className="text-lg font-bold tracking-tight text-[#f0ecdd]">{t('abt.vision', null, 'Our vision')}</h2>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-[#8a8577]">{t('abt.visionB', null, 'A trading culture where evidence beats a screenshot. The platform should make the honest record easier to keep, easier to review and harder to fake.')}</p>
+          </Card>
         </div>
-      </section>
+      </PublicSection>
 
-      {/* Mission & Vision */}
-      <section id="mission" className="mx-auto grid max-w-none grid-cols-1 gap-4 px-6 pb-6 sm:gap-5 lg:grid-cols-2 scroll-mt-28">
-        <Card className="group relative overflow-hidden rounded-2xl p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-8">
-          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-[#f4e6a8]/70 via-[#d4af37]/60 to-transparent" />
-          <IosIcon icon={Target} size="lg" tone="blue" className="mb-5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-105" />
-          <h2 className="text-xl font-bold tracking-tight text-[#f0ecdd]">{t('abt.mission')}</h2>
-          <p className="mt-3 leading-relaxed text-[#a8a394]">{t('abt.missionB')}</p>
-        </Card>
-        <Card className="group relative overflow-hidden rounded-2xl p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-8">
-          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/60 to-[#f4e6a8]/70" />
-          <IosIcon icon={Eye} size="lg" tone="purple" className="mb-5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-105" />
-          <h2 className="text-xl font-bold tracking-tight text-[#f0ecdd]">{t('abt.vision')}</h2>
-          <p className="mt-3 leading-relaxed text-[#a8a394]">{t('abt.visionB')}</p>
-        </Card>
-      </section>
-
-      {/* Ownership */}
-      <section className="mx-auto max-w-none px-6 py-6">
-        <Card className="relative flex flex-col items-start gap-5 overflow-hidden rounded-2xl p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:flex-row sm:items-center sm:p-8">
-          <div aria-hidden className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-gradient-to-b from-[#f4e6a8] via-[#d4af37] to-transparent" />
-          <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-16 w-16 shrink-0 rounded-2xl object-contain ring-1 ring-[#d4af37]/25" />
-          <div>
-            <h2 className="text-xl font-bold tracking-tight text-[#f0ecdd]">{t('abt.ownership')}</h2>
-          <p className="mt-2 leading-relaxed text-[#a8a394]">{t('abt.ownershipB')}</p>
+      <PublicSection eyebrow="Ownership & company facts" title="What TradingBible is — and is not.">
+        <div className="grid gap-3 lg:grid-cols-[1.2fr_1fr]">
+          <Card className="rounded-xl p-5 sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+              <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-14 w-14 shrink-0 rounded-xl object-contain ring-1 ring-[#d4af37]/25" />
+              <div>
+                <h2 className="text-lg font-bold tracking-tight text-[#f0ecdd]">{t('abt.ownership', null, 'Owned and operated by TradingBible LLC')}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">TradingBible LLC is a Delaware limited liability company and the sole operating company behind the platform. The company is private and not publicly traded. TB is a proposed future ticker; it is not reserved, listed or approved. TBC is a separate proposed token, not equity, and token operations remain disabled.</p>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {['Delaware LLC', 'Private · pre-IPO', 'TB proposed ticker', 'TBC separate from equity', 'No public share price', 'No listing approval'].map((item) => (
+                <div key={item} className="rounded-lg border border-[#d4af37]/15 bg-[#d4af37]/[0.04] px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.1em] text-[#d4af37]">{item}</div>
+              ))}
+            </div>
+          </Card>
+          <div className="space-y-3">
+            <PublicNotice><span className="font-semibold text-[#e9e7df]">TB equity and TBC are separate.</span> They have separate supply, ownership, valuation and history. Holding one does not imply the other.</PublicNotice>
+            <PublicCheckList items={['Not a broker-dealer or investment adviser', 'Broker connections are read-only by default', 'Public financial content is published only after approval', 'Shareholder records stay identity-verified and read-only']} columns={1} />
           </div>
-        </Card>
-      </section>
+        </div>
+      </PublicSection>
 
-      {/* What we provide */}
-      <section id="features" className="relative mx-auto max-w-none px-6 py-10 scroll-mt-28">
-        <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-px w-[min(70rem,90%)] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#d4af37]/20 to-transparent" />
-        <div className="mb-8 text-center sm:mb-10">
-          <h2 className="text-3xl font-extrabold tracking-[-0.02em] sm:text-4xl">{t('abt.provideA')} <span className="tb-gold-text">{t('abt.provideB')}</span></h2>
-          <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-[#a8a394]">{t('abt.provideSub')}</p>
+      <PublicSection id="features" eyebrow="The platform" title="Six surfaces, one record.">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {PROVIDES.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link key={item.title} to={item.to} className="group">
+                <Card className="h-full rounded-xl p-5 transition group-hover:border-[#d4af37]/30">
+                  <IosIcon icon={Icon} size="md" seed={item.title} />
+                  <h2 className="mt-3 text-base font-semibold text-[#f0ecdd]">{item.title}</h2>
+                  <p className="mt-1.5 text-sm leading-relaxed text-[#8a8577]">{item.body}</p>
+                  <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-[#d4af37]">Explore <ArrowRight className="h-3 w-3 transition group-hover:translate-x-0.5" /></span>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {PROVIDES.map((p) => (
-            <Card hover key={p.tk} className="group relative overflow-hidden rounded-2xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#d4af37]/30 hover:shadow-[0_24px_60px_-28px_rgba(212,175,55,0.35)]">
-              <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <IosIcon icon={p.icon} size="md" seed={p.tk} className="mb-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-105" />
-              <h3 className="font-semibold tracking-tight text-[#f0ecdd]">{t(p.tk)}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-[#8a8577]">{t(p.bk)}</p>
-            </Card>
-          ))}
-        </div>
-      </section>
+      </PublicSection>
 
-      {/* Markets covered */}
-      <section className="relative mx-auto max-w-none px-6 py-10">
-        <div className="mb-8 text-center sm:mb-10">
-          <h2 className="text-3xl font-extrabold tracking-[-0.02em] sm:text-4xl">{t('abt.marketsA')} <span className="tb-gold-text">{t('abt.marketsB')}</span></h2>
-          <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-[#a8a394]">{t('abt.marketsSub')}</p>
+      <PublicSection eyebrow="Markets" title="Six market groups. One journal.">
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
+          {MARKETS.map((m) => {
+            const Icon = m.icon;
+            return (
+              <Card key={m.label} className="rounded-xl p-4 text-center">
+                <IosIcon icon={Icon} size="md" seed={m.label} className="mx-auto" />
+                <div className="mt-2 text-xs font-semibold text-[#f0ecdd]">{m.label}</div>
+                <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.08em] text-[#8a8577]">{m.pair}</div>
+              </Card>
+            );
+          })}
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          {MARKETS.map((m) => (
-            <Card hover key={m.key} className="group relative overflow-hidden rounded-2xl p-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#d4af37]/30">
-              <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/35 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <IosIcon icon={m.icon} size="md" seed={m.key} className="mx-auto mb-3 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-105" />
-              <div className="font-semibold tracking-tight text-[#f0ecdd]">{t(m.key)}</div>
-              <div className="mt-1.5 font-mono text-[11px] uppercase tracking-wider text-[#8a8577]">{m.pair}</div>
-            </Card>
-          ))}
-        </div>
-      </section>
+      </PublicSection>
 
-      {/* Team */}
-      <section id="team" className="relative mx-auto max-w-none px-6 py-10 scroll-mt-28">
-        <div className="mb-8 text-center sm:mb-10">
-          <h2 className="text-3xl font-extrabold tracking-[-0.02em] sm:text-4xl">{t('abt.team')} <span className="tb-gold-text">{t('abt.teamB')}</span></h2>
-          <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-[#a8a394]">{t('abt.teamSub')}</p>
-        </div>
-        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
-          {TEAM.map((m) => (
-            <Card hover key={m.name} className="group relative overflow-hidden rounded-2xl p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#d4af37]/30 hover:shadow-[0_24px_60px_-28px_rgba(212,175,55,0.35)]">
-              <div className={`grid ${m.ratio || 'aspect-[3/4]'} w-full place-items-center overflow-hidden rounded-xl border border-white/[0.06] bg-gradient-to-b from-[#d4af37]/[0.1] via-[#0c0c11] to-[#0c0c11]`}>
-                {m.img ? (
-                  <img src={m.img} alt={m.name} className="h-full w-full object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+      <PublicSection id="team" eyebrow="The team" title="Small team. Direct accountability.">
+        <div className="grid gap-3 sm:grid-cols-3">
+          {TEAM.map((member) => (
+            <Card key={member.name} className="overflow-hidden rounded-xl p-3">
+              <div className="grid aspect-[4/5] w-full place-items-center overflow-hidden rounded-lg border border-white/[0.06] bg-gradient-to-b from-[#d4af37]/10 via-[#0c0c11] to-[#0c0c11]">
+                {member.img ? (
+                  <img src={member.img} alt={member.name} className="h-full w-full object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                 ) : (
-                  <div className="grid h-20 w-20 place-items-center rounded-full border border-[#d4af37]/30 bg-[#0f0f14] text-2xl font-bold text-[#d4af37]">{m.name.split(' ').map((n) => n[0]).join('')}</div>
+                  <div className="grid h-20 w-20 place-items-center rounded-full border border-[#d4af37]/30 bg-[#0f0f14] text-2xl font-bold text-[#d4af37]">{member.name.split(' ').map((n) => n[0]).join('')}</div>
                 )}
               </div>
-              <div className="px-2 pb-2 pt-4 text-center">
-                <div className="font-semibold tracking-tight text-[#f0ecdd]">{m.name}</div>
-                <div className="mt-1 text-[13px] font-medium text-[#e8c95a]">{t(m.key)}</div>
+              <div className="px-2 pb-2 pt-3">
+                <div className="text-sm font-semibold text-[#f0ecdd]">{member.name}</div>
+                <div className="mt-1 text-[11px] font-medium text-[#d4af37]">{member.role}</div>
               </div>
             </Card>
           ))}
         </div>
-      </section>
+      </PublicSection>
 
-      {/* Testimonials */}
-      <section className="relative mx-auto max-w-none px-6 py-10">
-        <div className="mb-8 text-center sm:mb-10">
-          <h2 className="text-3xl font-extrabold tracking-[-0.02em] sm:text-4xl">{t('abt.trusted')} <span className="tb-gold-text">{t('abt.traders')}</span></h2>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3">
+      <PublicSection eyebrow="In their words" title="What the record changed.">
+        <div className="grid gap-3 lg:grid-cols-3">
           {TESTIMONIALS.map((tm) => (
-            <Card key={tm.name} hover className="group relative overflow-hidden rounded-2xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#d4af37]/25">
-              <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/30 to-transparent" />
-              <Quote className="h-6 w-6 text-[#d4af37]/70" />
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-[#c9c4b4]">{t(tm.qk, null, tm.quote)}</p>
-              <div className="mt-4 flex items-center gap-1 text-[#e8c95a]">{[0,1,2,3,4].map((i) => <Star key={i} className="h-3.5 w-3.5 fill-current" />)}</div>
-              <div className="mt-3 border-t border-white/[0.06] pt-4"><div className="font-semibold tracking-tight text-[#f0ecdd]">{tm.name}</div><div className="mt-0.5 text-xs text-[#8a8577]">{t(tm.rk, null, tm.role)}</div></div>
+            <Card key={tm.name} className="rounded-xl p-5">
+              <Quote className="h-5 w-5 text-[#d4af37]/70" />
+              <p className="mt-2 text-sm leading-relaxed text-[#c9c4b4]">{tm.quote}</p>
+              <div className="mt-3 flex items-center gap-1 text-[#e8c95a]">{[0, 1, 2, 3, 4].map((i) => <Star key={i} className="h-3 w-3 fill-current" />)}</div>
+              <div className="mt-3 border-t border-white/[0.06] pt-3">
+                <div className="text-sm font-semibold text-[#f0ecdd]">{tm.name}</div>
+                <div className="mt-0.5 text-[11px] text-[#8a8577]">{tm.role}</div>
+              </div>
             </Card>
           ))}
         </div>
-      </section>
+      </PublicSection>
 
-      {/* Contact Us */}
-      <section className="mx-auto max-w-none px-6 py-10">
-        <Card className="relative grid grid-cols-1 gap-8 overflow-hidden rounded-2xl p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-10 lg:grid-cols-2 lg:gap-12">
-          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/60 to-transparent" />
-          <div>
-            <h2 className="text-2xl font-extrabold tracking-[-0.02em] sm:text-3xl">{t('abt.contact')} <span className="tb-gold-text">{t('abt.contactB')}</span></h2>
-            <p className="mt-3 leading-relaxed text-[#a8a394]">{t('abt.contactSub')}</p>
-            <a href="mailto:support@tradingbible.app" className="mt-6 inline-flex items-center gap-2.5 rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/[0.06] px-4 py-2.5 text-sm font-medium text-[#e8c95a] transition hover:border-[#d4af37]/50 hover:bg-[#d4af37]/[0.1]"><Mail className="h-4 w-4" /> support@tradingbible.app</a>
-            <p className="mt-5 text-xs leading-relaxed text-[#6a665a]">TradingBible LLC — Delaware limited liability company · Formed August 10, 2026 · EIN issued · NAICS 511210 · Sole operating company; Holdings Inc. on hold.<br />Requested ticker TB not reserved/listed. TBC is not equity and incorporation is not a brokerage license.</p>
-          </div>
-          <ContactForm />
-        </Card>
-      </section>
+      <PublicSection eyebrow="Contact" title="The right route to the right team.">
+        <div className="grid gap-3 sm:grid-cols-3">
+          {[
+            [Mail, 'Support', 'Product, billing and account questions.', 'support@tradingbible.app', 'mailto:support@tradingbible.app'],
+            [Globe, 'Investor relations', 'The TB record, shareholder verification and company disclosures.', 'investors@tradingbible.app', '/investors/contact'],
+            [ShieldCheck, 'Security', 'Responsible disclosure and account compromise.', 'security@tradingbible.app', '/security'],
+          ].map(([Icon, title, body, address, to]) => (
+            <Card key={title} className="rounded-xl p-5">
+              <div className="flex items-center gap-2.5"><Icon className="h-4 w-4 text-[#d4af37]" /><h2 className="text-base font-semibold text-[#f0ecdd]">{title}</h2></div>
+              <p className="mt-2 text-xs leading-relaxed text-[#8a8577]">{body}</p>
+              {to.startsWith('/') ? <Link to={to} className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline">{address} <ArrowRight className="h-3 w-3" /></Link> : <a href={to} className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline">{address} <ArrowRight className="h-3 w-3" /></a>}
+            </Card>
+          ))}
+        </div>
+      </PublicSection>
 
-      {/* CTA */}
-      <section className="relative mx-auto max-w-none px-6 pb-20">
-        <div aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 h-[16rem] w-[44rem] max-w-[92vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d4af37]/[0.07] blur-[100px]" />
-        <Card className="gold-glow relative flex flex-col items-center overflow-hidden rounded-3xl px-6 py-12 text-center sm:py-14">
-          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#e8c95a] to-transparent" />
-          <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_70%_at_50%_0%,rgba(212,175,55,0.1),transparent)]" />
-          <h2 className="relative text-balance text-2xl font-extrabold tracking-[-0.02em] sm:text-4xl">{t('abt.tagA')} <span className="tb-gold-text">{t('abt.tagB')}</span></h2>
-          <p className="relative mt-3 max-w-xl leading-relaxed text-[#a8a394]">{t('abt.ctaSub')}</p>
-          <GoldButton to="/pricing" className="relative mt-7 px-8 py-4 shadow-[0_16px_48px_-12px_rgba(212,175,55,0.65)]">{t('land.choosePlan', null, 'Choose your plan')} <ArrowRight className="h-4 w-4" /></GoldButton>
-        </Card>
-      </section>
-
-      <Footer />
-    </div>
+      <PublicCTA title={<>See the platform <span className="tb-gold-text">behind the company.</span></>} body="Start with the product pages, then choose a paid plan when you are ready to connect a live account." primary="Explore features" primaryTo="/features" secondary="Compare plans" secondaryTo="/pricing" />
+    </PublicSiteShell>
   );
+}
+
+function GhostLink() {
+  return <Link to="/investors" className="inline-flex items-center justify-center rounded-xl border border-[#d4af37]/20 px-5 py-3 text-sm font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/40">Investor centre</Link>;
 }

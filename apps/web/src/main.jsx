@@ -5,6 +5,7 @@ import '@/index.css';
 import '@/styles/tokens.css';
 import '@/styles/atelier.css';
 import '@/styles/mobile-app.css';
+import '@/styles/capital-ir.css';
 import { bootWhiteLabel } from '@/lib/whitelabel';
 
 // Apply saved white-label theme (accent + text colors) before first paint.

@@ -5,8 +5,9 @@ import {
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import {
-  AtAlert, AtBadge, AtButton, AtEmpty, AtMetric, AtPanel, AtProgress, AtTabs,
+  AtAlert, AtBadge, AtButton, AtEmpty, AtPanel,
 } from '@/components/AtelierUI';
+import { CapAdminHead, CapKpiGrid, CapTabs } from '@/components/CapitalUI';
 import { useToast } from '@/hooks/use-toast';
 import { investorFetch, useAdminInvestor } from '@/lib/investorApi';
 import { formatDate, formatNumber, TB_DOC_CATEGORIES } from '@/lib/investorRelations';
@@ -69,12 +70,12 @@ function OverviewTab({ data, reload }) {
   const m = data?.metrics || {};
   return (
     <div className="ir-stack-lg">
-      <div className="ir-cols-4">
-        <AtMetric label="Published announcements" value={m.publishedAnnouncements ?? 0} note={`${m.draftAnnouncements ?? 0} drafts`} />
-        <AtMetric label="Approved reports" value={m.approvedReports ?? 0} note={`${m.publishedReports ?? 0} published`} />
-        <AtMetric label="Verified shareholders" value={m.verifiedShareholders ?? 0} note={`${m.pendingAccess ?? 0} pending access`} />
-        <AtMetric label="Audit chain" value={m.auditChainValid ? 'Valid' : 'Review'} note={`${m.auditEvents ?? 0} events loaded`} tone={m.auditChainValid ? 'text-[var(--at-green)]' : 'text-[var(--at-red)]'} />
-      </div>
+      <CapKpiGrid items={[
+        { label: 'Published announcements', value: m.publishedAnnouncements ?? 0, note: `${m.draftAnnouncements ?? 0} drafts` },
+        { label: 'Approved reports', value: m.approvedReports ?? 0, note: `${m.publishedReports ?? 0} published` },
+        { label: 'Verified shareholders', value: m.verifiedShareholders ?? 0, note: `${m.pendingAccess ?? 0} pending access`, tone: 'gold' },
+        { label: 'Audit chain', value: m.auditChainValid ? 'Valid' : 'Review', note: `${m.auditEvents ?? 0} events loaded`, badge: { label: m.auditChainValid ? 'Verified' : 'Attention', tone: m.auditChainValid ? 'green' : 'red' } },
+      ]} />
       {!m.auditChainValid && (
         <AtAlert icon={AlertTriangle} tone="red"><span className="font-bold">Audit chain verification failed or is incomplete.</span> Do not rely on equity records until the chain is reviewed. The API returns the first failures in the audit tab.</AtAlert>
       )}
@@ -423,7 +424,7 @@ function AccessTab({ data, reload }) {
   return (
     <div className="ir-stack-lg">
       <AtAlert icon={ShieldCheck} tone="amber"><span className="font-bold">Verify before approving.</span> Approval requires an identity match and an executed ownership record. The portal never executes a transfer, issuance or vote. All decisions are audited.</AtAlert>
-      <AtPanel eyebrow="Private register" title="Shareholder access and verification" sub="Only a verified shareholder can see their own positions. No public endpoint returns this table.">
+      <AtPanel title="Shareholder access and verification" sub="Only a verified shareholder can see their own positions. No public endpoint returns this table.">
         <details className="ir-admin-form">
           <summary>+ Add a shareholder record</summary>
           <form onSubmit={submit} className="ir-form-grid">
@@ -498,14 +499,23 @@ export default function AdminInvestorRelationsPage() {
 
   return (
     <AdminLayout title="Investor relations control">
-      <div className="ir-page">
-        <div className="at-pagebar">
-          <div className="at-pagebar-main"><div className="at-pagebar-meta"><span>Capital & investor relations</span><span>TB · pre-IPO</span><span>Controlled publication</span></div><h1 className="at-pagebar-title">Investor relations control</h1><p className="at-pagebar-sub">Publish approved disclosures, track IPO readiness and verify shareholder access. No market data, share execution or token operation is enabled.</p></div>
-          <div className="at-pagebar-actions"><AtButton onClick={reload} variant="outline" size="sm" icon={RefreshCw} disabled={loading}>Refresh</AtButton><AtButton to="/investors" variant="gold" size="sm" iconRight={Globe2}>View public IR</AtButton></div>
-        </div>
-        {error && <AtAlert icon={AlertTriangle} tone="red"><div className="flex flex-wrap items-center justify-between gap-2"><span>{error}</span><AtButton onClick={reload} variant="outline" size="sm">Retry</AtButton></div></AtAlert>}
-        <div className="ir-tabs-scroll my-4"><AtTabs tabs={TABS.map((item) => ({ ...item, count: item.id === 'access' ? metrics.pendingAccess : undefined }))} active={tab} onChange={setTab} /></div>
-        {loading ? <div className="ir-card flex items-center gap-2 text-[11px] text-[var(--at-mut)]"><Loader2 className="h-4 w-4 animate-spin" /> Loading the investor operations console…</div> : (
+      <div className="ir-page cap-page cap-admin-page">
+        <CapAdminHead
+          title="Investor relations control"
+          actions={(
+            <>
+              <AtButton onClick={reload} variant="outline" size="sm" icon={RefreshCw} disabled={loading}>Refresh</AtButton>
+              <AtButton to="/investors" variant="gold" size="sm" iconRight={Globe2}>View public IR</AtButton>
+            </>
+          )}
+        />
+        {error && <div className="mt-2"><AtAlert icon={AlertTriangle} tone="red"><div className="flex flex-wrap items-center justify-between gap-2"><span>{error}</span><AtButton onClick={reload} variant="outline" size="sm">Retry</AtButton></div></AtAlert></div>}
+        <CapTabs
+          tabs={TABS.map((item) => ({ ...item, count: item.id === 'access' ? metrics.pendingAccess : undefined }))}
+          active={tab}
+          onChange={setTab}
+        />
+        {loading ? <div className="cap-empty"><span className="cap-empty-icon"><Loader2 className="h-4 w-4 animate-spin" /></span><div><strong>Loading the investor operations console</strong><p>Reading disclosure, access and audit queues.</p></div></div> : (
           <>
             {tab === 'overview' && <OverviewTab data={data} reload={reload} />}
             {tab === 'announcements' && <AnnouncementsTab data={data} reload={reload} />}

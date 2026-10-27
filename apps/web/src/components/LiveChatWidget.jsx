@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Send, Sparkles, BarChart3, Cable, Wallet, Target, Info, Wrench, MessageSquare, MessageCircle, Eraser, ExternalLink, Crown } from 'lucide-react';
+import { X, Send, Sparkles, BarChart3, Cable, Wallet, Target, Info, Wrench, MessageSquare, MessageCircle, Eraser, ExternalLink, Crown, Maximize2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -74,7 +74,19 @@ export default function LiveChatWidget() {
   // Keep the other floating launcher out of an open SI sheet.
   useEffect(() => {
     document.body.dataset.siOpen = open ? '1' : '';
-    return () => { delete document.body.dataset.siOpen; };
+    window.dispatchEvent(new CustomEvent('tb:si-toggle', { detail: { open } }));
+    return () => {
+      delete document.body.dataset.siOpen;
+    };
+  }, [open]);
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (event) => {
+      if (event.key !== 'Escape') return;
+      setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, [open]);
   const [tab, setTab] = useState('coach');
   const [text, setText] = useState('');
@@ -93,6 +105,16 @@ export default function LiveChatWidget() {
     const handler = () => setOpen(true);
     window.addEventListener('tb:open-live-chat', handler);
     return () => window.removeEventListener('tb:open-live-chat', handler);
+  }, []);
+
+  // On phones the two sheets share one lane; opening one closes the other.
+  // Desktop keeps both open together.
+  useEffect(() => {
+    const onTvToggle = (event) => {
+      if (event.detail?.open && window.innerWidth < 1024) setOpen(false);
+    };
+    window.addEventListener('tb:tv-toggle', onTvToggle);
+    return () => window.removeEventListener('tb:tv-toggle', onTvToggle);
   }, []);
 
   // Auto-scroll the transcript while streaming.
@@ -123,21 +145,34 @@ export default function LiveChatWidget() {
     sendMessage(body);
   };
 
+  const closePanel = () => setOpen(false);
+
+  const openCoachPage = () => {
+    setOpen(false);
+    nav('/app/coach');
+  };
+
   // Launcher bubble is theme-driven in JS (not CSS) so the color
   // switches deterministically with the toggle in both modes.
   const visibleMessages = [{ from: 'agent', text: WELCOME }, ...messages.map((m) => ({ from: m.role === 'user' ? 'you' : 'agent', text: m.content, images: m.images }))];
   const isFirstRun = visibleMessages.length <= 1;
   const coachTag = `${t('aiw.coach')} · Muse Spark`;
-  const phone = typeof window !== 'undefined' && window.innerWidth < 640;
-  const launcherBottom = Math.max(78, navClear + MARGIN);
-  const panelBottom = phone ? 120 : Math.max(MARGIN, navClear + MARGIN);
+  // Sit exactly on the top edge of the live nav bar. navClear is measured
+  // from the viewport bottom to the nav's top edge; adding MARGIN here is
+  // what previously left the launcher visibly floating above the line.
+  const navBottom = navClear > 0 ? navClear : 82;
+  const launcherBottom = navBottom;
+  const panelBottom = navBottom;
 
   return (
     <div className="tv-widget-root">
       {open && (
         <div
-          className="tv-chat-panel tv-pop fixed z-[45] flex h-[34rem] max-h-[calc(100dvh-2rem)] w-[min(25rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl"
-          style={{ bottom: panelBottom, right: MARGIN }}
+          className="tv-chat-panel tv-pop fixed z-[45] flex h-[34rem] w-[min(25rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.6rem] border border-[#d4af37]/25 bg-[#0c0c11]/85 shadow-[0_24px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(212,175,55,0.16)] backdrop-blur-xl"
+          style={{ bottom: panelBottom, right: MARGIN, maxHeight: `calc(100dvh - ${panelBottom + 12}px)` }}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('aiw.openTitle')}
         >
           {/* Gold top-edge accent + ambient glow + terminal scanlines */}
           <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
@@ -158,7 +193,15 @@ export default function LiveChatWidget() {
                 <Eraser className="h-3.5 w-3.5" />
               </button>
             )}
-            <button onClick={() => setOpen(false)} aria-label={t('aiw.closeChat')} className={iconBtn}>
+            <button
+              onClick={openCoachPage}
+              aria-label="Open the SI Coach page"
+              title="Open SI Coach"
+              className={iconBtn}
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </button>
+            <button onClick={closePanel} aria-label={t('aiw.closeChat')} className={iconBtn}>
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -188,7 +231,7 @@ export default function LiveChatWidget() {
                 <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">Upgrade to Elite SI for 24/7 trade reviews, mistake detection and reports.</p>
               </div>
               <button
-                onClick={() => { setOpen(false); nav('/pricing'); }}
+                onClick={() => { closePanel(); nav('/pricing'); }}
                 className="flex min-h-[44px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90"
               >
                 <Crown className="h-4 w-4" /> Upgrade to Elite
@@ -315,9 +358,10 @@ export default function LiveChatWidget() {
           onClick={() => setOpen(true)}
           aria-label={t('aiw.openLabel')}
           title={t('aiw.openTitle')}
-          className="tv-chat-btn fixed right-1 z-[45] grid place-items-center overflow-hidden rounded-full border transition-transform hover:scale-105"
+          className="tv-chat-btn fixed z-[45] grid place-items-center overflow-hidden rounded-full border transition-transform hover:scale-105"
           style={{
             bottom: launcherBottom,
+            right: MARGIN,
             height: BTN,
             width: BTN,
             backgroundColor: isLight ? '#fffdf9' : '#0c0c11',

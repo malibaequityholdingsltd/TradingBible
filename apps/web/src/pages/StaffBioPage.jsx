@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import {
   BadgeCheck, Building2, Facebook, Fingerprint, Github, Globe, Instagram,
   Linkedin, Mail, Shield, Twitter, Youtube,
@@ -186,7 +186,7 @@ export default function StaffBioPage() {
 
       <header className="relative z-10 border-b border-[#d4af37]/20 bg-[#08080d]/85 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
-          <a href="/" className="flex min-w-0 items-center gap-2.5">
+          <Link to="/" className="flex min-w-0 items-center gap-2.5">
             <img src={brandLogo.url} alt="" className="h-8 w-8 shrink-0 object-contain" />
             <span className="min-w-0">
               <span className="font-display block truncate text-lg font-extrabold leading-none tracking-tight">
@@ -196,7 +196,7 @@ export default function StaffBioPage() {
                 Official employee profile
               </span>
             </span>
-          </a>
+          </Link>
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#d6c47a]">
             <Shield className="h-3 w-3" /> tradingbible.app
           </span>

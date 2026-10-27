@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
 	PlayCircle, Clock, CheckCircle2, Lock, GraduationCap, Video, Route, Award, Sparkles,
 	Rocket, BookOpen, Bot, ArrowLeft, RotateCcw, ChevronRight, Trophy, Calendar, Radio, Loader2,
@@ -303,7 +304,7 @@ function Paywall({ onPurchased }) {
 					<GhostButton onClick={buyWithWallet} disabled={busy || tbcBalance < tbcPrice} className="disabled:opacity-40">
 						<Wallet className="h-4 w-4" /> {t('aca.walletPay')} — pay {tbcPrice.toLocaleString()} TBC in TBC ({tbcBalance >= tbcPrice ? t('aca.available') : t('aca.needMore', { amt: `${(tbcPrice - tbcBalance).toFixed(2)} TBC` })})
 					</GhostButton>
-					<div className="text-xs text-[#8a8577]">{tbcBalance.toLocaleString()} TBC in till · <a href="/app/wallet" className="text-[#d4af37] hover:underline">{t('bill.fundWallet')} — convert, swap, buy or receive TBC</a></div>
+					<div className="text-xs text-[#8a8577]">{tbcBalance.toLocaleString()} TBC in till · <Link to="/app/wallet" className="text-[#d4af37] hover:underline">{t('bill.fundWallet')} — convert, swap, buy or receive TBC</Link></div>
 				</div>
 			<p className="mt-3 text-xs text-[#6a665a]">{t('aca.guarantee')}</p>
 			</div>

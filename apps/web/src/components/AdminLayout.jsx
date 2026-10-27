@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Settings, FileText, CreditCard, IdCard, LibraryBig, BarChart3,
@@ -25,6 +25,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+
+// Admin chrome lives at the route boundary so switching console sections does
+// not remount the rail, header, phone search row or dock.
+const AdminChromeTitleContext = createContext(null);
+
+export function AdminChromeShell({ children }) {
+  const [title, setTitle] = useState('');
+  return (
+    <AdminLayoutContent title={title || 'Admin Dashboard'}>
+      <AdminChromeTitleContext.Provider value={setTitle}>{children}</AdminChromeTitleContext.Provider>
+    </AdminLayoutContent>
+  );
+}
 
 const NAV_GROUPS = [
   {
@@ -105,6 +118,15 @@ function Brand({ homeTo }) {
 }
 
 export default function AdminLayout({ children, title }) {
+  const setShellTitle = useContext(AdminChromeTitleContext);
+  useLayoutEffect(() => {
+    if (setShellTitle) setShellTitle(title || '');
+  }, [setShellTitle, title]);
+  if (setShellTitle) return children;
+  return <AdminLayoutContent title={title}>{children}</AdminLayoutContent>;
+}
+
+function AdminLayoutContent({ children, title }) {
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
   const loc = useLocation();
@@ -147,33 +169,31 @@ export default function AdminLayout({ children, title }) {
   }, []);
 
   const SideContent = (
-    <div className="flex h-full min-h-0 flex-col tabular-nums">
-      <div className="at-rail-brand">
+    <div className="tb-admin-rail-inner tabular-nums">
+      <div className="tb-admin-brandbar">
         <Brand homeTo={homeTo} />
+        <span className="at-kbd">⌘K</span>
       </div>
 
-      <div className="mx-4 mb-4 flex items-center justify-between rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-3 py-2">
-        <span className="inline-flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)]">
-          <span className="h-1.5 w-1.5 rounded-full bg-[var(--at-green)] shadow-[0_0_9px_var(--at-green)]" />
-          Secure operator session
-        </span>
-        <span className="at-kbd">⌘K</span>
+      <div className="tb-admin-session">
+        <span><i />Secure operator session</span>
+        <span className="at-kbd">Live</span>
       </div>
 
       <button
         type="button"
         onClick={() => { enterAdminPreview(); nav('/app'); }}
-        className="mx-4 mb-4 flex min-h-10 items-center gap-2.5 rounded-xl border border-[var(--at-gold)]/25 bg-[var(--at-gold-soft)] px-3 text-left text-xs font-semibold text-[var(--at-ink)] transition hover:border-[var(--at-gold)]/45"
+        className="tb-admin-viewapp"
       >
-        <LayoutDashboard className="h-4 w-4 shrink-0 text-[var(--at-gold)]" />
+        <LayoutDashboard className="h-3.5 w-3.5 shrink-0" />
         <span className="min-w-0 flex-1">View app</span>
-        <ChevronRight className="h-3.5 w-3.5 text-[var(--at-mut)]" />
+        <ChevronRight className="h-3 w-3 shrink-0 text-[var(--at-mut)]" />
       </button>
 
-      <nav data-nav-scroll className="nice-scroll flex-1 space-y-5 overflow-y-auto px-3 pb-4">
+      <nav data-nav-scroll className="tb-admin-nav nice-scroll">
         {NAV_GROUPS.map((group) => (
-          <div key={group.label}>
-            <div className="at-navgroup-label">{group.label}</div>
+          <div key={group.label} className="tb-admin-nav-group">
+            <div className="tb-admin-nav-label">{group.label}</div>
             <div className="space-y-0.5">
               {group.items.map(({ to, label, icon: Icon, end }) => (
                 <NavLink
@@ -183,7 +203,7 @@ export default function AdminLayout({ children, title }) {
                   onClick={() => setOpen(false)}
                   className={({ isActive }) => `at-navlink ${isActive ? 'is-active' : ''}`}
                 >
-                  <span className="at-navlink-icon"><Icon className="h-3.5 w-3.5" strokeWidth={1.9} /></span>
+                  <span className="at-navlink-icon"><Icon strokeWidth={1.9} /></span>
                   <span className="min-w-0 flex-1 truncate text-left">{label}</span>
                   {label === 'TBC control center' && <span className="h-1.5 w-1.5 rounded-full bg-[var(--at-amber)]/70" />}
                 </NavLink>
@@ -193,11 +213,26 @@ export default function AdminLayout({ children, title }) {
         ))}
       </nav>
 
-      <div className="flex items-center justify-between gap-2 border-t border-[var(--at-line-soft)] px-3 py-3 sm:hidden">
-        <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)]">Display</span>
-        <div className="flex items-center gap-2">
-          <ThemeSwitcher inline />
-          <LanguageSwitcher />
+      <div className="tb-admin-sidefoot">
+        <div className="tb-admin-identity">
+          <span className="tb-admin-identity-badge">{initial}</span>
+          <span className="tb-admin-identity-copy">
+            <strong>{user?.name || 'Operator'}</strong>
+            <span>{user?.email || user?.role || 'Admin'}</span>
+          </span>
+          <div className="tb-admin-sidefoot-tools">
+            <ThemeSwitcher inline />
+            <LanguageSwitcher />
+            <button
+              type="button"
+              onClick={signOut}
+              className="grid h-7 w-7 place-items-center rounded-md text-[var(--at-mut)] transition hover:bg-[var(--at-soft-2)] hover:text-[var(--at-red)]"
+              aria-label="Sign out"
+              title="Sign out"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -220,7 +255,7 @@ export default function AdminLayout({ children, title }) {
       <div className="lg:pl-[258px]">
         <header className="at-topbar fixed inset-x-0 left-0 right-0 top-[var(--header-h)] z-[35] h-16 w-full lg:left-[258px] lg:w-[calc(100%-258px)]">
           <div className="flex h-full w-full items-center gap-2 px-2.5 sm:gap-3 sm:px-4 lg:px-6">
-            <div className="flex min-w-0 flex-1 items-center gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-2 sm:min-w-[178px] sm:flex-none">
               <button onClick={() => setOpen(true)} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[var(--at-line-soft)] text-[var(--at-gold)] transition hover:border-[var(--at-line)] hover:text-[var(--at-gold)] max-sm:hidden lg:hidden" aria-label="Open navigation">
                 <Menu className="h-4 w-4" />
               </button>
@@ -236,8 +271,8 @@ export default function AdminLayout({ children, title }) {
                   <span>TradingBible</span><span className="text-[var(--at-mut-2)]">/</span><b>Admin</b>
                 </div>
                 <div className="flex min-w-0 items-center gap-2">
-                  <h1 className="truncate text-sm font-semibold tracking-[-0.02em] text-[var(--at-ink)] sm:text-[15px]">{title || 'Admin Dashboard'}</h1>
-                  <AtBadge tone="gold" className="hidden md:inline-flex">Live workspace</AtBadge>
+                  <h1 className="truncate text-sm font-semibold tracking-[-0.02em] text-[var(--at-ink)] sm:min-w-[150px] sm:text-[15px]">{title || 'Admin Dashboard'}</h1>
+                  <AtBadge tone="gold" className="hidden xl:inline-flex">Live workspace</AtBadge>
                 </div>
               </div>
             </div>
@@ -248,7 +283,7 @@ export default function AdminLayout({ children, title }) {
               </div>
             </div>
 
-            <div className="flex min-w-0 flex-1 items-center justify-end">
+            <div className="flex shrink-0 items-center justify-end">
               <div className="flex shrink-0 items-center gap-1 rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-1 sm:gap-1.5">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -306,7 +341,7 @@ export default function AdminLayout({ children, title }) {
                     <DropdownMenuItem onClick={() => { enterAdminPreview(); nav('/app'); }} className="cursor-pointer gap-2.5">
                       <LayoutDashboard className="h-4 w-4 text-[#d4af37]" /> View app
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => nav('/app/profile')} className="cursor-pointer gap-2.5">
+                    <DropdownMenuItem onClick={() => { enterAdminPreview(); nav('/app/profile'); }} className="cursor-pointer gap-2.5">
                       <User className="h-4 w-4 text-[#d4af37]" /> View profile
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => nav('/admin/settings')} className="cursor-pointer gap-2.5">

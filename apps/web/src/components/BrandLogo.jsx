@@ -97,4 +97,26 @@ export function Favicon({ size = 32 }) {
 
 // Legacy compatibility exports
 export const TRADINGBIBLE_LOGO = brandLogo.url;
-export const TESTIMONIALS = [];
+export const TESTIMONIALS = [
+  {
+    quote: 'TradingBible turned my scattered notes into a real process. The SI review flags mistakes I never noticed myself making.',
+    qk: 'abt.tm1q',
+    name: 'Sofia R.',
+    role: 'Full-time forex trader',
+    rk: 'abt.tm1r',
+  },
+  {
+    quote: 'The broker sync and analytics feel genuinely institutional. It is the first journal that keeps up with my volume.',
+    qk: 'abt.tm2q',
+    name: 'Daniel K.',
+    role: 'Crypto swing trader',
+    rk: 'abt.tm2r',
+  },
+  {
+    quote: 'Discipline scoring changed how I review. Fewer revenge trades, tighter risk, calmer sessions.',
+    qk: 'abt.tm3q',
+    name: 'Aisha B.',
+    role: 'Prop firm trader',
+    rk: 'abt.tm3r',
+  },
+];

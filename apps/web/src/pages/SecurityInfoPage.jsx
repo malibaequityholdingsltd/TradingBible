@@ -1,14 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import {
-  ArrowLeft, Bug, CreditCard, Database, Fingerprint, KeyRound, LockKeyhole,
+  Bug, CreditCard, Database, Fingerprint, KeyRound, LockKeyhole,
   Mail, ServerCog, ShieldCheck, Wallet,
 } from 'lucide-react';
-import Footer from '@/components/Footer';
-import { AtAlert, AtBadge, AtButton, AtHero, AtPanel } from '@/components/AtelierUI';
-import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
-import { useAuth } from '@/hooks/useAuth';
-import { homeRouteForUser } from '@/lib/homeRoute';
+import { AtAlert, AtBadge, AtButton, AtPanel } from '@/components/AtelierUI';
+import PublicSiteShell, { PublicPageHead, PublicSection } from '@/components/PublicSiteShell';
 
 const CONTROLS = [
   {
@@ -50,48 +46,24 @@ const CONTROLS = [
 ];
 
 export default function SecurityInfoPage() {
-  const { user, isAuthed } = useAuth();
-  const homeTo = homeRouteForUser(isAuthed ? user : null);
-
   return (
-    <div className="at-scope min-h-screen bg-[var(--at-bg0)] pt-[var(--header-h)] text-[var(--at-ink)]">
-      <div className="at-page at-enter px-5 py-8 sm:px-8 sm:py-12">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <Link to={homeTo} className="flex items-center gap-2.5">
-            <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-9 w-9 rounded-[10px] border border-[var(--at-line)] bg-[var(--at-panel)] object-contain p-0.5" />
-            <span className="text-sm font-semibold tracking-tight text-[var(--at-ink)]">TradingBible</span>
-          </Link>
-          <AtButton to="/faq" variant="quiet" size="sm" icon={ArrowLeft}>Help center</AtButton>
-        </div>
+    <PublicSiteShell>
+      <PublicPageHead
+        eyebrow="Trust & security"
+        title={<>Security is a <span className="tb-gold-text">system.</span></>}
+        description="How account access, broker data, payments and the proposed TBC token are separated. This page describes controls in place today; it is not a certification or an audit opinion."
+        meta={['No SOC 2 claim', 'Read-only broker access', 'TBC not issued']}
+        actions={<><AtButton href="mailto:security@tradingbible.app?subject=Security%20report" variant="gold" icon={Mail}>Report a vulnerability</AtButton><AtButton to="/terms" variant="outline" icon={KeyRound}>Terms of service</AtButton></>}
+      />
 
-        <AtHero
-          eyebrow="Trust & security"
-          icon={ShieldCheck}
-          title={<>Security is a <em>system.</em></>}
-          description="How account access, broker data, payments and the proposed TBC token are separated. This page describes controls in place today; it is not a certification or an audit opinion."
-          status={[
-            { label: 'Account auth', value: 'TOTP · passkeys', tone: 'green' },
-            { label: 'Data boundary', value: 'RLS · per user', tone: 'green' },
-            { label: 'Broker access', value: 'Read-only', tone: 'gold' },
-            { label: 'TBC token', value: 'Not issued', tone: 'amber' },
-          ]}
-          statusTitle="Current posture"
-          statusNote="No SOC 2, ISO 27001 or equivalent certification is claimed. A formal audit requires an independent assessor and a signed engagement."
-          actions={(
-            <>
-              <AtButton href="mailto:security@tradingbible.app?subject=Security%20report" variant="gold" icon={Mail}>Report a vulnerability</AtButton>
-              <AtButton to="/terms" variant="outline" icon={KeyRound}>Terms of service</AtButton>
-            </>
-          )}
-        />
-
-        <div className="mt-4">
+      <div className="at-scope mx-auto w-full max-w-[84rem] px-5 pb-16 pt-8 sm:px-8 sm:pt-10">
+        <div className="mb-4">
           <AtAlert icon={Bug} tone="amber">
             <b className="text-[var(--at-ink)]">Responsible disclosure.</b> Email security@tradingbible.app with reproduction steps and impact. Do not access another person’s data, disrupt the service, or publish details before we have had a reasonable opportunity to remediate. We aim to acknowledge reports within three business days.
           </AtAlert>
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {CONTROLS.map(({ icon: Icon, title, copy, label }) => (
             <article key={title} className="at-card at-card--hover p-5">
               <div className="flex items-start justify-between gap-3">
@@ -107,11 +79,7 @@ export default function SecurityInfoPage() {
         </div>
 
         <div className="mt-5 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <AtPanel
-            eyebrow="Boundaries"
-            title="What TradingBible will never do"
-            sub="These are product and control boundaries, not marketing claims."
-          >
+          <AtPanel eyebrow="Boundaries" title="What TradingBible will never do" sub="These are product and control boundaries, not marketing claims.">
             <ul className="grid gap-2 text-[12px] leading-relaxed text-[var(--at-ink-2)] sm:grid-cols-2">
               <li className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3">Place a trade or withdraw funds from a connected brokerage account.</li>
               <li className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3">Use one subscriber’s journal or trade data to generate another subscriber’s SI insights.</li>
@@ -135,7 +103,6 @@ export default function SecurityInfoPage() {
           Last reviewed October 2026. Security controls evolve; this page is updated when the underlying systems change.
         </p>
       </div>
-      <Footer />
-    </div>
+    </PublicSiteShell>
   );
 }

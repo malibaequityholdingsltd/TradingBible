@@ -2,6 +2,7 @@
 // the Trading Journal page. Self-contained: loads attempts + payouts,
 // re-evaluates live attempts and requests bank payouts on passed seats.
 import React, { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { CheckCircle2, XCircle, Loader2, BadgeDollarSign, Landmark, Trophy } from 'lucide-react';
 import { Card, GoldButton, GhostButton } from '@/components/ui-kit';
 import { useToast } from '@/hooks/use-toast';
@@ -70,7 +71,7 @@ export default function EvaluationsPanel() {
         <h3 className="flex items-center gap-2 whitespace-nowrap text-sm font-bold uppercase tracking-wide text-[#f0ecdd]"><Trophy className="h-4 w-4 text-[#d4af37]" /> My evaluations</h3>
         <span className="hidden h-px min-w-6 flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent sm:block" />
         <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{attempts.length}</span>
-        <a href="/app/challenges" className="ml-auto shrink-0 text-xs font-semibold text-[#d4af37] hover:underline">Get a ticket</a>
+        <Link to="/app/challenges" className="ml-auto shrink-0 text-xs font-semibold text-[#d4af37] hover:underline">Get a ticket</Link>
       </div>
       {attempts.length === 0 ? (
         <p className="mt-3 text-sm text-[#8a8577]">No evaluations yet — pick a ticket on the Challenges page to start.</p>

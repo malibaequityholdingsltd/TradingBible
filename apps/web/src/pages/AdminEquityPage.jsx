@@ -5,8 +5,9 @@ import {
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import {
-  AtAlert, AtBadge, AtButton, AtEmpty, AtMetric, AtPanel, AtTabs,
+  AtAlert, AtBadge, AtButton, AtEmpty, AtPanel,
 } from '@/components/AtelierUI';
+import { CapAdminHead, CapKpiGrid, CapTabs } from '@/components/CapitalUI';
 import { useToast } from '@/hooks/use-toast';
 import { investorFetch, useAdminInvestor } from '@/lib/investorApi';
 import { formatDate, formatNumber } from '@/lib/investorRelations';
@@ -69,12 +70,12 @@ function OverviewTab({ data }) {
   return (
     <div className="ir-stack-lg">
       <AtAlert icon={LockKeyhole} tone="amber"><span className="font-bold">Evidence and approval only.</span> This console records executed corporate decisions. It does not mint shares, move certificates, execute a transfer, connect to a transfer agent or enable a trade.</AtAlert>
-      <div className="ir-cols-4">
-        <AtMetric label="Authorized shares" value={formatNumber(authorized)} note="Across recorded classes" />
-        <AtMetric label="Issued shares" value={formatNumber(issued)} note="Company records only" />
-        <AtMetric label="Outstanding shares" value={formatNumber(outstanding)} note="Not a public market figure" />
-        <AtMetric label="Active positions" value={String(active.length)} note={`${m.pendingProposals ?? 0} proposal(s) awaiting decision`} />
-      </div>
+      <CapKpiGrid items={[
+        { label: 'Authorized shares', value: formatNumber(authorized), note: 'Across recorded classes' },
+        { label: 'Issued shares', value: formatNumber(issued), note: 'Company records only' },
+        { label: 'Outstanding shares', value: formatNumber(outstanding), note: 'Not a public market figure' },
+        { label: 'Active positions', value: String(active.length), note: `${m.pendingProposals ?? 0} proposal(s) awaiting decision`, tone: 'gold' },
+      ]} />
       <div className="ir-cols-12">
         <div className="ir-span-8">
           <AtPanel eyebrow="Capital register" title="Share classes" sub="Authorized classes and recorded figures.">
@@ -372,14 +373,23 @@ export default function AdminEquityPage() {
   const [tab, setTab] = useState('overview');
   return (
     <AdminLayout title="Equity administration">
-      <div className="ir-page">
-        <div className="at-pagebar">
-          <div className="at-pagebar-main"><div className="at-pagebar-meta"><span>Capital & investor relations</span><span>TB · private register</span><span>Approval + audit</span></div><h1 className="at-pagebar-title">Equity administration</h1><p className="at-pagebar-sub">Capital classes, verified positions and corporate approvals. This console does not issue, transfer or trade shares. No public quote exists.</p></div>
-          <div className="at-pagebar-actions"><AtButton onClick={reload} variant="outline" size="sm" icon={RefreshCw} disabled={loading}>Refresh</AtButton><AtButton to="/admin/investor-relations" variant="gold" size="sm" iconRight={ArrowRight}>IR control</AtButton></div>
-        </div>
-        {error && <AtAlert icon={AlertTriangle} tone="red"><div className="flex flex-wrap items-center justify-between gap-2"><span>{error}</span><AtButton onClick={reload} variant="outline" size="sm">Retry</AtButton></div></AtAlert>}
-        <div className="ir-tabs-scroll my-4"><AtTabs tabs={TABS.map((item) => ({ ...item, count: item.id === 'proposals' ? (data?.proposals || []).filter((row) => row.status === 'pending_approval').length : undefined }))} active={tab} onChange={setTab} /></div>
-        {loading ? <div className="ir-card flex items-center gap-2 text-[11px] text-[var(--at-mut)]"><Loader2 className="h-4 w-4 animate-spin" /> Loading equity controls…</div> : (
+      <div className="ir-page cap-page cap-admin-page">
+        <CapAdminHead
+          title="Equity administration"
+          actions={(
+            <>
+              <AtButton onClick={reload} variant="outline" size="sm" icon={RefreshCw} disabled={loading}>Refresh</AtButton>
+              <AtButton to="/admin/investor-relations" variant="gold" size="sm" iconRight={ArrowRight}>IR control</AtButton>
+            </>
+          )}
+        />
+        {error && <div className="mt-2"><AtAlert icon={AlertTriangle} tone="red"><div className="flex flex-wrap items-center justify-between gap-2"><span>{error}</span><AtButton onClick={reload} variant="outline" size="sm">Retry</AtButton></div></AtAlert></div>}
+        <CapTabs
+          tabs={TABS.map((item) => ({ ...item, count: item.id === 'proposals' ? (data?.proposals || []).filter((row) => row.status === 'pending_approval').length : undefined }))}
+          active={tab}
+          onChange={setTab}
+        />
+        {loading ? <div className="cap-empty"><span className="cap-empty-icon"><Loader2 className="h-4 w-4 animate-spin" /></span><div><strong>Loading equity controls</strong><p>Reading the private register and audit chain.</p></div></div> : (
           <>
             {tab === 'overview' && <OverviewTab data={data} />}
             {tab === 'captable' && <CapTableTab data={data} reload={reload} />}

@@ -1,128 +1,64 @@
 import React, { useMemo, useState } from 'react';
 import {
-  AlertTriangle, ArrowRight, BarChart3, Building2, CalendarClock, CheckCircle2,
-  CircleDollarSign, FileText, FolderOpen, Landmark, Loader2, LockKeyhole, Mail,
+  AlertTriangle, ArrowRight, Building2, CalendarClock, CheckCircle2,
+  BarChart3, CircleDollarSign, FileText, Landmark, Loader2, LockKeyhole, Mail,
   Newspaper, Scale, ShieldCheck, Target, Users,
 } from 'lucide-react';
 import InvestorShell, { InvestorNotice } from '@/components/InvestorShell';
 import { InvestorAssistant, InvestorContactForm, InvestorSubscribeForm } from '@/components/InvestorForms';
 import {
   IrAnnouncementCard, IrDocumentList, IrEmptyPanel, IrFinancialTable,
-  IrMilestoneList, IrSectionHead, IrStatGrid,
+  IrSectionHead,
 } from '@/components/InvestorBits';
 import {
   AtAlert, AtBadge, AtButton, AtEmpty, AtPanel, AtProgress, AtTabs,
 } from '@/components/AtelierUI';
+import {
+  CapEmpty, CapKpiGrid, CapPublicHead, CapRecordCard, CapSection, CapSectionHead,
+} from '@/components/CapitalUI';
 import { useInvestorOverview } from '@/lib/investorApi';
 import {
-  TB_DISCLOSURE, TB_DOC_CATEGORIES, TB_FAQ, TB_GOVERNANCE, TB_IPO_PHASES,
+  TB_DOC_CATEGORIES, TB_FAQ, TB_GOVERNANCE,
   TB_IR_POLICY, TB_ISSUER, TB_LEADERSHIP, TB_PILLARS, TB_REPORTING_PRINCIPLES,
-  TB_SEPARATION, formatDate, formatNumber,
+  TB_SEPARATION, formatDate, formatNumber, milestoneLabel, milestoneTone,
 } from '@/lib/investorRelations';
 
 const PAGE_COPY = {
-  overview: {
-    eyebrow: 'TradingBible · Investor relations',
-    title: 'A public record built before the public market.',
-    description: 'Corporate disclosure, financial reporting and shareholder access for a company preparing for a possible Nasdaq listing. The information is controlled, attributable and deliberately separated from any token product.',
-    badge: 'Pre-IPO information centre',
-  },
-  financials: {
-    eyebrow: 'TradingBible · Financial reporting',
-    title: 'Approved numbers. Identified sources.',
-    description: 'Financial reports appear only after an operator records a source, confirms the auditor status, names the approver and publishes the report. There are no estimated, annualised or placeholder results.',
-    badge: 'Reporting centre',
-  },
-  governance: {
-    eyebrow: 'TradingBible · Governance',
-    title: 'The controls have to exist before the capital.',
-    description: 'Entity structure, board composition, disclosure controls, shareholder rights and equity administration. Proposed policies remain visibly proposed until they are adopted and published.',
-    badge: 'Governance centre',
-  },
-  ipo: {
-    eyebrow: 'TradingBible · IPO readiness',
-    title: 'No bell, no shortcut.',
-    description: 'A transparent checklist of the corporate, financial, regulatory and exchange work required before a listing. Completion requires evidence; the platform does not auto-approve a milestone.',
-    badge: 'Preparation only',
-  },
-  news: {
-    eyebrow: 'TradingBible · Newsroom',
-    title: 'Announcements that can be sourced.',
-    description: 'Approved corporate announcements, reporting updates and readiness notices. Drafts and internal working notes never appear in the public feed.',
-    badge: 'Public announcements',
-  },
-  documents: {
-    eyebrow: 'TradingBible · Document library',
-    title: 'Approved, public and versioned.',
-    description: 'A controlled library of public corporate, governance, financial and IPO documents. Restricted documents and shareholder records require a separate authenticated process.',
-    badge: 'Public library',
-  },
-  contact: {
-    eyebrow: 'TradingBible · Investor relations',
-    title: 'A direct channel, with limits.',
-    description: 'Ask about published information, shareholder access or reporting. Do not send original signed documents, passwords, private keys or material non-public information.',
-    badge: 'Contact IR',
-  },
+  overview: { title: 'Investor relations' },
+  financials: { title: 'Financial reporting' },
+  governance: { title: 'Governance' },
+  ipo: { title: 'IPO readiness' },
+  news: { title: 'Announcements' },
+  documents: { title: 'Document library' },
+  contact: { title: 'Contact investor relations' },
 };
 
-function Hero({ copy, status = [], actions, meta = [] }) {
+function Hero({ copy, status = [] }) {
   return (
-    <section className="ir-hero">
-      <div className="ir-hero-grid">
-        <div className="min-w-0">
-          <div className="ir-eyebrow">{copy.eyebrow}</div>
-          <h1 className="ir-display mt-4">{copy.title}</h1>
-          <p className="ir-lead mt-6">{copy.description}</p>
-          <div className="ir-hero-meta">
-            <AtBadge tone="gold">{copy.badge}</AtBadge>
-            {meta.map((item) => <AtBadge key={item} tone="muted">{item}</AtBadge>)}
-          </div>
-          {actions && <div className="mt-6 flex flex-wrap gap-2">{actions}</div>}
-        </div>
-        <aside className="ir-status-panel">
-          <div className="ir-status-panel-head">
-            <div>
-              <div className="ir-kicker">Issuer status</div>
-              <div className="mt-1 text-xs font-semibold text-[var(--at-ink)]">Private · pre-IPO</div>
-            </div>
-            <AtBadge tone="amber">Not listed</AtBadge>
-          </div>
-          <div className="ir-list">
-            {status.map(([label, value]) => (
-              <div className="ir-list-row !py-2" key={label}>
-                <div className="ir-list-main"><div className="ir-list-sub !mt-0">{label}</div></div>
-                <div className="ir-list-side"><span className="text-right text-[10px] font-semibold text-[var(--at-ink-2)]">{value}</span></div>
-              </div>
-            ))}
-          </div>
-          <div className="ir-security-note">
-            <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--at-gold)]" />
-            <span>{TB_ISSUER.tickerStatus}. {TB_ISSUER.exchangeStatus}.</span>
-          </div>
-        </aside>
-      </div>
-    </section>
+    <CapPublicHead
+      title={copy.title}
+      aside={(
+        <CapRecordCard
+          title="Issuer status"
+          badge="Not listed"
+          rows={status}
+          note={`${TB_ISSUER.tickerStatus}. ${TB_ISSUER.exchangeStatus}.`}
+        />
+      )}
+    />
   );
 }
 
 function OverviewSection({ data, loading, error, reload }) {
   const announcements = data?.announcements || [];
   const reports = data?.financials || [];
-  const milestones = data?.milestones || [];
-  const ipo = data?.ipo || { complete: 0, total: 0, inProgress: 0, blocked: 0, progressPct: 0 };
+  const capital = data?.capital;
+  const ipo = data?.ipo || { complete: 0, total: 0, inProgress: 0, blocked: 0, notStarted: 0, progressPct: 0 };
 
   return (
     <>
       <Hero
         copy={PAGE_COPY.overview}
-        actions={(
-          <>
-            <AtButton to="/investors/ipo" variant="gold" iconRight={ArrowRight}>IPO readiness</AtButton>
-            <AtButton to="/investors/financials" variant="outline" icon={BarChart3}>Financial reporting</AtButton>
-            <AtButton to="/investors/shareholders" variant="quiet" icon={Users}>Shareholder portal</AtButton>
-          </>
-        )}
-        meta={['TB equity ≠ TBC', 'No offer or trading']}
         status={[
           ['Current entity', 'TradingBible LLC'],
           ['Proposed issuer', 'TradingBible, Inc.'],
@@ -131,135 +67,218 @@ function OverviewSection({ data, loading, error, reload }) {
           ['Last disclosure', formatDate(data?.generatedAt, 'Not available')],
         ]}
       />
-      <div className="mt-4"><InvestorNotice /></div>
+
+      <CapKpiGrid items={[
+        { icon: Landmark, label: 'Listing status', value: 'Pre-IPO', note: 'No public market', badge: 'Not listed' },
+        { icon: Target, label: 'Proposed ticker', value: 'TB', note: 'Not reserved or approved', badge: 'Proposed' },
+        { icon: BarChart3, label: 'IPO readiness', value: `${ipo.complete}/${ipo.total}`, note: 'Evidenced milestones', badge: `${ipo.progressPct}%` },
+        { icon: FileText, label: 'Approved reports', value: String(reports.length), note: 'Approved and published', badge: reports.length ? 'Published' : 'None yet' },
+      ]} />
+
+      <div className="mt-2.5"><InvestorNotice compact /></div>
+
       {error && (
-        <div className="mt-4">
+        <div className="mt-2.5">
           <AtAlert icon={ShieldCheck} tone="amber">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span>{error}</span>
+              <span>{error} Static company information remains available.</span>
               <AtButton onClick={reload} variant="outline" size="sm">Retry</AtButton>
             </div>
           </AtAlert>
         </div>
       )}
 
-      <section className="ir-sec">
-        <IrStatGrid items={[
-          { label: 'Listing status', value: 'Pre-IPO', note: 'No shares are publicly traded.', badge: 'Not listed', badgeTone: 'amber' },
-          { label: 'Proposed ticker', value: 'TB', note: 'Not reserved or approved.', tone: 'gold', badge: 'Proposed', badgeTone: 'gold' },
-          { label: 'IPO readiness', value: `${ipo.complete}/${ipo.total}`, note: 'Only evidenced completion counts.', badge: `${ipo.progressPct}%`, badgeTone: 'blue' },
-          { label: 'Approved reports', value: String(reports.length), note: 'Reports with a source note and approver.', badge: reports.length ? 'Published' : 'None yet', badgeTone: reports.length ? 'green' : 'muted' },
-        ]} />
-      </section>
-
-      <section className="ir-sec">
-        <IrSectionHead
-          index="01"
-          title="The investor record"
-          sub="Public disclosure, reporting and shareholder access are separate permissions, not one unrestricted feed."
-          action={<AtButton to="/stock/TB" variant="outline" size="sm" iconRight={ArrowRight}>TB stock overview</AtButton>}
+      <CapSection>
+        <CapSectionHead
+          title="Latest disclosure"
+          action={<AtButton to="/investors/news" variant="outline" size="sm" iconRight={ArrowRight}>Announcements</AtButton>}
         />
-        <div className="ir-cols-12">
-          <div className="ir-span-7">
-            <AtPanel eyebrow="Latest public announcements" title="Disclosure feed" sub="Approved corporate information only.">
+        <div className="cap-grid">
+          <div className="cap-span-7">
+            <AtPanel
+              className="cap-panel h-full"
+              title="Approved announcements"
+              action={<AtBadge tone="muted">{announcements.length}</AtBadge>}
+            >
               {loading ? (
-                <div className="flex items-center gap-2 text-[11px] text-[var(--at-mut)]"><Loader2 className="h-4 w-4 animate-spin" /> Loading public feed…</div>
+                <div className="flex items-center gap-2 text-[10px] text-[var(--at-mut)]">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--at-gold)]" />
+                  Loading approved announcements…
+                </div>
               ) : announcements.length === 0 ? (
-                <AtEmpty icon={Newspaper} title="No announcements published" sub="The public feed is empty. Draft and internal material is never shown here." action={<AtButton to="/investors/contact" variant="outline" size="sm">Contact IR</AtButton>} />
+                <CapEmpty
+                  icon={Newspaper}
+                  title="No announcements published"
+                  sub="Drafts and internal records are never shown here."
+                />
               ) : (
-                <div className="ir-stack">
-                  {announcements.slice(0, 3).map((item) => <IrAnnouncementCard key={item.id} item={item} />)}
-                  <AtButton to="/investors/news" variant="outline" size="sm" iconRight={ArrowRight}>All announcements</AtButton>
+                <div className="ir-list">
+                  {announcements.slice(0, 2).map((item) => (
+                    <div className="ir-list-row" key={item.id}>
+                      <div className="ir-list-main">
+                        <div className="ir-list-title">{item.title}</div>
+                        <div className="ir-list-sub">
+                          {item.category || 'Corporate'} · {formatDate(item.publishedAt, 'Publication pending')}
+                        </div>
+                      </div>
+                      <div className="ir-list-side"><AtBadge tone="green">Published</AtBadge></div>
+                    </div>
+                  ))}
                 </div>
               )}
             </AtPanel>
           </div>
-          <div className="ir-span-5">
-            <AtPanel eyebrow="Capital structure" title="Public share classes" sub="Only authorized classes approved for public disclosure.">
-              {!data?.capital ? (
-                <AtEmpty icon={CircleDollarSign} title="Not yet published" sub="No authorized share class has been approved for public disclosure. No placeholder capitalization is shown." />
-              ) : (
-                <div className="ir-stack">
-                  <div className="ir-cols-3">
-                    {[['Authorized', data.capital.authorizedShares], ['Issued', data.capital.issuedShares], ['Outstanding', data.capital.outstandingShares]].map(([label, value]) => (
-                      <div className="ir-card ir-card--soft !p-3" key={label}>
-                        <div className="ir-kicker">{label}</div>
-                        <div className="mt-1 font-mono text-base font-bold text-[var(--at-ink)]">{formatNumber(value)}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="ir-link-list">
-                    {data.capital.classes.map((row) => (
-                      <div key={row.id} className="flex items-center justify-between gap-2 border-t border-[var(--at-line-soft)] pt-2 text-[10px]">
-                        <span className="font-mono font-bold text-[var(--at-gold)]">{row.classCode}</span>
-                        <span className="text-[var(--at-mut)]">{formatNumber(row.outstandingShares)} outstanding</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </AtPanel>
-          </div>
-        </div>
-      </section>
-
-      <section className="ir-sec">
-        <div className="ir-cols-12">
-          <div className="ir-span-7">
-            <AtPanel eyebrow="Financial reporting" title="Latest approved report" sub="Figures and source record, or an honest empty state." action={<AtButton to="/investors/financials" variant="outline" size="sm" iconRight={ArrowRight}>All reports</AtButton>}>
-              {reports.length ? <IrFinancialTable rows={reports.slice(0, 2)} compact /> : <IrFinancialTable rows={[]} compact />}
-            </AtPanel>
-          </div>
-          <div className="ir-span-5">
-            <AtPanel eyebrow="IPO readiness" title="Evidenced completion" sub="The checklist is a preparation tool, not a listing application." action={<AtButton to="/investors/ipo" variant="outline" size="sm" iconRight={ArrowRight}>Readiness centre</AtButton>}>
-              <div className="ir-progress-row"><span>Overall progress</span><strong>{ipo.progressPct}%</strong></div>
+          <div className="cap-span-5">
+            <AtPanel
+              className="cap-panel h-full"
+              title="IPO readiness"
+              action={<AtBadge tone="amber">Preparation only</AtBadge>}
+            >
+              <div className="ir-progress-row">
+                <span>Evidenced completion</span>
+                <strong>{ipo.progressPct}%</strong>
+              </div>
               <AtProgress value={ipo.progressPct} />
-              <div className="ir-cols-2 mt-4">
-                <div className="ir-card ir-card--soft !p-3"><div className="ir-kicker">Complete</div><div className="mt-1 font-mono text-xl font-bold">{ipo.complete}</div></div>
-                <div className="ir-card ir-card--soft !p-3"><div className="ir-kicker">In progress</div><div className="mt-1 font-mono text-xl font-bold">{ipo.inProgress}</div></div>
+              <div className="cap-market-grid mt-3">
+                {[
+                  ['Complete', ipo.complete],
+                  ['In progress', ipo.inProgress],
+                  ['Blocked', ipo.blocked],
+                  ['Not started', ipo.notStarted],
+                ].map(([label, value]) => (
+                  <div className="cap-market-cell" key={label}>
+                    <span>{label}</span>
+                    <strong>{value}</strong>
+                  </div>
+                ))}
               </div>
-              <p className="ir-field-note mt-3">No milestone is marked complete without a named evidence record. No Nasdaq application or approval is implied.</p>
+              <p className="ir-field-note mt-3">
+                A milestone is complete only when a named evidence record is attached. No Nasdaq
+                application, approval or listing date is implied.
+              </p>
             </AtPanel>
           </div>
         </div>
-      </section>
+      </CapSection>
 
-      <section className="ir-sec">
-        <IrSectionHead index="02" title="Governance snapshot" sub="Proposed and adopted are different states. The label follows the evidence." action={<AtButton to="/investors/governance" variant="outline" size="sm" iconRight={ArrowRight}>Governance centre</AtButton>} />
-        <div className="ir-cols-3">
-          {TB_GOVERNANCE.slice(0, 6).map((item) => (
-            <article className="ir-card" key={item.title}>
-              <div className="flex items-start justify-between gap-2">
-                <div className="ir-card-title">{item.title}</div>
-                <AtBadge tone={item.tone}>{item.status}</AtBadge>
-              </div>
-              <p className="ir-card-text">{item.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="ir-sec">
-        <div className="ir-cta-strip">
-          <div>
-            <div className="ir-eyebrow mb-2">Verified shareholder access</div>
-            <h2>Your positions. Your records. No one else's.</h2>
-            <p>The shareholder portal requires authentication, an access request and administrator verification. Approved shareholders see only their own positions, certificates, vesting terms and voting records. It is read-only and does not execute transfers.</p>
+      <CapSection>
+        <CapSectionHead
+          title="Capital and reporting"
+          action={<AtButton to="/stock/TB" variant="outline" size="sm" iconRight={ArrowRight}>TB stock record</AtButton>}
+        />
+        <div className="cap-grid">
+          <div className="cap-span-7">
+            <AtPanel className="cap-panel h-full" title="Public capital">
+              {!capital ? (
+                <CapEmpty
+                  icon={CircleDollarSign}
+                  title="Capitalisation not published"
+                  sub="No authorized class has been approved for public disclosure. No placeholder share count is shown."
+                />
+              ) : (
+                <>
+                  <div className="cap-market-grid">
+                    {[
+                      ['Authorized', capital.authorizedShares],
+                      ['Issued', capital.issuedShares],
+                      ['Outstanding', capital.outstandingShares],
+                    ].map(([label, value]) => (
+                      <div className="cap-market-cell" key={label}>
+                        <span>{label}</span>
+                        <strong>{formatNumber(value)}</strong>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="ir-table-wrap mt-3">
+                    <table className="ir-table">
+                      <thead><tr><th>Class</th><th>Name</th><th>Authorized</th><th>Outstanding</th></tr></thead>
+                      <tbody>
+                        {capital.classes.map((row) => (
+                          <tr key={row.id}>
+                            <td className="strong">{row.classCode}</td>
+                            <td>{row.name}</td>
+                            <td className="num">{formatNumber(row.authorizedShares)}</td>
+                            <td className="num">{formatNumber(row.outstandingShares)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </AtPanel>
           </div>
-          <AtButton to="/investors/shareholders" variant="gold" icon={Users} iconRight={ArrowRight}>Open shareholder portal</AtButton>
-        </div>
-      </section>
-
-      <section className="ir-sec">
-        <div className="ir-cols-12">
-          <div className="ir-span-8"><InvestorAssistant /></div>
-          <div className="ir-span-4">
-            <AtPanel eyebrow="Investor updates" title="Approved disclosures only" sub="Confirm by email. Unsubscribe at any time.">
-              <InvestorSubscribeForm compact />
+          <div className="cap-span-5">
+            <AtPanel
+              className="cap-panel h-full"
+              title="Latest approved report"
+              action={<AtButton to="/investors/financials" variant="outline" size="sm" iconRight={ArrowRight}>Reports</AtButton>}
+            >
+              {reports.length ? (
+                <IrFinancialTable rows={reports.slice(0, 2)} compact />
+              ) : (
+                <CapEmpty
+                  icon={FileText}
+                  title="No approved report published"
+                  sub="A report appears only after approval with a source note and named approver."
+                />
+              )}
             </AtPanel>
           </div>
         </div>
-      </section>
+      </CapSection>
+
+      <CapSection>
+        <CapSectionHead
+          title="Governance and access"
+          action={<AtButton to="/investors/governance" variant="outline" size="sm" iconRight={ArrowRight}>Governance</AtButton>}
+        />
+        <div className="cap-grid">
+          <div className="cap-span-7">
+            <AtPanel className="cap-panel h-full" title="Governance status">
+              <div className="ir-list">
+                {TB_GOVERNANCE.slice(0, 5).map((item) => (
+                  <div className="ir-list-row" key={item.title}>
+                    <div className="ir-list-main"><div className="ir-list-title">{item.title}</div></div>
+                    <div className="ir-list-side"><AtBadge tone={item.tone}>{item.status}</AtBadge></div>
+                  </div>
+                ))}
+              </div>
+            </AtPanel>
+          </div>
+          <div className="cap-span-5">
+            <AtPanel
+              className="cap-panel h-full"
+              title="Shareholder access"
+              action={<AtBadge tone="gold">Read-only</AtBadge>}
+            >
+              <div className="ir-list">
+                {[
+                  ['Authentication', 'Required'],
+                  ['Verification', 'Administrator review'],
+                  ['Visible records', 'Own positions only'],
+                  ['Transfers', 'Not enabled'],
+                  ['Voting execution', 'Not enabled'],
+                ].map(([label, value]) => (
+                  <div className="ir-list-row" key={label}>
+                    <div className="ir-list-main"><div className="ir-list-sub !mt-0">{label}</div></div>
+                    <div className="ir-list-side"><span className="text-[9px] font-semibold text-[var(--at-ink-2)]">{value}</span></div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3">
+                <AtButton to="/investors/shareholders" variant="gold" size="sm" icon={Users} iconRight={ArrowRight}>Open portal</AtButton>
+              </div>
+            </AtPanel>
+          </div>
+        </div>
+      </CapSection>
+
+      <CapSection>
+        <AtPanel className="cap-panel" title="Investor updates">
+          <InvestorSubscribeForm compact />
+        </AtPanel>
+      </CapSection>
     </>
   );
 }
@@ -274,7 +293,7 @@ function FinancialsSection({ data, loading, error, reload }) {
         ['Currency', 'USD unless disclosed'],
         ['Fiscal year', 'Calendar year'],
         ['Public market', 'None'],
-      ]} actions={<AtButton to="/investors/documents" variant="outline" icon={FolderOpen}>Document library</AtButton>} meta={['No estimates as results', 'Source note required']} />
+      ]} />
       <div className="mt-4"><InvestorNotice /></div>
       {error && <div className="mt-4"><AtAlert icon={ShieldCheck} tone="amber"><div className="flex flex-wrap items-center justify-between gap-2"><span>{error}</span><AtButton onClick={reload} variant="outline" size="sm">Retry</AtButton></div></AtAlert></div>}
 
@@ -339,87 +358,104 @@ function GovernanceSection({ data }) {
         ['Board', 'Not yet constituted'],
         ['Transfer agent', 'Not engaged'],
         ['Shareholder portal', 'Verified access'],
-      ]} actions={<AtButton to="/investors/documents" variant="outline" icon={FolderOpen}>Governance documents</AtButton>} meta={['Proposed ≠ adopted', 'Evidence required']} />
-      <div className="mt-4"><InvestorNotice /></div>
+      ]} />
+      <div className="mt-2.5"><InvestorNotice compact /></div>
 
-      <section className="ir-sec">
-        <IrSectionHead index="01" title="Corporate structure" sub="The current operating entity and the proposed public issuer are not the same legal person." />
-        <div className="ir-cols-2">
-          <div className="ir-card">
-            <div className="flex items-center gap-2"><Building2 className="h-4 w-4 text-[var(--at-gold)]" /><div className="ir-card-title">TradingBible LLC</div><AtBadge tone="gold">Current</AtBadge></div>
-            <p className="ir-card-text">The current operating entity, organized in Delaware. It operates the platform and holds the current business relationships. It is not a public company.</p>
-            <div className="ir-list mt-3">
-              {[['Jurisdiction', 'Delaware, United States'], ['Public market', 'None'], ['Shares', 'LLC interests, not listed shares'], ['Investor access', 'Private records only']].map(([label, value]) => (
-                <div className="ir-list-row !py-2" key={label}><div className="ir-list-main"><div className="ir-list-sub !mt-0">{label}</div></div><div className="ir-list-side"><span className="text-[10px] font-semibold text-[var(--at-ink-2)]">{value}</span></div></div>
-              ))}
-            </div>
-          </div>
-          <div className="ir-card">
-            <div className="flex items-center gap-2"><Landmark className="h-4 w-4 text-[var(--at-gold)]" /><div className="ir-card-title">TradingBible, Inc.</div><AtBadge tone="amber">Proposed</AtBadge></div>
-            <p className="ir-card-text">A proposed Delaware C-Corporation intended to become the public holding company if a future conversion, board approval, legal process and listing occur. It has not been presented as formed.</p>
-            <div className="ir-list mt-3">
-              {[['Structure', 'Proposed C-Corporation'], ['Ticker', 'TB · proposed'], ['Target exchange', 'Nasdaq · target only'], ['Listing status', 'No application or approval']].map(([label, value]) => (
-                <div className="ir-list-row !py-2" key={label}><div className="ir-list-main"><div className="ir-list-sub !mt-0">{label}</div></div><div className="ir-list-side"><span className="text-[10px] font-semibold text-[var(--at-ink-2)]">{value}</span></div></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="ir-sec">
-        <IrSectionHead index="02" title="Governance workstreams" sub="Every item is labelled with its actual state. No proposed policy is described as adopted." />
-        <div className="ir-cols-3">
-          {TB_GOVERNANCE.map((item) => (
-            <article className="ir-card" key={item.title}>
-              <div className="flex items-start justify-between gap-2"><div className="ir-card-title">{item.title}</div><AtBadge tone={item.tone}>{item.status}</AtBadge></div>
-              <p className="ir-card-text">{item.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="ir-sec">
-        <div className="ir-cols-12">
-          <div className="ir-span-7">
-            <AtPanel eyebrow="Leadership" title="Current operators" sub="Profiles reflect the current operating structure, not a future board.">
-              <div className="ir-stack">
-                {TB_LEADERSHIP.map((person) => (
-                  <div className="ir-card ir-card--soft" key={person.name}>
-                    <div className="flex items-start gap-3">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[var(--at-line)] bg-[var(--at-gold-soft)] text-xs font-bold text-[var(--at-gold)]">{person.name.split(' ').map((p) => p[0]).slice(0, 2).join('')}</span>
-                      <div><div className="ir-card-title">{person.name}</div><div className="mt-0.5 text-[10px] font-semibold text-[var(--at-gold)]">{person.role}</div><p className="ir-card-text">{person.focus}</p><div className="ir-field-note mt-2">{person.note}</div></div>
-                    </div>
+      <CapSection>
+        <CapSectionHead title="Corporate structure" action={<AtBadge tone="muted">Two entities</AtBadge>} />
+        <div className="cap-grid">
+          <div className="cap-span-6">
+            <AtPanel className="cap-panel h-full" title="TradingBible LLC" action={<AtBadge tone="gold">Current</AtBadge>}>
+              <div className="ir-list">
+                {[
+                  ['Jurisdiction', 'Delaware, United States'],
+                  ['Public market', 'None'],
+                  ['Shares', 'LLC interests, not listed shares'],
+                  ['Investor access', 'Private records only'],
+                ].map(([label, value]) => (
+                  <div className="ir-list-row" key={label}>
+                    <div className="ir-list-main"><div className="ir-list-sub !mt-0">{label}</div></div>
+                    <div className="ir-list-side"><span className="text-[9px] font-semibold text-[var(--at-ink-2)]">{value}</span></div>
                   </div>
                 ))}
               </div>
-              <div className="ir-security-note mt-3"><ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--at-amber)]" /><span>Independent directors and board committees will be disclosed only after appointment and adoption. No board is represented as constituted.</span></div>
+              <p className="ir-field-note mt-3">The current operating entity. It is not a public company.</p>
             </AtPanel>
           </div>
-          <div className="ir-span-5">
-            <AtPanel eyebrow="Governance documents" title="Public library" sub="Governance, corporate and policy documents.">
-              <IrDocumentList documents={docs} emptyTitle="No governance documents published" emptySub="Adopted charters, committee terms and policies will appear here after approval." />
+          <div className="cap-span-6">
+            <AtPanel className="cap-panel h-full" title="TradingBible, Inc." action={<AtBadge tone="amber">Proposed</AtBadge>}>
+              <div className="ir-list">
+                {[
+                  ['Structure', 'Proposed C-Corporation'],
+                  ['Ticker', 'TB · proposed'],
+                  ['Target exchange', 'Nasdaq · target only'],
+                  ['Listing status', 'No application or approval'],
+                ].map(([label, value]) => (
+                  <div className="ir-list-row" key={label}>
+                    <div className="ir-list-main"><div className="ir-list-sub !mt-0">{label}</div></div>
+                    <div className="ir-list-side"><span className="text-[9px] font-semibold text-[var(--at-ink-2)]">{value}</span></div>
+                  </div>
+                ))}
+              </div>
+              <p className="ir-field-note mt-3">A proposed issuer. It has not been presented as formed.</p>
             </AtPanel>
           </div>
         </div>
-      </section>
+      </CapSection>
 
-      <section className="ir-sec">
-        <IrSectionHead index="03" title="Investor disclosure policy" sub="The operating rules behind every public page." />
-        <div className="ir-card">
-          <ol className="ir-bullet-list" style={{ counterReset: 'policy' }}>
+      <CapSection>
+        <CapSectionHead title="Governance workstreams" action={<AtBadge tone="amber">Proposed ≠ adopted</AtBadge>} />
+        <AtPanel className="cap-panel" title="Current status">
+          <div className="ir-list">
+            {TB_GOVERNANCE.map((item) => (
+              <div className="ir-list-row" key={item.title}>
+                <div className="ir-list-main">
+                  <div className="ir-list-title">{item.title}</div>
+                  <div className="ir-list-sub">{item.body}</div>
+                </div>
+                <div className="ir-list-side"><AtBadge tone={item.tone}>{item.status}</AtBadge></div>
+              </div>
+            ))}
+          </div>
+        </AtPanel>
+      </CapSection>
+
+      <CapSection>
+        <CapSectionHead title="Leadership and documents" />
+        <div className="cap-grid">
+          <div className="cap-span-7">
+            <AtPanel className="cap-panel h-full" title="Current operators" action={<AtBadge tone="muted">{TB_LEADERSHIP.length}</AtBadge>}>
+              <div className="ir-list">
+                {TB_LEADERSHIP.map((person) => (
+                  <div className="ir-list-row" key={person.name}>
+                    <div className="ir-list-main">
+                      <div className="ir-list-title">{person.name}</div>
+                      <div className="ir-list-sub">{person.role} · {person.focus}</div>
+                    </div>
+                    <div className="ir-list-side"><AtBadge tone="blue">Operator</AtBadge></div>
+                  </div>
+                ))}
+              </div>
+              <p className="ir-field-note mt-3">Profiles reflect the current operating structure, not a future board. No board is represented as constituted.</p>
+            </AtPanel>
+          </div>
+          <div className="cap-span-5">
+            <AtPanel className="cap-panel h-full" title="Public documents">
+              <IrDocumentList documents={docs} emptyTitle="No governance documents published" emptySub="Adopted charters, committee terms and policies appear here after approval." />
+            </AtPanel>
+          </div>
+        </div>
+      </CapSection>
+
+      <CapSection>
+        <AtPanel className="cap-panel" title="Investor disclosure policy">
+          <ol className="ir-bullet-list">
             {TB_IR_POLICY.map((item, index) => (
               <li key={item}><span className="mr-2 font-mono text-[9px] font-bold text-[var(--at-gold)]">{String(index + 1).padStart(2, '0')}</span>{item}</li>
             ))}
           </ol>
-        </div>
-      </section>
-
-      <section className="ir-sec">
-        <div className="ir-cta-strip">
-          <div><div className="ir-eyebrow mb-2">Shareholder rights</div><h2>Read-only until the lawful process exists.</h2><p>The portal records verified positions and voting history. It does not issue shares, execute transfers, change ownership or cast a vote on a shareholder's behalf.</p></div>
-          <AtButton to="/investors/shareholders" variant="gold" icon={Users}>Shareholder portal</AtButton>
-        </div>
-      </section>
+        </AtPanel>
+      </CapSection>
     </>
   );
 }
@@ -445,83 +481,63 @@ function IpoSection({ data }) {
         ['Underwriters', 'Not engaged'],
         ['Audited financials', 'Not published'],
         ['Readiness', `${ipo.complete}/${ipo.total} complete`],
-      ]} actions={<AtButton to="/investors/documents" variant="outline" icon={FileText}>IPO documents</AtButton>} meta={['No auto-approval', 'Evidence before completion']} />
-      <div className="mt-4">
+      ]} />
+      <div className="mt-2.5">
         <AtAlert icon={AlertTriangle} tone="amber"><span className="font-bold text-[var(--at-amber)]">Preparation only.</span> No registration statement has been filed, no underwriter has been engaged and no exchange has approved a listing. A completed workstream is not a regulatory approval.</AtAlert>
       </div>
 
-      <section className="ir-sec">
-        <IrStatGrid items={[
-          { label: 'Complete', value: String(ipo.complete), note: 'With named evidence.', tone: 'gold', badge: `${ipo.progressPct}%`, badgeTone: 'green' },
-          { label: 'In progress', value: String(ipo.inProgress), note: 'Active workstreams.', badge: 'Active', badgeTone: 'blue' },
-          { label: 'Blocked', value: String(ipo.blocked), note: 'Needs a decision or resource.', badge: ipo.blocked ? 'Attention' : 'None', badgeTone: ipo.blocked ? 'red' : 'muted' },
-          { label: 'Not started', value: String(ipo.notStarted), note: 'Work that has no evidence yet.', badge: 'Open', badgeTone: 'muted' },
-        ]} />
-        <div className="mt-4">
-          <div className="ir-progress-row"><span>Evidenced readiness</span><strong>{ipo.progressPct}%</strong></div>
-          <AtProgress value={ipo.progressPct} />
-        </div>
-      </section>
+      <CapKpiGrid items={[
+        { label: 'Complete', value: String(ipo.complete), note: 'With named evidence', badge: `${ipo.progressPct}%` },
+        { label: 'In progress', value: String(ipo.inProgress), note: 'Active workstreams', badge: 'Active' },
+        { label: 'Blocked', value: String(ipo.blocked), note: 'Decision or resource needed', badge: ipo.blocked ? 'Attention' : 'None' },
+        { label: 'Not started', value: String(ipo.notStarted), note: 'No evidence yet', badge: 'Open' },
+      ]} />
 
-      <section className="ir-sec">
-        <IrSectionHead index="01" title="Readiness workstreams" sub="Grouped by discipline. A completion without evidence is not accepted by the platform." action={<AtBadge tone="amber">No dates guaranteed</AtBadge>} />
-        {byPhase.length === 0 ? (
-          <IrEmptyPanel icon={Target} title="Readiness checklist not published" sub="The checklist will appear when an operator publishes the first evidence-backed milestone set." />
-        ) : (
-          <div className="ir-stack-lg">
-            {byPhase.map(([phase, items]) => (
-              <AtPanel key={phase} eyebrow={phase} title={`${phase} workstreams`} sub={`${items.filter((item) => item.status === 'complete').length} of ${items.length} complete`}>
-                <IrMilestoneList milestones={items} showPhase={false} />
-              </AtPanel>
-            ))}
-          </div>
-        )}
-      </section>
+      <div className="mt-2.5">
+        <div className="ir-progress-row"><span>Evidenced readiness</span><strong>{ipo.progressPct}%</strong></div>
+        <AtProgress value={ipo.progressPct} />
+      </div>
 
-      <section className="ir-sec">
-        <div className="ir-cols-12">
-          <div className="ir-span-7">
-            <AtPanel eyebrow="Readiness framework" title="The seven disciplines" sub="A listing is an integrated process, not a single filing.">
-              <div className="ir-stack">
-                {TB_IPO_PHASES.map((phase, index) => (
-                  <div className="ir-list-row" key={phase.id}>
-                    <span className="ir-index shrink-0">{String(index + 1).padStart(2, '0')}</span>
-                    <div className="ir-list-main"><div className="ir-list-title">{phase.label}</div><div className="ir-list-sub">{phase.note}</div></div>
-                  </div>
-                ))}
-              </div>
-            </AtPanel>
-          </div>
-          <div className="ir-span-5">
-            <AtPanel eyebrow="Evidence standard" title="What complete means" sub="The control is deliberately strict.">
-              <ul className="ir-bullet-list">
-                <li>A named evidence record is attached to the milestone.</li>
-                <li>An authorized operator updates the status; no automation approves it.</li>
-                <li>The change creates an append-only audit event.</li>
-                <li>Regulatory filings and exchange approvals are evidenced by the filing or approval record, not a task checkbox.</li>
-                <li>Forward-looking dates remain targets, not commitments.</li>
-              </ul>
-              <div className="ir-security-note mt-3"><ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--at-amber)]" /><span>No IPO milestone is auto-marked approved or complete.</span></div>
-            </AtPanel>
-          </div>
+      <CapSection>
+        <CapSectionHead
+          title="Readiness workstreams"
+          action={<AtBadge tone="amber">No dates guaranteed</AtBadge>}
+        />
+        <AtPanel className="cap-panel" title="Published milestones">
+          {byPhase.length === 0 ? (
+            <CapEmpty
+              icon={Target}
+              title="Readiness checklist not published"
+              sub="The checklist appears when an operator publishes the first evidence-backed milestone set."
+            />
+          ) : (
+            <div className="ir-list">
+              {byPhase.map(([phase, items]) => (
+                <React.Fragment key={phase}>
+                  <div className="ir-kicker mt-2 first:mt-0">{phase}</div>
+                  {items.map((item) => (
+                    <div className="ir-list-row" key={item.id || item.slug}>
+                      <div className="ir-list-main">
+                        <div className="ir-list-title">{item.title}</div>
+                        <div className="ir-list-sub">
+                          {item.evidence ? `Evidence: ${item.evidence}` : 'No evidence attached'}
+                        </div>
+                      </div>
+                      <div className="ir-list-side">
+                        <AtBadge tone={milestoneTone(item.status)}>{milestoneLabel(item.status)}</AtBadge>
+                      </div>
+                    </div>
+                  ))}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+        </AtPanel>
+        <div className="ir-security-note mt-2.5">
+          <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--at-amber)]" />
+          <span>Completion requires a named evidence record, an authorized operator update and an append-only audit event. No IPO milestone is auto-marked approved or complete.</span>
         </div>
-      </section>
-
-      <section className="ir-sec">
-        <div className="ir-cols-12">
-          <div className="ir-span-8"><InvestorAssistant /></div>
-          <div className="ir-span-4">
-            <AtPanel eyebrow="IPO questions" title="Ask for the public status" sub="The assistant can explain the checklist but cannot predict a listing date or valuation.">
-              <ul className="ir-bullet-list">
-                <li>Which workstreams are complete?</li>
-                <li>Has an application been filed?</li>
-                <li>What evidence is required?</li>
-                <li>Is a listing date guaranteed?</li>
-              </ul>
-            </AtPanel>
-          </div>
-        </div>
-      </section>
+      </CapSection>
     </>
   );
 }
@@ -536,7 +552,7 @@ function NewsSection({ data, loading }) {
         ['Editorial policy', 'Approved only'],
         ['Public market', 'None'],
         ['Updated', formatDate(data?.generatedAt, '—')],
-      ]} actions={<AtButton to="/investors/contact" variant="outline" icon={Mail}>Media contact</AtButton>} meta={['No drafts', 'No speculation']} />
+      ]} />
       <div className="mt-4"><InvestorNotice /></div>
       <section className="ir-sec">
         <IrSectionHead index="01" title="Public announcements" sub="Newest first. Each item carries its category and publication date." action={<AtBadge tone="gold">{announcements.length} item{announcements.length === 1 ? '' : 's'}</AtBadge>} />
@@ -576,7 +592,7 @@ function DocumentsSection({ data }) {
         ['Versioning', 'Tracked'],
         ['Checksums', 'When supplied'],
         ['Restricted records', 'Private'],
-      ]} actions={<AtButton to="/investors/shareholders" variant="outline" icon={Users}>Shareholder records</AtButton>} meta={['No confidential files', 'Approved versions only']} />
+      ]} />
       <div className="mt-4"><InvestorNotice /></div>
       <section className="ir-sec">
         <IrSectionHead index="01" title="Document library" sub="Filter by category. A document appears only after approval and publication." action={<AtBadge tone="gold">{filtered.length} shown</AtBadge>} />
@@ -614,8 +630,8 @@ function ContactSection() {
         ['Media', 'IR review'],
         ['Public market', 'None'],
         ['Response', 'Business-hours review'],
-      ]} actions={<AtButton to="/investors/shareholders" variant="outline" icon={Users}>Shareholder portal</AtButton>} meta={['No confidential data', 'No offer or advice']} />
-      <div className="mt-4"><InvestorNotice /></div>
+      ]} />
+      <div className="mt-2.5"><InvestorNotice compact /></div>
       <section className="ir-sec">
         <div className="ir-cols-12">
           <div className="ir-span-8">
@@ -632,12 +648,6 @@ function ContactSection() {
               </div>
             </AtPanel>
           </div>
-        </div>
-      </section>
-      <section className="ir-sec">
-        <div className="ir-cols-12">
-          <div className="ir-span-8"><InvestorAssistant /></div>
-          <div className="ir-span-4"><AtPanel eyebrow="Investor updates" title="Subscribe" sub="Approved disclosures and readiness notices."><InvestorSubscribeForm compact /></AtPanel></div>
         </div>
       </section>
       <section className="ir-sec">
@@ -667,11 +677,8 @@ export default function InvestorRelationsPage({ section = 'overview' }) {
 
   return (
     <InvestorShell active={section === 'overview' ? 'Investor Home' : undefined}>
-      <div className="ir-page">
+      <div className="ir-page cap-page">
         {content}
-        <section className="ir-sec">
-          <div className="ir-disclosure">{TB_DISCLOSURE}</div>
-        </section>
       </div>
     </InvestorShell>
   );

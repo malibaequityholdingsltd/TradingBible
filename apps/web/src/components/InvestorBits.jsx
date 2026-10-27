@@ -9,30 +9,30 @@ import {
 
 export function IrSectionHead({ index, title, sub, action, id }) {
   return (
-    <div className="ir-sec-head" id={id}>
-      <div className="flex min-w-0 items-end gap-3">
-        {index && <span className="ir-index mb-1">{index}</span>}
-        <div className="min-w-0">
-          <h2 className="ir-sec-title">{title}</h2>
-          {sub && <p className="ir-sec-sub">{sub}</p>}
+    <div className="cap-section-head" id={id}>
+      <div className="cap-section-head-main">
+        {index && <span className="cap-index mb-0.5">{index}</span>}
+        <div>
+          <h2>{title}</h2>
+          {sub && <p>{sub}</p>}
         </div>
       </div>
-      {action}
+      {action && <div className="cap-section-head-action">{action}</div>}
     </div>
   );
 }
 
 export function IrStatGrid({ items, columns = 4 }) {
   return (
-    <div className={columns === 2 ? 'ir-cols-2' : columns === 3 ? 'ir-cols-3' : 'ir-cols-4'}>
+    <div className="cap-kpis">
       {items.map((item) => (
-        <article className="ir-card" key={item.label}>
-          <div className="flex items-center justify-between gap-2">
-            <span className="ir-kicker">{item.label}</span>
+        <article className="cap-kpi" key={item.label}>
+          <div className="cap-kpi-top">
+            <span className="cap-kpi-label">{item.label}</span>
             {item.badge ? <AtBadge tone={item.badgeTone || 'muted'}>{item.badge}</AtBadge> : null}
           </div>
-          <div className={`mt-3 text-[20px] font-bold leading-tight tracking-[-0.04em] ${item.tone === 'gold' ? 'text-[var(--at-gold)]' : item.tone === 'amber' ? 'text-[var(--at-amber)]' : 'text-[var(--at-ink)]'}`}>{item.value}</div>
-          {item.note && <div className="mt-1.5 text-[9px] leading-relaxed text-[var(--at-mut)]">{item.note}</div>}
+          <div className={`cap-kpi-value ${item.tone === 'gold' ? 'text-[var(--at-gold)]' : item.tone === 'amber' ? 'text-[var(--at-amber)]' : ''}`}>{item.value}</div>
+          {item.note && <div className="cap-kpi-foot"><span>{item.note}</span></div>}
         </article>
       ))}
     </div>

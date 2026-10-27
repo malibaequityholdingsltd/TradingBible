@@ -23,43 +23,43 @@ const COLUMNS = [
   {
     headingKey: 'fot.h_product',
     links: [
-      { labelKey: 'fot.l_trading_journal', to: '/app/journal', member: true },
-      { labelKey: 'fot.l_ai_coach', to: '/app/coach', member: true },
-      { labelKey: 'fot.l_dashboard', to: '/app', member: true },
-      { labelKey: 'fot.l_broker_integrations', to: '/app/brokers', member: true },
-      { labelKey: 'fot.l_market_data', to: '/app/terminal-pro', member: true },
-      { labelKey: 'fot.l_performance_analytics', to: '/app/analytics', member: true },
+      { labelKey: 'fot.l_trading_journal', to: '/features/trading-journal' },
+      { labelKey: 'fot.l_ai_coach', to: '/features/si-coach' },
+      { labelKey: 'fot.l_dashboard', to: '/features/dashboard' },
+      { labelKey: 'fot.l_broker_integrations', to: '/features/broker-integrations' },
+      { labelKey: 'fot.l_market_data', to: '/features/market-data' },
+      { labelKey: 'fot.l_performance_analytics', to: '/features/performance-analytics' },
     ],
   },
   {
     headingKey: 'fot.h_tools',
     links: [
-      { labelKey: 'fot.l_features_overview', to: '/about#features' },
+      { labelKey: 'fot.l_features_overview', to: '/features' },
       { labelKey: 'fot.l_pricing', to: '/pricing' },
       { labelKey: 'fot.l_tbc', to: '/tbc', badge: 'Proposed' },
       { labelKey: 'fot.l_plans_comparison', to: '/pricing#plans' },
-      { labelKey: 'fot.l_api_access', to: '/app/api-docs', member: true, badge: 'Pro' },
-      { labelKey: 'fot.l_premium_features', to: '/pricing#plans' },
+      { labelKey: 'fot.l_api_access', to: '/features/api', badge: 'Pro' },
+      { labelKey: 'fot.l_premium_features', to: '/features/premium' },
     ],
   },
   {
     headingKey: 'fot.h_trading',
     links: [
-      { labelKey: 'fot.l_trading_overview', to: '/app/terminal-pro', member: true },
-      { labelKey: 'fot.l_broker_connections', to: '/app/brokers', member: true },
-      { labelKey: 'fot.l_strategy_analysis', to: '/app/analytics', member: true },
-      { labelKey: 'fot.l_risk_management', to: '/app/tools', member: true },
-      { labelKey: 'fot.l_trade_history', to: '/app/journal', member: true },
+      { labelKey: 'fot.l_trading_overview', to: '/features/trading-overview' },
+      { labelKey: 'fot.l_broker_connections', to: '/features/broker-connections' },
+      { labelKey: 'fot.l_strategy_analysis', to: '/features/strategy-analysis' },
+      { labelKey: 'fot.l_risk_management', to: '/features/risk-management' },
+      { labelKey: 'fot.l_trade_history', to: '/features/trade-history' },
     ],
   },
   {
     headingKey: 'fot.h_community',
     links: [
-      { labelKey: 'fot.l_social_network', to: '/app/community', member: true },
-      { labelKey: 'fot.l_refer_a_friend', to: '/app/affiliate', member: true },
-      { labelKey: 'fot.l_trading_community', to: '/app/community', member: true },
-      { labelKey: 'fot.l_discussion_forums', to: '/app/community', member: true },
-      { labelKey: 'fot.l_moderators', to: '/about#team' },
+      { labelKey: 'fot.l_social_network', to: '/community#social' },
+      { labelKey: 'fot.l_refer_a_friend', to: '/community#refer' },
+      { labelKey: 'fot.l_trading_community', to: '/community#community' },
+      { labelKey: 'fot.l_discussion_forums', to: '/community#forums' },
+      { labelKey: 'fot.l_moderators', to: '/community#moderators' },
     ],
   },
   {
@@ -67,9 +67,9 @@ const COLUMNS = [
     links: [
       { labelKey: 'fot.l_trading_guides', to: '/guides' },
       { labelKey: 'fot.l_video_tutorials', to: '/academy' },
-      { labelKey: 'fot.l_academy_courses', to: '/app/academy', member: true },
+      { labelKey: 'fot.l_academy_courses', to: '/academy#courses' },
       { labelKey: 'fot.l_webinars', to: '/webinars' },
-      { labelKey: 'fot.l_learning_resources', to: '/guides' },
+      { labelKey: 'fot.l_learning_resources', to: '/guides#resources' },
     ],
   },
   {
@@ -104,7 +104,7 @@ const SOCIALS = [
   { label: 'TikTok', icon: TikTokIcon, href: 'https://tiktok.com/@tradingbible', tone: 'gray' },
 ];
 
-export default function Footer() {
+export default function Footer({ compact = false }) {
   const { user, isAuthed } = useAuth();
   const { t } = useI18n();
   const homeTo = homeRouteForUser(isAuthed ? user : null);
@@ -113,6 +113,53 @@ export default function Footer() {
   const words = brand.split(/\s+/);
   const first = words.slice(0, -1).join(' ');
   const last = words[words.length - 1] || '';
+
+  // Capital & IR pages use a record footer, not the marketing footer. This
+  // keeps the public stock record from reading like a second landing page.
+  if (compact) {
+    const links = [
+      ['TB stock', '/stock/TB'],
+      ['Investor centre', '/investors'],
+      ['Financials', '/investors/financials'],
+      ['IPO readiness', '/investors/ipo'],
+      ['Governance', '/investors/governance'],
+      ['Shareholders', '/investors/shareholders'],
+      ['Contact', '/investors/contact'],
+    ];
+    return (
+      <footer className="at-scope tb-footer relative overflow-hidden border-t border-[var(--at-line)] bg-[var(--at-bg1)] text-[var(--at-ink)]">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--at-line-strong)] to-transparent" />
+        <div className="mx-auto w-full max-w-none px-3 py-5 sm:px-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-wrap items-center gap-3">
+              <Link to={homeTo} className="inline-flex items-center gap-2">
+                <img src={LOGO} alt={`${brand} logo`} className="h-7 w-7 rounded-lg border border-[var(--at-line)] bg-[var(--at-panel)] object-contain p-0.5" />
+                <span className="text-sm font-semibold tracking-tight text-[var(--at-ink)]">
+                  {first ? `${first} ` : ''}<span className="text-[var(--at-gold)]">{last}</span>
+                </span>
+              </Link>
+              <span className="hidden h-4 w-px bg-[var(--at-line-soft)] sm:block" />
+              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)]">TradingBible LLC · Delaware</span>
+            </div>
+            <nav aria-label="Capital and investor relations" className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+              {links.map(([label, to]) => (
+                <Link key={to} to={to} className="text-[10px] font-semibold text-[var(--at-mut)] transition hover:text-[var(--at-gold)]">{label}</Link>
+              ))}
+            </nav>
+          </div>
+          <div className="mt-4 flex flex-col gap-2 border-t border-[var(--at-line-soft)] pt-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="max-w-4xl text-[9px] leading-relaxed text-[var(--at-mut-2)]">
+              TB is a proposed future ticker. The company is private and not publicly traded. No share price, market capitalisation, trading volume, listing approval or regulatory approval is presented. TB equity and TBC are separate instruments.
+            </p>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] text-[var(--at-mut)]">
+              {settings.supportEmail && <a href={`mailto:${settings.supportEmail}`} className="transition hover:text-[var(--at-gold)]">{settings.supportEmail}</a>}
+              <span>© {new Date().getFullYear()} TradingBible LLC · {t('fot.rights')}</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   const memberHref = (to) => {
     if (!isAuthed) return `/login?next=${encodeURIComponent(to)}`;

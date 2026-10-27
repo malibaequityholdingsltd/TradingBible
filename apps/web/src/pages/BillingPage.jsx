@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { Crown, Check, CreditCard, RefreshCw, XCircle, RotateCcw, ArrowUpRight, ShieldCheck, Receipt, AlertTriangle, Wallet } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Card, EmptyState, GhostButton, GoldButton, Note, PageBar, SectionHead } from '@/components/ui-kit';
@@ -144,7 +145,7 @@ export default function BillingPage() {
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Wallet className="h-5 w-5" /></span>
           <div>
             <div className="text-xs uppercase tracking-wider text-[#8a8577]">{t('bill.walletBalance')}</div>
-            <div className="font-mono text-xl font-bold text-[#f0ecdd]">{money(walletBalance)} <a href="/app/wallet" className="font-sans text-xs font-medium text-[#d4af37] hover:underline">{t('bill.fundWallet')}</a></div>
+            <div className="font-mono text-xl font-bold text-[#f0ecdd]">{money(walletBalance)} <Link to="/app/wallet" className="font-sans text-xs font-medium text-[#d4af37] hover:underline">{t('bill.fundWallet')}</Link></div>
           </div>
         </div>
         <div className="text-xs text-[#6a665a]">{t('bill.payInstant')}</div>

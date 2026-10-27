@@ -1,57 +1,55 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
-import Footer from '@/components/Footer';
-import { Card, PageHero } from '@/components/ui-kit';
-import { useAuth } from '@/hooks/useAuth';
-import { homeRouteForUser } from '@/lib/homeRoute';
-import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { ChevronDown, FileText, ShieldCheck } from 'lucide-react';
+import { Card } from '@/components/ui-kit';
+import PublicSiteShell, { PublicNotice, PublicPageHead } from '@/components/PublicSiteShell';
 
 const UPDATED = 'October 2026';
 
+const LEGAL_LINKS = [
+  ['Terms of Service', '/terms'],
+  ['Privacy Policy', '/policy'],
+  ['Refund Policy', '/refund'],
+  ['FAQ', '/faq'],
+  ['Security', '/security'],
+  ['Pricing', '/pricing'],
+];
+
 function LegalShell({ title, subtitle, children }) {
-  const { user, isAuthed } = useAuth();
-  const homeTo = homeRouteForUser(isAuthed ? user : null);
-
   return (
-    <div className="min-h-screen bg-[#07070a] pt-[var(--header-h)] text-[#e9e7df]">
-      <header className="border-b border-[#d4af37]/10 bg-[#07070a]/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-none items-center justify-end px-6 py-4">
-          <Link to={homeTo} className="flex items-center gap-1.5 text-sm text-[#8a8577] transition hover:text-[#e9e7df]"><ArrowLeft className="h-4 w-4" /> Back home</Link>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-none px-4 py-12 sm:px-6 sm:py-16">
-        <PageHero
-          kicker={`Legal · Last updated ${UPDATED}`}
-          title={title}
-          subtitle={subtitle}
-        />
-        <div className="mt-8 grid grid-cols-1 items-start gap-5 xl:grid-cols-2 xl:gap-6">{children}</div>
-
-        <div className="mt-16 flex items-center gap-3 border-t border-[#d4af37]/10 pt-8">
-          <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-11 w-11 rounded-lg object-contain" />
-          <p className="text-xs leading-relaxed text-[#6a665a]">These terms are published by <span className="text-[#c9c4b4]">TradingBible LLC</span>, owner and operator of TradingBible.</p>
-        </div>
-        <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 border-t border-[#d4af37]/10 pt-8 text-sm text-[#8a8577]">
-          <Link to="/terms" className="hover:text-[#e9e7df]">Terms of Service</Link>
-          <Link to="/policy" className="hover:text-[#e9e7df]">Privacy Policy</Link>
-          <Link to="/refund" className="hover:text-[#e9e7df]">Refund Policy</Link>
-          <Link to="/faq" className="hover:text-[#e9e7df]">FAQ</Link>
-          <Link to="/pricing" className="hover:text-[#e9e7df]">Pricing</Link>
-        </div>
+    <PublicSiteShell>
+      <PublicPageHead
+        eyebrow={`Legal · Last updated ${UPDATED}`}
+        title={title}
+        description={subtitle}
+        meta={['TradingBible LLC', 'Delaware, USA', 'Public record']}
+      />
+      <div className="mx-auto grid w-full max-w-[84rem] gap-5 px-5 py-10 sm:px-8 sm:py-14 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start">
+        <div className="space-y-3">{children}</div>
+        <aside className="lg:sticky lg:top-28">
+          <Card className="rounded-xl p-4">
+            <div className="flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#d4af37]"><FileText className="h-3.5 w-3.5" /> Legal index</div>
+            <nav className="mt-3 flex flex-col gap-1" aria-label="Legal documents">
+              {LEGAL_LINKS.map(([label, to]) => (
+                <Link key={to} to={to} className="rounded-lg px-2 py-1.5 text-xs font-semibold text-[#8a8577] transition hover:bg-white/[0.04] hover:text-[#f0ecdd]">{label}</Link>
+              ))}
+            </nav>
+          </Card>
+          <div className="mt-3">
+            <PublicNotice><span className="font-semibold text-[#e9e7df]">Published by TradingBible LLC</span>, owner and operator of TradingBible. These documents apply to the public site and the member platform.</PublicNotice>
+          </div>
+        </aside>
       </div>
-      <Footer />
-    </div>
+    </PublicSiteShell>
   );
 }
 
 function Section({ id, heading, children }) {
   return (
     <section id={id} className={id ? 'scroll-mt-28' : undefined}>
-      <h2 className="mb-3 text-xl font-semibold text-[#f0ecdd]">{heading}</h2>
-      <Card>
-        <div className="space-y-3 text-sm leading-relaxed text-[#b3ae9e]">{children}</div>
+      <Card className="rounded-xl p-5 sm:p-6">
+        <h2 className="text-base font-semibold tracking-tight text-[#f0ecdd] sm:text-lg">{heading}</h2>
+        <div className="mt-2 space-y-3 text-sm leading-relaxed text-[#b3ae9e]">{children}</div>
       </Card>
     </section>
   );

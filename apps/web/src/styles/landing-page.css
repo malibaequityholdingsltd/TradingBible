@@ -1,0 +1,83 @@
+/* Public landing chrome. The artwork sits behind this layer and is never
+   replaced here — only the navigation surface follows the active theme. */
+.landing-header {
+  background: rgba(7, 7, 10, 0.94);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.16);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(22px) saturate(1.12);
+  -webkit-backdrop-filter: blur(22px) saturate(1.12);
+}
+.landing-nav-pill {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(10, 10, 15, 0.72);
+}
+.landing-nav-link {
+  color: #8a8577;
+}
+.landing-nav-link:hover {
+  color: #f0ecdd;
+}
+.landing-word {
+  color: #e9e7df;
+}
+.landing-menu {
+  border-top: 1px solid rgba(212, 175, 55, 0.12);
+  background: rgba(7, 7, 10, 0.98);
+}
+.landing-menu-link {
+  color: #b8b3a3;
+}
+.landing-menu-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f0ecdd;
+}
+.landing-menu-link--gold {
+  color: #d4af37;
+}
+
+html.light .landing-header {
+  background: rgba(250, 248, 242, 0.94);
+  border-bottom-color: rgba(166, 124, 30, 0.26);
+  box-shadow: 0 12px 30px -24px rgba(60, 55, 40, 0.38);
+}
+html.light .landing-nav-pill {
+  border-color: rgba(45, 52, 64, 0.11);
+  background: rgba(255, 255, 255, 0.62);
+}
+html.light .landing-nav-link {
+  color: #5b6270;
+}
+html.light .landing-nav-link:hover {
+  color: #1d2024;
+}
+html.light .landing-word {
+  color: #232830;
+}
+html.light .landing-menu {
+  border-top-color: rgba(166, 124, 30, 0.2);
+  background: rgba(250, 248, 242, 0.99);
+}
+html.light .landing-menu-link {
+  color: #4d5563;
+}
+html.light .landing-menu-link:hover {
+  background: rgba(45, 52, 64, 0.06);
+  color: #1d2024;
+}
+html.light .landing-menu-link--gold {
+  color: #8d6918;
+}
+html.light .landing-header .landing-control {
+  color: #545a65;
+}
+html.light .landing-header .landing-control:hover {
+  background: rgba(45, 52, 64, 0.06);
+  color: #1d2024;
+}
+html.light .landing-header .landing-login {
+  color: #3e4245;
+}
+html.light .landing-header .landing-login:hover {
+  background: rgba(45, 52, 64, 0.06);
+  color: #1d2024;
+}
