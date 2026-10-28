@@ -8,6 +8,7 @@ import { errorMiddleware } from './middleware/error.js';
 import { globalRateLimit } from './middleware/global-rate-limit.js';
 import { getCircleX402Middleware } from './middleware/circle-x402.js';
 import logger from './utils/logger.js';
+import { startSiWarmup } from './services/si-warmup.js';
 import { BodyLimit } from './constants/common.js';
 
 const app = express();
@@ -73,6 +74,7 @@ const port = process.env.PORT || 3001;
 
 app.listen(port, () => {
 	logger.info(`🚀 API Server running on http://localhost:${port}`);
+	startSiWarmup();
 });
 
 export default app;

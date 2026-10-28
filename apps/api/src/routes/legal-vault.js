@@ -18,6 +18,10 @@ import {
 	recordApproval,
 	findByEnvelopeId,
 } from '../services/tbc-execution.js';
+import {
+	findByEnvelopeId as findTbByEnvelopeId,
+	updateProviderStatus as updateTbProviderStatus,
+} from '../services/tb-stock-execution.js';
 
 const router = Router();
 
@@ -196,7 +200,12 @@ export async function docusignWebhook(req, res) {
 		|| payload?.data?.envelopeSummary?.envelopeId
 		|| payload?.envelopeId;
 	if (!envelopeId) return res.status(202).json({ ok: true, ignored: 'no envelope id' });
-	const record = await findByEnvelopeId(envelopeId);
+	let record = await findByEnvelopeId(envelopeId);
+	let updateRecord = updateProviderStatus;
+	if (!record) {
+		record = await findTbByEnvelopeId(envelopeId);
+		updateRecord = updateTbProviderStatus;
+	}
 	if (!record) return res.status(202).json({ ok: true, ignored: 'unknown envelope' });
 
 	const summary = payload?.data?.envelopeSummary || {};
@@ -206,7 +215,7 @@ export async function docusignWebhook(req, res) {
 	const completedAt = completedAtRaw && !Number.isNaN(new Date(completedAtRaw).getTime())
 		? new Date(completedAtRaw).toISOString()
 		: null;
-	await updateProviderStatus(record.slug, {
+	await updateRecord(record.slug, {
 		providerStatus: status,
 		recipients: signers.map((signer) => ({
 			recipientId: String(signer.recipientId || ''),

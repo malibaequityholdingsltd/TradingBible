@@ -26,6 +26,8 @@ import supportRouter from './support.js';
 import adsRouter from './ads.js';
 import adminRouter from './admin.js';
 import legalVaultRouter, { docusignWebhook } from './legal-vault.js';
+import tbStockDocumentsRouter from './tb-stock-documents.js';
+import adminTbStockDocumentsRouter from './admin-tb-stock-documents.js';
 import academyRouter from './academy.js';
 import digestRouter from './digest.js';
 import dunsRouter from './duns.js';
@@ -57,6 +59,7 @@ export default () => {
     router.use('/wallet', walletRouter);
     router.use('/tbc/documents', tbcDocumentsRouter);
     router.use('/tbc', tbcRouter);
+    router.use('/tb-stock/documents', tbStockDocumentsRouter);
     router.use('/challenges', challengesRouter);
     router.use('/backtest', backtestRouter);
     router.use('/', ecosystemRouter);
@@ -69,6 +72,7 @@ export default () => {
     router.use('/support', supportRouter);
     router.use('/ads', adsRouter);
     router.use('/admin/legal-vault', legalVaultRouter);
+    router.use('/admin/tb-stock-documents', adminTbStockDocumentsRouter);
     router.post('/webhooks/docusign', docusignWebhook);
     router.use('/admin', adminRouter);
     router.use('/admin/digest', digestRouter);

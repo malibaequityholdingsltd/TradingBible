@@ -101,12 +101,15 @@ const TbcPublicPage = lazy(() => import('./pages/TbcPublicPage'));
 const TbcAppPage = lazy(() => import('./pages/TbcAppPage'));
 const TbcChainPage = lazy(() => import('./pages/TbcChainPage'));
 const StockTbPage = lazy(() => import('./pages/StockTbPage'));
+const TbStockDocumentsPage = lazy(() => import('./pages/TbStockDocumentsPage'));
 const InvestorRelationsPage = lazy(() => import('./pages/InvestorRelationsPage'));
 const ShareholderPortalPage = lazy(() => import('./pages/ShareholderPortalPage'));
+const AppInvestorPortalPage = lazy(() => import('./pages/ShareholderPortalPage').then((m) => ({ default: m.AppInvestorPortalPage })));
 const AdminInvestorRelationsPage = lazy(() => import('./pages/AdminInvestorRelationsPage'));
 const AdminEquityPage = lazy(() => import('./pages/AdminEquityPage'));
 const AdminTbcPage = lazy(() => import('./pages/AdminTbcPage'));
 const AdminTbcDocumentsPage = lazy(() => import('./pages/AdminTbcDocumentsPage'));
+const AdminTbStockDocumentsPage = lazy(() => import('./pages/AdminTbStockDocumentsPage'));
 const ChallengesPage = lazy(() => import('./pages/ChallengesPage'));
 const BacktestPage = lazy(() => import('./pages/BacktestPage'));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
@@ -396,6 +399,7 @@ function RoutesWithBoundary() {
                     <Route path="/developers/tbc" element={<TbcChainPage view="developers" />} />
                     <Route path="/stock" element={<Navigate to="/stock/TB" replace />} />
                     <Route path="/stock/TB" element={<StockTbPage />} />
+                    <Route path="/stock/TB/documents" element={<TbStockDocumentsPage />} />
                     <Route path="/investors" element={<InvestorRelationsPage section="overview" />} />
                     <Route path="/investors/financials" element={<InvestorRelationsPage section="financials" />} />
                     <Route path="/investors/governance" element={<InvestorRelationsPage section="governance" />} />
@@ -422,6 +426,7 @@ function RoutesWithBoundary() {
                     <Route path="/reset" element={<ResetPage />} />
                     <Route path="/onboarding" element={<Protected><OnboardingPage /></Protected>} />
                     <Route path="/app" element={<PaidProtected><DashboardPage /></PaidProtected>} />
+                    <Route path="/app/investors" element={<Protected><AppInvestorPortalPage /></Protected>} />
                     <Route path="/app/analytics" element={<PaidProtected><AnalyticsPage /></PaidProtected>} />
                     <Route path="/app/watchlists" element={<PaidProtected><WatchlistsPage /></PaidProtected>} />
                     <Route path="/app/orderflow" element={<PaidProtected><OrderFlowPage /></PaidProtected>} />
@@ -480,6 +485,7 @@ function RoutesWithBoundary() {
                     <Route path="/admin/investor-relations" element={<AdminProtected><AdminInvestorRelationsPage /></AdminProtected>} />
                     <Route path="/admin/equity" element={<AdminProtected><AdminEquityPage /></AdminProtected>} />
                     <Route path="/admin/legal-vault" element={<AdminProtected><AdminTbcDocumentsPage /></AdminProtected>} />
+                    <Route path="/admin/tb-stock-documents" element={<AdminProtected><AdminTbStockDocumentsPage /></AdminProtected>} />
                     <Route path="/staff/*" element={<StaffProtected><StaffPortal /></StaffProtected>} />
                 </Routes>
             </Suspense>

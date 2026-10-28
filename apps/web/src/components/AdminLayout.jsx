@@ -12,7 +12,7 @@ import AdminSearch from '@/components/AdminSearch';
 import '@/styles/admin-console.css';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
-import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { BrandName, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { displayInitial } from '@/lib/displayName';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { enterAdminPreview } from '@/lib/adminPreview';
@@ -110,7 +110,7 @@ function Brand({ homeTo }) {
         </span>
       </span>
       <span className="min-w-0 leading-tight">
-        <span className="at-rail-word block truncate text-[var(--at-ink)]">Trading<span className="text-[var(--at-gold)]">Bible</span></span>
+        <BrandName name="TradingBible" className="at-rail-word block truncate" />
         <span className="at-rail-sub mt-1 block">Operator suite</span>
       </span>
     </Link>
@@ -268,7 +268,7 @@ function AdminLayoutContent({ children, title }) {
               />
               <div className="min-w-0">
                 <div className="at-crumb hidden sm:flex items-center gap-1.5">
-                  <span>TradingBible</span><span className="text-[var(--at-mut-2)]">/</span><b>Admin</b>
+                  <BrandName name="TradingBible" /><span className="text-[var(--at-mut-2)]">/</span><b>Admin</b>
                 </div>
                 <div className="flex min-w-0 items-center gap-2">
                   <h1 className="truncate text-sm font-semibold tracking-[-0.02em] text-[var(--at-ink)] sm:min-w-[150px] sm:text-[15px]">{title || 'Admin Dashboard'}</h1>

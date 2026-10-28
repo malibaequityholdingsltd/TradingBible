@@ -1,0 +1,1002 @@
+{
+  "title": "TradingBible TB stock document library",
+  "issuer": "TradingBible LLC",
+  "proposedIssuer": "TradingBible, Inc.",
+  "ticker": "TB",
+  "tickerStatus": "Proposed \u2014 not reserved or approved",
+  "jurisdiction": "Delaware, United States",
+  "updated": "October 2026",
+  "notice": "TB is a proposed future ticker. These signature-ready preparation instruments are not an offer, solicitation, listing application, regulatory approval, or evidence that TB is publicly traded. DocuSign execution is recorded separately; no signature is fabricated.",
+  "documents": [
+    {
+      "slug": "tb-public-markets-strategy-board-feasibility",
+      "number": "TB-01",
+      "title": "TB Public Markets Strategy and Board Feasibility Mandate",
+      "category": "Corporate authority",
+      "summary": "Authorizes feasibility work on a possible future public listing. It does not authorize an offering, an exchange application, or a listing.",
+      "subtitle": "TB stock preparation \u00b7 signature-ready instrument",
+      "status": "Draft \u2014 signature block open",
+      "visibility": "public",
+      "classification": "Public draft \u2014 signature-ready instrument",
+      "version": "October 2026",
+      "signatureFields": "Authorized signatory + conditional additional authorized signatory",
+      "signatureStatus": "Open \u2014 not executed",
+      "pdf": "pdf/tb-public-markets-strategy-board-feasibility.pdf",
+      "docx": "docx/tb-public-markets-strategy-board-feasibility.docx",
+      "docxProtected": "docx-protected/tb-public-markets-strategy-board-feasibility.docx",
+      "pdfBytes": 144660,
+      "docxBytes": 169439,
+      "emailSubjectPrefix": "TradingBible TB Stock",
+      "signers": [
+        {
+          "id": "issuer",
+          "label": "Malik Nlem \u2014 Chief Executive Manager",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Manager",
+          "required": true,
+          "anchor": "TB EXECUTION 01 - AUTHORIZED SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Issuer signature: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Issuer printed name: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Issuer capacity: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Issuer date: ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        },
+        {
+          "id": "additional",
+          "label": "Additional Authorized Signatory (if required)",
+          "party": "Additional Authorized Signatory",
+          "capacity": "Authorized Signatory",
+          "required": false,
+          "anchor": "TB EXECUTION 01 - OPTIONAL SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Additional signature: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Additional printed name: __________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Additional capacity: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Additional date: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "slug": "tb-llc-conversion-corporate-restructuring",
+      "number": "TB-02",
+      "title": "LLC Conversion and Corporate Restructuring Framework",
+      "category": "Corporate authority",
+      "summary": "Framework for reconciling the LLC record and evaluating a corporate conversion. No conversion, share issuance, or ownership change is effected by this draft.",
+      "subtitle": "TB stock preparation \u00b7 signature-ready instrument",
+      "status": "Draft \u2014 signature block open",
+      "visibility": "public",
+      "classification": "Public draft \u2014 signature-ready instrument",
+      "version": "October 2026",
+      "signatureFields": "Authorized signatory + conditional additional authorized signatory",
+      "signatureStatus": "Open \u2014 not executed",
+      "pdf": "pdf/tb-llc-conversion-corporate-restructuring.pdf",
+      "docx": "docx/tb-llc-conversion-corporate-restructuring.docx",
+      "docxProtected": "docx-protected/tb-llc-conversion-corporate-restructuring.docx",
+      "pdfBytes": 145917,
+      "docxBytes": 169504,
+      "emailSubjectPrefix": "TradingBible TB Stock",
+      "signers": [
+        {
+          "id": "issuer",
+          "label": "Malik Nlem \u2014 Chief Executive Manager",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Manager",
+          "required": true,
+          "anchor": "TB EXECUTION 02 - AUTHORIZED SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Issuer signature: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Issuer printed name: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Issuer capacity: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Issuer date: ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        },
+        {
+          "id": "additional",
+          "label": "Additional Authorized Signatory (if required)",
+          "party": "Additional Authorized Signatory",
+          "capacity": "Authorized Signatory",
+          "required": false,
+          "anchor": "TB EXECUTION 02 - OPTIONAL SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Additional signature: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Additional printed name: __________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Additional capacity: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Additional date: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "slug": "tb-share-capital-shareholder-governance",
+      "number": "TB-03",
+      "title": "TB Share Capital and Shareholder Governance",
+      "category": "Equity & governance",
+      "summary": "Proposed share-capital and shareholder-governance terms for a future qualified issuer. No shares, price, allocation, or public market is created.",
+      "subtitle": "TB stock preparation \u00b7 signature-ready instrument",
+      "status": "Draft \u2014 signature block open",
+      "visibility": "public",
+      "classification": "Public draft \u2014 signature-ready instrument",
+      "version": "October 2026",
+      "signatureFields": "Authorized signatory + conditional additional authorized signatory",
+      "signatureStatus": "Open \u2014 not executed",
+      "pdf": "pdf/tb-share-capital-shareholder-governance.pdf",
+      "docx": "docx/tb-share-capital-shareholder-governance.docx",
+      "docxProtected": "docx-protected/tb-share-capital-shareholder-governance.docx",
+      "pdfBytes": 144182,
+      "docxBytes": 169537,
+      "emailSubjectPrefix": "TradingBible TB Stock",
+      "signers": [
+        {
+          "id": "issuer",
+          "label": "Malik Nlem \u2014 Chief Executive Manager",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Manager",
+          "required": true,
+          "anchor": "TB EXECUTION 03 - AUTHORIZED SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Issuer signature: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Issuer printed name: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Issuer capacity: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Issuer date: ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        },
+        {
+          "id": "additional",
+          "label": "Additional Authorized Signatory (if required)",
+          "party": "Additional Authorized Signatory",
+          "capacity": "Authorized Signatory",
+          "required": false,
+          "anchor": "TB EXECUTION 03 - OPTIONAL SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Additional signature: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Additional printed name: __________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Additional capacity: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Additional date: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "slug": "tb-sec-registration-prospectus-standard",
+      "number": "TB-04",
+      "title": "SEC Registration and Prospectus Preparation Standard",
+      "category": "Securities",
+      "summary": "Preparation standard for a possible SEC registration and prospectus. No filing, effectiveness, or regulatory approval is implied.",
+      "subtitle": "TB stock preparation \u00b7 signature-ready instrument",
+      "status": "Draft \u2014 signature block open",
+      "visibility": "public",
+      "classification": "Public draft \u2014 signature-ready instrument",
+      "version": "October 2026",
+      "signatureFields": "Authorized signatory + conditional additional authorized signatory",
+      "signatureStatus": "Open \u2014 not executed",
+      "pdf": "pdf/tb-sec-registration-prospectus-standard.pdf",
+      "docx": "docx/tb-sec-registration-prospectus-standard.docx",
+      "docxProtected": "docx-protected/tb-sec-registration-prospectus-standard.docx",
+      "pdfBytes": 146429,
+      "docxBytes": 169585,
+      "emailSubjectPrefix": "TradingBible TB Stock",
+      "signers": [
+        {
+          "id": "issuer",
+          "label": "Malik Nlem \u2014 Chief Executive Manager",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Manager",
+          "required": true,
+          "anchor": "TB EXECUTION 04 - AUTHORIZED SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Issuer signature: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Issuer printed name: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Issuer capacity: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Issuer date: ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        },
+        {
+          "id": "additional",
+          "label": "Additional Authorized Signatory (if required)",
+          "party": "Additional Authorized Signatory",
+          "capacity": "Authorized Signatory",
+          "required": false,
+          "anchor": "TB EXECUTION 04 - OPTIONAL SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Additional signature: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Additional printed name: __________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Additional capacity: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Additional date: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "slug": "tb-audit-financial-reporting-readiness",
+      "number": "TB-05",
+      "title": "Audit and Financial Reporting Readiness",
+      "category": "Financial reporting",
+      "summary": "Readiness standard for investor-grade financial statements and reporting controls. No audit opinion, reported result, or financial approval exists.",
+      "subtitle": "TB stock preparation \u00b7 signature-ready instrument",
+      "status": "Draft \u2014 signature block open",
+      "visibility": "public",
+      "classification": "Public draft \u2014 signature-ready instrument",
+      "version": "October 2026",
+      "signatureFields": "Authorized signatory + conditional additional authorized signatory",
+      "signatureStatus": "Open \u2014 not executed",
+      "pdf": "pdf/tb-audit-financial-reporting-readiness.pdf",
+      "docx": "docx/tb-audit-financial-reporting-readiness.docx",
+      "docxProtected": "docx-protected/tb-audit-financial-reporting-readiness.docx",
+      "pdfBytes": 143524,
+      "docxBytes": 169517,
+      "emailSubjectPrefix": "TradingBible TB Stock",
+      "signers": [
+        {
+          "id": "issuer",
+          "label": "Malik Nlem \u2014 Chief Executive Manager",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Manager",
+          "required": true,
+          "anchor": "TB EXECUTION 05 - AUTHORIZED SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Issuer signature: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Issuer printed name: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Issuer capacity: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Issuer date: ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        },
+        {
+          "id": "additional",
+          "label": "Additional Authorized Signatory (if required)",
+          "party": "Additional Authorized Signatory",
+          "capacity": "Authorized Signatory",
+          "required": false,
+          "anchor": "TB EXECUTION 05 - OPTIONAL SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Additional signature: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Additional printed name: __________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Additional capacity: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Additional date: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "slug": "tb-public-company-governance-ethics",
+      "number": "TB-06",
+      "title": "Public Company Governance and Ethics Charter",
+      "category": "Governance",
+      "summary": "Proposed governance, board, committee, and ethics framework for a future public issuer. Board composition and committee appointments remain future actions.",
+      "subtitle": "TB stock preparation \u00b7 signature-ready instrument",
+      "status": "Draft \u2014 signature block open",
+      "visibility": "public",
+      "classification": "Public draft \u2014 signature-ready instrument",
+      "version": "October 2026",
+      "signatureFields": "Authorized signatory + conditional additional authorized signatory",
+      "signatureStatus": "Open \u2014 not executed",
+      "pdf": "pdf/tb-public-company-governance-ethics.pdf",
+      "docx": "docx/tb-public-company-governance-ethics.docx",
+      "docxProtected": "docx-protected/tb-public-company-governance-ethics.docx",
+      "pdfBytes": 144914,
+      "docxBytes": 169500,
+      "emailSubjectPrefix": "TradingBible TB Stock",
+      "signers": [
+        {
+          "id": "issuer",
+          "label": "Malik Nlem \u2014 Chief Executive Manager",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Manager",
+          "required": true,
+          "anchor": "TB EXECUTION 06 - AUTHORIZED SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Issuer signature: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Issuer printed name: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Issuer capacity: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Issuer date: ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        },
+        {
+          "id": "additional",
+          "label": "Additional Authorized Signatory (if required)",
+          "party": "Additional Authorized Signatory",
+          "capacity": "Authorized Signatory",
+          "required": false,
+          "anchor": "TB EXECUTION 06 - OPTIONAL SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Additional signature: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Additional printed name: __________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Additional capacity: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Additional date: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "slug": "tb-exchange-listing-ipo-playbook",
+      "number": "TB-07",
+      "title": "Exchange Listing and IPO Execution Playbook",
+      "category": "IPO preparation",
+      "summary": "Playbook for evaluating an exchange listing and IPO execution. Nasdaq is a target only; no application, approval, or listing exists.",
+      "subtitle": "TB stock preparation \u00b7 signature-ready instrument",
+      "status": "Draft \u2014 signature block open",
+      "visibility": "public",
+      "classification": "Public draft \u2014 signature-ready instrument",
+      "version": "October 2026",
+      "signatureFields": "Authorized signatory + conditional additional authorized signatory",
+      "signatureStatus": "Open \u2014 not executed",
+      "pdf": "pdf/tb-exchange-listing-ipo-playbook.pdf",
+      "docx": "docx/tb-exchange-listing-ipo-playbook.docx",
+      "docxProtected": "docx-protected/tb-exchange-listing-ipo-playbook.docx",
+      "pdfBytes": 144975,
+      "docxBytes": 169479,
+      "emailSubjectPrefix": "TradingBible TB Stock",
+      "signers": [
+        {
+          "id": "issuer",
+          "label": "Malik Nlem \u2014 Chief Executive Manager",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Manager",
+          "required": true,
+          "anchor": "TB EXECUTION 07 - AUTHORIZED SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Issuer signature: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Issuer printed name: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Issuer capacity: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Issuer date: ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        },
+        {
+          "id": "additional",
+          "label": "Additional Authorized Signatory (if required)",
+          "party": "Additional Authorized Signatory",
+          "capacity": "Authorized Signatory",
+          "required": false,
+          "anchor": "TB EXECUTION 07 - OPTIONAL SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Additional signature: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Additional printed name: __________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Additional capacity: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Additional date: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "slug": "tb-ipo-due-diligence-evidence",
+      "number": "TB-08",
+      "title": "IPO Due Diligence and Evidence Governance",
+      "category": "Diligence",
+      "summary": "Data-room, evidence, and verification standard for a possible IPO process. It does not establish any fact, valuation, or approval.",
+      "subtitle": "TB stock preparation \u00b7 signature-ready instrument",
+      "status": "Draft \u2014 signature block open",
+      "visibility": "public",
+      "classification": "Public draft \u2014 signature-ready instrument",
+      "version": "October 2026",
+      "signatureFields": "Authorized signatory + conditional additional authorized signatory",
+      "signatureStatus": "Open \u2014 not executed",
+      "pdf": "pdf/tb-ipo-due-diligence-evidence.pdf",
+      "docx": "docx/tb-ipo-due-diligence-evidence.docx",
+      "docxProtected": "docx-protected/tb-ipo-due-diligence-evidence.docx",
+      "pdfBytes": 143721,
+      "docxBytes": 169514,
+      "emailSubjectPrefix": "TradingBible TB Stock",
+      "signers": [
+        {
+          "id": "issuer",
+          "label": "Malik Nlem \u2014 Chief Executive Manager",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Manager",
+          "required": true,
+          "anchor": "TB EXECUTION 08 - AUTHORIZED SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Issuer signature: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Issuer printed name: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Issuer capacity: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Issuer date: ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        },
+        {
+          "id": "additional",
+          "label": "Additional Authorized Signatory (if required)",
+          "party": "Additional Authorized Signatory",
+          "capacity": "Authorized Signatory",
+          "required": false,
+          "anchor": "TB EXECUTION 08 - OPTIONAL SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Additional signature: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Additional printed name: __________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Additional capacity: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Additional date: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "slug": "tb-electronic-signature-approval-protocol",
+      "number": "TB-09",
+      "title": "TB Electronic Signature and Approval Protocol",
+      "category": "Execution controls",
+      "summary": "Control protocol for electronic signature and approval of TB instruments. A completed DocuSign envelope is execution evidence, not a regulatory or listing approval.",
+      "subtitle": "TB stock preparation \u00b7 signature-ready instrument",
+      "status": "Draft \u2014 signature block open",
+      "visibility": "public",
+      "classification": "Public draft \u2014 signature-ready instrument",
+      "version": "October 2026",
+      "signatureFields": "Authorized signatory + conditional additional authorized signatory",
+      "signatureStatus": "Open \u2014 not executed",
+      "pdf": "pdf/tb-electronic-signature-approval-protocol.pdf",
+      "docx": "docx/tb-electronic-signature-approval-protocol.docx",
+      "docxProtected": "docx-protected/tb-electronic-signature-approval-protocol.docx",
+      "pdfBytes": 142389,
+      "docxBytes": 169398,
+      "emailSubjectPrefix": "TradingBible TB Stock",
+      "signers": [
+        {
+          "id": "issuer",
+          "label": "Malik Nlem \u2014 Chief Executive Manager",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Manager",
+          "required": true,
+          "anchor": "TB EXECUTION 09 - AUTHORIZED SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Issuer signature: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Issuer printed name: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Issuer capacity: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Issuer date: ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        },
+        {
+          "id": "additional",
+          "label": "Additional Authorized Signatory (if required)",
+          "party": "Additional Authorized Signatory",
+          "capacity": "Authorized Signatory",
+          "required": false,
+          "anchor": "TB EXECUTION 09 - OPTIONAL SIGNATORY",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Additional signature: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Additional printed name: __________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Additional capacity: ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Additional date: __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

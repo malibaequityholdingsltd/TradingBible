@@ -3,7 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { FileText, ShieldCheck, UserRound } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { AtBadge, AtButton } from '@/components/AtelierUI';
-import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { BrandName, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useAuth } from '@/hooks/useAuth';
@@ -55,7 +55,7 @@ function InvestorShellContent({ children, contained = true, active = '' }) {
   const headerRef = useRef(null);
   const [headerH, setHeaderH] = useState(0);
   const homeTo = homeRouteForUser(isAuthed ? user : null);
-  const portalTo = isAuthed ? '/investors/shareholders' : '/login?next=%2Finvestors%2Fshareholders';
+  const portalTo = isAuthed ? '/app/investors' : '/investors/shareholders';
   const portalLabel = isAuthed ? 'Shareholder portal' : 'Investor sign in';
 
   useEffect(() => {
@@ -79,7 +79,7 @@ function InvestorShellContent({ children, contained = true, active = '' }) {
             <span className="cap-ir-mark">
               <img src={TRADINGBIBLE_LOGO} alt="TradingBible" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
             </span>
-            <span className="cap-ir-word">Trading<span>Bible</span></span>
+            <BrandName name="TradingBible" className="cap-ir-word" />
           </Link>
 
           <span className="cap-ir-rule hidden sm:block" />

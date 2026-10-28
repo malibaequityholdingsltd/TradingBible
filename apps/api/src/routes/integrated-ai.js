@@ -8,6 +8,7 @@ import { uploadFiles } from '../middleware/file-upload.js';
 import { integratedAiRateLimit } from '../middleware/integrated-ai-rate-limit.js';
 import { supabaseAuth } from '../middleware/supabase-auth.js';
 import { requirePlan } from '../middleware/require-plan.js';
+import { endSse, openSse, withTimeout } from '../utils/sse.js';
 
 const router = Router();
 
@@ -43,6 +44,10 @@ router.post('/stream', integratedAiRateLimit, uploadFiles({
 		});
 	}
 
+	// Flush SSE headers before waiting for the provider. A slow first token
+	// must never turn into a proxy 504; keep-alive comments hold the stream.
+	const sse = openSse(res);
+
 	let sseStream;
 	try {
 		// Best-effort Company Bible: admins curate every brand fact at
@@ -55,11 +60,19 @@ router.post('/stream', integratedAiRateLimit, uploadFiles({
 			const stored = rows?.[0]?.config && typeof rows[0].config === 'object' ? rows[0].config : COMPANY_DEFAULTS;
 			systemPrompt = `${SystemPrompt}\n\n## Company Bible (admin-curated truth, prefer over general knowledge)\n${companyContextText(stored)}`;
 		} catch { /* defaults already in SystemPrompt */ }
-		sseStream = await stream({
-			userId: req.userId,
-			systemPrompt,
-			userMessage: parsedMessage,
-		});
+		const configuredSetupTimeout = Number(process.env.SI_STREAM_SETUP_TIMEOUT_MS);
+		const setupTimeoutMs = Number.isFinite(configuredSetupTimeout) && configuredSetupTimeout > 0
+			? Math.min(90000, Math.max(15000, configuredSetupTimeout))
+			: 75000;
+		sseStream = await withTimeout(
+			stream({
+				userId: req.userId,
+				systemPrompt,
+				userMessage: parsedMessage,
+			}),
+			setupTimeoutMs,
+			'SI provider',
+		);
 	} catch (err) {
 		const message = String(err?.message || '');
 		let friendly = 'The SI assistant is temporarily unavailable. Please try again shortly.';
@@ -69,17 +82,34 @@ router.post('/stream', integratedAiRateLimit, uploadFiles({
 			friendly = message;
 		}
 		logger.error('SI stream setup failed:', message);
-		return res.status(502).json({ error: { message: friendly } });
+		if (!res.headersSent) {
+			sse.cleanup();
+			return res.status(502).json({ error: { message: friendly } });
+		}
+		sse.event({ type: 'error', data: { content: friendly } });
+		sse.event({ type: 'completed', data: { content: '[COMPLETED]' } });
+		sse.cleanup();
+		endSse(res);
+		return;
 	}
 
-	res.setHeader('Content-Type', 'text/event-stream');
-	res.setHeader('Cache-Control', 'no-cache');
-	res.setHeader('Connection', 'keep-alive');
-	res.setHeader('X-Accel-Buffering', 'no');
+	sseStream.on('error', (error) => {
+		logger.error('SI stream failed:', String(error?.message || error));
+		sse.event({ type: 'error', data: { content: 'The SI assistant stopped unexpectedly. Please try again.' } });
+		sse.cleanup();
+		endSse(res);
+	});
+	sseStream.on('end', () => {
+		sse.cleanup();
+		endSse(res);
+	});
 
 	sseStream.pipe(res, { end: false });
 
-	res.on('close', () => sseStream.destroy());
+	res.on('close', () => {
+		sse.cleanup();
+		sseStream.destroy();
+	});
 });
 
 export default router;

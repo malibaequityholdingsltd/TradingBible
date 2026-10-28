@@ -11,7 +11,7 @@ import GlobalSearch from '@/components/GlobalSearch';
 import ThemePickerDialog from '@/components/ThemePickerDialog';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { BrandWordmark, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { BrandName, BrandWordmark, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { IosIcon, IOS_TINTS as IOS } from '@/components/IosIcon';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { meetsPlan } from '@/lib/entitlements';
@@ -71,7 +71,7 @@ const NAV_GROUPS = [
       { to: '/app/signals', labelKey: 'nav.signals', icon: Radar, tint: IOS.orange },
       { to: '/app/staking', labelKey: 'nav.staking', icon: Coins, tint: IOS.green },
       { to: '/app/tbc', labelKey: 'nav.tbc', icon: Coins, tint: IOS.gold },
-      { to: '/investors', labelKey: 'nav.investors', label: 'Investor relations', icon: Landmark, tint: IOS.gold },
+      { to: '/app/investors', labelKey: 'nav.investors', label: 'Investor access', icon: Landmark, tint: IOS.gold },
       { to: '/leaderboard', labelKey: 'nav.leaderboard', icon: Medal, tint: IOS.purple },
       { to: '/app/economic-calendar', labelKey: 'nav.economic', icon: CalendarClock, tint: IOS.indigo },
     ],
@@ -311,7 +311,7 @@ function AppLayoutContent({ children, title }) {
   };
 
   const FooterNav = (
-    <footer className="app-nav-footer fixed inset-x-0 bottom-0 z-40 hidden backdrop-blur-xl lg:block">
+    <footer className={`app-nav-footer fixed inset-x-0 bottom-0 z-40 hidden backdrop-blur-xl lg:block ${dashboardActive ? 'dashboard-nav' : ''}`}>
       <span aria-hidden className="app-nav-footer-sheen" />
       <nav
         aria-label="App sections"
@@ -334,7 +334,7 @@ function AppLayoutContent({ children, title }) {
       <div>
         {/* Phone header: solid two-row bar (compact row + full-width
             search). sm+ keeps the single-row translucent bar. */}
-        <header className="app-header fixed inset-x-0 left-0 right-0 top-[var(--header-h)] z-[35] w-full border-b border-white/[0.06] bg-[#0a0a0f] tabular-nums sm:bg-[#0a0a0f]/90 sm:backdrop-blur-2xl">
+        <header className={`app-header fixed inset-x-0 left-0 right-0 top-[var(--header-h)] z-[35] w-full border-b border-white/[0.06] bg-[#0a0a0f] tabular-nums sm:bg-[#0a0a0f]/90 sm:backdrop-blur-2xl${dashboardActive ? ' dashboard-nav' : ''}`}>
           {/* drifting gold hairline + slow light sweep */}
           <div aria-hidden className="app-header-hairline pointer-events-none absolute inset-x-0 bottom-0 h-px" />
           <div aria-hidden className="app-header-sheen pointer-events-none absolute inset-0 overflow-hidden" />
@@ -352,7 +352,7 @@ function AppLayoutContent({ children, title }) {
                 />
                 <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 tabular-nums shadow-[0_0_8px_rgba(52,211,153,0.9)] ring-2 ring-[#0a0a0f]" />
               </span>
-              <span className="text-xl font-black leading-none tracking-tight text-[#f0ecdd]">Trading<span className="gold-text">Bible</span></span>
+              <BrandName name="TradingBible" className="text-xl font-black leading-none tracking-tight" />
             </Link>
             <span aria-hidden className="hidden h-6 w-px bg-white/10 xl:block" />
             <h1 className="hidden min-w-0 truncate text-sm font-semibold text-[#c9c4b4] sm:block">{title}</h1>
@@ -465,7 +465,7 @@ function AppLayoutContent({ children, title }) {
         {/* Phone dock backdrop: solid fade so page text never shows
             around or below the floating dock while scrolling. */}
         <div aria-hidden className="tb-dockfade pointer-events-none fixed inset-x-0 bottom-0 z-30 h-36 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/95 to-transparent lg:hidden" />
-        <nav aria-label="App sections" className="tb-dock fixed inset-x-4 bottom-3 z-40 rounded-[10px] border border-[#d4af37]/15 bg-[#101016] tabular-nums shadow-[0_12px_32px_rgba(0,0,0,0.55),0_0_20px_rgba(212,175,55,0.06)] ring-1 ring-inset ring-white/[0.06] lg:hidden">
+        <nav aria-label="App sections" className={`tb-dock fixed inset-x-4 bottom-3 z-40 rounded-[10px] border border-[#d4af37]/15 bg-[#101016] tabular-nums shadow-[0_12px_32px_rgba(0,0,0,0.55),0_0_20px_rgba(212,175,55,0.06)] ring-1 ring-inset ring-white/[0.06] lg:hidden ${dashboardActive ? 'dashboard-nav' : ''}`}>
           <div className="flex px-2 pb-2 pt-2">
             {MAIN_TABS.map((m, idx) => {
               const Icon = m.icon;

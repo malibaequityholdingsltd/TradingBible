@@ -4,7 +4,7 @@ import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, Externa
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { useAuth } from '@/hooks/useAuth';
-import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { BrandName, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { hardenEmbed, useLiveChannels, ytVideoEmbed, swapEmbedHost, youtubeEmbedUrl, localizeChannelHours } from '@/lib/liveChannels';
 import { useLiveStatus } from '@/lib/useLiveStatus';
 import { meetsPlan } from '@/lib/entitlements';
@@ -538,7 +538,7 @@ export default function TvPage() {
           title="TradingBible home"
         >
           <img src={TRADINGBIBLE_LOGO} alt="" aria-hidden className="h-5 w-5 object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
-          <span><span className="tb-gold-text">TradingBible</span><span className="font-semibold text-[#8a8577]"> TV</span></span>
+          <span><BrandName name="TradingBible" /><span className="font-semibold text-[#8a8577]"> TV</span></span>
         </button>
         <div className="pointer-events-auto flex items-center gap-2">
           <button

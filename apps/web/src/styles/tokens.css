@@ -48,6 +48,17 @@ html.light {
   --tb-shadow-gold: 0 12px 40px -22px rgba(166, 124, 30, 0.35);
 }
 
+/* Brand wordmark: the "Trading" half follows the theme; "Bible" is always
+   the fixed brand gold, never washed to white or black by a theme remap. */
+.brand-wordmark { white-space: nowrap; }
+.brand-wordmark__lead { color: #f0ecdd; }
+.brand-wordmark__gold { color: #d4af37; }
+.brand-wordmark__tail { color: #8a8577; }
+html.light .brand-wordmark__lead { color: #232830; }
+html.light .brand-wordmark__tail { color: #545a65; }
+html.light [data-force-dark] .brand-wordmark__lead { color: #f0ecdd; }
+html.light [data-force-dark] .brand-wordmark__tail { color: #8a8577; }
+
 html.light .tb-hero {
   background:
     radial-gradient(120% 140% at 100% 0%, rgba(212, 175, 55, 0.2), transparent 55%),

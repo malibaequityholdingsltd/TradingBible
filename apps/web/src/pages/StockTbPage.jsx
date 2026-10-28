@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   BarChart3, Building2, CircleDollarSign, FileText, Landmark, LockKeyhole,
   ShieldCheck, Target,
 } from 'lucide-react';
 import InvestorShell, { InvestorNotice } from '@/components/InvestorShell';
+import TbcDocumentViewer from '@/components/TbcDocumentViewer';
+import { TbStockDocumentsSection } from '@/components/TbStockDocuments';
 import { AtBadge, AtPanel, AtProgress } from '@/components/AtelierUI';
 import {
   CapEmpty, CapKpiGrid, CapPublicHead, CapRecordCard, CapSection, CapSectionHead,
 } from '@/components/CapitalUI';
 import { useInvestorOverview } from '@/lib/investorApi';
+import { publicTbStockDocxUrl, usePublicTbStockDocuments } from '@/lib/tbStockDocs';
 import {
   TB_ISSUER, TB_SEPARATION, formatDate, formatNumber,
 } from '@/lib/investorRelations';
@@ -259,11 +262,20 @@ function SeparationPanel() {
 
 export default function StockTbPage() {
   const { data, loading, error, reload } = useInvestorOverview();
+  const { documents, loading: docsLoading, error: docsError } = usePublicTbStockDocuments();
+  const [selectedDoc, setSelectedDoc] = useState(null);
   const ipo = data?.ipo || { complete: 0, total: 0 };
 
   return (
     <InvestorShell active="TB Stock">
       <div className="cap-page stock-record-page">
+        <TbcDocumentViewer
+          open={Boolean(selectedDoc)}
+          doc={selectedDoc}
+          docxUrl={selectedDoc ? publicTbStockDocxUrl(selectedDoc.slug) : ''}
+          onDownloadDocx={selectedDoc ? () => { window.location.href = publicTbStockDocxUrl(selectedDoc.slug); } : undefined}
+          onClose={() => setSelectedDoc(null)}
+        />
         <CapPublicHead
           title="TB stock record"
           aside={(
@@ -322,6 +334,16 @@ export default function StockTbPage() {
             <div className="cap-span-7"><CapitalPanel data={data} /></div>
             <div className="cap-span-5"><FinancialPanel data={data} /></div>
           </div>
+        </CapSection>
+
+        <CapSection>
+          <CapSectionHead title="TB stock documents" />
+          <TbStockDocumentsSection
+            documents={documents}
+            loading={docsLoading}
+            error={docsError}
+            onRead={setSelectedDoc}
+          />
         </CapSection>
 
         <CapSection>

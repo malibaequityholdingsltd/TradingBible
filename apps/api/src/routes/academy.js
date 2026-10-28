@@ -2,6 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import logger from '../utils/logger.js';
 import { supabaseAuth } from '../middleware/supabase-auth.js';
+import { endSse, openSse, withTimeout } from '../utils/sse.js';
 import {
 	academyDb,
 	generateCertificate,
@@ -14,6 +15,12 @@ import {
 } from '../api/academy.js';
 
 const router = Router();
+
+function siSetupTimeoutMs() {
+	const configured = Number(process.env.SI_STREAM_SETUP_TIMEOUT_MS);
+	if (!Number.isFinite(configured) || configured <= 0) return 75000;
+	return Math.min(90000, Math.max(15000, configured));
+}
 
 const academyAiRateLimit = rateLimit({
 	windowMs: 60 * 1000,
@@ -292,22 +299,56 @@ router.post('/tutor/stream', academyAiRateLimit, async (req, res) => {
 	try {
 		const row = await academyDb.getLesson(req.userId, pathKey, courseKey, lessonKey);
 		if (!row) return res.status(404).json({ error: { message: 'Open the lesson first.' } });
-		const sse = await tutorStream({
-			userId: req.userId,
-			lesson: row.content,
-			progressNote: 'The student is working through this lesson right now.',
-			history,
-			question,
+
+		const sse = openSse(res);
+		let source;
+		try {
+			source = await withTimeout(
+				tutorStream({
+					userId: req.userId,
+					lesson: row.content,
+					progressNote: 'The student is working through this lesson right now.',
+					history,
+					question,
+				}),
+				siSetupTimeoutMs(),
+				'SI tutor',
+			);
+		} catch (err) {
+			logger.error('academy tutor failed', String(err?.message || err));
+			sse.event({ type: 'error', data: { content: 'The SI tutor is unavailable right now. Please try again.' } });
+			sse.event({ type: 'completed', data: { content: '[COMPLETED]' } });
+			sse.cleanup();
+			endSse(res);
+			return;
+		}
+
+		const narration = stripStreamNarration();
+		const fail = (err) => {
+			logger.error('academy tutor stream failed', String(err?.message || err));
+			sse.event({ type: 'error', data: { content: 'The SI tutor stopped unexpectedly. Please try again.' } });
+			sse.cleanup();
+			endSse(res);
+		};
+		source.on('error', fail);
+		narration.on('error', fail);
+		source.pipe(narration).pipe(res, { end: false });
+		narration.on('end', () => {
+			sse.cleanup();
+			endSse(res);
 		});
-		res.setHeader('Content-Type', 'text/event-stream');
-		res.setHeader('Cache-Control', 'no-cache');
-		res.setHeader('Connection', 'keep-alive');
-		res.setHeader('X-Accel-Buffering', 'no');
-		sse.pipe(stripStreamNarration()).pipe(res, { end: false });
-		res.on('close', () => sse.destroy());
+		res.on('close', () => {
+			sse.cleanup();
+			source.destroy();
+			narration.destroy();
+		});
 	} catch (err) {
 		logger.error('academy tutor failed', String(err?.message || err));
-		res.status(500).json({ error: { message: 'The SI tutor is unavailable right now. Please try again.' } });
+		if (!res.headersSent) {
+			res.status(500).json({ error: { message: 'The SI tutor is unavailable right now. Please try again.' } });
+		} else {
+			endSse(res);
+		}
 	}
 });
 
@@ -315,24 +356,48 @@ router.post('/tutor/stream', academyAiRateLimit, async (req, res) => {
 router.post('/webinar/stream', academyAiRateLimit, async (req, res) => {
 	const { webinar, scheduleNote, history, question } = req.body ?? {};
 	if (!webinar?.title) return res.status(422).json({ error: { message: 'Webinar details are required.' } });
+	const sse = openSse(res);
+	let source;
 	try {
-		const sse = await webinarStream({
-			userId: req.userId,
-			webinar,
-			scheduleNote: scheduleNote || '',
-			history,
-			question,
-		});
-		res.setHeader('Content-Type', 'text/event-stream');
-		res.setHeader('Cache-Control', 'no-cache');
-		res.setHeader('Connection', 'keep-alive');
-		res.setHeader('X-Accel-Buffering', 'no');
-		sse.pipe(stripStreamNarration()).pipe(res, { end: false });
-		res.on('close', () => sse.destroy());
+		source = await withTimeout(
+			webinarStream({
+				userId: req.userId,
+				webinar,
+				scheduleNote: scheduleNote || '',
+				history,
+				question,
+			}),
+			siSetupTimeoutMs(),
+			'SI webinar host',
+		);
 	} catch (err) {
 		logger.error('academy webinar failed', String(err?.message || err));
-		res.status(500).json({ error: { message: 'The live SI host is unavailable right now. Please try again.' } });
+		sse.event({ type: 'error', data: { content: 'The live SI host is unavailable right now. Please try again.' } });
+		sse.event({ type: 'completed', data: { content: '[COMPLETED]' } });
+		sse.cleanup();
+		endSse(res);
+		return;
 	}
+
+	const narration = stripStreamNarration();
+	const fail = (err) => {
+		logger.error('academy webinar stream failed', String(err?.message || err));
+		sse.event({ type: 'error', data: { content: 'The live SI host stopped unexpectedly. Please try again.' } });
+		sse.cleanup();
+		endSse(res);
+	};
+	source.on('error', fail);
+	narration.on('error', fail);
+	source.pipe(narration).pipe(res, { end: false });
+	narration.on('end', () => {
+		sse.cleanup();
+		endSse(res);
+	});
+	res.on('close', () => {
+		sse.cleanup();
+		source.destroy();
+		narration.destroy();
+	});
 });
 
 export default router;

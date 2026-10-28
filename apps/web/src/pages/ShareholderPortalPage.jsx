@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import {
   ArrowRight, BadgeCheck, CalendarClock, CheckCircle2, FileText, KeyRound,
   Landmark, Loader2, LockKeyhole, Mail, ShieldCheck, UserRound, Users, Vote,
 } from 'lucide-react';
+import AppLayout from '@/components/AppLayout';
 import InvestorShell, { InvestorNotice } from '@/components/InvestorShell';
 import { AtAlert, AtBadge, AtButton, AtEmpty, AtPanel, AtProgress } from '@/components/AtelierUI';
 import { CapPublicHead, CapRecordCard } from '@/components/CapitalUI';
@@ -10,6 +12,7 @@ import { IrDocumentList, IrSectionHead, IrStatGrid } from '@/components/Investor
 import { useAuth } from '@/hooks/useAuth';
 import { useShareholderPortal, investorFetch } from '@/lib/investorApi';
 import { formatDate, formatNumber, TB_ISSUER } from '@/lib/investorRelations';
+import '@/styles/investor-relations.css';
 
 function SignInGate() {
   return (
@@ -251,7 +254,56 @@ function ApprovedPortal({ portal, reload }) {
   );
 }
 
-export default function ShareholderPortalPage() {
+function PortalBody({ isAuthed, user, isAuthReady, loading, error, data, reload, requestSent, setRequestSent }) {
+  const status = data?.status;
+  const showApproved = status === 'approved';
+  const showPending = status === 'pending' || status === 'requested' || status === 'suspended' || status === 'revoked';
+  const showRequest = isAuthed && !loading && !error && (!data || status === 'not_requested');
+
+  return (
+    <>
+      {!isAuthReady || (isAuthed && loading) ? (
+        <section className="ir-sec"><div className="ir-card flex items-center gap-2 text-[11px] text-[var(--at-mut)]"><Loader2 className="h-4 w-4 animate-spin" /> Checking your authenticated access…</div></section>
+      ) : !isAuthed ? (
+        <section className="ir-sec"><div className="ir-cols-12"><div className="ir-span-7"><SignInGate /></div><div className="ir-span-5"><AtPanel eyebrow="Access boundary" title="Not a public register" sub="What the portal will and will not do."><ul className="ir-bullet-list"><li>It returns only records linked to the authenticated, verified account.</li><li>It never exposes another shareholder's identity or position.</li><li>It does not issue shares, move certificates or execute a transfer.</li><li>It does not cast a vote or act as a proxy.</li><li>Every administrator decision is written to an audit stream.</li></ul></AtPanel></div></div></section>
+      ) : error ? (
+        <section className="ir-sec"><AtAlert icon={ShieldCheck} tone="amber"><div className="flex flex-wrap items-center justify-between gap-2"><span>{error}</span><AtButton onClick={reload} variant="outline" size="sm">Retry</AtButton></div></AtAlert></section>
+      ) : showApproved ? (
+        <ApprovedPortal portal={data} reload={reload} />
+      ) : showPending ? (
+        <section className="ir-sec"><PendingState portal={data} reload={reload} /></section>
+      ) : showRequest ? (
+        <section className="ir-sec">
+          <div className="ir-cols-12">
+            <div className="ir-span-7">
+              <AtPanel eyebrow="Access request" title="Request verified shareholder access" sub="No positions are visible until an administrator verifies your identity and approves the request.">
+                <AccessRequestForm user={user} onRequested={() => setRequestSent(true)} />
+              </AtPanel>
+            </div>
+            <div className="ir-span-5">
+              <AtPanel eyebrow="Before you request" title="What you will see" sub="A narrow, read-only record.">
+                <ul className="ir-bullet-list">
+                  <li>Your own active positions and certificate references.</li>
+                  <li>Share class, ownership percentage and recorded issue date.</li>
+                  <li>Vesting terms and a schedule estimate, with the contractual documents controlling.</li>
+                  <li>Your historical voting records and public meeting notices.</li>
+                  <li>Public documents only; no other shareholder's data.</li>
+                </ul>
+                <div className="ir-security-note mt-3"><LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--at-gold)]" /><span>The portal cannot create, transfer, cancel or vote shares. Contact IR if your legal record needs correction.</span></div>
+              </AtPanel>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="ir-sec"><AtPanel flush><AtEmpty icon={ShieldCheck} title="Access unavailable" sub="The portal did not return an active access state. Contact investor relations for help." action={<AtButton to="/investors/contact" variant="outline" size="sm">Contact IR</AtButton>} /></AtPanel></section>
+      )}
+
+      <section className="ir-sec"><div className="ir-disclosure">Shareholder records are private and read-only. The portal is not a transfer agent, securities intermediary, voting platform or source of a share price. TB is a proposed ticker and the company is not publicly traded. Email {TB_ISSUER.irEmail} for access questions.</div></section>
+    </>
+  );
+}
+
+function usePortalState() {
   const { isAuthed, user, isAuthReady } = useAuth();
   const { data, loading, error, reload } = useShareholderPortal(isAuthed);
   const [requestSent, setRequestSent] = useState(false);
@@ -263,10 +315,18 @@ export default function ShareholderPortalPage() {
     }
   }, [requestSent, reload]);
 
-  const status = data?.status;
+  return { isAuthed, user, isAuthReady, data, loading, error, reload, requestSent, setRequestSent };
+}
+
+export default function ShareholderPortalPage() {
+  const portal = usePortalState();
+  const status = portal.data?.status;
   const showApproved = status === 'approved';
   const showPending = status === 'pending' || status === 'requested' || status === 'suspended' || status === 'revoked';
-  const showRequest = isAuthed && !loading && !error && (!data || status === 'not_requested');
+
+  // Signed-in users get the authenticated portal inside the app. The public
+  // route remains the explanation/sign-in gate only, never a second portal.
+  if (portal.isAuthReady && portal.isAuthed) return <Navigate to="/app/investors" replace />;
 
   return (
     <InvestorShell active="Shareholders">
@@ -276,9 +336,9 @@ export default function ShareholderPortalPage() {
           aside={(
             <CapRecordCard
               title="Portal access"
-              badge={showApproved ? 'Verified' : showPending ? 'In review' : isAuthed ? 'Signed in' : 'Sign in required'}
+              badge={showApproved ? 'Verified' : showPending ? 'In review' : portal.isAuthed ? 'Signed in' : 'Sign in required'}
               rows={[
-                ['Authentication', isAuthed ? 'Signed in' : 'Required'],
+                ['Authentication', portal.isAuthed ? 'Signed in' : 'Required'],
                 ['Verification', showApproved ? 'Verified' : showPending ? 'Pending' : 'Not started'],
                 ['Ownership data', showApproved ? 'Visible' : 'Hidden'],
                 ['Transfers', 'Not enabled'],
@@ -289,45 +349,36 @@ export default function ShareholderPortalPage() {
           )}
         />
         <div className="mt-2"><InvestorNotice /></div>
-
-        {!isAuthReady || (isAuthed && loading) ? (
-          <section className="ir-sec"><div className="ir-card flex items-center gap-2 text-[11px] text-[var(--at-mut)]"><Loader2 className="h-4 w-4 animate-spin" /> Checking your authenticated access…</div></section>
-        ) : !isAuthed ? (
-          <section className="ir-sec"><div className="ir-cols-12"><div className="ir-span-7"><SignInGate /></div><div className="ir-span-5"><AtPanel eyebrow="Access boundary" title="Not a public register" sub="What the portal will and will not do."><ul className="ir-bullet-list"><li>It returns only records linked to the authenticated, verified account.</li><li>It never exposes another shareholder's identity or position.</li><li>It does not issue shares, move certificates or execute a transfer.</li><li>It does not cast a vote or act as a proxy.</li><li>Every administrator decision is written to an audit stream.</li></ul></AtPanel></div></div></section>
-        ) : error ? (
-          <section className="ir-sec"><AtAlert icon={ShieldCheck} tone="amber"><div className="flex flex-wrap items-center justify-between gap-2"><span>{error}</span><AtButton onClick={reload} variant="outline" size="sm">Retry</AtButton></div></AtAlert></section>
-        ) : showApproved ? (
-          <ApprovedPortal portal={data} reload={reload} />
-        ) : showPending ? (
-          <section className="ir-sec"><PendingState portal={data} reload={reload} /></section>
-        ) : showRequest ? (
-          <section className="ir-sec">
-            <div className="ir-cols-12">
-              <div className="ir-span-7">
-                <AtPanel eyebrow="Access request" title="Request verified shareholder access" sub="No positions are visible until an administrator verifies your identity and approves the request.">
-                  <AccessRequestForm user={user} onRequested={() => setRequestSent(true)} />
-                </AtPanel>
-              </div>
-              <div className="ir-span-5">
-                <AtPanel eyebrow="Before you request" title="What you will see" sub="A narrow, read-only record.">
-                  <ul className="ir-bullet-list">
-                    <li>Your own active positions and certificate references.</li>
-                    <li>Share class, ownership percentage and recorded issue date.</li>
-                    <li>Vesting terms and a schedule estimate, with the contractual documents controlling.</li>
-                    <li>Your historical voting records and public meeting notices.</li>
-                    <li>Public documents only; no other shareholder's data.</li>
-                  </ul>
-                  <div className="ir-security-note mt-3"><LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--at-gold)]" /><span>The portal cannot create, transfer, cancel or vote shares. Contact IR if your legal record needs correction.</span></div>
-                </AtPanel>
-              </div>
-            </div>
-          </section>
-        ) : (
-          <section className="ir-sec"><AtPanel flush><AtEmpty icon={ShieldCheck} title="Access unavailable" sub="The portal did not return an active access state. Contact investor relations for help." action={<AtButton to="/investors/contact" variant="outline" size="sm">Contact IR</AtButton>} /></AtPanel></section>
-        )}
-
-        <section className="ir-sec"><div className="ir-disclosure">Shareholder records are private and read-only. The portal is not a transfer agent, securities intermediary, voting platform or source of a share price. TB is a proposed ticker and the company is not publicly traded. Email {TB_ISSUER.irEmail} for access questions.</div></section>
+        <PortalBody {...portal} />
       </div>
     </InvestorShell>
+  );
+}
+
+/**
+ * The signed-in portal. It uses the app chrome and never shares the public
+ * /investors landing page, while reusing the same read-only portal logic.
+ */
+export function AppInvestorPortalPage() {
+  const portal = usePortalState();
+  const status = portal.data?.status;
+  const showApproved = status === 'approved';
+  const showPending = status === 'pending' || status === 'requested' || status === 'suspended' || status === 'revoked';
+
+  return (
+    <AppLayout title="Investor access">
+      <div className="tb-page mx-auto w-full max-w-none">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-[var(--at-line-soft)] bg-[var(--at-panel)] px-4 py-4 sm:px-5">
+          <div className="min-w-0">
+            <div className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--at-gold)]">Investor access</div>
+            <h1 className="mt-1.5 text-xl font-bold tracking-[-0.035em] text-[var(--at-ink)] sm:text-2xl">Your shareholder record</h1>
+            <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-[var(--at-mut)]">Authenticated and read-only. This is the portal inside your TradingBible account, not the public investor landing page. Records are visible only where IR has verified identity and approved access.</p>
+          </div>
+          <AtBadge tone="gold">{showApproved ? 'Verified' : showPending ? 'In review' : 'Signed in'}</AtBadge>
+        </div>
+        <div className="mb-3"><InvestorNotice compact /></div>
+        <PortalBody {...portal} />
+      </div>
+    </AppLayout>
   );
 }

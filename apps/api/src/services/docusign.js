@@ -218,7 +218,14 @@ function fieldTabsFor(signer, recipientId) {
 	};
 }
 
-export async function createEnvelope({ doc, recipients, sendNow = docusignConfig().sendOnCreate }) {
+export async function createEnvelope({
+	doc,
+	recipients,
+	sendNow = docusignConfig().sendOnCreate,
+	documentRoot = tbcDocumentRoot,
+	emailSubjectPrefix = 'TradingBible',
+	emailBlurb = '',
+}) {
 	const config = docusignConfig();
 	if (!config.configured) {
 		const err = new Error(`DocuSign is not configured: ${config.missing.join(', ')}`);
@@ -231,7 +238,7 @@ export async function createEnvelope({ doc, recipients, sendNow = docusignConfig
 		err.status = 422;
 		throw err;
 	}
-	const pdfPath = path.join(tbcDocumentRoot, doc.pdf);
+	const pdfPath = path.join(documentRoot, doc.pdf);
 	const pdf = await readFile(pdfPath);
 
 	const signers = recipients.map((recipient, index) => {
@@ -245,10 +252,10 @@ export async function createEnvelope({ doc, recipients, sendNow = docusignConfig
 			tabs: recipient.fieldAnchors ? fieldTabsFor(recipient, recipientId) : anchorTabsFor({ ...recipient, recipientId }),
 		};
 	});
-	const subject = `TradingBible · ${doc.number} ${doc.title} — signature required`;
+	const subject = `${doc.emailSubjectPrefix || emailSubjectPrefix} · ${doc.number} ${doc.title} — signature required`;
 	const body = {
 		emailSubject: subject,
-		emailBlurb: [
+		emailBlurb: emailBlurb || [
 			'You are receiving a controlled TradingBible LLC instrument for signature.',
 			'Open the envelope and complete only the fields assigned to your capacity.',
 			'Do not sign a field allocated to another party.',

@@ -5,6 +5,7 @@ import { NodeEnv } from '../constants/common.js';
 import logger from '../utils/logger.js';
 import { supabaseRest } from '../utils/supabaseClient.js';
 import { streamOpencode, completeOpencode } from './opencode-ai.js';
+import { LocalSystemPrompt } from '../constants/prompts.js';
 
 const MessageRole = Object.freeze({
 	User: 'user',
@@ -31,6 +32,24 @@ export const ContentBlockType = Object.freeze({
 const MAX_HISTORY_MESSAGES = 60;
 
 const AI_IMAGE_BUCKET = 'integrated_ai_images';
+
+// A dead or slow provider must not hold an SSE setup open indefinitely. The
+// route flushes headers immediately, but a bounded setup keeps fallback
+// latency predictable and avoids stacking provider timeouts behind a proxy.
+function providerSetupTimeoutMs() {
+	const configured = Number(process.env.SI_PROVIDER_TIMEOUT_MS);
+	if (!Number.isFinite(configured) || configured <= 0) return 45000;
+	return Math.min(60000, Math.max(8000, configured));
+}
+
+function isLocalEndpoint(endpoint) {
+	try {
+		const host = new URL(String(endpoint || '')).hostname;
+		return host === '127.0.0.1' || host === 'localhost' || host === '::1';
+	} catch {
+		return false;
+	}
+}
 
 const HistoryEventTypes = new Set([
 	SSEEventType.Reasoning,
@@ -248,6 +267,33 @@ function signImageReference(reference) {
 }
 
 /**
+ * Starts a provider request but only applies the timeout while waiting for
+ * response headers. Once the provider is streaming, the SSE heartbeat and the
+ * proxy read timeout own the connection, so a long answer is not cut off.
+ *
+ * @param {string} url
+ * @param {RequestInit} options
+ * @param {number} [timeoutMs]
+ * @returns {Promise<Response>}
+ */
+async function fetchWithHeaderTimeout(url, options = {}, timeoutMs = providerSetupTimeoutMs()) {
+	const controller = new AbortController();
+	const waitMs = Math.max(1000, Number(timeoutMs) || providerSetupTimeoutMs());
+	const timer = setTimeout(() => controller.abort(), waitMs);
+	timer.unref?.();
+	try {
+		return await fetch(url, { ...options, signal: controller.signal });
+	} catch (error) {
+		if (error?.name === 'AbortError') {
+			throw new Error(`SI provider did not start responding within ${waitMs}ms`);
+		}
+		throw error;
+	} finally {
+		clearTimeout(timer);
+	}
+}
+
+/**
  * Sends a message to the SI proxy and pipes SSE events to the client.
  * Assistant message is saved to Supabase when the stream ends.
  * This method should be used for text/text, image/text, image/image, text/image combinations.
@@ -256,7 +302,7 @@ function signImageReference(reference) {
  * @returns {Promise<import('node:stream').Readable>}
  */
 export async function stream({ userId, systemPrompt, userMessage }) {
-const apiUrl = process.env.INTEGRATED_AI_API_URL;
+	const apiUrl = process.env.INTEGRATED_AI_API_URL;
 	const apiKey = process.env.INTEGRATED_AI_API_KEY;
 	const websiteId = process.env.WEBSITE_ID;
 	const opencodeUrl = process.env.OPENCODE_SERVER_URL;
@@ -282,42 +328,53 @@ const apiUrl = process.env.INTEGRATED_AI_API_URL;
 		// expired key, free-tier refusal). The last error carries the
 		// combined detail for logs; the route maps it to a friendly message.
 		const failures = [];
-		const attempt = async (label, fn, timeoutMs = 25000) => {
+		const attempt = async (label, fn, timeoutMs = providerSetupTimeoutMs()) => {
+			let timer;
 			try {
 				return await Promise.race([
 					fn(),
-					new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timed out`)), timeoutMs)),
+					new Promise((_, reject) => {
+						timer = setTimeout(() => reject(new Error(`${label} timed out`)), timeoutMs);
+						timer.unref?.();
+					}),
 				]);
 			} catch (err) {
 				failures.push(`${label}: ${String(err?.message || err).slice(0, 180)}`);
 				logger.error(`SI provider ${label} failed, trying next`, String(err?.message || err).slice(0, 200));
 				return null;
+			} finally {
+				clearTimeout(timer);
 			}
 		};
+		const providerTimeoutMs = providerSetupTimeoutMs();
 		const opencode = opencodeUrl
-			? await attempt('local gateway', () => streamOpencode({ userId, systemPrompt, userMessage }))
+			? await attempt('local gateway', () => streamOpencode({ userId, systemPrompt, userMessage }), providerTimeoutMs)
 			: null;
 		if (opencode) return opencode;
 		const deepseek = deepSeekKey
 			? await attempt('deepseek-compatible', () => streamOpenAiCompatible({
+				userId,
 				systemPrompt,
 				userMessage,
 				baseUrl: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com',
 				apiKey: deepSeekKey,
 				model: process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash',
 				maxTokens: process.env.DEEPSEEK_MAX_TOKENS,
-			}))
+			}), providerTimeoutMs)
 			: null;
 		if (deepseek) return deepseek;
-		try {
-			return await streamOpenAiCompatible({ systemPrompt, userMessage });
-		} catch (err) {
-			failures.push(`openai-compatible: ${String(err?.message || err).slice(0, 180)}`);
-			throw new Error(failures.length ? `SI providers failed — ${failures.join(' · ')}` : err.message);
-		}
+		const openai = (openAiBaseUrl && openAiKey)
+			? await attempt('openai-compatible', () => streamOpenAiCompatible({
+				userId,
+				systemPrompt: isLocalEndpoint(openAiBaseUrl) ? LocalSystemPrompt : systemPrompt,
+				userMessage,
+			}), providerTimeoutMs)
+			: null;
+		if (openai) return openai;
+		throw new Error(failures.length ? `SI providers failed — ${failures.join(' · ')}` : 'No SI provider is available. Please contact support.');
 	}
 
-	const response = await fetch(`${apiUrl}/generate`, {
+	const response = await fetchWithHeaderTimeout(`${apiUrl}/generate`, {
 		method: 'POST',
 		headers: {
 			'Accept': 'text/event-stream',
@@ -558,10 +615,10 @@ async function parseSSEEvents({ stream }) {
  * (DeepSeek, OpenAI, Groq, OpenRouter, etc.) and re-emits it as TradingBible SSE events
  * so the client hook does not need to change.
  *
- * @param {{ systemPrompt: string, userMessage: ContentBlock[], baseUrl?: string, apiKey?: string, model?: string, maxTokens?: string }} params
+ * @param {{ userId?: string, systemPrompt: string, userMessage: ContentBlock[], baseUrl?: string, apiKey?: string, model?: string, maxTokens?: string }} params
  * @returns {Promise<import('node:stream').Readable>}
  */
-async function streamOpenAiCompatible({ systemPrompt, userMessage, baseUrl, apiKey, model, maxTokens }) {
+async function streamOpenAiCompatible({ userId, systemPrompt, userMessage, baseUrl, apiKey, model, maxTokens }) {
 	const text = userMessage
 		.filter((b) => b.type === ContentBlockType.Text)
 		.map((b) => b.text)
@@ -572,7 +629,7 @@ async function streamOpenAiCompatible({ systemPrompt, userMessage, baseUrl, apiK
 	const resolvedModel = model || process.env.OPENAI_MODEL || 'deepseek-v4-flash';
 	const resolvedKey = apiKey || process.env.OPENAI_API_KEY;
 
-	const response = await fetch(`${endpoint}/chat/completions`, {
+	const response = await fetchWithHeaderTimeout(`${endpoint}/chat/completions`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -589,7 +646,7 @@ async function streamOpenAiCompatible({ systemPrompt, userMessage, baseUrl, apiK
 			...(maxTokens && { max_tokens: Number(maxTokens) }),
 			...(process.env.OPENAI_REASONING_EFFORT && { reasoning_effort: process.env.OPENAI_REASONING_EFFORT }),
 		}),
-	});
+	}, providerSetupTimeoutMs());
 
 	if (!response.ok) {
 		const errorBody = await response.text().catch(() => 'Unknown error');
@@ -609,6 +666,7 @@ async function streamOpenAiCompatible({ systemPrompt, userMessage, baseUrl, apiK
 	const decoder = new TextDecoderStream();
 
 	(async () => {
+		let assistantText = '';
 		try {
 			let buffer = '';
 			for await (const chunk of response.body.pipeThrough(decoder)) {
@@ -627,6 +685,7 @@ async function streamOpenAiCompatible({ systemPrompt, userMessage, baseUrl, apiK
 						passThrough.push(`data: ${JSON.stringify({ type: SSEEventType.Reasoning, data: { content: reason }, metadata: { agentName: resolvedModel } })}\n\n`);
 					}
 					if (delta) {
+						assistantText += delta;
 						passThrough.push(`data: ${JSON.stringify({ type: SSEEventType.Content, data: { content: delta }, metadata: { agentName: resolvedModel } })}\n\n`);
 					}
 				}
@@ -635,6 +694,12 @@ async function streamOpenAiCompatible({ systemPrompt, userMessage, baseUrl, apiK
 			logger.error('SI provider stream failed', String(error?.message || error));
 			passThrough.push(`data: ${JSON.stringify({ type: SSEEventType.Error, data: { content: error.message } })}\n\n`);
 		} finally {
+			if (userId && assistantText.trim()) {
+				saveMessages({ userId, messages: [
+					{ role: MessageRole.User, content: userMessage },
+					{ role: MessageRole.Assistant, content: [{ type: SSEEventType.Content, data: { content: assistantText } }] },
+				] }).catch((error) => logger.warn('SI history not persisted (fallback provider):', String(error?.message || error)));
+			}
 			passThrough.end(`data: ${JSON.stringify({ type: SSEEventType.Completed, data: { content: '[COMPLETED]' } })}\n\n`);
 		}
 	})();

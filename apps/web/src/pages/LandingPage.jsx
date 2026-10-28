@@ -10,7 +10,7 @@ import { PLANS, translatePlan } from '@/lib/mockData';
 import Footer from '@/components/Footer';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { TESTIMONIALS, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { BrandName, TESTIMONIALS, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { homeRouteForUser } from '@/lib/homeRoute';
@@ -141,9 +141,6 @@ function Nav({ homeTo, isAuthed, platformName }) {
   const [scrolled, setScrolled] = React.useState(false);
   const [menuOpen, setMenuOpen] = React.useState(false);
   const brand = String(platformName || 'TradingBible').trim();
-  const words = brand.split(/\s+/);
-  const first = words.slice(0, -1).join(' ');
-  const last = words[words.length - 1] || '';
   const close = () => setMenuOpen(false);
 
   React.useEffect(() => {
@@ -161,9 +158,7 @@ function Nav({ homeTo, isAuthed, platformName }) {
       <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6">
         <Link to={homeTo} onClick={close} className="flex min-w-0 shrink-0 items-center gap-2.5">
           <img src={LOGO} alt={`${brand} logo`} className="h-9 w-9 shrink-0 rounded-xl object-contain gold-glow sm:h-10 sm:w-10" />
-          <span className="landing-word hidden truncate text-xl font-extrabold tracking-tight sm:inline sm:text-2xl">
-            {first ? `${first} ` : ''}<span className="tb-gold-text">{last}</span>
-          </span>
+          <BrandName name={brand} className="landing-word hidden truncate text-xl font-extrabold tracking-tight sm:inline sm:text-2xl" />
         </Link>
 
         <nav className="landing-nav-pill hidden items-center gap-0.5 rounded-full p-1 xl:flex" aria-label="Main navigation">

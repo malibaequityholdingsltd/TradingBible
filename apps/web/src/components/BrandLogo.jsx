@@ -21,6 +21,38 @@ function LogoSVG({ width, height, className }) {
   );
 }
 
+/**
+ * The brand split is deliberate: "Trading" follows the active theme so it
+ * stays legible, while "Bible" stays brand gold in both themes.
+ */
+export function BrandName({ name = 'TradingBible', className = '', style }) {
+  const brand = String(name || 'TradingBible').trim() || 'TradingBible';
+  const match = brand.match(/^(.*?)(Bible)(.*)$/i);
+
+  if (match) {
+    return (
+      <span className={`brand-wordmark ${className}`} style={style}>
+        <span className="brand-wordmark__lead">{match[1]}</span>
+        <span className="brand-wordmark__gold">{match[2]}</span>
+        {match[3] && <span className="brand-wordmark__tail">{match[3]}</span>}
+      </span>
+    );
+  }
+
+  const words = brand.split(/\s+/);
+  if (words.length > 1) {
+    const tail = words.pop();
+    return (
+      <span className={`brand-wordmark ${className}`} style={style}>
+        <span className="brand-wordmark__lead">{words.join(' ')} </span>
+        <span className="brand-wordmark__gold">{tail}</span>
+      </span>
+    );
+  }
+
+  return <span className={`brand-wordmark ${className}`} style={style}>{brand}</span>;
+}
+
 export function BrandLogo({
   variant = 'primary',
   size = 32,
@@ -33,15 +65,13 @@ export function BrandLogo({
   const height = typeof size === 'number' ? `${size}px` : size;
 
   const logoClass = `inline-flex items-center justify-center ${className}`;
-  const textClass = `ml-2 font-extrabold tracking-tight text-[#f0ecdd] ${showText ? '' : 'hidden'}`;
+  const textClass = `ml-2 font-extrabold tracking-tight ${showText ? '' : 'hidden'}`;
 
   if (showText) {
     return (
       <span className={logoClass} style={{ width: 'auto', height }}>
         <LogoSVG width={width} height={height} />
-        <span className={textClass} style={{ fontSize: textSize || size * 0.4 }}>
-          {brandLogo.name}
-        </span>
+        <BrandName name={brandLogo.name} className={textClass} style={{ fontSize: textSize || size * 0.4 }} />
       </span>
     );
   }
@@ -69,9 +99,7 @@ export function BrandWordmark({
     <span className={`inline-flex items-center gap-2 ${className}`} style={{ height }}>
       <LogoSVG width={width} height={height} />
       <span className="flex flex-col leading-none min-w-0">
-        <span className="font-extrabold tracking-tight text-[#f0ecdd] truncate" style={{ fontSize }}>
-          Trading<span className="text-[#d4af37]">Bible</span>
-        </span>
+        <BrandName name="TradingBible" className="font-extrabold tracking-tight truncate" style={{ fontSize }} />
         {showTagline && (
           <span className="uppercase tracking-[0.15em] text-[#8a8577] truncate" style={{ fontSize: taglineSize }}>
             {tagline}

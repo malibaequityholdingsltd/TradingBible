@@ -46,7 +46,20 @@ const cleanDraft = (recipients) => Object.fromEntries(
   }]),
 );
 
-export default function TbcExecutionPanel({ onChanged }) {
+export default function TbcExecutionPanel({
+  onChanged,
+  apiBase = '/admin/legal-vault',
+  title = 'Execution & approvals',
+  subtitle = 'DocuSign envelopes for the five public summaries and 26 controlled instruments · each signer gets only their own anchored fields · status syncs by webhook or manual pull',
+  panelSub = 'public and controlled instruments',
+  documentListLabel = 'TBC documents',
+  emptySub = 'Provision the TBC document package on the API host to prepare execution.',
+  approvalOptions = APPROVAL_OPTIONS,
+  approvalStateDefault = 'approved',
+  approvalHelp = 'Record an approval only after DocuSign reports the envelope as executed. Approval states are evidence records; they do not enable token sale, staking, governance, migration or chain features.',
+  approvalPlaceholder = 'Resolution reference, counsel advice, license number, conditions…',
+  scopeNote = 'Each signer receives signature, printed-name, capacity and date tabs anchored only to their own execution block. Optional parties are off by default.',
+}) {
   const [state, setState] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -81,7 +94,7 @@ export default function TbcExecutionPanel({ onChanged }) {
     setLoading(true);
     setError('');
     try {
-      const data = await api('/admin/legal-vault/executions');
+      const data = await api(`${apiBase}/executions`);
       setState(data);
       setSelectedSlug((current) => {
         const next = preferredSlug || current;
@@ -105,10 +118,10 @@ export default function TbcExecutionPanel({ onChanged }) {
   useEffect(() => {
     if (!selected) return;
     setDrafts(cleanDraft(selected.recipients));
-    setApprovalState(selected.approvalStatus && selected.approvalStatus !== 'not_requested' ? selected.approvalStatus : 'approved');
+    setApprovalState(selected.approvalStatus && selected.approvalStatus !== 'not_requested' ? selected.approvalStatus : approvalStateDefault);
     setApprovalNote(selected.approvalNote || '');
     setNotice('');
-  }, [selected?.slug, selected?.lastSyncedAt, selected?.approvalAt]);
+  }, [selected?.slug, selected?.lastSyncedAt, selected?.approvalAt, approvalStateDefault]);
 
   const counts = useMemo(() => {
     const docs = state?.documents || [];
@@ -134,7 +147,7 @@ export default function TbcExecutionPanel({ onChanged }) {
         id: recipient.id,
         routingOrder: recipient.routingOrder || 1,
       }));
-      const data = await api(`/admin/legal-vault/${encodeURIComponent(selected.slug)}/workflow`, {
+      const data = await api(`${apiBase}/${encodeURIComponent(selected.slug)}/workflow`, {
         method: 'PUT',
         body: JSON.stringify({ recipients }),
       });
@@ -161,11 +174,11 @@ export default function TbcExecutionPanel({ onChanged }) {
         id: recipient.id,
         routingOrder: recipient.routingOrder || 1,
       }));
-      await api(`/admin/legal-vault/${encodeURIComponent(selected.slug)}/workflow`, {
+      await api(`${apiBase}/${encodeURIComponent(selected.slug)}/workflow`, {
         method: 'PUT',
         body: JSON.stringify({ recipients }),
       });
-      const data = await api(`/admin/legal-vault/${encodeURIComponent(selected.slug)}/send`, {
+      const data = await api(`${apiBase}/${encodeURIComponent(selected.slug)}/send`, {
         method: 'POST',
         body: JSON.stringify({ draft: !sendImmediately }),
       });
@@ -186,7 +199,7 @@ export default function TbcExecutionPanel({ onChanged }) {
     setBusy('submit');
     setError('');
     try {
-      await api(`/admin/legal-vault/${encodeURIComponent(selected.slug)}/submit`, { method: 'POST' });
+      await api(`${apiBase}/${encodeURIComponent(selected.slug)}/submit`, { method: 'POST' });
       await load(selected.slug);
       onChanged?.();
       setNotice('Draft envelope released for signature.');
@@ -202,7 +215,7 @@ export default function TbcExecutionPanel({ onChanged }) {
     setBusy('sync');
     setError('');
     try {
-      await api(`/admin/legal-vault/${encodeURIComponent(selected.slug)}/sync`, { method: 'POST' });
+      await api(`${apiBase}/${encodeURIComponent(selected.slug)}/sync`, { method: 'POST' });
       await load(selected.slug);
       onChanged?.();
       setNotice('Envelope and recipient status pulled from DocuSign.');
@@ -218,7 +231,7 @@ export default function TbcExecutionPanel({ onChanged }) {
     setBusy('approval');
     setError('');
     try {
-      await api(`/admin/legal-vault/${encodeURIComponent(selected.slug)}/approval`, {
+      await api(`${apiBase}/${encodeURIComponent(selected.slug)}/approval`, {
         method: 'POST',
         body: JSON.stringify({ status: approvalState, note: approvalNote }),
       });
@@ -242,14 +255,14 @@ export default function TbcExecutionPanel({ onChanged }) {
     <section className="mt-5">
       <AtSectionHeading
         index="01"
-        title="Execution & approvals"
-        sub="DocuSign envelopes for the five public summaries and 26 controlled instruments · each signer gets only their own anchored fields · status syncs by webhook or manual pull"
+        title={title}
+        sub={subtitle}
         action={<AtBadge tone={configured ? 'green' : 'amber'}>{configured ? 'DocuSign configured' : 'DocuSign setup required'}</AtBadge>}
       />
 
       <AtPanel
         title="Signature register"
-        sub={`${counts.prepared} prepared · ${counts.awaiting} awaiting signatures · ${counts.executed} executed · ${counts.approved} approved · public and controlled instruments`}
+        sub={`${counts.prepared} prepared · ${counts.awaiting} awaiting signatures · ${counts.executed} executed · ${counts.approved} approved · ${panelSub}`}
         action={<AtButton onClick={() => load(selectedSlug)} variant="quiet" size="sm" icon={loading ? Loader2 : RefreshCw} disabled={loading}>Refresh</AtButton>}
         bodyClassName="p-0"
       >
@@ -279,10 +292,10 @@ export default function TbcExecutionPanel({ onChanged }) {
             {[1, 2, 3, 4].map((n) => <div key={n} className="h-16 animate-pulse rounded-xl bg-[var(--at-soft)]" />)}
           </div>
         ) : !state?.documents?.length ? (
-          <AtEmpty icon={FileSignature} title="No documents found" sub="Provision the TBC document package on the API host to prepare execution." />
+          <AtEmpty icon={FileSignature} title="No documents found" sub={emptySub} />
         ) : (
           <div className="at-exec-layout">
-            <div className="at-exec-list" role="listbox" aria-label="TBC documents">
+            <div className="at-exec-list" role="listbox" aria-label={documentListLabel}>
               {state.documents.map((doc) => (
                 <button
                   key={doc.slug}
@@ -343,7 +356,7 @@ export default function TbcExecutionPanel({ onChanged }) {
                     <div>
                       <div className="at-eyebrow">Signing scope</div>
                       <p className="mt-1 text-[10px] leading-relaxed text-[var(--at-mut)]">
-                        Each signer receives signature, printed-name, capacity and date tabs anchored only to their own execution block. Optional parties are off by default.
+                        {scopeNote}
                       </p>
                     </div>
                     <AtBadge tone="blue">{selected.selected} recipients selected</AtBadge>
@@ -423,7 +436,7 @@ export default function TbcExecutionPanel({ onChanged }) {
                     <div>
                       <div className="at-eyebrow">Approval evidence</div>
                       <p className="mt-1 max-w-2xl text-[10px] leading-relaxed text-[var(--at-mut)]">
-                        Record an approval only after DocuSign reports the envelope as executed. Approval states are evidence records; they do not enable token sale, staking, governance, migration or chain features.
+                        {approvalHelp}
                       </p>
                     </div>
                     <AtBadge tone={canApprove ? 'green' : 'amber'}>
@@ -434,7 +447,7 @@ export default function TbcExecutionPanel({ onChanged }) {
                     <label className="at-label sm:w-40">
                       Decision
                       <select className="at-select" value={approvalState} onChange={(event) => setApprovalState(event.target.value)} disabled={!canApprove}>
-                        {APPROVAL_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                        {approvalOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                       </select>
                     </label>
                     <label className="at-label min-w-0 flex-1">
@@ -444,7 +457,7 @@ export default function TbcExecutionPanel({ onChanged }) {
                         value={approvalNote}
                         onChange={(event) => setApprovalNote(event.target.value)}
                         disabled={!canApprove}
-                        placeholder="Resolution reference, counsel advice, license number, conditions…"
+                        placeholder={approvalPlaceholder}
                       />
                     </label>
                     <AtButton onClick={recordApproval} disabled={!canApprove || Boolean(busy)} variant="gold" size="sm" icon={busy === 'approval' ? Loader2 : Stamp}>

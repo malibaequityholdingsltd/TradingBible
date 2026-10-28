@@ -3,7 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { ArrowRight, Coins, FileText, ShieldCheck } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { AtBadge, AtButton } from '@/components/AtelierUI';
-import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { BrandName, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -67,7 +67,7 @@ export default function TbcPublicShell({ children, active = '', contained = true
             <span className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-xl border border-[var(--at-line-strong)] bg-[var(--at-gold-soft)]">
               <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-7 w-7 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
             </span>
-            <span className="hidden text-lg font-extrabold leading-none tracking-[-0.04em] text-[var(--at-ink)] sm:block">Trading<span className="text-[var(--at-gold)]">Bible</span></span>
+            <BrandName name="TradingBible" className="hidden text-lg font-extrabold leading-none tracking-[-0.04em] sm:block" />
           </Link>
 
           <span className="hidden h-5 w-px bg-[var(--at-line-soft)] sm:block" />

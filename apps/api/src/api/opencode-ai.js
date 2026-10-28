@@ -30,14 +30,16 @@ function baseUrl() {
 	return String(process.env.OPENCODE_SERVER_URL || 'http://127.0.0.1:8001').replace(/\/+$/, '');
 }
 
-async function request(path, { method = 'GET', body } = {}) {
+async function request(path, { method = 'GET', body, timeoutMs = 0 } = {}) {
 	const headers = { 'Content-Type': 'application/json' };
 	const password = process.env.OPENCODE_SERVER_PASSWORD;
 	if (password) headers.Authorization = `Bearer ${password}`;
+	const signal = timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined;
 	return fetch(`${baseUrl()}${path}`, {
 		method,
 		headers,
 		body: body === undefined ? undefined : JSON.stringify(body),
+		...(signal ? { signal } : {}),
 	});
 }
 
@@ -45,7 +47,7 @@ async function ensureSession(userId) {
 	const existing = sessions.get(userId);
 	if (existing) return existing;
 
-	const res = await request('/session', { method: 'POST', body: { title: 'TradingBible SI' } });
+	const res = await request('/session', { method: 'POST', body: { title: 'TradingBible SI' }, timeoutMs: 12000 });
 	if (!res.ok) {
 		throw new Error(`opencode: failed to create session (${res.status})`);
 	}
@@ -79,6 +81,7 @@ export async function streamOpencode({ userId, systemPrompt, userMessage }) {
 			system: systemPrompt,
 			parts: [{ type: 'text', text: text || 'Hello' }],
 		},
+		timeoutMs: 15000,
 	});
 
 	if (!res.ok) {
@@ -177,6 +180,7 @@ export async function completeOpencode({ userId, systemPrompt, userMessage }) {
 			system: systemPrompt,
 			parts: [{ type: 'text', text: text || 'Hello' }],
 		},
+		timeoutMs: 15000,
 	});
 
 	if (!res.ok) {

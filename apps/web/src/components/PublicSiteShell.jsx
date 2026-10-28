@@ -4,7 +4,7 @@ import { ArrowRight, Check, Menu, ShieldCheck, X } from 'lucide-react';
 import Footer from '@/components/Footer';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { BrandName, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
 import { usePlatformSettings } from '@/lib/platformSettings';
@@ -27,9 +27,6 @@ function PublicNav({ homeTo, isAuthed }) {
   const { settings } = usePlatformSettings();
   const [open, setOpen] = React.useState(false);
   const brand = String(settings.platformName || 'TradingBible').trim();
-  const words = brand.split(/\s+/);
-  const first = words.slice(0, -1).join(' ');
-  const last = words[words.length - 1] || '';
   const close = () => setOpen(false);
   const navLink = 'landing-nav-link rounded-full px-3 py-2 text-[13px] font-semibold transition-colors';
   const mobileLink = 'landing-menu-link block rounded-xl px-4 py-3 text-sm font-medium transition-colors';
@@ -39,7 +36,7 @@ function PublicNav({ homeTo, isAuthed }) {
       <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6">
         <Link to={homeTo} onClick={close} className="flex min-w-0 shrink-0 items-center gap-2.5" aria-label={`${brand} home`}>
           <img src={TRADINGBIBLE_LOGO} alt="" className="h-9 w-9 shrink-0 rounded-xl object-contain gold-glow sm:h-10 sm:w-10" />
-          <span className="landing-word hidden truncate text-xl font-extrabold tracking-tight sm:inline sm:text-2xl">{first ? `${first} ` : ''}<span className="tb-gold-text">{last}</span></span>
+          <BrandName name={brand} className="landing-word hidden truncate text-xl font-extrabold tracking-tight sm:inline sm:text-2xl" />
         </Link>
 
         <nav className="landing-nav-pill hidden items-center gap-0.5 rounded-full p-1 xl:flex" aria-label="Public navigation">

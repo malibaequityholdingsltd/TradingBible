@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Twitter, Facebook, Linkedin, Instagram, Youtube, LineChart, Lock, ShieldCheck } from 'lucide-react';
 import { IosIcon } from '@/components/IosIcon';
-import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { BrandName, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { useI18n } from '@/lib/i18n';
@@ -289,7 +289,7 @@ export default function Footer({ compact = false }) {
         <div className="flex flex-col items-center justify-between gap-4 border-t border-[var(--at-line-soft)] pt-5 text-[12px] text-[var(--at-mut)] sm:flex-row">
           <div className="flex items-center gap-2">
             <img src={TRADINGBIBLE_LOGO} alt="" className="h-5 w-5 rounded-[6px] border border-[var(--at-line)] bg-[var(--at-panel)] object-contain p-0.5" />
-            <span>TradingBible</span>
+            <BrandName name="TradingBible" />
           </div>
           <div className="flex flex-wrap justify-center gap-x-5 gap-y-2">
             <Link to="/terms" className="transition hover:text-[var(--at-ink)]">{t('fot.terms')}</Link>

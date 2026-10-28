@@ -18,6 +18,7 @@
 - [Admin Plugins](/admin/plugins): TradingBible application page.
 - [Admin Reports](/admin/reports): TradingBible application page.
 - [Admin Settings](/admin/settings): TradingBible application page.
+- [Admin Tb Stock Documents](/admin/tb-stock-documents): TradingBible application page.
 - [Admin Tbc](/admin/tbc): TradingBible application page.
 - [Admin Tbc Documents](/admin/legal-vault): TradingBible application page.
 - [Admin Tv Ads](/admin/tv): TradingBible application page.
@@ -28,6 +29,7 @@
 - [Alerts](/app/alerts): TradingBible application page.
 - [Analytics](/app/analytics): TradingBible application page.
 - [Api Docs](/app/api-docs): TradingBible application page.
+- [App Investor Portal](/app/investors): TradingBible application page.
 - [Backtest](/app/backtest): TradingBible application page.
 - [Billing](/app/billing): TradingBible application page.
 - [Blog](/blog): TradingBible application page.
@@ -78,6 +80,7 @@
 - [Stock Tb](/stock/TB): TradingBible application page.
 - [Student Dashboard](/student): TradingBible application page.
 - [Symbol Redirect](/app/charts): TradingBible application page.
+- [Tb Stock Documents](/stock/TB/documents): TradingBible application page.
 - [Tbc App](/app/tbc/:tab): TradingBible application page.
 - [Tbc Chain](/developers/tbc): TradingBible application page.
 - [Tbc Public](/tbc/faqs): TradingBible application page.

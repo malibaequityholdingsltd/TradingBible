@@ -97,7 +97,8 @@
   white-space: nowrap;
 }
 
-.cap-ir-word span { color: var(--at-gold); }
+.cap-ir-word .brand-wordmark__lead { color: var(--at-ink); }
+.cap-ir-word .brand-wordmark__gold { color: #d4af37; }
 
 .cap-ir-rule {
   width: 1px;
