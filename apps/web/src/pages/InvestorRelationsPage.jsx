@@ -37,6 +37,7 @@ function Hero({ copy, status = [] }) {
   return (
     <CapPublicHead
       title={copy.title}
+      sub="The private-company record for TradingBible LLC and the proposed TB ticker. Disclosures are published only after approval; no public market exists."
       aside={(
         <CapRecordCard
           title="Issuer status"

@@ -156,7 +156,7 @@ export default function LiveChatWidget() {
   // switches deterministically with the toggle in both modes.
   const visibleMessages = [{ from: 'agent', text: WELCOME }, ...messages.map((m) => ({ from: m.role === 'user' ? 'you' : 'agent', text: m.content, images: m.images }))];
   const isFirstRun = visibleMessages.length <= 1;
-  const coachTag = `${t('aiw.coach')} · Muse Spark`;
+  const coachTag = `${t('aiw.coach').toUpperCase()} · TRADINGBIBLE`;
   // Sit exactly on the top edge of the live nav bar. navClear is measured
   // from the viewport bottom to the nav's top edge; adding MARGIN here is
   // what previously left the launcher visibly floating above the line.
@@ -321,7 +321,7 @@ export default function LiveChatWidget() {
           {tab === 'about' && (
             <div className="relative flex-1 space-y-3 overflow-y-auto p-3.5">
               {[
-                { h: t('aiw.model'), body: (<div className="font-mono mt-1 text-[11px] leading-relaxed text-[#c9c4b4]">muse-spark-1.3-contributor-free<br /><span className="text-[#8a8577]">{t('aiw.via')}</span></div>) },
+                { h: t('aiw.model'), body: (<div className="mt-1 text-[11px] leading-relaxed text-[#c9c4b4]">TradingBible SI<br /><span className="text-[#8a8577]">{t('aiw.via')}</span></div>) },
                 { h: t('aiw.privacy'), body: (<p className="mt-1 text-[11px] leading-relaxed text-[#c9c4b4]">{t('aiw.privacyB')}</p>) },
                 { h: t('aiw.help'), body: (<a href="mailto:support@tradingbible.app" className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline">support@tradingbible.app <ExternalLink className="h-3 w-3" /></a>) },
               ].map((s) => (

@@ -132,9 +132,9 @@
 .cap-ir-parent {
   display: none;
   font-family: var(--at-mono, monospace);
-  font-size: 8px;
+  font-size: 9.5px;
   font-weight: 700;
-  letter-spacing: .17em;
+  letter-spacing: .13em;
   text-transform: uppercase;
   color: var(--at-mut);
 }
@@ -164,7 +164,7 @@
   border: 1px solid transparent;
   border-radius: 7px;
   padding: 3px 8px;
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 650;
   letter-spacing: -.01em;
   color: var(--at-mut);
@@ -193,11 +193,11 @@
   border: 1px solid var(--at-line-soft);
   border-radius: 9px;
   background: var(--at-soft);
-  padding: 7px 10px;
+  padding: 8px 11px;
   font-family: var(--at-mono, monospace);
-  font-size: 8px;
+  font-size: 9.5px;
   font-weight: 700;
-  letter-spacing: .12em;
+  letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--at-mut);
 }
@@ -230,7 +230,7 @@
 
 @media (min-width: 1100px) {
   .cap-ir-parent { display: inline-flex; }
-  .cap-ir-link { font-size: 9.5px; padding-inline: 9px; }
+  .cap-ir-link { font-size: 10.5px; padding-inline: 9px; }
 }
 
 /* ── Public page header ─────────────────────────────────────────── */
@@ -289,6 +289,14 @@
   color: var(--at-mut);
 }
 
+.cap-public-sub {
+  max-width: 68ch;
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--at-mut);
+}
+
 .cap-public-badges {
   display: flex;
   flex-wrap: wrap;
@@ -337,7 +345,7 @@
 .cap-record-row:last-child { border-bottom: 0; }
 
 .cap-record-row span {
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.35;
   color: var(--at-mut);
 }
@@ -345,7 +353,7 @@
 .cap-record-row strong {
   max-width: 62%;
   font-family: var(--at-mono, monospace);
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 700;
   line-height: 1.35;
   text-align: right;
@@ -358,7 +366,7 @@
   margin-top: 8px;
   border-top: 1px solid var(--at-line-soft);
   padding-top: 8px;
-  font-size: 8.5px;
+  font-size: 9.5px;
   line-height: 1.5;
   color: var(--at-mut);
 }
@@ -409,14 +417,15 @@
 
 .cap-kpi-label {
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   font-family: var(--at-mono, monospace);
-  font-size: 8px;
+  font-size: 9.5px;
   font-weight: 700;
-  letter-spacing: .13em;
-  text-overflow: ellipsis;
+  line-height: 1.25;
+  letter-spacing: .1em;
+  text-overflow: clip;
   text-transform: uppercase;
-  white-space: nowrap;
+  white-space: normal;
   color: var(--at-mut);
 }
 
@@ -434,9 +443,9 @@
 
 .cap-kpi-index {
   font-family: var(--at-mono, monospace);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: .12em;
+  letter-spacing: .1em;
   color: var(--at-gold);
 }
 
@@ -465,13 +474,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 5px;
-  margin-top: 4px;
-  font-size: 8.5px;
+  margin-top: 5px;
+  font-size: 9.5px;
   line-height: 1.45;
   color: var(--at-mut);
 }
 
-.cap-kpi-foot .at-chip { font-size: 7.5px; }
+.cap-kpi-foot .at-chip { font-size: 8.5px; }
 
 @media (max-width: 1100px) {
   .cap-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -526,7 +535,7 @@
   border-radius: 7px;
   background: var(--at-gold-soft);
   font-family: var(--at-mono, monospace);
-  font-size: 8px;
+  font-size: 9.5px;
   font-weight: 700;
   color: var(--at-gold);
 }
@@ -543,8 +552,8 @@
 
 .cap-section-head p {
   max-width: 90ch;
-  margin-top: 3px;
-  font-size: 10.5px;
+  margin-top: 4px;
+  font-size: 11px;
   line-height: 1.55;
   color: var(--at-mut);
 }
@@ -592,8 +601,8 @@
 
 .cap-panel .at-eyebrow {
   margin-bottom: 5px;
-  font-size: 8px;
-  letter-spacing: .15em;
+  font-size: 9px;
+  letter-spacing: .13em;
 }
 
 .cap-panel .at-panel-title {
@@ -605,7 +614,7 @@
 .cap-panel .at-panel-sub {
   max-width: 82ch;
   margin-top: 2px;
-  font-size: 9.5px;
+  font-size: 10.5px;
   line-height: 1.5;
 }
 
@@ -614,15 +623,15 @@
 
 .cap-panel .ir-list-row { padding-block: 9px; gap: 8px 12px; }
 .cap-panel .ir-list-title { font-size: 10.5px; }
-.cap-panel .ir-list-sub { font-size: 9px; }
+.cap-panel .ir-list-sub { font-size: 10px; }
 
 .cap-panel .ir-table-wrap { border-radius: 10px; }
-.cap-panel .ir-table th { padding: 8px 10px; font-size: 7.5px; }
+.cap-panel .ir-table th { padding: 8px 10px; font-size: 9px; }
 .cap-panel .ir-table td { padding: 9px 10px; font-size: 10px; }
 
 /* Shared list/table refinements used by the public pages. */
 .cap-page .ir-table-wrap { border-radius: 11px; }
-.cap-page .ir-table th { padding: 8px 10px; font-size: 8px; }
+.cap-page .ir-table th { padding: 8px 10px; font-size: 9px; }
 .cap-page .ir-table td { padding: 10px 10px; font-size: 10px; }
 
 .cap-page .ir-list-row { padding: 10px 0; }
@@ -638,8 +647,8 @@
 }
 
 .cap-page .ir-card-title { font-size: 12.5px; }
-.cap-page .ir-card-text { font-size: 10px; line-height: 1.6; }
-.cap-page .ir-card-num { font-size: 8px; }
+.cap-page .ir-card-text { font-size: 11px; line-height: 1.6; }
+.cap-page .ir-card-num { font-size: 9px; }
 
 .cap-page .ir-sec { margin-top: 20px; }
 .cap-page .ir-sec-title { font-size: clamp(16px, 1.55vw, 21px); font-weight: 620; letter-spacing: -.035em; }
@@ -665,7 +674,7 @@
 .cap-page .ir-announcement h3 { font-size: 12px; }
 .cap-page .ir-announcement p { font-size: 10px; }
 
-.cap-page .ir-disclosure { font-size: 8px; }
+.cap-page .ir-disclosure { font-size: 9.5px; line-height: 1.55; }
 
 /* ── Market state ───────────────────────────────────────────────── */
 .cap-market-state {
@@ -702,7 +711,7 @@
 .cap-market-state p {
   max-width: 80ch;
   margin-top: 4px;
-  font-size: 10px;
+  font-size: 10.5px;
   line-height: 1.6;
   color: var(--at-mut);
 }
@@ -734,9 +743,9 @@
 .cap-market-cell span {
   display: block;
   font-family: var(--at-mono, monospace);
-  font-size: 7.5px;
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: .12em;
+  letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--at-mut);
 }
@@ -744,7 +753,7 @@
 .cap-market-cell strong {
   display: block;
   margin-top: 3px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 650;
   color: var(--at-ink-2);
 }
@@ -830,7 +839,7 @@
   background: var(--at-soft);
   padding: 4px 8px;
   font-family: var(--at-mono, monospace);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: .1em;
   text-transform: uppercase;
@@ -898,7 +907,7 @@
   background: var(--at-gold-soft);
   padding-inline: 4px;
   font-family: var(--at-mono, monospace);
-  font-size: 7.5px;
+  font-size: 8.5px;
   font-weight: 700;
   color: var(--at-gold);
 }
@@ -968,8 +977,8 @@
 .cap-rail-row:first-child { border-top: 0; padding-top: 0; }
 .cap-rail-row:last-child { padding-bottom: 0; }
 
-.cap-rail-row span { font-size: 9px; line-height: 1.4; color: var(--at-mut); }
-.cap-rail-row strong { font-family: var(--at-mono, monospace); font-size: 8.5px; font-weight: 700; color: var(--at-ink-2); text-align: right; }
+.cap-rail-row span { font-size: 10px; line-height: 1.4; color: var(--at-mut); }
+.cap-rail-row strong { font-family: var(--at-mono, monospace); font-size: 9.5px; font-weight: 700; color: var(--at-ink-2); text-align: right; }
 
 .cap-workflow {
   display: grid;
@@ -991,9 +1000,9 @@
   align-items: center;
   gap: 5px;
   font-family: var(--at-mono, monospace);
-  font-size: 7.5px;
+  font-size: 8.5px;
   font-weight: 700;
-  letter-spacing: .11em;
+  letter-spacing: .09em;
   text-transform: uppercase;
   color: var(--at-mut);
 }
@@ -1031,7 +1040,7 @@
 }
 
 .cap-empty strong { display: block; font-size: 11px; font-weight: 650; color: var(--at-ink); }
-.cap-empty p { max-width: 72ch; margin-top: 2px; font-size: 9px; line-height: 1.5; color: var(--at-mut); }
+.cap-empty p { max-width: 72ch; margin-top: 3px; font-size: 10px; line-height: 1.5; color: var(--at-mut); }
 .cap-empty > .at-btn { margin-left: auto; }
 
 .cap-admin-shell .ir-admin-form,

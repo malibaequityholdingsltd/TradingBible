@@ -8,7 +8,25 @@ export function AdProvider({ children, options }) {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    service.initialize().then(() => setInitialized(true));
+    let cancelled = false;
+    const start = () => {
+      service.initialize()
+        .then(() => { if (!cancelled) setInitialized(true); })
+        .catch(() => { if (!cancelled) setInitialized(true); });
+    };
+    // Ads are not on the critical path. Let the page paint and the auth
+    // profile settle before spending a request on the ad server.
+    const idle = typeof window.requestIdleCallback === 'function'
+      ? window.requestIdleCallback(start, { timeout: 2500 })
+      : window.setTimeout(start, 1200);
+    return () => {
+      cancelled = true;
+      if (typeof window.cancelIdleCallback === 'function' && typeof idle === 'number') {
+        window.cancelIdleCallback(idle);
+      } else {
+        window.clearTimeout(idle);
+      }
+    };
   }, [service]);
 
   return (

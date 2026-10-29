@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useLayoutEffect, useState 
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Settings, FileText, CreditCard, IdCard, LibraryBig, BarChart3,
-  LogOut, Menu, Shield, X, Plug, Key, Package, User, ChevronDown, ChevronRight, MonitorPlay, Briefcase, Gift,
+  LogOut, Menu, Search, Shield, X, Plug, Key, Package, User, ChevronDown, ChevronRight, MonitorPlay, Briefcase, Gift,
   GraduationCap, Wallet, UserRound, Building2, Coins, Command, ShieldCheck, Landmark,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +13,7 @@ import '@/styles/admin-console.css';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { BrandName, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { IosIcon } from '@/components/IosIcon';
 import { displayInitial } from '@/lib/displayName';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { enterAdminPreview } from '@/lib/adminPreview';
@@ -128,11 +129,39 @@ export default function AdminLayout({ children, title }) {
 
 function AdminLayoutContent({ children, title }) {
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQ, setSearchQ] = useState('');
   const nav = useNavigate();
   const loc = useLocation();
   const { user, logout } = useAuth();
   const initial = displayInitial(user);
   const [staff, setStaff] = useState([]);
+
+  useEffect(() => {
+    setOpen(false);
+    setSearchOpen(false);
+    setSearchQ('');
+  }, [loc.pathname]);
+
+  useEffect(() => {
+    if (!open && !searchOpen) return undefined;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (event) => {
+      if (event.key === 'Escape') { setOpen(false); setSearchOpen(false); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [open, searchOpen]);
+
+  const allAdminNav = NAV_GROUPS.flatMap((group) => group.items.map((item) => ({ ...item, group: group.label })));
+  const normalizedSearch = searchQ.trim().toLowerCase();
+  const searchResults = normalizedSearch
+    ? allAdminNav.filter((item) => `${item.label} ${item.to} ${item.group}`.toLowerCase().includes(normalizedSearch))
+    : allAdminNav;
 
   useEffect(() => {
     (async () => {
@@ -240,38 +269,34 @@ function AdminLayoutContent({ children, title }) {
 
   return (
     <div className="at-shell tb-admin-shell min-h-screen bg-transparent pt-[var(--header-h)] tabular-nums antialiased">
+      {/* Desktop keeps the persistent operator rail. Phones never render a
+          side rail: navigation lives in the header search and the bottom
+          More sheet, matching the trader app. */}
       <aside className="at-rail fixed bottom-0 left-0 top-[var(--header-h)] z-30 hidden w-[258px] flex-col overflow-hidden lg:flex">
-        {SideContent}
-      </aside>
-
-      {open && <div className="fixed inset-x-0 bottom-0 top-[var(--header-h)] z-40 bg-black/75 backdrop-blur-sm lg:hidden" onClick={() => setOpen(false)} />}
-      <aside className={`at-rail fixed bottom-0 left-0 top-[var(--header-h)] z-40 flex w-[278px] flex-col overflow-hidden transition-transform duration-300 lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}>
-        <button onClick={() => setOpen(false)} aria-label="Close menu" className="absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-lg border border-[var(--at-line-soft)] text-[var(--at-mut)] hover:text-[var(--at-ink)]">
-          <X className="h-4 w-4" />
-        </button>
         {SideContent}
       </aside>
 
       <div className="lg:pl-[258px]">
         <header className="at-topbar fixed inset-x-0 left-0 right-0 top-[var(--header-h)] z-[35] h-16 w-full lg:left-[258px] lg:w-[calc(100%-258px)]">
-          <div className="flex h-full w-full items-center gap-2 px-2.5 sm:gap-3 sm:px-4 lg:px-6">
-            <div className="flex min-w-0 flex-1 items-center gap-2 sm:min-w-[178px] sm:flex-none">
-              <button onClick={() => setOpen(true)} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[var(--at-line-soft)] text-[var(--at-gold)] transition hover:border-[var(--at-line)] hover:text-[var(--at-gold)] max-sm:hidden lg:hidden" aria-label="Open navigation">
-                <Menu className="h-4 w-4" />
-              </button>
+          <div className="flex h-full w-full items-center gap-2 px-3 sm:gap-3 sm:px-4 lg:px-6">
+            <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:min-w-[178px] sm:flex-none">
               <img
                 src={TRADINGBIBLE_LOGO}
                 alt=""
                 aria-hidden
-                className="h-7 w-7 shrink-0 rounded-lg border border-[var(--at-line-soft)] bg-[var(--at-gold-soft)] object-contain sm:hidden"
+                className="h-8 w-8 shrink-0 rounded-[10px] border border-[var(--at-line-soft)] bg-[var(--at-gold-soft)] object-contain sm:hidden"
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
               <div className="min-w-0">
                 <div className="at-crumb hidden sm:flex items-center gap-1.5">
                   <BrandName name="TradingBible" /><span className="text-[var(--at-mut-2)]">/</span><b>Admin</b>
                 </div>
-                <div className="flex min-w-0 items-center gap-2">
-                  <h1 className="truncate text-sm font-semibold tracking-[-0.02em] text-[var(--at-ink)] sm:min-w-[150px] sm:text-[15px]">{title || 'Admin Dashboard'}</h1>
+                <div className="flex items-center gap-1.5 leading-none sm:hidden">
+                  <BrandName name="TradingBible" className="text-[10px] font-bold tracking-[-0.01em]" />
+                  <span className="text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--at-mut-2)]">Admin</span>
+                </div>
+                <div className="mt-0.5 flex min-w-0 items-center gap-2 sm:mt-0">
+                  <h1 className="truncate text-[17px] font-semibold tracking-[-0.035em] text-[var(--at-ink)] sm:min-w-[150px] sm:text-[15px]">{title || 'Admin Dashboard'}</h1>
                   <AtBadge tone="gold" className="hidden xl:inline-flex">Live workspace</AtBadge>
                 </div>
               </div>
@@ -285,6 +310,14 @@ function AdminLayoutContent({ children, title }) {
 
             <div className="flex shrink-0 items-center justify-end">
               <div className="flex shrink-0 items-center gap-1 rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-1 sm:gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => { setSearchOpen(true); setOpen(false); }}
+                  aria-label="Search admin"
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[var(--at-gold)] transition hover:bg-[var(--at-gold-soft)] sm:hidden"
+                >
+                  <Search className="h-4 w-4" />
+                </button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="relative hidden h-8 w-8 shrink-0 place-items-center rounded-lg text-[var(--at-gold)] transition hover:bg-[var(--at-gold-soft)] hover:text-[var(--at-gold)] sm:grid" aria-label="Staff directory" title="Staff">
@@ -315,8 +348,8 @@ function AdminLayoutContent({ children, title }) {
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <span className="hidden h-5 w-px bg-[var(--at-line-soft)] sm:block" />
-                <ThemeSwitcher inline />
-                <LanguageSwitcher />
+                <span className="hidden sm:flex"><ThemeSwitcher inline /></span>
+                <span className="hidden sm:flex"><LanguageSwitcher /></span>
                 <button
                   onClick={() => { enterAdminPreview(); nav('/app'); }}
                   aria-label="View app"
@@ -358,44 +391,161 @@ function AdminLayoutContent({ children, title }) {
           </div>
         </header>
 
-        {/* Phones keep the admin search reachable instead of dropping it from
-            the header at the sm breakpoint. */}
-        <div className="fixed inset-x-0 top-[calc(var(--header-h)+58px)] z-[34] flex items-center gap-2 border-y border-[var(--at-line-soft)] bg-[var(--at-topbar-bg)] px-3 py-2 backdrop-blur-xl sm:hidden">
-          <div className="min-w-0 flex-1"><AdminSearch /></div>
-          <button
-            type="button"
-            onClick={() => { enterAdminPreview(); nav('/app'); }}
-            className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-[var(--at-gold)]/25 bg-[var(--at-gold-soft)] px-2.5 text-[9px] font-bold uppercase tracking-[0.04em] text-[var(--at-ink)]"
-          >
-            <LayoutDashboard className="h-3.5 w-3.5 text-[var(--at-gold)]" />
-            View app
-          </button>
-        </div>
-
         <main className="mx-auto w-full max-w-none flex-1 px-1.5 pb-28 pt-[calc(4rem+1rem)] sm:px-2 sm:pb-8 lg:px-3 xl:px-4">
           {children}
         </main>
 
-        <nav aria-label="Admin sections" className="tb-admin-dock">
-          {[
-            { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
-            { to: '/admin/users', label: 'Users', icon: Users },
-            { to: '/admin/tbc', label: 'TBC', icon: Coins },
-            { to: '/admin/jobs', label: 'Hiring', icon: Briefcase },
-          ].map(({ to, label, icon: Icon, end }) => {
-            const active = end ? loc.pathname === to : loc.pathname === to || loc.pathname.startsWith(`${to}/`);
-            return (
-              <NavLink key={to} to={to} end={end} className={`tb-admin-dock__tab ${active ? 'is-active' : ''}`}>
-                <span className="tb-admin-dock__icon"><Icon className="h-[19px] w-[19px]" strokeWidth={1.9} /></span>
-                <span>{label}</span>
-              </NavLink>
-            );
-          })}
-          <button type="button" onClick={() => setOpen(true)} className="tb-admin-dock__tab">
-            <span className="tb-admin-dock__icon"><Menu className="h-[19px] w-[19px]" strokeWidth={1.9} /></span>
-            <span>More</span>
-          </button>
-        </nav>
+        {!open && !searchOpen && (
+          <nav aria-label="Admin sections" className="tb-admin-dock">
+            {[
+              { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
+              { to: '/admin/users', label: 'Users', icon: Users },
+              { to: '/admin/tbc', label: 'TBC', icon: Coins },
+              { to: '/admin/jobs', label: 'Hiring', icon: Briefcase },
+            ].map(({ to, label, icon: Icon, end }) => {
+              const active = end ? loc.pathname === to : loc.pathname === to || loc.pathname.startsWith(`${to}/`);
+              return (
+                <NavLink key={to} to={to} end={end} className={`tb-admin-dock__tab ${active ? 'is-active' : ''}`}>
+                  <span className="tb-admin-dock__icon"><IosIcon icon={Icon} tone="theme" glyph="contrast" size="md" className="nav-medallion" /></span>
+                  <span>{label}</span>
+                </NavLink>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => { setSearchOpen(false); setOpen(true); }}
+              aria-label="More admin sections"
+              aria-expanded={open}
+              className={`tb-admin-dock__tab ${open ? 'is-active' : ''}`}
+            >
+              <span className="tb-admin-dock__icon"><IosIcon icon={open ? X : Menu} tone="theme" glyph="contrast" size="md" className="nav-medallion" /></span>
+              <span>More</span>
+            </button>
+          </nav>
+        )}
+
+        {/* Phone search is a focused overlay, not a permanent second bar. */}
+        {searchOpen && (
+          <div className="fixed inset-0 z-[86] bg-[var(--at-bg0)] sm:hidden" role="dialog" aria-modal="true" aria-label="Search admin sections">
+            <div className="flex h-full flex-col pt-[calc(var(--header-h)+10px)]">
+              <div className="flex items-center gap-2 px-3 pb-3">
+                <div className="flex min-w-0 flex-1 items-center gap-2 rounded-[14px] border border-[var(--at-line)] bg-[var(--at-soft)] px-3">
+                  <Search className="h-4 w-4 shrink-0 text-[var(--at-gold)]" />
+                  <input
+                    autoFocus
+                    value={searchQ}
+                    onChange={(event) => setSearchQ(event.target.value)}
+                    placeholder="Search sections and actions"
+                    className="h-12 min-w-0 flex-1 bg-transparent text-sm text-[var(--at-ink)] outline-none placeholder:text-[var(--at-mut-2)]"
+                  />
+                  {searchQ && (
+                    <button type="button" onClick={() => setSearchQ('')} aria-label="Clear search" className="grid h-8 w-8 place-items-center text-[var(--at-mut)]">
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <button type="button" onClick={() => { setSearchOpen(false); setSearchQ(''); }} className="h-11 shrink-0 rounded-[12px] border border-[var(--at-line)] px-3 text-xs font-semibold text-[var(--at-ink-2)]">
+                  Cancel
+                </button>
+              </div>
+              <div className="nice-scroll flex-1 overflow-y-auto px-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+                {searchResults.length ? (
+                  <div className="space-y-1.5">
+                    {searchResults.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.to}
+                          type="button"
+                          onClick={() => { setSearchOpen(false); setSearchQ(''); nav(item.to); }}
+                          className="flex min-h-[56px] w-full items-center gap-3 rounded-[16px] border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-3 text-left"
+                        >
+                          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-[var(--at-gold-soft)] text-[var(--at-gold)]"><Icon className="h-4 w-4" strokeWidth={1.9} /></span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-semibold text-[var(--at-ink)]">{item.label}</span>
+                            <span className="block truncate text-[10px] uppercase tracking-[0.1em] text-[var(--at-mut-2)]">{item.group}</span>
+                          </span>
+                          <ChevronRight className="h-4 w-4 shrink-0 text-[var(--at-mut-2)]" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="grid place-items-center py-16 text-center text-sm text-[var(--at-mut)]">No sections match “{searchQ}”.</div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Phone More: one native sheet for the whole operator suite. */}
+        {open && (
+          <div className="fixed inset-0 z-[85] lg:hidden" role="dialog" aria-modal="true" aria-label="Admin menu">
+            <div className="absolute inset-0 bg-black/70" onClick={() => setOpen(false)} />
+            <div className="tb-sheet tb-admin-more-sheet dock-sheet-up absolute inset-x-0 bottom-0 max-h-[88dvh] overflow-y-auto rounded-t-[28px] border-t border-[var(--at-gold)]/25 bg-[#0a0a0f] px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+              <div className="tb-sheet-head sticky top-0 z-10 -mx-4 bg-[#0a0a0f] px-4 pb-2 pt-2.5">
+                <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-white/15" aria-hidden />
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--at-mut-2)]">TradingBible</p>
+                    <h2 className="mt-0.5 text-lg font-bold tracking-[-0.03em] text-[var(--at-ink)]">Operator menu</h2>
+                  </div>
+                  <button type="button" onClick={() => setOpen(false)} aria-label="Close menu" className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] border border-[var(--at-line-soft)] text-[var(--at-mut)]">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="mb-4 flex items-center gap-3 rounded-[18px] border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[13px] bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] text-sm font-bold text-[#0a0a0f] ring-1 ring-[#d4af37]/40">{initial}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold text-[var(--at-ink)]">{user?.name || 'Operator'}</span>
+                  <span className="block truncate text-[11px] text-[var(--at-mut)]">{user?.email || 'Administrator'}</span>
+                </span>
+                <AtBadge tone="gold">Admin</AtBadge>
+              </div>
+
+              <div className="mb-5 grid grid-cols-3 gap-2">
+                <button type="button" onClick={() => { setOpen(false); enterAdminPreview(); nav('/app'); }} className="flex min-h-[70px] flex-col items-center justify-center gap-1.5 rounded-[17px] border border-[var(--at-line-soft)] bg-[var(--at-soft)] text-[10px] font-semibold text-[var(--at-ink-2)]">
+                  <LayoutDashboard className="h-4 w-4 text-[var(--at-gold)]" /> View app
+                </button>
+                <button type="button" onClick={() => { setOpen(false); nav('/admin/settings'); }} className="flex min-h-[70px] flex-col items-center justify-center gap-1.5 rounded-[17px] border border-[var(--at-line-soft)] bg-[var(--at-soft)] text-[10px] font-semibold text-[var(--at-ink-2)]">
+                  <Settings className="h-4 w-4 text-[var(--at-gold)]" /> Settings
+                </button>
+                <button type="button" onClick={() => { setOpen(false); signOut(); }} className="flex min-h-[70px] flex-col items-center justify-center gap-1.5 rounded-[17px] border border-[var(--at-line-soft)] bg-[var(--at-soft)] text-[10px] font-semibold text-red-400">
+                  <LogOut className="h-4 w-4" /> Sign out
+                </button>
+              </div>
+
+              <div className="space-y-5">
+                {NAV_GROUPS.map((group) => (
+                  <div key={group.label}>
+                    <div className="px-1 pb-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--at-mut-2)]">{group.label}</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {group.items.map(({ to, label, icon: Icon, end }) => (
+                        <NavLink
+                          key={to}
+                          to={to}
+                          end={end}
+                          onClick={() => setOpen(false)}
+                          className={({ isActive }) => `sheet-row flex min-h-[64px] items-center gap-2.5 rounded-[16px] border px-3 py-2.5 text-left text-[11px] font-semibold ${isActive ? 'sheet-on border-[#d4af37]/40 bg-[#d4af37]/[0.10] text-[#f0ecdd] ring-1 ring-inset ring-[#d4af37]/25' : 'border-[var(--at-line-soft)] bg-[var(--at-soft)] text-[var(--at-ink-2)]'}`}
+                        >
+                          <IosIcon icon={Icon} tone="theme" glyph="contrast" size="sm" className="nav-medallion nav-medallion--sm shrink-0" />
+                          <span className="min-w-0 flex-1 leading-tight">{label}</span>
+                        </NavLink>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 flex items-center gap-2 border-t border-[var(--at-line-soft)] pt-3">
+                <span className="flex flex-1 items-center justify-center rounded-[14px] border border-[var(--at-line-soft)] bg-[var(--at-soft)] py-2"><ThemeSwitcher inline /></span>
+                <span className="flex flex-1 items-center justify-center rounded-[14px] border border-[var(--at-line-soft)] bg-[var(--at-soft)] py-2"><LanguageSwitcher /></span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

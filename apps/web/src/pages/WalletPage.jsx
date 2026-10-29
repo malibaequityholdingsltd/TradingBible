@@ -437,7 +437,7 @@ export default function WalletPage() {
 				/>
 
 				<div className="mt-4">
-					<AtTabs tabs={BANK_TABS} active={bankTab} onChange={setBankTab} />
+					<AtTabs tabs={BANK_TABS} active={bankTab} onChange={setBankTab} className="wallet-tabs" />
 				</div>
 
 			{bankTab === 'accounts' && (
@@ -448,7 +448,7 @@ export default function WalletPage() {
 				<span className="hidden h-px min-w-6 flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent sm:block" />
 				<GhostButton onClick={() => setBankTab('send')} className="ml-auto !px-3 !py-2 !text-xs"><Send className="h-4 w-4" /> {t('wal.sendMoney')}</GhostButton>
 			</div>
-			<div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+			<div className="wallet-accounts mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
 				<div className="at-card relative overflow-hidden p-5">
 					<span aria-hidden className="at-watermark !right-4 !top-1 !text-[4.4rem]">TBC</span>
 					<div className="flex items-center justify-between gap-2">

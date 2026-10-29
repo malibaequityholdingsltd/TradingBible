@@ -333,6 +333,7 @@ export default function ShareholderPortalPage() {
       <div className="ir-page cap-page">
         <CapPublicHead
           title="Shareholder portal"
+          sub="Verify access to your own shareholder record. A portal request never changes legal ownership, and no individual holding is exposed publicly."
           aside={(
             <CapRecordCard
               title="Portal access"

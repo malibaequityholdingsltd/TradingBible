@@ -177,7 +177,7 @@ export default function JournalPage() {
   return (
     <AppLayout title={t('nav.journal')}>
       <div className="tb-page">
-        <div className="tb-scroll-row items-center">
+        <div className="tb-scroll-row journal-filters items-center">
           <div className="flex min-w-[150px] flex-1 items-center gap-2 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2">
             <Search className="h-4 w-4 shrink-0 text-[#8a8577]" />
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('jrn.search')} className="w-full bg-transparent text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none" />
@@ -188,12 +188,12 @@ export default function JournalPage() {
           <select value={direction} onChange={(e) => setDirection(e.target.value)} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2 text-sm text-[#e9e7df] outline-none">
             {['All', 'Long', 'Short', 'Buy', 'Sell'].map((d) => <option key={d} className="bg-[#0f0f14]">{d}</option>)}
           </select>
-          <GhostButton onClick={exportCsv} className="!min-h-[42px] !px-3 !py-2"><Download className="h-4 w-4" /> <span className="hidden sm:inline">{t('jou.export')}</span></GhostButton>
-          <GhostButton onClick={exportTax} disabled={taxBusy} className="!min-h-[42px] !px-3 !py-2"><Download className="h-4 w-4" /> <span className="hidden sm:inline">{taxBusy ? '…' : 'Tax CSV'}</span></GhostButton>
-          <GoldButton onClick={syncBrokers} disabled={syncing} className="!min-h-[42px] !px-4 !py-2 disabled:opacity-60">
+          <GhostButton onClick={exportCsv} className="journal-export !min-h-[42px] !px-3 !py-2"><Download className="h-4 w-4" /> <span className="hidden sm:inline">{t('jou.export')}</span></GhostButton>
+          <GhostButton onClick={exportTax} disabled={taxBusy} className="journal-export !min-h-[42px] !px-3 !py-2"><Download className="h-4 w-4" /> <span className="hidden sm:inline">{taxBusy ? '…' : 'Tax CSV'}</span></GhostButton>
+          <GoldButton onClick={syncBrokers} disabled={syncing} className="journal-sync !min-h-[42px] !px-4 !py-2 disabled:opacity-60">
             <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? t('jrn.syncing') : t('jrn.syncBrokers')}
           </GoldButton>
-          {syncOnly && <span className="rounded-full border border-[#d4af37]/25 bg-[#d4af37]/[0.06] px-3 py-1.5 text-[11px] font-medium text-[#d4af37]">{t('jrn.syncOnly')}</span>}
+          {syncOnly && <span className="journal-note rounded-full border border-[#d4af37]/25 bg-[#d4af37]/[0.06] px-3 py-1.5 text-[11px] font-medium text-[#d4af37]">{t('jrn.syncOnly')}</span>}
         </div>
 
         {loading ? (

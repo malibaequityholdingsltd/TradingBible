@@ -2165,7 +2165,7 @@ export function AdminContent() {
           ]} />
       )}
       {tab === 'courses' && (
-        <GenericContentTab prefix="course" title="Academy Courses" subtitle="Course catalog shown in the Academy. Publish lessons, quizzes and certificates per course."
+        <GenericContentTab prefix="course" title="Academy Courses" subtitle="Course catalog shown in the Academy. Publish lessons and certificates; quizzes are held back for the final certificate exam."
           fields={[
             { key: 'title', label: 'Course title', required: true, default: '', full: false },
             { key: 'category', label: 'Category', default: '', full: false },
@@ -2814,7 +2814,7 @@ const BUILTIN_PLUGINS = [
   { slug: 'ai-coach', name: 'SI Trade Coach', version: '1.4.0', description: 'GPT-powered trade analysis, emotion scoring, and improvement suggestions.', author: 'TradingBible Core', enabled: true, status: 'installed' },
   { slug: 'economic-calendar', name: 'Economic Calendar', version: '1.2.0', description: 'Forex Factory event feed with impact levels and real-time countdowns.', author: 'TradingBible Core', enabled: true, status: 'installed' },
   { slug: 'chart-drawings', name: 'Chart Drawing Tools', version: '1.0.3', description: 'Persistent trendlines, fibonacci, annotations and templates per user.', author: 'TradingBible Core', enabled: true, status: 'installed' },
-  { slug: 'academy', name: 'Academy Module', version: '1.1.0', description: 'Course catalog, lesson tracking, quizzes and certificate generation.', author: 'TradingBible Core', enabled: true, status: 'installed' },
+  { slug: 'academy', name: 'Academy Module', version: '1.1.0', description: 'Course catalog, lesson tracking, final certificate exams and certificate generation.', author: 'TradingBible Core', enabled: true, status: 'installed' },
   { slug: 'community-forum', name: 'Community Forum', version: '1.0.1', description: 'Threaded discussions, replies, likes, and moderation tools.', author: 'TradingBible Core', enabled: true, status: 'installed' },
 ];
 
@@ -4511,12 +4511,13 @@ export function AdminSettings() {
     const timer = setTimeout(async () => {
       setSaveState('saving');
       try {
-        if (settingsId) {
-          await pb.collection('admin_platform_settings').update(settingsId, { key: 'default', settings, features });
-        } else {
-          const created = await pb.collection('admin_platform_settings').create({ key: 'default', settings, features });
-          setSettingsId(created.id);
-        }
+        // Upsert on the natural key. Two tabs (or a double-invoked effect)
+        // must never race into a duplicate `default` row.
+        const saved = await pb.collection('admin_platform_settings').upsert(
+          { key: 'default', settings, features },
+          'key',
+        );
+        if (saved?.id) setSettingsId(saved.id);
         setSaveState('saved');
         notifyPlatformSettingsChanged();
       } catch (err) {

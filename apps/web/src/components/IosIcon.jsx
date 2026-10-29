@@ -65,6 +65,7 @@ export function IosIcon({
   const glyphColor = explicitGlyph
     || (glyph === 'dark' || glyph === true ? '#1C1C1E' : null)
     || (glyph === 'light' ? '#FFFFFF' : null)
+    || (glyph === 'contrast' ? 'var(--tb-nav-glyph, #1C1C1E)' : null)
     || (resolvedTone === 'theme' ? 'var(--tb-theme-glyph, var(--tb-gold))' : 'var(--ios-ink)');
 
   return (

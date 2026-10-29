@@ -25,13 +25,20 @@ export class AdsService {
     this.ads = new Map();
     this.placements = new Map();
     this.initialized = false;
+    this.initPromise = null;
   }
 
   async initialize() {
     if (this.initialized) return;
-    await this.fetchAds();
-    await this.fetchPlacements();
-    this.initialized = true;
+    if (this.initPromise) return this.initPromise;
+    this.initPromise = (async () => {
+      await this.fetchAds();
+      await this.fetchPlacements();
+      this.initialized = true;
+    })().finally(() => {
+      this.initPromise = null;
+    });
+    return this.initPromise;
   }
 
   async fetchAds() {

@@ -36,9 +36,26 @@ export function useQuotes(symbols, { refreshMs = 30000 } = {}) {
   }, [key]);
 
   useEffect(() => {
-    fetchData();
-    timer.current = setInterval(fetchData, refreshMs);
-    return () => clearInterval(timer.current);
+    let stopped = false;
+    const start = () => {
+      if (stopped) return;
+      clearInterval(timer.current);
+      fetchData();
+      timer.current = setInterval(fetchData, refreshMs);
+    };
+    const stop = () => clearInterval(timer.current);
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') stop();
+      else start();
+    };
+
+    start();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      stopped = true;
+      stop();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [fetchData, refreshMs]);
 
   return { quotes, status, refresh: fetchData };

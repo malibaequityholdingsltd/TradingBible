@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Code2, Palette, CreditCard, HelpCircle, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, Compass, FlaskConical, Medal, Briefcase, SquareTerminal, Star, Coins, X, Search } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Code2, Palette, CreditCard, HelpCircle, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, Compass, FlaskConical, Medal, Briefcase, SquareTerminal, Star, Coins, X, Search, MonitorPlay, MessageCircle, Languages, Check } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { avatarUrl } from '@/lib/avatar';
 import { displayInitial } from '@/lib/displayName';
 import { useNotifications } from '@/hooks/useNotifications';
-import { useI18n } from '@/lib/i18n';
+import { useI18n, SUPPORTED_LANGS } from '@/lib/i18n';
 import OnboardingTutorial from '@/components/OnboardingTutorial';
 import GlobalSearch from '@/components/GlobalSearch';
 import ThemePickerDialog from '@/components/ThemePickerDialog';
@@ -71,7 +71,7 @@ const NAV_GROUPS = [
       { to: '/app/signals', labelKey: 'nav.signals', icon: Radar, tint: IOS.orange },
       { to: '/app/staking', labelKey: 'nav.staking', icon: Coins, tint: IOS.green },
       { to: '/app/tbc', labelKey: 'nav.tbc', icon: Coins, tint: IOS.gold },
-      { to: '/app/investors', labelKey: 'nav.investors', label: 'Investor access', icon: Landmark, tint: IOS.gold },
+      { to: '/app/investors', labelKey: 'nav.investors', label: 'Investors', icon: Landmark, tint: IOS.gold },
       { to: '/leaderboard', labelKey: 'nav.leaderboard', icon: Medal, tint: IOS.purple },
       { to: '/app/economic-calendar', labelKey: 'nav.economic', icon: CalendarClock, tint: IOS.indigo },
     ],
@@ -112,6 +112,7 @@ export default function AppLayout({ children, title }) {
 
 function AppLayoutContent({ children, title }) {
   const [moreOpen, setMoreOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [tutorial, setTutorial] = useState(false);
   // One-click app themes (everyone, every plan): accent + text colors apply
@@ -141,12 +142,13 @@ function AppLayoutContent({ children, title }) {
   const loc = useLocation();
   const { user, logout, updateProfile } = useAuth();
   const { unseen } = useNotifications();
-  const { t } = useI18n();
+  const { t, lang, setLang } = useI18n();
   const { features } = usePlatformSettings();
   const initial = displayInitial(user);
   const signOut = () => { logout(); nav('/'); };
 
   const isAdmin = user?.role === 'admin';
+  const adminPreview = isAdmin && isAdminPreview();
   const isSubscriber = isAdmin || ['pro', 'elite', 'professional'].includes((user?.plan || '').toLowerCase());
   const canSeeSignals = isAdmin || features.signals !== false;
   const avatar = avatarUrl(user);
@@ -203,9 +205,9 @@ function AppLayoutContent({ children, title }) {
   const SHEET_SKIP = new Set(MAIN_TABS.map((m) => m.to));
 
   // Sheet hygiene: close on route change, lock body scroll + Esc to close.
-  useEffect(() => { setMoreOpen(false); setSearchOpen(false); }, [loc.pathname]);
+  useEffect(() => { setMoreOpen(false); setSearchOpen(false); setLangOpen(false); }, [loc.pathname]);
   useEffect(() => {
-    if (!moreOpen) return;
+    if (!moreOpen) { setLangOpen(false); return; }
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e) => { if (e.key === 'Escape') setMoreOpen(false); };
@@ -248,8 +250,8 @@ function AppLayoutContent({ children, title }) {
         <IosIcon
           icon={LayoutDashboard}
           size="2xl"
-          tint={IOS.gold}
-          glyph="#1C1C1E"
+          tone="theme"
+          glyph="contrast"
           className="nav-dashboard-icon"
         />
         <span aria-hidden className="nav-dashboard-spark" />
@@ -264,15 +266,15 @@ function AppLayoutContent({ children, title }) {
       <span className="relative">
         <IosIcon
           icon={it.icon}
-          tint={IOS.gold}
-          glyph="#1C1C1E"
+          tone="theme"
+          glyph="contrast"
           size="md"
           className={`nav-medallion ${it.locked ? 'opacity-60 saturate-[0.7]' : ''}`}
         />
         {it.locked && <Crown className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full bg-[#0a0a0f] p-[2px] text-[#d4af37] ring-1 ring-[#d4af37]/40" />}
       </span>
     );
-    const labelEl = <span className="app-nav-footer-label hidden max-w-full truncate px-0.5 text-[8px] font-semibold leading-none xl:block">{label}</span>;
+    const labelEl = <span className="app-nav-footer-label hidden max-w-full truncate px-0.5 text-[9px] font-semibold leading-none xl:block">{label}</span>;
     const tooltip = (
       <span className="pointer-events-none absolute bottom-[calc(100%+3px)] left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md border border-[#d4af37]/25 bg-[#0a0a0f] px-2 py-1 text-[10px] font-semibold text-[#f0ecdd] opacity-0 shadow-lg transition group-hover:opacity-100 group-focus-visible:opacity-100 xl:hidden">
         {label}{it.locked ? ' · upgrade' : ''}
@@ -311,7 +313,7 @@ function AppLayoutContent({ children, title }) {
   };
 
   const FooterNav = (
-    <footer className={`app-nav-footer fixed inset-x-0 bottom-0 z-40 hidden backdrop-blur-xl lg:block ${dashboardActive ? 'dashboard-nav' : ''}`}>
+    <footer className="app-nav-footer fixed inset-x-0 bottom-0 z-40 hidden backdrop-blur-xl lg:block">
       <span aria-hidden className="app-nav-footer-sheen" />
       <nav
         aria-label="App sections"
@@ -330,11 +332,11 @@ function AppLayoutContent({ children, title }) {
   );
 
   return (
-    <div className="tb-app-shell min-h-screen bg-transparent pt-[var(--header-h)] tabular-nums antialiased">
+    <div className={`tb-app-shell min-h-screen bg-transparent pt-[var(--header-h)] tabular-nums antialiased${adminPreview ? ' tb-admin-preview' : ''}`}>
       <div>
         {/* Phone header: solid two-row bar (compact row + full-width
             search). sm+ keeps the single-row translucent bar. */}
-        <header className={`app-header fixed inset-x-0 left-0 right-0 top-[var(--header-h)] z-[35] w-full border-b border-white/[0.06] bg-[#0a0a0f] tabular-nums sm:bg-[#0a0a0f]/90 sm:backdrop-blur-2xl${dashboardActive ? ' dashboard-nav' : ''}`}>
+        <header className="app-header fixed inset-x-0 left-0 right-0 top-[var(--header-h)] z-[35] w-full border-b border-white/[0.06] bg-[#0a0a0f] tabular-nums sm:bg-[#0a0a0f]/90 sm:backdrop-blur-2xl">
           {/* drifting gold hairline + slow light sweep */}
           <div aria-hidden className="app-header-hairline pointer-events-none absolute inset-x-0 bottom-0 h-px" />
           <div aria-hidden className="app-header-sheen pointer-events-none absolute inset-0 overflow-hidden" />
@@ -377,9 +379,11 @@ function AppLayoutContent({ children, title }) {
               <IosIcon icon={Search} size="sm" tone="theme" />
             </button>
             <ThemeSwitcher inline className="hdr-ic hover:bg-[#d4af37]/10" />
-            <LanguageSwitcher className="hdr-ic hover:bg-[#d4af37]/10" />
+            <span className="hidden sm:block">
+              <LanguageSwitcher className="hdr-ic hover:bg-[#d4af37]/10" />
+            </span>
             {canSeeSignals && (
-              <button onClick={() => nav('/app/alerts')} className="hdr-ic relative grid h-9 w-9 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37]" title={t('app.alerts')}>
+              <button onClick={() => nav('/app/alerts')} className="hdr-ic relative hidden h-9 w-9 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] sm:grid" title={t('app.alerts')}>
                 <IosIcon icon={Bell} size="sm" tone="theme" />
                 {unseen > 0 && <span className="absolute right-1 top-1 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-red-500 px-1 text-[8px] font-bold tabular-nums text-white">{unseen > 9 ? '9+' : unseen}</span>}
               </button>
@@ -402,6 +406,12 @@ function AppLayoutContent({ children, title }) {
                 <DropdownMenuItem onClick={() => nav('/app/profile')} className="min-h-[44px] cursor-pointer gap-2.5">
                   {menuIcon(User, 'blue')} {t('nav.profile')}
                 </DropdownMenuItem>
+                {canSeeSignals && (
+                  <DropdownMenuItem onClick={() => nav('/app/alerts')} className="min-h-[44px] cursor-pointer gap-2.5">
+                    {menuIcon(Bell, 'orange')} <span className="flex-1">{t('app.alerts')}</span>
+                    {unseen > 0 && <span className="grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">{unseen > 9 ? '9+' : unseen}</span>}
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => nav('/app/billing')} className="min-h-[44px] cursor-pointer gap-2.5">
                   {menuIcon(CreditCard, 'green')} {t('nav.billing')}
                 </DropdownMenuItem>
@@ -451,10 +461,10 @@ function AppLayoutContent({ children, title }) {
           )}
         </header>
         <main className="mx-auto w-full max-w-none px-1.5 pb-24 pt-[calc(var(--apphead)+0.75rem)] sm:px-2 sm:pt-[92px] lg:px-2 lg:pt-[100px] xl:px-2.5 xl:pt-[104px] 2xl:px-3">
-          {isAdmin && isAdminPreview() && (
-            <div className="admin-frost mb-2 flex items-center justify-between gap-3 rounded-[10px] border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-4 py-2 tabular-nums">
-              <span className="text-xs text-[#d4af37]">{t('misc.adminPreview')}</span>
-              <button onClick={() => { exitAdminPreview(); nav('/admin'); }} className="flex shrink-0 items-center gap-1.5 rounded-[10px] border border-[#d4af37]/25 px-3 py-1.5 text-xs font-semibold tabular-nums text-[#d4af37] transition hover:bg-[#d4af37]/10"><LogOut className="h-3.5 w-3.5" /> {t('misc.exitAdmin')}</button>
+          {adminPreview && (
+            <div className="admin-preview-banner admin-frost mb-2 flex items-center justify-between gap-3 rounded-[10px] border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-4 py-2 tabular-nums">
+              <span className="min-w-0 truncate text-xs text-[#d4af37]">{t('misc.adminPreview')}</span>
+              <button onClick={() => { exitAdminPreview(); nav('/admin'); }} className="flex shrink-0 items-center gap-1.5 rounded-[10px] border border-[#d4af37]/25 px-3 py-1.5 text-xs font-semibold tabular-nums text-[#d4af37] transition hover:bg-[#d4af37]/10"><LogOut className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t('misc.exitAdmin')}</span><span className="sm:hidden">Exit</span></button>
             </div>
           )}
           {children}
@@ -465,7 +475,7 @@ function AppLayoutContent({ children, title }) {
         {/* Phone dock backdrop: solid fade so page text never shows
             around or below the floating dock while scrolling. */}
         <div aria-hidden className="tb-dockfade pointer-events-none fixed inset-x-0 bottom-0 z-30 h-36 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/95 to-transparent lg:hidden" />
-        <nav aria-label="App sections" className={`tb-dock fixed inset-x-4 bottom-3 z-40 rounded-[10px] border border-[#d4af37]/15 bg-[#101016] tabular-nums shadow-[0_12px_32px_rgba(0,0,0,0.55),0_0_20px_rgba(212,175,55,0.06)] ring-1 ring-inset ring-white/[0.06] lg:hidden ${dashboardActive ? 'dashboard-nav' : ''}`}>
+        <nav aria-label="App sections" className="tb-dock fixed inset-x-4 bottom-3 z-40 rounded-[10px] border border-[#d4af37]/15 bg-[#101016] tabular-nums shadow-[0_12px_32px_rgba(0,0,0,0.55),0_0_20px_rgba(212,175,55,0.06)] ring-1 ring-inset ring-white/[0.06] lg:hidden">
           <div className="flex px-2 pb-2 pt-2">
             {MAIN_TABS.map((m, idx) => {
               const Icon = m.icon;
@@ -481,7 +491,7 @@ function AppLayoutContent({ children, title }) {
                 return (
                   <button key={m.to} onClick={goPricing} aria-label={`${m.label} — upgrade required`} style={{ '--nav-i': idx }} className={`${btn} text-[#8a8577]/70`}>
                     <span className={`${pill} text-[#8a8577]/70`}>
-                      <IosIcon icon={Icon} tint={IOS.gold} glyph="#1C1C1E" size="md" className="nav-medallion opacity-60 saturate-[0.7]" />
+                      <IosIcon icon={Icon} tone="theme" glyph="contrast" size="md" className="nav-medallion opacity-60 saturate-[0.7]" />
                       <Crown className="absolute right-0.5 top-0.5 h-3 w-3 rounded-full bg-[#0a0a0f] p-[1.5px] text-[#d4af37] ring-1 ring-[#d4af37]/40" />
                     </span>
                     <span className={`${lbl} text-[#8a8577]/70`}>{m.label}</span>
@@ -494,7 +504,7 @@ function AppLayoutContent({ children, title }) {
                   {({ isActive }) => (
                     <>
                       <span key={isActive ? 'on' : 'off'} className={`${pill} ${isActive ? 'dock-pop' : ''}`}>
-                        <IosIcon icon={Icon} tint={IOS.gold} glyph="#1C1C1E" size="md" className="nav-medallion" />
+                        <IosIcon icon={Icon} tone="theme" glyph="contrast" size="md" className="nav-medallion" />
                       </span>
                       <span className={`${lbl} ${isActive ? 'lbl-on' : 'text-[#8a8577]'}`}>{m.label}</span>
                     </>
@@ -505,18 +515,19 @@ function AppLayoutContent({ children, title }) {
             <button onClick={() => setMoreOpen((o) => !o)} aria-label={t('dock.more', null, 'More')} aria-expanded={moreOpen}
               style={{ '--nav-i': MAIN_TABS.length }} className="dock-tab ios-spring flex min-h-[64px] min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-2xl">
               <span className="relative grid h-11 min-w-[52px] shrink-0 place-items-center rounded-[12px] transition">
-                <IosIcon icon={moreOpen ? X : Menu} tint={IOS.gold} glyph="#1C1C1E" size="md" className="nav-medallion" />
+                <IosIcon icon={moreOpen ? X : Menu} tone="theme" glyph="contrast" size="md" className="nav-medallion" />
               </span>
               <span className={`truncate text-[10px] font-semibold leading-none ${moreActive ? 'lbl-on' : 'text-[#8a8577]'}`}>{t('dock.more', null, 'More')}</span>
             </button>
           </div>
         </nav>
-        {/* Phone More sheet: the full list, grouped, one tap away. */}
+        {/* Phone More sheet: shortcuts, the full directory, then the
+            phone-only preferences that no longer crowd the top bar. */}
         {moreOpen && (
           <div className="fixed inset-0 z-[85] lg:hidden" role="dialog" aria-modal="true" aria-label={t('dock.more', null, 'More')}>
             <div className="dock-fade absolute inset-0 bg-black/70" onClick={() => setMoreOpen(false)} />
-            <div className="tb-sheet dock-sheet-up absolute inset-x-0 bottom-0 max-h-[78vh] overflow-y-auto rounded-t-[10px] border-t border-[#d4af37]/20 bg-[#0a0a0f] px-4 tabular-nums pb-[env(safe-area-inset-bottom)]">
-              <div className="sticky top-0 bg-[#0a0a0f] pb-2 pt-2.5">
+            <div className="tb-sheet tb-more-sheet dock-sheet-up absolute inset-x-0 bottom-0 max-h-[86dvh] overflow-y-auto rounded-t-[28px] border-t border-[#d4af37]/20 bg-[#0a0a0f] px-4 tabular-nums pb-[calc(1rem+env(safe-area-inset-bottom))]">
+              <div className="tb-sheet-head sticky top-0 z-10 -mx-4 bg-[#0a0a0f] px-4 pb-2 pt-2.5">
                 <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-white/15" aria-hidden />
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold tabular-nums text-[#f0ecdd]">{t('dock.more', null, 'More')}</span>
@@ -526,7 +537,35 @@ function AppLayoutContent({ children, title }) {
                   </button>
                 </div>
               </div>
-              <div className="space-y-5 pb-4">
+
+              <div className="mb-5 grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setMoreOpen(false); nav('/app/coach'); }}
+                  className="tile ios-spring flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-[18px] border border-white/5 px-1 py-3 text-center text-[#8a8577]"
+                >
+                  <IosIcon icon={GraduationCap} tint={IOS.teal} glyph="#1C1C1E" size="sm" />
+                  <span className="text-[10px] font-semibold leading-tight">Coach</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMoreOpen(false); window.dispatchEvent(new CustomEvent('tb:open-live-chat')); }}
+                  className="tile ios-spring flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-[18px] border border-white/5 px-1 py-3 text-center text-[#8a8577]"
+                >
+                  <IosIcon icon={MessageCircle} tint={IOS.green} glyph="#1C1C1E" size="sm" />
+                  <span className="text-[10px] font-semibold leading-tight">Live chat</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMoreOpen(false); nav('/tv'); }}
+                  className="tile ios-spring flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-[18px] border border-white/5 px-1 py-3 text-center text-[#8a8577]"
+                >
+                  <IosIcon icon={MonitorPlay} tint={IOS.red} glyph="#1C1C1E" size="sm" />
+                  <span className="text-[10px] font-semibold leading-tight">TradingBible TV</span>
+                </button>
+              </div>
+
+              <div className="space-y-5">
                 {NAV_GROUPS.map((group) => {
                   const items = visibleItems(group.items).filter((it) => !SHEET_SKIP.has(it.to));
                   if (!items.length) return null;
@@ -537,9 +576,9 @@ function AppLayoutContent({ children, title }) {
                         {items.map((it) => {
                           const Icon = it.icon;
                           const label = it.label || t(it.labelKey);
-                          const tile = 'tile ios-spring flex min-h-[80px] flex-col items-center justify-center gap-1.5 rounded-[10px] border px-1 py-3 text-center tabular-nums';
+                          const tile = 'tile ios-spring flex min-h-[80px] flex-col items-center justify-center gap-1.5 rounded-[18px] border px-1 py-3 text-center tabular-nums';
                           const iosTile = (
-                            <IosIcon icon={Icon} tint={it.tint} glyph={it.glyph} size="sm" className="shadow-[0_1px_6px_rgba(0,0,0,0.35)]" />
+                            <IosIcon icon={Icon} tone="theme" glyph="contrast" size="sm" className="nav-medallion nav-medallion--sm shadow-[0_1px_6px_rgba(0,0,0,0.35)]" />
                           );
                           if (it.locked) {
                             return (
@@ -562,6 +601,39 @@ function AppLayoutContent({ children, title }) {
                     </div>
                   );
                 })}
+              </div>
+
+              <div className="mt-5 border-t border-white/8 pt-3">
+                <div className="px-1 pb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#5f5b50]">Preferences</div>
+                <div className="grid grid-cols-3 gap-2">
+                  <button type="button" onClick={() => setLangOpen((o) => !o)} aria-expanded={langOpen}
+                    className="flex min-h-[52px] flex-col items-center justify-center gap-1 rounded-[16px] border border-white/5 text-[10px] font-semibold text-[#8a8577]">
+                    <Languages className="h-4 w-4 text-[#d4af37]" />
+                    <span>Language · {lang.toUpperCase()}</span>
+                  </button>
+                  {canSeeSignals && (
+                    <button type="button" onClick={() => { setMoreOpen(false); nav('/app/alerts'); }}
+                      className="flex min-h-[52px] flex-col items-center justify-center gap-1 rounded-[16px] border border-white/5 text-[10px] font-semibold text-[#8a8577]">
+                      <Bell className="h-4 w-4 text-[#d4af37]" />
+                      <span>Alerts{unseen > 0 ? ` · ${unseen}` : ''}</span>
+                    </button>
+                  )}
+                  <button type="button" onClick={() => { setMoreOpen(false); setTutorial(true); }}
+                    className="flex min-h-[52px] flex-col items-center justify-center gap-1 rounded-[16px] border border-white/5 text-[10px] font-semibold text-[#8a8577]">
+                    <HelpCircle className="h-4 w-4 text-[#d4af37]" />
+                    <span>Help</span>
+                  </button>
+                </div>
+                {langOpen && (
+                  <div className="mt-2 grid grid-cols-2 gap-1.5 rounded-[16px] border border-white/8 bg-white/[0.02] p-1.5">
+                    {SUPPORTED_LANGS.map((l) => (
+                      <button key={l.code} type="button" onClick={() => { setLang(l.code); setLangOpen(false); }}
+                        className={`flex min-h-[40px] items-center justify-between rounded-[11px] px-3 text-left text-[11px] font-semibold ${lang === l.code ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'text-[#8a8577]'}`}>
+                        {l.label}{lang === l.code && <Check className="h-3.5 w-3.5" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

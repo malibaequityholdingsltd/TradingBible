@@ -43,31 +43,59 @@ const CACHE_KEY = 'tb:platform-settings-v2';
 const CACHE_TTL = 30 * 60 * 1000;
 const CHANGE_EVENT = 'tb:platform-settings:changed';
 
-export function notifyPlatformSettingsChanged() {
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event(CHANGE_EVENT));
+const EMPTY_STATE = {
+  settings: PLATFORM_SETTINGS_DEFAULTS,
+  features: PLATFORM_FEATURES_DEFAULTS,
+  planGates: PLAN_GATES_DEFAULTS,
+  loaded: false,
+};
+
+// Platform settings are used by the app shell, route guards and several
+// pages at once. Before this store existed each caller fetched the same row
+// independently (4+ identical Supabase requests per app open). Keep one
+// module-level snapshot and one in-flight request for the whole tab.
+let sharedState = EMPTY_STATE;
+let hydrated = false;
+let inflight = null;
+let lastLoadedAt = 0;
+const listeners = new Set();
+
+function readCache() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed?.ts || Date.now() - parsed.ts >= CACHE_TTL) return null;
+    return {
+      settings: { ...PLATFORM_SETTINGS_DEFAULTS, ...(parsed.settings || {}) },
+      features: { ...PLATFORM_FEATURES_DEFAULTS, ...(parsed.features || {}) },
+      planGates: { ...PLAN_GATES_DEFAULTS, ...((parsed.settings || {}).planGates || {}) },
+    };
+  } catch {
+    return null;
   }
 }
 
-export function usePlatformSettings() {
-  const [settings, setSettings] = useState(PLATFORM_SETTINGS_DEFAULTS);
-  const [features, setFeatures] = useState(PLATFORM_FEATURES_DEFAULTS);
-  const [planGates, setPlanGates] = useState(PLAN_GATES_DEFAULTS);
-  const [loaded, setLoaded] = useState(false);
+function hydrate() {
+  if (hydrated) return;
+  hydrated = true;
+  const cached = readCache();
+  if (cached) sharedState = { ...sharedState, ...cached, loaded: true };
+}
 
-  const load = useCallback(async () => {
-    try {
-      const raw = window.localStorage.getItem(CACHE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.ts && Date.now() - parsed.ts < CACHE_TTL) {
-          setSettings({ ...PLATFORM_SETTINGS_DEFAULTS, ...(parsed.settings || {}) });
-          setFeatures({ ...PLATFORM_FEATURES_DEFAULTS, ...(parsed.features || {}) });
-          setPlanGates({ ...PLAN_GATES_DEFAULTS, ...((parsed.settings || {}).planGates || {}) });
-          setLoaded(true);
-        }
-      }
-    } catch {}
+function publish(next) {
+  sharedState = next;
+  listeners.forEach((listener) => listener(next));
+}
+
+function loadPlatformSettings(force = false) {
+  hydrate();
+  if (inflight) return inflight;
+  if (!force && lastLoadedAt && Date.now() - lastLoadedAt < 5000) {
+    return Promise.resolve(sharedState);
+  }
+  inflight = (async () => {
     try {
       const rec = await pb.collection('admin_platform_settings').getFirstListItem('key = "default"');
       const next = {
@@ -75,30 +103,59 @@ export function usePlatformSettings() {
         settings: { ...PLATFORM_SETTINGS_DEFAULTS, ...(rec.settings || {}) },
         features: { ...PLATFORM_FEATURES_DEFAULTS, ...(rec.features || {}) },
       };
-      setSettings(next.settings);
-      setFeatures(next.features);
-      setPlanGates({ ...PLAN_GATES_DEFAULTS, ...(next.settings.planGates || {}) });
-      setLoaded(true);
+      sharedState = {
+        settings: next.settings,
+        features: next.features,
+        planGates: { ...PLAN_GATES_DEFAULTS, ...(next.settings.planGates || {}) },
+        loaded: true,
+      };
+      lastLoadedAt = Date.now();
       try {
         window.localStorage.setItem(CACHE_KEY, JSON.stringify(next));
-      } catch {}
+      } catch { /* ignore */ }
     } catch {
-      setLoaded(true);
+      sharedState = { ...sharedState, loaded: true };
+    } finally {
+      const done = sharedState;
+      inflight = null;
+      publish(done);
     }
-  }, []);
+  })();
+  return inflight;
+}
+
+export function notifyPlatformSettingsChanged() {
+  lastLoadedAt = 0;
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(CHANGE_EVENT));
+  }
+}
+
+export function usePlatformSettings() {
+  const [state, setState] = useState(() => {
+    hydrate();
+    return sharedState;
+  });
 
   useEffect(() => {
-    load();
-    const onRefresh = () => load();
-    window.addEventListener('focus', onRefresh);
-    window.addEventListener(CHANGE_EVENT, onRefresh);
-    return () => {
-      window.removeEventListener('focus', onRefresh);
-      window.removeEventListener(CHANGE_EVENT, onRefresh);
-    };
-  }, [load]);
+    const listener = (next) => setState(next);
+    listeners.add(listener);
+    // Another component may have refreshed the store between render and
+    // effect; sync once before subscribing.
+    setState(sharedState);
+    loadPlatformSettings();
+    return () => listeners.delete(listener);
+  }, []);
 
-  return { settings, features, planGates, loaded, reload: load };
+  return {
+    ...state,
+    reload: useCallback(() => loadPlatformSettings(true), []),
+  };
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('focus', () => loadPlatformSettings(true));
+  window.addEventListener(CHANGE_EVENT, () => loadPlatformSettings(true));
 }
 
 export const FEATURE_ROUTES = {

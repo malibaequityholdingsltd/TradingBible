@@ -424,6 +424,14 @@ export default defineConfig({
 		emptyOutDir: true,
 		cssCodeSplit: true,
 		chunkSizeWarningLimit: 600,
+		modulePreload: {
+			// Chart libraries are lazy route dependencies. Vite's manual
+			// vendor chunk was being preloaded on the landing page, wasting
+			// ~600 KB before a visitor had opened a chart. Keep the runtime
+			// preload for the chart route, but not the initial document.
+			resolveDependencies: (_filename, deps) =>
+				deps.filter((dep) => !dep.includes('vendor-charts')),
+		},
 		rollupOptions: {
 			external: [
 				'@babel/parser',
@@ -434,6 +442,10 @@ export default defineConfig({
 			output: {
 				manualChunks: {
 					'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+					// Shared UI helpers must live outside vendor-charts. Otherwise
+					// the landing page's `cn()` import pulls the whole 600 KB chart
+					// vendor chunk into the first paint.
+					'vendor-ui': ['clsx', 'tailwind-merge'],
 					'vendor-supabase': ['@supabase/supabase-js'],
 					'vendor-charts': ['recharts', 'lightweight-charts'],
 					'vendor-motion': ['framer-motion'],

@@ -543,33 +543,6 @@ html.light .app-search-trigger { background-color: rgba(255, 255, 255, 0.7) !imp
 html.light .app-header .tb-title { color: #232830; }
 html.light .app-header .hdr-ic { color: #4d5563; }
 
-/* The big Dashboard nav bar is the one exception: it stays on the
-   charcoal/gold chrome in both themes. All other app pages follow the
-   active light/dark navigation palette. */
-html.light .tb-app-shell .app-header.dashboard-nav {
-  background-color: rgba(10, 10, 15, 0.94) !important;
-  border-bottom-color: rgba(212, 175, 55, 0.3) !important;
-}
-html.light .tb-app-shell .app-header.dashboard-nav .app-header-pill { background-color: rgba(255, 255, 255, 0.05) !important; border-color: rgba(255, 255, 255, 0.12) !important; }
-html.light .tb-app-shell .app-header.dashboard-nav .app-search-trigger { background-color: rgba(255, 255, 255, 0.04) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
-html.light .tb-app-shell .app-header.dashboard-nav .tb-title { color: #f0ecdd; }
-html.light .tb-app-shell .app-header.dashboard-nav .hdr-ic { color: #8a8577; }
-.tb-app-shell .app-header.dashboard-nav .brand-wordmark__lead { color: #f0ecdd; }
-html.light .tb-app-shell .app-header.dashboard-nav .brand-wordmark__lead { color: #f0ecdd; }
-html.light .tb-app-shell .app-header.dashboard-nav [class*="text-[#f0ecdd]"],
-html.light .tb-app-shell .app-header.dashboard-nav [class*="text-[#e9e7df]"],
-html.light .tb-app-shell .app-header.dashboard-nav [class*="text-[#f5f2e8]"],
-html.light .tb-app-shell .app-header.dashboard-nav [class*="text-[#f5f3ec]"],
-html.light .tb-app-shell .app-header.dashboard-nav [class*="text-white"] { color: #f0ecdd !important; }
-html.light .tb-app-shell .app-header.dashboard-nav [class*="text-[#c9c4b4]"],
-html.light .tb-app-shell .app-header.dashboard-nav [class*="text-[#b8b3a3]"] { color: #c9c4b4 !important; }
-html.light .tb-app-shell .app-header.dashboard-nav [class*="text-[#8a8577]"],
-html.light .tb-app-shell .app-header.dashboard-nav [class*="text-[#6a665a]"],
-html.light .tb-app-shell .app-header.dashboard-nav [class*="text-[#5f5b50]"] { color: #8a8577 !important; }
-html.light .tb-app-shell .app-header.dashboard-nav [class*="bg-[#0c0c11]"],
-html.light .tb-app-shell .app-header.dashboard-nav [class*="bg-[#101016]"],
-html.light .tb-app-shell .app-header.dashboard-nav [class*="bg-[#0a0a0f]"] { background-color: #0c0c11 !important; }
-
 /* Phone chrome — light-mode surfaces (dark-first components) */
 html.light .tb-ticker { background: #faf8f2; border-color: rgba(166, 124, 30, 0.35); }
 html.light .tb-ticker .tk-sym { color: #6a6252; }
@@ -589,14 +562,6 @@ html.light .tb-sheet { background: #fffdf9; border-color: rgba(166, 124, 30, 0.4
 html.light .tb-sheet .sheet-row { color: #4d5563; }
 html.light .tb-sheet .sheet-on { color: #232830; }
 html.light .tb-sheet .tile { border-color: #e4ded0; background: #ffffff; }
-
-/* Dashboard dock keeps the gold-on-charcoal chrome in light mode too. */
-html.light .tb-app-shell .dashboard-nav.tb-dock {
-  background: rgba(13, 15, 21, 0.97) !important;
-  border-color: rgba(212, 175, 55, 0.35) !important;
-  box-shadow: 0 -18px 48px -28px rgba(0, 0, 0, 0.9), 0 -1px 0 rgba(212, 175, 55, 0.16) !important;
-  --nav-orb-cutout: #101016;
-}
 
 /* App section bar — all sections live in one fixed row at the bottom of
    tablet/desktop. No page gives up a left column. */
@@ -626,39 +591,6 @@ html.light .app-nav-footer {
 html.light .app-nav-footer-link--active {
   color: #232830;
 }
-
-/* Dashboard footer keeps the gold-on-charcoal chrome in light mode too. */
-html.light .dashboard-nav.app-nav-footer {
-  border-top-color: rgba(212, 175, 55, 0.24);
-  background: rgba(10, 10, 15, 0.95);
-  box-shadow: 0 -14px 32px -20px rgba(0, 0, 0, 0.55);
-  --nav-orb-cutout: #101016;
-}
-
-/* Dashboard navigation keeps its gold-on-charcoal chrome in both themes.
-   Every other app page follows the active light/dark navigation palette. */
-.dashboard-nav.app-nav-footer .app-nav-footer-link {
-  color: #d4af37;
-}
-.dashboard-nav.app-nav-footer .app-nav-footer-link:hover,
-.dashboard-nav.app-nav-footer .app-nav-footer-link--active,
-.dashboard-nav.app-nav-footer .app-nav-footer-link--active .app-nav-footer-label {
-  color: #f4e6a8;
-}
-.dashboard-nav.app-nav-footer .app-nav-footer-label { color: inherit; }
-html.light .dashboard-nav.app-nav-footer .app-nav-footer-link {
-  color: #d4af37;
-}
-html.light .dashboard-nav.app-nav-footer .app-nav-footer-link:hover,
-html.light .dashboard-nav.app-nav-footer .app-nav-footer-link--active,
-html.light .dashboard-nav.app-nav-footer .app-nav-footer-link--active .app-nav-footer-label {
-  color: #f4e6a8;
-}
-.dashboard-nav.tb-dock .dock-tab { color: #d4af37; }
-.dashboard-nav.tb-dock .dock-tab > span:last-child { color: inherit !important; }
-.dashboard-nav.tb-dock .dock-tab .lbl-on { color: #f4e6a8 !important; }
-html.light .dashboard-nav.tb-dock .dock-tab { color: #d4af37; }
-html.light .dashboard-nav.tb-dock .dock-tab .lbl-on { color: #f4e6a8 !important; }
 
 /* ─── Navigation choreography ────────────────────────────────────────
    The bar has one shared motion language: a light sweep, staggered
@@ -727,7 +659,7 @@ html.light .app-nav-footer-link--active .app-nav-footer-label {
 .app-nav-footer-link:active .ios-icon { transform: translateY(0) scale(0.94); }
 .app-nav-footer-link--active .ios-icon { animation: nav-icon-breathe 2.8s ease-in-out infinite; }
 .app-nav-footer-link--active .nav-medallion {
-  box-shadow: 0 0 0 2px rgba(244, 230, 168, 0.55), 0 0 18px -4px rgba(212, 175, 55, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -6px 10px rgba(79, 55, 4, 0.22);
+  box-shadow: 0 0 0 2px var(--tb-nav-ring), 0 0 18px -4px var(--tb-nav-glow), inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -6px 10px rgba(79, 55, 4, 0.22);
 }
 
 /* Desktop dashboard medallion */
@@ -757,8 +689,8 @@ html.light .app-nav-footer-link--active .app-nav-footer-label {
   padding: 5px;
   border: 3px solid var(--nav-orb-cutout, #101016);
   border-radius: 9999px;
-  background: conic-gradient(from 210deg, #f8e9b5, #c9a227, #8a6a18, #f4e6a8, #c9a227);
-  box-shadow: 0 18px 38px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(244, 230, 168, 0.22), 0 0 28px -8px rgba(212, 175, 55, 0.62);
+  background: conic-gradient(from 210deg, var(--tb-nav-coin-1), var(--tb-nav-coin-3), var(--tb-nav-coin-4), var(--tb-nav-coin-1), var(--tb-nav-coin-3));
+  box-shadow: 0 18px 38px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px color-mix(in srgb, var(--tb-nav-ring) 55%, transparent), 0 0 28px -8px var(--tb-nav-glow);
   transform: translateX(-50%);
   animation: nav-orb-float 3.8s ease-in-out infinite;
   will-change: transform;
@@ -766,10 +698,10 @@ html.light .app-nav-footer-link--active .app-nav-footer-label {
 }
 .nav-dashboard-orb:hover {
   filter: brightness(1.06);
-  box-shadow: 0 22px 46px -12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(244, 230, 168, 0.35), 0 0 42px -6px rgba(212, 175, 55, 0.9);
+  box-shadow: 0 22px 46px -12px rgba(0, 0, 0, 0.9), 0 0 0 1px color-mix(in srgb, var(--tb-nav-ring) 65%, transparent), 0 0 42px -6px var(--tb-nav-glow);
 }
 .nav-dashboard-orb[aria-current="page"] {
-  box-shadow: 0 20px 44px -12px rgba(0, 0, 0, 0.9), 0 0 0 2px rgba(244, 230, 168, 0.55), 0 0 40px -6px rgba(212, 175, 55, 0.88);
+  box-shadow: 0 20px 44px -12px rgba(0, 0, 0, 0.9), 0 0 0 2px var(--tb-nav-ring), 0 0 40px -6px var(--tb-nav-glow);
 }
 .nav-dashboard-icon {
   --ios-size: 66px;
@@ -777,7 +709,7 @@ html.light .app-nav-footer-link--active .app-nav-footer-label {
   z-index: 2;
   border: 0;
   border-radius: 9999px;
-  background: radial-gradient(circle at 32% 22%, #fbf0c4 0%, #e6c65b 32%, #c9a227 64%, #8f6c12 100%);
+  background: radial-gradient(circle at 32% 22%, var(--tb-nav-coin-1) 0%, var(--tb-nav-coin-2) 32%, var(--tb-nav-coin-3) 64%, var(--tb-nav-coin-4) 100%);
   box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.55), inset 0 -10px 18px rgba(79, 55, 4, 0.28);
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), filter 0.32s ease;
 }
@@ -788,7 +720,7 @@ html.light .app-nav-footer-link--active .app-nav-footer-label {
   inset: -19px;
   z-index: 0;
   border-radius: 9999px;
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.30) 0%, rgba(212, 175, 55, 0.10) 42%, transparent 70%);
+  background: radial-gradient(circle, var(--tb-nav-halo) 0%, color-mix(in srgb, var(--tb-nav-halo) 38%, transparent) 42%, transparent 70%);
   filter: blur(5px);
   pointer-events: none;
   animation: nav-orb-halo 3.4s ease-in-out infinite;
@@ -797,7 +729,7 @@ html.light .app-nav-footer-link--active .app-nav-footer-label {
   position: absolute;
   inset: -12px;
   z-index: 3;
-  border: 1px dashed rgba(244, 230, 168, 0.48);
+  border: 1px dashed var(--tb-nav-orbit);
   border-radius: 9999px;
   pointer-events: none;
   animation: nav-orb-orbit 9s linear infinite;
@@ -822,8 +754,8 @@ html.light .app-nav-footer-link--active .app-nav-footer-label {
   width: 6px;
   height: 6px;
   border-radius: 9999px;
-  background: #fff8d6;
-  box-shadow: 0 0 12px #f4e6a8, 0 0 4px #fff;
+  background: var(--tb-nav-coin-1);
+  box-shadow: 0 0 12px var(--tb-nav-coin-1), 0 0 4px #fff;
   pointer-events: none;
   animation: nav-orb-spark 2.6s ease-in-out infinite;
 }
@@ -873,7 +805,7 @@ html.light .tb-dock { --nav-orb-cutout: #fffdf9; }
 .tb-dock .dock-tab:hover .ios-icon { transform: translateY(-3px) scale(1.1) rotate(-1.5deg); }
 .tb-dock .dock-tab[aria-current="page"] .ios-icon { animation: nav-icon-breathe 2.8s ease-in-out infinite; }
 .tb-dock .dock-tab[aria-current="page"] .nav-medallion {
-  box-shadow: 0 0 0 2px rgba(244, 230, 168, 0.6), 0 0 18px -4px rgba(212, 175, 55, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -6px 10px rgba(79, 55, 4, 0.22);
+  box-shadow: 0 0 0 2px var(--tb-nav-ring), 0 0 18px -4px var(--tb-nav-glow), inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -6px 10px rgba(79, 55, 4, 0.22);
 }
 .tb-dock .dock-tab:active .ios-icon { transform: scale(0.94); }
 .tb-dock .nav-dashboard-slot { height: 58px; }

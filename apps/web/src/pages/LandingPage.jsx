@@ -71,7 +71,7 @@ const MODULES = [
   },
   {
     icon: GraduationCap, tag: 'LEARN', title: 'A school run by SI',
-    body: 'Six paths, 147 lessons, eight live webinars a week, graded quizzes and one-to-one tutoring. One $150 lifetime payment.',
+    body: 'Six paths, 147 lessons, eight live webinars a week, one final certificate exam per path and one-to-one tutoring. One $150 lifetime payment.',
     to: '/academy', link: 'Enter the Academy',
   },
   {
@@ -119,7 +119,7 @@ const FAQS = [
   ['Do you offer a free trial?', 'No. TradingBible is paid-only: your card is charged at checkout before you enter the terminal. Every first payment carries a 14-day money-back guarantee, so you can test broker sync, analytics, the SI Coach and signals with a real account.'],
   ['Which brokers and platforms are supported?', 'Named brokers only — Binance, Deriv, easyMarkets, Interactive Brokers, Alpaca, Coinbase and more, plus TradingBible Funded evaluations and self-custody wallet tracking for BTC, ETH, USDC and Solana. Live accounts only; trades and balances sync automatically.'],
   ['What does the SI Coach actually do?', 'SI reviews every synced trade for quality, risk and discipline, detects recurring mistakes such as widened stops, revenge trading and overtrading, and answers questions grounded in your real history. Ask “What is my biggest mistake?” and it shows the evidence.'],
-  ['How does the Academy work?', 'One $150 lifetime payment unlocks the full school: six paths including Forex Mastery A–Z, Crypto Mastery A–Z and Order Flow Mastery, 147 topics, SI-written lessons, graded quizzes, a tutor inside each path, eight live webinars a week and a certificate per path.'],
+  ['How does the Academy work?', 'One $150 lifetime payment unlocks the full school: six paths including Forex Mastery A–Z, Crypto Mastery A–Z and Order Flow Mastery, 147 topics, SI-written lessons, a tutor inside each path, eight live webinars a week, one final certificate exam per path and a certificate after you pass it.'],
   ['What do Professional API and white-label include?', 'Professional ($99/mo) unlocks the REST API with personal keys and webhooks, team seats, unlimited brokers, white-label presets, white-glove onboarding and a dedicated success manager for funds and prop desks.'],
   ['Is there a community and one-to-one help?', 'Yes. The forum ranks members by real contribution, the public leaderboard shows verified activity without fake P&L, and vetted mentors can be booked for one-to-one sessions settled in TBC credits.'],
   ['How is TBC different from TB?', 'TBC platform credits are an existing off-chain utility credit used inside TradingBible. The proposed TBC token is a separate, unissued network asset. TB is a proposed equity ticker for TradingBible, Inc. Holding TBC credits does not make you a shareholder, and holding TB equity would not make you a TBC holder.'],
@@ -402,7 +402,7 @@ export default function LandingPage() {
               <IosIcon icon={GraduationCap} size="lg" tone="green" />
               <div><div className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#d4af37]">TradingBible Academy</div><h3 className="text-lg font-semibold tracking-tight text-[#f0ecdd]">From first candle to professional desk.</h3></div>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-[#8a8577]">Six paths, 147 lessons and eight live webinars a week. Every lesson is written by SI, every quiz is graded, and every path ends with a certificate. One $150 lifetime payment.</p>
+            <p className="mt-4 text-sm leading-relaxed text-[#8a8577]">Six paths, 147 lessons and eight live webinars a week. Learn first — every lesson is written by SI, there are no pop quizzes, and each path ends with one final certificate exam. One $150 lifetime payment.</p>
             <div className="mt-5 grid grid-cols-2 gap-2">
               {ACADEMY.map(([value, label]) => (
                 <div key={label} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3"><div className="font-mono text-xl font-bold text-[#e8c95a]">{value}</div><div className="mt-0.5 text-[10px] leading-snug text-[#8a8577]">{label}</div></div>

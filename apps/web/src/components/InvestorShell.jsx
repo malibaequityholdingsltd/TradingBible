@@ -71,7 +71,7 @@ function InvestorShellContent({ children, contained = true, active = '' }) {
   return (
     <div
       className="ir-shell at-shell min-h-screen bg-transparent text-[var(--at-ink)]"
-      style={{ paddingTop: `calc(var(--header-h) + ${headerH ? headerH + 8 : 122}px)` }}
+      style={{ paddingTop: `calc(var(--header-h) + ${Math.max(headerH || 0, 122) + 8}px)` }}
     >
       <header ref={headerRef} className="ir-header cap-ir-header fixed inset-x-0 top-[var(--header-h)] z-40 border-b border-[var(--at-line-soft)]">
         <div className="cap-ir-top">

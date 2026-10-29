@@ -29,7 +29,7 @@
 - [Alerts](/app/alerts): TradingBible application page.
 - [Analytics](/app/analytics): TradingBible application page.
 - [Api Docs](/app/api-docs): TradingBible application page.
-- [App Investor Portal](/app/investors): TradingBible application page.
+- [App Investor Access](/app/investors): TradingBible application page.
 - [Backtest](/app/backtest): TradingBible application page.
 - [Billing](/app/billing): TradingBible application page.
 - [Blog](/blog): TradingBible application page.

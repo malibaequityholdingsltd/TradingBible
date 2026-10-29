@@ -60,7 +60,7 @@ const CHAPTERS = [
     sub: 'Structured paths, live webinars and a verifiable certificate.',
     steps: [
       { id: 'learn.path', title: 'Enroll in a path', body: 'Forex or crypto, beginner to funded — the SI writes lessons around you.', to: '/app/academy', cta: 'Browse Academy' },
-      { id: 'learn.lesson', title: 'Finish lesson one + quiz', body: 'Ten minutes. Quizzes lock in the concept; the tutor fills gaps.', to: '/app/academy', cta: 'Start learning' },
+      { id: 'learn.lesson', title: 'Finish lesson one', body: 'Ten minutes. Learn at your pace; the tutor fills gaps. The final exam comes after the path.', to: '/app/academy', cta: 'Start learning' },
       { id: 'learn.webinar', title: 'RSVP to a webinar', body: 'Weekly live sessions with Q&A across every track.', to: '/app/academy', cta: 'See schedule' },
       { id: 'learn.community', title: 'Introduce yourself', body: 'Post your first win — or your best expensive lesson.', to: '/app/community', cta: 'Join community' },
     ],

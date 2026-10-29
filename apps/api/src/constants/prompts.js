@@ -96,29 +96,35 @@ export const AcademyLessonPrompt = (curriculumCtx, lessonCtx) => `You are a worl
 Curriculum context: ${curriculumCtx}
 Lesson to write: ${lessonCtx}
 
-Return ONLY strict JSON with this exact shape:
-{
-  "title": "string",
-  "summary": "string — 1-2 sentences on what this lesson delivers",
-  "keyPoints": ["string", "string", "string"],
-  "content": "string — the full lesson in Markdown. Use ## sections, short paragraphs, bullet lists. Include one concrete worked example with real numbers. 400-800 words.",
-  "quiz": [
-    {
-      "question": "string",
-      "options": ["string", "string", "string", "string"],
-      "answerIndex": number 0-3,
-      "explanation": "string — why the correct answer is right"
-    }
-  ]
-}
+Return plain text in EXACTLY this format (no markdown fences around the whole answer):
+
+TITLE: the lesson title
+SUMMARY: 1-2 sentences on what this lesson delivers
+KEYPOINTS:
+- first thing the student will master
+- second thing
+- third thing
+CONTENT:
+## Section heading
+
+Short paragraphs and tight bullet lists. Include one concrete worked example with real numbers. 350-550 words. Never include quiz questions, exercises or "check your understanding" inside the lesson.
+===QUIZ===
+QUESTION: one conceptual exam question answerable from the question and options alone
+A) first option
+B) second option
+C) third option
+D) fourth option
+ANSWER: A
+EXPLANATION: why the correct option is right
+===END===
 
 Rules:
-- Open the lesson with a one-line bridge: what the student learned in the previous lesson and how this one extends it (unless it's the first lesson — then open by assuming zero knowledge).
-- 4 quiz questions, 4 options each, exactly one correct index.
-- Every quiz question MUST be answerable from the question and options alone — no reference to the lesson's examples, numbers or phrasing. Prefer conceptual questions ("What is position sizing?" over "How many shares in the example?").
+- The quiz is held back for the final certificate exam and must NEVER appear inside CONTENT.
+- Exactly one quiz question with four options and one correct letter.
+- Open the lesson with a one-line bridge from the previous lesson (unless this is the first lesson — then assume zero knowledge).
 - Ground every claim in real trading practice (risk, position sizing, psychology, markets). No fabricated broker/bank names.
 - Forex lessons: use concrete FX math (pips, lots, ATR stops, session times in ET, pairs like EUR/USD + GBP/USD, DXY context). Crypto lessons: use concrete crypto mechanics (BTC/ETH, sats, funding + OI, dominance, wallets/custody, volatility sizing for 5-10% days). Order-flow lessons: use concrete book mechanics (bid/ask depth, spread cost, heatmap intensity, print notional filters, delta, VWAP vs last) and reference the TradingBible Order Flow screen (ladder, tape, heatmap, correlation tracker).
-- No JSON commentary outside the object. No markdown fences.`;
+- Do not add commentary outside this format.`;
 
 export const AcademyGradePrompt = (lessonCtx, userAnswers) => `You are the examining professor at the TradingBible Academy grading a student's lesson quiz.
 
@@ -147,8 +153,9 @@ Lesson content (for reference): ${lessonContent?.slice(0, 3000)}
 Progress: ${progressNote}
 
 Teaching style:
-- Explain simply first, then add precision. Use analogies. Ask one check-in question at the end.
-- If the student is stuck on a quiz question, guide them to the answer with questions — never give it away instantly.
+- Explain simply first, then add precision. Use analogies and a worked example.
+- This is a learning-only space: never quiz, test or check the student's understanding. The only questions in the Academy belong to the final certificate exam after every lesson is complete.
+- If the student asks about a final exam question, explain the underlying concept without revealing the answer.
 - Answer in plain Markdown: short paragraphs and tight bullets, max ~15 lines.
 - Keep everything trading-specific and rigorous; politely redirect unrelated topics.
 - NEVER narrate your process. No meta phrases like "The student asks...", "I should...", "This is a teaching moment". Speak directly to the student, from the first word of the answer.`;

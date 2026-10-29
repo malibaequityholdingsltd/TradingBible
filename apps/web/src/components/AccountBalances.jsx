@@ -8,17 +8,17 @@ import { fmtMoney } from '@/lib/mockData';
 function BalanceCard({ label, total, count, empty, emptyLabel, to, cta, t }) {
   const connected = count > 0;
   return (
-    <div className="glass rounded-2xl p-5">
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] uppercase tracking-wider text-[#8a8577] sm:text-xs">{label}</span>
+    <div className="account-balance glass rounded-2xl p-5">
+      <div className="account-balance-copy">
+        <span className="account-balance-label text-[11px] uppercase tracking-wider text-[#8a8577] sm:text-xs">{label}</span>
+        <div className="account-balance-value mt-3 font-mono text-2xl font-semibold text-[#f0ecdd]">{fmtMoney(total)}</div>
+        {connected ? (
+          <div className="account-balance-state mt-1 text-xs text-emerald-400">{t('acct.connectedN', { n: count, s: count === 1 ? '' : 's' })}</div>
+        ) : (
+          <div className="account-balance-state mt-1 text-xs text-[#8a8577]">{empty}</div>
+        )}
       </div>
-      <div className="mt-3 font-mono text-2xl font-semibold text-[#f0ecdd]">{fmtMoney(total)}</div>
-      {connected ? (
-        <div className="mt-1 text-xs text-emerald-400">{t('acct.connectedN', { n: count, s: count === 1 ? '' : 's' })}</div>
-      ) : (
-        <div className="mt-1 text-xs text-[#8a8577]">{empty}</div>
-      )}
-      <Link to={to} className="mt-4 flex items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/25 py-2 text-xs font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60">
+      <Link to={to} className="account-balance-link mt-4 flex items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/25 py-2 text-xs font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60">
         {connected ? cta : emptyLabel} <ArrowRight className="h-3.5 w-3.5" />
       </Link>
     </div>
@@ -34,7 +34,7 @@ export default function AccountBalances() {
   }
 
   return (
-    <div className="grid gap-3 sm:gap-4 md:grid-cols-3">
+    <div className="account-balances grid gap-3 sm:gap-4 md:grid-cols-3">
       <BalanceCard
         label={t('acct.liveBal')}
         total={liveTotal}

@@ -278,6 +278,7 @@ export default function StockTbPage() {
         />
         <CapPublicHead
           title="TB stock record"
+          sub="A factual record of the proposed TB ticker, target venue and evidence-backed IPO readiness. No shares are offered and no public market exists."
           aside={(
             <CapRecordCard
               badge="Not listed"

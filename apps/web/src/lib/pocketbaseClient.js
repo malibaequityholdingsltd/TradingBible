@@ -119,11 +119,22 @@ function createSupabaseCompatClient() {
       return () => listeners.delete(cb);
     },
     clear() {
+      try {
+        const id = authStore.record?.id;
+        if (id) localStorage.removeItem(`tb:profile-v1:${id}`);
+      } catch { /* ignore */ }
       supabase.auth.signOut();
     },
   };
 
+  let lastAuthSignature = null;
   const notifyAuth = () => {
+    // Supabase fires both getSession() and the initial onAuthStateChange
+    // event on boot. They often resolve to the same profile; don't wake every
+    // auth subscriber (and refetch notifications) twice for identical data.
+    const signature = `${authStore.token || ''}|${authStore.isValid ? 1 : 0}|${JSON.stringify(authStore.record || null)}`;
+    if (signature === lastAuthSignature) return;
+    lastAuthSignature = signature;
     listeners.forEach((cb) => cb(authStore.token, authStore.record));
   };
 
@@ -194,91 +205,172 @@ function createSupabaseCompatClient() {
     };
   }
 
-  async function syncAuthFromSession(session) {
+  const PROFILE_CACHE_PREFIX = 'tb:profile-v1:';
+  const PROFILE_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+
+  function readProfileCache(id) {
+    if (!id) return null;
+    try {
+      const raw = localStorage.getItem(`${PROFILE_CACHE_PREFIX}${id}`);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed?.ts || Date.now() - parsed.ts > PROFILE_CACHE_TTL) return null;
+      return parsed.profile || null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeProfileCache(id, profile) {
+    if (!id || !profile) return;
+    try {
+      localStorage.setItem(`${PROFILE_CACHE_PREFIX}${id}`, JSON.stringify({ ts: Date.now(), profile }));
+    } catch { /* ignore quota */ }
+  }
+
+  const withProfileTimeout = (promise, ms = 1200) => Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
+  ]);
+
+  function fetchSessionProfile(session) {
+    // A slow users lookup used to run first, then fall back to a second
+    // email lookup — up to 3s before the app could render. Run both probes
+    // together and take the first one that returns a profile.
+    return new Promise((resolve) => {
+      let remaining = 2;
+      let settled = false;
+      const done = (profile) => {
+        if (settled) return;
+        if (profile) {
+          settled = true;
+          resolve(profile);
+          return;
+        }
+        remaining -= 1;
+        if (remaining === 0) {
+          settled = true;
+          resolve(null);
+        }
+      };
+      withProfileTimeout(loadProfile(session.user.id)).then(done).catch(() => done(null));
+      withProfileTimeout(loadProfileByEmail(session.user.email)).then(done).catch(() => done(null));
+    });
+  }
+
+  async function provisionFallbackProfile(session) {
+    const md = session.user.user_metadata || {};
+    const fallbackFirst = md.first_name || null;
+    const fallbackLast = md.last_name || null;
+    const fallbackUsername = md.username
+      || [fallbackFirst, fallbackLast].filter(Boolean).join('').toLowerCase().replace(/[^a-z0-9]/g, '')
+      || (session.user.email || '').split('@')[0] || 'user';
+    const fallbackName = [fallbackFirst, fallbackLast].filter(Boolean).join(' ') || fallbackUsername;
+    const fallbackRole = md.role || (isAdminEmail(session.user.email) ? 'admin' : 'user');
+    const fallbackAccountType = md.accountType === 'company'
+      ? 'teacher'
+      : md.accountType === 'individual'
+        ? 'trader'
+        : md.accountType || 'trader';
+    const fallbackCompanyName = md.companyName || null;
+
+    try {
+      // First-login provisioning only: INSERT so an existing row is never
+      // clobbered. On PK conflict the row already exists (a slow profile
+      // read, not a new user) — leave it untouched.
+      const provision = { id: session.user.id, email: session.user.email };
+      if (fallbackUsername) { provision.username = fallbackUsername; provision.name = fallbackName; }
+      if (fallbackFirst) provision.first_name = fallbackFirst;
+      if (fallbackLast) provision.last_name = fallbackLast;
+      if (md.dob) provision.dob = md.dob;
+      if (md.phone) provision.phone = md.phone;
+      if (fallbackRole === 'admin') { provision.role = 'admin'; provision.plan = 'professional'; }
+      else if (md.plan && ['pro', 'elite', 'professional'].includes(md.plan)) { provision.plan = md.plan; }
+      if (fallbackAccountType) provision.accountType = fallbackAccountType;
+      if (fallbackCompanyName) provision.companyName = fallbackCompanyName;
+      const { data: createdProfile, error: profileError } = await withProfileTimeout(
+        supabase.from('users').insert(provision).select().single(),
+        1500,
+      );
+      if (!profileError && createdProfile) return normalizeProfile(createdProfile, 'users');
+    } catch { /* row exists or insert failed — existing data untouched */ }
+    return null;
+  }
+
+  function applySession(session, profile) {
+    authStore.token = session.access_token;
+    authStore.record = mapRecord(session.user, profile);
+    authStore.isValid = true;
+    try {
+      localStorage.setItem('tb_auth_provider', 'supabase');
+      localStorage.setItem('tb_auth_token', session.access_token);
+    } catch { /* ignore */ }
+    if (profile) writeProfileCache(session.user.id, profile);
+    notifyAuth();
+  }
+
+  let authSyncPromise = null;
+  let authSyncToken = null;
+  let lastSyncedToken = null;
+  let lastSyncedAt = 0;
+
+  function syncAuthFromSession(session, { force = false } = {}) {
     if (!session?.user || !session?.access_token) {
       authStore.token = null;
       authStore.record = null;
       authStore.isValid = false;
+      lastSyncedToken = null;
+      lastSyncedAt = 0;
       localStorage.removeItem('tb_auth_provider');
       localStorage.removeItem('tb_auth_token');
       notifyAuth();
       markAuthReady();
+      return Promise.resolve();
+    }
+
+    const token = session.access_token;
+    if (authSyncPromise && authSyncToken === token) return authSyncPromise;
+    if (!force && lastSyncedToken === token && Date.now() - lastSyncedAt < 30000) return Promise.resolve();
+
+    authSyncToken = token;
+    authSyncPromise = doSyncAuthFromSession(session).finally(() => {
+      if (authSyncToken === token) {
+        authSyncPromise = null;
+        authSyncToken = null;
+      }
+    });
+    return authSyncPromise;
+  }
+
+  async function doSyncAuthFromSession(session) {
+    const cached = readProfileCache(session.user.id);
+    if (cached) {
+      // Returning users render immediately from the last known profile, then
+      // refresh silently. No 1–3s blank auth wait on every app open.
+      applySession(session, cached);
+      markAuthReady();
+      lastSyncedToken = session.access_token;
+      lastSyncedAt = Date.now();
+      fetchSessionProfile(session)
+        .then((profile) => {
+          if (!profile || authStore.token !== session.access_token) return;
+          applySession(session, profile);
+        })
+        .catch(() => {});
       return;
     }
 
-    // Timeout for profile loading to prevent hanging on DB issues
-    const profileTimeout = setTimeout(() => {
-      console.warn('[Auth] Profile load timed out, using fallback profile');
-    }, 2000);
-
     try {
-      let profile = await Promise.race([
-        loadProfile(session.user.id),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
-      ]).catch(() => null);
-
-      if (!profile) {
-        profile = await Promise.race([
-          loadProfileByEmail(session.user.email),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
-        ]).catch(() => null);
-      }
-
-      if (!profile) {
-        const md = session.user.user_metadata || {};
-        const fallbackFirst = md.first_name || null;
-        const fallbackLast = md.last_name || null;
-        const fallbackUsername = md.username
-          || [fallbackFirst, fallbackLast].filter(Boolean).join('').toLowerCase().replace(/[^a-z0-9]/g, '')
-          || (session.user.email || '').split('@')[0] || 'user';
-        const fallbackName = [fallbackFirst, fallbackLast].filter(Boolean).join(' ') || fallbackUsername;
-        const fallbackRole = session.user.user_metadata?.role || (isAdminEmail(session.user.email) ? 'admin' : 'user');
-        const fallbackAccountType = session.user.user_metadata?.accountType === 'company'
-          ? 'teacher'
-          : session.user.user_metadata?.accountType === 'individual'
-            ? 'trader'
-            : session.user.user_metadata?.accountType || 'trader';
-        const fallbackCompanyName = session.user.user_metadata?.companyName || null;
-
-        try {
-          // First-login provisioning only: INSERT so an existing row is
-          // never clobbered. On PK conflict the row already exists (a slow
-          // profile read, not a new user) — leave it untouched.
-          const provision = { id: session.user.id, email: session.user.email };
-          if (fallbackUsername) { provision.username = fallbackUsername; provision.name = fallbackName; }
-          if (fallbackFirst) provision.first_name = fallbackFirst;
-          if (fallbackLast) provision.last_name = fallbackLast;
-          if (md.dob) provision.dob = md.dob;
-          if (md.phone) provision.phone = md.phone;
-          if (fallbackRole === 'admin') { provision.role = 'admin'; provision.plan = 'professional'; }
-          else if (md.plan && ['pro', 'elite', 'professional'].includes(md.plan)) { provision.plan = md.plan; }
-          if (fallbackAccountType) provision.accountType = fallbackAccountType;
-          if (fallbackCompanyName) provision.companyName = fallbackCompanyName;
-          const { data: createdProfile, error: profileError } = await Promise.race([
-            supabase.from('users').insert(provision).select().single(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
-          ]);
-          if (!profileError && createdProfile) {
-            profile = normalizeProfile(createdProfile, 'users');
-          }
-        } catch { /* row exists or insert failed — existing data untouched */ }
-      }
-
-      authStore.token = session.access_token;
-      authStore.record = mapRecord(session.user, profile);
-      authStore.isValid = true;
-      localStorage.setItem('tb_auth_provider', 'supabase');
-      localStorage.setItem('tb_auth_token', session.access_token);
-      notifyAuth();
+      let profile = await fetchSessionProfile(session);
+      if (!profile) profile = await provisionFallbackProfile(session);
+      applySession(session, profile);
     } catch (e) {
       console.warn('[Auth] syncAuthFromSession failed:', e);
-      authStore.token = session.access_token;
-      authStore.record = mapRecord(session.user, null);
-      authStore.isValid = true;
-      notifyAuth();
+      applySession(session, null);
     } finally {
-      clearTimeout(profileTimeout);
       markAuthReady();
+      lastSyncedToken = session.access_token;
+      lastSyncedAt = Date.now();
     }
   }
 
@@ -293,8 +385,8 @@ function createSupabaseCompatClient() {
     .catch((e) => { console.warn('[Auth] getSession failed:', e); })
     .finally(() => clearTimeout(authTimeout));
 
-  supabase.auth.onAuthStateChange((_event, session) => {
-    syncAuthFromSession(session);
+  supabase.auth.onAuthStateChange((event, session) => {
+    syncAuthFromSession(session, { force: event === 'USER_UPDATED' });
   });
 
   function collection(table) {
@@ -361,6 +453,26 @@ function createSupabaseCompatClient() {
         }
         if (error) throw error;
         return created;
+      },
+
+      async upsert(data, options = {}) {
+        const payload = { ...data };
+        const onConflict = typeof options === 'string' ? options : (options.onConflict || 'id');
+        const shouldScopeOwner = table !== 'admin_platform_settings';
+        if (shouldScopeOwner && authStore.record?.id && payload.owner === undefined) payload.owner = authStore.record.id;
+        const { data: row, error } = await supabase
+          .from(table)
+          .upsert(payload, { onConflict })
+          .select()
+          .single();
+        if (error && isSchemaCacheColumnError(error) && shouldScopeOwner) {
+          delete payload.owner;
+          const retry = await supabase.from(table).upsert(payload, { onConflict }).select().single();
+          if (retry.error) throw retry.error;
+          return retry.data;
+        }
+        if (error) throw error;
+        return row;
       },
 
       async update(id, patch) {

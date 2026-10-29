@@ -30,6 +30,7 @@ export default function TbStockDocumentsPage() {
 
         <CapPublicHead
           title="TB stock documents"
+          sub="Approved and draft stock documents, with execution status shown exactly as recorded. DocuSign is the only accepted signature source."
           actions={(
             <AtButton to="/stock/TB" variant="outline" size="sm" icon={ArrowLeft}>TB stock record</AtButton>
           )}

@@ -1,8 +1,8 @@
 // TradingBible Service Worker - Offline First, Push Notifications, Background Sync
-const CACHE_NAME = 'tradingbible-v1.2.1';
-const STATIC_CACHE = 'tradingbible-static-v1.2.1';
-const DYNAMIC_CACHE = 'tradingbible-dynamic-v1.2.1';
-const API_CACHE = 'tradingbible-api-v1.2.1';
+const CACHE_NAME = 'tradingbible-v1.3.6';
+const STATIC_CACHE = 'tradingbible-static-v1.3.6';
+const DYNAMIC_CACHE = 'tradingbible-dynamic-v1.3.6';
+const API_CACHE = 'tradingbible-api-v1.3.6';
 
 const STATIC_ASSETS = [
   '/',
@@ -75,8 +75,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets - Cache First
-  if (STATIC_ASSETS.some(asset => url.pathname === asset || url.pathname.startsWith(asset))) {
+  // Static assets - Cache First. Match real static paths only: the old
+  // `startsWith('/')` check accidentally treated every request as static.
+  const isStaticAsset = url.pathname.startsWith('/assets/')
+    || url.pathname.startsWith('/icons/')
+    || STATIC_ASSETS.includes(url.pathname);
+  if (isStaticAsset) {
     event.respondWith(cacheFirst(event.request, STATIC_CACHE));
     return;
   }
@@ -210,12 +214,12 @@ self.addEventListener('notificationclose', (event) => {
 
 // Message from client
 self.addEventListener('message', (event) => {
-  if (event.data === 'skipWaiting') {
+  if (event.data === 'skipWaiting' || event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
   if (event.data === 'getVersion') {
-    event.ports[0].postMessage({ version: '1.2.1' });
+    event.ports[0].postMessage({ version: '1.3.0' });
   }
 });
 
-console.log('[SW] TradingBible Service Worker v1.2.1 loaded');
+console.log('[SW] TradingBible Service Worker v1.3.0 loaded');

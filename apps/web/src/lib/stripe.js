@@ -1,6 +1,5 @@
 import apiServerClient from '@/lib/apiServerClient';
 import pb from '@/lib/pocketbaseClient';
-import { loadStripe } from '@stripe/stripe-js';
 
 let stripePromise = null;
 let cachedConfig = null;
@@ -17,6 +16,9 @@ export async function getStripe() {
   if (stripePromise) return stripePromise;
   const config = await getStripeConfig();
   if (!config.publishableKey) throw new Error('Stripe is not configured yet. Add STRIPE_PUBLISHABLE_KEY to apps/api/.env');
+  // Stripe.js is ~1.1 MB. Keep it out of the initial bundle and out of every
+  // page that only needs the public config — load it at checkout time.
+  const { loadStripe } = await import('@stripe/stripe-js');
   stripePromise = loadStripe(config.publishableKey);
   return stripePromise;
 }

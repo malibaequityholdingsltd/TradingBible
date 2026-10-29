@@ -104,7 +104,7 @@ const StockTbPage = lazy(() => import('./pages/StockTbPage'));
 const TbStockDocumentsPage = lazy(() => import('./pages/TbStockDocumentsPage'));
 const InvestorRelationsPage = lazy(() => import('./pages/InvestorRelationsPage'));
 const ShareholderPortalPage = lazy(() => import('./pages/ShareholderPortalPage'));
-const AppInvestorPortalPage = lazy(() => import('./pages/ShareholderPortalPage').then((m) => ({ default: m.AppInvestorPortalPage })));
+const AppInvestorAccessPage = lazy(() => import('./pages/InvestorAccessPage'));
 const AdminInvestorRelationsPage = lazy(() => import('./pages/AdminInvestorRelationsPage'));
 const AdminEquityPage = lazy(() => import('./pages/AdminEquityPage'));
 const AdminTbcPage = lazy(() => import('./pages/AdminTbcPage'));
@@ -426,7 +426,7 @@ function RoutesWithBoundary() {
                     <Route path="/reset" element={<ResetPage />} />
                     <Route path="/onboarding" element={<Protected><OnboardingPage /></Protected>} />
                     <Route path="/app" element={<PaidProtected><DashboardPage /></PaidProtected>} />
-                    <Route path="/app/investors" element={<Protected><AppInvestorPortalPage /></Protected>} />
+                    <Route path="/app/investors" element={<Protected><AppInvestorAccessPage /></Protected>} />
                     <Route path="/app/analytics" element={<PaidProtected><AnalyticsPage /></PaidProtected>} />
                     <Route path="/app/watchlists" element={<PaidProtected><WatchlistsPage /></PaidProtected>} />
                     <Route path="/app/orderflow" element={<PaidProtected><OrderFlowPage /></PaidProtected>} />

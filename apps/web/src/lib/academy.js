@@ -41,11 +41,31 @@ export async function getLesson(pathKey, courseKey, lessonKey) {
 	return parse(res, 'Could not load the lesson');
 }
 
+export async function getLessonTranslation(pathKey, courseKey, lessonKey, lang) {
+	const res = await apiServerClient.fetch('/academy/lesson/translate', {
+		method: 'POST', headers: headers(), body: JSON.stringify({ pathKey, courseKey, lessonKey, lang }),
+	});
+	return parse(res, 'Could not prepare the translated audio');
+}
+
 export async function gradeQuiz(pathKey, courseKey, lessonKey, answers) {
 	const res = await apiServerClient.fetch('/academy/quiz/grade', {
 		method: 'POST', headers: headers(), body: JSON.stringify({ pathKey, courseKey, lessonKey, answers }),
 	});
 	return parse(res, 'Could not grade the quiz');
+}
+
+export async function getAcademyExam(pathKey) {
+	const q = new URLSearchParams({ pathKey });
+	const res = await apiServerClient.fetch(`/academy/exam?${q.toString()}`, { headers: headers() });
+	return parse(res, 'Could not load the certificate exam');
+}
+
+export async function gradeAcademyExam(pathKey, answers) {
+	const res = await apiServerClient.fetch('/academy/exam/grade', {
+		method: 'POST', headers: headers(), body: JSON.stringify({ pathKey, answers }),
+	});
+	return parse(res, 'Could not grade the certificate exam');
 }
 
 export async function completeLesson(pathKey, courseKey, lessonKey) {

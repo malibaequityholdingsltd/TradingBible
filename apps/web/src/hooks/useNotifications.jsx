@@ -55,6 +55,8 @@ export function NotificationsProvider({ children }) {
 
   const check = useCallback(async () => {
     if (!pb.authStore.isValid) return;
+    // Don't wake the radio every 30s while the PWA is backgrounded.
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
     let active;
     try {
       active = await pb.collection('price_alerts').getFullList({ filter: 'status = "active"', requestKey: 'notif-active' });

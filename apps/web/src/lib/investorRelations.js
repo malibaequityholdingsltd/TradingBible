@@ -222,7 +222,10 @@ export function formatCompact(value) {
 
 export function formatDate(value, fallback = 'Not published') {
   if (!value) return fallback;
-  const date = new Date(value);
+  const raw = String(value);
+  // Date-only records are calendar dates, not UTC instants. Parsing them as
+  // local midnight keeps a recorded issue or meeting date from shifting a day.
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? new Date(`${raw}T00:00:00`) : new Date(value);
   if (Number.isNaN(date.getTime())) return fallback;
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
 }

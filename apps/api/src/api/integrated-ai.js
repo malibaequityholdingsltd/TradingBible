@@ -51,6 +51,50 @@ function isLocalEndpoint(endpoint) {
 	}
 }
 
+// Local model servers differ: Ollama exposes the OpenAI-compatible surface
+// under /v1 while most hosted providers already include /v1 in their base
+// URL. Keep both candidates and let the caller fall through on a 404.
+function chatEndpointCandidates(endpoint) {
+	const clean = String(endpoint || '').replace(/\/+$/, '');
+	if (!clean) return [];
+	const candidates = [`${clean}/chat/completions`];
+	if (isLocalEndpoint(clean) && !/\/v1$/i.test(clean)) {
+		candidates.unshift(`${clean}/v1/chat/completions`);
+	}
+	return [...new Set(candidates)];
+}
+
+const localModelCache = new Map();
+
+// A local Ollama install can be healthy while the model named in .env is not
+// present (for example a stale free-model name). Resolve to an installed
+// model instead of turning every Academy generation into a fallback lesson.
+async function resolveProviderModel(endpoint, requested) {
+	const wanted = String(requested || '').trim();
+	if (!isLocalEndpoint(endpoint)) return wanted;
+	const clean = String(endpoint || '').replace(/\/+$/, '');
+	if (localModelCache.has(clean)) return localModelCache.get(clean);
+	try {
+		const res = await fetch(`${clean}/api/tags`, { signal: AbortSignal.timeout(2500) });
+		if (!res.ok) return wanted;
+		const data = await res.json();
+		const names = (Array.isArray(data?.models) ? data.models : [])
+			.map((m) => String(m?.name || m?.model || '').trim())
+			.filter(Boolean);
+		if (!names.length) return wanted;
+		if (wanted && names.includes(wanted)) {
+			localModelCache.set(clean, wanted);
+			return wanted;
+		}
+		const preferred = names.find((name) => /qwen|deepseek|llama|mistral|mixtral|gemma/i.test(name)) || names[0];
+		logger.warn(`SI model "${wanted || 'unset'}" is not installed at ${clean}; using "${preferred}"`);
+		localModelCache.set(clean, preferred);
+		return preferred;
+	} catch {
+		return wanted;
+	}
+}
+
 const HistoryEventTypes = new Set([
 	SSEEventType.Reasoning,
 	SSEEventType.Content,
@@ -513,34 +557,48 @@ async function completeOpenAiCompatibleText({ systemPrompt, userMessage, baseUrl
 		.trim();
 
 	const endpoint = String(baseUrl || process.env.OPENAI_BASE_URL || '').replace(/\/+$/, '');
-	const resolvedModel = model || process.env.OPENAI_MODEL || 'deepseek-v4-flash';
+	const requestedModel = model || process.env.OPENAI_MODEL || 'deepseek-v4-flash';
+	const resolvedModel = await resolveProviderModel(endpoint, requestedModel);
 	const resolvedKey = apiKey || process.env.OPENAI_API_KEY;
+	const candidates = chatEndpointCandidates(endpoint);
+	let lastError = null;
 
-	const response = await fetch(`${endpoint}/chat/completions`, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${resolvedKey}`,
-		},
-		body: JSON.stringify({
-			model: resolvedModel,
-			stream: false,
-			messages: [
-				{ role: 'system', content: systemPrompt },
-				{ role: 'user', content: text || 'Hello' },
-			],
-		}),
-	});
-	if (!response.ok) {
-		const errorBody = await response.text().catch(() => 'Unknown error');
-		throw new Error(`SI provider request failed with status ${response.status}: ${errorBody}`);
+	for (let i = 0; i < candidates.length; i += 1) {
+		const response = await fetch(candidates[i], {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${resolvedKey}`,
+			},
+			body: JSON.stringify({
+				model: resolvedModel,
+				stream: false,
+				// Ollama defaults to a tiny completion budget when max_tokens is
+				// omitted, which truncates the Academy's JSON mid-object.
+				max_tokens: Number(process.env.ACADEMY_MAX_TOKENS || 1600),
+				messages: [
+					{ role: 'system', content: systemPrompt },
+					{ role: 'user', content: text || 'Hello' },
+				],
+			}),
+			signal: AbortSignal.timeout(120000),
+		});
+		if (response.status === 404 && i < candidates.length - 1) {
+			lastError = new Error(`SI provider endpoint ${candidates[i]} returned 404`);
+			continue;
+		}
+		if (!response.ok) {
+			const errorBody = await response.text().catch(() => 'Unknown error');
+			throw new Error(`SI provider request failed with status ${response.status}: ${errorBody}`);
+		}
+		const data = await response.json();
+		const content = data?.choices?.[0]?.message?.content;
+		if (typeof content !== 'string' || !content.trim()) {
+			throw new Error('The SI provider returned an empty response. Please try again.');
+		}
+		return content;
 	}
-	const data = await response.json();
-	const content = data?.choices?.[0]?.message?.content;
-	if (typeof content !== 'string' || !content.trim()) {
-		throw new Error('The SI provider returned an empty response. Please try again.');
-	}
-	return content;
+	throw lastError || new Error('No SI provider endpoint is available.');
 }
 
 /**
@@ -626,28 +684,39 @@ async function streamOpenAiCompatible({ userId, systemPrompt, userMessage, baseU
 		.trim();
 
 	const endpoint = String(baseUrl || process.env.OPENAI_BASE_URL || '').replace(/\/+$/, '');
-	const resolvedModel = model || process.env.OPENAI_MODEL || 'deepseek-v4-flash';
+	const requestedModel = model || process.env.OPENAI_MODEL || 'deepseek-v4-flash';
+	const resolvedModel = await resolveProviderModel(endpoint, requestedModel);
 	const resolvedKey = apiKey || process.env.OPENAI_API_KEY;
-
-	const response = await fetchWithHeaderTimeout(`${endpoint}/chat/completions`, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${resolvedKey}`,
-		},
-		body: JSON.stringify({
-			model: resolvedModel,
-			stream: true,
-			stream_options: { include_usage: true },
-			messages: [
-				{ role: 'system', content: systemPrompt },
-				{ role: 'user', content: text || 'Hello' },
-			],
-			...(maxTokens && { max_tokens: Number(maxTokens) }),
-			...(process.env.OPENAI_REASONING_EFFORT && { reasoning_effort: process.env.OPENAI_REASONING_EFFORT }),
-		}),
-	}, providerSetupTimeoutMs());
-
+	const candidates = chatEndpointCandidates(endpoint);
+	let response = null;
+	let lastError = null;
+	for (let i = 0; i < candidates.length; i += 1) {
+		const candidate = await fetchWithHeaderTimeout(candidates[i], {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${resolvedKey}`,
+			},
+			body: JSON.stringify({
+				model: resolvedModel,
+				stream: true,
+				stream_options: { include_usage: true },
+				messages: [
+					{ role: 'system', content: systemPrompt },
+					{ role: 'user', content: text || 'Hello' },
+				],
+				...(maxTokens && { max_tokens: Number(maxTokens) }),
+				...(process.env.OPENAI_REASONING_EFFORT && { reasoning_effort: process.env.OPENAI_REASONING_EFFORT }),
+			}),
+		}, providerSetupTimeoutMs());
+		if (candidate.status === 404 && i < candidates.length - 1) {
+			lastError = new Error(`SI provider endpoint ${candidates[i]} returned 404`);
+			continue;
+		}
+		response = candidate;
+		break;
+	}
+	if (!response) throw lastError || new Error('No SI provider endpoint is available.');
 	if (!response.ok) {
 		const errorBody = await response.text().catch(() => 'Unknown error');
 		throw new Error(`SI provider request failed with status ${response.status}: ${errorBody}`);

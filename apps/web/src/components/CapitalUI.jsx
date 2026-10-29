@@ -9,7 +9,7 @@ import { AtBadge, AtButton } from '@/components/AtelierUI';
  * numbers and no marketing hero separated from the product.
  */
 
-export function CapPublicHead({ title, actions, aside, className = '' }) {
+export function CapPublicHead({ title, sub, actions, aside, className = '' }) {
   return (
     <header className={`cap-public-head cap-public-head--compact ${className}`}>
       <div className="cap-public-head-main">
@@ -17,6 +17,7 @@ export function CapPublicHead({ title, actions, aside, className = '' }) {
           <h1 className="cap-public-title">{title}</h1>
           {actions && <div className="cap-public-actions">{actions}</div>}
         </div>
+        {sub && <p className="cap-public-sub">{sub}</p>}
       </div>
       {aside && <div className="cap-public-aside">{aside}</div>}
     </header>
