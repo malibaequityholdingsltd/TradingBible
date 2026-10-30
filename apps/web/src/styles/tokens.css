@@ -34,18 +34,20 @@
   --tb-shadow-gold: 0 10px 32px -12px var(--tb-gold-glow);
   --tb-ring: 0 0 0 1px rgba(212, 175, 55, 0.28);
 
-  /* Navigation coin language. The active page glyph flips to white in the
-     dark theme and near-black in the light theme; the coin itself follows
-     the active accent tokens so theme changes are visible everywhere. */
-  --tb-nav-coin-1: #fbf0c4;
-  --tb-nav-coin-2: #e6c65b;
-  --tb-nav-coin-3: #c9a227;
-  --tb-nav-coin-4: #8f6c12;
+  /* Navigation icon surfaces. These are deliberately neutral: the icon
+     layout is charcoal with a white glyph in dark mode and ivory with a
+     near-black glyph in light mode. Gold stays a brand accent, never the
+     surface of a navigation icon. */
+  --tb-nav-surface: #17171c;
+  --tb-nav-surface-hi: #26262d;
+  --tb-nav-active-surface: #2d2d35;
+  --tb-nav-border: rgba(255, 255, 255, 0.14);
   --tb-nav-glyph: #ffffff;
-  --tb-nav-orbit: rgba(244, 230, 168, 0.48);
-  --tb-nav-halo: rgba(212, 175, 55, 0.30);
-  --tb-nav-ring: rgba(244, 230, 168, 0.55);
-  --tb-nav-glow: rgba(212, 175, 55, 0.80);
+  --tb-nav-glyph-muted: rgba(255, 255, 255, 0.62);
+  --tb-nav-orbit: rgba(255, 255, 255, 0.22);
+  --tb-nav-halo: rgba(255, 255, 255, 0.12);
+  --tb-nav-ring: rgba(255, 255, 255, 0.82);
+  --tb-nav-glow: rgba(255, 255, 255, 0.16);
 
   --tb-ease: cubic-bezier(0.2, 0.9, 0.28, 1.15);
   --tb-speed: 0.25s;
@@ -60,15 +62,16 @@ html.light {
   --tb-shadow-card: 0 10px 30px -22px rgba(60, 55, 40, 0.35);
   --tb-shadow-gold: 0 12px 40px -22px rgba(166, 124, 30, 0.35);
 
-  --tb-nav-coin-1: #f8ecc4;
-  --tb-nav-coin-2: #e2c25a;
-  --tb-nav-coin-3: #b18a1e;
-  --tb-nav-coin-4: #7a5a0e;
+  --tb-nav-surface: #f1ede3;
+  --tb-nav-surface-hi: #fffdf8;
+  --tb-nav-active-surface: #ffffff;
+  --tb-nav-border: rgba(23, 24, 28, 0.14);
   --tb-nav-glyph: #17181c;
-  --tb-nav-orbit: rgba(166, 124, 30, 0.42);
-  --tb-nav-halo: rgba(166, 124, 30, 0.20);
-  --tb-nav-ring: rgba(166, 124, 30, 0.45);
-  --tb-nav-glow: rgba(166, 124, 30, 0.55);
+  --tb-nav-glyph-muted: rgba(23, 24, 28, 0.56);
+  --tb-nav-orbit: rgba(23, 24, 28, 0.20);
+  --tb-nav-halo: rgba(23, 24, 28, 0.08);
+  --tb-nav-ring: rgba(23, 24, 28, 0.82);
+  --tb-nav-glow: rgba(23, 24, 28, 0.12);
 }
 
 /* Brand wordmark: the "Trading" half follows the theme; "Bible" is always
@@ -651,32 +654,42 @@ html.light [data-force-dark] .tb-gold-text, html.light [data-force-dark] * .tb-g
    standard tile, so it breaks the bottom-bar line. */
 .nav-dashboard-icon {
   --ios-size: 66px;
-  border: 0;
+  border: 1px solid var(--tb-nav-border);
   border-radius: 9999px;
-  background: radial-gradient(circle at 32% 22%, #fbf0c4 0%, #e6c65b 32%, #c9a227 64%, #8f6c12 100%);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.55), inset 0 -10px 18px rgba(79, 55, 4, 0.28);
+  background: linear-gradient(155deg, var(--tb-nav-surface-hi), var(--tb-nav-active-surface));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 .nav-dashboard-icon::after { display: none; }
 .nav-dashboard-icon .ios-icon-glyph { width: 54%; height: 54%; }
 
 
-/* Small navigation medallions: the same gold coin language as the raised
-   Dashboard, scaled down so every item stays inside the bar row. */
+/* Small navigation medallions: the same neutral, theme-aware surface as
+   the raised Dashboard, scaled down so every item stays inside the bar row. */
 .nav-medallion {
   --ios-size: 40px;
-  border: 0;
+  border: 1px solid var(--tb-nav-border);
   border-radius: 9999px;
-  background: radial-gradient(circle at 32% 22%, var(--tb-nav-coin-1) 0%, var(--tb-nav-coin-2) 32%, var(--tb-nav-coin-3) 64%, var(--tb-nav-coin-4) 100%);
-  box-shadow: 0 4px 12px -8px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -6px 10px rgba(79, 55, 4, 0.22);
+  background: linear-gradient(155deg, var(--tb-nav-surface-hi), var(--tb-nav-surface));
+  box-shadow: 0 4px 12px -8px rgba(0, 0, 0, 0.62), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 .nav-medallion--sm { --ios-size: 34px; }
 .nav-medallion::after { display: none; }
-.nav-medallion .ios-icon-glyph { width: 50%; height: 50%; opacity: 0.84; filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.18)); }
-.nav-medallion .ios-icon-glyph { transition: opacity 0.2s ease; }
+.nav-medallion .ios-icon-glyph { width: 50%; height: 50%; opacity: 0.62; filter: none; transition: opacity 0.2s ease; }
 .app-nav-footer-link--active .nav-medallion .ios-icon-glyph,
 .tb-dock .dock-tab[aria-current="page"] .nav-medallion .ios-icon-glyph,
 .nav-dashboard-orb[aria-current="page"] .ios-icon-glyph,
 .tb-admin-dock__tab.is-active .nav-medallion .ios-icon-glyph { opacity: 1; }
+.app-nav-footer-link--active .nav-medallion,
+.tb-dock .dock-tab[aria-current="page"] .nav-medallion,
+.tb-admin-dock__tab.is-active .nav-medallion {
+  background: var(--tb-nav-active-surface);
+  border-color: var(--tb-nav-ring);
+}
 html.light .nav-medallion {
-  box-shadow: 0 3px 9px -6px rgba(90, 70, 20, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -5px 8px rgba(79, 55, 4, 0.18);
+  box-shadow: 0 3px 9px -6px rgba(60, 55, 40, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+html.light .app-nav-footer-link--active .nav-medallion,
+html.light .tb-dock .dock-tab[aria-current="page"] .nav-medallion,
+html.light .tb-admin-dock__tab.is-active .nav-medallion {
+  box-shadow: 0 0 0 2px var(--tb-nav-ring), 0 0 18px -4px var(--tb-nav-glow), inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }

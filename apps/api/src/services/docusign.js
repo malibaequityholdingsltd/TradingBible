@@ -24,10 +24,14 @@ export function docusignConfig() {
 	if (!process.env.DOCUSIGN_ACCOUNT_ID) missing.push('DOCUSIGN_ACCOUNT_ID');
 	if (!process.env.DOCUSIGN_PRIVATE_KEY) missing.push('DOCUSIGN_PRIVATE_KEY');
 	if (!process.env.DOCUSIGN_CONNECT_HMAC_KEY) missing.push('DOCUSIGN_CONNECT_HMAC_KEY');
+	const environment = /demo/i.test(AUTH_SERVER) || /demo/i.test(BASE_URL) ? 'demo' : 'production';
 	return {
 		configured: missing.length === 0,
 		missing,
-		environment: /demo/i.test(AUTH_SERVER) || /demo/i.test(BASE_URL) ? 'demo' : 'production',
+		environment,
+		// A demo envelope must never be presented as a production execution.
+		// The API refuses to create or send one when NODE_ENV=production.
+		demoInProduction: process.env.NODE_ENV === 'production' && environment === 'demo',
 		sendOnCreate: String(process.env.DOCUSIGN_SEND_ON_CREATE || 'true').toLowerCase() !== 'false',
 	};
 }
@@ -227,6 +231,12 @@ export async function createEnvelope({
 	emailBlurb = '',
 }) {
 	const config = docusignConfig();
+	if (config.demoInProduction) {
+		const err = new Error('DocuSign is still pointed at the demo environment. Production execution is blocked until live credentials are configured.');
+		err.status = 503;
+		err.code = 'docusign_demo_in_production';
+		throw err;
+	}
 	if (!config.configured) {
 		const err = new Error(`DocuSign is not configured: ${config.missing.join(', ')}`);
 		err.status = 503;
@@ -289,6 +299,13 @@ export async function createEnvelope({
 }
 
 export async function sendEnvelope(envelopeId) {
+	const config = docusignConfig();
+	if (config.demoInProduction) {
+		const err = new Error('DocuSign is still pointed at the demo environment. Production sending is blocked until live credentials are configured.');
+		err.status = 503;
+		err.code = 'docusign_demo_in_production';
+		throw err;
+	}
 	const result = await dsFetch(`/envelopes/${encodeURIComponent(envelopeId)}`, {
 		method: 'PUT',
 		body: JSON.stringify({ status: 'sent' }),

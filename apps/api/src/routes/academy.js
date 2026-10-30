@@ -3,7 +3,9 @@ import rateLimit from 'express-rate-limit';
 import logger from '../utils/logger.js';
 import { supabaseAuth } from '../middleware/supabase-auth.js';
 import { endSse, openSse, withTimeout } from '../utils/sse.js';
+import { familyCodeFromTransactionId, normalizeFamilyCode } from '../utils/academy-family.js';
 import {
+	DEFAULT_CURRICULA,
 	academyDb,
 	generateCertificate,
 	generateCurriculum,
@@ -39,7 +41,7 @@ router.use(supabaseAuth);
 async function requireAccess(req, res, next) {
 	try {
 		const user = await academyDb.getUser(req.userId);
-		// Admins always pass: only the $150 purchase (or an admin role)
+		// Admins always pass: only an individual or family Academy purchase (or an admin role)
 		// unlocks the Academy — no other bypass exists.
 		if (!user?.academyAccess && user?.role !== 'admin') {
 			return res.status(403).json({ error: { message: 'not_purchased', code: 'academy_access_required' } });
@@ -61,6 +63,88 @@ router.get('/access', async (req, res) => {
 	} catch (err) {
 		logger.error('academy access failed', String(err?.message || err));
 		res.status(500).json({ error: { message: 'Could not check Academy access.' } });
+	}
+});
+
+// ── Family pass ─────────────────────────────────────────────────────
+// A family pass is a $299 one-time purchase for up to four learners. The
+// buyer is seat one; up to three more accounts can redeem the code. Both
+// endpoints sit before requireAccess because a learner redeeming a code does
+// not have Academy access yet.
+const FAMILY_SEATS = 4;
+
+function familySummary(pass, members, role) {
+	const code = familyCodeFromTransactionId(pass?.transactionId, 'pass');
+	const used = 1 + (members?.length || 0);
+	return {
+		role,
+		active: Boolean(pass),
+		code: role === 'owner' ? code : undefined,
+		seatsTotal: FAMILY_SEATS,
+		seatsUsed: Math.min(used, FAMILY_SEATS),
+		seatsRemaining: Math.max(0, FAMILY_SEATS - used),
+		members: members?.length || 0,
+	};
+}
+
+router.get('/family', async (req, res) => {
+	try {
+		const ownerPass = await academyDb.getFamilyPassByOwner(req.userId);
+		if (ownerPass) {
+			const code = familyCodeFromTransactionId(ownerPass.transactionId, 'pass');
+			const members = code ? await academyDb.listFamilyMembers(code) : [];
+			return res.json(familySummary(ownerPass, members, 'owner'));
+		}
+		const memberRow = await academyDb.getFamilyMemberByOwner(req.userId);
+		if (memberRow) {
+			const code = familyCodeFromTransactionId(memberRow.transactionId, 'member');
+			const pass = code ? await academyDb.getFamilyPassByCode(code) : null;
+			const members = code ? await academyDb.listFamilyMembers(code) : [];
+			return res.json(familySummary(pass, members, 'member'));
+		}
+		return res.json({ role: null, active: false, seatsTotal: FAMILY_SEATS, seatsUsed: 0, seatsRemaining: 0, members: 0 });
+	} catch (err) {
+		logger.error('academy family lookup failed', String(err?.message || err));
+		return res.status(500).json({ error: { message: 'Could not load your family pass.' } });
+	}
+});
+
+router.post('/family/redeem', async (req, res) => {
+	const code = normalizeFamilyCode(req.body?.code);
+	if (!code) return res.status(422).json({ error: { message: 'Enter a valid family code.', code: 'invalid_family_code' } });
+	try {
+		const user = await academyDb.getUser(req.userId);
+		if (user?.academyAccess || user?.role === 'admin') {
+			return res.json({ ok: true, already: true, message: 'You already have Academy access.' });
+		}
+		const pass = await academyDb.getFamilyPassByCode(code);
+		if (!pass) return res.status(404).json({ error: { message: 'That family code is not valid.', code: 'family_code_not_found' } });
+		if (pass.owner === req.userId) {
+			return res.status(409).json({ error: { message: 'This is your own family pass. Share the code with your learners.', code: 'family_owner_cannot_redeem' } });
+		}
+		const existing = await academyDb.getFamilyMemberByOwnerAndCode(req.userId, code);
+		if (existing) {
+			await academyDb.grantAccess(req.userId);
+			const members = await academyDb.listFamilyMembers(code);
+			return res.json({ ok: true, already: true, ...familySummary(pass, members, 'member') });
+		}
+		const members = await academyDb.listFamilyMembers(code);
+		if ((members?.length || 0) >= FAMILY_SEATS - 1) {
+			return res.status(409).json({ error: { message: 'This family pass is full (4 learners).', code: 'family_pass_full' } });
+		}
+		const memberRow = await academyDb.createFamilyMember(req.userId, code);
+		if (!memberRow) throw new Error('family member row was not created');
+		try {
+			await academyDb.grantAccess(req.userId);
+		} catch (grantErr) {
+			await academyDb.deleteFamilyMember(memberRow.id).catch(() => {});
+			throw grantErr;
+		}
+		const updatedMembers = await academyDb.listFamilyMembers(code);
+		return res.json({ ok: true, ...familySummary(pass, updatedMembers, 'member') });
+	} catch (err) {
+		logger.error('academy family redeem failed', String(err?.message || err));
+		return res.status(500).json({ error: { message: 'Could not redeem that family code.' } });
 	}
 });
 
@@ -348,6 +432,21 @@ const curriculumKey = (userId, pathKey) => `${userId}:${pathKey}`;
 async function ensureCurriculum(userId, pathKey, level, about) {
 	const cached = await academyDb.getCurriculum(userId, pathKey);
 	if (cached) return { status: 'ready', curriculum: cached.curriculum };
+
+	// Curated paths are deterministic and already reviewed. Seed them
+	// immediately so enrollment never waits on a CPU-only model; the SI is
+	// still the author of every lesson. Unknown/custom paths keep the
+	// generated-curriculum path below.
+	const curated = DEFAULT_CURRICULA[pathKey];
+	if (curated) {
+		try {
+			await academyDb.saveCurriculum(userId, pathKey, curated);
+		} catch (err) {
+			logger.error('academy curated curriculum save failed', String(err?.message || err));
+		}
+		return { status: 'ready', curriculum: curated };
+	}
+
 	const key = curriculumKey(userId, pathKey);
 	if (!generating.has(key)) {
 		generating.add(key);

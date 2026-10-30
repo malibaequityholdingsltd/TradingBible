@@ -33,7 +33,7 @@ const PAGE_COPY = {
   contact: { title: 'Contact investor relations' },
 };
 
-function Hero({ copy, status = [] }) {
+function Hero({ copy, status = [], metrics = null }) {
   return (
     <CapPublicHead
       title={copy.title}
@@ -46,7 +46,9 @@ function Hero({ copy, status = [] }) {
           note={`${TB_ISSUER.tickerStatus}. ${TB_ISSUER.exchangeStatus}.`}
         />
       )}
-    />
+    >
+      {metrics}
+    </CapPublicHead>
   );
 }
 
@@ -67,14 +69,15 @@ function OverviewSection({ data, loading, error, reload }) {
           ['Public market', 'None'],
           ['Last disclosure', formatDate(data?.generatedAt, 'Not available')],
         ]}
+        metrics={(
+          <CapKpiGrid items={[
+            { icon: Landmark, label: 'Listing status', value: 'Pre-IPO', note: 'No public market', badge: 'Not listed' },
+            { icon: Target, label: 'Proposed ticker', value: 'TB', note: 'Not reserved or approved', badge: 'Proposed' },
+            { icon: BarChart3, label: 'IPO readiness', value: `${ipo.complete}/${ipo.total}`, note: 'Evidenced milestones', badge: `${ipo.progressPct}%` },
+            { icon: FileText, label: 'Approved reports', value: String(reports.length), note: 'Approved and published', badge: reports.length ? 'Published' : 'None yet' },
+          ]} />
+        )}
       />
-
-      <CapKpiGrid items={[
-        { icon: Landmark, label: 'Listing status', value: 'Pre-IPO', note: 'No public market', badge: 'Not listed' },
-        { icon: Target, label: 'Proposed ticker', value: 'TB', note: 'Not reserved or approved', badge: 'Proposed' },
-        { icon: BarChart3, label: 'IPO readiness', value: `${ipo.complete}/${ipo.total}`, note: 'Evidenced milestones', badge: `${ipo.progressPct}%` },
-        { icon: FileText, label: 'Approved reports', value: String(reports.length), note: 'Approved and published', badge: reports.length ? 'Published' : 'None yet' },
-      ]} />
 
       <div className="mt-2.5"><InvestorNotice compact /></div>
 

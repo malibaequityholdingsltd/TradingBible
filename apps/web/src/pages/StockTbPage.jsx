@@ -291,14 +291,14 @@ export default function StockTbPage() {
               note="No exchange application or approval exists. No shares are offered through this page."
             />
           )}
-        />
-
-        <CapKpiGrid items={[
-          { icon: Landmark, label: 'Ticker', value: 'TB', note: 'Proposed · not reserved' },
-          { icon: Building2, label: 'Status', value: 'Pre-IPO', note: 'Private company' },
-          { icon: Target, label: 'Target venue', value: 'Nasdaq', note: 'Target only · no application' },
-          { icon: BarChart3, label: 'Readiness', value: `${ipo.complete}/${ipo.total}`, note: 'Evidenced milestones' },
-        ]} />
+        >
+          <CapKpiGrid items={[
+            { icon: Landmark, label: 'Ticker', value: 'TB', note: 'Proposed · not reserved' },
+            { icon: Building2, label: 'Status', value: 'Pre-IPO', note: 'Private company' },
+            { icon: Target, label: 'Target venue', value: 'Nasdaq', note: 'Target only · no application' },
+            { icon: BarChart3, label: 'Readiness', value: `${ipo.complete}/${ipo.total}`, note: 'Evidenced milestones' },
+          ]} />
+        </CapPublicHead>
 
         <div className="mt-2.5"><InvestorNotice compact /></div>
 

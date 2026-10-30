@@ -46,18 +46,23 @@ export async function openCheckout(plan) {
   else throw new Error('No checkout URL returned');
 }
 
-export async function openAcademyCheckout() {
+export async function openAcademyCheckout(tier = 'individual') {
+  const family = tier === 'family';
   const config = await getStripeConfig();
-  const priceId = config.prices?.academy;
-  if (!priceId) throw new Error('Academy checkout is not configured yet — missing STRIPE_PRICE_ACADEMY in apps/api/.env');
+  const priceId = family ? config.prices?.academyFamily : config.prices?.academy;
+  if (!priceId) {
+    throw new Error(family
+      ? 'Family checkout is not configured yet — missing STRIPE_PRICE_ACADEMY_FAMILY in apps/api/.env'
+      : 'Academy checkout is not configured yet — missing STRIPE_PRICE_ACADEMY in apps/api/.env');
+  }
   const res = await apiServerClient.fetch('/stripe/checkout-session', {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify({ intent: 'academy' }),
+    body: JSON.stringify({ intent: family ? 'academy_family' : 'academy' }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Could not create Academy checkout session');
+    throw new Error(err.error || (family ? 'Could not create Academy family checkout session' : 'Could not create Academy checkout session'));
   }
   const { url } = await res.json();
   if (url) window.location.href = url;

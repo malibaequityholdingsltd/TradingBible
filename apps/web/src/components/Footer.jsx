@@ -139,7 +139,7 @@ export default function Footer({ compact = false }) {
                 </span>
               </Link>
               <span className="hidden h-4 w-px bg-[var(--at-line-soft)] sm:block" />
-              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)]">TradingBible LLC · Delaware</span>
+              <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)]">TradingBible LLC · Delaware</span>
             </div>
             <nav aria-label="Capital and investor relations" className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
               {links.map(([label, to]) => (
@@ -229,7 +229,7 @@ export default function Footer({ compact = false }) {
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--at-gold)]">TB investor relations</span>
-              <span className="rounded-md border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-1.5 py-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-amber)]">Pre-IPO · not publicly traded</span>
+              <span className="rounded-md border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-1.5 py-0.5 font-mono text-[9.5px] font-bold uppercase tracking-[0.12em] text-[var(--at-amber)]">Pre-IPO · not publicly traded</span>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
               {[
@@ -261,7 +261,7 @@ export default function Footer({ compact = false }) {
                     >
                       <span>{t(link.labelKey)}</span>
                       {link.member && <Lock className="mt-1.5 h-2.5 w-2.5 shrink-0 text-[var(--at-mut-2)] group-hover:text-[var(--at-gold)]" />}
-                      {link.badge && <span className="mt-1.5 rounded-full border border-[var(--at-line)] bg-[var(--at-gold-soft)] px-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.08em] text-[var(--at-gold)]">{link.badge}</span>}
+                      {link.badge && <span className="mt-1.5 rounded-full border border-[var(--at-line)] bg-[var(--at-gold-soft)] px-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.08em] text-[var(--at-gold)]">{link.badge}</span>}
                     </Link>
                   </li>
                 ))}

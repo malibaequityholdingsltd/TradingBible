@@ -22,7 +22,7 @@ export function TbStockDocumentCard({ doc, onRead, compact = false }) {
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--at-gold)]">{doc.number}</span>
+              <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.12em] text-[var(--at-gold)]">{doc.number}</span>
               <AtBadge tone={signed ? 'green' : 'gold'}>{signedLabel(doc)}</AtBadge>
               <AtBadge tone="muted">{doc.category}</AtBadge>
             </div>
@@ -33,11 +33,11 @@ export function TbStockDocumentCard({ doc, onRead, compact = false }) {
 
         <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-[var(--at-line-soft)] pt-3">
           <div>
-            <dt className="font-mono text-[8px] uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Signature</dt>
+            <dt className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Signature</dt>
             <dd className="mt-0.5 text-[9px] font-semibold text-[var(--at-ink-2)]">{executionLabel}</dd>
           </div>
           <div>
-            <dt className="font-mono text-[8px] uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Format</dt>
+            <dt className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Format</dt>
             <dd className="mt-0.5 text-[9px] font-semibold text-[var(--at-ink-2)]">DOCX · read-only</dd>
           </div>
         </dl>
@@ -138,7 +138,7 @@ export function TbStockDocumentsSection({ documents, loading, error, onRead }) {
               onClick={() => onRead?.(doc)}
               className="rounded-lg border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3 text-left transition hover:border-[var(--at-line-strong)]"
             >
-              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-gold)]">{doc.number}</span>
+              <span className="font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--at-gold)]">{doc.number}</span>
               <span className="mt-1 block text-[10px] font-semibold leading-snug text-[var(--at-ink)]">{doc.title}</span>
               <span className="mt-1 block text-[9px] text-[var(--at-mut)]">{doc.execution?.signed ? 'Executed copy' : 'Signature-ready · not executed'}</span>
             </button>

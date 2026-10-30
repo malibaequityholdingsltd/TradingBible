@@ -7,6 +7,7 @@
 import { Transform } from 'node:stream';
 import logger from '../utils/logger.js';
 import { supabaseRest } from '../utils/supabaseClient.js';
+import { familyMemberTransactionId, familyPassTransactionId } from '../utils/academy-family.js';
 import { generateText, stream } from './integrated-ai.js';
 import {
 	AcademyCertificatePrompt,
@@ -36,8 +37,10 @@ function extractJson(raw) {
 
 // ── Default curricula (fallback if the SI is unavailable) ───────────
 // Mirrors apps/web/src/lib/academyCatalog.js STATIC_CURRICULA — keep in sync.
-// Keys: beginner | forex | crypto | intermediate | professional
-const DEFAULT_CURRICULA = {
+// Keys: beginner | forex | crypto | orderflow | intermediate | professional |
+//       multi-asset | platform | funded | digital-assets | investor | ai-tech |
+//       company-business
+export const DEFAULT_CURRICULA = {
 	'beginner': {
 		pathName: 'Beginner Foundation',
 		focus: 'A complete A–Z foundation: markets, Forex & Crypto basics, risk, analysis and execution.',
@@ -172,7 +175,7 @@ const DEFAULT_CURRICULA = {
 				description: 'Prop-firm challenges, trading plans, algos and the funded-trader routine.',
 				lessons: [
 					{ lessonKey: 'trading-plan-fx', title: 'Your FX trading plan: sessions, pairs, rules', minutes: 18 },
-					{ lessonKey: 'prop-firms', title: 'Prop firms: FTMO, FundedNext — passing the challenge', minutes: 22 },
+					{ lessonKey: 'prop-firms', title: 'TradingBible Funded — passing the evaluation', minutes: 22 },
 					{ lessonKey: 'psychology-fx', title: 'FX psychology: overtrading, revenge & patience', minutes: 20 },
 					{ lessonKey: 'backtest-ea', title: 'Backtesting & EAs: forward-test before you fund', minutes: 24 },
 					{ lessonKey: 'playbook-capstone', title: 'Capstone: your complete FX playbook', minutes: 24 },
@@ -444,6 +447,319 @@ const DEFAULT_CURRICULA = {
 			},
 		],
 	},
+	'multi-asset': {
+		pathName: 'Multi-Asset Command',
+		focus: 'Read gold, indices, equities, energy, FX and crypto as one connected market — then size one book instead of six unrelated bets.',
+		courses: [
+			{
+				courseKey: 'market-map',
+				title: 'The Multi-Asset Map',
+				minutes: 58,
+				description: 'What moves each asset family and how the session clock changes the answer.',
+				lessons: [
+					{ lessonKey: 'asset-families', title: 'Asset families: what actually moves gold, oil, indices and FX', minutes: 20 },
+					{ lessonKey: 'session-clock', title: 'The 24-hour session clock: Asia, London, New York', minutes: 18 },
+					{ lessonKey: 'dollar-axis', title: 'The dollar axis: DXY, yields and risk appetite', minutes: 20 },
+				],
+			},
+			{
+				courseKey: 'gold-equities',
+				title: 'Gold, Indices & Equities',
+				minutes: 82,
+				description: 'The signature markets: metals, index futures, single stocks and the growth trade.',
+				lessons: [
+					{ lessonKey: 'gold-playbook', title: 'Gold: real yields, fear and the XAU/USD playbook', minutes: 22 },
+					{ lessonKey: 'index-playbook', title: 'Indices: SPX, NAS100 and the opening drive', minutes: 21 },
+					{ lessonKey: 'single-stocks', title: 'Single stocks: earnings, gaps and liquidity', minutes: 20 },
+					{ lessonKey: 'oil-copper', title: 'Oil, copper and the growth trade', minutes: 19 },
+				],
+			},
+			{
+				courseKey: 'cross-asset-risk',
+				title: 'Cross-Asset Portfolio Risk',
+				minutes: 80,
+				description: 'Correlation, one-book sizing and hedging without doubling the risk.',
+				lessons: [
+					{ lessonKey: 'correlation-regime', title: 'Correlation regimes: when diversification stops working', minutes: 20 },
+					{ lessonKey: 'one-book', title: 'One book: sizing across six markets', minutes: 21 },
+					{ lessonKey: 'hedging-basics', title: 'Hedging without doubling your risk', minutes: 19 },
+					{ lessonKey: 'multi-capstone', title: 'Capstone: a full multi-asset week', minutes: 20 },
+				],
+			},
+		],
+	},
+	'platform': {
+		pathName: 'Platform Mastery',
+		focus: 'Use Terminal Pro, journal, analytics, alerts, order flow, broker/data infrastructure, backtesting and paper trading as one repeatable workflow.',
+		courses: [
+			{
+				courseKey: 'terminal-basics',
+				title: 'Terminal Pro Essentials',
+				minutes: 74,
+				description: 'A clean workspace, honest charts, safe orders and repeatable prep.',
+				lessons: [
+					{ lessonKey: 'workspace', title: 'Build a workspace that fits your session', minutes: 18 },
+					{ lessonKey: 'charts', title: 'Charts, timeframes and clean levels', minutes: 20 },
+					{ lessonKey: 'orders', title: 'Orders, stops and risk preview', minutes: 19 },
+					{ lessonKey: 'layouts', title: 'Layouts, hotkeys and repeatable prep', minutes: 17 },
+				],
+			},
+			{
+				courseKey: 'journal-analytics',
+				title: 'Journal & Performance Analytics',
+				minutes: 75,
+				description: 'Turn each trade into evidence, then read the evidence honestly.',
+				lessons: [
+					{ lessonKey: 'journal-entry', title: 'A journal entry that actually teaches you', minutes: 19 },
+					{ lessonKey: 'tagging', title: 'Tag setups, mistakes and market conditions', minutes: 18 },
+					{ lessonKey: 'analytics', title: 'Read your analytics without fooling yourself', minutes: 20 },
+					{ lessonKey: 'review-loop', title: 'The weekly review loop', minutes: 18 },
+				],
+			},
+			{
+				courseKey: 'alerts-flow',
+				title: 'Alerts, Order Flow & Automation',
+				minutes: 77,
+				description: 'Let the platform wait for your level while you study the book.',
+				lessons: [
+					{ lessonKey: 'alerts', title: 'Alerts that wait for your level, not your emotion', minutes: 17 },
+					{ lessonKey: 'heatmap', title: 'Order flow: depth, heatmap and tape', minutes: 22 },
+					{ lessonKey: 'paper', title: 'Paper trading the exact live plan', minutes: 18 },
+					{ lessonKey: 'backtest', title: 'Backtest, then forward-test', minutes: 20 },
+				],
+			},
+			{
+				courseKey: 'broker-infra',
+				title: 'Brokerage & Data Infrastructure',
+				minutes: 74,
+				description: 'The plumbing behind the screen: connections, routing, data quality and failure drills.',
+				lessons: [
+					{ lessonKey: 'broker-connections', title: 'Broker connections: read-only keys, scopes and revocation', minutes: 18 },
+					{ lessonKey: 'order-routing', title: 'Order routing, fills and slippage', minutes: 19 },
+					{ lessonKey: 'market-data', title: 'Market data: feeds, timestamps and gaps', minutes: 19 },
+					{ lessonKey: 'infra-risk', title: 'Infrastructure risk: outages, failover and incident drills', minutes: 18 },
+				],
+			},
+			{
+				courseKey: 'platform-capstone',
+				title: 'Platform Capstone',
+				minutes: 56,
+				description: 'A full morning, a full execution day and a workflow review.',
+				lessons: [
+					{ lessonKey: 'morning-routine', title: 'The 20-minute morning routine', minutes: 18 },
+					{ lessonKey: 'execution-day', title: 'A full execution day on the platform', minutes: 20 },
+					{ lessonKey: 'platform-review', title: 'Measure the workflow, not just the P&L', minutes: 18 },
+				],
+			},
+		],
+	},
+	'funded': {
+		pathName: 'Funded & Prop Desk',
+		focus: 'Pass, keep and scale a funded account with rule-aware risk, payout planning and desk discipline.',
+		courses: [
+			{
+				courseKey: 'challenge-rules',
+				title: 'Know the Rulebook',
+				minutes: 56,
+				description: 'The three challenge types and the math that decides survival.',
+				lessons: [
+					{ lessonKey: 'rule-types', title: 'One-step, two-step and instant funding', minutes: 18 },
+					{ lessonKey: 'drawdown', title: 'Daily loss vs max drawdown — the math', minutes: 20 },
+					{ lessonKey: 'consistency', title: 'Consistency rules and payout eligibility', minutes: 18 },
+				],
+			},
+			{
+				courseKey: 'passing',
+				title: 'Passing Without Gambling',
+				minutes: 72,
+				description: 'Build a buffer, size correctly and survive the rule traps.',
+				lessons: [
+					{ lessonKey: 'first-days', title: 'The first three days: build a buffer', minutes: 18 },
+					{ lessonKey: 'risk-per-trade', title: 'Risk per trade under a prop rulebook', minutes: 19 },
+					{ lessonKey: 'news-weekend', title: 'News, weekends and rule traps', minutes: 17 },
+					{ lessonKey: 'recovery', title: 'Recovery without revenge', minutes: 18 },
+				],
+			},
+			{
+				courseKey: 'funded-desk',
+				title: 'The Funded Desk',
+				minutes: 77,
+				description: 'Payouts, scaling and multiple accounts without correlated blow-up.',
+				lessons: [
+					{ lessonKey: 'payout', title: 'Payout cycles and cash-flow planning', minutes: 18 },
+					{ lessonKey: 'scaling', title: 'Scaling: when to add size', minutes: 19 },
+					{ lessonKey: 'multiple-accounts', title: 'Multiple accounts without correlated blow-up', minutes: 20 },
+					{ lessonKey: 'prop-capstone', title: 'Capstone: a 30-day funded plan', minutes: 20 },
+				],
+			},
+		],
+	},
+	'digital-assets': {
+		pathName: 'TBC & Digital Assets',
+		focus: 'Understand TradingBible Coin as a proposed digital asset — architecture, custody, testnet, utility and legal boundaries.',
+		courses: [
+			{
+				courseKey: 'tbc-foundations',
+				title: 'TBC Foundations',
+				minutes: 74,
+				description: 'What TBC is, what it is not, and how the proposed network works.',
+				lessons: [
+					{ lessonKey: 'what-tbc', title: 'What TBC is — and what it is not', minutes: 18 },
+					{ lessonKey: 'supply', title: 'Supply, minting and the 100M cap', minutes: 17 },
+					{ lessonKey: 'architecture', title: 'Cosmos SDK, CometBFT and EVM', minutes: 20 },
+					{ lessonKey: 'wallet', title: 'Wallets, keys and safe custody', minutes: 19 },
+				],
+			},
+			{
+				courseKey: 'tbc-lifecycle',
+				title: 'Testnet to Mainnet',
+				minutes: 75,
+				description: 'Observation, security, listings and the legal questions that come first.',
+				lessons: [
+					{ lessonKey: 'testnet', title: 'The 90-day public testnet', minutes: 18 },
+					{ lessonKey: 'security', title: 'Security reviews and incident response', minutes: 19 },
+					{ lessonKey: 'listing', title: 'Listings, liquidity and market structure', minutes: 18 },
+					{ lessonKey: 'legal', title: 'Staking, yield and jurisdiction risk', minutes: 20 },
+				],
+			},
+			{
+				courseKey: 'digital-asset-ops',
+				title: 'Digital Asset Operations',
+				minutes: 55,
+				description: 'Treasury, segregation and explaining TBC to a regulator.',
+				lessons: [
+					{ lessonKey: 'treasury', title: 'Treasury and asset segregation', minutes: 18 },
+					{ lessonKey: 'payments', title: 'TBC credits and payout mechanics', minutes: 17 },
+					{ lessonKey: 'tbc-capstone', title: 'Capstone: explain TBC to a regulator', minutes: 20 },
+				],
+			},
+		],
+	},
+	'investor': {
+		pathName: 'Investor & Ownership',
+		focus: 'Read a private company like an owner: ownership, dilution, financial quality, IPO readiness and shareholder rights.',
+		courses: [
+			{
+				courseKey: 'ownership-basics',
+				title: 'Ownership Basics',
+				minutes: 76,
+				description: 'Equity, tokens, cap tables, rights and valuation without hype.',
+				lessons: [
+					{ lessonKey: 'equity-vs-coin', title: 'Equity, tokens and credits — never interchangeable', minutes: 18 },
+					{ lessonKey: 'cap-table', title: 'Cap table, dilution and ownership %', minutes: 20 },
+					{ lessonKey: 'rights', title: 'Shareholder rights and transfer restrictions', minutes: 18 },
+					{ lessonKey: 'valuation', title: 'Valuation without hype', minutes: 20 },
+				],
+			},
+			{
+				courseKey: 'company-financials',
+				title: 'Reading the Company',
+				minutes: 75,
+				description: 'Revenue quality, runway, unit economics and the risks that matter.',
+				lessons: [
+					{ lessonKey: 'revenue-quality', title: 'Revenue quality vs revenue headlines', minutes: 19 },
+					{ lessonKey: 'burn-runway', title: 'Burn, runway and capital needs', minutes: 18 },
+					{ lessonKey: 'unit-economics', title: 'Unit economics for a fintech', minutes: 20 },
+					{ lessonKey: 'risk-factors', title: 'Risk factors that actually matter', minutes: 18 },
+				],
+			},
+			{
+				courseKey: 'ipo-path',
+				title: 'The IPO & Disclosure Path',
+				minutes: 79,
+				description: 'The real steps from LLC to listed company, and what an S-1 must prove.',
+				lessons: [
+					{ lessonKey: 'ipo-steps', title: 'From LLC to listed company: the real steps', minutes: 21 },
+					{ lessonKey: 's1', title: 'What an S-1 must prove', minutes: 20 },
+					{ lessonKey: 'governance', title: 'Governance, audits and controls', minutes: 18 },
+					{ lessonKey: 'investor-capstone', title: 'Capstone: an owner\'s diligence memo', minutes: 20 },
+				],
+			},
+		],
+	},
+	'ai-tech': {
+		pathName: 'AI & Trading Technology',
+		focus: 'Use AI as a research and risk assistant: prompts, data quality, backtest traps, model risk and automation guardrails.',
+		courses: [
+			{
+				courseKey: 'ai-foundations',
+				title: 'AI for Traders',
+				minutes: 76,
+				description: 'What AI can do, where it fails, and how to ask for testable ideas.',
+				lessons: [
+					{ lessonKey: 'what-ai', title: 'What AI can and cannot do in markets', minutes: 18 },
+					{ lessonKey: 'prompts', title: 'Prompts that produce testable ideas', minutes: 19 },
+					{ lessonKey: 'data', title: 'Data quality, look-ahead and survivorship bias', minutes: 21 },
+					{ lessonKey: 'hallucination', title: 'Hallucination, overfitting and false confidence', minutes: 18 },
+				],
+			},
+			{
+				courseKey: 'si-workflow',
+				title: 'The SI Research Workflow',
+				minutes: 75,
+				description: 'From question to brief, with human review at every decision.',
+				lessons: [
+					{ lessonKey: 'si-brief', title: 'From question to SI research brief', minutes: 18 },
+					{ lessonKey: 'signals', title: 'Signals, confidence and human review', minutes: 19 },
+					{ lessonKey: 'journal-ai', title: 'AI journal review without outsourcing judgment', minutes: 18 },
+					{ lessonKey: 'automation', title: 'Automation guardrails and kill switches', minutes: 20 },
+				],
+			},
+			{
+				courseKey: 'build-stack',
+				title: 'Build & Evaluate a Trading Stack',
+				minutes: 59,
+				description: 'APIs, backtest architecture and an AI-assisted desk policy.',
+				lessons: [
+					{ lessonKey: 'apis', title: 'APIs, webhooks and data contracts', minutes: 19 },
+					{ lessonKey: 'backtest', title: 'Backtest architecture that survives contact', minutes: 20 },
+					{ lessonKey: 'ai-capstone', title: 'Capstone: an AI-assisted desk policy', minutes: 20 },
+				],
+			},
+		],
+	},
+	'company-business': {
+		pathName: 'Company & Creator Business',
+		focus: 'How TradingBible is built: product lines, pricing, content, community, partnerships, compliance and trust.',
+		courses: [
+			{
+				courseKey: 'business-model',
+				title: 'The TradingBible Business Model',
+				minutes: 72,
+				description: 'Subscriptions, licensing, education, ads and the metrics that matter.',
+				lessons: [
+					{ lessonKey: 'lines', title: 'Subscriptions, licensing, education and ads', minutes: 18 },
+					{ lessonKey: 'pricing', title: 'Pricing without promising returns', minutes: 17 },
+					{ lessonKey: 'funnel', title: 'From free lesson to lifetime learner', minutes: 18 },
+					{ lessonKey: 'metrics', title: 'Metrics that matter before revenue', minutes: 19 },
+				],
+			},
+			{
+				courseKey: 'creator-engine',
+				title: 'The Creator & Education Engine',
+				minutes: 74,
+				description: 'Curriculum, content, community and distribution that teach instead of hype.',
+				lessons: [
+					{ lessonKey: 'curriculum', title: 'Curriculum design for kids and adults', minutes: 19 },
+					{ lessonKey: 'content', title: 'Content that teaches, not hypes', minutes: 18 },
+					{ lessonKey: 'community', title: 'Community, mentors and live rooms', minutes: 18 },
+					{ lessonKey: 'distribution', title: 'Distribution, SEO and partnerships', minutes: 19 },
+				],
+			},
+			{
+				courseKey: 'trust-ops',
+				title: 'Trust, Compliance & Operations',
+				minutes: 75,
+				description: 'Disclosures, privacy, support and a 90-day company plan.',
+				lessons: [
+					{ lessonKey: 'disclosures', title: 'Disclosures, disclaimers and honest claims', minutes: 18 },
+					{ lessonKey: 'kyc', title: 'KYC, privacy and data handling', minutes: 19 },
+					{ lessonKey: 'support', title: 'Support, refunds and incident response', minutes: 18 },
+					{ lessonKey: 'business-capstone', title: 'Capstone: a 90-day company plan', minutes: 20 },
+				],
+			},
+		],
+	},
 };
 
 // Back-compat alias (old code imported the singular).
@@ -510,6 +826,43 @@ export const academyDb = {
 		supabaseRest(`/rest/v1/academy_webinar_rsvps?owner=eq.${owner}&webinarId=eq.${encodeURIComponent(webinarId)}`, { method: 'DELETE' }),
 	createPurchase: (row) =>
 		supabaseRest('/rest/v1/academy_purchases', { method: 'POST', body: row, prefer: 'return=representation' }),
+
+	// Family passes use the existing one-time purchase ledger. The owner row
+	// carries the share code; each redeemed seat is a separate member row.
+	getFamilyPassByOwner: (owner) =>
+		selectWhere('academy_purchases', `owner=eq.${encodeURIComponent(owner)}&status=eq.family_owner`, 'order=createdAt.desc&limit=1')
+			.then((r) => r?.[0] || null),
+	getFamilyPassByCode: (code) => {
+		const tx = familyPassTransactionId(code);
+		if (!tx) return Promise.resolve(null);
+		return selectWhere('academy_purchases', `transactionId=eq.${encodeURIComponent(tx)}&status=eq.family_owner`, 'order=createdAt.desc&limit=1')
+			.then((r) => r?.[0] || null);
+	},
+	listFamilyMembers: (code) => {
+		const tx = familyMemberTransactionId(code);
+		if (!tx) return Promise.resolve([]);
+		return selectWhere('academy_purchases', `transactionId=eq.${encodeURIComponent(tx)}&status=eq.family_member`, 'select=id,owner,createdAt&order=createdAt.asc');
+	},
+	getFamilyMemberByOwner: (owner) =>
+		selectWhere('academy_purchases', `owner=eq.${encodeURIComponent(owner)}&status=eq.family_member`, 'order=createdAt.desc&limit=1')
+			.then((r) => r?.[0] || null),
+	getFamilyMemberByOwnerAndCode: (owner, code) => {
+		const tx = familyMemberTransactionId(code);
+		if (!tx) return Promise.resolve(null);
+		return selectWhere('academy_purchases', `owner=eq.${encodeURIComponent(owner)}&transactionId=eq.${encodeURIComponent(tx)}&status=eq.family_member`, 'limit=1')
+			.then((r) => r?.[0] || null);
+	},
+	createFamilyMember: (owner, code) => {
+		const tx = familyMemberTransactionId(code);
+		if (!tx) throw new Error('invalid family code');
+		return supabaseRest('/rest/v1/academy_purchases', {
+			method: 'POST',
+			body: { owner, transactionId: tx, amount: 0, currency: 'usd', status: 'family_member' },
+			prefer: 'return=representation',
+		}).then((r) => r?.[0] || null);
+	},
+	deleteFamilyMember: (id) =>
+		supabaseRest(`/rest/v1/academy_purchases?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE' }),
 };
 
 // ── SI generation ────────────────────────────────────────────────────

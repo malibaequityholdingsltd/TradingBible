@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import Stripe from 'stripe';
 import logger from '../utils/logger.js';
-import { supabase } from '../utils/supabaseClient.js';
+import { supabase, supabaseRest } from '../utils/supabaseClient.js';
+import { familyPassTransactionId, generateFamilyCode, normalizeFamilyCode } from '../utils/academy-family.js';
 
 const router = Router();
 
@@ -26,11 +27,14 @@ function getWebhookSecret() {
   return process.env.STRIPE_WEBHOOK_SECRET || process.env.STRIPE_SANDBOX_WEBHOOK_SECRET || '';
 }
 
+const ACADEMY_FAMILY_PRICE_ID = process.env.STRIPE_PRICE_ACADEMY_FAMILY || 'price_1UVq0gETv6zJp2esYqK9qDUs';
+
 const PRICE_MAP = {
   pro: process.env.STRIPE_PRICE_PRO || '',
   elite: process.env.STRIPE_PRICE_ELITE || '',
   professional: process.env.STRIPE_PRICE_PROFESSIONAL || '',
   academy: process.env.STRIPE_PRICE_ACADEMY || '',
+  academyFamily: ACADEMY_FAMILY_PRICE_ID,
 };
 
 // Stripe SDK errors are user-safe (declined card, unknown price, canceled
@@ -158,9 +162,11 @@ router.post('/checkout-session', async (req, res) => {
   if (!stripe) return res.status(503).json({ error: 'Stripe is not configured. Set STRIPE_SECRET_KEY in apps/api/.env' });
 
   const { plan, intent } = req.body ?? {};
-  const isAcademy = intent === 'academy' || plan === 'academy';
-  const priceId = isAcademy ? PRICE_MAP.academy : PRICE_MAP[plan];
+  const isFamily = intent === 'academy_family' || plan === 'academy_family';
+  const isAcademy = isFamily || intent === 'academy' || plan === 'academy';
+  const priceId = isFamily ? PRICE_MAP.academyFamily : isAcademy ? PRICE_MAP.academy : PRICE_MAP[plan];
   if (!priceId) return res.status(422).json({ error: 'unknown or unconfigured plan' });
+  const familyCode = isFamily ? generateFamilyCode() : null;
 
   // ensure customer
   let customerId = user.stripeCustomerId;
@@ -175,15 +181,20 @@ router.post('/checkout-session', async (req, res) => {
   const origin = req.headers.origin || process.env.CORS_ORIGIN || 'https://tradingbible.app';
   try {
     if (isAcademy) {
+      const metadata = { user_id: user.id, intent: isFamily ? 'academy_family' : 'academy' };
+      if (isFamily) {
+        metadata.family_code = familyCode;
+        metadata.seats = '4';
+      }
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
         customer: customerId || undefined,
         customer_email: customerId ? undefined : user.email,
         line_items: [{ price: priceId, quantity: 1 }],
-        success_url: `${origin}/app/academy?checkout=success`,
+        success_url: `${origin}/app/academy?checkout=success${isFamily ? '&family=1' : ''}`,
         cancel_url: `${origin}/app/academy?checkout=cancel`,
         client_reference_id: user.id,
-        metadata: { user_id: user.id, intent: 'academy' },
+        metadata,
       });
       return res.json({ url: session.url, id: session.id });
     }
@@ -337,11 +348,39 @@ router.post('/webhook', async (req, res) => {
     } else if (type.startsWith('checkout.session.completed')) {
       const customerId = typeof data.customer === 'string' ? data.customer : data.customer?.id;
       const intent = data.metadata?.intent;
-      if (intent === 'academy') {
+      if (intent === 'academy' || intent === 'academy_family') {
         const user = await findUser(data.metadata, customerId);
         if (user) {
-          await updateUser(user.id, { academyAccess: true, academyPurchasedAt: new Date(event.created * 1000).toISOString(), stripeCustomerId: customerId });
-          await recordEvent(user.id, { eventType: type, planName: 'academy', status: data.payment_status || 'paid', occurredAt: new Date(event.created * 1000).toISOString() });
+          const purchasedAt = new Date(event.created * 1000).toISOString();
+          await updateUser(user.id, { academyAccess: true, academyPurchasedAt: purchasedAt, stripeCustomerId: customerId });
+          if (intent === 'academy_family') {
+            const code = normalizeFamilyCode(data.metadata?.family_code) || generateFamilyCode();
+            const tx = familyPassTransactionId(code);
+            try {
+              const existing = await supabaseRest(
+                `/rest/v1/academy_purchases?owner=eq.${encodeURIComponent(user.id)}&transactionId=eq.${encodeURIComponent(tx)}&select=id&limit=1`,
+              );
+              if (!existing?.length) {
+                await supabaseRest('/rest/v1/academy_purchases', {
+                  method: 'POST',
+                  body: {
+                    owner: user.id,
+                    transactionId: tx,
+                    amount: data.amount_total != null ? data.amount_total / 100 : 299,
+                    currency: data.currency || 'usd',
+                    status: 'family_owner',
+                    createdAt: purchasedAt,
+                  },
+                  prefer: 'return=representation',
+                });
+              }
+            } catch (familyErr) {
+              logger.error('academy family pass record failed', String(familyErr));
+            }
+            await recordEvent(user.id, { eventType: type, planName: 'academy_family', status: data.payment_status || 'paid', occurredAt: purchasedAt });
+          } else {
+            await recordEvent(user.id, { eventType: type, planName: 'academy', status: data.payment_status || 'paid', occurredAt: purchasedAt });
+          }
         }
       } else if (intent === 'wallet_deposit') {
         const user = await findUser(data.metadata, customerId);

@@ -1,13 +1,19 @@
-// TradingBible Academy — full Forex + Crypto catalog.
+// TradingBible Academy — full company-purpose catalog.
 // Single source of truth for the portal UI (paths, courses, lessons, topic explorer).
-// Backend fallbacks mirror this file in apps/api/src/api/academy.js — keep them in sync.
+// Covers markets, platform, funded desks, TBC, investor ownership, AI/technology
+// and the company/creator business. Backend fallbacks mirror this file in
+// apps/api/src/api/academy.js — keep them in sync.
 
 export const TRACKS = [
 	{ key: 'all', name: 'All topics' },
 	{ key: 'general', name: 'Foundations' },
 	{ key: 'forex', name: 'Forex' },
 	{ key: 'crypto', name: 'Crypto' },
+	{ key: 'multi', name: 'Multi-Asset' },
 	{ key: 'orderflow', name: 'Order Flow' },
+	{ key: 'platform', name: 'Platform' },
+	{ key: 'company', name: 'Company' },
+	{ key: 'technology', name: 'AI & Tech' },
 	{ key: 'pro', name: 'Pro Desk' },
 ];
 
@@ -71,6 +77,76 @@ export const PATHS = [
 		icon: 'briefcase',
 		desc: 'Trade like an institution: systematic strategies, portfolio management, prop-firm & fund-grade execution in FX and digital assets.',
 		skills: ['Systematic strategies', 'Portfolio heat', 'Algo & backtesting', 'Fund-grade review'],
+	},
+	{
+		key: 'multi-asset',
+		name: 'Multi-Asset Command',
+		level: 'Beginner → Advanced',
+		track: 'multi',
+		color: '#f59e0b',
+		icon: 'compass',
+		desc: 'Trade the whole board: gold, indices, oil, equities, FX and crypto. Learn which market is leading, when correlation turns, and how to size one portfolio instead of six disconnected bets.',
+		skills: ['Gold & metals', 'Indices & equities', 'Commodities & oil', 'Cross-asset risk'],
+	},
+	{
+		key: 'platform',
+		name: 'Platform Mastery',
+		level: 'Beginner → Pro',
+		track: 'platform',
+		color: '#22d3ee',
+		icon: 'monitor',
+		desc: 'Use every TradingBible surface with confidence: Terminal Pro, journal, analytics, alerts, order flow, broker/data infrastructure, backtesting, paper trading and the SI coach — so the tools work as one workflow.',
+		skills: ['Terminal Pro', 'Journal & analytics', 'Alerts & order flow', 'Broker & data'],
+	},
+	{
+		key: 'funded',
+		name: 'Funded & Prop Desk',
+		level: 'Intermediate → Pro',
+		track: 'pro',
+		color: '#d4af37',
+		icon: 'target',
+		desc: 'Pass, keep and scale a funded account: rulebooks, drawdown math, payout cycles, challenge psychology and the desk habits prop firms actually reward.',
+		skills: ['Challenge rules', 'Drawdown math', 'Payout cycles', 'Scaling plan'],
+	},
+	{
+		key: 'digital-assets',
+		name: 'TBC & Digital Assets',
+		level: 'Beginner → Advanced',
+		track: 'company',
+		color: '#f472b6',
+		icon: 'coins',
+		desc: 'Understand TradingBible Coin as a proposed digital asset — not equity: Cosmos architecture, wallets, custody, testnet, token utility, risk, and the legal boundaries around staking, yield and listings.',
+		skills: ['TBC vs equity', 'Wallets & custody', 'Testnet & mainnet', 'Legal risk'],
+	},
+	{
+		key: 'investor',
+		name: 'Investor & Ownership',
+		level: 'Beginner → Pro',
+		track: 'company',
+		color: '#34d399',
+		icon: 'handshake',
+		desc: 'Read a private company like an owner: cap table, dilution, revenue quality, IPO readiness, shareholder rights, disclosures and the difference between TBC, equity and a promise.',
+		skills: ['Cap table & dilution', 'Financial quality', 'IPO readiness', 'Shareholder rights'],
+	},
+	{
+		key: 'ai-tech',
+		name: 'AI & Trading Technology',
+		level: 'Intermediate → Pro',
+		track: 'technology',
+		color: '#a78bfa',
+		icon: 'cpu',
+		desc: 'Use AI as a research and risk assistant, not an oracle: prompts, data quality, backtest traps, model risk, automation guardrails and the SI workflow behind TradingBible.',
+		skills: ['AI research', 'Data quality', 'Backtest traps', 'Automation guardrails'],
+	},
+	{
+		key: 'company-business',
+		name: 'Company & Creator Business',
+		level: 'Beginner → Pro',
+		track: 'company',
+		color: '#e0a0f0',
+		icon: 'building',
+		desc: 'Learn how TradingBible itself is built: product lines, pricing, partnerships, content, community, compliance and the operating system behind a fintech education business.',
+		skills: ['Business model', 'Product & pricing', 'Partnerships', 'Compliance & trust'],
 	},
 ];
 
@@ -491,6 +567,326 @@ export const STATIC_CURRICULA = {
 			},
 		],
 	},
+
+	'multi-asset': {
+		pathName: 'Multi-Asset Command',
+		focus: 'Read gold, indices, equities, energy, FX and crypto as one connected market — then size one book instead of six unrelated bets.',
+		courses: [
+			{
+				courseKey: 'market-map',
+				title: 'The Multi-Asset Map',
+				minutes: 58,
+				description: 'What moves each asset family and how the session clock changes the answer.',
+				lessons: [
+					{ lessonKey: 'asset-families', title: 'Asset families: what actually moves gold, oil, indices and FX', minutes: 20, tags: ['multi'] },
+					{ lessonKey: 'session-clock', title: 'The 24-hour session clock: Asia, London, New York', minutes: 18, tags: ['multi'] },
+					{ lessonKey: 'dollar-axis', title: 'The dollar axis: DXY, yields and risk appetite', minutes: 20, tags: ['multi'] },
+				],
+			},
+			{
+				courseKey: 'gold-equities',
+				title: 'Gold, Indices & Equities',
+				minutes: 82,
+				description: 'The signature markets: metals, index futures, single stocks and the growth trade.',
+				lessons: [
+					{ lessonKey: 'gold-playbook', title: 'Gold: real yields, fear and the XAU/USD playbook', minutes: 22, tags: ['multi'] },
+					{ lessonKey: 'index-playbook', title: 'Indices: SPX, NAS100 and the opening drive', minutes: 21, tags: ['multi'] },
+					{ lessonKey: 'single-stocks', title: 'Single stocks: earnings, gaps and liquidity', minutes: 20, tags: ['multi'] },
+					{ lessonKey: 'oil-copper', title: 'Oil, copper and the growth trade', minutes: 19, tags: ['multi'] },
+				],
+			},
+			{
+				courseKey: 'cross-asset-risk',
+				title: 'Cross-Asset Portfolio Risk',
+				minutes: 80,
+				description: 'Correlation, one-book sizing and hedging without doubling the risk.',
+				lessons: [
+					{ lessonKey: 'correlation-regime', title: 'Correlation regimes: when diversification stops working', minutes: 20, tags: ['multi'] },
+					{ lessonKey: 'one-book', title: 'One book: sizing across six markets', minutes: 21, tags: ['multi'] },
+					{ lessonKey: 'hedging-basics', title: 'Hedging without doubling your risk', minutes: 19, tags: ['multi'] },
+					{ lessonKey: 'multi-capstone', title: 'Capstone: a full multi-asset week', minutes: 20, tags: ['multi'] },
+				],
+			},
+		],
+	},
+
+	'platform': {
+		pathName: 'Platform Mastery',
+		focus: 'Use Terminal Pro, journal, analytics, alerts, order flow, broker/data infrastructure, backtesting and paper trading as one repeatable workflow.',
+		courses: [
+			{
+				courseKey: 'terminal-basics',
+				title: 'Terminal Pro Essentials',
+				minutes: 74,
+				description: 'A clean workspace, honest charts, safe orders and repeatable prep.',
+				lessons: [
+					{ lessonKey: 'workspace', title: 'Build a workspace that fits your session', minutes: 18, tags: ['platform'] },
+					{ lessonKey: 'charts', title: 'Charts, timeframes and clean levels', minutes: 20, tags: ['platform'] },
+					{ lessonKey: 'orders', title: 'Orders, stops and risk preview', minutes: 19, tags: ['platform'] },
+					{ lessonKey: 'layouts', title: 'Layouts, hotkeys and repeatable prep', minutes: 17, tags: ['platform'] },
+				],
+			},
+			{
+				courseKey: 'journal-analytics',
+				title: 'Journal & Performance Analytics',
+				minutes: 75,
+				description: 'Turn each trade into evidence, then read the evidence honestly.',
+				lessons: [
+					{ lessonKey: 'journal-entry', title: 'A journal entry that actually teaches you', minutes: 19, tags: ['platform'] },
+					{ lessonKey: 'tagging', title: 'Tag setups, mistakes and market conditions', minutes: 18, tags: ['platform'] },
+					{ lessonKey: 'analytics', title: 'Read your analytics without fooling yourself', minutes: 20, tags: ['platform'] },
+					{ lessonKey: 'review-loop', title: 'The weekly review loop', minutes: 18, tags: ['platform'] },
+				],
+			},
+			{
+				courseKey: 'alerts-flow',
+				title: 'Alerts, Order Flow & Automation',
+				minutes: 77,
+				description: 'Let the platform wait for your level while you study the book.',
+				lessons: [
+					{ lessonKey: 'alerts', title: 'Alerts that wait for your level, not your emotion', minutes: 17, tags: ['platform'] },
+					{ lessonKey: 'heatmap', title: 'Order flow: depth, heatmap and tape', minutes: 22, tags: ['platform'] },
+					{ lessonKey: 'paper', title: 'Paper trading the exact live plan', minutes: 18, tags: ['platform'] },
+					{ lessonKey: 'backtest', title: 'Backtest, then forward-test', minutes: 20, tags: ['platform'] },
+				],
+			},
+			{
+				courseKey: 'broker-infra',
+				title: 'Brokerage & Data Infrastructure',
+				minutes: 74,
+				description: 'The plumbing behind the screen: connections, routing, data quality and failure drills.',
+				lessons: [
+					{ lessonKey: 'broker-connections', title: 'Broker connections: read-only keys, scopes and revocation', minutes: 18, tags: ['platform'] },
+					{ lessonKey: 'order-routing', title: 'Order routing, fills and slippage', minutes: 19, tags: ['platform'] },
+					{ lessonKey: 'market-data', title: 'Market data: feeds, timestamps and gaps', minutes: 19, tags: ['platform'] },
+					{ lessonKey: 'infra-risk', title: 'Infrastructure risk: outages, failover and incident drills', minutes: 18, tags: ['platform'] },
+				],
+			},
+			{
+				courseKey: 'platform-capstone',
+				title: 'Platform Capstone',
+				minutes: 56,
+				description: 'A full morning, a full execution day and a workflow review.',
+				lessons: [
+					{ lessonKey: 'morning-routine', title: 'The 20-minute morning routine', minutes: 18, tags: ['platform'] },
+					{ lessonKey: 'execution-day', title: 'A full execution day on the platform', minutes: 20, tags: ['platform'] },
+					{ lessonKey: 'platform-review', title: 'Measure the workflow, not just the P&L', minutes: 18, tags: ['platform'] },
+				],
+			},
+		],
+	},
+
+	'funded': {
+		pathName: 'Funded & Prop Desk',
+		focus: 'Pass, keep and scale a funded account with rule-aware risk, payout planning and desk discipline.',
+		courses: [
+			{
+				courseKey: 'challenge-rules',
+				title: 'Know the Rulebook',
+				minutes: 56,
+				description: 'The three challenge types and the math that decides survival.',
+				lessons: [
+					{ lessonKey: 'rule-types', title: 'One-step, two-step and instant funding', minutes: 18, tags: ['pro'] },
+					{ lessonKey: 'drawdown', title: 'Daily loss vs max drawdown — the math', minutes: 20, tags: ['pro'] },
+					{ lessonKey: 'consistency', title: 'Consistency rules and payout eligibility', minutes: 18, tags: ['pro'] },
+				],
+			},
+			{
+				courseKey: 'passing',
+				title: 'Passing Without Gambling',
+				minutes: 72,
+				description: 'Build a buffer, size correctly and survive the rule traps.',
+				lessons: [
+					{ lessonKey: 'first-days', title: 'The first three days: build a buffer', minutes: 18, tags: ['pro'] },
+					{ lessonKey: 'risk-per-trade', title: 'Risk per trade under a prop rulebook', minutes: 19, tags: ['pro'] },
+					{ lessonKey: 'news-weekend', title: 'News, weekends and rule traps', minutes: 17, tags: ['pro'] },
+					{ lessonKey: 'recovery', title: 'Recovery without revenge', minutes: 18, tags: ['pro'] },
+				],
+			},
+			{
+				courseKey: 'funded-desk',
+				title: 'The Funded Desk',
+				minutes: 77,
+				description: 'Payouts, scaling and multiple accounts without correlated blow-up.',
+				lessons: [
+					{ lessonKey: 'payout', title: 'Payout cycles and cash-flow planning', minutes: 18, tags: ['pro'] },
+					{ lessonKey: 'scaling', title: 'Scaling: when to add size', minutes: 19, tags: ['pro'] },
+					{ lessonKey: 'multiple-accounts', title: 'Multiple accounts without correlated blow-up', minutes: 20, tags: ['pro'] },
+					{ lessonKey: 'prop-capstone', title: 'Capstone: a 30-day funded plan', minutes: 20, tags: ['pro'] },
+				],
+			},
+		],
+	},
+
+	'digital-assets': {
+		pathName: 'TBC & Digital Assets',
+		focus: 'Understand TradingBible Coin as a proposed digital asset — architecture, custody, testnet, utility and legal boundaries.',
+		courses: [
+			{
+				courseKey: 'tbc-foundations',
+				title: 'TBC Foundations',
+				minutes: 74,
+				description: 'What TBC is, what it is not, and how the proposed network works.',
+				lessons: [
+					{ lessonKey: 'what-tbc', title: 'What TBC is — and what it is not', minutes: 18, tags: ['crypto', 'company'] },
+					{ lessonKey: 'supply', title: 'Supply, minting and the 100M cap', minutes: 17, tags: ['crypto', 'company'] },
+					{ lessonKey: 'architecture', title: 'Cosmos SDK, CometBFT and EVM', minutes: 20, tags: ['crypto', 'company'] },
+					{ lessonKey: 'wallet', title: 'Wallets, keys and safe custody', minutes: 19, tags: ['crypto', 'company'] },
+				],
+			},
+			{
+				courseKey: 'tbc-lifecycle',
+				title: 'Testnet to Mainnet',
+				minutes: 75,
+				description: 'Observation, security, listings and the legal questions that come first.',
+				lessons: [
+					{ lessonKey: 'testnet', title: 'The 90-day public testnet', minutes: 18, tags: ['crypto', 'company'] },
+					{ lessonKey: 'security', title: 'Security reviews and incident response', minutes: 19, tags: ['crypto', 'company'] },
+					{ lessonKey: 'listing', title: 'Listings, liquidity and market structure', minutes: 18, tags: ['crypto', 'company'] },
+					{ lessonKey: 'legal', title: 'Staking, yield and jurisdiction risk', minutes: 20, tags: ['crypto', 'company'] },
+				],
+			},
+			{
+				courseKey: 'digital-asset-ops',
+				title: 'Digital Asset Operations',
+				minutes: 55,
+				description: 'Treasury, segregation and explaining TBC to a regulator.',
+				lessons: [
+					{ lessonKey: 'treasury', title: 'Treasury and asset segregation', minutes: 18, tags: ['crypto', 'company'] },
+					{ lessonKey: 'payments', title: 'TBC credits and payout mechanics', minutes: 17, tags: ['crypto', 'company'] },
+					{ lessonKey: 'tbc-capstone', title: 'Capstone: explain TBC to a regulator', minutes: 20, tags: ['crypto', 'company'] },
+				],
+			},
+		],
+	},
+
+	'investor': {
+		pathName: 'Investor & Ownership',
+		focus: 'Read a private company like an owner: ownership, dilution, financial quality, IPO readiness and shareholder rights.',
+		courses: [
+			{
+				courseKey: 'ownership-basics',
+				title: 'Ownership Basics',
+				minutes: 76,
+				description: 'Equity, tokens, cap tables, rights and valuation without hype.',
+				lessons: [
+					{ lessonKey: 'equity-vs-coin', title: 'Equity, tokens and credits — never interchangeable', minutes: 18, tags: ['company'] },
+					{ lessonKey: 'cap-table', title: 'Cap table, dilution and ownership %', minutes: 20, tags: ['company'] },
+					{ lessonKey: 'rights', title: 'Shareholder rights and transfer restrictions', minutes: 18, tags: ['company'] },
+					{ lessonKey: 'valuation', title: 'Valuation without hype', minutes: 20, tags: ['company'] },
+				],
+			},
+			{
+				courseKey: 'company-financials',
+				title: 'Reading the Company',
+				minutes: 75,
+				description: 'Revenue quality, runway, unit economics and the risks that matter.',
+				lessons: [
+					{ lessonKey: 'revenue-quality', title: 'Revenue quality vs revenue headlines', minutes: 19, tags: ['company'] },
+					{ lessonKey: 'burn-runway', title: 'Burn, runway and capital needs', minutes: 18, tags: ['company'] },
+					{ lessonKey: 'unit-economics', title: 'Unit economics for a fintech', minutes: 20, tags: ['company'] },
+					{ lessonKey: 'risk-factors', title: 'Risk factors that actually matter', minutes: 18, tags: ['company'] },
+				],
+			},
+			{
+				courseKey: 'ipo-path',
+				title: 'The IPO & Disclosure Path',
+				minutes: 79,
+				description: 'The real steps from LLC to listed company, and what an S-1 must prove.',
+				lessons: [
+					{ lessonKey: 'ipo-steps', title: 'From LLC to listed company: the real steps', minutes: 21, tags: ['company'] },
+					{ lessonKey: 's1', title: 'What an S-1 must prove', minutes: 20, tags: ['company'] },
+					{ lessonKey: 'governance', title: 'Governance, audits and controls', minutes: 18, tags: ['company'] },
+					{ lessonKey: 'investor-capstone', title: 'Capstone: an owner\'s diligence memo', minutes: 20, tags: ['company'] },
+				],
+			},
+		],
+	},
+
+	'ai-tech': {
+		pathName: 'AI & Trading Technology',
+		focus: 'Use AI as a research and risk assistant: prompts, data quality, backtest traps, model risk and automation guardrails.',
+		courses: [
+			{
+				courseKey: 'ai-foundations',
+				title: 'AI for Traders',
+				minutes: 76,
+				description: 'What AI can do, where it fails, and how to ask for testable ideas.',
+				lessons: [
+					{ lessonKey: 'what-ai', title: 'What AI can and cannot do in markets', minutes: 18, tags: ['technology'] },
+					{ lessonKey: 'prompts', title: 'Prompts that produce testable ideas', minutes: 19, tags: ['technology'] },
+					{ lessonKey: 'data', title: 'Data quality, look-ahead and survivorship bias', minutes: 21, tags: ['technology'] },
+					{ lessonKey: 'hallucination', title: 'Hallucination, overfitting and false confidence', minutes: 18, tags: ['technology'] },
+				],
+			},
+			{
+				courseKey: 'si-workflow',
+				title: 'The SI Research Workflow',
+				minutes: 75,
+				description: 'From question to brief, with human review at every decision.',
+				lessons: [
+					{ lessonKey: 'si-brief', title: 'From question to SI research brief', minutes: 18, tags: ['technology'] },
+					{ lessonKey: 'signals', title: 'Signals, confidence and human review', minutes: 19, tags: ['technology'] },
+					{ lessonKey: 'journal-ai', title: 'AI journal review without outsourcing judgment', minutes: 18, tags: ['technology'] },
+					{ lessonKey: 'automation', title: 'Automation guardrails and kill switches', minutes: 20, tags: ['technology'] },
+				],
+			},
+			{
+				courseKey: 'build-stack',
+				title: 'Build & Evaluate a Trading Stack',
+				minutes: 59,
+				description: 'APIs, backtest architecture and an AI-assisted desk policy.',
+				lessons: [
+					{ lessonKey: 'apis', title: 'APIs, webhooks and data contracts', minutes: 19, tags: ['technology'] },
+					{ lessonKey: 'backtest', title: 'Backtest architecture that survives contact', minutes: 20, tags: ['technology'] },
+					{ lessonKey: 'ai-capstone', title: 'Capstone: an AI-assisted desk policy', minutes: 20, tags: ['technology'] },
+				],
+			},
+		],
+	},
+
+	'company-business': {
+		pathName: 'Company & Creator Business',
+		focus: 'How TradingBible is built: product lines, pricing, content, community, partnerships, compliance and trust.',
+		courses: [
+			{
+				courseKey: 'business-model',
+				title: 'The TradingBible Business Model',
+				minutes: 72,
+				description: 'Subscriptions, licensing, education, ads and the metrics that matter.',
+				lessons: [
+					{ lessonKey: 'lines', title: 'Subscriptions, licensing, education and ads', minutes: 18, tags: ['company'] },
+					{ lessonKey: 'pricing', title: 'Pricing without promising returns', minutes: 17, tags: ['company'] },
+					{ lessonKey: 'funnel', title: 'From free lesson to lifetime learner', minutes: 18, tags: ['company'] },
+					{ lessonKey: 'metrics', title: 'Metrics that matter before revenue', minutes: 19, tags: ['company'] },
+				],
+			},
+			{
+				courseKey: 'creator-engine',
+				title: 'The Creator & Education Engine',
+				minutes: 74,
+				description: 'Curriculum, content, community and distribution that teach instead of hype.',
+				lessons: [
+					{ lessonKey: 'curriculum', title: 'Curriculum design for kids and adults', minutes: 19, tags: ['company'] },
+					{ lessonKey: 'content', title: 'Content that teaches, not hypes', minutes: 18, tags: ['company'] },
+					{ lessonKey: 'community', title: 'Community, mentors and live rooms', minutes: 18, tags: ['company'] },
+					{ lessonKey: 'distribution', title: 'Distribution, SEO and partnerships', minutes: 19, tags: ['company'] },
+				],
+			},
+			{
+				courseKey: 'trust-ops',
+				title: 'Trust, Compliance & Operations',
+				minutes: 75,
+				description: 'Disclosures, privacy, support and a 90-day company plan.',
+				lessons: [
+					{ lessonKey: 'disclosures', title: 'Disclosures, disclaimers and honest claims', minutes: 18, tags: ['company'] },
+					{ lessonKey: 'kyc', title: 'KYC, privacy and data handling', minutes: 19, tags: ['company'] },
+					{ lessonKey: 'support', title: 'Support, refunds and incident response', minutes: 18, tags: ['company'] },
+					{ lessonKey: 'business-capstone', title: 'Capstone: a 90-day company plan', minutes: 20, tags: ['company'] },
+				],
+			},
+		],
+	},
 };
 
 export const WEBINAR_CATALOG = [
@@ -533,6 +929,26 @@ export const WEBINAR_CATALOG = [
 		id: 'crypto-defi-yield', title: 'Crypto Deep-Dive: DeFi & Narratives', day: 0, hour: 15, duration: 60,
 		host: 'SI Host · Crypto Research', track: 'crypto',
 		description: 'Weekly narrative scan: L1/L2 flows, memecoins vs utility, airdrops and staking yields worth attention.',
+	},
+	{
+		id: 'multi-asset-open', title: 'Multi-Asset Open: Gold, Nasdaq & BTC', day: 4, hour: 9, duration: 60,
+		host: 'SI Host · Cross-Asset Desk', track: 'multi',
+		description: 'One room, three markets: the dollar axis, gold levels, index opening drive and crypto risk appetite.',
+	},
+	{
+		id: 'platform-lab', title: 'Platform Lab: Terminal + Journal Workflow', day: 5, hour: 18, duration: 60,
+		host: 'SI Host · Product Desk', track: 'platform',
+		description: 'Build the exact TradingBible workflow: Terminal layout, alerts, journal tags and the weekly review.',
+	},
+	{
+		id: 'company-room', title: 'Company Room: TBC, Investor & Product Brief', day: 6, hour: 12, duration: 60,
+		host: 'SI Host · Company Desk', track: 'company',
+		description: 'A factual company room: TBC status, investor disclosures, product lines and what is still proposed.',
+	},
+	{
+		id: 'ai-research-lab', title: 'SI Lab: AI Research & Automation', day: 3, hour: 19, duration: 60,
+		host: 'SI Host · Systems Desk', track: 'technology',
+		description: 'Turn a market question into a testable research brief, then add human review and automation guardrails.',
 	},
 ];
 

@@ -5,6 +5,8 @@ import {
 	Rocket, BookOpen, Bot, ArrowLeft, RotateCcw, ChevronRight, Trophy, Calendar, Radio, Loader2,
 	MessageSquare, Send, BadgeCheck, CircleDollarSign, Wallet, Search, Globe, Bitcoin,
 	Sprout, Zap, Briefcase, Layers, Filter, Timer, Library,
+	Compass, MonitorPlay, Target, Coins, Handshake, Cpu, Building2,
+	Users, Copy, Check, KeyRound,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import AcademyListen from '@/components/AcademyListen';
@@ -18,6 +20,7 @@ import {
 	getAcademyAccess, enrollInPath, getCurriculum, getLesson,
 	getAcademyExam, gradeAcademyExam,
 	completeLesson, getAcademyProgress, claimCertificate, rsvpWebinar, unrsvpWebinar, attendWebinar,
+	getAcademyFamily, redeemAcademyFamily,
 } from '@/lib/academy';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import pb from '@/lib/pocketbaseClient';
@@ -25,8 +28,16 @@ import { PATHS, STATIC_CURRICULA, WEBINAR_CATALOG, TRACKS, getTopicIndex, pathSt
 import '@/styles/academy-studio.css';
 
 // ── Path icon map ────────────────────────────────────────────────────
-const PATH_ICONS = { sprout: Sprout, globe: Globe, bitcoin: Bitcoin, zap: Zap, briefcase: Briefcase, layers: Layers };
-const TRACK_COLORS = { general: '#34d399', forex: '#38bdf8', crypto: '#f472b6', orderflow: '#a78bfa', pro: '#d4af37' };
+const PATH_ICONS = {
+	sprout: Sprout, globe: Globe, bitcoin: Bitcoin, zap: Zap, briefcase: Briefcase, layers: Layers,
+	compass: Compass, monitor: MonitorPlay, target: Target, coins: Coins, handshake: Handshake,
+	cpu: Cpu, building: Building2,
+};
+const TRACK_COLORS = {
+	general: '#34d399', forex: '#38bdf8', crypto: '#f472b6', multi: '#f59e0b',
+	orderflow: '#a78bfa', platform: '#22d3ee', company: '#34d399', technology: '#a78bfa', pro: '#d4af37',
+};
+const TRACK_LABELS = Object.fromEntries(TRACKS.map((track) => [track.key, track.name]));
 function PathIcon({ icon, color }) {
 	const C = PATH_ICONS[icon] || Route;
 	return <C className="h-5 w-5" style={{ color }} />;
@@ -238,13 +249,17 @@ function AIChat({ endpoint, buildBody, placeholder, accent = '#d4af37' }) {
 	);
 }
 
-// ── Paywall ($150 lifetime) ──────────────────────────────────────────
+// ── Paywall ($150 individual / $299 family) ─────────────────────────
 function Paywall({ onPurchased }) {
 	const { toast } = useToast();
 	const { t } = useI18n();
-	const [busy, setBusy] = useState(false);
+	const [busyTier, setBusyTier] = useState(null);
+	const busy = Boolean(busyTier);
 	const [configured, setConfigured] = useState(true);
+	const [familyConfigured, setFamilyConfigured] = useState(true);
 	const [checked, setChecked] = useState(false);
+	const [familyCode, setFamilyCode] = useState('');
+	const [redeeming, setRedeeming] = useState(false);
 	const { ledger, payWithWallet } = useWallet();
 	const tbcBalance = ledger?.balances?.TBC || 0;
 	// 1 TBC = 1 KWD, NOT 1 USD — $150 list converts at KWD peg (default 150/3.25 ≈ 46.15 TBC)
@@ -254,6 +269,7 @@ function Paywall({ onPurchased }) {
 	useEffect(() => {
 		getStripeConfig().then((cfg) => {
 			setConfigured(Boolean(cfg?.prices?.academy));
+			setFamilyConfigured(Boolean(cfg?.prices?.academyFamily));
 		}).catch(() => {}).finally(() => setChecked(true));
 	}, []);
 	useEffect(() => {
@@ -264,29 +280,48 @@ function Paywall({ onPurchased }) {
 		}).catch(() => {});
 	}, []);
 
-	const buy = async () => {
-		setBusy(true);
+	const buy = async (tier = 'individual') => {
+		setBusyTier(tier);
 		try {
-			await openAcademyCheckout();
+			await openAcademyCheckout(tier);
 		} catch (err) {
 			toast({ variant: 'destructive', title: t('c.error'), description: err.message });
-		} finally { setBusy(false); }
+		} finally { setBusyTier(null); }
 	};
 
 	const buyWithWallet = async () => {
-		setBusy(true);
+		setBusyTier('wallet');
 		try {
 			await payWithWallet('academy');
 			toast({ title: t('aca.badge'), description: t('bill.payWallet') });
 			onPurchased();
 		} catch (err) {
 			toast({ variant: 'destructive', title: t('bill.payWallet'), description: err.message });
-		} finally { setBusy(false); }
+		} finally { setBusyTier(null); }
+	};
+
+	const redeem = async (event) => {
+		event.preventDefault();
+		const code = familyCode.trim();
+		if (!code) return;
+		setRedeeming(true);
+		try {
+			const res = await redeemAcademyFamily(code);
+			toast({
+				title: 'Family access unlocked',
+				description: res?.already ? 'Your Academy access is already active.' : 'Your seat is ready. Welcome to the Academy.',
+			});
+			setFamilyCode('');
+			onPurchased();
+		} catch (err) {
+			toast({ variant: 'destructive', title: 'Could not redeem code', description: err.message });
+		} finally { setRedeeming(false); }
 	};
 
 	const features = [
-		{ icon: Route, text: '5 learning paths — Beginner, Forex Mastery, Crypto Mastery, Intermediate, Professional' },
-		{ icon: Library, text: '100+ Forex & Crypto topics: pairs, sessions, perps, funding, on-chain, SMC, news, DeFi' },
+		{ icon: Route, text: `${PATHS.length} learning paths — foundation, FX, crypto, multi-asset, platform, funded, TBC, investor, AI and company` },
+		{ icon: Library, text: '233 lessons across every company purpose — no topic left outside the Academy' },
+		{ icon: Sparkles, text: 'Family-friendly story first, professional depth second — kids and adults learn together' },
 		{ icon: Video, text: '8 live webinars / week with an SI host — FX London lab, crypto on-chain lab, news reactions' },
 		{ icon: Bot, text: 'One-on-one SI tutor inside every lesson' },
 		{ icon: Trophy, text: 'Learn without pop quizzes — pass one final certificate exam per path' },
@@ -315,16 +350,46 @@ function Paywall({ onPurchased }) {
 
 				<div className="mt-6 flex flex-col items-center gap-3">
 					<GoldButton
-						onClick={buy}
+						onClick={() => buy('individual')}
 						disabled={busy || (checked && !configured)}
 						className="min-h-[52px] px-8 text-base disabled:opacity-60"
 					>
-						{busy ? <><Loader2 className="h-5 w-5 animate-spin" /> {t('aca.opening')}</> : <><CircleDollarSign className="h-5 w-5" /> {t('aca.cta')}</>}
+						{busyTier === 'individual' ? <><Loader2 className="h-5 w-5 animate-spin" /> {t('aca.opening')}</> : <><CircleDollarSign className="h-5 w-5" /> {t('aca.cta')}</>}
 					</GoldButton>
 					<GhostButton onClick={buyWithWallet} disabled={busy || tbcBalance < tbcPrice} className="disabled:opacity-40">
 						<Wallet className="h-4 w-4" /> {t('aca.walletPay')} — pay {tbcPrice.toLocaleString()} TBC in TBC ({tbcBalance >= tbcPrice ? t('aca.available') : t('aca.needMore', { amt: `${(tbcPrice - tbcBalance).toFixed(2)} TBC` })})
 					</GhostButton>
 					<div className="text-xs text-[#8a8577]">{tbcBalance.toLocaleString()} TBC in till · <Link to="/app/wallet" className="text-[#d4af37] hover:underline">{t('bill.fundWallet')} — convert, swap, buy or receive TBC</Link></div>
+				</div>
+
+				<div className="mt-4 w-full max-w-xl rounded-2xl border border-[#d4af37]/20 bg-white/[0.03] p-4 text-left backdrop-blur-md">
+					<div className="flex items-start gap-3">
+						<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/10 text-[#d4af37]"><Users className="h-5 w-5" /></span>
+						<div className="min-w-0 flex-1">
+							<div className="flex flex-wrap items-baseline justify-between gap-2">
+								<div>
+									<div className="text-sm font-semibold text-[#f0ecdd]">Family pass · up to 4 learners</div>
+									<div className="text-xs text-[#8a8577]">One payment · lifetime access · card checkout</div>
+								</div>
+								<div className="font-mono text-2xl font-bold text-[#e8c95a]">$299</div>
+							</div>
+							<p className="mt-2 text-xs leading-relaxed text-[#a9a392]">You get seat one. Share the private code with up to three more accounts — each learner gets the full 13-path Academy.</p>
+							<button type="button" onClick={() => buy('family')} disabled={busy || (checked && !familyConfigured)} className="mt-3 inline-flex min-h-[40px] items-center gap-2 rounded-lg border border-[#d4af37]/35 px-4 text-xs font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-50">
+								{busyTier === 'family' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />} Buy family pass
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<div className="mt-3 w-full max-w-xl rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-left">
+					<div className="flex items-center gap-2 text-sm font-semibold text-[#f0ecdd]"><KeyRound className="h-4 w-4 text-[#d4af37]" /> Have a family code?</div>
+					<form onSubmit={redeem} className="mt-3 flex flex-col gap-2 sm:flex-row">
+						<input value={familyCode} onChange={(e) => setFamilyCode(e.target.value.toUpperCase())} placeholder="TB-FAM-XXXXXXXX" autoComplete="off" spellCheck={false} className="min-h-[42px] min-w-0 flex-1 rounded-lg border border-white/10 bg-black/20 px-3 font-mono text-sm tracking-wider text-[#f0ecdd] outline-none placeholder:text-[#6a665a] focus:border-[#d4af37]/50" />
+						<button type="submit" disabled={redeeming || !familyCode.trim()} className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg border border-[#d4af37]/35 px-4 text-xs font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-40">
+							{redeeming ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />} Redeem
+						</button>
+					</form>
+					<p className="mt-2 text-[11px] leading-relaxed text-[#6a665a]">Your account joins the pass instantly. The owner keeps the code; seats cannot be transferred after use.</p>
 				</div>
 			<p className="mt-3 text-xs text-[#6a665a]">{t('aca.guarantee')}</p>
 			</div>
@@ -450,6 +515,7 @@ function LessonView({
 					<div className="ac-lesson-meta">
 						<span><Clock className="h-3.5 w-3.5" /> {t('aca.minutes', { n: lesson.minutes })}</span>
 						<span>No quiz inside this lesson</span>
+						<span className="ac-family-meta"><Sparkles className="h-3.5 w-3.5" /> Story first, then desk depth</span>
 						{done && <span className="is-done"><CheckCircle2 className="h-3.5 w-3.5" /> {t('aca.completed')}</span>}
 					</div>
 					<AcademyListen
@@ -1007,6 +1073,8 @@ export default function AcademyPage() {
 	const [attended, setAttended] = useState([]);
 	const [tab, setTab] = useState('learn');
 	const [trackFilter, setTrackFilter] = useState('all');
+	const [family, setFamily] = useState(null);
+	const [familyCopied, setFamilyCopied] = useState(false);
 
 	useEffect(() => {
 		try { window.scrollTo(0, 0); } catch { /* ignore */ }
@@ -1021,17 +1089,31 @@ export default function AcademyPage() {
 	const forexCount = useMemo(() => topicIndex.filter((x) => (x.tags || []).includes('forex')).length, [topicIndex]);
 	const cryptoCount = useMemo(() => topicIndex.filter((x) => (x.tags || []).includes('crypto')).length, [topicIndex]);
 
+	const refreshFamily = useCallback(async () => {
+		try {
+			const res = await getAcademyFamily();
+			setFamily(res?.active ? res : null);
+		} catch {
+			setFamily(null);
+		}
+	}, []);
+
 	const refreshAccess = useCallback(async () => {
 		setLoadError(null);
 		try {
 			const res = await getAcademyAccess();
 			setAccess(res.access);
-			if (res.access) refreshProgress();
+			if (res.access) {
+				refreshProgress();
+				refreshFamily();
+			} else {
+				setFamily(null);
+			}
 		} catch {
 			setAccess(null);
 			setLoadError('access');
 		}
-	}, []);
+	}, [refreshFamily]);
 
 	const refreshProgress = useCallback(async () => {
 		try {
@@ -1366,6 +1448,17 @@ export default function AcademyPage() {
 			document.querySelector('.ac-toolbar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 		}, 0);
 	};
+	const copyFamilyCode = async () => {
+		if (!family?.code) return;
+		try {
+			await navigator.clipboard.writeText(family.code);
+			setFamilyCopied(true);
+			window.setTimeout(() => setFamilyCopied(false), 1800);
+			toast({ title: 'Family code copied', description: 'Send it to the learners who should join your pass.' });
+		} catch {
+			toast({ variant: 'destructive', title: 'Could not copy the code', description: 'Select the code and copy it manually.' });
+		}
+	};
 	const openReadyExam = () => {
 		const path = PATHS.find((p) => p.key === studio.completePathKey);
 		if (path) openExam(path);
@@ -1377,6 +1470,7 @@ export default function AcademyPage() {
 		{ id: 'topics', label: 'Topic index' },
 		{ id: 'webinars', label: 'Live room' },
 		{ id: 'certificates', label: 'Certificates' },
+		...(family?.active ? [{ id: 'family', label: 'Family' }] : []),
 	];
 
 	return (
@@ -1391,7 +1485,7 @@ export default function AcademyPage() {
 							<em>Then prove it.</em>
 						</h1>
 						<p className="ac-lede">
-							A structured path from first candle to desk-level execution. Read every lesson at your own pace; the final certificate exam is the only test.
+							A structured, family-friendly path from first candle to desk-level execution. Read or listen in your language, learn through a simple story first, then go as deep as the professional desk requires. The final certificate exam is the only test.
 						</p>
 						<div className="ac-hero-actions">
 							<button type="button" className="ac-btn ac-btn-gold" onClick={studio.nextUp ? continueLearning : enrolled.length ? () => selectTab('certificates') : scrollToPaths}>
@@ -1402,7 +1496,7 @@ export default function AcademyPage() {
 								Browse the topic index
 							</button>
 						</div>
-						<p className="ac-hero-note"><span /> No quizzes inside lessons · One final exam per path · Certificate on pass</p>
+						<p className="ac-hero-note"><span /> No quizzes inside lessons · Read aloud in your language · One final exam per path · Certificate on pass</p>
 					</div>
 					<aside className="ac-progress-card" aria-label="Your Academy progress">
 						<div className="ac-ring" style={{ '--ac-pct': `${studio.pct}%` }}>
@@ -1468,7 +1562,7 @@ export default function AcademyPage() {
 								<span className="ac-section-kicker">01 — The curriculum</span>
 								<h2 className="ac-section-title">Choose your desk.</h2>
 							</div>
-							<p className="ac-section-sub">Six paths. One standard: finish every lesson, then pass the final certificate exam. No pop quizzes, no filler.</p>
+							<p className="ac-section-sub">Thirteen paths. One standard: finish every lesson, then pass the final certificate exam. No pop quizzes, no filler.</p>
 						</div>
 						<div className="ac-path-grid">
 							{filteredPaths.map((p, index) => {
@@ -1510,7 +1604,7 @@ export default function AcademyPage() {
 										<div className="ac-path-top">
 											<span className="ac-path-index">{String(index + 1).padStart(2, '0')}</span>
 											<span className="ac-path-icon"><PathIcon icon={p.icon} color={trackColor} /></span>
-											<span className="ac-path-label"><strong>{p.level}</strong>{p.track} desk</span>
+											<span className="ac-path-label"><strong>{p.level}</strong>{TRACK_LABELS[p.track] || p.track}</span>
 											<span className="ac-path-track">{isEnrolled ? `${pct}%` : 'Open'}</span>
 										</div>
 										<h3 className="ac-path-title">{p.name}</h3>
@@ -1559,10 +1653,10 @@ export default function AcademyPage() {
 							<div>
 								<span className="ac-eyebrow">Live room · {t('aca.liveInteractive')}</span>
 								<h2 className="ac-page-title">Learn in the room.</h2>
-								<p className="ac-page-sub">Weekly Forex and Crypto desks with an SI host. Bring a chart, a question or a decision you are working through.</p>
+								<p className="ac-page-sub">Weekly desks across FX, crypto, multi-asset, platform, company and AI. Bring a chart, a question or a decision you are working through.</p>
 							</div>
 							<div className="ac-filter">
-								{[{ key: 'all', name: 'All desks' }, { key: 'forex', name: 'Forex' }, { key: 'crypto', name: 'Crypto' }, { key: 'general', name: 'General' }, { key: 'pro', name: 'Pro' }].map((tr) => (
+								{[{ key: 'all', name: 'All desks' }, ...TRACKS.filter((tr) => tr.key !== 'all')].map((tr) => (
 									<button key={tr.key} type="button" className={`ac-filter-btn ${trackFilter === tr.key ? 'is-active' : ''}`} onClick={() => setTrackFilter(tr.key)}>{tr.name}</button>
 								))}
 							</div>
@@ -1612,6 +1706,45 @@ export default function AcademyPage() {
 						) : (
 							<p className="ac-section-sub" style={{ marginTop: 18 }}>No desk is live right now. Reserve a seat above and the room opens at the scheduled time.</p>
 						)}
+					</div>
+				)}
+
+				{tab === 'family' && family?.active && (
+					<div>
+						<div className="ac-page-intro">
+							<div>
+								<span className="ac-eyebrow">Family pass · {family.role === 'owner' ? 'Owner' : 'Seat'}</span>
+								<h2 className="ac-page-title">{family.role === 'owner' ? 'Four learners. One standard.' : 'Your family seat.'}</h2>
+								<p className="ac-page-sub">{family.role === 'owner' ? 'Share the private code with up to three more learners. Every seat gets the full Academy, read-aloud lessons and the same certificate standard.' : 'You are learning on a family pass. The owner manages the share code and remaining seats.'}</p>
+							</div>
+						</div>
+						<div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+							<div className="rounded-2xl border border-[#d4af37]/20 bg-white/[0.03] p-5">
+								{family.role === 'owner' ? (
+									<>
+										<div className="text-sm font-semibold text-[#f0ecdd]">Share this private code</div>
+										<p className="mt-1 text-xs leading-relaxed text-[#a9a392]">Each learner signs in, opens Academy, and redeems it under “Have a family code?”.</p>
+										<div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+											<code className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-lg tracking-[0.18em] text-[#e8c95a]">{family.code}</code>
+											<button type="button" onClick={copyFamilyCode} disabled={!family.code} className="inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl border border-[#d4af37]/35 px-4 text-xs font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-40">
+												{familyCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} {familyCopied ? 'Copied' : 'Copy code'}
+											</button>
+										</div>
+									</>
+								) : (
+									<>
+										<div className="text-sm font-semibold text-[#f0ecdd]">Your seat is active</div>
+										<p className="mt-1 text-xs leading-relaxed text-[#a9a392]">The owner keeps the share code. If you need another seat, ask them to share it with the learner directly.</p>
+									</>
+								)}
+							</div>
+							<div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+								<div className="text-xs uppercase tracking-[0.18em] text-[#8a8577]">Seats</div>
+								<div className="mt-2 flex items-end gap-2"><strong className="font-mono text-4xl text-[#f0ecdd]">{family.seatsRemaining}</strong><span className="pb-1 text-xs text-[#8a8577]">remaining</span></div>
+								<div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><span className="block h-full rounded-full bg-[#d4af37]" style={{ width: `${Math.round((family.seatsUsed / family.seatsTotal) * 100)}%` }} /></div>
+								<div className="mt-2 text-xs text-[#a9a392]">{family.seatsUsed} of {family.seatsTotal} seats in use</div>
+							</div>
+						</div>
 					</div>
 				)}
 

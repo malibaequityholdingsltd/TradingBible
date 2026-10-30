@@ -25,6 +25,9 @@ jobs:
       - name: Unit tests (web)
         run: npm run test --prefix apps/web
 
+      - name: Academy + release guards
+        run: npm run verify
+
       - name: Build web
         run: npm run build
 

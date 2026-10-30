@@ -376,7 +376,7 @@ function AppLayoutContent({ children, title }) {
             {/* Phones: search is an overlay toggled here, not a fixed row */}
             <button onClick={() => setSearchOpen((o) => !o)} aria-label={t('nav.search', null, 'Search')} aria-expanded={searchOpen}
               className="hdr-ic grid h-9 w-9 shrink-0 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] sm:hidden">
-              <IosIcon icon={Search} size="sm" tone="theme" />
+              <IosIcon icon={Search} size="sm" tone="gray" glyph="contrast" />
             </button>
             <ThemeSwitcher inline className="hdr-ic hover:bg-[#d4af37]/10" />
             <span className="hidden sm:block">
@@ -384,12 +384,12 @@ function AppLayoutContent({ children, title }) {
             </span>
             {canSeeSignals && (
               <button onClick={() => nav('/app/alerts')} className="hdr-ic relative hidden h-9 w-9 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] sm:grid" title={t('app.alerts')}>
-                <IosIcon icon={Bell} size="sm" tone="theme" />
-                {unseen > 0 && <span className="absolute right-1 top-1 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-red-500 px-1 text-[8px] font-bold tabular-nums text-white">{unseen > 9 ? '9+' : unseen}</span>}
+                <IosIcon icon={Bell} size="sm" tone="gray" glyph="contrast" />
+                {unseen > 0 && <span className="absolute right-1 top-1 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold tabular-nums text-white">{unseen > 9 ? '9+' : unseen}</span>}
               </button>
             )}
             <button onClick={() => setTutorial(true)} aria-label={t('app.help')} title={t('app.help')} className="hidden h-9 w-9 place-items-center rounded-[10px] text-[#8a8577] transition hover:bg-[#d4af37]/10 hover:text-[#d4af37] sm:grid">
-              <IosIcon icon={HelpCircle} size="sm" tone="theme" />
+              <IosIcon icon={HelpCircle} size="sm" tone="gray" glyph="contrast" />
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -475,7 +475,7 @@ function AppLayoutContent({ children, title }) {
         {/* Phone dock backdrop: solid fade so page text never shows
             around or below the floating dock while scrolling. */}
         <div aria-hidden className="tb-dockfade pointer-events-none fixed inset-x-0 bottom-0 z-30 h-36 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/95 to-transparent lg:hidden" />
-        <nav aria-label="App sections" className="tb-dock fixed inset-x-4 bottom-3 z-40 rounded-[10px] border border-[#d4af37]/15 bg-[#101016] tabular-nums shadow-[0_12px_32px_rgba(0,0,0,0.55),0_0_20px_rgba(212,175,55,0.06)] ring-1 ring-inset ring-white/[0.06] lg:hidden">
+        <nav aria-label="App sections" className="tb-dock fixed inset-x-4 bottom-3 z-40 rounded-[10px] border border-white/10 bg-[#101016] tabular-nums shadow-[0_12px_32px_rgba(0,0,0,0.55)] ring-1 ring-inset ring-white/[0.06] lg:hidden">
           <div className="flex px-2 pb-2 pt-2">
             {MAIN_TABS.map((m, idx) => {
               const Icon = m.icon;

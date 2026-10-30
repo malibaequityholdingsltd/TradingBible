@@ -19,6 +19,18 @@ export async function getAcademyAccess() {
 	return parse(res, 'Could not check Academy access');
 }
 
+export async function getAcademyFamily() {
+	const res = await apiServerClient.fetch('/academy/family', { headers: headers() });
+	return parse(res, 'Could not load your family pass');
+}
+
+export async function redeemAcademyFamily(code) {
+	const res = await apiServerClient.fetch('/academy/family/redeem', {
+		method: 'POST', headers: headers(), body: JSON.stringify({ code }),
+	});
+	return parse(res, 'Could not redeem that family code');
+}
+
 export async function enrollInPath(pathKey) {
 	const res = await apiServerClient.fetch('/academy/enroll', {
 		method: 'POST', headers: headers(), body: JSON.stringify({ pathKey }),

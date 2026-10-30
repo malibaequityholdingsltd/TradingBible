@@ -138,7 +138,7 @@ export function IrDocumentList({ documents, emptyTitle = 'No public documents pu
               {item.isDemo && <span className="text-[var(--at-amber)]">Demo</span>}
             </div>
             {item.summary && <p className="ir-list-sub">{item.summary}</p>}
-            {item.checksumSha256 && <div className="mt-1 font-mono text-[8px] text-[var(--at-mut-2)]">SHA-256 {item.checksumSha256.slice(0, 20)}…</div>}
+            {item.checksumSha256 && <div className="mt-1 font-mono text-[9.5px] text-[var(--at-mut-2)]">SHA-256 {item.checksumSha256.slice(0, 20)}…</div>}
           </div>
           {item.url ? (
             <a href={item.url} target="_blank" rel="noreferrer" className="at-btn at-btn--outline at-btn--sm shrink-0">

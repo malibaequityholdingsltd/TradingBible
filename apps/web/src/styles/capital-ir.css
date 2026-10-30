@@ -333,6 +333,35 @@
 
 .cap-record-rows { display: grid; }
 
+.cap-record-rows--grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 14px;
+}
+
+.cap-record-rows--grid .cap-record-row {
+  display: block;
+  min-width: 0;
+  padding: 6px 0;
+}
+
+.cap-record-rows--grid .cap-record-row span {
+  display: block;
+  font-size: 9.5px;
+}
+
+.cap-record-rows--grid .cap-record-row strong {
+  display: block;
+  max-width: 100%;
+  margin-top: 2px;
+  font-size: 10px;
+  text-align: left;
+  white-space: normal;
+}
+
+.cap-record-rows--grid-odd .cap-record-row:last-child {
+  grid-column: 1 / -1;
+}
+
 .cap-record-row {
   display: flex;
   align-items: baseline;
@@ -1429,12 +1458,13 @@
   .cap-public-title { font-size: clamp(1.4rem, 6.8vw, 1.75rem); }
   .cap-public-desc { font-size: 10.5px; }
   .cap-kpis { gap: 6px; }
-  .cap-kpi { padding: 10px; }
+  .cap-kpi { padding: 11px; }
   .cap-kpi-value { font-size: 18px; }
-  .cap-kpi-foot { font-size: 8px; }
+  .cap-kpi-foot { font-size: 9.5px; }
+  .cap-kpi-foot .at-chip { font-size: 9px; }
   .cap-section { margin-top: 17px; }
   .cap-section-head h2 { font-size: 16px; }
-  .cap-section-head p { font-size: 10px; }
+  .cap-section-head p { font-size: 10.5px; }
   .cap-admin-head h1 { font-size: 1.55rem; }
   .cap-admin-head-main > p { font-size: 10px; }
   .cap-admin-summary { gap: 6px; }

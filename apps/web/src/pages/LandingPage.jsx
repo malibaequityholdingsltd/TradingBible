@@ -24,7 +24,7 @@ const LOGO = TRADINGBIBLE_LOGO;
 
 const STATS = [
   { value: '20+', label: 'Broker & prop connections', note: 'Live accounts, synced' },
-  { value: '147', label: 'Academy lessons', note: 'Six structured paths' },
+  { value: '233', label: 'Academy lessons', note: 'Thirteen structured paths' },
   { value: '24/7', label: 'SI coaching', note: 'Grounded in your history' },
   { value: '0 TBC', label: 'Tokens issued', note: '100M max proposed' },
 ];
@@ -71,7 +71,7 @@ const MODULES = [
   },
   {
     icon: GraduationCap, tag: 'LEARN', title: 'A school run by SI',
-    body: 'Six paths, 147 lessons, eight live webinars a week, one final certificate exam per path and one-to-one tutoring. One $150 lifetime payment.',
+    body: 'Thirteen paths, 233 lessons, eight live webinars a week, one final certificate exam per path and one-to-one tutoring. $150 individual or $299 for a family of four — one lifetime payment.',
     to: '/academy', link: 'Enter the Academy',
   },
   {
@@ -93,10 +93,11 @@ const REVIEW_ROWS = [
 ];
 
 const ACADEMY = [
-  ['147', 'lessons across six paths'],
-  ['6', 'learning paths, beginner to professional'],
+  ['233', 'lessons across thirteen paths'],
+  ['13', 'learning paths, beginner to professional'],
   ['8', 'live SI-hosted webinars every week'],
-  ['$150', 'once · lifetime access'],
+  ['$150', 'individual · lifetime access'],
+  ['$299', 'family of 4 · lifetime access'],
 ];
 
 const FUNDED = [
@@ -119,7 +120,7 @@ const FAQS = [
   ['Do you offer a free trial?', 'No. TradingBible is paid-only: your card is charged at checkout before you enter the terminal. Every first payment carries a 14-day money-back guarantee, so you can test broker sync, analytics, the SI Coach and signals with a real account.'],
   ['Which brokers and platforms are supported?', 'Named brokers only — Binance, Deriv, easyMarkets, Interactive Brokers, Alpaca, Coinbase and more, plus TradingBible Funded evaluations and self-custody wallet tracking for BTC, ETH, USDC and Solana. Live accounts only; trades and balances sync automatically.'],
   ['What does the SI Coach actually do?', 'SI reviews every synced trade for quality, risk and discipline, detects recurring mistakes such as widened stops, revenge trading and overtrading, and answers questions grounded in your real history. Ask “What is my biggest mistake?” and it shows the evidence.'],
-  ['How does the Academy work?', 'One $150 lifetime payment unlocks the full school: six paths including Forex Mastery A–Z, Crypto Mastery A–Z and Order Flow Mastery, 147 topics, SI-written lessons, a tutor inside each path, eight live webinars a week, one final certificate exam per path and a certificate after you pass it.'],
+  ['How does the Academy work?', 'One $150 lifetime payment unlocks the full school, or a $299 family pass covers up to four learners: thirteen paths including Forex Mastery A–Z, Crypto Mastery A–Z, Order Flow Mastery, Multi-Asset, Platform Mastery, Funded/Prop Desk, TBC & Digital Assets, Investor & Ownership, AI & Trading Technology, and the Company/Creator Business, 233 lessons, SI-written lessons, a tutor inside each path, eight live webinars a week, one final certificate exam per path and a certificate after you pass it.'],
   ['What do Professional API and white-label include?', 'Professional ($99/mo) unlocks the REST API with personal keys and webhooks, team seats, unlimited brokers, white-label presets, white-glove onboarding and a dedicated success manager for funds and prop desks.'],
   ['Is there a community and one-to-one help?', 'Yes. The forum ranks members by real contribution, the public leaderboard shows verified activity without fake P&L, and vetted mentors can be booked for one-to-one sessions settled in TBC credits.'],
   ['How is TBC different from TB?', 'TBC platform credits are an existing off-chain utility credit used inside TradingBible. The proposed TBC token is a separate, unissued network asset. TB is a proposed equity ticker for TradingBible, Inc. Holding TBC credits does not make you a shareholder, and holding TB equity would not make you a TBC holder.'],
@@ -346,7 +347,7 @@ export default function LandingPage() {
               <Card key={module.title} hover className="group flex flex-col rounded-xl p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#d4af37]/30 sm:p-5">
                 <div className="flex items-center justify-between gap-2">
                   <IosIcon icon={Icon} size="md" seed={module.title} />
-                  <span className="font-mono text-[8px] font-bold tracking-[0.16em] text-[#5f5b50]">{module.tag}</span>
+                  <span className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#5f5b50]">{module.tag}</span>
                 </div>
                 <h3 className="mt-3 text-[15px] font-semibold tracking-tight text-[#f0ecdd]">{module.title}</h3>
                 <p className="mt-1.5 flex-1 text-xs leading-relaxed text-[#8a8577]">{module.body}</p>
@@ -402,7 +403,7 @@ export default function LandingPage() {
               <IosIcon icon={GraduationCap} size="lg" tone="green" />
               <div><div className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#d4af37]">TradingBible Academy</div><h3 className="text-lg font-semibold tracking-tight text-[#f0ecdd]">From first candle to professional desk.</h3></div>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-[#8a8577]">Six paths, 147 lessons and eight live webinars a week. Learn first — every lesson is written by SI, there are no pop quizzes, and each path ends with one final certificate exam. One $150 lifetime payment.</p>
+            <p className="mt-4 text-sm leading-relaxed text-[#8a8577]">Thirteen paths, 233 lessons and eight live webinars a week. Learn first — every lesson is written by SI, there are no pop quizzes, and each path ends with one final certificate exam. $150 individual, or $299 for a family of four — one lifetime payment.</p>
             <div className="mt-5 grid grid-cols-2 gap-2">
               {ACADEMY.map(([value, label]) => (
                 <div key={label} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3"><div className="font-mono text-xl font-bold text-[#e8c95a]">{value}</div><div className="mt-0.5 text-[10px] leading-snug text-[#8a8577]">{label}</div></div>
@@ -445,13 +446,13 @@ export default function LandingPage() {
             </div>
             <div className="grid gap-2.5 sm:grid-cols-2">
               <Card className="rounded-xl p-4 sm:p-5">
-                <div className="flex items-center justify-between gap-2"><span className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#d4af37]">TB · PROPOSED TICKER</span><span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[8px] font-bold text-[#d4af37]">NOT LISTED</span></div>
+                <div className="flex items-center justify-between gap-2"><span className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#d4af37]">TB · PROPOSED TICKER</span><span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[9px] font-bold text-[#d4af37]">NOT LISTED</span></div>
                 <h3 className="mt-3 text-[15px] font-semibold tracking-tight text-[#f0ecdd]">No price. No market cap. No approval.</h3>
                 <p className="mt-1.5 text-xs leading-relaxed text-[#8a8577]">TradingBible is pre-IPO. TB is a proposed Nasdaq ticker. No listing application, exchange approval, share price, trading volume or investment offer is represented.</p>
                 <Link to="/stock/TB" className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline">Open issuer record <ArrowRight className="h-3 w-3" /></Link>
               </Card>
               <Card className="rounded-xl p-4 sm:p-5">
-                <div className="flex items-center justify-between gap-2"><span className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#d4af37]">TBC · PROPOSED ASSET</span><span className="rounded-full border border-amber-400/25 px-2 py-0.5 font-mono text-[8px] font-bold text-amber-300">NOT ISSUED</span></div>
+                <div className="flex items-center justify-between gap-2"><span className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#d4af37]">TBC · PROPOSED ASSET</span><span className="rounded-full border border-amber-400/25 px-2 py-0.5 font-mono text-[9px] font-bold text-amber-300">NOT ISSUED</span></div>
                 <h3 className="mt-3 text-[15px] font-semibold tracking-tight text-[#f0ecdd]">Separate from TB equity.</h3>
                 <p className="mt-1.5 text-xs leading-relaxed text-[#8a8577]">TBC platform credits are existing off-chain credits. The proposed TBC token is not issued, and token sale, transfer, staking, governance and migration operations remain disabled. Holding TBC does not make you a shareholder.</p>
                 <Link to="/tbc/separation" className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline">Read separation notice <ArrowRight className="h-3 w-3" /></Link>
@@ -485,7 +486,7 @@ export default function LandingPage() {
               const p = translatePlan(t, raw);
               return (
                 <Card key={p.id} hover className={`relative flex flex-col rounded-2xl p-5 sm:p-6 ${p.highlight ? 'border-[#d4af37]/50 bg-gradient-to-b from-[#d4af37]/[0.12] via-[#121209] to-[#0f0f14] md:scale-[1.02]' : ''}`}>
-                  {p.highlight && <div className="absolute right-4 top-4 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-2.5 py-1 font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-[#0a0a0f]">{t('misc.popular')}</div>}
+                  {p.highlight && <div className="absolute right-4 top-4 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-[#0a0a0f]">{t('misc.popular')}</div>}
                   <div className="flex items-center gap-2.5">
                     <img src={p.logo} alt="" className="h-10 w-10 rounded-xl object-contain ring-1 ring-[#d4af37]/25" />
                     <div><h3 className="text-base font-bold tracking-tight text-[#f0ecdd]">{p.name}</h3><p className="text-[10px] text-[#8a8577]">{p.tagline}</p></div>

@@ -123,7 +123,7 @@ export default function AboutPage() {
               <Card key={m.label} className="rounded-xl p-4 text-center">
                 <IosIcon icon={Icon} size="md" seed={m.label} className="mx-auto" />
                 <div className="mt-2 text-xs font-semibold text-[#f0ecdd]">{m.label}</div>
-                <div className="mt-1 font-mono text-[8px] uppercase tracking-[0.08em] text-[#8a8577]">{m.pair}</div>
+                <div className="mt-1 font-mono text-[9px] uppercase tracking-[0.08em] text-[#8a8577]">{m.pair}</div>
               </Card>
             );
           })}

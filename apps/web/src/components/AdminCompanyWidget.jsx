@@ -89,7 +89,7 @@ function Inner() {
             <div className="flex items-center gap-2.5">
               <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#d4af37]/30 bg-[#d4af37]/10">
                 <img src={TRADINGBIBLE_LOGO} alt="" className="h-7 w-7 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                <span className="absolute -bottom-1 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#d4af37] px-1 font-mono text-[8px] font-black text-[#0a0a0f]">A–Z</span>
+                <span className="absolute -bottom-1 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#d4af37] px-1 font-mono text-[9px] font-black text-[#0a0a0f]">A–Z</span>
               </span>
               <div className="min-w-0 flex-1 leading-tight">
                 <div className="gold-text truncate text-[15px] font-extrabold">Company Bible</div>

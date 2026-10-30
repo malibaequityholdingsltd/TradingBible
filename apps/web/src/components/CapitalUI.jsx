@@ -9,7 +9,7 @@ import { AtBadge, AtButton } from '@/components/AtelierUI';
  * numbers and no marketing hero separated from the product.
  */
 
-export function CapPublicHead({ title, sub, actions, aside, className = '' }) {
+export function CapPublicHead({ title, sub, actions, aside, children, className = '' }) {
   return (
     <header className={`cap-public-head cap-public-head--compact ${className}`}>
       <div className="cap-public-head-main">
@@ -18,6 +18,7 @@ export function CapPublicHead({ title, sub, actions, aside, className = '' }) {
           {actions && <div className="cap-public-actions">{actions}</div>}
         </div>
         {sub && <p className="cap-public-sub">{sub}</p>}
+        {children}
       </div>
       {aside && <div className="cap-public-aside">{aside}</div>}
     </header>
@@ -31,7 +32,7 @@ export function CapRecordCard({ title = 'Record status', badge, rows = [], note,
         <span className="cap-kicker"><span />{title}</span>
         {badge && (typeof badge === 'string' ? <AtBadge tone="amber">{badge}</AtBadge> : badge)}
       </div>
-      <div className="cap-record-rows">
+      <div className={`cap-record-rows ${rows.length >= 4 ? 'cap-record-rows--grid' : ''}${rows.length % 2 === 1 ? ' cap-record-rows--grid-odd' : ''}`}>
         {rows.map(([label, value]) => (
           <div className="cap-record-row" key={label}>
             <span>{label}</span>

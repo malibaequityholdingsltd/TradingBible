@@ -293,7 +293,7 @@ function AdminLayoutContent({ children, title }) {
                 </div>
                 <div className="flex items-center gap-1.5 leading-none sm:hidden">
                   <BrandName name="TradingBible" className="text-[10px] font-bold tracking-[-0.01em]" />
-                  <span className="text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--at-mut-2)]">Admin</span>
+                  <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--at-mut-2)]">Admin</span>
                 </div>
                 <div className="mt-0.5 flex min-w-0 items-center gap-2 sm:mt-0">
                   <h1 className="truncate text-[17px] font-semibold tracking-[-0.035em] text-[var(--at-ink)] sm:min-w-[150px] sm:text-[15px]">{title || 'Admin Dashboard'}</h1>
@@ -314,16 +314,16 @@ function AdminLayoutContent({ children, title }) {
                   type="button"
                   onClick={() => { setSearchOpen(true); setOpen(false); }}
                   aria-label="Search admin"
-                  className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[var(--at-gold)] transition hover:bg-[var(--at-gold-soft)] sm:hidden"
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[var(--tb-nav-glyph)] transition hover:bg-[var(--at-gold-soft)] sm:hidden"
                 >
                   <Search className="h-4 w-4" />
                 </button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="relative hidden h-8 w-8 shrink-0 place-items-center rounded-lg text-[var(--at-gold)] transition hover:bg-[var(--at-gold-soft)] hover:text-[var(--at-gold)] sm:grid" aria-label="Staff directory" title="Staff">
+                    <button className="relative hidden h-8 w-8 shrink-0 place-items-center rounded-lg text-[var(--tb-nav-glyph)] transition hover:bg-[var(--at-gold-soft)] hover:text-[var(--tb-nav-glyph)] sm:grid" aria-label="Staff directory" title="Staff">
                       <Users className="h-3.5 w-3.5" />
                       {staff.length > 0 && (
-                        <span className="absolute -right-0.5 -top-0.5 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-[var(--at-gold)] px-1 font-mono text-[8px] font-bold text-[#0a0a0f]">{staff.length}</span>
+                        <span className="absolute -right-0.5 -top-0.5 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-[var(--at-gold)] px-1 font-mono text-[9px] font-bold text-[#0a0a0f]">{staff.length}</span>
                       )}
                     </button>
                   </DropdownMenuTrigger>
@@ -354,9 +354,9 @@ function AdminLayoutContent({ children, title }) {
                   onClick={() => { enterAdminPreview(); nav('/app'); }}
                   aria-label="View app"
                   title="View app"
-                  className="hidden h-8 w-8 shrink-0 place-items-center rounded-lg text-[var(--at-mut)] transition hover:bg-[var(--at-gold-soft)] hover:text-[var(--at-gold)] sm:grid xl:flex xl:w-auto xl:items-center xl:gap-1.5 xl:px-2.5 xl:text-[10px] xl:font-semibold"
+                  className="hidden h-8 w-8 shrink-0 place-items-center rounded-lg text-[var(--at-mut)] transition hover:bg-[var(--at-gold-soft)] hover:text-[var(--tb-nav-glyph)] sm:grid xl:flex xl:w-auto xl:items-center xl:gap-1.5 xl:px-2.5 xl:text-[10px] xl:font-semibold"
                 >
-                  <LayoutDashboard className="h-3.5 w-3.5 text-[var(--at-gold)]" />
+                  <LayoutDashboard className="h-3.5 w-3.5 text-[var(--tb-nav-glyph)]" />
                   <span className="hidden xl:inline">View app</span>
                 </button>
                 <DropdownMenu>
@@ -365,7 +365,7 @@ function AdminLayoutContent({ children, title }) {
                       <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-[#f4e6a8] to-[#a67c1e] text-[11px] font-bold tabular-nums text-[#0a0a0f] ring-1 ring-[#d4af37]/40">
                         {initial}
                       </span>
-                      <ChevronDown className="h-3 w-3 text-[var(--at-gold)]" />
+                      <ChevronDown className="h-3 w-3 text-[var(--tb-nav-glyph)]" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" sideOffset={8} className="w-56 rounded-xl border-[#d4af37]/15 bg-[#111113] tabular-nums text-[#e9e7df]">

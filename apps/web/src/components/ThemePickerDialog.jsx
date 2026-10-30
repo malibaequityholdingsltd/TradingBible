@@ -24,7 +24,7 @@ export default function ThemePickerDialog({ open, onOpenChange, activeId, onPick
             >
               <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg font-mono text-xs font-extrabold ring-1 ring-black/20" style={{ background: pr.accentColor, color: pr.primaryColor }}>Aa</span>
               <span className="min-w-0">
-                <span className="flex items-center gap-1.5 truncate text-xs font-bold text-[var(--tb-ink)]">{pr.label}{pr.id === 'tb-gold' && <span className="shrink-0 rounded bg-[#d4af37]/15 px-1 py-px font-mono text-[8px] font-extrabold uppercase tracking-wider text-[#d4af37]">Default</span>}</span>
+                <span className="flex items-center gap-1.5 truncate text-xs font-bold text-[var(--tb-ink)]">{pr.label}{pr.id === 'tb-gold' && <span className="shrink-0 rounded bg-[#d4af37]/15 px-1 py-px font-mono text-[9px] font-extrabold uppercase tracking-wider text-[#d4af37]">Default</span>}</span>
                 <span className="block font-mono text-[10px] text-[var(--tb-faint)]">{pr.accentColor}</span>
               </span>
               {activeId === pr.id && <span className="ml-auto grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#d4af37]"><Check className="h-3 w-3 text-[#0a0a0f]" strokeWidth={3} /></span>}

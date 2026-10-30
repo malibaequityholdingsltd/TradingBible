@@ -502,7 +502,7 @@ export default function OrderflowChart({
 							)}
 							{/* Docked DOM — current book, Bookmap Web style */}
 							<div className="absolute bottom-0 right-0 top-0 flex w-[104px] flex-col border-l border-[#d4af37]/15 bg-black/55 py-1 backdrop-blur-sm">
-								<div className="px-1.5 pb-1 text-center text-[8px] font-bold uppercase tracking-widest text-[#8a8577]">DOM</div>
+								<div className="px-1.5 pb-1 text-center text-[9px] font-bold uppercase tracking-widest text-[#8a8577]">DOM</div>
 								<div className="no-scrollbar min-h-0 flex-1 space-y-px overflow-hidden px-1 font-mono text-[10px] leading-[1.55]">
 									{[...ladder.asks].reverse().map((a, i) => (
 										<div key={`da-${i}`} className="relative overflow-hidden rounded-sm bg-white/[0.03] px-1">

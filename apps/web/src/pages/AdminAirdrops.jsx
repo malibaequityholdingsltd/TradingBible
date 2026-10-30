@@ -273,15 +273,15 @@ function CampaignCard({ campaign: a, busy, onSnapshot, onClose }) {
 
         <div className="mt-4 grid grid-cols-3 gap-2">
           <div className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-3 py-2">
-            <div className="text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Recipients</div>
+            <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Recipients</div>
             <div className="mt-1 font-mono text-[13px] font-semibold text-[var(--at-ink)]">{nf(recipients)}</div>
           </div>
           <div className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-3 py-2">
-            <div className="text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Claimed</div>
+            <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Claimed</div>
             <div className="mt-1 font-mono text-[13px] font-semibold text-[var(--at-ink)]">{nf(claimed)}</div>
           </div>
           <div className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-3 py-2">
-            <div className="text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Ceiling</div>
+            <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Ceiling</div>
             <div className="mt-1 font-mono text-[13px] font-semibold text-[var(--at-ink)]">{nf(Number(a.amountPerUser) * Number(a.maxRecipients || 0))}</div>
           </div>
         </div>

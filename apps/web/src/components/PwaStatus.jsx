@@ -48,8 +48,16 @@ export default function PwaStatus() {
       setReloading(true);
       window.location.reload();
     };
+    const checkForUpdate = () => {
+      if (document.visibilityState !== 'visible' || !reg) return;
+      reg.update().catch(() => {});
+    };
     navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
-    return () => navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+    document.addEventListener('visibilitychange', checkForUpdate);
+    return () => {
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+      document.removeEventListener('visibilitychange', checkForUpdate);
+    };
   }, [reloading]);
 
   const applyUpdate = () => {
@@ -60,7 +68,7 @@ export default function PwaStatus() {
   if (online && !waitingWorker) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[60] flex flex-col items-center gap-2 px-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-24 z-[60] flex flex-col items-center gap-2 px-4 sm:bottom-4">
       {!online && (
         <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-[#d4af37]/25 bg-[#0f0f14]/95 px-4 py-2 text-sm text-[#e9e7df] shadow-lg backdrop-blur">
           <WifiOff className="h-4 w-4 text-[#d4af37]" />

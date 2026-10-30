@@ -111,7 +111,7 @@ export default function TbcPublicShell({ children, active = '', contained = true
         </div>
 
         <div className="border-t border-[var(--at-line-soft)] bg-[var(--at-soft)] px-3 py-1.5 sm:px-6">
-          <div className="mx-auto flex max-w-none flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--at-mut)] sm:justify-start">
+          <div className="mx-auto flex max-w-none flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[9.5px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)] sm:justify-start">
             <span className="text-[var(--at-gold)]">{TBC_PROPOSAL.phase}</span>
             <span>No token issued</span>
             <span className="hidden sm:inline">No sale open</span>

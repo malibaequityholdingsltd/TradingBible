@@ -558,15 +558,15 @@ export function AdminDashboard() {
                   ) : <div className="grid h-[224px] place-items-center text-xs text-[var(--at-mut)]">No growth data yet.</div>}
                   <div className="mt-3 grid grid-cols-3 gap-2 border-t border-[var(--at-line-soft)] pt-3">
                     <div>
-                      <div className="text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">New this month</div>
+                      <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">New this month</div>
                       <div className="mt-1 font-mono text-sm font-semibold text-[var(--at-ink)]">{growth.length ? growth[growth.length - 1].new.toLocaleString() : '—'}</div>
                     </div>
                     <div>
-                      <div className="text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Verified</div>
+                      <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Verified</div>
                       <div className="mt-1 font-mono text-sm font-semibold text-[var(--at-green)]">{verifiedRate}%</div>
                     </div>
                     <div>
-                      <div className="text-[8px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Growth trend</div>
+                      <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut-2)]">Growth trend</div>
                       <div className="mt-1"><AtSparkline data={growth.map((g) => g.new)} height={22} color="var(--at-gold)" /></div>
                     </div>
                   </div>
@@ -696,7 +696,7 @@ export function AdminDashboard() {
                         <Icon className="h-3.5 w-3.5 shrink-0 text-[var(--at-gold)]" />
                         <div className="min-w-0 flex-1">
                           <div className="truncate text-[10px] font-semibold text-[var(--at-ink-2)]">{label}</div>
-                          {detail && <div className="truncate text-[8px] text-[var(--at-mut-2)]">{detail}</div>}
+                          {detail && <div className="truncate text-[9px] text-[var(--at-mut-2)]">{detail}</div>}
                         </div>
                         <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${status === 'ok' ? 'bg-[var(--at-green)] shadow-[0_0_7px_var(--at-green)]' : status === 'unknown' ? 'bg-[var(--at-mut-2)]' : 'bg-[var(--at-red)]'}`} />
                       </div>
@@ -4989,7 +4989,7 @@ export function AdminCompany() {
                         <span className={`block truncate text-[12px] font-semibold ${active ? 'text-[var(--at-ink)]' : 'text-[var(--at-ink-2)]'}`}>{sec.label}</span>
                         <span className="mt-1 flex items-center gap-1.5">
                           <span className="h-0.5 flex-1 overflow-hidden rounded-full bg-[var(--at-soft-2)]"><span className="block h-full rounded-full bg-[var(--at-gold)]" style={{ width: `${pct}%` }} /></span>
-                          <span className="font-mono text-[8px] text-[var(--at-mut-2)]">{f}/{n}</span>
+                          <span className="font-mono text-[9px] text-[var(--at-mut-2)]">{f}/{n}</span>
                         </span>
                       </span>
                     </button>

@@ -195,7 +195,7 @@ html.light .academy-studio .ac-hero::after {
   margin-top: 22px;
   color: var(--ac-faint);
   font-family: var(--ac-mono);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.09em;
   line-height: 1.5;
@@ -267,7 +267,7 @@ html.light .academy-studio .ac-progress-card {
   margin-top: 5px;
   color: var(--ac-faint);
   font-family: var(--ac-mono);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -290,7 +290,7 @@ html.light .academy-studio .ac-progress-card {
   display: block;
   color: var(--ac-faint);
   font-family: var(--ac-mono);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -426,7 +426,7 @@ html.light .academy-studio .ac-progress-card {
   display: block;
   color: var(--ac-faint);
   font-family: var(--ac-mono);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -505,7 +505,7 @@ html.light .academy-studio .ac-progress-card {
 .academy-studio .ac-tab-index {
   color: var(--ac-faint);
   font-family: var(--ac-mono);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
@@ -560,7 +560,7 @@ html.light .academy-studio .ac-progress-card {
   margin-bottom: 8px;
   color: var(--ac-gold);
   font-family: var(--ac-mono);
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -633,7 +633,7 @@ html.light .academy-studio .ac-progress-card {
 .academy-studio .ac-path-index {
   color: var(--ac-faint);
   font-family: var(--ac-mono);
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.1em;
 }
@@ -653,7 +653,7 @@ html.light .academy-studio .ac-progress-card {
   min-width: 0;
   color: var(--ac-faint);
   font-family: var(--ac-mono);
-  font-size: 8px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.1em;
   line-height: 1.4;
@@ -663,7 +663,7 @@ html.light .academy-studio .ac-progress-card {
 .academy-studio .ac-path-label strong {
   display: block;
   color: var(--ac-accent, var(--ac-gold));
-  font-size: 8px;
+  font-size: 9.5px;
   font-weight: 700;
 }
 
@@ -671,7 +671,7 @@ html.light .academy-studio .ac-progress-card {
   margin-left: auto;
   color: var(--ac-faint);
   font-family: var(--ac-mono);
-  font-size: 8px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -707,7 +707,7 @@ html.light .academy-studio .ac-progress-card {
   border: 1px solid var(--ac-line);
   border-radius: 5px;
   color: var(--ac-faint);
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.2;
 }
 
@@ -728,7 +728,7 @@ html.light .academy-studio .ac-progress-card {
   gap: 8px;
   color: var(--ac-faint);
   font-family: var(--ac-mono);
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.4;
 }
 
@@ -750,7 +750,7 @@ html.light .academy-studio .ac-progress-card {
   gap: 8px;
   color: var(--ac-faint);
   font-family: var(--ac-mono);
-  font-size: 8px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -758,7 +758,7 @@ html.light .academy-studio .ac-progress-card {
 
 .academy-studio .ac-path-progress-line strong {
   color: var(--ac-gold);
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .academy-studio .ac-bar {
@@ -1549,7 +1549,7 @@ html.light .academy-studio .ac-progress-card {
   margin-top: 18px;
   color: var(--ac-faint);
   font-family: var(--ac-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   letter-spacing: 0.04em;
 }
 
@@ -1561,6 +1561,10 @@ html.light .academy-studio .ac-progress-card {
 
 .academy-studio .ac-lesson-meta .is-done {
   color: var(--ac-green);
+}
+
+.academy-studio .ac-lesson-meta .ac-family-meta {
+  color: var(--ac-gold);
 }
 
 .academy-studio .ac-listen {
@@ -1604,7 +1608,7 @@ html.light .academy-studio .ac-progress-card {
   display: block;
   color: var(--ac-faint);
   font-family: var(--ac-mono);
-  font-size: 8px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -1659,7 +1663,7 @@ html.light .academy-studio .ac-progress-card {
   color: var(--ac-ink);
   cursor: pointer;
   font-family: var(--ac-mono);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
 }
 

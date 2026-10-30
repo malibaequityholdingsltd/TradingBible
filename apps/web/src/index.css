@@ -552,7 +552,7 @@ html.light .tb-searchpanel { background: #faf8f2; border-color: #e4ded0; }
 html.light .tb-avatarmenu { background: #fffdf9; color: #2d3440; border-color: rgba(166, 124, 30, 0.35); }
 html.light .tb-avatarmenu [role="separator"] { background: rgba(45, 52, 64, 0.1); }
 html.light .tb-avatarmenu [data-highlighted] { background: rgba(45, 52, 64, 0.07); color: #232830; }
-html.light .tb-dock { background: #fffdf9; border-color: rgba(166, 124, 30, 0.4); box-shadow: 0 16px 40px -18px rgba(60, 55, 40, 0.45); }
+html.light .tb-dock { background: #fffdf9; border-color: rgba(23, 24, 28, 0.14); box-shadow: 0 16px 40px -18px rgba(60, 55, 40, 0.28); }
 html.light .tb-dock .dock-tab { color: #6a6252; }
 .tb-dock .lbl-on { color: #f7f3e8; }
 html.light .tb-dock .lbl-on { color: #232830; }
@@ -566,7 +566,7 @@ html.light .tb-sheet .tile { border-color: #e4ded0; background: #ffffff; }
 /* App section bar — all sections live in one fixed row at the bottom of
    tablet/desktop. No page gives up a left column. */
 .app-nav-footer {
-  border-top: 1px solid rgba(212, 175, 55, 0.16);
+  border-top: 1px solid var(--tb-nav-border);
   background: rgba(10, 10, 15, 0.94);
   box-shadow: 0 -14px 36px -18px rgba(0, 0, 0, 0.8), 0 -1px 0 rgba(255, 255, 255, 0.04);
 }
@@ -609,7 +609,7 @@ html.light .app-nav-footer { --nav-orb-cutout: #fbf8ef; }
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: linear-gradient(105deg, transparent 33%, rgba(212, 175, 55, 0.10) 47%, rgba(255, 255, 255, 0.035) 51%, transparent 64%);
+  background: linear-gradient(105deg, transparent 33%, color-mix(in srgb, var(--tb-nav-glyph) 9%, transparent) 47%, color-mix(in srgb, var(--tb-nav-glyph) 4%, transparent) 51%, transparent 64%);
   background-size: 240% 100%;
   animation: nav-bar-sheen 8.5s linear infinite;
 }
@@ -627,7 +627,7 @@ html.light .app-nav-footer { --nav-orb-cutout: #fbf8ef; }
   width: 0;
   height: 2px;
   border-radius: 999px;
-  background: linear-gradient(90deg, transparent, var(--tb-gold), transparent);
+  background: linear-gradient(90deg, transparent, var(--tb-nav-glyph), transparent);
   opacity: 0;
   transform: translateX(-50%);
   transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
@@ -654,12 +654,12 @@ html.light .app-nav-footer-link--active .app-nav-footer-label {
 }
 .app-nav-footer-link:hover .ios-icon {
   transform: translateY(-3px) scale(1.09) rotate(-1.5deg);
-  box-shadow: 0 10px 22px -14px rgba(0, 0, 0, 0.9), 0 0 16px -7px color-mix(in srgb, var(--tb-gold) 60%, transparent);
+  box-shadow: 0 10px 22px -14px rgba(0, 0, 0, 0.9), 0 0 16px -7px var(--tb-nav-glow);
 }
 .app-nav-footer-link:active .ios-icon { transform: translateY(0) scale(0.94); }
 .app-nav-footer-link--active .ios-icon { animation: nav-icon-breathe 2.8s ease-in-out infinite; }
 .app-nav-footer-link--active .nav-medallion {
-  box-shadow: 0 0 0 2px var(--tb-nav-ring), 0 0 18px -4px var(--tb-nav-glow), inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -6px 10px rgba(79, 55, 4, 0.22);
+  box-shadow: 0 0 0 2px var(--tb-nav-ring), 0 0 18px -4px var(--tb-nav-glow), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 /* Desktop dashboard medallion */
@@ -689,8 +689,8 @@ html.light .app-nav-footer-link--active .app-nav-footer-label {
   padding: 5px;
   border: 3px solid var(--nav-orb-cutout, #101016);
   border-radius: 9999px;
-  background: conic-gradient(from 210deg, var(--tb-nav-coin-1), var(--tb-nav-coin-3), var(--tb-nav-coin-4), var(--tb-nav-coin-1), var(--tb-nav-coin-3));
-  box-shadow: 0 18px 38px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px color-mix(in srgb, var(--tb-nav-ring) 55%, transparent), 0 0 28px -8px var(--tb-nav-glow);
+  background: linear-gradient(155deg, var(--tb-nav-surface-hi), var(--tb-nav-surface));
+  box-shadow: 0 18px 38px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px color-mix(in srgb, var(--tb-nav-ring) 55%, transparent), 0 0 28px -8px var(--tb-nav-glow);
   transform: translateX(-50%);
   animation: nav-orb-float 3.8s ease-in-out infinite;
   will-change: transform;
@@ -698,19 +698,19 @@ html.light .app-nav-footer-link--active .app-nav-footer-label {
 }
 .nav-dashboard-orb:hover {
   filter: brightness(1.06);
-  box-shadow: 0 22px 46px -12px rgba(0, 0, 0, 0.9), 0 0 0 1px color-mix(in srgb, var(--tb-nav-ring) 65%, transparent), 0 0 42px -6px var(--tb-nav-glow);
+  box-shadow: 0 22px 46px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px color-mix(in srgb, var(--tb-nav-ring) 65%, transparent), 0 0 42px -6px var(--tb-nav-glow);
 }
 .nav-dashboard-orb[aria-current="page"] {
-  box-shadow: 0 20px 44px -12px rgba(0, 0, 0, 0.9), 0 0 0 2px var(--tb-nav-ring), 0 0 40px -6px var(--tb-nav-glow);
+  box-shadow: 0 20px 44px -12px rgba(0, 0, 0, 0.6), 0 0 0 2px var(--tb-nav-ring), 0 0 40px -6px var(--tb-nav-glow);
 }
 .nav-dashboard-icon {
   --ios-size: 66px;
   position: relative;
   z-index: 2;
-  border: 0;
+  border: 1px solid var(--tb-nav-border);
   border-radius: 9999px;
-  background: radial-gradient(circle at 32% 22%, var(--tb-nav-coin-1) 0%, var(--tb-nav-coin-2) 32%, var(--tb-nav-coin-3) 64%, var(--tb-nav-coin-4) 100%);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.55), inset 0 -10px 18px rgba(79, 55, 4, 0.28);
+  background: linear-gradient(155deg, var(--tb-nav-surface-hi), var(--tb-nav-active-surface));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), filter 0.32s ease;
 }
 .nav-dashboard-icon::after { display: none; }
@@ -742,8 +742,8 @@ html.light .app-nav-footer-link--active .app-nav-footer-label {
   width: 5px;
   height: 5px;
   border-radius: 9999px;
-  background: var(--tb-gold);
-  box-shadow: 0 0 10px var(--tb-gold);
+  background: var(--tb-nav-glyph);
+  box-shadow: 0 0 10px var(--tb-nav-glow);
   transform: translateX(-50%);
 }
 .nav-dashboard-spark {
@@ -754,8 +754,8 @@ html.light .app-nav-footer-link--active .app-nav-footer-label {
   width: 6px;
   height: 6px;
   border-radius: 9999px;
-  background: var(--tb-nav-coin-1);
-  box-shadow: 0 0 12px var(--tb-nav-coin-1), 0 0 4px #fff;
+  background: var(--tb-nav-glyph);
+  box-shadow: 0 0 12px var(--tb-nav-glow), 0 0 4px var(--tb-nav-glyph);
   pointer-events: none;
   animation: nav-orb-spark 2.6s ease-in-out infinite;
 }
@@ -776,7 +776,7 @@ html.light .tb-dock { --nav-orb-cutout: #fffdf9; }
   z-index: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(105deg, transparent 34%, rgba(212, 175, 55, 0.12) 47%, transparent 62%);
+  background: linear-gradient(105deg, transparent 34%, color-mix(in srgb, var(--tb-nav-glyph) 10%, transparent) 47%, transparent 62%);
   background-size: 240% 100%;
   animation: nav-bar-sheen 7.5s linear infinite;
 }
@@ -794,7 +794,7 @@ html.light .tb-dock { --nav-orb-cutout: #fffdf9; }
   width: 0;
   height: 2px;
   border-radius: 999px;
-  background: linear-gradient(90deg, transparent, var(--tb-gold), transparent);
+  background: linear-gradient(90deg, transparent, var(--tb-nav-glyph), transparent);
   opacity: 0;
   transform: translateX(-50%);
   transition: width 0.26s ease, opacity 0.26s ease;
@@ -805,7 +805,7 @@ html.light .tb-dock { --nav-orb-cutout: #fffdf9; }
 .tb-dock .dock-tab:hover .ios-icon { transform: translateY(-3px) scale(1.1) rotate(-1.5deg); }
 .tb-dock .dock-tab[aria-current="page"] .ios-icon { animation: nav-icon-breathe 2.8s ease-in-out infinite; }
 .tb-dock .dock-tab[aria-current="page"] .nav-medallion {
-  box-shadow: 0 0 0 2px var(--tb-nav-ring), 0 0 18px -4px var(--tb-nav-glow), inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -6px 10px rgba(79, 55, 4, 0.22);
+  box-shadow: 0 0 0 2px var(--tb-nav-ring), 0 0 18px -4px var(--tb-nav-glow), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 .tb-dock .dock-tab:active .ios-icon { transform: scale(0.94); }
 .tb-dock .nav-dashboard-slot { height: 58px; }

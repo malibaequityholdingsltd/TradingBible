@@ -218,7 +218,7 @@ export function InvestorAssistant({ compact = false }) {
         )}
         {messages.map((item, index) => (
           <div key={`${item.role}-${index}`} className={`max-w-[96%] rounded-2xl border px-3.5 py-3 text-[11px] leading-relaxed ${item.role === 'user' ? 'ml-auto border-[var(--at-line)] bg-[var(--at-gold-soft)] text-[var(--at-ink)]' : 'border-[var(--at-line-soft)] bg-[var(--at-soft)] text-[var(--at-ink-2)]'}`}>
-            <div className="mb-1 font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)]">{item.role === 'user' ? 'You' : 'IR assistant'}</div>
+            <div className="mb-1 font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)]">{item.role === 'user' ? 'You' : 'IR assistant'}</div>
             <p className="whitespace-pre-wrap">{item.text}</p>
             {item.role === 'assistant' && item.sources?.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2 border-t border-[var(--at-line-soft)] pt-2">

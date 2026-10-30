@@ -365,7 +365,7 @@ export default function ChallengesPage() {
                           <div className="mt-2 grid grid-cols-3 gap-1">
                             {rails.map(([k, v]) => (
                               <div key={k} className="rounded-md border border-white/[0.06] bg-white/[0.02] px-1.5 py-1">
-                                <div className="text-[8px] font-bold uppercase tracking-wider text-[#5f5b50]">{k}</div>
+                                <div className="text-[9px] font-bold uppercase tracking-wider text-[#5f5b50]">{k}</div>
                                 <div className={`mt-0.5 truncate font-mono text-[11px] font-bold tabular-nums ${k === 'Split' ? 'text-emerald-400' : 'text-[#e9e7df]'}`}>{v}</div>
                               </div>
                             ))}

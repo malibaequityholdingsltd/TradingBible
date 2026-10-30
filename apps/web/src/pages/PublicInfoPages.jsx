@@ -159,16 +159,19 @@ export const WebinarsPage = () => (
 /* ------------------------------------------------------------------ */
 
 const ACADEMY_TRACKS = [
-  [BookOpen, 'Markets & charts', 'Candlesticks, structure, liquidity, order flow and the difference between a setup and a story. Start with the language the terminal uses.'],
-  [ShieldCheck, 'Risk & position sizing', 'R-multiples, stop placement, exposure, drawdown and the math that keeps one bad session from becoming the end of the account.'],
-  [CalendarDays, 'Journal & review', 'A repeatable way to record a decision, tag the setup and review the sample without rewriting history after the outcome is known.'],
-  [Sparkles, 'SI & process', 'How to ask SI a useful question, how to read a review and how to turn an observation into one measurable adjustment.'],
+  [BookOpen, 'Markets & multi-asset', 'FX, crypto, gold, indices, single stocks and energy — read as one connected market, not six disconnected bets.'],
+  [ShieldCheck, 'Risk & funded desk', 'R-multiples, drawdown math, prop-firm rulebooks and the sizing discipline that keeps one bad session from ending the account.'],
+  [CalendarDays, 'Platform, journal & order flow', 'Terminal Pro, charts, alerts, depth, tape, backtesting and a weekly review loop that turns each trade into evidence.'],
+  [Sparkles, 'TBC & digital assets', 'The proposed TBC network, wallets and custody, testnet, token utility and the legal boundaries around staking and yield.'],
+  [Briefcase, 'Investor & company', 'Cap tables, dilution, revenue quality, IPO readiness, shareholder rights and how the TradingBible business is built.'],
+  [Users, 'AI, SI & company operations', 'Prompts, data quality, backtest traps, automation guardrails and the human review that keeps AI in its lane.'],
 ];
 
 const ACADEMY_POINTS = [
-  'Structured tracks from first chart to first review',
-  'Lessons kept inside the product, next to the journal',
-  'Practical exercises rather than passive video hours',
+  '13 structured paths and 233 lessons across every company purpose',
+  'Read aloud in your language, with a simple story first and professional depth second',
+  'Lessons kept inside the product, next to the journal and Terminal',
+  'No quizzes inside lessons — one final certificate exam per path at 80%',
   'No profit claims, trade signals or copy-trading',
   'Member progress stays private by default',
   'Eligible plans include the full Academy library',
@@ -179,11 +182,11 @@ export const AcademyInfoPage = () => (
     <PublicPageHead
       eyebrow="Education · TradingBible Academy"
       title={<>Learn the desk <span className="tb-gold-text">before you scale it.</span></>}
-      description="The Academy is a structured curriculum for the tools you actually use: charts, order flow, risk, journaling, SI reviews and the discipline of a repeatable process. It is education, not a signal service."
-      meta={['Member library', 'Practical exercises', 'No profit claims']}
+      description="A structured, family-friendly curriculum for the tools, markets and company purposes you actually work with: multi-asset markets, platform mastery, funded desks, TBC, investor ownership, AI and the creator business. Read or listen in your language. It is education, not a signal service."
+      meta={['13 paths', '233 lessons', 'Read aloud', 'No profit claims']}
       actions={<><GoldButton to="/app/academy">Open the Academy <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/guides" className="border px-5 py-3 text-[#e9e7df]">Read the setup guide</GhostButton></>}
     />
-    <PublicSection eyebrow="Tracks" title="Four tracks. One workflow." sub="Each track ends with an exercise you can apply to your own record.">
+    <PublicSection eyebrow="Every purpose" title="Every company purpose. One curriculum." sub="Each path ends with a final certificate exam. No pop quizzes inside lessons.">
       <div className="grid gap-3 md:grid-cols-2">
         {ACADEMY_TRACKS.map(([icon, title, body]) => {
           const Icon = icon;
