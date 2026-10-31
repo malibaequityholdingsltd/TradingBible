@@ -20,7 +20,7 @@ function check(name, condition, detail = '') {
 }
 
 const sw = read('apps/web/public/sw.js');
-check('service worker version is 1.3.9', sw.includes("tradingbible-v1.3.9"));
+check('service worker version is 1.4.0', sw.includes("tradingbible-v1.4.0"));
 const installBlock = sw.slice(sw.indexOf("addEventListener('install'"), sw.indexOf("addEventListener('activate'"));
 check('service worker install does not skipWaiting', !installBlock.includes('self.skipWaiting()'));
 check('service worker accepts SKIP_WAITING message', sw.includes('SKIP_WAITING'));
