@@ -51,13 +51,38 @@ export function speechLang(lang) {
   return BCP47[lang] || BCP47.en;
 }
 
+const VOICE_KEY = 'tb.academy.voice';
+const RATE_KEY = 'tb.academy.rate';
+
+function stored(key, fallback = '') {
+  try {
+    return window.localStorage.getItem(key) || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function store(key, value) {
+  try {
+    window.localStorage.setItem(key, String(value));
+  } catch {
+    /* localStorage can be unavailable in private mode */
+  }
+}
+
+function initialRate() {
+  const value = Number(stored(RATE_KEY, '1'));
+  return Number.isFinite(value) && value >= 0.5 && value <= 2 ? value : 1;
+}
+
 export default function useSpeechReader() {
   const [supported] = useState(speechSupported);
   const [status, setStatus] = useState('idle'); // idle | playing | paused | ended | error
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
   const [voices, setVoices] = useState([]);
-  const [rate, setRateState] = useState(1);
+  const [voiceURI, setVoiceURI] = useState(() => stored(VOICE_KEY, ''));
+  const [rate, setRateState] = useState(initialRate);
 
   const chunksRef = useRef([]);
   const indexRef = useRef(0);
@@ -65,9 +90,10 @@ export default function useSpeechReader() {
   const sessionRef = useRef(0);
   const timerRef = useRef(null);
   const utteranceRef = useRef(null);
-  const rateRef = useRef(1);
+  const rateRef = useRef(rate);
   const langRef = useRef('en-US');
   const voicesRef = useRef([]);
+  const voiceRef = useRef(voiceURI);
 
   useEffect(() => {
     if (!supported) return undefined;
@@ -111,7 +137,12 @@ export default function useSpeechReader() {
     utterance.lang = langRef.current;
     utterance.rate = rateRef.current;
     const prefix = langRef.current.toLowerCase().split('-')[0];
-    const voice = voicesRef.current.find((item) => item.lang?.toLowerCase().startsWith(prefix));
+    const selected = voiceRef.current
+      ? voicesRef.current.find((item) => item.voiceURI === voiceRef.current)
+      : null;
+    const voice = selected && selected.lang?.toLowerCase().startsWith(prefix)
+      ? selected
+      : voicesRef.current.find((item) => item.lang?.toLowerCase().startsWith(prefix));
     if (voice) utterance.voice = voice;
     utterance.onend = () => {
       if (cancelledRef.current || session !== sessionRef.current) return;
@@ -194,7 +225,32 @@ export default function useSpeechReader() {
     const value = Number(next) || 1;
     rateRef.current = value;
     setRateState(value);
+    store(RATE_KEY, value);
   }, []);
+
+  const setVoice = useCallback((next) => {
+    const value = String(next || '');
+    voiceRef.current = value;
+    setVoiceURI(value);
+    store(VOICE_KEY, value);
+  }, []);
+
+  const preview = useCallback((text, lang = 'en', selectedVoice = voiceRef.current) => {
+    if (!supported) return;
+    const clean = String(text || '').trim();
+    if (!clean) return;
+    const synth = window.speechSynthesis;
+    // Chrome drops a new utterance if cancel() and speak() happen in the same
+    // tick with nothing queued. Only cancel when something is actually active.
+    if (synth.speaking || synth.pending || synth.paused) synth.cancel();
+    const utterance = new SpeechSynthesisUtterance(clean);
+    utterance.lang = speechLang(lang);
+    utterance.rate = rateRef.current;
+    const voice = voicesRef.current.find((item) => item.voiceURI === selectedVoice)
+      || voicesRef.current.find((item) => item.lang?.toLowerCase().startsWith(lang.toLowerCase()));
+    if (voice) utterance.voice = voice;
+    synth.speak(utterance);
+  }, [supported]);
 
   useEffect(() => () => {
     cancelledRef.current = true;
@@ -209,8 +265,11 @@ export default function useSpeechReader() {
     progress,
     error,
     voices,
+    voiceURI,
+    setVoice,
     rate,
     setRate,
+    preview,
     start,
     pause,
     resume,

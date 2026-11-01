@@ -5,6 +5,7 @@ import '@/index.css';
 import '@/styles/tokens.css';
 import '@/styles/atelier.css';
 import '@/styles/mobile-app.css';
+import '@/styles/wallet-v3.css';
 import '@/styles/capital-ir.css';
 import { bootWhiteLabel } from '@/lib/whitelabel';
 

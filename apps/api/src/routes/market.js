@@ -2,14 +2,13 @@ import { Router } from 'express';
 import logger from '../utils/logger.js';
 import { supabaseRest, getSupabaseUser } from '../utils/supabaseClient.js';
 
-// ── Signal marketplace + mentorship ──────────────────────────────
+// ── Signal marketplace ────────────────────────────────────────────
 // Creators list signals with a price; subscribers pay monthly per creator
-// (75% creator / 25% platform, settled in ledger rows). Mentorship works
-// the same way per booking (85/15). Money never leaves the ledger.
+// (75% creator / 25% platform, settled in ledger rows). Money never leaves
+// the ledger.
 
 const router = Router();
 const CREATOR_SHARE = 0.75;
-const MENTOR_SHARE = 0.85;
 const PLATFORM_OWNER = 'platform';
 
 async function authedUser(req) {
@@ -180,100 +179,6 @@ router.post('/subscribe', async (req, res) => {
 	}
 });
 
-// ── Mentors: register / list / book ───────────────────────────────
-router.post('/mentors/register', async (req, res) => {
-	const user = await authedUser(req);
-	if (!user) return res.status(401).json({ error: 'unauthorized' });
-	const headline = String(req.body?.headline || '').trim().slice(0, 120);
-	const topics = Array.isArray(req.body?.topics) ? req.body.topics.filter((t) => typeof t === 'string').map((t) => t.trim().slice(0, 30)).slice(0, 8) : [];
-	const price = Math.max(0, Math.min(5000, Number(req.body?.price ?? 0)));
-	if (!headline || !price) return res.status(422).json({ error: 'headline + price required' });
-	try {
-		await supabaseRest('/rest/v1/mentors', {
-			method: 'POST',
-			body: { owner: user.id, headline, topics, price_usd: price, enabled: true },
-			prefer: 'return=representation,resolution=merge-duplicates',
-		});
-		return res.json({ ok: true });
-	} catch (err) {
-		logger.error('mentor register failed', String(err));
-		return res.status(500).json({ error: 'failed' });
-	}
-});
-
-router.get('/mentors', async (req, res) => {
-	try {
-		const rows = await supabaseRest('/rest/v1/mentors', {
-			query: { select: '*', enabled: 'eq.true', order: 'created_at.desc', limit: 100 },
-		}).catch(() => []);
-		const names = await displayNames([...new Set((rows || []).map((r) => r.owner))]);
-		return res.json({
-			mentors: (rows || []).map((r) => ({
-				owner: r.owner, name: names[r.owner] || 'Mentor',
-				headline: r.headline, topics: r.topics || [], price: Number(r.price_usd) || 0,
-			})),
-		});
-	} catch (err) {
-		logger.error('mentors list failed', String(err));
-		return res.status(500).json({ error: 'failed' });
-	}
-});
-
-router.post('/mentors/book', async (req, res) => {
-	const user = await authedUser(req);
-	if (!user) return res.status(401).json({ error: 'unauthorized' });
-	const mentor = String(req.body?.mentor || '').trim();
-	const topic = String(req.body?.topic || '').trim().slice(0, 120);
-	if (!mentor || mentor === user.id) return res.status(422).json({ error: 'invalid mentor' });
-	try {
-		const rows = await supabaseRest('/rest/v1/mentors', {
-			query: { select: '*', owner: `eq.${mentor}`, enabled: 'eq.true', limit: 1 },
-		}).catch(() => []);
-		const m = rows?.[0];
-		if (!m) return res.status(404).json({ error: 'mentor not available' });
-		const price = Number(m.price_usd) || 0;
-		// TBC-only settlement: USD list price, split paid in TBC.
-		const { requireTbc, tbcForUsd } = await import('../utils/tbc-econ.js');
-		let tbcPrice;
-		try {
-			({ tbc: tbcPrice } = await requireTbc(user.id, price));
-		} catch (e) {
-			if (e?.code === 'insufficient_tbc') return res.status(422).json({ error: e.message });
-			throw e;
-		}
-		if (!(price > 0)) return res.status(422).json({ error: 'mentor has no price' });
-		const { tbc: tbcMentor } = await tbcForUsd(price * MENTOR_SHARE);
-		const mentorCut = Math.round(tbcMentor * 100) / 100;
-		const fee = Math.round((tbcPrice - mentorCut) * 100) / 100;
-		await ledger(user.id, 'pay', -tbcPrice, `mentor:${mentor}`, 'TBC', { currency: 'TBC', fiatValue: price });
-		await ledger(mentor, 'mentor_earn', mentorCut, `mentor:${user.id}`, 'TBC', { currency: 'TBC', fiatValue: Math.round(price * MENTOR_SHARE * 100) / 100 });
-		if (fee > 0) await ledger(PLATFORM_OWNER, 'fee', fee, `mentor:${mentor}`, 'TBC', { currency: 'TBC', fiatValue: Math.round((price - price * MENTOR_SHARE) * 100) / 100 });
-		const session = await supabaseRest('/rest/v1/mentor_sessions', {
-			method: 'POST',
-			body: { owner: user.id, mentor, topic, price_usd: price, platform_fee: fee, status: 'booked', scheduled_for: req.body?.scheduledFor || null },
-			prefer: 'return=representation',
-		});
-		return res.json({ ok: true, session: session?.[0] || null });
-	} catch (err) {
-		logger.error('mentor book failed', String(err));
-		return res.status(500).json({ error: 'failed' });
-	}
-});
-
-router.get('/mentors/sessions', async (req, res) => {	const user = await authedUser(req);
-	if (!user) return res.status(401).json({ error: 'unauthorized' });
-	try {
-		const [mine, teaching] = await Promise.all([
-			supabaseRest('/rest/v1/mentor_sessions', { query: { select: '*', owner: `eq.${user.id}`, order: 'created_at.desc', limit: 50 } }).catch(() => []),
-			supabaseRest('/rest/v1/mentor_sessions', { query: { select: '*', mentor: `eq.${user.id}`, order: 'created_at.desc', limit: 50 } }).catch(() => []),
-		]);
-		return res.json({ mine: mine || [], teaching: teaching || [] });
-	} catch (err) {
-		logger.error('mentor sessions failed', String(err));
-		return res.status(500).json({ error: 'failed' });
-	}
-});
-
 // ── Unsubscribe from a creator ───────────────────────────────────
 router.post('/unsubscribe', async (req, res) => {
 	const user = await authedUser(req);
@@ -287,29 +192,6 @@ router.post('/unsubscribe', async (req, res) => {
 		return res.json({ ok: true });
 	} catch (err) {
 		logger.error('market unsubscribe failed', String(err));
-		return res.status(500).json({ error: 'failed' });
-	}
-});
-
-// ── Complete a mentor session (either party) ─────────────────────
-router.post('/mentors/complete', async (req, res) => {
-	const user = await authedUser(req);
-	if (!user) return res.status(401).json({ error: 'unauthorized' });
-	const sessionId = String(req.body?.sessionId || '').trim();
-	if (!sessionId) return res.status(422).json({ error: 'session required' });
-	try {
-		const rows = await supabaseRest(`/rest/v1/mentor_sessions?id=eq.${encodeURIComponent(sessionId)}`, {
-			query: { select: 'id,owner,mentor,status', limit: 1 },
-		}).catch(() => []);
-		const s = rows?.[0];
-		if (!s || (s.owner !== user.id && s.mentor !== user.id)) return res.status(404).json({ error: 'session not found' });
-		if (s.status !== 'booked') return res.json({ ok: true, already: true });
-		await supabaseRest(`/rest/v1/mentor_sessions?id=eq.${s.id}`, {
-			method: 'PATCH', body: { status: 'completed' },
-		});
-		return res.json({ ok: true });
-	} catch (err) {
-		logger.error('mentor complete failed', String(err));
 		return res.status(500).json({ error: 'failed' });
 	}
 });

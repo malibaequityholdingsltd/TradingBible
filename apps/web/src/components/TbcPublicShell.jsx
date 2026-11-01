@@ -56,8 +56,8 @@ export default function TbcPublicShell({ children, active = '', contained = true
     return () => ro.disconnect();
   }, []);
   const homeTo = homeRouteForUser(isAuthed ? user : null);
-  const ctaTo = isAuthed ? (user?.role === 'admin' ? '/admin/tbc' : '/app/tbc') : '/signup';
-  const ctaLabel = isAuthed ? 'Open TBC' : 'Create account';
+  const ctaTo = isAuthed ? (user?.role === 'admin' ? '/admin/tbc' : '/tbc/documents') : '/signup';
+  const ctaLabel = isAuthed ? 'Documents' : 'Create account';
 
   return (
     <div className="at-shell min-h-screen bg-transparent text-[var(--at-ink)]" style={{ paddingTop: `calc(var(--header-h) + ${headerH ? headerH + 12 : 126}px)` }}>

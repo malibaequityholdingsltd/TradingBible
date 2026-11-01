@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Code2, Palette, CreditCard, HelpCircle, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, Compass, FlaskConical, Medal, Briefcase, SquareTerminal, Star, Coins, X, Search, MonitorPlay, MessageCircle, Languages, Check } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Code2, Palette, CreditCard, HelpCircle, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, Compass, FlaskConical, Medal, SquareTerminal, Star, Coins, X, Search, MonitorPlay, MessageCircle, Languages, Check } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { avatarUrl } from '@/lib/avatar';
 import { displayInitial } from '@/lib/displayName';
@@ -70,7 +70,6 @@ const NAV_GROUPS = [
       { to: '/app/watchlists', labelKey: 'nav.watchlists', icon: Star, tint: IOS.gold },
       { to: '/app/signals', labelKey: 'nav.signals', icon: Radar, tint: IOS.orange },
       { to: '/app/staking', labelKey: 'nav.staking', icon: Coins, tint: IOS.green },
-      { to: '/app/tbc', labelKey: 'nav.tbc', icon: Coins, tint: IOS.gold },
       { to: '/app/investors', labelKey: 'nav.investors', label: 'Investors', icon: Landmark, tint: IOS.gold },
       { to: '/leaderboard', labelKey: 'nav.leaderboard', icon: Medal, tint: IOS.purple },
       { to: '/app/economic-calendar', labelKey: 'nav.economic', icon: CalendarClock, tint: IOS.indigo },
@@ -80,7 +79,6 @@ const NAV_GROUPS = [
     labelKey: 'nav.learn',
     items: [
       { to: '/app/guide', labelKey: 'nav.guide', icon: Compass, tint: IOS.teal },
-      { to: '/app/mentors', labelKey: 'nav.mentors', icon: Briefcase, tint: IOS.brown },
       { to: '/app/community', labelKey: 'nav.community', icon: Users, tint: IOS.blue },
       { to: '/app/academy', labelKey: 'nav.academy', icon: GraduationCap, tint: IOS.red },
       { to: '/app/api-docs', labelKey: 'nav.apidocs', icon: Code2, requiresSubscriber: true, requiredPlan: 'professional', tint: IOS.gray },

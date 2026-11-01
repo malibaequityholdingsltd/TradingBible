@@ -3069,8 +3069,8 @@ export function AdminJobs() {
   };
 
   // One-click Hire: accept + auto-provision the employee login, staff role,
-  // mentor staging for coaches, and invite email. The temp password comes
-  // back once — share it with the hire directly.
+  // and invite email. The temp password comes back once — share it with the
+  // hire directly.
   const [hiredCreds, setHiredCreds] = useState(null); // { email, tempPassword, role }
   const [hiringId, setHiringId] = useState(null); // posting id with screening editor open
   const [hiringDraft, setHiringDraft] = useState({ questions: '', samples_required: false, trial_task: '', trial_days: '14', salary_tbc: '', salary_freq: 'monthly', closes_at: '' });
@@ -4288,110 +4288,6 @@ export function AdminEmployees() {
             ))}
           </div>
         ) : <p className="text-sm text-[#8a8577]">No AI work records yet.</p>}
-      </Collapse>
-    </AdminLayout>
-  );
-}
-
-/* ─── ADMIN MENTORS ──────────────────────────────────────────────── */
-export function AdminMentors() {
-  const { toast } = useToast();
-  const [mentors, setMentors] = useState([]);
-  const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState(null);
-  const [q, setQ] = useState('');
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const token = pb.authStore.token;
-      const [m, s] = await Promise.all([
-        fetch(`${API_SERVER_URL}/admin/mentors`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => (r.ok ? r.json() : [])),
-        fetch(`${API_SERVER_URL}/admin/mentors/sessions`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => (r.ok ? r.json() : [])),
-      ]);
-      setMentors(Array.isArray(m) ? m : []);
-      setSessions(Array.isArray(s) ? s : []);
-    } catch {
-      setMentors([]);
-      setSessions([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-  useEffect(() => { load(); }, [load]);
-
-  const toggle = async (m) => {
-    setBusy(m.owner);
-    try {
-      const res = await fetch(`${API_SERVER_URL}/admin/mentors/${encodeURIComponent(m.owner)}`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: !m.enabled }),
-      });
-      if (!res.ok) throw new Error('update failed');
-      toast({ title: m.enabled ? 'Mentor hidden' : 'Mentor published' });
-      load();
-    } catch (err) {
-      toast({ variant: 'destructive', title: 'Failed', description: String(err.message || err) });
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const shown = mentors.filter((m) => !q || `${m.owner} ${m.headline} ${(m.topics || []).join(' ')}`.toLowerCase().includes(q.toLowerCase()));
-  const booked = sessions.filter((s) => s.status === 'booked').length;
-
-  return (
-    <AdminLayout title="Mentors">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          ['Mentors', mentors.length],
-          ['Published', mentors.filter((m) => m.enabled).length],
-          ['Sessions', sessions.length],
-          ['Booked', booked],
-        ].map(([label, value]) => (
-          <div key={label} className="glass rounded-2xl p-4">
-            <div className="text-[11px] uppercase tracking-wider text-[#8a8577]">{label}</div>
-            <div className="mt-1 font-mono text-xl font-bold text-[#f0ecdd]">{value}</div>
-          </div>
-        ))}
-      </div>
-      <div className="glass mt-4 rounded-2xl p-4 sm:p-5">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><GraduationCap className="h-4 w-4 text-[#d4af37]" /> Mentor directory</h3>
-          <div className="flex items-center gap-2">
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search mentors…" className="w-48 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
-            <button onClick={load} className="rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><RefreshCw className="h-4 w-4" /></button>
-          </div>
-        </div>
-        {loading ? <p className="text-sm text-[#8a8577]">Loading…</p> : shown.length ? (
-          <div className="space-y-2">
-            {shown.map((m) => (
-              <div key={m.owner} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2.5">
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold text-[#f0ecdd]">{m.headline || 'Untitled mentor'}</div>
-                  <div className="mt-0.5 truncate font-mono text-xs text-[#8a8577]">{String(m.owner).slice(0, 8)}… · {(m.topics || []).join(', ') || 'no topics'} · ${m.price_usd ?? 0}</div>
-                </div>
-                <button disabled={busy === m.owner} onClick={() => toggle(m)} className={`rounded-lg border px-3 py-1.5 text-xs ${m.enabled ? 'border-emerald-500/40 text-emerald-300' : 'border-[#d4af37]/30 text-[#d4af37]'} disabled:opacity-60`}>
-                  {m.enabled ? 'Published — hide' : 'Hidden — publish'}
-                </button>
-              </div>
-            ))}
-          </div>
-        ) : <p className="text-sm text-[#8a8577]">No mentors yet. New coaches appear here after they register on /app/mentors; staff hires are staged from Jobs &amp; Hiring.</p>}
-      </div>
-      <Collapse title="Recent sessions" count={sessions.length} defaultOpen={false}>
-        {sessions.length ? (
-          <div className="space-y-2">
-            {sessions.slice(0, 25).map((s) => (
-              <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2 text-sm">
-                <div className="min-w-0 truncate text-[#c9c4b4]">{s.topic || 'Session'} · <span className="font-mono text-xs tabular-nums text-[#8a8577]">{s.scheduled_for ? String(s.scheduled_for).slice(0, 16).replace('T', ' ') : 'unscheduled'}</span></div>
-                <div className="font-mono text-xs tabular-nums text-[#d4af37]">${s.price_usd ?? 0} · {s.status}</div>
-              </div>
-            ))}
-          </div>
-        ) : <p className="text-sm text-[#8a8577]">No sessions booked yet.</p>}
       </Collapse>
     </AdminLayout>
   );

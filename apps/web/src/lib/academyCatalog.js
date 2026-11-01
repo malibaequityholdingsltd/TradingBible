@@ -17,6 +17,37 @@ export const TRACKS = [
 	{ key: 'pro', name: 'Pro Desk' },
 ];
 
+export const SCHOOLS = [
+	{
+		key: 'foundation',
+		name: 'Foundation School',
+		code: 'S—01',
+		desc: 'Start with how markets work, what you are actually trading, and the risk habits that come before any strategy.',
+		pathKeys: ['beginner'],
+	},
+	{
+		key: 'markets',
+		name: 'Markets School',
+		code: 'S—02',
+		desc: 'Read FX, crypto, multi-asset and order flow as one connected market rather than disconnected screens.',
+		pathKeys: ['forex', 'crypto', 'multi-asset', 'orderflow'],
+	},
+	{
+		key: 'desk',
+		name: 'Desk Craft School',
+		code: 'S—03',
+		desc: 'Build the operating system of a desk: edge, psychology, platform mastery, funded rules and AI guardrails.',
+		pathKeys: ['intermediate', 'professional', 'platform', 'funded', 'ai-tech'],
+	},
+	{
+		key: 'ownership',
+		name: 'Ownership School',
+		code: 'S—04',
+		desc: 'Understand the company behind the terminal: TBC, investor ownership, business model and creator operations.',
+		pathKeys: ['digital-assets', 'investor', 'company-business'],
+	},
+];
+
 export const PATHS = [
 	{
 		key: 'beginner',

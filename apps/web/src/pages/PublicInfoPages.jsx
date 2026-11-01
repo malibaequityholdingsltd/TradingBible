@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight, BookOpen, Briefcase, CalendarDays, GraduationCap, Mail,
-  MessageSquare, PlayCircle, ShieldCheck, Sparkles, Users,
+  MessageSquare, PlayCircle, ShieldCheck, Users,
 } from 'lucide-react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { AdSlot } from '@/lib/ads/components.jsx';
@@ -159,34 +159,32 @@ export const WebinarsPage = () => (
 /* ------------------------------------------------------------------ */
 
 const ACADEMY_TRACKS = [
-  [BookOpen, 'Markets & multi-asset', 'FX, crypto, gold, indices, single stocks and energy — read as one connected market, not six disconnected bets.'],
-  [ShieldCheck, 'Risk & funded desk', 'R-multiples, drawdown math, prop-firm rulebooks and the sizing discipline that keeps one bad session from ending the account.'],
-  [CalendarDays, 'Platform, journal & order flow', 'Terminal Pro, charts, alerts, depth, tape, backtesting and a weekly review loop that turns each trade into evidence.'],
-  [Sparkles, 'TBC & digital assets', 'The proposed TBC network, wallets and custody, testnet, token utility and the legal boundaries around staking and yield.'],
-  [Briefcase, 'Investor & company', 'Cap tables, dilution, revenue quality, IPO readiness, shareholder rights and how the TradingBible business is built.'],
-  [Users, 'AI, SI & company operations', 'Prompts, data quality, backtest traps, automation guardrails and the human review that keeps AI in its lane.'],
+  [BookOpen, 'Foundation School', 'How markets work, what you are actually trading, and the risk habits that come before any strategy.'],
+  [ShieldCheck, 'Markets School', 'FX, crypto, multi-asset and order flow — read as one connected market rather than disconnected screens.'],
+  [CalendarDays, 'Desk Craft School', 'Edge, psychology, platform mastery, funded-desk rules and the AI guardrails that keep automation in its lane.'],
+  [Briefcase, 'Ownership School', 'The proposed TBC network, investor ownership, the business model and the creator operations behind TradingBible.'],
 ];
 
 const ACADEMY_POINTS = [
-  '13 structured paths and 233 lessons across every company purpose',
-  'Read aloud in your language, with a simple story first and professional depth second',
+  'Four schools, 13 structured programmes and 233 lessons across every company purpose',
+  'Male and female read-aloud voices, with speed and language controls in every lesson',
+  'A simple story first and professional depth second, written for kids and adults without weakening risk or compliance',
   'Lessons kept inside the product, next to the journal and Terminal',
-  'No quizzes inside lessons — one final certificate exam per path at 80%',
+  'No quizzes inside lessons — one final certificate exam per programme at 80%',
   'No profit claims, trade signals or copy-trading',
   'Member progress stays private by default',
-  'Eligible plans include the full Academy library',
 ];
 
 export const AcademyInfoPage = () => (
   <PublicSiteShell>
     <PublicPageHead
-      eyebrow="Education · TradingBible Academy"
-      title={<>Learn the desk <span className="tb-gold-text">before you scale it.</span></>}
-      description="A structured, family-friendly curriculum for the tools, markets and company purposes you actually work with: multi-asset markets, platform mastery, funded desks, TBC, investor ownership, AI and the creator business. Read or listen in your language. It is education, not a signal service."
-      meta={['13 paths', '233 lessons', 'Read aloud', 'No profit claims']}
+      eyebrow="Education · Academy 2.0"
+      title={<>Learn the desk. <span className="tb-gold-text">Hear it. Then prove it.</span></>}
+      description="Academy 2.0 is a structured, family-friendly curriculum for the tools, markets and company purposes you actually work with: multi-asset markets, platform mastery, funded desks, TBC, investor ownership, AI and the creator business. Read or listen in your language with a male or female reader. It is education, not a signal service."
+      meta={['4 schools', '13 programmes', 'Male + female voices', '233 lessons']}
       actions={<><GoldButton to="/app/academy">Open the Academy <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/guides" className="border px-5 py-3 text-[#e9e7df]">Read the setup guide</GhostButton></>}
     />
-    <PublicSection eyebrow="Every purpose" title="Every company purpose. One curriculum." sub="Each path ends with a final certificate exam. No pop quizzes inside lessons.">
+    <PublicSection eyebrow="The four schools" title="Four schools. Thirteen programmes. One standard." sub="Every programme ends with a final certificate exam. No pop quizzes inside lessons. The same standard applies to every learner.">
       <div className="grid gap-3 md:grid-cols-2">
         {ACADEMY_TRACKS.map(([icon, title, body]) => {
           const Icon = icon;
@@ -206,7 +204,7 @@ export const AcademyInfoPage = () => (
       <PublicCheckList items={ACADEMY_POINTS} />
       <div className="mt-3"><PublicNotice>Academy content is educational. Completing a course does not guarantee funding, returns or a trading outcome.</PublicNotice></div>
     </PublicSection>
-    <PublicCTA title={<>Learn inside the product <span className="tb-gold-text">you actually trade with.</span></>} body="Open the member Academy on an eligible plan, or start with the public setup guide." primary="Open the Academy" primaryTo="/app/academy" secondary="Read the guide" secondaryTo="/guides" />
+    <PublicCTA title={<>Learn inside the product <span className="tb-gold-text">you actually trade with.</span></>} body="Open Academy 2.0 on an eligible plan, or start with the public setup guide. Every programme keeps the same final-exam standard." primary="Open Academy 2.0" primaryTo="/app/academy" secondary="Read the guide" secondaryTo="/guides" />
   </PublicSiteShell>
 );
 

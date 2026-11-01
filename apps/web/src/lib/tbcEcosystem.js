@@ -143,19 +143,19 @@ export const TBC_ROADMAP = [
 
 export const TBC_MODULES = [
   { id: 'website', title: 'TBC public website', detail: 'Token overview, utility, roadmap, whitepaper, FAQs and risks.', status: 'ready', route: '/tbc' },
-  { id: 'dashboard', title: 'TBC dashboard', detail: 'Holdings, balances, activity, eligibility and status.', status: 'phase-one', route: '/app/tbc' },
-  { id: 'wallet', title: 'Wallet', detail: 'Non-custodial addresses, supported networks and transaction history.', status: 'phase-one', route: '/app/tbc/wallet' },
-  { id: 'purchase', title: 'Token purchase', detail: 'Price, quote, KYC, checkout, payment, allocation and receipt.', status: 'gated', route: '/app/tbc/buy' },
+  { id: 'dashboard', title: 'TBC credit wallet', detail: 'Credit balance, conversions and member transfers in your wallet.', status: 'ready', route: '/app/wallet?tab=crypto' },
+  { id: 'wallet', title: 'External wallet tracker', detail: 'Read-only addresses, supported networks and public balances.', status: 'ready', route: '/app/wallet?tab=crypto' },
+  { id: 'purchase', title: 'Token purchase', detail: 'Price, quote, KYC, checkout, payment, allocation and receipt.', status: 'gated', route: '/tbc/purchases' },
   { id: 'tokenomics', title: 'Tokenomics', detail: '100M proposal, allocation, vesting and supply lifecycle.', status: 'phase-one', route: '/tbc/tokenomics' },
-  { id: 'vesting', title: 'Vesting portal', detail: 'Schedules, cliffs, unlock calendar and claimable amounts.', status: 'gated', route: '/app/tbc/vesting' },
-  { id: 'staking', title: 'Staking', detail: 'Pools, lock periods, reward rules, unstaking and history.', status: 'gated', route: '/app/tbc/staking' },
-  { id: 'governance', title: 'Governance', detail: 'Proposals, discussion, voting, delegation and execution records.', status: 'gated', route: '/app/tbc/governance' },
+  { id: 'vesting', title: 'Vesting portal', detail: 'Schedules, cliffs, unlock calendar and claimable amounts.', status: 'gated' },
+  { id: 'staking', title: 'Staking', detail: 'Pools, lock periods, reward rules, unstaking and history.', status: 'gated' },
+  { id: 'governance', title: 'Governance', detail: 'Proposals, discussion, voting, delegation and execution records.', status: 'gated' },
   { id: 'utility', title: 'TBC utility center', detail: 'Eligible services, TBC payments, benefits and usage history.', status: 'planned', route: '/tbc/utility' },
   { id: 'chain', title: 'TradingBible Chain', detail: 'Network overview, validators, explorer and status.', status: 'planned', route: '/chain' },
-  { id: 'migration', title: 'Migration portal', detail: 'Base-to-chain conversion, locking, finality and reconciliation.', status: 'gated', route: '/app/tbc/migrate' },
+  { id: 'migration', title: 'Migration portal', detail: 'Base-to-chain conversion, locking, finality and reconciliation.', status: 'gated' },
   { id: 'developers', title: 'Developer platform', detail: 'API keys, SDKs, webhooks, sandbox and documentation.', status: 'planned', route: '/developers/tbc' },
   { id: 'compliance', title: 'Compliance portal', detail: 'Identity checks, country eligibility, screening and cases.', status: 'gated', route: '/tbc/compliance' },
-  { id: 'support', title: 'Support center', detail: 'Refund requests, complaints, disputes and help articles.', status: 'phase-one', route: '/app/tbc/support' },
+  { id: 'support', title: 'Support center', detail: 'Refund requests, complaints, disputes and help articles.', status: 'support-only', route: '/contact' },
   { id: 'admin', title: 'Admin control center', detail: 'Issuance, permissions, treasury, approvals and audit records.', status: 'phase-one', route: '/admin/tbc' },
 ];
 

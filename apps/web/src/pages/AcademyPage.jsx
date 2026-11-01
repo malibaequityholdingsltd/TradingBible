@@ -6,7 +6,7 @@ import {
 	MessageSquare, Send, BadgeCheck, CircleDollarSign, Wallet, Search, Globe, Bitcoin,
 	Sprout, Zap, Briefcase, Layers, Filter, Timer, Library,
 	Compass, MonitorPlay, Target, Coins, Handshake, Cpu, Building2,
-	Users, Copy, Check, KeyRound,
+	Users, Copy, Check, KeyRound, Headphones, AudioLines,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import AcademyListen from '@/components/AcademyListen';
@@ -24,8 +24,9 @@ import {
 } from '@/lib/academy';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import pb from '@/lib/pocketbaseClient';
-import { PATHS, STATIC_CURRICULA, WEBINAR_CATALOG, TRACKS, getTopicIndex, pathStats } from '@/lib/academyCatalog';
+import { PATHS, SCHOOLS, STATIC_CURRICULA, WEBINAR_CATALOG, TRACKS, getTopicIndex, pathStats } from '@/lib/academyCatalog';
 import '@/styles/academy-studio.css';
+import '@/styles/academy-v2.css';
 
 // ── Path icon map ────────────────────────────────────────────────────
 const PATH_ICONS = {
@@ -115,18 +116,18 @@ function Markdown({ text }) {
 		const lines = String(text || '').split('\n');
 		const out = [];
 		let list = null;
-		const flushList = () => { if (list) { out.push(<ul key={out.length} className="my-2 list-disc space-y-1 pl-5">{list.map((li, i) => <li key={i} className="text-sm leading-relaxed text-[#c9c4b4]" dangerouslySetInnerHTML={{ __html: inlineMarkdown(li) }} />)}</ul>); list = null; } };
+		const flushList = () => { if (list) { out.push(<ul key={out.length} className="my-2 list-disc space-y-1 pl-5">{list.map((li, i) => <li key={i} className="text-sm leading-relaxed text-[#c9c4b4] [html.light_&]:text-[#4a4a42]" dangerouslySetInnerHTML={{ __html: inlineMarkdown(li) }} />)}</ul>); list = null; } };
 		for (const raw of lines) {
 			const line = raw.trimEnd();
 			if (!line.trim()) { flushList(); continue; }
 			if (line.startsWith('### ')) { flushList(); out.push(<h4 key={out.length} className="mt-4 text-sm font-bold uppercase tracking-wide text-[#d4af37]">{line.slice(4)}</h4>); continue; }
-			if (line.startsWith('## ')) { flushList(); out.push(<h3 key={out.length} className="mt-5 text-lg font-bold text-[#f0ecdd]">{line.slice(3)}</h3>); continue; }
-			if (line.startsWith('# ')) { flushList(); out.push(<h2 key={out.length} className="mt-5 text-xl font-bold text-[#f0ecdd]">{line.slice(2)}</h2>); continue; }
+			if (line.startsWith('## ')) { flushList(); out.push(<h3 key={out.length} className="mt-5 text-lg font-bold text-[#f0ecdd] [html.light_&]:text-[#1a1d21]">{line.slice(3)}</h3>); continue; }
+			if (line.startsWith('# ')) { flushList(); out.push(<h2 key={out.length} className="mt-5 text-xl font-bold text-[#f0ecdd] [html.light_&]:text-[#1a1d21]">{line.slice(2)}</h2>); continue; }
 			if (/^[-*]\s+/.test(line)) { (list || (list = [])).push(line.replace(/^[-*]\s+/, '')); continue; }
 			if (/^\d+\.\s+/.test(line)) { (list || (list = [])).push(line.replace(/^\d+\.\s+/, '')); continue; }
 			if (/^[-*_]{3,}$/.test(line.trim())) { flushList(); out.push(<hr key={out.length} className="ac-rule" />); continue; }
 			flushList();
-			out.push(<p key={out.length} className="my-2 text-sm leading-relaxed text-[#c9c4b4]" dangerouslySetInnerHTML={{ __html: inlineMarkdown(line) }} />);
+			out.push(<p key={out.length} className="my-2 text-sm leading-relaxed text-[#c9c4b4] [html.light_&]:text-[#4a4a42]" dangerouslySetInnerHTML={{ __html: inlineMarkdown(line) }} />);
 		}
 		flushList();
 		return out;
@@ -212,32 +213,32 @@ function AIChat({ endpoint, buildBody, placeholder, accent = '#d4af37' }) {
 	};
 
 	return (
-		<div className="flex h-[380px] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/15 bg-[#0d0d12]/60 backdrop-blur-xl">
-			<div className="flex items-center gap-2 border-b border-[#d4af37]/10 px-4 py-3">
+		<div className="flex h-[380px] flex-col overflow-hidden rounded-2xl border border-[#d4af37]/15 bg-[#0d0d12]/60 backdrop-blur-xl [html.light_&]:border-[#8a6418]/20 [html.light_&]:bg-[#fffdf6]/80">
+			<div className="flex items-center gap-2 border-b border-[#d4af37]/10 px-4 py-3 [html.light_&]:border-[#8a6418]/15">
 				<Bot className="h-4 w-4" style={{ color: accent }} />
-				<span className="text-sm font-semibold text-[#f0ecdd]">{placeholder}</span>
-				{streaming && <Loader2 className="ml-auto h-4 w-4 animate-spin text-[#d4af37]" />}
+				<span className="text-sm font-semibold text-[#f0ecdd] [html.light_&]:text-[#1a1d21]">{placeholder}</span>
+				{streaming && <Loader2 className="ml-auto h-4 w-4 animate-spin text-[#d4af37] [html.light_&]:text-[#8a6418]" />}
 			</div>
 			<div ref={scrollRef} className="no-scrollbar flex-1 space-y-3 overflow-y-auto px-4 py-4">
 				{messages.length === 0 && (
-					<p className="text-xs leading-relaxed text-[#6a665a]">{t('aca.askAnything')}</p>
+					<p className="text-xs leading-relaxed text-[#6a665a] [html.light_&]:text-[#7e786a]">{t('aca.askAnything')}</p>
 				)}
 				{messages.map((m, i) => (
 					<div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-						<div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed backdrop-blur-md ${m.role === 'user' ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/12 bg-[#111113]/85 text-[#c9c4b4]'}`}>
+						<div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed backdrop-blur-md ${m.role === 'user' ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'border border-[#d4af37]/12 bg-[#111113]/85 text-[#c9c4b4] [html.light_&]:border-[#8a6418]/15 [html.light_&]:bg-[#f7f1e4] [html.light_&]:text-[#4a4a42]'}`}>
 							{m.role === 'assistant' ? <Markdown text={m.content} /> : m.content}
 						</div>
 					</div>
 				))}
 			</div>
-			<div className="flex items-center gap-2 border-t border-[#d4af37]/10 p-3">
+			<div className="flex items-center gap-2 border-t border-[#d4af37]/10 p-3 [html.light_&]:border-[#8a6418]/15">
 				<input
 					value={input}
 					onChange={(e) => setInput(e.target.value)}
 					onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && send(input)}
 					disabled={streaming}
 					placeholder={streaming ? t('aca.typing') : t('aca.askTutorPh')}
-					className="min-h-[42px] flex-1 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3.5 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none focus:border-[#d4af37]/50 disabled:opacity-60"
+					className="min-h-[42px] flex-1 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3.5 text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none focus:border-[#d4af37]/50 disabled:opacity-60 [html.light_&]:border-[#8a6418]/20 [html.light_&]:bg-white [html.light_&]:text-[#1a1d21] [html.light_&]:placeholder:text-[#8a8577] [html.light_&]:focus:border-[#8a6418]/50"
 				/>
 				<button
 					onClick={() => send(input)}
@@ -319,12 +320,13 @@ function Paywall({ onPurchased }) {
 	};
 
 	const features = [
-		{ icon: Route, text: `${PATHS.length} learning paths — foundation, FX, crypto, multi-asset, platform, funded, TBC, investor, AI and company` },
+		{ icon: Route, text: `Four schools · ${PATHS.length} programmes — foundation, FX, crypto, multi-asset, platform, funded, TBC, investor, AI and company` },
 		{ icon: Library, text: '233 lessons across every company purpose — no topic left outside the Academy' },
+		{ icon: Headphones, text: 'Male and female read-aloud voices in 8 languages — switch reader and speed inside every lesson' },
 		{ icon: Sparkles, text: 'Family-friendly story first, professional depth second — kids and adults learn together' },
 		{ icon: Video, text: '8 live webinars / week with an SI host — FX London lab, crypto on-chain lab, news reactions' },
 		{ icon: Bot, text: 'One-on-one SI tutor inside every lesson' },
-		{ icon: Trophy, text: 'Learn without pop quizzes — pass one final certificate exam per path' },
+		{ icon: Trophy, text: 'Learn without pop quizzes — pass one final certificate exam per programme' },
 		{ icon: Award, text: 'Lifetime access — one payment, forever' },
 	];
 
@@ -339,13 +341,13 @@ function Paywall({ onPurchased }) {
 			<div className="flex flex-col items-center text-center">
 				<div className="mt-4 flex flex-wrap justify-center gap-2">
 					{['Forex: pairs → prop firms', 'Crypto: wallets → perps → on-chain', 'Risk, psychology & playbooks'].map((s) => (
-						<span key={s} className="rounded-full border border-[#d4af37]/20 px-3 py-1 text-xs text-[#c9c4b4] backdrop-blur-md">{s}</span>
+						<span key={s} className="rounded-full border border-[#d4af37]/20 px-3 py-1 text-xs text-[#c9c4b4] backdrop-blur-md [html.light_&]:border-[#8a6418]/25 [html.light_&]:text-[#4a4a42]">{s}</span>
 					))}
 				</div>
 
 				<div className="mt-6 flex items-end gap-1.5">
 					<span className="tb-gold-text text-5xl font-bold">₮{tbcPrice.toLocaleString()}</span>
-					<span className="mb-1.5 text-sm text-[#8a8577]">$150 list · {t('aca.priceNote')}</span>
+					<span className="mb-1.5 text-sm text-[#8a8577] [html.light_&]:text-[#6b675c]">$150 list · {t('aca.priceNote')}</span>
 				</div>
 
 				<div className="mt-6 flex flex-col items-center gap-3">
@@ -359,46 +361,46 @@ function Paywall({ onPurchased }) {
 					<GhostButton onClick={buyWithWallet} disabled={busy || tbcBalance < tbcPrice} className="disabled:opacity-40">
 						<Wallet className="h-4 w-4" /> {t('aca.walletPay')} — pay {tbcPrice.toLocaleString()} TBC in TBC ({tbcBalance >= tbcPrice ? t('aca.available') : t('aca.needMore', { amt: `${(tbcPrice - tbcBalance).toFixed(2)} TBC` })})
 					</GhostButton>
-					<div className="text-xs text-[#8a8577]">{tbcBalance.toLocaleString()} TBC in till · <Link to="/app/wallet" className="text-[#d4af37] hover:underline">{t('bill.fundWallet')} — convert, swap, buy or receive TBC</Link></div>
+					<div className="text-xs text-[#8a8577] [html.light_&]:text-[#6b675c]">{tbcBalance.toLocaleString()} TBC in till · <Link to="/app/wallet" className="text-[#d4af37] [html.light_&]:text-[#8a6418] hover:underline">{t('bill.fundWallet')} — convert, swap, buy or receive TBC</Link></div>
 				</div>
 
-				<div className="mt-4 w-full max-w-xl rounded-2xl border border-[#d4af37]/20 bg-white/[0.03] p-4 text-left backdrop-blur-md">
+				<div className="mt-4 w-full max-w-xl rounded-2xl border border-[#d4af37]/20 bg-white/[0.03] p-4 text-left backdrop-blur-md [html.light_&]:border-[#8a6418]/25 [html.light_&]:bg-white">
 					<div className="flex items-start gap-3">
 						<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/10 text-[#d4af37]"><Users className="h-5 w-5" /></span>
 						<div className="min-w-0 flex-1">
 							<div className="flex flex-wrap items-baseline justify-between gap-2">
 								<div>
-									<div className="text-sm font-semibold text-[#f0ecdd]">Family pass · up to 4 learners</div>
-									<div className="text-xs text-[#8a8577]">One payment · lifetime access · card checkout</div>
+									<div className="text-sm font-semibold text-[#f0ecdd] [html.light_&]:text-[#1a1d21]">Family pass · up to 4 learners</div>
+									<div className="text-xs text-[#8a8577] [html.light_&]:text-[#6b675c]">One payment · lifetime access · card checkout</div>
 								</div>
-								<div className="font-mono text-2xl font-bold text-[#e8c95a]">$299</div>
+								<div className="font-mono text-2xl font-bold text-[#e8c95a] [html.light_&]:text-[#8a6418]">$299</div>
 							</div>
-							<p className="mt-2 text-xs leading-relaxed text-[#a9a392]">You get seat one. Share the private code with up to three more accounts — each learner gets the full 13-path Academy.</p>
-							<button type="button" onClick={() => buy('family')} disabled={busy || (checked && !familyConfigured)} className="mt-3 inline-flex min-h-[40px] items-center gap-2 rounded-lg border border-[#d4af37]/35 px-4 text-xs font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-50">
+							<p className="mt-2 text-xs leading-relaxed text-[#a9a392] [html.light_&]:text-[#5f5b52]">You get seat one. Share the private code with up to three more accounts — each learner gets the full Academy.</p>
+							<button type="button" onClick={() => buy('family')} disabled={busy || (checked && !familyConfigured)} className="mt-3 inline-flex min-h-[40px] items-center gap-2 rounded-lg border border-[#d4af37]/35 px-4 text-xs font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-50 [html.light_&]:border-[#8a6418]/35 [html.light_&]:text-[#8a6418]">
 								{busyTier === 'family' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />} Buy family pass
 							</button>
 						</div>
 					</div>
 				</div>
 
-				<div className="mt-3 w-full max-w-xl rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-left">
-					<div className="flex items-center gap-2 text-sm font-semibold text-[#f0ecdd]"><KeyRound className="h-4 w-4 text-[#d4af37]" /> Have a family code?</div>
+				<div className="mt-3 w-full max-w-xl rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-left [html.light_&]:border-black/10 [html.light_&]:bg-white">
+					<div className="flex items-center gap-2 text-sm font-semibold text-[#f0ecdd] [html.light_&]:text-[#1a1d21]"><KeyRound className="h-4 w-4 text-[#d4af37] [html.light_&]:text-[#8a6418]" /> Have a family code?</div>
 					<form onSubmit={redeem} className="mt-3 flex flex-col gap-2 sm:flex-row">
-						<input value={familyCode} onChange={(e) => setFamilyCode(e.target.value.toUpperCase())} placeholder="TB-FAM-XXXXXXXX" autoComplete="off" spellCheck={false} className="min-h-[42px] min-w-0 flex-1 rounded-lg border border-white/10 bg-black/20 px-3 font-mono text-sm tracking-wider text-[#f0ecdd] outline-none placeholder:text-[#6a665a] focus:border-[#d4af37]/50" />
-						<button type="submit" disabled={redeeming || !familyCode.trim()} className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg border border-[#d4af37]/35 px-4 text-xs font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-40">
+						<input value={familyCode} onChange={(e) => setFamilyCode(e.target.value.toUpperCase())} placeholder="TB-FAM-XXXXXXXX" autoComplete="off" spellCheck={false} className="min-h-[42px] min-w-0 flex-1 rounded-lg border border-white/10 bg-black/20 px-3 font-mono text-sm tracking-wider text-[#f0ecdd] outline-none placeholder:text-[#6a665a] focus:border-[#d4af37]/50 [html.light_&]:border-black/10 [html.light_&]:bg-white [html.light_&]:text-[#1a1d21] [html.light_&]:placeholder:text-[#8a8577] [html.light_&]:focus:border-[#8a6418]/50" />
+						<button type="submit" disabled={redeeming || !familyCode.trim()} className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg border border-[#d4af37]/35 px-4 text-xs font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-40 [html.light_&]:border-[#8a6418]/35 [html.light_&]:text-[#8a6418]">
 							{redeeming ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />} Redeem
 						</button>
 					</form>
-					<p className="mt-2 text-[11px] leading-relaxed text-[#6a665a]">Your account joins the pass instantly. The owner keeps the code; seats cannot be transferred after use.</p>
+					<p className="mt-2 text-[11px] leading-relaxed text-[#6a665a] [html.light_&]:text-[#7e786a]">Your account joins the pass instantly. The owner keeps the code; seats cannot be transferred after use.</p>
 				</div>
-			<p className="mt-3 text-xs text-[#6a665a]">{t('aca.guarantee')}</p>
+			<p className="mt-3 text-xs text-[#6a665a] [html.light_&]:text-[#7e786a]">{t('aca.guarantee')}</p>
 			</div>
 
 			<div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 				{features.map((f) => (
 					<Card key={f.text} className="flex items-start gap-3 rounded-xl p-4">
 						<f.icon className="mt-0.5 h-5 w-5 shrink-0 text-[#d4af37]" />
-						<span className="text-sm text-[#c9c4b4]">{f.text}</span>
+						<span className="text-sm text-[#c9c4b4] [html.light_&]:text-[#4a4a42]">{f.text}</span>
 					</Card>
 				))}
 			</div>
@@ -1073,6 +1075,7 @@ export default function AcademyPage() {
 	const [attended, setAttended] = useState([]);
 	const [tab, setTab] = useState('learn');
 	const [trackFilter, setTrackFilter] = useState('all');
+	const [schoolFilter, setSchoolFilter] = useState('all');
 	const [family, setFamily] = useState(null);
 	const [familyCopied, setFamilyCopied] = useState(false);
 
@@ -1085,9 +1088,8 @@ export default function AcademyPage() {
 		lessons: topicIndex.length,
 		minutes: topicIndex.reduce((a, x) => a + (Number(x.minutes) || 0), 0),
 		paths: PATHS.length,
+		schools: SCHOOLS.length,
 	}), [topicIndex]);
-	const forexCount = useMemo(() => topicIndex.filter((x) => (x.tags || []).includes('forex')).length, [topicIndex]);
-	const cryptoCount = useMemo(() => topicIndex.filter((x) => (x.tags || []).includes('crypto')).length, [topicIndex]);
 
 	const refreshFamily = useCallback(async () => {
 		try {
@@ -1248,7 +1250,12 @@ export default function AcademyPage() {
 	const liveWebinar = liveWebinars.find((w) => w.state.live);
 	const filteredWebinars = trackFilter === 'all' ? liveWebinars : liveWebinars.filter((w) => w.track === trackFilter || w.track === 'general');
 
-	const filteredPaths = trackFilter === 'all' ? PATHS : PATHS.filter((p) => p.track === trackFilter || (trackFilter === 'general' && p.track === 'general'));
+	const activeSchool = SCHOOLS.find((school) => school.key === schoolFilter);
+	const filteredPaths = PATHS.filter((p) => {
+		const trackMatch = trackFilter === 'all' || p.track === trackFilter || (trackFilter === 'general' && p.track === 'general');
+		const schoolMatch = schoolFilter === 'all' || activeSchool?.pathKeys.includes(p.key);
+		return trackMatch && schoolMatch;
+	});
 
 	useEffect(() => {
 		if (!liveWebinar || attended.includes(liveWebinar.id)) return;
@@ -1262,7 +1269,7 @@ export default function AcademyPage() {
 	if (access === false && !isAdmin) {
 		return (
 			<AppLayout title={t('aca.page')}>
-				<div className="tb-page academy-studio">
+				<div className="tb-page academy-studio academy-v2">
 				<Paywall onPurchased={() => { toast({ title: t('aca.welcome'), description: t('aca.welcomeSub') }); refreshAccess(); }} />
 				<div className="mt-6">
 					<TopicExplorer onStartPath={() => { toast({ title: t('aca.badge'), description: 'Get lifetime access to unlock all paths and lessons.' }); }} />
@@ -1276,7 +1283,7 @@ export default function AcademyPage() {
 	if (loadError) {
 		return (
 			<AppLayout title={t('aca.page')}>
-				<div className="tb-page academy-studio">
+				<div className="tb-page academy-studio academy-v2">
 				<EmptyState
 					icon={GraduationCap}
 					title={t('aca.loadFailRetry', null, 'Could not load your Academy. Check your connection, then try again.')}
@@ -1290,7 +1297,7 @@ export default function AcademyPage() {
 	if (access === null || !data) {
 		return (
 			<AppLayout title={t('aca.page')}>
-				<div className="tb-page academy-studio">
+				<div className="tb-page academy-studio academy-v2">
 				<div className="ac-state">
 					<Loader2 className="h-7 w-7 animate-spin" />
 					<strong>{t('aca.loading')}</strong>
@@ -1312,7 +1319,7 @@ export default function AcademyPage() {
 		const pathDone = flatLessons.filter((x) => progressMap[`${x.course.courseKey}:${x.lesson.lessonKey}`]?.completed).length;
 		return (
 			<AppLayout title={t('aca.page')}>
-				<div className="tb-page academy-studio">
+				<div className="tb-page academy-studio academy-v2">
 				<LessonView
 					pathKey={activePath.key}
 					curriculum={lessonCurriculum}
@@ -1339,7 +1346,7 @@ export default function AcademyPage() {
 		const certificate = enrollmentFor(activePath.key);
 		return (
 			<AppLayout title={t('aca.page')}>
-				<div className="tb-page academy-studio">
+				<div className="tb-page academy-studio academy-v2">
 				<FinalExamView
 					pathKey={activePath.key}
 					pathName={activePath.name}
@@ -1363,7 +1370,7 @@ export default function AcademyPage() {
 		const exam = examForPath(data.progress, activePath.key);
 		return (
 			<AppLayout title={t('aca.page')}>
-				<div className="tb-page academy-studio">
+				<div className="tb-page academy-studio academy-v2">
 				{!curriculum || generating === activePath.key && !curriculum ? (
 					<div className="ac-state">
 						<Loader2 className="h-7 w-7 animate-spin" />
@@ -1466,67 +1473,124 @@ export default function AcademyPage() {
 	};
 
 	const studioTabs = [
-		{ id: 'learn', label: 'Curriculum' },
-		{ id: 'topics', label: 'Topic index' },
-		{ id: 'webinars', label: 'Live room' },
-		{ id: 'certificates', label: 'Certificates' },
+		{ id: 'learn', label: 'Programmes' },
+		{ id: 'topics', label: 'Library' },
+		{ id: 'webinars', label: 'Live' },
+		{ id: 'certificates', label: 'Certs' },
 		...(family?.active ? [{ id: 'family', label: 'Family' }] : []),
 	];
 
 	return (
 		<AppLayout title={t('aca.page')}>
-			<div className="tb-page academy-studio">
-				<section className="ac-hero">
-					<div className="ac-hero-copy">
-						<span className="ac-eyebrow">TradingBible Academy · Studio 01</span>
-						<h1 className="ac-title">
-							Learn the market.
-							<br />
-							<em>Then prove it.</em>
-						</h1>
-						<p className="ac-lede">
-							A structured, family-friendly path from first candle to desk-level execution. Read or listen in your language, learn through a simple story first, then go as deep as the professional desk requires. The final certificate exam is the only test.
-						</p>
-						<div className="ac-hero-actions">
-							<button type="button" className="ac-btn ac-btn-gold" onClick={studio.nextUp ? continueLearning : enrolled.length ? () => selectTab('certificates') : scrollToPaths}>
-								{studio.nextUp ? 'Continue learning' : enrolled.length ? 'Open certificates' : 'Choose a path'}
-								<ChevronRight className="h-4 w-4" />
-							</button>
-							<button type="button" className="ac-btn ac-btn-ghost" onClick={() => selectTab('topics')}>
-								Browse the topic index
-							</button>
-						</div>
-						<p className="ac-hero-note"><span /> No quizzes inside lessons · Read aloud in your language · One final exam per path · Certificate on pass</p>
+			<div className="tb-page academy-studio academy-v2">
+				<header className="ac-v2-masthead">
+					<div className="ac-v2-mast-brand">
+						<span className="ac-v2-mast-mark">A²</span>
+						<div><small>TradingBible</small><strong>Academy 2.0</strong></div>
 					</div>
-					<aside className="ac-progress-card" aria-label="Your Academy progress">
-						<div className="ac-ring" style={{ '--ac-pct': `${studio.pct}%` }}>
-							<div className="ac-ring-inner">
-								<strong>{studio.pct}%</strong>
-								<span>path progress</span>
-							</div>
-						</div>
-						<div className="ac-progress-stats">
-							<div>
-								<span>Lessons</span>
-								<strong>{studio.total ? `${studio.done} / ${studio.total}` : 'Not started'}</strong>
-							</div>
-							<div>
-								<span>Next up</span>
-								<strong>{studio.nextUp?.lesson?.title || 'Choose a path'}</strong>
-							</div>
-						</div>
-						<button type="button" className="ac-link-btn" onClick={studio.nextUp ? continueLearning : () => selectTab('certificates')}>
-							{studio.nextUp ? 'Open next lesson' : 'View certificate track'} <ChevronRight className="h-3.5 w-3.5" />
-						</button>
-					</aside>
-				</section>
+					<div className="ac-v2-mast-meta">
+						<span><AudioLines className="h-3.5 w-3.5" /> Audio-first</span>
+						<span><Globe className="h-3.5 w-3.5" /> 8 languages</span>
+						<span><BadgeCheck className="h-3.5 w-3.5" /> {totals.paths} programmes</span>
+					</div>
+				</header>
 
-				<section className="ac-ledger" aria-label="Academy catalogue">
-					<div className="ac-ledger-item"><span>Learning paths</span><strong>{String(totals.paths).padStart(2, '0')}</strong><small>Foundation to professional</small></div>
-					<div className="ac-ledger-item"><span>Forex lessons</span><strong>{forexCount}</strong><small>Pairs · sessions · risk</small></div>
-					<div className="ac-ledger-item"><span>Crypto lessons</span><strong>{cryptoCount}</strong><small>Wallets · perps · on-chain</small></div>
-					<div className="ac-ledger-item"><span>Study time</span><strong>{Math.round(totals.minutes / 60)}h+</strong><small>Read at your own pace</small></div>
-				</section>
+				<div className="ac-v2-layout">
+					<aside className="ac-v2-rail" aria-label="Academy navigation">
+						<div className="ac-v2-rail-brand">
+							<span className="ac-v2-mark">A²</span>
+							<div><strong>The Listening Institute</strong><small>Academy 2.0</small></div>
+						</div>
+						<nav className="ac-v2-rail-nav" role="tablist" aria-label="Academy sections">
+							{studioTabs.map((item, index) => (
+								<button
+									key={item.id}
+									type="button"
+									role="tab"
+									aria-selected={tab === item.id}
+									className={`ac-v2-rail-link ${tab === item.id ? 'is-active' : ''}`}
+									onClick={() => selectTab(item.id)}
+								>
+									<span className="ac-v2-rail-index">0{index + 1}</span>
+									<span>{item.label}</span>
+								</button>
+							))}
+						</nav>
+						<div className="ac-v2-rail-next">
+							<span className="ac-v2-rail-label">Next up</span>
+							<strong>{studio.nextUp?.lesson?.title || 'Choose a programme'}</strong>
+							<small>{studio.nextUp?.pathName || `${totals.paths} programmes ready`}</small>
+							<button type="button" onClick={studio.nextUp ? continueLearning : scrollToPaths}>
+								{studio.nextUp ? 'Continue lesson' : 'Browse programmes'} <ChevronRight className="h-3.5 w-3.5" />
+							</button>
+						</div>
+						<div className="ac-v2-rail-progress">
+							<div><span>Overall progress</span><strong>{studio.pct}%</strong></div>
+							<div className="ac-v2-rail-bar"><i style={{ width: `${studio.pct}%` }} /></div>
+							<small>{studio.total ? `${studio.done} of ${studio.total} lessons` : 'No lessons started'}</small>
+						</div>
+						<div className="ac-v2-rail-voice">
+							<span className="ac-v2-rail-voice-icon"><Headphones className="h-4 w-4" /></span>
+							<div><strong>Male + female</strong><small>Reader choice in every lesson</small></div>
+						</div>
+					</aside>
+
+					<div className="ac-v2-stage">
+						<section className="ac-hero ac-v2-hero">
+							<div className="ac-hero-copy">
+								<span className="ac-eyebrow">Academy 2.0 · The Listening Institute</span>
+								<h1 className="ac-title">
+									Learn the market.
+									<br />
+									<em>Hear it.</em>
+								</h1>
+								<p className="ac-lede">
+									A new Academy built for reading and listening: four schools, thirteen programmes and 233 lessons, with a male or female reader in your language. The story comes first, the professional depth second, and one final exam is the only test.
+								</p>
+								<div className="ac-hero-actions">
+									<button type="button" className="ac-btn ac-btn-gold" onClick={studio.nextUp ? continueLearning : enrolled.length ? () => selectTab('certificates') : scrollToPaths}>
+										{studio.nextUp ? 'Continue learning' : enrolled.length ? 'Open credentials' : 'Enter the programme'}
+										<ChevronRight className="h-4 w-4" />
+									</button>
+									<button type="button" className="ac-btn ac-btn-ghost" onClick={() => selectTab('topics')}>
+										Browse the library
+									</button>
+								</div>
+								<p className="ac-hero-note"><span /> Four schools · 13 programmes · Male + female voices · One final gate</p>
+								<div className="ac-v2-voice-strip">
+									<span className="ac-v2-eq" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></span>
+									<div><strong>Two readers. Every lesson.</strong><span>Choose a female or male voice, switch language, and change speed without losing your place.</span></div>
+								</div>
+							</div>
+							<aside className="ac-progress-card" aria-label="Your Academy progress">
+								<div className="ac-ring" style={{ '--ac-pct': `${studio.pct}%` }}>
+									<div className="ac-ring-inner">
+										<strong>{studio.pct}%</strong>
+										<span>overall progress</span>
+									</div>
+								</div>
+								<div className="ac-progress-stats">
+									<div>
+										<span>Lessons</span>
+										<strong>{studio.total ? `${studio.done} / ${studio.total}` : 'Not started'}</strong>
+									</div>
+									<div>
+										<span>Next up</span>
+										<strong>{studio.nextUp?.lesson?.title || 'Choose a programme'}</strong>
+									</div>
+								</div>
+								<button type="button" className="ac-link-btn" onClick={studio.nextUp ? continueLearning : () => selectTab('certificates')}>
+									{studio.nextUp ? 'Open next lesson' : 'View credential track'} <ChevronRight className="h-3.5 w-3.5" />
+								</button>
+							</aside>
+						</section>
+
+						<section className="ac-ledger" aria-label="Academy catalogue">
+							<div className="ac-ledger-item"><span>Schools</span><strong>{String(totals.schools).padStart(2, '0')}</strong><small>Foundation to ownership</small></div>
+							<div className="ac-ledger-item"><span>Programmes</span><strong>{String(totals.paths).padStart(2, '0')}</strong><small>Four schools · one standard</small></div>
+							<div className="ac-ledger-item"><span>Lessons</span><strong>{totals.lessons}</strong><small>Read or listen</small></div>
+							<div className="ac-ledger-item"><span>Listening time</span><strong>{Math.round(totals.minutes / 60)}h+</strong><small>Male + female voices</small></div>
+						</section>
 
 				<div className="ac-toolbar">
 					<nav className="ac-tabs" role="tablist" aria-label="Academy sections">
@@ -1559,10 +1623,24 @@ export default function AcademyPage() {
 					<div id="ac-paths">
 						<div className="ac-section-head">
 							<div>
-								<span className="ac-section-kicker">01 — The curriculum</span>
-								<h2 className="ac-section-title">Choose your desk.</h2>
+								<span className="ac-section-kicker">01 — The programme catalogue</span>
+								<h2 className="ac-section-title">Choose a school.</h2>
 							</div>
-							<p className="ac-section-sub">Thirteen paths. One standard: finish every lesson, then pass the final certificate exam. No pop quizzes, no filler.</p>
+							<p className="ac-section-sub">Four schools, thirteen programmes, 233 lessons. Every programme ends at the same gate: finish every lesson, then pass the final exam. No pop quizzes, no filler.</p>
+						</div>
+						<div className="ac-v2-school-strip" role="group" aria-label="Filter by school">
+							<button type="button" className={`ac-v2-school ${schoolFilter === 'all' ? 'is-active' : ''}`} onClick={() => setSchoolFilter('all')}>
+								<span className="ac-v2-school-code">All</span>
+								<strong>Every programme</strong>
+								<small>{PATHS.length} paths · one standard</small>
+							</button>
+							{SCHOOLS.map((school) => (
+								<button key={school.key} type="button" className={`ac-v2-school ${schoolFilter === school.key ? 'is-active' : ''}`} onClick={() => setSchoolFilter(schoolFilter === school.key ? 'all' : school.key)}>
+									<span className="ac-v2-school-code">{school.code}</span>
+									<strong>{school.name}</strong>
+									<small>{school.pathKeys.length} {school.pathKeys.length === 1 ? 'programme' : 'programmes'} · {school.desc}</small>
+								</button>
+							))}
 						</div>
 						<div className="ac-path-grid">
 							{filteredPaths.map((p, index) => {
@@ -1641,7 +1719,19 @@ export default function AcademyPage() {
 								);
 							})}
 						</div>
-						{filteredPaths.length === 0 && <div className="ac-empty"><strong>No paths in this desk.</strong><p>Switch the filter above to see the rest of the curriculum.</p></div>}
+						{filteredPaths.length === 0 && (
+							<div className="ac-empty">
+								<strong>No programmes match these filters.</strong>
+								<p>Clear the school or desk filter to see the rest of the catalogue.</p>
+								<button
+									type="button"
+									className="ac-btn ac-btn-ghost ac-btn-sm"
+									onClick={() => { setSchoolFilter('all'); setTrackFilter('all'); }}
+								>
+									Clear filters
+								</button>
+							</div>
+						)}
 					</div>
 				)}
 
@@ -1718,31 +1808,31 @@ export default function AcademyPage() {
 								<p className="ac-page-sub">{family.role === 'owner' ? 'Share the private code with up to three more learners. Every seat gets the full Academy, read-aloud lessons and the same certificate standard.' : 'You are learning on a family pass. The owner manages the share code and remaining seats.'}</p>
 							</div>
 						</div>
-						<div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-							<div className="rounded-2xl border border-[#d4af37]/20 bg-white/[0.03] p-5">
+						<div className="ac-family-grid">
+							<div className="ac-family-panel">
 								{family.role === 'owner' ? (
 									<>
-										<div className="text-sm font-semibold text-[#f0ecdd]">Share this private code</div>
-										<p className="mt-1 text-xs leading-relaxed text-[#a9a392]">Each learner signs in, opens Academy, and redeems it under “Have a family code?”.</p>
-										<div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-											<code className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-lg tracking-[0.18em] text-[#e8c95a]">{family.code}</code>
-											<button type="button" onClick={copyFamilyCode} disabled={!family.code} className="inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl border border-[#d4af37]/35 px-4 text-xs font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-40">
+										<div className="ac-family-title">Share this private code</div>
+										<p className="ac-family-copy">Each learner signs in, opens Academy, and redeems it under “Have a family code?”.</p>
+										<div className="ac-family-code-row">
+											<code className="ac-family-code">{family.code}</code>
+											<button type="button" onClick={copyFamilyCode} disabled={!family.code} className="ac-family-copy-btn">
 												{familyCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} {familyCopied ? 'Copied' : 'Copy code'}
 											</button>
 										</div>
 									</>
 								) : (
 									<>
-										<div className="text-sm font-semibold text-[#f0ecdd]">Your seat is active</div>
-										<p className="mt-1 text-xs leading-relaxed text-[#a9a392]">The owner keeps the share code. If you need another seat, ask them to share it with the learner directly.</p>
+										<div className="ac-family-title">Your seat is active</div>
+										<p className="ac-family-copy">The owner keeps the share code. If you need another seat, ask them to share it with the learner directly.</p>
 									</>
 								)}
 							</div>
-							<div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-								<div className="text-xs uppercase tracking-[0.18em] text-[#8a8577]">Seats</div>
-								<div className="mt-2 flex items-end gap-2"><strong className="font-mono text-4xl text-[#f0ecdd]">{family.seatsRemaining}</strong><span className="pb-1 text-xs text-[#8a8577]">remaining</span></div>
-								<div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><span className="block h-full rounded-full bg-[#d4af37]" style={{ width: `${Math.round((family.seatsUsed / family.seatsTotal) * 100)}%` }} /></div>
-								<div className="mt-2 text-xs text-[#a9a392]">{family.seatsUsed} of {family.seatsTotal} seats in use</div>
+							<div className="ac-family-panel ac-family-seats">
+								<div className="ac-family-kicker">Seats</div>
+								<div className="ac-family-seat-row"><strong>{family.seatsRemaining}</strong><span>remaining</span></div>
+								<div className="ac-family-seat-bar"><span style={{ width: `${Math.round((family.seatsUsed / family.seatsTotal) * 100)}%` }} /></div>
+								<div className="ac-family-copy">{family.seatsUsed} of {family.seatsTotal} seats in use</div>
 							</div>
 						</div>
 					</div>
@@ -1754,7 +1844,7 @@ export default function AcademyPage() {
 							<div>
 								<span className="ac-eyebrow">Certification · {t('aca.yourCerts')}</span>
 								<h2 className="ac-page-title">A record of the work.</h2>
-								<p className="ac-page-sub">One certificate per path. Issued only after every lesson is complete and the final exam is passed.</p>
+								<p className="ac-page-sub">One certificate per programme. Issued only after every lesson is complete and the final exam is passed.</p>
 							</div>
 						</div>
 						{enrolled.length === 0 ? (
@@ -1829,6 +1919,8 @@ export default function AcademyPage() {
 						</div>
 					</div>
 					<button type="button" className="ac-link-btn" onClick={continueLearning}>Ask in your next lesson <ChevronRight className="h-3.5 w-3.5" /></button>
+				</div>
+					</div>
 				</div>
 			</div>
 		</AppLayout>

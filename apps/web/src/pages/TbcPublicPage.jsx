@@ -253,7 +253,7 @@ function Overview({ docs, docsLoading, docsError, onRead }) {
             { label: 'Public sale', value: 'Disabled' },
             { label: 'Phase', value: 'Information' },
           ]}
-          actions={<><GoldButton to="/app/tbc">Open TBC dashboard <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/tbc/whitepaper">Read the whitepaper</GhostButton></>}
+          actions={<><GoldButton to="/tbc/documents">Source documents <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/tbc/whitepaper">Read the whitepaper</GhostButton></>}
         />
         <div className="mt-4"><TbcProposalNotice /></div>
       </div>
@@ -353,7 +353,7 @@ function Whitepaper({ whitepaper, docsLoading, onRead }) {
   return (
     <>
       <div className="pt-3 sm:pt-5">
-        <PageHero kickerIcon={BookOpen} kicker="Official summary · P-01" title="TBC Whitepaper" accent="& Utility Roadmap" subtitle="Issuer overview, functional design and delivery milestones. Read the current draft in the Word reader, or download a read-only Word copy." actions={<><GoldButton to="/app/tbc">Open dashboard <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/tbc/documents">Document library</GhostButton></>} />
+        <PageHero kickerIcon={BookOpen} kicker="Official summary · P-01" title="TBC Whitepaper" accent="& Utility Roadmap" subtitle="Issuer overview, functional design and delivery milestones. Read the current draft in the Word reader, or download a read-only Word copy." actions={<><GoldButton to="/tbc/documents">Document library <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/tbc/faqs">FAQs</GhostButton></>} />
       </div>
       <div className="mt-4"><TbcProposalNotice /></div>
       <div className="mt-5 grid gap-4 lg:grid-cols-[1.35fr_.65fr]">
@@ -479,7 +479,7 @@ function Documents({ docs, loading, error, onRead }) {
   return (
     <>
       <div className="pt-3 sm:pt-5">
-        <PageHero kickerIcon={FileText} kicker="Public document library" title="Read the source," accent="not the marketing" subtitle="Five corrected public summaries covering the whitepaper, supply and vesting, purchases and custody, jurisdiction eligibility, and platform separation. The 26 controlled corporate instruments are available only in the admin vault." actions={<GoldButton to="/app/tbc">Open dashboard <ArrowRight className="h-4 w-4" /></GoldButton>} />
+        <PageHero kickerIcon={FileText} kicker="Public document library" title="Read the source," accent="not the marketing" subtitle="Five corrected public summaries covering the whitepaper, supply and vesting, purchases and custody, jurisdiction eligibility, and platform separation. The 26 controlled corporate instruments are available only in the admin vault." actions={<GoldButton to="/tbc/risks">Risk factors <ArrowRight className="h-4 w-4" /></GoldButton>} />
       </div>
       <div className="mt-4"><TbcProposalNotice /></div>
       <div className="mt-5"><DocumentLibrary documents={docs} loading={loading} error={error} onRead={onRead} /></div>
@@ -663,7 +663,7 @@ function Faqs() {
       <div className="mt-5 space-y-2">
         {TBC_FAQS.map((faq) => <details key={faq.q} className="group rounded-[10px] border border-white/[0.07] bg-[#0b0b10] p-4 open:border-[#d4af37]/25"><summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-[#f0ecdd]"><span>{faq.q}</span><ChevronRight className="h-4 w-4 shrink-0 text-[#d4af37] transition group-open:rotate-90" /></summary><p className="mt-2 max-w-3xl text-xs leading-relaxed text-[#8a8577]">{faq.a}</p></details>)}
       </div>
-      <div className="mt-4 grid gap-4 lg:grid-cols-2"><Card className="p-4"><SectionHead icon={FileText} title="Need a document?" /><p className="text-xs text-[#8a8577]">The five public summaries are available in the document library. The controlled instruments are in the admin legal vault.</p><div className="mt-2"><SectionLink to="/tbc/documents">Document library</SectionLink></div></Card><Card className="p-4"><SectionHead icon={ShieldCheck} title="Report a suspicious offer" /><p className="text-xs leading-relaxed text-[#8a8577]">TradingBible will never ask you to send seed phrases, grant wallet approvals, or pay a “tax” to receive TBC. Report any offer that claims otherwise to support.</p><div className="mt-2"><SectionLink to="/app/tbc/support">Contact support</SectionLink></div></Card></div>
+      <div className="mt-4 grid gap-4 lg:grid-cols-2"><Card className="p-4"><SectionHead icon={FileText} title="Need a document?" /><p className="text-xs text-[#8a8577]">The five public summaries are available in the document library. The controlled instruments are in the admin legal vault.</p><div className="mt-2"><SectionLink to="/tbc/documents">Document library</SectionLink></div></Card><Card className="p-4"><SectionHead icon={ShieldCheck} title="Report a suspicious offer" /><p className="text-xs leading-relaxed text-[#8a8577]">TradingBible will never ask you to send seed phrases, grant wallet approvals, or pay a “tax” to receive TBC. Report any offer that claims otherwise to support.</p><div className="mt-2"><SectionLink to="/contact">Contact support</SectionLink></div></Card></div>
     </>
   );
 }

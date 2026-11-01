@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Settings, FileText, CreditCard, IdCard, LibraryBig, BarChart3,
   LogOut, Menu, Search, Shield, X, Plug, Key, Package, User, ChevronDown, ChevronRight, MonitorPlay, Briefcase, Gift,
-  GraduationCap, Wallet, UserRound, Building2, Coins, Command, ShieldCheck, Landmark,
+  Wallet, UserRound, Building2, Coins, Command, ShieldCheck, Landmark,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import pb from '@/lib/pocketbaseClient';
@@ -79,7 +79,6 @@ const NAV_GROUPS = [
     items: [
       { to: '/admin/content', label: 'Content', icon: LibraryBig },
       { to: '/admin/tv', label: 'TradingBible TV', icon: MonitorPlay },
-      { to: '/admin/mentors', label: 'Mentors', icon: GraduationCap },
       { to: '/admin/jobs', label: 'Jobs & hiring', icon: Briefcase },
     ],
   },

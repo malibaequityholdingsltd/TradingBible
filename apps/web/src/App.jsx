@@ -75,7 +75,6 @@ const AdminIntegrations = lazy(() => import('./pages/AdminPortal').then((m) => (
 const AdminApiKeys = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminApiKeys })));
 const AdminPlugins = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminPlugins })));
 const AdminJobs = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminJobs })));
-const AdminMentors = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminMentors })));
 const AdminEmployees = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminEmployees })));
 const AdminWallet = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminWallet })));
 const AdminCompany = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminCompany })));
@@ -98,7 +97,6 @@ const FaqPage = lazy(() => import('./pages/LegalPages').then((m) => ({ default: 
 const AdsDemoPage = lazy(() => import('./pages/AdsDemoPage'));
 const ProGuidePage = lazy(() => import('./pages/ProGuidePage'));
 const TbcPublicPage = lazy(() => import('./pages/TbcPublicPage'));
-const TbcAppPage = lazy(() => import('./pages/TbcAppPage'));
 const TbcChainPage = lazy(() => import('./pages/TbcChainPage'));
 const StockTbPage = lazy(() => import('./pages/StockTbPage'));
 const TbStockDocumentsPage = lazy(() => import('./pages/TbStockDocumentsPage'));
@@ -114,7 +112,6 @@ const ChallengesPage = lazy(() => import('./pages/ChallengesPage'));
 const BacktestPage = lazy(() => import('./pages/BacktestPage'));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
 const StakingPage = lazy(() => import('./pages/StakingPage'));
-const MentorsPage = lazy(() => import('./pages/MentorsPage'));
 const PaperPage = lazy(() => import('./pages/PaperPage'));
 const StaffBioPage = lazy(() => import('./pages/StaffBioPage'));
 const StaffIdCardsPage = lazy(() => import('./pages/StaffIdCardsPage'));
@@ -410,10 +407,11 @@ function RoutesWithBoundary() {
                     <Route path="/investors/shareholders" element={<ShareholderPortalPage />} />
                     {/* Public staff profile — opened by scanning an ID-card QR */}
                     <Route path="/staff/:id" element={<StaffProfileGate />} />
-                    {/* Merged surfaces — old deep links land in their new home */}
-                    <Route path="/app/tbc" element={<Protected><TbcAppPage /></Protected>} />
-                    <Route path="/app/support" element={<Navigate to="/app/tbc/support" replace />} />
-                    <Route path="/app/tbc/:tab" element={<Protected><TbcAppPage /></Protected>} />
+                    {/* TBC now lives on the public record; the member TBC page is retired. */}
+                    <Route path="/app/tbc" element={<Navigate to="/app/wallet?tab=crypto" replace />} />
+                    <Route path="/app/tbc/support" element={<Navigate to="/contact" replace />} />
+                    <Route path="/app/tbc/:tab" element={<Navigate to="/app/wallet?tab=crypto" replace />} />
+                    <Route path="/app/support" element={<Navigate to="/contact" replace />} />
                     <Route path="/app/defi" element={<Navigate to="/app/wallet?tab=crypto" replace />} />
                     <Route path="/app/market" element={<Navigate to="/app/signals?tab=market" replace />} />
                     <Route path="/app/funded" element={<Navigate to="/app/challenges" replace />} />
@@ -443,7 +441,8 @@ function RoutesWithBoundary() {
                     <Route path="/app/paper" element={<Protected><PaperPage /></Protected>} />
                     <Route path="/app/backtest" element={<PaidProtected><BacktestPage /></PaidProtected>} />
                     <Route path="/app/staking" element={<Protected><StakingPage /></Protected>} />
-                    <Route path="/app/mentors" element={<Protected><MentorsPage /></Protected>} />
+                    {/* The SI coach is the only mentor surface. */}
+                    <Route path="/app/mentors" element={<Navigate to="/app/coach" replace />} />
                     <Route path="/leaderboard" element={<LeaderboardPage />} />
                     <Route path="/app/reports" element={<PlanProtected plan="elite" gate="reports"><ReportsPage /></PlanProtected>} />
                     <Route path="/app/coach" element={<PlanProtected plan="elite" gate="coach"><FeatureGate feature="aiCoach"><CoachPage /></FeatureGate></PlanProtected>} />
@@ -478,7 +477,6 @@ function RoutesWithBoundary() {
                     <Route path="/admin/api-keys" element={<AdminProtected><AdminApiKeys /></AdminProtected>} />
                     <Route path="/admin/plugins" element={<AdminProtected><AdminPlugins /></AdminProtected>} />
                     <Route path="/admin/jobs" element={<AdminProtected><AdminJobs /></AdminProtected>} />
-                    <Route path="/admin/mentors" element={<AdminProtected><AdminMentors /></AdminProtected>} />
                     <Route path="/admin/wallet" element={<AdminProtected><AdminWallet /></AdminProtected>} />
                     <Route path="/admin/company" element={<AdminProtected><AdminCompany /></AdminProtected>} />
                     <Route path="/admin/tbc" element={<AdminProtected><AdminTbcPage /></AdminProtected>} />

@@ -314,51 +314,6 @@ router.delete('/forum-replies/:id', supabaseAuth, async (req, res, next) => {
 	} catch (err) { next(err); }
 });
 
-// ── Mentors ──────────────────────────────────────────────────────────
-// Mentor directory oversight. Profiles are created by users via
-// POST /market/mentors/register; admins can enable/disable or edit them.
-
-router.get('/mentors', supabaseAuth, async (req, res, next) => {
-	try {
-		await assertAdmin(req);
-		const rows = await supabaseRest('/rest/v1/mentors', {
-			query: { select: '*', order: 'created_at.desc', limit: 1000 },
-		});
-		res.json(rows || []);
-	} catch (err) { next(err); }
-});
-
-router.patch('/mentors/:owner', supabaseAuth, async (req, res, next) => {
-	try {
-		await assertAdmin(req);
-		const patch = {};
-		if (req.body) {
-			if ('enabled' in req.body) patch.enabled = Boolean(req.body.enabled);
-			if ('headline' in req.body) patch.headline = String(req.body.headline || '').slice(0, 140);
-			if ('price_usd' in req.body) {
-				const n = Number(req.body.price_usd);
-				if (!Number.isNaN(n) && n >= 0) patch.price_usd = n;
-			}
-			if ('topics' in req.body && Array.isArray(req.body.topics)) {
-				patch.topics = req.body.topics.map((t) => String(t).slice(0, 40)).slice(0, 12);
-			}
-		}
-		const updated = await supabaseRest(`/rest/v1/mentors?owner=eq.${encodeURIComponent(req.params.owner)}`, {
-			method: 'PATCH', body: patch, prefer: 'return=representation', query: { select: '*' },
-		});
-		res.json(updated?.[0] || { owner: req.params.owner, ...patch });
-	} catch (err) { next(err); }
-});
-
-router.get('/mentors/sessions', supabaseAuth, async (req, res, next) => {
-	try {
-		await assertAdmin(req);
-		const rows = await supabaseRest('/rest/v1/mentor_sessions', {
-			query: { select: '*', order: 'created_at.desc', limit: 1000 },
-		});
-		res.json(rows || []);
-	} catch (err) { next(err); }
-});
 
 // ── Wallet overview (read-only) ──────────────────────────────────────
 // Platform-wide money-movement oversight. No transfer/withdraw powers:

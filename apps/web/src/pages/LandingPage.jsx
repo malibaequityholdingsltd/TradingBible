@@ -24,7 +24,7 @@ const LOGO = TRADINGBIBLE_LOGO;
 
 const STATS = [
   { value: '20+', label: 'Broker & prop connections', note: 'Live accounts, synced' },
-  { value: '233', label: 'Academy lessons', note: 'Thirteen structured paths' },
+  { value: '233', label: 'Academy lessons', note: 'Four schools · 13 programmes' },
   { value: '24/7', label: 'SI coaching', note: 'Grounded in your history' },
   { value: '0 TBC', label: 'Tokens issued', note: '100M max proposed' },
 ];
@@ -71,7 +71,7 @@ const MODULES = [
   },
   {
     icon: GraduationCap, tag: 'LEARN', title: 'A school run by SI',
-    body: 'Thirteen paths, 233 lessons, eight live webinars a week, one final certificate exam per path and one-to-one tutoring. $150 individual or $299 for a family of four — one lifetime payment.',
+    body: 'Academy 2.0: four schools, 13 programmes and 233 lessons, with male and female read-aloud voices in eight languages. Eight live webinars a week, one final certificate exam per programme and one-to-one tutoring. $150 individual or $299 for a family of four — one lifetime payment.',
     to: '/academy', link: 'Enter the Academy',
   },
   {
@@ -93,7 +93,7 @@ const REVIEW_ROWS = [
 ];
 
 const ACADEMY = [
-  ['233', 'lessons across thirteen paths'],
+  ['233', 'lessons across four schools'],
   ['13', 'learning paths, beginner to professional'],
   ['8', 'live SI-hosted webinars every week'],
   ['$150', 'individual · lifetime access'],
@@ -120,7 +120,7 @@ const FAQS = [
   ['Do you offer a free trial?', 'No. TradingBible is paid-only: your card is charged at checkout before you enter the terminal. Every first payment carries a 14-day money-back guarantee, so you can test broker sync, analytics, the SI Coach and signals with a real account.'],
   ['Which brokers and platforms are supported?', 'Named brokers only — Binance, Deriv, easyMarkets, Interactive Brokers, Alpaca, Coinbase and more, plus TradingBible Funded evaluations and self-custody wallet tracking for BTC, ETH, USDC and Solana. Live accounts only; trades and balances sync automatically.'],
   ['What does the SI Coach actually do?', 'SI reviews every synced trade for quality, risk and discipline, detects recurring mistakes such as widened stops, revenge trading and overtrading, and answers questions grounded in your real history. Ask “What is my biggest mistake?” and it shows the evidence.'],
-  ['How does the Academy work?', 'One $150 lifetime payment unlocks the full school, or a $299 family pass covers up to four learners: thirteen paths including Forex Mastery A–Z, Crypto Mastery A–Z, Order Flow Mastery, Multi-Asset, Platform Mastery, Funded/Prop Desk, TBC & Digital Assets, Investor & Ownership, AI & Trading Technology, and the Company/Creator Business, 233 lessons, SI-written lessons, a tutor inside each path, eight live webinars a week, one final certificate exam per path and a certificate after you pass it.'],
+  ['How does the Academy work?', 'One $150 lifetime payment unlocks Academy 2.0, or a $299 family pass covers up to four learners. Four schools and thirteen programmes — Forex Mastery A–Z, Crypto Mastery A–Z, Order Flow Mastery, Multi-Asset, Platform Mastery, Funded/Prop Desk, TBC & Digital Assets, Investor & Ownership, AI & Trading Technology and the Company/Creator Business — with 233 SI-written lessons. Every lesson can be read aloud by a male or female voice in eight languages, a tutor sits inside each programme, eight live webinars run every week, and one final certificate exam per programme is the only test.'],
   ['What do Professional API and white-label include?', 'Professional ($99/mo) unlocks the REST API with personal keys and webhooks, team seats, unlimited brokers, white-label presets, white-glove onboarding and a dedicated success manager for funds and prop desks.'],
   ['Is there a community and one-to-one help?', 'Yes. The forum ranks members by real contribution, the public leaderboard shows verified activity without fake P&L, and vetted mentors can be booked for one-to-one sessions settled in TBC credits.'],
   ['How is TBC different from TB?', 'TBC platform credits are an existing off-chain utility credit used inside TradingBible. The proposed TBC token is a separate, unissued network asset. TB is a proposed equity ticker for TradingBible, Inc. Holding TBC credits does not make you a shareholder, and holding TB equity would not make you a TBC holder.'],
@@ -403,7 +403,7 @@ export default function LandingPage() {
               <IosIcon icon={GraduationCap} size="lg" tone="green" />
               <div><div className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#d4af37]">TradingBible Academy</div><h3 className="text-lg font-semibold tracking-tight text-[#f0ecdd]">From first candle to professional desk.</h3></div>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-[#8a8577]">Thirteen paths, 233 lessons and eight live webinars a week. Learn first — every lesson is written by SI, there are no pop quizzes, and each path ends with one final certificate exam. $150 individual, or $299 for a family of four — one lifetime payment.</p>
+            <p className="mt-4 text-sm leading-relaxed text-[#8a8577]">Academy 2.0: four schools, 13 programmes and 233 lessons, plus eight live webinars a week. Learn first — every lesson is written by SI, read it or hear it in a male or female voice, there are no pop quizzes, and each programme ends with one final certificate exam. $150 individual, or $299 for a family of four — one lifetime payment.</p>
             <div className="mt-5 grid grid-cols-2 gap-2">
               {ACADEMY.map(([value, label]) => (
                 <div key={label} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3"><div className="font-mono text-xl font-bold text-[#e8c95a]">{value}</div><div className="mt-0.5 text-[10px] leading-snug text-[#8a8577]">{label}</div></div>
