@@ -193,7 +193,7 @@ export default function PaperPage() {
                 <p className="mt-1 text-sm leading-relaxed text-[#8a8577]">
                   Paper trading needs its tables. Open Supabase → SQL editor → paste and run
                   <span className="font-mono text-[#d4af37]"> APPLY_MISSING_TABLES.sql </span>
-                  from the project root (it also creates challenges, mentors, leaderboard and wallet-rail tables). Reload this page after.
+                  from the project root (it also creates challenges, leaderboard and wallet-rail tables). Reload this page after.
                 </p>
               </div>
             </div>

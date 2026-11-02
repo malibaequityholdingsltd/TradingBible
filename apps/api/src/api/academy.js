@@ -742,7 +742,7 @@ export const DEFAULT_CURRICULA = {
 				lessons: [
 					{ lessonKey: 'curriculum', title: 'Curriculum design for kids and adults', minutes: 19 },
 					{ lessonKey: 'content', title: 'Content that teaches, not hypes', minutes: 18 },
-					{ lessonKey: 'community', title: 'Community, mentors and live rooms', minutes: 18 },
+					{ lessonKey: 'community', title: 'Community, live rooms and peer feedback', minutes: 18 },
 					{ lessonKey: 'distribution', title: 'Distribution, SEO and partnerships', minutes: 19 },
 				],
 			},
@@ -852,6 +852,9 @@ export const academyDb = {
 		return selectWhere('academy_purchases', `owner=eq.${encodeURIComponent(owner)}&transactionId=eq.${encodeURIComponent(tx)}&status=eq.family_member`, 'limit=1')
 			.then((r) => r?.[0] || null);
 	},
+	getProPurchaseByOwner: (owner) =>
+		selectWhere('academy_purchases', `owner=eq.${encodeURIComponent(owner)}&status=eq.pro`, 'order=createdAt.desc&limit=1')
+			.then((r) => r?.[0] || null),
 	createFamilyMember: (owner, code) => {
 		const tx = familyMemberTransactionId(code);
 		if (!tx) throw new Error('invalid family code');

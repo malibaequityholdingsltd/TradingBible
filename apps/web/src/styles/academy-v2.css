@@ -1153,7 +1153,7 @@ html.light .academy-studio.academy-v2 .ac-hero {
   background: conic-gradient(var(--ac-teal) var(--ac-pct), color-mix(in srgb, var(--ac-line) 80%, transparent) 0);
 }
 
-/* ── gate + mentor ────────────────────────────────────────────────── */
+/* ── gate + coach ────────────────────────────────────────────────── */
 .academy-studio.academy-v2 .ac-gate {
   border-radius: 20px;
   background:
@@ -1171,12 +1171,12 @@ html.light .academy-studio.academy-v2 .ac-hero {
   font-size: clamp(27px, 3.5vw, 42px);
 }
 
-.academy-studio.academy-v2 .ac-mentor {
+.academy-studio.academy-v2 .ac-sicoach {
   border-radius: 14px;
   background: color-mix(in srgb, var(--ac-panel) 74%, transparent);
 }
 
-.academy-studio.academy-v2 .ac-mentor-icon {
+.academy-studio.academy-v2 .ac-sicoach-icon {
   border-color: color-mix(in srgb, var(--ac-teal) 30%, var(--ac-line));
   background: color-mix(in srgb, var(--ac-teal) 9%, transparent);
   color: var(--ac-teal);

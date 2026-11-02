@@ -82,7 +82,7 @@ export default function DashboardPage() {
   const stats = computeStats(trades);
   const { user } = useAuth();
   const { t } = useI18n();
-  const isSubscriber = user?.role === 'admin' || ['pro', 'elite', 'professional'].includes((user?.plan || '').toLowerCase());
+  const isSubscriber = user?.role === 'admin' || ['pro', 'elite', 'professional', 'teams'].includes((user?.plan || '').toLowerCase());
 
   if (loading) {
     return <AppLayout title={t('nav.dashboard')}><div className="tb-page"><Skeleton className="h-36" /><div className="grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-2 xl:grid-cols-4">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}</div><CardSkeleton rows={4} /></div></AppLayout>;

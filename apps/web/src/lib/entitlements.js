@@ -1,12 +1,13 @@
 // Plan entitlements — single source of truth for who may access what.
 //
-// Tiers (ascending): pro ($19.99) < elite ($49.99) < professional ($99).
+// Tiers (ascending): pro ($19.99) < elite ($49.99) < professional ($99) < teams ($199).
 // Admins bypass every check. Users with no plan rank 0.
 
 export const PLAN_RANK = {
   pro: 1,
   elite: 2,
   professional: 3,
+  teams: 4,
 };
 
 export function planRank(plan) {

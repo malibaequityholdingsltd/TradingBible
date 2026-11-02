@@ -8,7 +8,7 @@ import { deriveEmployeeNo } from './employeeNo.js';
 // when a posting has auto_accept switched on.
 
 const isCoachPosting = (posting) =>
-	/coach|mentor|teacher|academy/i.test(`${posting?.title || ''} ${posting?.department || ''}`);
+	/coach|teacher|academy/i.test(`${posting?.title || ''} ${posting?.department || ''}`);
 
 export function roleForPosting(posting) {
 	return isCoachPosting(posting)
@@ -23,8 +23,7 @@ const cleanUsername = (name, email) => {
 };
 
 // Find-or-create the auth account, upsert the profile row with the staff
-// role, send an invite email (best effort), and stage a DISABLED mentor row
-// for coaches so they surface in Mentors the moment they set a price.
+// role, and send an invite email (best effort).
 // Also stamps user_settings.staff (hired/title/arrangement/hiredAt) so
 // route guards + requirePlan recognize employees — staff work without
 // buying a plan. Existing settings (totp, suspensions) are read-merged,
@@ -132,29 +131,6 @@ export async function provisionEmployee({ name, email, posting, staffMeta }) {
 	try {
 		await supabaseRest('/auth/v1/admin/invite', { method: 'POST', body: { email: cleanEmail } });
 	} catch (err) { logger.warn('hire: invite email failed', String(err)); }
-
-	// 5. Coaches surface in Mentors once they set a price (staged disabled,
-	// placeholder price 0 — never invent a rate they didn't choose).
-	if (isCoachPosting(posting)) {
-		try {
-			const existingMentor = await supabaseRest('/rest/v1/mentors', {
-				query: { select: 'owner', owner: `eq.${authId}`, limit: 1 },
-			}).catch(() => null);
-			if (!existingMentor?.[0]) {
-				await supabaseRest('/rest/v1/mentors', {
-					method: 'POST',
-					body: {
-						owner: authId,
-						headline: `${cleanName} — Trading Coach`,
-						topics: ['Forex', 'Mentorship'],
-						price_usd: 0,
-						enabled: false,
-					},
-					query: { select: 'owner' },
-				});
-			}
-		} catch (err) { logger.error('hire: mentor staging failed', String(err)); }
-	}
 
 	return { authId, created, tempPassword, role };
 }

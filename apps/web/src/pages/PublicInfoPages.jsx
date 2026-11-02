@@ -69,7 +69,7 @@ const GUIDE_POINTS = [
   'Risk and position-sizing math before the click',
   'SI reviews tied to your own journal and notes',
   'Academy lessons for charts, risk, psychology and process',
-  'Report exports for mentors, prop firms and your own review',
+  'Report exports for prop firms, teams and your own review',
 ];
 
 export const GuidesPage = () => (

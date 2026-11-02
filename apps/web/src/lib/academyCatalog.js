@@ -900,7 +900,7 @@ export const STATIC_CURRICULA = {
 				lessons: [
 					{ lessonKey: 'curriculum', title: 'Curriculum design for kids and adults', minutes: 19, tags: ['company'] },
 					{ lessonKey: 'content', title: 'Content that teaches, not hypes', minutes: 18, tags: ['company'] },
-					{ lessonKey: 'community', title: 'Community, mentors and live rooms', minutes: 18, tags: ['company'] },
+					{ lessonKey: 'community', title: 'Community, live rooms and peer feedback', minutes: 18, tags: ['company'] },
 					{ lessonKey: 'distribution', title: 'Distribution, SEO and partnerships', minutes: 19, tags: ['company'] },
 				],
 			},

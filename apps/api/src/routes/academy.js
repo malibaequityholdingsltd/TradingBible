@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit';
 import logger from '../utils/logger.js';
 import { supabaseAuth } from '../middleware/supabase-auth.js';
 import { endSse, openSse, withTimeout } from '../utils/sse.js';
-import { familyCodeFromTransactionId, normalizeFamilyCode } from '../utils/academy-family.js';
+import { familyCodeFromTransactionId, groupKind, groupSeats, normalizeFamilyCode } from '../utils/academy-family.js';
 import {
 	DEFAULT_CURRICULA,
 	academyDb,
@@ -55,34 +55,46 @@ async function requireAccess(req, res, next) {
 }
 
 // ── Access ──────────────────────────────────────────────────────────
+async function resolveAcademyTier(user) {
+	if (!user) return null;
+	if (user.role === 'admin') return 'admin';
+	const pro = await academyDb.getProPurchaseByOwner(user.id);
+	if (pro) return 'pro';
+	const ownerPass = await academyDb.getFamilyPassByOwner(user.id);
+	if (ownerPass) return groupKind(familyCodeFromTransactionId(ownerPass.transactionId, 'pass'));
+	const memberRow = await academyDb.getFamilyMemberByOwner(user.id);
+	if (memberRow) return groupKind(familyCodeFromTransactionId(memberRow.transactionId, 'member'));
+	return user.academyAccess ? 'individual' : null;
+}
+
 router.get('/access', async (req, res) => {
 	try {
 		const user = await academyDb.getUser(req.userId);
 		const access = Boolean(user?.academyAccess || user?.role === 'admin');
-		res.json({ access, purchasedAt: user?.academyPurchasedAt || null });
+		const tier = access ? await resolveAcademyTier(user) : null;
+		res.json({ access, tier, purchasedAt: user?.academyPurchasedAt || null });
 	} catch (err) {
 		logger.error('academy access failed', String(err?.message || err));
 		res.status(500).json({ error: { message: 'Could not check Academy access.' } });
 	}
 });
 
-// ── Family pass ─────────────────────────────────────────────────────
-// A family pass is a $299 one-time purchase for up to four learners. The
-// buyer is seat one; up to three more accounts can redeem the code. Both
-// endpoints sit before requireAccess because a learner redeeming a code does
-// not have Academy access yet.
-const FAMILY_SEATS = 4;
-
+// ── Group passes ────────────────────────────────────────────────────
+// Family passes are $299 for four learners; team passes are $499 for ten.
+// The buyer is seat one. Both endpoints sit before requireAccess because a
+// learner redeeming a code does not have Academy access yet.
 function familySummary(pass, members, role) {
 	const code = familyCodeFromTransactionId(pass?.transactionId, 'pass');
+	const total = groupSeats(code);
 	const used = 1 + (members?.length || 0);
 	return {
 		role,
+		kind: groupKind(code),
 		active: Boolean(pass),
 		code: role === 'owner' ? code : undefined,
-		seatsTotal: FAMILY_SEATS,
-		seatsUsed: Math.min(used, FAMILY_SEATS),
-		seatsRemaining: Math.max(0, FAMILY_SEATS - used),
+		seatsTotal: total,
+		seatsUsed: Math.min(used, total),
+		seatsRemaining: Math.max(0, total - used),
 		members: members?.length || 0,
 	};
 }
@@ -102,25 +114,25 @@ router.get('/family', async (req, res) => {
 			const members = code ? await academyDb.listFamilyMembers(code) : [];
 			return res.json(familySummary(pass, members, 'member'));
 		}
-		return res.json({ role: null, active: false, seatsTotal: FAMILY_SEATS, seatsUsed: 0, seatsRemaining: 0, members: 0 });
+		return res.json({ role: null, kind: null, active: false, seatsTotal: 4, seatsUsed: 0, seatsRemaining: 0, members: 0 });
 	} catch (err) {
 		logger.error('academy family lookup failed', String(err?.message || err));
-		return res.status(500).json({ error: { message: 'Could not load your family pass.' } });
+		return res.status(500).json({ error: { message: 'Could not load your group pass.' } });
 	}
 });
 
 router.post('/family/redeem', async (req, res) => {
 	const code = normalizeFamilyCode(req.body?.code);
-	if (!code) return res.status(422).json({ error: { message: 'Enter a valid family code.', code: 'invalid_family_code' } });
+	if (!code) return res.status(422).json({ error: { message: 'Enter a valid family or team code.', code: 'invalid_family_code' } });
 	try {
 		const user = await academyDb.getUser(req.userId);
 		if (user?.academyAccess || user?.role === 'admin') {
 			return res.json({ ok: true, already: true, message: 'You already have Academy access.' });
 		}
 		const pass = await academyDb.getFamilyPassByCode(code);
-		if (!pass) return res.status(404).json({ error: { message: 'That family code is not valid.', code: 'family_code_not_found' } });
+		if (!pass) return res.status(404).json({ error: { message: 'That family or team code is not valid.', code: 'family_code_not_found' } });
 		if (pass.owner === req.userId) {
-			return res.status(409).json({ error: { message: 'This is your own family pass. Share the code with your learners.', code: 'family_owner_cannot_redeem' } });
+			return res.status(409).json({ error: { message: 'This is your own pass. Share the code with your learners.', code: 'family_owner_cannot_redeem' } });
 		}
 		const existing = await academyDb.getFamilyMemberByOwnerAndCode(req.userId, code);
 		if (existing) {
@@ -129,8 +141,9 @@ router.post('/family/redeem', async (req, res) => {
 			return res.json({ ok: true, already: true, ...familySummary(pass, members, 'member') });
 		}
 		const members = await academyDb.listFamilyMembers(code);
-		if ((members?.length || 0) >= FAMILY_SEATS - 1) {
-			return res.status(409).json({ error: { message: 'This family pass is full (4 learners).', code: 'family_pass_full' } });
+		const seats = groupSeats(code);
+		if ((members?.length || 0) >= seats - 1) {
+			return res.status(409).json({ error: { message: `This ${groupKind(code)} pass is full (${seats} learners).`, code: 'family_pass_full' } });
 		}
 		const memberRow = await academyDb.createFamilyMember(req.userId, code);
 		if (!memberRow) throw new Error('family member row was not created');
@@ -144,7 +157,7 @@ router.post('/family/redeem', async (req, res) => {
 		return res.json({ ok: true, ...familySummary(pass, updatedMembers, 'member') });
 	} catch (err) {
 		logger.error('academy family redeem failed', String(err?.message || err));
-		return res.status(500).json({ error: { message: 'Could not redeem that family code.' } });
+		return res.status(500).json({ error: { message: 'Could not redeem that family or team code.' } });
 	}
 });
 

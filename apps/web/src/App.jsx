@@ -140,7 +140,7 @@ function isSubscriber(user) {
     // Hired staff work here — they pass the subscriber floor without buying
     // a plan. Tier gates (elite/professional) still apply via meetsPlan.
     if (isStaffUser(user)) return true;
-    return ['pro', 'elite', 'professional'].includes((user.plan || '').toLowerCase());
+    return ['pro', 'elite', 'professional', 'teams'].includes((user.plan || '').toLowerCase());
 }
 
 function SubscriberProtected({ children }) {

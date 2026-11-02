@@ -546,14 +546,14 @@ export const COMPANY_DEFAULTS = {
 	product: {
 		version: '1.2.0 live (documented scope — not an independent audit).',
 		stack: 'React 18 + Vite + Tailwind · Node + Express 5 · Supabase Postgres RLS · Paddle/Stripe · VPS Ubuntu + PM2 + Nginx + Lets Encrypt.',
-		surfaces: 'Terminal Pro · journal · analytics · SI reports/coach (Elite+) · signals/indicators · risk tools · backtest/paper · challenges/prop analytics · broker sync · alerts/heatmaps/order-flow · community · academy/mentors/webinars · TV · wallet/billing · API/white-label (Professional) · TBC page · admin portal · 24-mission Pro-Guide.',
+		surfaces: 'Terminal Pro · journal · analytics · SI reports/coach (Elite+) · signals/indicators · risk tools · backtest/paper · challenges/prop analytics · broker sync · alerts/heatmaps/order-flow · community · academy/webinars · TV · wallet/billing · API/white-label (Professional) · TBC page · admin portal · 24-mission Pro-Guide.',
 		terminal: 'Proprietary Terminal Pro + future Chart SDK as licensable assets. A charting terminal is NOT an exchange or broker — execution, custody, data redistribution, client accounts need separate agreements + authorization.',
 		persistence: 'Auto-save drawings, annotations, watchlists, layouts, journal entries, prop-firm activity across sessions. Broker/prop sync must be permission-based with provider integrations.',
 		auth: 'Supabase GoTrue (OTP / magic links / WebAuthn passkeys) + branded Send-Email webhook hook. RBAC, RLS, hardware-backed admin auth, key rotation, audit logs, backups, DR, pen-tests, incident response as we scale.',
 	},
 	monetization: {
-		plans: 'Pro $19.99/mo (journal/analytics/risk) · Elite SI $49.99/mo (SI reports/coaching/integrations) · Professional $99/mo (API/webhooks/white-label). VERIFIED current checkout prices. Stripe, no free trial, card required. 14-day money-back on first subscription.',
-		lines: 'Subscriptions + developer licensing + chart widgets + institutional software + ads + education/mentorship + affiliates + eligible prop-firm services. Future brokerage commissions/spreads/fees ONLY after legal + regulatory clearance.',
+		plans: 'Pro $19.99/mo (journal/analytics/risk) · Elite SI $49.99/mo (SI reports/coaching/integrations) · Professional $99/mo (API/webhooks/white-label) · Teams $199/mo (up to 10 seats/centralised billing/seat provisioning with support). VERIFIED current checkout prices. Stripe, no free trial, card required. 14-day money-back on first subscription.',
+		lines: 'Subscriptions + developer licensing + chart widgets + institutional software + ads + education/Academy + affiliates + eligible prop-firm services. Future brokerage commissions/spreads/fees ONLY after legal + regulatory clearance.',
 		tractionNote: 'NO verified revenue, profit, valuation, MRR, customer, or growth figures supplied — all pending confirmation, never estimated as achievements. (ARPU ~$36.89 illustrative only.)',
 		payouts: 'CFD withdrawals every 14 days to TBC credit wallet (80% standard → 90% scaling; 1-step fixed 90%). First funded payout refunds entry fee in TBC credits.',
 	},
@@ -690,7 +690,7 @@ async function getBillingSummary() {
 		for (const sub of list.data || []) {
 			activeCount++;
 			for (const item of sub.items?.data || []) {
-				const plan = priceToPlan[item.price?.id] || 'other';
+				const plan = priceToPlan[item.price?.id] || sub.metadata?.plan || 'other';
 				const amt = (item.price?.unit_amount || 0) * (item.quantity || 1);
 				const monthly = item.price?.recurring?.interval === 'year' ? Math.round(amt / 12) : amt;
 				mrrCents += monthly;
@@ -714,6 +714,7 @@ const BILLING_PRICE_MAP = () => ({
 	pro: process.env.STRIPE_PRICE_PRO || '',
 	elite: process.env.STRIPE_PRICE_ELITE || '',
 	professional: process.env.STRIPE_PRICE_PROFESSIONAL || '',
+	teams: process.env.STRIPE_PRICE_TEAMS || '',
 });
 
 router.get('/billing/summary', supabaseAuth, async (req, res, next) => {
@@ -1210,9 +1211,9 @@ router.patch('/jobs/postings/:id', supabaseAuth, async (req, res, next) => {
 });
 
 // ── POST /admin/jobs/applications/:id/hire — accept + auto-provision ──
-// Creates (or upgrades) the login, assigns the staff role, stages a mentor
-// row for coaches, sends the invite email. The temp password is returned
-// ONLY here (admin eyes) — never through the public apply flow.
+// Creates (or upgrades) the login, assigns the staff role, and sends the
+// invite email. The temp password is returned ONLY here (admin eyes) — never
+// through the public apply flow.
 router.post('/jobs/applications/:id/hire', supabaseAuth, async (req, res, next) => {
 	try {
 		await assertAdmin(req);

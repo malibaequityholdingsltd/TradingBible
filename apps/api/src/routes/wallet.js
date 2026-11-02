@@ -1084,7 +1084,7 @@ router.post('/pay', async (req, res) => {
 		return res.status(503).json({ error: 'tbc_unavailable', message: 'TBC payments open at token launch.' });
 	}
 	const isAcademy = intent === 'academy';
-	const priceMap = { pro: 19.99, elite: 49.99, professional: 99, academy: 150 };
+	const priceMap = { pro: 19.99, elite: 49.99, professional: 99, teams: 199, academy: 150 };
 	const key = isAcademy ? 'academy' : plan;
 	const amount = priceMap[key];
 	if (!amount) return res.status(422).json({ error: 'unknown plan' });

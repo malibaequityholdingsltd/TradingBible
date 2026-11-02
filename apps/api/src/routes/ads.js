@@ -30,7 +30,7 @@ function sanitizeChannel(raw) {
 		embedUrl: cleanUrl(c.embedUrl),
 		blurb: String(c.blurb || '').trim().slice(0, 160),
 		isNew: c.isNew === true,
-		plan: ['pro', 'elite', 'professional'].includes(plan) ? plan : 'pro',
+		plan: ['pro', 'elite', 'professional', 'teams'].includes(plan) ? plan : 'pro',
 	};
 }
 

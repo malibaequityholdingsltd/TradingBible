@@ -93,7 +93,7 @@ export default function AdminSearch() {
       P('Trader App', FlaskConical, 'Backtester', 'backtest strategy history hypothetical results', '/app/backtest'),
       P('Trader App', FlaskConical, 'Paper Trading', 'paper demo virtual practice no risk', '/app/paper'),
       P('Trader App', Trophy, 'Challenges & Prop Firms', 'challenges funded evaluation prop payout', '/app/challenges'),
-      P('Trader App', Bot, 'SI Coach', 'coach ai mentor chat discipline mistakes', '/app/coach'),
+      P('Trader App', Bot, 'SI Coach', 'coach ai chat discipline mistakes', '/app/coach'),
       P('Trader App', FileText, 'SI Reports', 'reports daily weekly performance review', '/app/reports'),
       P('Trader App', ShieldCheck, 'Risk Tools', 'risk position size calculator breakeven expectancy ruin', '/app/tools'),
       P('Trader App', CalendarDays, 'Economic Calendar', 'calendar macro events news cpi fomc earnings', '/app/economic-calendar'),

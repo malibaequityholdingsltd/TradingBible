@@ -2,7 +2,7 @@
 // Sent to Muse Spark 1.3 (muse-spark-1.3-contributor-free) or any OpenAI-compatible
 // provider configured in apps/api/.env. See docs/deepseek-integration.md.
 
-export const SystemPrompt = `You are the TradingBible SI Coach, an elite trading performance mentor embedded in a luxury trading-journal terminal.
+export const SystemPrompt = `You are the TradingBible SI Coach, an elite trading performance coach embedded in a luxury trading-journal terminal.
 
 ## How you receive input
 - You get a single system message (these instructions) plus one user message per turn.
@@ -34,7 +34,7 @@ export const SystemPrompt = `You are the TradingBible SI Coach, an elite trading
 // Compact instructions for a small local model. The full prompt is kept for
 // hosted providers; a 3B CPU model cannot prefill the full Company Bible plus
 // role prompt before the provider setup deadline.
-export const LocalSystemPrompt = `You are the TradingBible SI Coach — a direct, practical trading-performance mentor inside TradingBible.
+export const LocalSystemPrompt = `You are the TradingBible SI Coach — a direct, practical trading-performance coach inside TradingBible.
 
 Answer in plain text or short Markdown. Be specific and concise (usually under 15 lines). Never invent prices, balances, win rates, trades, credentials, approvals, listings, financial results, or shareholder records. If data is missing, say so and suggest the relevant app screen or support.
 
@@ -63,7 +63,7 @@ export const AcademyCurriculumPrompt = (level, about, pathKey = 'beginner') => {
 		'digital-assets': `Track: TBC & DIGITAL ASSETS. Required across 3 courses: (1) TBC foundations — what TBC is and is not (never equity), supply/minting/100M cap, Cosmos SDK + CometBFT + EVM, wallets/keys/custody; (2) testnet to mainnet — 90-day public testnet, security reviews/incident response, listings/liquidity/market structure, staking/yield/jurisdiction risk; (3) digital asset operations — treasury/asset segregation, TBC credits/payout mechanics, explain TBC to a regulator capstone.`,
 		'investor': `Track: INVESTOR & OWNERSHIP. Required across 3 courses: (1) ownership basics — equity vs tokens vs credits, cap table/dilution/ownership %, shareholder rights/transfer restrictions, valuation without hype; (2) reading the company — revenue quality, burn/runway/capital needs, fintech unit economics, risk factors that matter; (3) IPO + disclosure path — LLC to listed company steps, what an S-1 must prove, governance/audits/controls, owner's diligence memo capstone.`,
 		'ai-tech': `Track: AI & TRADING TECHNOLOGY. Required across 3 courses: (1) AI for traders — what AI can/cannot do in markets, prompts for testable ideas, data quality/look-ahead/survivorship bias, hallucination/overfitting/false confidence; (2) SI research workflow — question to brief, signals/confidence/human review, AI journal review without outsourcing judgment, automation guardrails/kill switches; (3) build + evaluate — APIs/webhooks/data contracts, backtest architecture, AI-assisted desk policy capstone.`,
-		'company-business': `Track: COMPANY & CREATOR BUSINESS. Required across 3 courses: (1) TradingBible business model — subscriptions/licensing/education/ads, pricing without promising returns, free-to-lifetime funnel, metrics before revenue; (2) creator + education engine — curriculum for kids and adults, content that teaches not hypes, community/mentors/live rooms, distribution/SEO/partnerships; (3) trust/compliance/operations — disclosures and honest claims, KYC/privacy/data handling, support/refunds/incident response, 90-day company plan capstone.`,
+		'company-business': `Track: COMPANY & CREATOR BUSINESS. Required across 3 courses: (1) TradingBible business model — subscriptions/licensing/education/ads, pricing without promising returns, free-to-lifetime funnel, metrics before revenue; (2) creator + education engine — curriculum for kids and adults, content that teaches not hypes, community/live rooms/peer feedback, distribution/SEO/partnerships; (3) trust/compliance/operations — disclosures and honest claims, KYC/privacy/data handling, support/refunds/incident response, 90-day company plan capstone.`,
 	};
 	const brief = trackBriefs[pathKey] || trackBriefs['beginner'];
 	return `You are the Head of Education at the TradingBible Academy, an elite trading school.

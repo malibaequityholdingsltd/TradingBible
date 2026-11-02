@@ -1,12 +1,12 @@
 // Tier enforcement for paid API surfaces. Must run AFTER supabaseAuth
 // (needs req.userId). Admins always pass. Everyone else needs a plan at or
-// above the required tier ('pro' | 'elite' | 'professional').
+// above the required tier ('pro' | 'elite' | 'professional' | 'teams').
 // Fails closed: unknown/empty plans are rejected.
 
 import { supabase } from '../utils/supabaseClient.js';
 import logger from '../utils/logger.js';
 
-const RANK = { pro: 1, elite: 2, professional: 3 };
+const RANK = { pro: 1, elite: 2, professional: 3, teams: 4 };
 
 export const requirePlan = (minimum) => async (req, res, next) => {
 	const need = RANK[String(minimum || '').toLowerCase()] || 0;

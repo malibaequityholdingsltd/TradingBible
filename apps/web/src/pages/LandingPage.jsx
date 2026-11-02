@@ -71,17 +71,17 @@ const MODULES = [
   },
   {
     icon: GraduationCap, tag: 'LEARN', title: 'A school run by SI',
-    body: 'Academy 2.0: four schools, 13 programmes and 233 lessons, with male and female read-aloud voices in eight languages. Eight live webinars a week, one final certificate exam per programme and one-to-one tutoring. $150 individual or $299 for a family of four — one lifetime payment.',
+    body: 'Academy 2.0: four schools, 13 programmes and 233 lessons, with male and female read-aloud voices in eight languages. Eight live webinars a week, one final certificate exam per programme and one-to-one tutoring. $150 individual, $199 Pro, $299 family of four or $499 team of ten — one lifetime payment.',
     to: '/academy', link: 'Enter the Academy',
   },
   {
     icon: Wallet, tag: 'CREDITS', title: 'TBC platform credits',
-    body: 'Existing off-chain credits can settle entries, signals, mentorship and Academy access from your balance. The proposed TBC token is separate and not issued.',
+    body: 'Existing off-chain credits can settle entries, signals, Academy access and platform tools from your balance. The proposed TBC token is separate and not issued.',
     to: '/tbc', link: 'Read the TBC record',
   },
   {
     icon: KeyRound, tag: 'BUILD', title: 'API, desks and white-label',
-    body: 'Professional-tier REST keys, webhooks, team seats and white-label presets for funds and prop desks that need their own front door.',
+    body: 'Professional-tier REST keys, webhooks and white-label presets for funds and prop desks that need their own front door. Teams adds up to ten seats on one invoice.',
     to: '/pricing', link: 'See Professional',
   },
 ];
@@ -96,8 +96,11 @@ const ACADEMY = [
   ['233', 'lessons across four schools'],
   ['13', 'learning paths, beginner to professional'],
   ['8', 'live SI-hosted webinars every week'],
+  ['4', 'schools, one standard'],
   ['$150', 'individual · lifetime access'],
+  ['$199', 'Pro · lifetime access'],
   ['$299', 'family of 4 · lifetime access'],
+  ['$499', 'team of 10 · lifetime access'],
 ];
 
 const FUNDED = [
@@ -120,9 +123,9 @@ const FAQS = [
   ['Do you offer a free trial?', 'No. TradingBible is paid-only: your card is charged at checkout before you enter the terminal. Every first payment carries a 14-day money-back guarantee, so you can test broker sync, analytics, the SI Coach and signals with a real account.'],
   ['Which brokers and platforms are supported?', 'Named brokers only — Binance, Deriv, easyMarkets, Interactive Brokers, Alpaca, Coinbase and more, plus TradingBible Funded evaluations and self-custody wallet tracking for BTC, ETH, USDC and Solana. Live accounts only; trades and balances sync automatically.'],
   ['What does the SI Coach actually do?', 'SI reviews every synced trade for quality, risk and discipline, detects recurring mistakes such as widened stops, revenge trading and overtrading, and answers questions grounded in your real history. Ask “What is my biggest mistake?” and it shows the evidence.'],
-  ['How does the Academy work?', 'One $150 lifetime payment unlocks Academy 2.0, or a $299 family pass covers up to four learners. Four schools and thirteen programmes — Forex Mastery A–Z, Crypto Mastery A–Z, Order Flow Mastery, Multi-Asset, Platform Mastery, Funded/Prop Desk, TBC & Digital Assets, Investor & Ownership, AI & Trading Technology and the Company/Creator Business — with 233 SI-written lessons. Every lesson can be read aloud by a male or female voice in eight languages, a tutor sits inside each programme, eight live webinars run every week, and one final certificate exam per programme is the only test.'],
-  ['What do Professional API and white-label include?', 'Professional ($99/mo) unlocks the REST API with personal keys and webhooks, team seats, unlimited brokers, white-label presets, white-glove onboarding and a dedicated success manager for funds and prop desks.'],
-  ['Is there a community and one-to-one help?', 'Yes. The forum ranks members by real contribution, the public leaderboard shows verified activity without fake P&L, and vetted mentors can be booked for one-to-one sessions settled in TBC credits.'],
+  ['How does the Academy work?', 'One $150 lifetime payment unlocks Academy 2.0. Pro ($199) adds the Pro badge and a commercial internal-training licence, a $299 family pass covers up to four learners, and a $499 team pass covers up to ten. Four schools and thirteen programmes — Forex Mastery A–Z, Crypto Mastery A–Z, Order Flow Mastery, Multi-Asset, Platform Mastery, Funded/Prop Desk, TBC & Digital Assets, Investor & Ownership, AI & Trading Technology and the Company/Creator Business — with 233 SI-written lessons. Every lesson can be read aloud by a male or female voice in eight languages, a tutor sits inside each programme, eight live webinars run every week, and one final certificate exam per programme is the only test.'],
+  ['What do Professional API and white-label include?', 'Professional ($99/mo) unlocks the REST API with personal keys and webhooks, unlimited brokers, white-label presets, white-glove onboarding and a dedicated success manager for funds and prop desks. Teams ($199/mo) adds up to ten seats with centralised billing, priority support and team onboarding.'],
+  ['Is there a community and one-to-one help?', 'Yes. The forum ranks members by real contribution, the public leaderboard shows verified activity without fake P&L, and the SI coach answers questions grounded in your own journal and lessons. Human coaching is not sold as a separate marketplace.'],
   ['How is TBC different from TB?', 'TBC platform credits are an existing off-chain utility credit used inside TradingBible. The proposed TBC token is a separate, unissued network asset. TB is a proposed equity ticker for TradingBible, Inc. Holding TBC credits does not make you a shareholder, and holding TB equity would not make you a TBC holder.'],
   ['Is TradingBible listed on Nasdaq?', 'No. TradingBible is a private, pre-IPO company. TB is a proposed ticker; no listing application, exchange approval, share price, market capitalisation, trading volume or investment offer is represented anywhere on this site.'],
 ];
@@ -403,7 +406,7 @@ export default function LandingPage() {
               <IosIcon icon={GraduationCap} size="lg" tone="green" />
               <div><div className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#d4af37]">TradingBible Academy</div><h3 className="text-lg font-semibold tracking-tight text-[#f0ecdd]">From first candle to professional desk.</h3></div>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-[#8a8577]">Academy 2.0: four schools, 13 programmes and 233 lessons, plus eight live webinars a week. Learn first — every lesson is written by SI, read it or hear it in a male or female voice, there are no pop quizzes, and each programme ends with one final certificate exam. $150 individual, or $299 for a family of four — one lifetime payment.</p>
+            <p className="mt-4 text-sm leading-relaxed text-[#8a8577]">Academy 2.0: four schools, 13 programmes and 233 lessons, plus eight live webinars a week. Learn first — every lesson is written by SI, read it or hear it in a male or female voice, there are no pop quizzes, and each programme ends with one final certificate exam. $150 individual, $199 Pro, $299 for a family of four or $499 for a team of ten — one lifetime payment.</p>
             <div className="mt-5 grid grid-cols-2 gap-2">
               {ACADEMY.map(([value, label]) => (
                 <div key={label} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3"><div className="font-mono text-xl font-bold text-[#e8c95a]">{value}</div><div className="mt-0.5 text-[10px] leading-snug text-[#8a8577]">{label}</div></div>
@@ -481,7 +484,7 @@ export default function LandingPage() {
       <section id="pricing" className={`scroll-mt-28 border-t border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/55' : 'bg-[#0a0a0f]/55'} backdrop-blur-sm`}>
         <div className="mx-auto w-full max-w-[84rem] px-5 py-14 sm:px-8 sm:py-20">
           <Head center eyebrow="Pricing" title="Choose the room you want to trade from." sub="Every plan starts with the same live-account journal. Upgrade when you want SI beside you, daily reports or a desk-level API." />
-          <div className="mt-8 grid items-stretch gap-3 md:grid-cols-3">
+          <div className="mt-8 grid items-stretch gap-3 md:grid-cols-2 xl:grid-cols-4">
             {PLANS.map((raw) => {
               const p = translatePlan(t, raw);
               return (

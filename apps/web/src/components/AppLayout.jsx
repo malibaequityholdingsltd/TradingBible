@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Code2, Palette, CreditCard, HelpCircle, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, Compass, FlaskConical, Medal, SquareTerminal, Star, Coins, X, Search, MonitorPlay, MessageCircle, Languages, Check } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Plug, Crown, User, LogOut, Menu, BarChart3, FileText, Calculator, Users, GraduationCap, Code2, Palette, CreditCard, HelpCircle, Bell, Radar, CalendarClock, Landmark, KeyRound, Building2, Settings, ChevronDown, Trophy, Share2, Compass, FlaskConical, Medal, SquareTerminal, Coins, X, Search, MonitorPlay, MessageCircle, Languages, Check } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { avatarUrl } from '@/lib/avatar';
 import { displayInitial } from '@/lib/displayName';
@@ -67,7 +67,6 @@ const NAV_GROUPS = [
   {
     labelKey: 'nav.markets',
     items: [
-      { to: '/app/watchlists', labelKey: 'nav.watchlists', icon: Star, tint: IOS.gold },
       { to: '/app/signals', labelKey: 'nav.signals', icon: Radar, tint: IOS.orange },
       { to: '/app/staking', labelKey: 'nav.staking', icon: Coins, tint: IOS.green },
       { to: '/app/investors', labelKey: 'nav.investors', label: 'Investors', icon: Landmark, tint: IOS.gold },
@@ -147,7 +146,7 @@ function AppLayoutContent({ children, title }) {
 
   const isAdmin = user?.role === 'admin';
   const adminPreview = isAdmin && isAdminPreview();
-  const isSubscriber = isAdmin || ['pro', 'elite', 'professional'].includes((user?.plan || '').toLowerCase());
+  const isSubscriber = isAdmin || ['pro', 'elite', 'professional', 'teams'].includes((user?.plan || '').toLowerCase());
   const canSeeSignals = isAdmin || features.signals !== false;
   const avatar = avatarUrl(user);
   const homeTo = homeRouteForUser(user);

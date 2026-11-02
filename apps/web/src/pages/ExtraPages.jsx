@@ -363,7 +363,7 @@ export function PricingPage() {
     <PublicSiteShell>
       <PublicPageHead
         eyebrow="Pricing · Paid plans"
-        title={<>One record. Three plans. <span className="tb-gold-text">No free trial.</span></>}
+        title={<>One record. Four plans. <span className="tb-gold-text">No free trial.</span></>}
         description={t('price.sub', null, 'Start with the plan that fits your desk. Every first payment is covered by a 14-day money-back guarantee, and you can cancel from your profile at any time.')}
         meta={['Billed through Stripe', '14-day guarantee', 'Cancel anytime']}
       >
@@ -372,7 +372,7 @@ export function PricingPage() {
         )}
       </PublicPageHead>
       <div className="relative mx-auto w-full max-w-[84rem] px-5 py-10 sm:px-8 sm:py-14">
-        <div id="plans" className="grid w-full scroll-mt-28 items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+        <div id="plans" className="grid w-full scroll-mt-28 items-stretch gap-5 md:grid-cols-2 xl:grid-cols-4 lg:gap-6">
           {PLANS.map((raw) => {
             const p = translatePlan(t, raw);
             return (

@@ -74,7 +74,7 @@ const FEATURES = {
     stats: [['Live', 'computed from synced trades'], ['1', 'record per strategy'], ['0', 'synthetic performance']],
     sections: [
       ['Measure the decision, not just the win', 'A profitable trade can still be a bad decision. Analytics separate outcome from process so you can see consistency, risk and the cost of breaking your own rules.'],
-      ['Reports that travel', 'Filter by account, strategy or period, then export a report for a mentor, prop firm or your own review. The underlying trade record remains the source.'],
+      ['Reports that travel', 'Filter by account, strategy or period, then export a report for a prop firm, team or your own review. The underlying trade record remains the source.'],
     ],
     points: ['Equity curve and drawdown', 'Profit factor, expectancy and win rate', 'Trader Score and discipline trends', 'Exportable reports with source records'],
     cta: ['Explore analytics', '/app/analytics'],
@@ -98,18 +98,18 @@ const FEATURES = {
       ['Built for a desk', 'Pull synced trades, balances and reviews into your own reporting stack. Keys are scoped to the account and can be revoked without deleting the underlying journal.'],
       ['A clear boundary', 'The API exposes your record; it does not enable trading, withdrawals or token operations. Professional access is a data permission, not a brokerage permission.'],
     ],
-    points: ['Personal API keys and webhooks', 'Read-oriented account data', 'Team seats on Professional', 'No order placement or withdrawal surface'],
+    points: ['Personal API keys and webhooks', 'Read-oriented account data', 'Teams plan adds up to 10 seats', 'No order placement or withdrawal surface'],
     cta: ['See Professional', '/pricing'],
   },
   premium: {
     label: 'Premium Features', eyebrow: 'Product · Premium', title: 'The SI-first desk.',
-    summary: 'Elite adds daily and weekly SI reports; Professional adds the API, team seats, white-label presets and a dedicated success manager for funds and prop desks.',
+    summary: 'Elite adds daily and weekly SI reports; Professional adds the API, white-label presets and a dedicated success manager. Teams adds up to 10 seats with centralised billing for funds and prop desks.',
     stats: [['Elite', 'SI reports and coach'], ['Pro', 'API, teams, white-label'], ['1:1', 'onboarding on Professional']],
     sections: [
       ['Go deeper with SI', 'Elite turns the coach into a reporting rhythm: what changed, where risk leaked and what to fix next. The reports stay tied to the live record.'],
-      ['Run a desk', 'Professional adds the integration and identity layers a fund or prop desk needs, including white-label presets, team seats and API access.'],
+      ['Run a desk', 'Professional adds the integration and identity layers a fund or prop desk needs, including white-label presets and API access. Teams provisions up to 10 seats on one invoice.'],
     ],
-    points: ['Daily and weekly SI reports', 'SI coach chat and mistake detection', 'Unlimited broker accounts and team seats', 'REST API, webhooks and white-label presets'],
+    points: ['Daily and weekly SI reports', 'SI coach chat and mistake detection', 'Unlimited broker accounts', 'REST API, webhooks and white-label presets', 'Teams plan adds up to 10 seats'],
     cta: ['Compare plans', '/pricing#plans'],
   },
   'trading-overview': {
@@ -162,7 +162,7 @@ const FEATURES = {
     stats: [['All', 'synced fills in one history'], ['Search', 'symbol, tag, session'], ['Export', 'reports and records']],
     sections: [
       ['The whole record', 'Search by symbol, setup, date, account or mistake. Open a trade to see the entry, exit, size, notes and the SI review that followed.'],
-      ['Evidence you can share', 'Export a report for a mentor, prop firm or internal review without rebuilding the story. The source record stays attached.'],
+      ['Evidence you can share', 'Export a report for a prop firm, team or internal review without rebuilding the story. The source record stays attached.'],
     ],
     points: ['Synced trade history, not manual entry', 'Notes and reviews attached to each trade', 'Filters by symbol, tag, account and date', 'Exportable records and reports'],
     cta: ['Open trade history', '/app/journal'],
@@ -295,12 +295,12 @@ const COMMUNITY_SECTIONS = [
   {
     id: 'community', icon: Globe2, eyebrow: 'Community · Trading community', title: 'A room for process, not hype.',
     body: 'The community forum is organised around setups, reviews and lessons. Members can ask for a second pair of eyes, share a playbook and compare how they handled the same market condition.',
-    points: ['Discussion by market and skill level', 'Share charts and journal notes safely', 'Mentors and SI-hosted sessions', 'Moderation that removes spam and financial promotions'],
+    points: ['Discussion by market and skill level', 'Share charts and journal notes safely', 'SI-hosted sessions and peer discussion', 'Moderation that removes spam and financial promotions'],
   },
   {
     id: 'forums', icon: MessageSquare, eyebrow: 'Community · Discussion forums', title: 'Threads worth reopening.',
     body: 'Forums keep the long-form discussion that a chat box loses. Search by topic, follow a thread and link back to the trade or lesson that started the question.',
-    points: ['Searchable threads and topic tags', 'Attach a journal review or lesson', 'Mentor replies and SI summaries', 'Clear rules on advice and promotion'],
+    points: ['Searchable threads and topic tags', 'Attach a journal review or lesson', 'SI summaries and peer replies', 'Clear rules on advice and promotion'],
   },
   {
     id: 'moderators', icon: ShieldCheck, eyebrow: 'Community · Moderators', title: 'Human review, visible rules.',

@@ -143,7 +143,7 @@ router.get('/stats', async (req, res) => {
 // ── Claim payout: commissions are paid in TBC brand credits ────────
 // Peg: 1 TBC = 1 KWD. USD-denominated commissions convert at the published
 // TBC rate and land as ledger rows (asset='TBC'). TBC is the brand's money:
-// spendable on challenges, signals and mentorship, convertible, and
+// spendable on challenges, signals and Academy, convertible, and
 // claimable on-chain at token launch.
 async function tbcRate() {
 	const { tbcEcon } = await import('../utils/tbc-econ.js');

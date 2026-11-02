@@ -131,7 +131,7 @@ export default function AffiliatePage() {
             <Stat label={`${t('afl.pendingEarn')} · TBC`} value={`${(Math.round(pending * tbcRate * 100) / 100).toLocaleString()} TBC`} tone="text-[#d4af37]" />
             <Stat label={`${t('afl.paid')} · TBC`} value={`${(Math.round(paid * tbcRate * 100) / 100).toLocaleString()} TBC`} tone="text-emerald-400" />
           </StatGrid>
-          <p className="-mt-1 text-xs text-[#8a8577]">Paid in TBC at {tbcRate} TBC per $1 — spendable on challenges, signals and mentorship, claimable on-chain at launch.</p>
+          <p className="-mt-1 text-xs text-[#8a8577]">Paid in TBC at {tbcRate} TBC per $1 — spendable on challenges, signals and Academy, claimable on-chain at launch.</p>
 
           <div className="mb-3 flex items-center gap-3">
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">{t('afl.refHistory')}</h3>

@@ -250,7 +250,7 @@ function AIChat({ endpoint, buildBody, placeholder, accent = '#d4af37' }) {
 	);
 }
 
-// ── Paywall ($150 individual / $299 family) ─────────────────────────
+// ── Paywall (Individual $150 / Pro $199 / Family $299 / Teams $499) ──
 function Paywall({ onPurchased }) {
 	const { toast } = useToast();
 	const { t } = useI18n();
@@ -308,9 +308,10 @@ function Paywall({ onPurchased }) {
 		setRedeeming(true);
 		try {
 			const res = await redeemAcademyFamily(code);
+			const group = res?.kind === 'team' ? 'Team' : 'Family';
 			toast({
-				title: 'Family access unlocked',
-				description: res?.already ? 'Your Academy access is already active.' : 'Your seat is ready. Welcome to the Academy.',
+				title: `${group} access unlocked`,
+				description: res?.already ? 'Your Academy access is already active.' : `Your ${group.toLowerCase()} seat is ready. Welcome to the Academy.`,
 			});
 			setFamilyCode('');
 			onPurchased();
@@ -323,11 +324,32 @@ function Paywall({ onPurchased }) {
 		{ icon: Route, text: `Four schools · ${PATHS.length} programmes — foundation, FX, crypto, multi-asset, platform, funded, TBC, investor, AI and company` },
 		{ icon: Library, text: '233 lessons across every company purpose — no topic left outside the Academy' },
 		{ icon: Headphones, text: 'Male and female read-aloud voices in 8 languages — switch reader and speed inside every lesson' },
-		{ icon: Sparkles, text: 'Family-friendly story first, professional depth second — kids and adults learn together' },
-		{ icon: Video, text: '8 live webinars / week with an SI host — FX London lab, crypto on-chain lab, news reactions' },
 		{ icon: Bot, text: 'One-on-one SI tutor inside every lesson' },
-		{ icon: Trophy, text: 'Learn without pop quizzes — pass one final certificate exam per programme' },
-		{ icon: Award, text: 'Lifetime access — one payment, forever' },
+		{ icon: Video, text: '8 live webinars / week with an SI host — FX London lab, crypto on-chain lab, news reactions' },
+		{ icon: Award, text: 'One final certificate exam per programme · lifetime access' },
+	];
+
+	const tiers = [
+		{
+			id: 'individual', name: 'Individual', price: 150, tagline: 'One learner. The full Academy.',
+			icon: GraduationCap, cta: t('aca.cta'), disabled: checked && !configured,
+			features: ['All 233 lessons · 13 programmes', 'Four schools, one standard', 'Read-aloud voices in 8 languages', '1:1 SI tutor in every lesson', '8 live webinars every week', 'One final certificate exam'],
+		},
+		{
+			id: 'pro', name: 'Pro', price: 199, tagline: 'For professional traders and creators.',
+			icon: BadgeCheck, featured: true, badge: 'Pro', cta: 'Choose Pro', disabled: false,
+			features: ['Everything in Individual', 'Commercial-use licence for internal training', 'Client-education use, no resale', 'Pro badge inside the Academy', 'Lifetime access'],
+		},
+		{
+			id: 'family', name: 'Family', price: 299, tagline: 'Up to four learners.',
+			icon: Users, cta: 'Buy family pass', disabled: checked && !familyConfigured,
+			features: ['Everything in Individual', 'Four seats', 'Private family code', 'Owner seat + three learners', 'Lifetime access'],
+		},
+		{
+			id: 'team', name: 'Teams', price: 499, tagline: 'Up to ten learners.',
+			icon: Building2, badge: 'Teams', cta: 'Buy team pass', disabled: false,
+			features: ['Everything in Individual', 'Ten seats', 'Private team code', 'Owner console + seat tracking', 'Lifetime access'],
+		},
 	];
 
 	return (
@@ -338,65 +360,61 @@ function Paywall({ onPurchased }) {
 			accent={`${t('aca.titleB')} ${t('aca.titleC')}`}
 			subtitle={t('aca.sub')}
 		>
-			<div className="flex flex-col items-center text-center">
+			<div className="mx-auto w-full max-w-6xl text-center">
 				<div className="mt-4 flex flex-wrap justify-center gap-2">
 					{['Forex: pairs → prop firms', 'Crypto: wallets → perps → on-chain', 'Risk, psychology & playbooks'].map((s) => (
 						<span key={s} className="rounded-full border border-[#d4af37]/20 px-3 py-1 text-xs text-[#c9c4b4] backdrop-blur-md [html.light_&]:border-[#8a6418]/25 [html.light_&]:text-[#4a4a42]">{s}</span>
 					))}
 				</div>
 
-				<div className="mt-6 flex items-end gap-1.5">
-					<span className="tb-gold-text text-5xl font-bold">₮{tbcPrice.toLocaleString()}</span>
-					<span className="mb-1.5 text-sm text-[#8a8577] [html.light_&]:text-[#6b675c]">$150 list · {t('aca.priceNote')}</span>
-				</div>
-
-				<div className="mt-6 flex flex-col items-center gap-3">
-					<GoldButton
-						onClick={() => buy('individual')}
-						disabled={busy || (checked && !configured)}
-						className="min-h-[52px] px-8 text-base disabled:opacity-60"
-					>
-						{busyTier === 'individual' ? <><Loader2 className="h-5 w-5 animate-spin" /> {t('aca.opening')}</> : <><CircleDollarSign className="h-5 w-5" /> {t('aca.cta')}</>}
-					</GoldButton>
-					<GhostButton onClick={buyWithWallet} disabled={busy || tbcBalance < tbcPrice} className="disabled:opacity-40">
-						<Wallet className="h-4 w-4" /> {t('aca.walletPay')} — pay {tbcPrice.toLocaleString()} TBC in TBC ({tbcBalance >= tbcPrice ? t('aca.available') : t('aca.needMore', { amt: `${(tbcPrice - tbcBalance).toFixed(2)} TBC` })})
-					</GhostButton>
-					<div className="text-xs text-[#8a8577] [html.light_&]:text-[#6b675c]">{tbcBalance.toLocaleString()} TBC in till · <Link to="/app/wallet" className="text-[#d4af37] [html.light_&]:text-[#8a6418] hover:underline">{t('bill.fundWallet')} — convert, swap, buy or receive TBC</Link></div>
-				</div>
-
-				<div className="mt-4 w-full max-w-xl rounded-2xl border border-[#d4af37]/20 bg-white/[0.03] p-4 text-left backdrop-blur-md [html.light_&]:border-[#8a6418]/25 [html.light_&]:bg-white">
-					<div className="flex items-start gap-3">
-						<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/10 text-[#d4af37]"><Users className="h-5 w-5" /></span>
-						<div className="min-w-0 flex-1">
-							<div className="flex flex-wrap items-baseline justify-between gap-2">
-								<div>
-									<div className="text-sm font-semibold text-[#f0ecdd] [html.light_&]:text-[#1a1d21]">Family pass · up to 4 learners</div>
-									<div className="text-xs text-[#8a8577] [html.light_&]:text-[#6b675c]">One payment · lifetime access · card checkout</div>
+				<div className="mt-8 grid items-stretch gap-4 text-left md:grid-cols-2 xl:grid-cols-4">
+					{tiers.map((tier) => {
+						const Icon = tier.icon;
+						const isBusy = busyTier === tier.id;
+						return (
+							<div key={tier.id} className={`relative flex flex-col rounded-2xl border p-5 ${tier.featured ? 'border-[#d4af37]/50 bg-gradient-to-b from-[#d4af37]/[0.12] to-white/[0.02] shadow-[0_20px_60px_-30px_rgba(212,175,55,0.6)]' : 'border-white/10 bg-white/[0.03]'} backdrop-blur-md [html.light_&]:border-black/10 [html.light_&]:bg-white`}>
+								{tier.badge && <span className="absolute right-4 top-4 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-[#0a0a0f]">{tier.badge}</span>}
+								<div className="flex items-center gap-2.5 pr-12">
+									<span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border ${tier.featured ? 'border-[#d4af37]/35 bg-[#d4af37]/15 text-[#e8c95a]' : 'border-white/10 bg-white/[0.04] text-[#d4af37]'} [html.light_&]:border-[#8a6418]/25 [html.light_&]:bg-[#d4af37]/10 [html.light_&]:text-[#8a6418]`}><Icon className="h-5 w-5" /></span>
+									<div className="min-w-0"><h3 className="text-base font-bold tracking-tight text-[#f0ecdd] [html.light_&]:text-[#1a1d21]">{tier.name}</h3><p className="text-[11px] leading-snug text-[#8a8577] [html.light_&]:text-[#6b675c]">{tier.tagline}</p></div>
 								</div>
-								<div className="font-mono text-2xl font-bold text-[#e8c95a] [html.light_&]:text-[#8a6418]">$299</div>
+								<div className="mt-4 flex items-end gap-1"><span className="font-mono text-4xl font-bold text-[#e8c95a] [html.light_&]:text-[#8a6418]">${tier.price}</span><span className="mb-1 text-xs text-[#8a8577] [html.light_&]:text-[#6b675c]">one-time</span></div>
+								<ul className="mt-4 flex-1 space-y-2 text-xs text-[#b3ae9e] [html.light_&]:text-[#4a4a42]">
+									{tier.features.map((f) => <li key={f} className="flex gap-2"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#34d399]" /><span className="leading-snug">{f}</span></li>)}
+								</ul>
+								<div className="mt-5 space-y-2">
+									<GoldButton onClick={() => buy(tier.id)} disabled={busy || tier.disabled} className="w-full min-h-[46px] text-sm disabled:opacity-50">
+										{isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
+										{isBusy ? t('aca.opening') : tier.cta}
+									</GoldButton>
+									{tier.id === 'individual' && (
+										<>
+											<GhostButton onClick={buyWithWallet} disabled={busy || tbcBalance < tbcPrice} className="w-full min-h-[40px] text-xs disabled:opacity-40">
+												<Wallet className="h-3.5 w-3.5" /> Pay with TBC
+											</GhostButton>
+											<div className="text-center text-[11px] leading-relaxed text-[#6a665a] [html.light_&]:text-[#7e786a]">₮{tbcPrice.toLocaleString()} · {tbcBalance.toLocaleString()} TBC available · <Link to="/app/wallet" className="text-[#d4af37] [html.light_&]:text-[#8a6418] hover:underline">Top up</Link></div>
+										</>
+									)}
+								</div>
 							</div>
-							<p className="mt-2 text-xs leading-relaxed text-[#a9a392] [html.light_&]:text-[#5f5b52]">You get seat one. Share the private code with up to three more accounts — each learner gets the full Academy.</p>
-							<button type="button" onClick={() => buy('family')} disabled={busy || (checked && !familyConfigured)} className="mt-3 inline-flex min-h-[40px] items-center gap-2 rounded-lg border border-[#d4af37]/35 px-4 text-xs font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-50 [html.light_&]:border-[#8a6418]/35 [html.light_&]:text-[#8a6418]">
-								{busyTier === 'family' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />} Buy family pass
-							</button>
-						</div>
-					</div>
+						);
+					})}
 				</div>
 
-				<div className="mt-3 w-full max-w-xl rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-left [html.light_&]:border-black/10 [html.light_&]:bg-white">
-					<div className="flex items-center gap-2 text-sm font-semibold text-[#f0ecdd] [html.light_&]:text-[#1a1d21]"><KeyRound className="h-4 w-4 text-[#d4af37] [html.light_&]:text-[#8a6418]" /> Have a family code?</div>
+				<div className="mx-auto mt-5 w-full max-w-2xl rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-left [html.light_&]:border-black/10 [html.light_&]:bg-white">
+					<div className="flex items-center gap-2 text-sm font-semibold text-[#f0ecdd] [html.light_&]:text-[#1a1d21]"><KeyRound className="h-4 w-4 text-[#d4af37] [html.light_&]:text-[#8a6418]" /> Have a family or team code?</div>
 					<form onSubmit={redeem} className="mt-3 flex flex-col gap-2 sm:flex-row">
-						<input value={familyCode} onChange={(e) => setFamilyCode(e.target.value.toUpperCase())} placeholder="TB-FAM-XXXXXXXX" autoComplete="off" spellCheck={false} className="min-h-[42px] min-w-0 flex-1 rounded-lg border border-white/10 bg-black/20 px-3 font-mono text-sm tracking-wider text-[#f0ecdd] outline-none placeholder:text-[#6a665a] focus:border-[#d4af37]/50 [html.light_&]:border-black/10 [html.light_&]:bg-white [html.light_&]:text-[#1a1d21] [html.light_&]:placeholder:text-[#8a8577] [html.light_&]:focus:border-[#8a6418]/50" />
+						<input value={familyCode} onChange={(e) => setFamilyCode(e.target.value.toUpperCase())} placeholder="TB-FAM-… / TB-TEAM-…" autoComplete="off" spellCheck={false} className="min-h-[42px] min-w-0 flex-1 rounded-lg border border-white/10 bg-black/20 px-3 font-mono text-sm tracking-wider text-[#f0ecdd] outline-none placeholder:text-[#6a665a] focus:border-[#d4af37]/50 [html.light_&]:border-black/10 [html.light_&]:bg-white [html.light_&]:text-[#1a1d21] [html.light_&]:placeholder:text-[#8a8577] [html.light_&]:focus:border-[#8a6418]/50" />
 						<button type="submit" disabled={redeeming || !familyCode.trim()} className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg border border-[#d4af37]/35 px-4 text-xs font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/10 disabled:cursor-not-allowed disabled:opacity-40 [html.light_&]:border-[#8a6418]/35 [html.light_&]:text-[#8a6418]">
 							{redeeming ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />} Redeem
 						</button>
 					</form>
 					<p className="mt-2 text-[11px] leading-relaxed text-[#6a665a] [html.light_&]:text-[#7e786a]">Your account joins the pass instantly. The owner keeps the code; seats cannot be transferred after use.</p>
 				</div>
-			<p className="mt-3 text-xs text-[#6a665a] [html.light_&]:text-[#7e786a]">{t('aca.guarantee')}</p>
+				<p className="mt-3 text-xs text-[#6a665a] [html.light_&]:text-[#7e786a]">{t('aca.guarantee')}</p>
 			</div>
 
-			<div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+			<div className="mt-8 grid gap-3 text-left sm:grid-cols-2 lg:grid-cols-3">
 				{features.map((f) => (
 					<Card key={f.text} className="flex items-start gap-3 rounded-xl p-4">
 						<f.icon className="mt-0.5 h-5 w-5 shrink-0 text-[#d4af37]" />
@@ -406,6 +424,7 @@ function Paywall({ onPurchased }) {
 			</div>
 		</PageHero>
 	);
+
 }
 
 function LessonLoading() {
@@ -1062,8 +1081,9 @@ export default function AcademyPage() {
 	const { t } = useI18n();
 	const { toast } = useToast();
 	const { user } = useAuth();
-	const isAdmin = user?.role === 'admin'; // admins enter free — everyone else pays $150
+	const isAdmin = user?.role === 'admin'; // admins enter free — everyone else chooses a paid tier
 	const [access, setAccess] = useState(null); // null = loading
+	const [tier, setTier] = useState(null); // individual | pro | family | team | admin
 	const [data, setData] = useState(null);
 	const [loadError, setLoadError] = useState(null); // 'access' | 'progress' | null
 	const [view, setView] = useState('paths'); // paths | curriculum | lesson | exam
@@ -1105,11 +1125,13 @@ export default function AcademyPage() {
 		try {
 			const res = await getAcademyAccess();
 			setAccess(res.access);
+			setTier(res.tier || null);
 			if (res.access) {
 				refreshProgress();
 				refreshFamily();
 			} else {
 				setFamily(null);
+				setTier(null);
 			}
 		} catch {
 			setAccess(null);
@@ -1461,7 +1483,7 @@ export default function AcademyPage() {
 			await navigator.clipboard.writeText(family.code);
 			setFamilyCopied(true);
 			window.setTimeout(() => setFamilyCopied(false), 1800);
-			toast({ title: 'Family code copied', description: 'Send it to the learners who should join your pass.' });
+			toast({ title: `${family?.kind === 'team' ? 'Team' : 'Family'} code copied`, description: 'Send it to the learners who should join your pass.' });
 		} catch {
 			toast({ variant: 'destructive', title: 'Could not copy the code', description: 'Select the code and copy it manually.' });
 		}
@@ -1477,7 +1499,7 @@ export default function AcademyPage() {
 		{ id: 'topics', label: 'Library' },
 		{ id: 'webinars', label: 'Live' },
 		{ id: 'certificates', label: 'Certs' },
-		...(family?.active ? [{ id: 'family', label: 'Family' }] : []),
+		...(family?.active ? [{ id: 'family', label: family.kind === 'team' ? 'Team' : 'Family' }] : []),
 	];
 
 	return (
@@ -1492,6 +1514,8 @@ export default function AcademyPage() {
 						<span><AudioLines className="h-3.5 w-3.5" /> Audio-first</span>
 						<span><Globe className="h-3.5 w-3.5" /> 8 languages</span>
 						<span><BadgeCheck className="h-3.5 w-3.5" /> {totals.paths} programmes</span>
+						{tier === 'pro' && <span className="rounded-full border border-[#d4af37]/35 bg-[#d4af37]/10 px-2.5 py-1 text-[#e8c95a]"><BadgeCheck className="h-3.5 w-3.5" /> Pro</span>}
+						{tier === 'team' && <span className="rounded-full border border-[#34d399]/30 bg-[#34d399]/10 px-2.5 py-1 text-[#34d399]"><Building2 className="h-3.5 w-3.5" /> Teams</span>}
 					</div>
 				</header>
 
@@ -1803,9 +1827,9 @@ export default function AcademyPage() {
 					<div>
 						<div className="ac-page-intro">
 							<div>
-								<span className="ac-eyebrow">Family pass · {family.role === 'owner' ? 'Owner' : 'Seat'}</span>
-								<h2 className="ac-page-title">{family.role === 'owner' ? 'Four learners. One standard.' : 'Your family seat.'}</h2>
-								<p className="ac-page-sub">{family.role === 'owner' ? 'Share the private code with up to three more learners. Every seat gets the full Academy, read-aloud lessons and the same certificate standard.' : 'You are learning on a family pass. The owner manages the share code and remaining seats.'}</p>
+								<span className="ac-eyebrow">{family.kind === 'team' ? 'Team' : 'Family'} pass · {family.role === 'owner' ? 'Owner' : 'Seat'}</span>
+								<h2 className="ac-page-title">{family.role === 'owner' ? (family.kind === 'team' ? 'Ten seats. One standard.' : 'Four learners. One standard.') : `Your ${family.kind === 'team' ? 'team' : 'family'} seat.`}</h2>
+								<p className="ac-page-sub">{family.role === 'owner' ? `Share the private code with up to ${family.seatsTotal - 1} more learners. Every seat gets the full Academy, read-aloud lessons and the same certificate standard.` : `You are learning on a ${family.kind === 'team' ? 'team' : 'family'} pass. The owner manages the share code and remaining seats.`}</p>
 							</div>
 						</div>
 						<div className="ac-family-grid">
@@ -1813,7 +1837,7 @@ export default function AcademyPage() {
 								{family.role === 'owner' ? (
 									<>
 										<div className="ac-family-title">Share this private code</div>
-										<p className="ac-family-copy">Each learner signs in, opens Academy, and redeems it under “Have a family code?”.</p>
+										<p className="ac-family-copy">Each learner signs in, opens Academy, and redeems it under “Have a family or team code?”.</p>
 										<div className="ac-family-code-row">
 											<code className="ac-family-code">{family.code}</code>
 											<button type="button" onClick={copyFamilyCode} disabled={!family.code} className="ac-family-copy-btn">
@@ -1910,9 +1934,9 @@ export default function AcademyPage() {
 					</div>
 				</section>
 
-				<div className="ac-mentor">
-					<div className="ac-mentor-main">
-						<span className="ac-mentor-icon"><Bot className="h-4 w-4" /></span>
+				<div className="ac-sicoach">
+					<div className="ac-sicoach-main">
+						<span className="ac-sicoach-icon"><Bot className="h-4 w-4" /></span>
 						<div>
 							<strong>SI is inside every lesson.</strong>
 							<span>Ask for a worked example, a chart read, or a plain-English explanation. It is a tutor, not a signal service.</span>

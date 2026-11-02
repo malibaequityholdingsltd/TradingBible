@@ -30,11 +30,11 @@ import { ABTestingEngine } from '@/lib/ads/abtesting.js';
 import { useToast } from '@/hooks/use-toast';
 
 const GOLD = '#d4af37';
-const PLAN_COLORS = { none: '#6a665a', pro: '#3b82f6', elite: GOLD, professional: '#a855f7' };
-const PLAN_PRICES = { pro: 19.99, elite: 49.99, professional: 99.00 };
+const PLAN_COLORS = { none: '#6a665a', pro: '#3b82f6', elite: GOLD, professional: '#a855f7', teams: '#22c55e' };
+const PLAN_PRICES = { pro: 19.99, elite: 49.99, professional: 99.00, teams: 199.00 };
 const ACADEMY_PRICE = 150; // one-time lifetime fee
 // No free trial: paid plans only. Helpers treat legacy 'trial' rows as no plan.
-const PAID_PLANS = ['pro', 'elite', 'professional'];
+const PAID_PLANS = ['pro', 'elite', 'professional', 'teams'];
 const planKey = (p) => (!p || p === 'trial' ? null : p);
 const isPaidPlan = (p) => PAID_PLANS.includes(planKey(p));
 const displayPlan = (p) => planKey(p) || 'none';
@@ -311,7 +311,7 @@ function EditUserModal({ user, userSource, onClose, onSaved }) {
               <select value={form.plan} onChange={e => setForm({ ...form, plan: e.target.value })}
                 disabled={userSource === 'profiles'}
                 className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50 disabled:opacity-50">
-                {['none', 'pro', 'elite', 'professional'].map(p => <option key={p} value={p === 'none' ? '' : p} className="bg-[#0f0f14]">{planLabel(p === 'none' ? null : p)}</option>)}
+                {['none', 'pro', 'elite', 'professional', 'teams'].map(p => <option key={p} value={p === 'none' ? '' : p} className="bg-[#0f0f14]">{planLabel(p === 'none' ? null : p)}</option>)}
               </select>
             </div>
             <div>
@@ -491,7 +491,7 @@ export function AdminDashboard() {
 
   const todayLabel = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
   const verifiedRate = stats.total ? Math.round((stats.verified / stats.total) * 100) : 0;
-  const planTone = (plan) => (planKey(plan) === 'pro' ? 'blue' : planKey(plan) === 'elite' ? 'gold' : planKey(plan) === 'professional' ? 'violet' : 'muted');
+  const planTone = (plan) => (planKey(plan) === 'pro' ? 'blue' : planKey(plan) === 'elite' ? 'gold' : planKey(plan) === 'professional' ? 'violet' : planKey(plan) === 'teams' ? 'green' : 'muted');
 
   return (
     <AdminLayout title="Admin Dashboard">
@@ -910,7 +910,7 @@ export function AdminUsers() {
         <select value={planFilter} onChange={e => { setPlanFilter(e.target.value); setPage(1); }}
           className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none">
           <option value="all" className="bg-[#0f0f14]">All Plans</option>
-          {['none', 'pro', 'elite', 'professional'].map(p => <option key={p} value={p} className="bg-[#0f0f14]">{planLabel(p === 'none' ? null : p)}</option>)}
+          {['none', 'pro', 'elite', 'professional', 'teams'].map(p => <option key={p} value={p} className="bg-[#0f0f14]">{planLabel(p === 'none' ? null : p)}</option>)}
         </select>
         <select value={roleFilter} onChange={e => { setRoleFilter(e.target.value); setPage(1); }}
           className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none">
@@ -1022,7 +1022,7 @@ export function AdminAnalytics() {
   const { toast } = useToast();
 
   const planDist = useMemo(() => {
-    const counts = { none: 0, pro: 0, elite: 0, professional: 0 };
+    const counts = { none: 0, pro: 0, elite: 0, professional: 0, teams: 0 };
     users.forEach(u => { const k = displayPlan(u.plan); counts[k] = (counts[k] || 0) + 1; });
     return Object.entries(counts).map(([name, value]) => ({ name: name === 'none' ? 'No plan' : name.charAt(0).toUpperCase() + name.slice(1), value, color: PLAN_COLORS[name] }));
   }, [users]);
@@ -4025,6 +4025,7 @@ export function AdminTvAds() {
               <option value="pro" className="bg-[#0f0f14]">Pro — every paid plan</option>
               <option value="elite" className="bg-[#0f0f14]">Elite SI and up</option>
               <option value="professional" className="bg-[#0f0f14]">Professional only</option>
+              <option value="teams" className="bg-[#0f0f14]">Teams only</option>
             </select>
           </div>
           <label className="flex items-center gap-3 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
@@ -4521,6 +4522,7 @@ export function AdminSettings() {
                 <option value="pro" className="bg-[#0f0f14]">Pro and up</option>
                 <option value="elite" className="bg-[#0f0f14]">Elite and up</option>
                 <option value="professional" className="bg-[#0f0f14]">Professional only</option>
+              <option value="teams" className="bg-[#0f0f14]">Teams only</option>
               </select>
             </label>
           ))}

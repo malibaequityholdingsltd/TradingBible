@@ -19,7 +19,7 @@ const PROVIDES = [
   { icon: LineChart, title: 'Terminal & market data', body: 'Charts, order flow, heatmaps and TradingBible TV across five markets and 250+ symbols.', to: '/features/market-data' },
   { icon: ShieldCheck, title: 'Risk tools', body: 'Position sizing, R-multiples, exposure context and alerts built into the workflow before the order.', to: '/features/risk-management' },
   { icon: GraduationCap, title: 'Academy', body: 'Structured lessons on charts, risk, journaling and process — education, never signals or profit claims.', to: '/academy' },
-  { icon: Activity, title: 'Analytics & reports', body: 'Equity, drawdown, profit factor, expectancy and Trader Score, with exportable reports for a mentor or prop firm.', to: '/features/performance-analytics' },
+  { icon: Activity, title: 'Analytics & reports', body: 'Equity, drawdown, profit factor, expectancy and Trader Score, with exportable reports for a prop firm or your own review.', to: '/features/performance-analytics' },
 ];
 
 const MARKETS = [

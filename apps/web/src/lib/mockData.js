@@ -18,7 +18,9 @@ export const PLANS = [
   { id: 'elite', name: 'Elite SI', price: 49.99, period: 'mo', highlight: true, tagline: 'SI-first performance', logo: LOGOS.goldWhite,
     features: ['Everything in Pro', 'SI Trading Coach chat', 'Daily & weekly SI reports', 'Mistake detection', '15 broker accounts', 'Priority SI queue'], cta: 'Choose Elite SI' },
   { id: 'professional', name: 'Professional', price: 99, period: 'mo', tagline: 'For funds & prop desks', logo: LOGOS.goldBlack,
-    features: ['Everything in Elite', 'Unlimited broker accounts', 'Team seats', 'API & webhooks', 'White-label branding', 'White-glove onboarding', 'Dedicated success manager'], cta: 'Choose Professional' },
+    features: ['Everything in Elite', 'Unlimited broker accounts', 'White-label branding', 'API & webhooks', 'White-glove onboarding', 'Dedicated success manager'], cta: 'Choose Professional' },
+  { id: 'teams', name: 'Teams', price: 199, period: 'mo', tagline: 'For trading rooms, schools & funds', logo: LOGOS.goldWhite,
+    features: ['Everything in Professional', 'Up to 10 seats', 'Centralised billing', 'Seat provisioning with support', 'Priority support', 'Team onboarding'], cta: 'Choose Teams' },
 ];
 
 const PLAN_I18N_KEY = { pro: 'pro', elite: 'elite', professional: 'prof' };
@@ -35,12 +37,16 @@ export function translatePlan(t, plan) {
     if (!v || v === key) break;
     features.push(v);
   }
+  const fallback = (key, value) => {
+    const translated = t(key);
+    return !translated || translated === key ? value : translated;
+  };
   return {
     ...plan,
-    name: t(`plan.${k}.name`),
-    tagline: t(`plan.${k}.tag`),
-    period: t(`plan.${k}.period`),
-    cta: t(`plan.${k}.cta`),
+    name: fallback(`plan.${k}.name`, plan.name),
+    tagline: fallback(`plan.${k}.tag`, plan.tagline),
+    period: fallback(`plan.${k}.period`, plan.period),
+    cta: fallback(`plan.${k}.cta`, plan.cta),
     features: features.length ? features : plan.features,
   };
 }

@@ -14,7 +14,6 @@
 - [Admin Integrations](/admin/integrations): TradingBible application page.
 - [Admin Investor Relations](/admin/investor-relations): TradingBible application page.
 - [Admin Jobs](/admin/jobs): TradingBible application page.
-- [Admin Mentors](/admin/mentors): TradingBible application page.
 - [Admin Plugins](/admin/plugins): TradingBible application page.
 - [Admin Reports](/admin/reports): TradingBible application page.
 - [Admin Settings](/admin/settings): TradingBible application page.
@@ -53,7 +52,6 @@
 - [Landing](/): TradingBible application page.
 - [Leaderboard](/leaderboard): TradingBible application page.
 - [Login](/login): TradingBible application page.
-- [Mentors](/app/mentors): TradingBible application page.
 - [Navigate](/teacher): TradingBible application page.
 - [Onboarding](/onboarding): TradingBible application page.
 - [Order Flow](/app/orderflow): TradingBible application page.
@@ -81,7 +79,6 @@
 - [Student Dashboard](/student): TradingBible application page.
 - [Symbol Redirect](/app/charts): TradingBible application page.
 - [Tb Stock Documents](/stock/TB/documents): TradingBible application page.
-- [Tbc App](/app/tbc/:tab): TradingBible application page.
 - [Tbc Chain](/developers/tbc): TradingBible application page.
 - [Tbc Public](/tbc/faqs): TradingBible application page.
 - [Terminal Premium](/app/terminal-pro): TradingBible application page.

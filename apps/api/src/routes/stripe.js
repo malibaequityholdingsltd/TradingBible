@@ -2,7 +2,7 @@ import { Router } from 'express';
 import Stripe from 'stripe';
 import logger from '../utils/logger.js';
 import { supabase, supabaseRest } from '../utils/supabaseClient.js';
-import { familyPassTransactionId, generateFamilyCode, normalizeFamilyCode } from '../utils/academy-family.js';
+import { familyPassTransactionId, generateFamilyCode, generateTeamCode, normalizeFamilyCode } from '../utils/academy-family.js';
 
 const router = Router();
 
@@ -29,13 +29,41 @@ function getWebhookSecret() {
 
 const ACADEMY_FAMILY_PRICE_ID = process.env.STRIPE_PRICE_ACADEMY_FAMILY || 'price_1UVq0gETv6zJp2esYqK9qDUs';
 
+// Fixed one-time Academy tiers. Pro and Teams use inline Stripe price data
+// when no dashboard price is configured, so the price stays exactly $199 and
+// $499 without inventing a price ID or touching the production env file.
+const ACADEMY_PRO_PRICE = { amount: 19900, name: 'TradingBible Academy Pro' };
+const ACADEMY_TEAM_PRICE = { amount: 49900, name: 'TradingBible Academy Teams' };
+const PLATFORM_TEAMS_PRICE = { amount: 19900, name: 'TradingBible Teams', recurring: { interval: 'month' } };
+
 const PRICE_MAP = {
   pro: process.env.STRIPE_PRICE_PRO || '',
   elite: process.env.STRIPE_PRICE_ELITE || '',
   professional: process.env.STRIPE_PRICE_PROFESSIONAL || '',
+  teams: process.env.STRIPE_PRICE_TEAMS || '',
   academy: process.env.STRIPE_PRICE_ACADEMY || '',
+  academyPro: process.env.STRIPE_PRICE_ACADEMY_PRO || '',
   academyFamily: ACADEMY_FAMILY_PRICE_ID,
+  academyTeam: process.env.STRIPE_PRICE_ACADEMY_TEAM || '',
 };
+
+const PLAN_PRICE_SPECS = {
+  teams: PLATFORM_TEAMS_PRICE,
+};
+
+async function resolveSubscriptionPrice(stripe, plan) {
+  if (PRICE_MAP[plan]) return PRICE_MAP[plan];
+  const spec = PLAN_PRICE_SPECS[plan];
+  if (!spec) return '';
+  const price = await stripe.prices.create({
+    currency: 'usd',
+    unit_amount: spec.amount,
+    recurring: spec.recurring,
+    product_data: { name: spec.name },
+  });
+  PRICE_MAP[plan] = price.id;
+  return price.id;
+}
 
 // Stripe SDK errors are user-safe (declined card, unknown price, canceled
 // subscription) — surface them as JSON instead of a generic 500.
@@ -162,11 +190,17 @@ router.post('/checkout-session', async (req, res) => {
   if (!stripe) return res.status(503).json({ error: 'Stripe is not configured. Set STRIPE_SECRET_KEY in apps/api/.env' });
 
   const { plan, intent } = req.body ?? {};
+  const isTeamPass = intent === 'academy_team' || plan === 'academy_team';
+  const isProPass = intent === 'academy_pro' || plan === 'academy_pro';
   const isFamily = intent === 'academy_family' || plan === 'academy_family';
-  const isAcademy = isFamily || intent === 'academy' || plan === 'academy';
-  const priceId = isFamily ? PRICE_MAP.academyFamily : isAcademy ? PRICE_MAP.academy : PRICE_MAP[plan];
-  if (!priceId) return res.status(422).json({ error: 'unknown or unconfigured plan' });
-  const familyCode = isFamily ? generateFamilyCode() : null;
+  const isAcademy = isTeamPass || isProPass || isFamily || intent === 'academy' || plan === 'academy';
+  const isPlatformTeams = plan === 'teams';
+  const academyKey = isTeamPass ? 'academyTeam' : isProPass ? 'academyPro' : isFamily ? 'academyFamily' : 'academy';
+  const academySpec = isTeamPass ? ACADEMY_TEAM_PRICE : isProPass ? ACADEMY_PRO_PRICE : null;
+  const platformSpec = isPlatformTeams ? PLATFORM_TEAMS_PRICE : null;
+  const priceId = isAcademy ? PRICE_MAP[academyKey] : PRICE_MAP[plan];
+  if (!priceId && !academySpec && !platformSpec) return res.status(422).json({ error: 'unknown or unconfigured plan' });
+  const groupCode = isFamily || isTeamPass ? (isTeamPass ? generateTeamCode() : generateFamilyCode()) : null;
 
   // ensure customer
   let customerId = user.stripeCustomerId;
@@ -181,17 +215,30 @@ router.post('/checkout-session', async (req, res) => {
   const origin = req.headers.origin || process.env.CORS_ORIGIN || 'https://tradingbible.app';
   try {
     if (isAcademy) {
-      const metadata = { user_id: user.id, intent: isFamily ? 'academy_family' : 'academy' };
-      if (isFamily) {
-        metadata.family_code = familyCode;
-        metadata.seats = '4';
+      const metadata = {
+        user_id: user.id,
+        intent: isTeamPass ? 'academy_team' : isProPass ? 'academy_pro' : isFamily ? 'academy_family' : 'academy',
+      };
+      if (groupCode) {
+        metadata.family_code = groupCode;
+        metadata.seats = isTeamPass ? '10' : '4';
       }
+      const lineItem = priceId
+        ? { price: priceId, quantity: 1 }
+        : {
+            price_data: {
+              currency: 'usd',
+              unit_amount: academySpec.amount,
+              product_data: { name: academySpec.name },
+            },
+            quantity: 1,
+          };
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
         customer: customerId || undefined,
         customer_email: customerId ? undefined : user.email,
-        line_items: [{ price: priceId, quantity: 1 }],
-        success_url: `${origin}/app/academy?checkout=success${isFamily ? '&family=1' : ''}`,
+        line_items: [lineItem],
+        success_url: `${origin}/app/academy?checkout=success${isFamily ? '&family=1' : isTeamPass ? '&team=1' : isProPass ? '&pro=1' : ''}`,
         cancel_url: `${origin}/app/academy?checkout=cancel`,
         client_reference_id: user.id,
         metadata,
@@ -200,17 +247,30 @@ router.post('/checkout-session', async (req, res) => {
     }
     // No free trial: every checkout charges immediately. New subscribers
     // must complete a paid checkout (card collected + charged now).
+    const subscriptionPrice = priceId || (platformSpec ? null : await resolveSubscriptionPrice(stripe, plan));
+    if (!subscriptionPrice && !platformSpec) return res.status(422).json({ error: 'unknown or unconfigured plan' });
+    const lineItem = subscriptionPrice
+      ? { price: subscriptionPrice, quantity: 1 }
+      : {
+          price_data: {
+            currency: 'usd',
+            unit_amount: platformSpec.amount,
+            recurring: platformSpec.recurring,
+            product_data: { name: platformSpec.name },
+          },
+          quantity: 1,
+        };
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: customerId || undefined,
       customer_email: customerId ? undefined : user.email,
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/app/billing?checkout=success`,
+      line_items: [lineItem],
+      success_url: `${origin}/app/billing?checkout=success${isPlatformTeams ? '&teams=1' : ''}`,
       cancel_url: `${origin}/app/billing?checkout=cancel`,
       client_reference_id: user.id,
-      metadata: { user_id: user.id, plan },
+      metadata: { user_id: user.id, plan: plan || 'teams' },
       subscription_data: {
-        metadata: { user_id: user.id, plan },
+        metadata: { user_id: user.id, plan: plan || 'teams' },
       },
     });
     res.json({ url: session.url, id: session.id });
@@ -273,17 +333,18 @@ router.post('/subscription/update', async (req, res) => {
   if (!user) return res.status(401).json({ error: 'unauthorized' });
   if (!user.subscriptionId) return res.status(422).json({ error: 'no active subscription' });
   const { plan } = req.body ?? {};
-  const priceId = PRICE_MAP[plan];
-  if (!priceId) return res.status(422).json({ error: 'unknown or unconfigured plan' });
   const stripe = getStripe();
   if (!stripe) return res.status(503).json({ error: 'Stripe not configured' });
   try {
+    const priceId = await resolveSubscriptionPrice(stripe, plan);
+    if (!priceId) return res.status(422).json({ error: 'unknown or unconfigured plan' });
     const sub = await stripe.subscriptions.retrieve(user.subscriptionId);
     const itemId = sub.items.data[0]?.id;
     if (!itemId) return res.status(422).json({ error: 'no subscription item' });
     const updated = await stripe.subscriptions.update(user.subscriptionId, {
       items: [{ id: itemId, price: priceId }],
       proration_behavior: 'create_prorations',
+      metadata: { ...(sub.metadata || {}), user_id: user.id, plan },
     });
     res.json({ subscription: updated });
   } catch (err) { return sendStripeError(res, err); }
@@ -319,7 +380,7 @@ router.post('/webhook', async (req, res) => {
       const user = await findUser(data.metadata, customerId);
       if (user) {
         const priceId = data.items?.data?.[0]?.price?.id || data.plan?.id || '';
-        const plan = priceMap[priceId];
+        const plan = priceMap[priceId] || data.metadata?.plan || '';
         const periodEnd = data.current_period_end ? new Date(data.current_period_end * 1000).toISOString() : null;
         const cancelScheduled = Boolean(data.cancel_at_period_end);
         const patch = {
@@ -348,13 +409,14 @@ router.post('/webhook', async (req, res) => {
     } else if (type.startsWith('checkout.session.completed')) {
       const customerId = typeof data.customer === 'string' ? data.customer : data.customer?.id;
       const intent = data.metadata?.intent;
-      if (intent === 'academy' || intent === 'academy_family') {
+      if (intent === 'academy' || intent === 'academy_family' || intent === 'academy_pro' || intent === 'academy_team') {
         const user = await findUser(data.metadata, customerId);
         if (user) {
           const purchasedAt = new Date(event.created * 1000).toISOString();
           await updateUser(user.id, { academyAccess: true, academyPurchasedAt: purchasedAt, stripeCustomerId: customerId });
-          if (intent === 'academy_family') {
-            const code = normalizeFamilyCode(data.metadata?.family_code) || generateFamilyCode();
+          if (intent === 'academy_family' || intent === 'academy_team') {
+            const isTeam = intent === 'academy_team';
+            const code = normalizeFamilyCode(data.metadata?.family_code) || (isTeam ? generateTeamCode() : generateFamilyCode());
             const tx = familyPassTransactionId(code);
             try {
               const existing = await supabaseRest(
@@ -366,7 +428,7 @@ router.post('/webhook', async (req, res) => {
                   body: {
                     owner: user.id,
                     transactionId: tx,
-                    amount: data.amount_total != null ? data.amount_total / 100 : 299,
+                    amount: data.amount_total != null ? data.amount_total / 100 : (isTeam ? 499 : 299),
                     currency: data.currency || 'usd',
                     status: 'family_owner',
                     createdAt: purchasedAt,
@@ -375,9 +437,33 @@ router.post('/webhook', async (req, res) => {
                 });
               }
             } catch (familyErr) {
-              logger.error('academy family pass record failed', String(familyErr));
+              logger.error('academy group pass record failed', String(familyErr));
             }
-            await recordEvent(user.id, { eventType: type, planName: 'academy_family', status: data.payment_status || 'paid', occurredAt: purchasedAt });
+            await recordEvent(user.id, { eventType: type, planName: isTeam ? 'academy_team' : 'academy_family', status: data.payment_status || 'paid', occurredAt: purchasedAt });
+          } else if (intent === 'academy_pro') {
+            const tx = `academy_pro:${data.id || user.id}`;
+            try {
+              const existing = await supabaseRest(
+                `/rest/v1/academy_purchases?owner=eq.${encodeURIComponent(user.id)}&transactionId=eq.${encodeURIComponent(tx)}&select=id&limit=1`,
+              );
+              if (!existing?.length) {
+                await supabaseRest('/rest/v1/academy_purchases', {
+                  method: 'POST',
+                  body: {
+                    owner: user.id,
+                    transactionId: tx,
+                    amount: data.amount_total != null ? data.amount_total / 100 : 199,
+                    currency: data.currency || 'usd',
+                    status: 'pro',
+                    createdAt: purchasedAt,
+                  },
+                  prefer: 'return=representation',
+                });
+              }
+            } catch (proErr) {
+              logger.error('academy pro purchase record failed', String(proErr));
+            }
+            await recordEvent(user.id, { eventType: type, planName: 'academy_pro', status: data.payment_status || 'paid', occurredAt: purchasedAt });
           } else {
             await recordEvent(user.id, { eventType: type, planName: 'academy', status: data.payment_status || 'paid', occurredAt: purchasedAt });
           }

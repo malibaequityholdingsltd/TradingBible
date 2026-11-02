@@ -30,7 +30,9 @@ function authHeaders() {
 export async function openCheckout(plan) {
   const config = await getStripeConfig();
   const priceId = config.prices?.[plan];
-  if (!priceId) throw new Error('This plan is not available for checkout yet — missing STRIPE_PRICE_* in apps/api/.env');
+  // Teams uses the fixed $199/mo inline price on the API, so it does not
+  // require a dashboard price ID before the first checkout.
+  if (!priceId && plan !== 'teams') throw new Error('This plan is not available for checkout yet — missing STRIPE_PRICE_* in apps/api/.env');
 
   const res = await apiServerClient.fetch('/stripe/checkout-session', {
     method: 'POST',
@@ -46,23 +48,31 @@ export async function openCheckout(plan) {
   else throw new Error('No checkout URL returned');
 }
 
+const ACADEMY_TIERS = {
+  individual: { intent: 'academy', priceKey: 'academy', label: 'Academy' },
+  pro: { intent: 'academy_pro', priceKey: 'academyPro', label: 'Academy Pro' },
+  family: { intent: 'academy_family', priceKey: 'academyFamily', label: 'Academy family' },
+  team: { intent: 'academy_team', priceKey: 'academyTeam', label: 'Academy Teams' },
+};
+
 export async function openAcademyCheckout(tier = 'individual') {
-  const family = tier === 'family';
+  const spec = ACADEMY_TIERS[tier] || ACADEMY_TIERS.individual;
   const config = await getStripeConfig();
-  const priceId = family ? config.prices?.academyFamily : config.prices?.academy;
-  if (!priceId) {
-    throw new Error(family
-      ? 'Family checkout is not configured yet — missing STRIPE_PRICE_ACADEMY_FAMILY in apps/api/.env'
-      : 'Academy checkout is not configured yet — missing STRIPE_PRICE_ACADEMY in apps/api/.env');
+  const priceId = config.prices?.[spec.priceKey];
+  // Pro and Teams have fixed inline prices on the API ($199 / $499), so they
+  // remain sellable even before dedicated dashboard prices are created.
+  const hasInlinePrice = tier === 'pro' || tier === 'team';
+  if (!priceId && !hasInlinePrice) {
+    throw new Error(`${spec.label} checkout is not configured yet — missing STRIPE_PRICE_ACADEMY in apps/api/.env`);
   }
   const res = await apiServerClient.fetch('/stripe/checkout-session', {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify({ intent: family ? 'academy_family' : 'academy' }),
+    body: JSON.stringify({ intent: spec.intent }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || (family ? 'Could not create Academy family checkout session' : 'Could not create Academy checkout session'));
+    throw new Error(err.error || `Could not create ${spec.label} checkout session`);
   }
   const { url } = await res.json();
   if (url) window.location.href = url;
