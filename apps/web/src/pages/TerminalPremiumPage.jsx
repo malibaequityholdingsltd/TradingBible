@@ -13,6 +13,7 @@ import AppLayout from '@/components/AppLayout';
 import { Card } from '@/components/ui-kit';
 import { IosIcon } from '@/components/IosIcon';
 import { useQuotes } from '@/hooks/useQuotes';
+import { useTrades } from '@/hooks/useTrades';
 import { useAuth } from '@/hooks/useAuth';
 import pb from '@/lib/pocketbaseClient';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
@@ -177,6 +178,7 @@ export default function TerminalPremiumPage() {
   }, [symParam]);
 
   const { quotes, status } = useQuotes(stripSyms, { refreshMs: 15000 });
+  const { trades } = useTrades();
   const live = quotes[symbol];
   const price = typeof live?.price === 'number' ? live.price : null;
   const liveChg = numOrNull(live?.changePercent);
@@ -394,7 +396,7 @@ export default function TerminalPremiumPage() {
           </div>
 
           {/* ── Desk grid: rail + stage ── */}
-          <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[20rem_minmax(0,1fr)] 2xl:grid-cols-[21rem_minmax(0,1fr)]">
+          <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[16rem_minmax(0,1fr)_18rem]">
             {/* Left instrument rail — snap deck on phones, grid on sm+ */}
             <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1">
               <Card className="term-panel min-w-0 !p-3">
@@ -477,10 +479,12 @@ export default function TerminalPremiumPage() {
                     )}
                     <input value={tradeQty} onChange={(e) => setTradeQty(e.target.value)} type="number" min="0" step="0.01" aria-label="Qty"
                       className="w-20 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-1.5 font-mono text-xs text-[#e9e7df] outline-none" />
-                    <button onClick={() => placeChartTrade('long')} disabled={!tradeAccountId || tradeBusy || price == null}
-                      className="rounded-lg bg-emerald-500/15 px-3 py-1.5 text-xs font-bold text-emerald-400 disabled:opacity-50">{tradeBusy === 'long' ? '…' : 'BUY'}</button>
-                    <button onClick={() => placeChartTrade('short')} disabled={!tradeAccountId || tradeBusy || price == null}
-                      className="rounded-lg bg-red-500/15 px-3 py-1.5 text-xs font-bold text-red-400 disabled:opacity-50">{tradeBusy === 'short' ? '…' : 'SELL'}</button>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <button onClick={() => placeChartTrade('long')} disabled={!tradeAccountId || tradeBusy || price == null}
+                        className="rounded-lg bg-emerald-500/15 px-3 py-1.5 text-xs font-bold text-emerald-400 disabled:opacity-50">{tradeBusy === 'long' ? '…' : 'BUY'}</button>
+                      <button onClick={() => placeChartTrade('short')} disabled={!tradeAccountId || tradeBusy || price == null}
+                        className="rounded-lg bg-red-500/15 px-3 py-1.5 text-xs font-bold text-red-400 disabled:opacity-50">{tradeBusy === 'short' ? '…' : 'SELL'}</button>
+                    </div>
                     {activeAttempt && <span className="text-[11px] text-[#8a8577]">active: {String(activeAttempt.product_name || activeAttempt.product_key || '').slice(0, 32)}</span>}
                     {tradeMsg && <span className="w-full text-[11px] text-[#8a8577]">{tradeMsg}</span>}
                   </div>
@@ -598,6 +602,112 @@ export default function TerminalPremiumPage() {
               </Card>
               <BottomDock symbol={symbol} accountId={workspace.risk.accountId} logLines={logs} />
             </div>
+
+            {/* Right order rail — desktop exchange ticket + live book context */}
+            <aside className="hidden min-w-0 space-y-3 xl:block">
+              <Card className="term-panel min-w-0 !p-3">
+                <SectionTitle right={<span className={`font-mono text-[10px] ${status === 'live' ? 'text-emerald-400' : 'text-[#8a8577]'}`}>{status === 'live' ? 'LIVE' : String(status || '').toUpperCase()}</span>}>
+                  Order ticket
+                </SectionTitle>
+                <div className="rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/[0.04] p-2.5">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="font-mono text-sm font-bold text-[#f0ecdd]">{symbol}</span>
+                    <span className={`font-mono text-lg font-extrabold ${up ? 'text-emerald-400' : 'text-red-400'}`}>{fmtPx(price)}</span>
+                  </div>
+                  <div className="mt-0.5 flex items-center justify-between text-[10px] text-[#8a8577]">
+                    <span>{nameOf(symbol) || baseOf(symbol)}</span>
+                    <span className={up ? 'text-emerald-400' : 'text-red-400'}>{liveChg != null ? `${up ? '+' : ''}${liveChg.toFixed(2)}%` : '—'}</span>
+                  </div>
+                </div>
+                <label className="mt-3 block text-[9px] font-bold uppercase tracking-[0.12em] text-[#8a8577]">
+                  Paper account
+                  <select
+                    value={tradeAccountId}
+                    onChange={(event) => setTradeAccountId(event.target.value)}
+                    className="mt-1 w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-[11px] text-[#e9e7df] outline-none"
+                  >
+                    <option value="">Select account…</option>
+                    {paperAccounts.map((account) => (
+                      <option key={account.id} value={account.id} className="bg-[#0f0f14]">
+                        {String(account.name || '').startsWith('challenge:') ? `🏆 ${account.name}` : account.name} — ${Number(account.balance || 0).toLocaleString()}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="mt-2 block text-[9px] font-bold uppercase tracking-[0.12em] text-[#8a8577]">
+                  Quantity
+                  <input
+                    value={tradeQty}
+                    onChange={(event) => setTradeQty(event.target.value)}
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    className="mt-1 w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 font-mono text-[12px] text-[#e9e7df] outline-none"
+                  />
+                </label>
+                <div className="mt-2 grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => placeChartTrade('long')}
+                    disabled={!tradeAccountId || tradeBusy || price == null}
+                    className="min-h-[38px] rounded-lg bg-emerald-500/15 text-[11px] font-bold text-emerald-400 disabled:opacity-40"
+                  >
+                    {tradeBusy === 'long' ? '…' : 'BUY / LONG'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => placeChartTrade('short')}
+                    disabled={!tradeAccountId || tradeBusy || price == null}
+                    className="min-h-[38px] rounded-lg bg-red-500/15 text-[11px] font-bold text-red-400 disabled:opacity-40"
+                  >
+                    {tradeBusy === 'short' ? '…' : 'SELL / SHORT'}
+                  </button>
+                </div>
+                {!challengeAccounts.length && (
+                  <Link to="/app/challenges" className="mt-2 block text-center text-[10.5px] font-semibold text-[#d4af37] hover:underline">
+                    Get a challenge account →
+                  </Link>
+                )}
+                {tradeMsg && <p className="mt-2 text-[10px] leading-relaxed text-[#8a8577]">{tradeMsg}</p>}
+                <p className="mt-2 border-t border-white/5 pt-2 text-[9.5px] leading-relaxed text-[#5f5b50]">
+                  Paper/challenge orders only. Live brokerage execution is not connected in this workspace.
+                </p>
+              </Card>
+
+              <Card className="term-panel min-w-0 !p-3">
+                <SectionTitle right={<Link to="/app/journal" className="text-[10px] font-semibold text-[#d4af37] hover:underline">Journal</Link>}>
+                  Open positions
+                </SectionTitle>
+                {trades.filter((trade) => !trade.closedAt && !trade.exit).length ? (
+                  <div className="space-y-1.5">
+                    {trades.filter((trade) => !trade.closedAt && !trade.exit).slice(0, 5).map((trade) => {
+                      const pnl = Number(trade.pnl || 0);
+                      return (
+                        <div key={trade.id} className="flex items-center justify-between gap-2 rounded-lg border border-white/5 bg-black/20 px-2 py-1.5">
+                          <div className="min-w-0">
+                            <div className="truncate font-mono text-[11px] font-bold text-[#e9e7df]">{trade.symbol}</div>
+                            <div className="text-[9px] uppercase text-[#8a8577]">{trade.direction || 'long'} · {trade.size ?? '—'}</div>
+                          </div>
+                          <span className={`font-mono text-[11px] font-semibold ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{pnl >= 0 ? '+' : ''}{pnl.toFixed(2)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="py-4 text-center text-[10.5px] text-[#8a8577]">No open positions on the selected account.</p>
+                )}
+              </Card>
+
+              <Card className="term-panel min-w-0 !p-3">
+                <SectionTitle>Session</SectionTitle>
+                <div className="space-y-1.5 text-[10.5px]">
+                  <div className="flex items-center justify-between gap-2"><span className="text-[#8a8577]">Feed</span><span className="font-mono text-[#e9e7df]">{live?.source || '—'}</span></div>
+                  <div className="flex items-center justify-between gap-2"><span className="text-[#8a8577]">Timeframe</span><span className="font-mono text-[#e9e7df]">{timeframe}</span></div>
+                  <div className="flex items-center justify-between gap-2"><span className="text-[#8a8577]">Chart</span><span className="font-mono text-[#e9e7df]">{chartType}</span></div>
+                  <div className="flex items-center justify-between gap-2"><span className="text-[#8a8577]">Workspace</span><span className="font-mono text-[#e9e7df]">{cloudStatus}</span></div>
+                </div>
+              </Card>
+            </aside>
           </div>
 
           <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)}

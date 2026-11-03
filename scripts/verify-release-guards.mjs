@@ -60,7 +60,9 @@ check('light navigation glyph is near-black', tokens.includes('--tb-nav-glyph: #
 check('navigation medallions use the theme glyph variable', tokens.includes('color: var(--ios-glyph, var(--ios-ink))'));
 const appLayout = read('apps/web/src/components/AppLayout.jsx');
 const adminLayout = read('apps/web/src/components/AdminLayout.jsx');
-check('user dock/footer use contrast navigation glyphs', (appLayout.match(/glyph="contrast"/g) || []).length >= 4);
+const exchangeCss = read('apps/web/src/styles/exchange.css');
+check('user navigation uses theme contrast glyphs', appLayout.includes('ex-nav-item') && exchangeCss.includes('.ex-nav-item.is-active svg { color: var(--ex-text); }'));
+check('user mobile dock uses theme contrast glyphs', appLayout.includes('ex-mobile-dock__item') && exchangeCss.includes('html.light .ex-mobile-dock__item.is-active svg { color: #0a0a0f; }'));
 check('admin dock/More use contrast navigation glyphs', (adminLayout.match(/glyph="contrast"/g) || []).length >= 3);
 
 const academy = read('apps/api/src/routes/academy.js');

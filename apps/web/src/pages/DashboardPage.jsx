@@ -1,104 +1,155 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { AreaChart, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from 'recharts';
-import { TrendingUp, TrendingDown, Activity, Plug, ArrowRight, LineChart, Grid2x2, MonitorPlay, PlusCircle } from 'lucide-react';
+import {
+  AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
+} from 'recharts';
+import {
+  ArrowDownToLine, ArrowRight, ArrowUpRight, BarChart3, BookOpen, Bot, CandlestickChart,
+  CreditCard, GraduationCap, LineChart, Plug, Plus, Radar, RefreshCw, Send, ShieldCheck,
+  Sparkles, Target, Wallet,
+} from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { fmtMoney } from '@/lib/mockData';
 import { useI18n } from '@/lib/i18n';
 import { useTrades, computeStats } from '@/hooks/useTrades';
+import { useWallet } from '@/hooks/useWallet';
+import { useQuotes } from '@/hooks/useQuotes';
 import { useAuth } from '@/hooks/useAuth';
 import DashboardWidgets from '@/components/DashboardWidgets';
-import AccountBalances from '@/components/AccountBalances';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { AdSlot } from '@/lib/ads/components.jsx';
-import { PageBar, Card, StatGrid, EmptyState, GoldButton, GhostButton, SectionHead, Skeleton, CardSkeleton } from '@/components/ui-kit';
-import { IosIcon } from '@/components/IosIcon';
+import { Card, EmptyState, GoldButton, GhostButton, SectionHead, Skeleton } from '@/components/ui-kit';
 
-const GOLD = '#d4af37';
+const MARKET_SYMBOLS = ['BTCUSD', 'ETHUSD', 'EURUSD', 'XAUUSD', 'NAS100', 'SPX500'];
 
-// Slim get-started banner: hides itself once all 24 Pro Guide missions
-// (manual + auto-detected) are done. Local-only, never blocks.
 function GuideBanner() {
   const [dismissed, setDismissed] = React.useState(() => {
     try { return localStorage.getItem('tb:guide-banner-hide') === '1'; } catch { return true; }
   });
   const [pct, setPct] = React.useState(null);
+
   React.useEffect(() => {
     if (dismissed) return;
     try {
       const manual = JSON.parse(localStorage.getItem('tb:guide-done-v1') || '[]');
-      // 24 missions total; auto-detected ones resolve on the guide page.
-      // Banner counts manual check-offs; visiting the guide reconciles.
       setPct(Array.isArray(manual) ? manual.length : 0);
     } catch { setPct(0); }
   }, [dismissed]);
+
   if (dismissed || pct === null || pct >= 24) return null;
-  return (
-    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#d4af37]/25 bg-gradient-to-r from-[#d4af37]/[0.08] to-transparent p-4">
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold text-[#f0ecdd]">New here? Run the Pro Guide.</div>
-        <div className="text-xs text-[#8a8577]">24 missions across the full portal — {pct}/24 done.</div>
-      </div>
-      <Link to="/app/guide" className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-xs font-bold text-[#0a0a0f]">Start guide</Link>
-      <button onClick={() => { try { localStorage.setItem('tb:guide-banner-hide', '1'); } catch {} setDismissed(true); }} className="px-2 py-1 text-xs text-[#6a665a] hover:text-[#e9e7df]" aria-label="Dismiss">✕</button>
-    </div>
-  );
-}
 
-function DashStat({ label, value, delta, positive }) {
   return (
-    <div className="tb-card tb-card-hover sheen-panel p-4 sm:p-5">
-      <div className="flex items-center justify-between gap-2">
-        <span className="truncate text-[11px] font-bold uppercase tracking-wider text-[#8a8577] sm:text-xs">{label}</span>
-      </div>
-      <div className="mt-3 truncate font-mono text-xl font-bold text-[#f0ecdd] sm:text-2xl">{value}</div>
-      {delta && (
-        <div className="mt-2 w-fit">
-          <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${positive ? 'bg-emerald-400/10 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}>
-            {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}{delta}
-          </span>
+    <div className="ex-card ex-guide-banner mb-3 p-3">
+      <div className="ex-guide-banner__row">
+        <span className="ex-empty__icon h-8 w-8 shrink-0"><Target className="h-4 w-4" /></span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[12px] font-semibold text-[var(--ex-text)]">New here? Run the Pro Guide.</div>
+          <div className="mt-0.5 text-[10.5px] text-[var(--ex-muted)]">24 missions across the full portal — {pct}/24 done.</div>
         </div>
-      )}
+        <div className="ex-guide-banner__actions">
+          <Link to="/app/guide" className="ex-btn ex-btn--secondary ex-btn--sm">Start guide</Link>
+          <button
+            type="button"
+            onClick={() => { try { localStorage.setItem('tb:guide-banner-hide', '1'); } catch { /* ignore */ } setDismissed(true); }}
+            className="ex-icon-btn h-7 w-7"
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+      <div className="ex-guide-banner__row mt-2">
+        <div className="ex-guide-banner__bar">
+          <div className="h-full rounded-full bg-[var(--ex-accent)]" style={{ width: `${Math.min(100, (pct / 24) * 100)}%` }} />
+        </div>
+        <span className="ex-mono text-[9px] text-[var(--ex-faint)]">{pct}/24</span>
+      </div>
     </div>
   );
 }
 
-// Command deck: one tap to every desk of the terminal.
-const DESKS = [
-  { to: '/app/terminal-pro', icon: LineChart, key: 'nav.terminalPro', fallback: 'Terminal Pro', blurb: 'Charts, layouts, drawings and live quotes' },
-  { to: '/app/heatmaps', icon: Grid2x2, key: 'nav.heatmaps', fallback: 'Heatmaps', blurb: '5 markets of living bubbles' },
-  { to: '/app/orderflow', icon: Activity, key: 'nav.orderflow', fallback: 'Order Flow', blurb: 'Depth, tape and footprint' },
-];
+function money(value) {
+  if (value == null || Number.isNaN(Number(value))) return '—';
+  return fmtMoney(Number(value));
+}
 
-const TT = ({ active, payload, label, prefix = '' }) => active && payload?.length ? (
-  <div className="rounded-lg border border-[#d4af37]/30 bg-[#0f0f14] px-3 py-2 text-xs">
-    <div className="text-[#8a8577]">{label}</div>
-    <div className="font-mono text-[#d4af37]">{prefix}{payload[0].value.toLocaleString()}</div>
-  </div>
-) : null;
+function pct(value) {
+  if (value == null || Number.isNaN(Number(value))) return '—';
+  const n = Number(value);
+  return `${n > 0 ? '+' : ''}${n.toFixed(2)}%`;
+}
+
+function formatPrice(value) {
+  if (value == null || Number.isNaN(Number(value))) return '—';
+  const n = Number(value);
+  if (n >= 1000) return n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  if (n >= 10) return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+  return n.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 5 });
+}
+
+function ChartTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="ex-card p-2 text-[10px] shadow-lg">
+      <div className="text-[var(--ex-muted)]">{label}</div>
+      <div className="ex-mono mt-0.5 font-semibold text-[var(--ex-text)]">{money(payload[0]?.value)}</div>
+    </div>
+  );
+}
+
+function MarketRow({ symbol, quote }) {
+  const change = quote?.changePercent;
+  const up = Number(change) >= 0;
+  return (
+    <Link to={`/app/terminal-pro?symbol=${encodeURIComponent(symbol)}`} className="ex-market-row">
+      <span className="ex-market-row__symbol">
+        <span className="ex-market-row__mark">{symbol.slice(0, 2)}</span>
+        <span className="min-w-0">
+          <span className="ex-market-row__name">{symbol}</span>
+          <span className="ex-market-row__meta">{quote?.source || 'Live feed'}</span>
+        </span>
+      </span>
+      <span className="ex-market-row__price">{formatPrice(quote?.price)}</span>
+      <span className={`ex-market-row__change ${change == null ? 'ex-faint' : up ? 'ex-up' : 'ex-down'}`}>
+        {change == null ? '—' : pct(change)}
+      </span>
+      <span className="ex-market-row__bar" aria-hidden>
+        <i style={{ width: `${Math.min(100, Math.max(6, Math.abs(Number(change) || 0) * 12))}%`, background: up ? 'var(--ex-up)' : 'var(--ex-down)' }} />
+      </span>
+    </Link>
+  );
+}
 
 export default function DashboardPage() {
   const { trades, loading } = useTrades();
-  const stats = computeStats(trades);
   const { user } = useAuth();
   const { t } = useI18n();
+  const { ledger, totalUsd, wallets, loading: walletLoading } = useWallet();
+  const { quotes } = useQuotes(MARKET_SYMBOLS, { refreshMs: 30000 });
+  const stats = useMemo(() => computeStats(trades), [trades]);
+
+  const cash = Number(ledger?.balances?.USD || 0);
+  const tbc = Number(ledger?.balances?.TBC || 0);
+  const external = Number(totalUsd || 0);
+  const total = cash + external;
+  const openTrades = useMemo(() => trades.filter((trade) => !trade.closedAt && !trade.exit), [trades]);
+  const recentTrades = useMemo(() => [...trades]
+    .sort((a, b) => new Date(b.tradeDate || b.created || 0) - new Date(a.tradeDate || a.created || 0))
+    .slice(0, 5), [trades]);
+
+  const firstName = String(user?.name || user?.username || '').trim().split(/\s+/)[0] || 'Trader';
   const isSubscriber = user?.role === 'admin' || ['pro', 'elite', 'professional', 'teams'].includes((user?.plan || '').toLowerCase());
 
   if (loading) {
-    return <AppLayout title={t('nav.dashboard')}><div className="tb-page"><Skeleton className="h-36" /><div className="grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-2 xl:grid-cols-4">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}</div><CardSkeleton rows={4} /></div></AppLayout>;
-  }
-
-  if (!stats) {
     return (
       <AppLayout title={t('nav.dashboard')}>
-        <div className="tb-page">
-          <AccountBalances />
-          <EmptyState
-            icon={Plug}
-            title={t('dash.connectTitle')}
-            sub={t('dash.connectSub')}
-            action={<GoldButton to="/app/brokers">{t('dash.connectBtn')}</GoldButton>}
-          />
+        <div className="ex-page">
+          <Skeleton className="h-8 w-44" />
+          <Skeleton className="mt-3 h-28 w-full" />
+          <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_320px]">
+            <Skeleton className="h-72" />
+            <Skeleton className="h-72" />
+          </div>
         </div>
       </AppLayout>
     );
@@ -106,103 +157,258 @@ export default function DashboardPage() {
 
   return (
     <AppLayout title={t('nav.dashboard')}>
-      <div className="tb-page">
-        <PageBar
-          actions={
-            <>
-              <GoldButton to="/app/journal" className="min-h-[40px] px-4 py-2 text-xs"><PlusCircle className="h-4 w-4" /> {t('jou.newTrade', null, 'New trade')}</GoldButton>
-              <GhostButton to="/app/terminal-pro" className="!min-h-[40px] !px-4 !py-2 !text-xs"><LineChart className="h-4 w-4" /> {t('nav.terminalPro', null, 'Terminal Pro')}</GhostButton>
-              <GhostButton to="/tv" className="min-h-[40px] px-4 py-2 text-xs"><MonitorPlay className="h-4 w-4" /> {t('nav.tv', null, 'TradingBible TV')}</GhostButton>
-            </>
-          }
-        />
+      <div className="ex-page ex-dashboard">
+        <header className="ex-page-head">
+          <div className="ex-page-head__copy">
+            <span className="ex-kicker">Portfolio overview</span>
+            <h1 className="ex-page-title">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {firstName}.</h1>
+            <p className="ex-page-sub">Your balances, open risk, recent fills and the market tape in one place.</p>
+          </div>
+          <div className="ex-page-actions">
+            <GoldButton to="/app/wallet?tab=cash"><Plus /> Deposit</GoldButton>
+            <GhostButton to="/app/terminal-pro"><CandlestickChart /> Trade</GhostButton>
+          </div>
+        </header>
+
+        <section className="ex-dashboard__account" aria-label="Account summary">
+          <div className="ex-dashboard__balance">
+            <div className="min-w-0">
+              <div className="ex-dashboard__balance-label">
+                <Wallet className="h-3.5 w-3.5" /> Total balance
+              </div>
+              <div className="ex-dashboard__balance-value">{walletLoading ? '—' : money(total)}</div>
+              <div className="ex-dashboard__balance-sub">
+                <span>Cash <strong className="ex-mono text-[var(--ex-text)]">{money(cash)}</strong></span>
+                <span>TBC <strong className="ex-mono text-[var(--ex-text)]">{tbc.toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong></span>
+                <span>Tracked wallets <strong className="ex-mono text-[var(--ex-text)]">{money(external)}</strong></span>
+                <span className="ex-faint">{wallets.length} wallet{wallets.length === 1 ? '' : 's'} linked</span>
+              </div>
+            </div>
+            <div className="ex-dashboard__balance-actions">
+              <Link to="/app/wallet?tab=cash" className="ex-btn ex-btn--primary ex-btn--sm"><ArrowDownToLine /> Deposit</Link>
+              <Link to="/app/wallet?tab=cash" className="ex-btn ex-btn--secondary ex-btn--sm"><ArrowUpRight /> Withdraw</Link>
+              <Link to="/app/wallet?tab=send" className="ex-btn ex-btn--secondary ex-btn--sm"><Send /> Send</Link>
+              <Link to="/app/wallet?tab=crypto" className="ex-btn ex-btn--secondary ex-btn--sm"><RefreshCw /> Convert</Link>
+            </div>
+          </div>
+          <div className="ex-dashboard__metrics">
+            <div className="ex-dashboard__metric">
+              <span>Net P&amp;L</span>
+              <strong className={stats?.balance >= 100000 ? 'ex-up' : stats ? 'ex-down' : ''}>{stats ? money(stats.balance - 100000) : '—'}</strong>
+            </div>
+            <div className="ex-dashboard__metric">
+              <span>Win rate</span>
+              <strong>{stats ? `${stats.winRate}%` : '—'}</strong>
+            </div>
+            <div className="ex-dashboard__metric">
+              <span>Profit factor</span>
+              <strong>{stats ? stats.profitFactor.toFixed(2) : '—'}</strong>
+            </div>
+            <div className="ex-dashboard__metric">
+              <span>Open positions</span>
+              <strong>{openTrades.length}</strong>
+            </div>
+          </div>
+        </section>
+
+        <GuideBanner />
+
+        <div className="ex-dashboard__grid">
+          <div className="ex-dashboard__main">
+            <Card>
+              <div className="ex-card-head">
+                <div>
+                  <div className="ex-card-title">Portfolio performance</div>
+                  <div className="ex-card-sub">Equity curve from your recorded trades</div>
+                </div>
+                <div className="ex-segmented" aria-label="Chart range">
+                  <span className="ex-tab is-active">All</span>
+                  <span className="ex-tab">30D</span>
+                  <span className="ex-tab">7D</span>
+                </div>
+              </div>
+              <div className="ex-chart-box ex-chart-box--tall">
+                {stats?.equity?.length ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={stats.equity} margin={{ left: -16, right: 8, top: 12, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="equityFill" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="var(--ex-accent)" stopOpacity={0.28} />
+                          <stop offset="100%" stopColor="var(--ex-accent)" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid stroke="var(--ex-line)" strokeDasharray="2 4" vertical={false} />
+                      <XAxis dataKey="day" tick={{ fill: 'var(--ex-muted)', fontSize: 9 }} axisLine={false} tickLine={false} minTickGap={24} />
+                      <YAxis domain={[(min) => Math.floor(min - 1000), (max) => Math.ceil(max + 1000)]} tick={{ fill: 'var(--ex-muted)', fontSize: 9 }} axisLine={false} tickLine={false} tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} width={42} />
+                      <Tooltip content={<ChartTooltip />} />
+                      <Area type="monotone" dataKey="equity" stroke="var(--ex-accent)" strokeWidth={2} fill="url(#equityFill)" dot={false} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <EmptyState
+                    icon={LineChart}
+                    title="No performance data yet"
+                    sub="Connect a broker or record a trade to build your equity curve."
+                    action={<GoldButton to="/app/brokers">Connect broker</GoldButton>}
+                  />
+                )}
+              </div>
+            </Card>
+
+            <Card>
+              <div className="ex-card-head">
+                <div>
+                  <div className="ex-card-title">Open positions</div>
+                  <div className="ex-card-sub">Live risk currently on the book</div>
+                </div>
+                <Link to="/app/terminal-pro" className="ex-btn ex-btn--ghost ex-btn--sm">Open terminal <ArrowRight /></Link>
+              </div>
+              {openTrades.length ? (
+                <div className="ex-table-wrap">
+                  <table className="ex-table ex-table--cards">
+                    <thead>
+                      <tr><th>Symbol</th><th>Side</th><th>Entry</th><th>Size</th><th>P&amp;L</th><th>Opened</th></tr>
+                    </thead>
+                    <tbody>
+                      {openTrades.slice(0, 6).map((trade) => {
+                        const pnl = Number(trade.pnl || 0);
+                        return (
+                          <tr key={trade.id}>
+                            <td data-label="Symbol" className="ex-table__main">{trade.symbol || '—'}</td>
+                            <td data-label="Side"><span className={`ex-side-pill ${String(trade.direction).toLowerCase() === 'short' ? 'ex-side-pill--short' : 'ex-side-pill--long'}`}>{trade.direction || 'long'}</span></td>
+                            <td data-label="Entry" className="ex-table__num">{formatPrice(trade.entry)}</td>
+                            <td data-label="Size" className="ex-table__num">{trade.size ?? '—'}</td>
+                            <td data-label="P&L" className={`ex-table__num ${pnl >= 0 ? 'ex-up' : 'ex-down'}`}>{money(pnl)}</td>
+                            <td data-label="Opened" className="ex-muted">{trade.openedAt ? new Date(trade.openedAt).toLocaleDateString() : '—'}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <EmptyState
+                  icon={Plug}
+                  title="No open positions"
+                  sub="Connect a broker to sync live positions, or log a trade manually in the journal."
+                  action={<GhostButton to="/app/brokers">Connect broker</GhostButton>}
+                />
+              )}
+            </Card>
+
+            <Card>
+              <div className="ex-card-head">
+                <div>
+                  <div className="ex-card-title">Market watch</div>
+                  <div className="ex-card-sub">Live quotes · refreshes every 30 seconds</div>
+                </div>
+                <Link to="/app/signals" className="ex-btn ex-btn--ghost ex-btn--sm">All markets <ArrowRight /></Link>
+              </div>
+              <div>
+                {MARKET_SYMBOLS.map((symbol) => (
+                  <MarketRow key={symbol} symbol={symbol} quote={quotes[symbol]} />
+                ))}
+              </div>
+            </Card>
+          </div>
+
+          <aside className="ex-dashboard__side">
+            <Card>
+              <div className="ex-card-head ex-card-head--plain">
+                <div className="ex-card-title">Quick actions</div>
+              </div>
+              <div className="ex-card-body pt-0">
+                <div className="ex-quick-grid">
+                  <Link to="/app/wallet?tab=cash" className="ex-quick-action"><ArrowDownToLine /> Deposit</Link>
+                  <Link to="/app/wallet?tab=cash" className="ex-quick-action"><ArrowUpRight /> Withdraw</Link>
+                  <Link to="/app/wallet?tab=send" className="ex-quick-action"><Send /> Send</Link>
+                  <Link to="/app/wallet?tab=crypto" className="ex-quick-action"><RefreshCw /> Convert</Link>
+                  <Link to="/app/journal" className="ex-quick-action"><BookOpen /> Journal</Link>
+                  <Link to="/app/alerts" className="ex-quick-action"><Radar /> Alerts</Link>
+                  <Link to="/app/academy" className="ex-quick-action"><GraduationCap /> Academy</Link>
+                  <Link to="/app/coach" className="ex-quick-action"><Bot /> SI Coach</Link>
+                </div>
+              </div>
+            </Card>
+
+            <Card>
+              <div className="ex-card-head ex-card-head--plain">
+                <div>
+                  <div className="ex-card-title">SI insight</div>
+                  <div className="ex-card-sub">Your coach, grounded in your record</div>
+                </div>
+                <Sparkles className="h-4 w-4 text-[var(--ex-accent)]" />
+              </div>
+              <div className="ex-card-body pt-0">
+                <p className="text-[11.5px] leading-relaxed text-[var(--ex-text-2)]">
+                  Ask SI to review your last 20 trades, pressure-test a setup, or turn a losing week into a repeatable checklist.
+                </p>
+                <Link to="/app/coach" className="ex-btn ex-btn--secondary ex-btn--sm mt-3 w-full">Open SI Coach <ArrowRight /></Link>
+              </div>
+            </Card>
+
+            <Card>
+              <div className="ex-card-head">
+                <div>
+                  <div className="ex-card-title">Recent activity</div>
+                  <div className="ex-card-sub">Latest journal entries</div>
+                </div>
+                <Link to="/app/journal" className="ex-btn ex-btn--ghost ex-btn--sm">View all</Link>
+              </div>
+              {recentTrades.length ? recentTrades.map((trade) => {
+                const pnl = Number(trade.pnl || 0);
+                return (
+                  <Link key={trade.id} to="/app/journal" className="ex-activity-row">
+                    <span className="ex-activity-row__main">
+                      <strong>{trade.symbol || 'Trade'} <span className={`ex-side-pill ${String(trade.direction).toLowerCase() === 'short' ? 'ex-side-pill--short' : 'ex-side-pill--long'}`}>{trade.direction || 'long'}</span></strong>
+                      <span>{trade.tradeDate ? new Date(trade.tradeDate).toLocaleDateString() : '—'} · {trade.strategy || 'No strategy'}</span>
+                    </span>
+                    <span className={`ex-activity-row__value ${pnl >= 0 ? 'ex-up' : 'ex-down'}`}>{money(pnl)}</span>
+                  </Link>
+                );
+              }) : (
+                <div className="ex-empty min-h-[140px]">
+                  <span className="ex-empty__icon"><BookOpen /></span>
+                  <strong>No trades recorded</strong>
+                  <p>Your journal entries will appear here.</p>
+                </div>
+              )}
+            </Card>
+
+            <Card>
+              <div className="ex-card-head ex-card-head--plain">
+                <div className="ex-card-title">Account health</div>
+              </div>
+              <div className="ex-card-body pt-0">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2 text-[11px]">
+                    <span className="flex items-center gap-1.5 text-[var(--ex-muted)]"><ShieldCheck className="h-3.5 w-3.5" /> Security</span>
+                    <span className="ex-badge ex-badge--up">Active</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 text-[11px]">
+                    <span className="flex items-center gap-1.5 text-[var(--ex-muted)]"><CreditCard className="h-3.5 w-3.5" /> Plan</span>
+                    <span className="ex-badge">{isSubscriber ? (user?.plan || 'Pro') : 'Free'}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 text-[11px]">
+                    <span className="flex items-center gap-1.5 text-[var(--ex-muted)]"><BarChart3 className="h-3.5 w-3.5" /> Broker links</span>
+                    <span className="ex-badge">{wallets.length ? `${wallets.length} linked` : 'None'}</span>
+                  </div>
+                </div>
+                {!isSubscriber && (
+                  <Link to="/pricing" className="ex-btn ex-btn--primary ex-btn--sm mt-3 w-full">Upgrade plan</Link>
+                )}
+              </div>
+            </Card>
+          </aside>
+        </div>
+
         <ErrorBoundary fallback={null}>
           <AdSlot placementId="ph_dashboard_top" />
         </ErrorBoundary>
-        <GuideBanner />
-        <AccountBalances />
-        <StatGrid cols={4}>
-          <DashStat label={t('dash.perfPnl')} value={fmtMoney(stats.balance - 100000)} delta={t('dash.syncedN', { n: stats.totalTrades })} positive={stats.balance >= 100000} />
-          <DashStat label={t('dash.daily')} value={fmtMoney(stats.dailyPnl)} delta={t('dash.today')} positive={stats.dailyPnl >= 0} />
-          <DashStat label={t('dash.weekly')} value={fmtMoney(stats.weeklyPnl)} delta={t('dash.last7')} positive={stats.weeklyPnl >= 0} />
-          <DashStat label={t('dash.monthly')} value={fmtMoney(stats.monthlyPnl)} delta={t('dash.last30')} positive={stats.monthlyPnl >= 0} />
-          <DashStat label={t('dash.winRate')} value={`${stats.winRate}%`} delta={stats.winRate >= 50 ? t('dash.aboveTarget') : t('dash.belowTarget')} positive={stats.winRate >= 50} />
-          <DashStat label={t('dash.profitFactor')} value={stats.profitFactor.toFixed(2)} delta={stats.profitFactor >= 1.5 ? t('dash.healthyEdge') : t('dash.needsWork')} positive={stats.profitFactor >= 1.5} />
-          <DashStat label={t('dash.maxDd')} value={`${stats.drawdown}%`} delta={stats.drawdown > -10 ? t('dash.withinLimits') : t('dash.elevated')} positive={stats.drawdown > -10} />
-          <DashStat label={t('dash.traderScore')} value={`${stats.traderScore}/100`} delta={t('dash.aiComputed')} positive />
-        </StatGrid>
 
-        {/* Command deck — every list, widget and desk, one tap away */}
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:grid-cols-4">
-          {DESKS.map((d) => (
-            <Link
-              key={d.to}
-              to={d.to}
-              className="tb-card tb-card-hover sheen-panel group flex min-w-0 items-center gap-3 p-3.5 sm:p-4"
-            >
-              <IosIcon icon={d.icon} size="md" seed={d.key} className="transition group-hover:scale-105" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-bold text-[#f0ecdd]">{t(d.key, null, d.fallback)}</span>
-                <span className="block truncate text-[11px] text-[#8a8577]">{d.blurb}</span>
-              </span>
-              <ArrowRight className="h-4 w-4 shrink-0 text-[#6a665a] transition group-hover:translate-x-0.5 group-hover:text-[#d4af37]" />
-            </Link>
-          ))}
+        <div className="mt-3">
+          <DashboardWidgets />
         </div>
-
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-          <Card className="p-4 sm:p-6 lg:col-span-2">
-            <SectionHead title={t('dash.equityCurve')} />
-            <ResponsiveContainer width="100%" height={260}>
-              <AreaChart data={stats.equity} margin={{ left: -12, right: 8 }}>
-                <defs><linearGradient id="eq" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={GOLD} stopOpacity={0.4} /><stop offset="100%" stopColor={GOLD} stopOpacity={0} /></linearGradient></defs>
-                <XAxis dataKey="day" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip content={<TT prefix="$" />} />
-                <Area type="monotone" dataKey="equity" stroke={GOLD} strokeWidth={2} fill="url(#eq)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </Card>
-          <Card className="p-4 sm:p-6">
-            <SectionHead title={t('dash.monthlyPnlH')} />
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={stats.monthly} margin={{ left: -18, right: 8 }}>
-                <XAxis dataKey="m" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip content={<TT prefix="$" />} cursor={{ fill: 'rgba(212,175,55,0.06)' }} />
-                <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>{stats.monthly.map((e, i) => <Cell key={i} fill={e.pnl >= 0 ? GOLD : '#7a2b2b'} />)}</Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
-        </div>
-
-        <Card className="p-4 sm:p-6">
-          <SectionHead title={t('dash.stratPerf')} />
-          <div className="space-y-3">
-            {stats.strategies.map((s) => (
-              <div key={s.name} className="flex items-center gap-3 sm:gap-4">
-                <div className="w-24 min-w-0 shrink-0 truncate text-sm text-[#c9c4b4] sm:w-32">{s.name}</div>
-                <div className="h-2 min-w-0 flex-1 rounded-full bg-white/8"><div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25]" style={{ width: `${s.winRate}%` }} /></div>
-                <div className="w-10 shrink-0 whitespace-nowrap text-right font-mono text-sm text-[#d4af37] sm:w-12">{s.winRate}%</div>
-                <div className={`w-16 shrink-0 whitespace-nowrap text-right font-mono text-sm sm:w-20 ${s.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmtMoney(s.pnl)}</div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {isSubscriber && (
-          <Link to="/app/wallet" className="tb-card tb-card-hover flex items-center justify-between gap-4 p-5">
-            <div className="flex min-w-0 items-center gap-4">
-              <div className="min-w-0">
-                <h3 className="font-semibold text-[#f0ecdd]">{t('nav.wallet')}</h3>
-                <p className="truncate text-sm text-[#8a8577]">{t('wal.subtitle')}</p>
-              </div>
-            </div>
-            <ArrowRight className="h-5 w-5 shrink-0 text-[#d4af37]" />
-          </Link>
-        )}
-
-        <DashboardWidgets />
       </div>
     </AppLayout>
   );

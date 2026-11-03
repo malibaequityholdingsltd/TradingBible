@@ -1,8 +1,11 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Crown, Check, CreditCard, RefreshCw, XCircle, RotateCcw, ArrowUpRight, ShieldCheck, Receipt, AlertTriangle, Wallet } from 'lucide-react';
+import {
+  AlertTriangle, ArrowUpRight, Check, CreditCard, Crown, Receipt, RefreshCw,
+  RotateCcw, ShieldCheck, Wallet, XCircle,
+} from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { Card, EmptyState, GhostButton, GoldButton, Note, PageBar, SectionHead } from '@/components/ui-kit';
+import { Card, EmptyState, GhostButton, GoldButton, Note } from '@/components/ui-kit';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { PLANS, translatePlan } from '@/lib/mockData';
@@ -13,23 +16,26 @@ import { useWallet } from '@/hooks/useWallet';
 
 function fmtDate(iso) {
   if (!iso) return '—';
-  if (typeof iso === 'number') iso = new Date(iso * 1000).toISOString();
-  return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  const value = typeof iso === 'number' ? new Date(iso * 1000).toISOString() : iso;
+  return new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
-const money = (n, c = 'USD') => (n || n === 0) ? new Intl.NumberFormat('en-US', { style: 'currency', currency: c || 'USD' }).format(n) : '—';
 
-const STATUS_STYLE = {
-  active: 'bg-emerald-500/15 text-emerald-400',
-  past_due: 'bg-red-500/15 text-red-400',
-  canceled: 'bg-white/10 text-[#8a8577]',
-  paused: 'bg-orange-500/15 text-orange-400',
-};
+const money = (n, c = 'USD') => (n || n === 0)
+  ? new Intl.NumberFormat('en-US', { style: 'currency', currency: c || 'USD' }).format(n)
+  : '—';
+
+function statusBadge(status) {
+  if (status === 'active') return 'ex-badge--up';
+  if (status === 'past_due') return 'ex-badge--down';
+  if (status === 'paused') return 'ex-badge--accent';
+  return '';
+}
 
 export default function BillingPage() {
   const { user, updateProfile } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
-  const PAID = PLANS.map((p) => translatePlan(t, p));
+  const plans = PLANS.map((plan) => translatePlan(t, plan));
   const [sub, setSub] = useState(null);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,16 +44,18 @@ export default function BillingPage() {
   const [stripeEnv, setStripeEnv] = useState(null);
   const { ledger, payWithWallet } = useWallet();
   const walletBalance = ledger?.balances?.USD || 0;
-
   const currentPlan = user?.plan || null;
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const cfg = await getStripeConfig();
-      setConfigured(Boolean(cfg?.configured));
-      setStripeEnv(cfg?.environment || null);
-    } catch { setConfigured(false); setStripeEnv(null); }
+      const config = await getStripeConfig();
+      setConfigured(Boolean(config?.configured));
+      setStripeEnv(config?.environment || null);
+    } catch {
+      setConfigured(false);
+      setStripeEnv(null);
+    }
     try { setSub(await getSubscription()); } catch { setSub(null); }
     try {
       const items = await pb.collection('billing_events').getList(1, 20, { sort: '-created' });
@@ -121,157 +129,164 @@ export default function BillingPage() {
 
   return (
     <AppLayout title={t('nav.billing')}>
-      <div className="tb-page">
-      <PageBar
-        actions={stripeEnv ? (
-          <span className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${stripeEnv === 'live' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#d4af37]/15 text-[#d4af37]'}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${stripeEnv === 'live' ? 'bg-emerald-400' : 'bg-[#d4af37]'}`} />
-            {stripeEnv === 'live' ? t('bill.stripeLive') : t('bill.stripeTest')}
-            {stripeEnv !== 'live' && <span className="hidden font-normal text-[#8a8577] sm:inline">· {t('bill.testMode')}</span>}
-          </span>
-        ) : null}
-      />
-
-      {isAdmin && !configured && (
-        <Note icon={AlertTriangle}>
-          <p className="font-medium text-[#f0ecdd]">Stripe — STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_*</p>
-          <p className="mt-1">dashboard.stripe.com → Developers → API keys & Webhooks → Prices.</p>
-        </Note>
-      )}
-
-      {/* Wallet balance */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#d4af37]/20 bg-gradient-to-r from-[#d4af37]/[0.08] to-transparent px-5 py-4">
-        <div className="flex items-center gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Wallet className="h-5 w-5" /></span>
-          <div>
-            <div className="text-xs uppercase tracking-wider text-[#8a8577]">{t('bill.walletBalance')}</div>
-            <div className="font-mono text-xl font-bold text-[#f0ecdd]">{money(walletBalance)} <Link to="/app/wallet" className="font-sans text-xs font-medium text-[#d4af37] hover:underline">{t('bill.fundWallet')}</Link></div>
+      <div className="ex-page">
+        <header className="ex-page-head">
+          <div className="ex-page-head__copy">
+            <span className="ex-kicker">Account</span>
+            <h1 className="ex-page-title">Billing</h1>
+            <p className="ex-page-sub">Your plan, payment method and invoice history. Prices are fixed and shown before checkout.</p>
           </div>
-        </div>
-        <div className="text-xs text-[#6a665a]">{t('bill.payInstant')}</div>
-      </div>
-
-      {/* Current subscription */}
-      <Card className="!border-[#d4af37]/25">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#f4e6a8]/25 to-[#c99a25]/10 text-[#d4af37] ring-1 ring-[#d4af37]/30"><Crown className="h-5 w-5" /></span>
-            <div>
-              <div className="text-xs uppercase tracking-wider text-[#8a8577]">{t('bill.currentPlan')}</div>
-              <div className="mt-0.5 text-2xl font-extrabold tb-gold-text">{currentPlan ? currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1) : t('bill.noPlan', null, 'No plan')}</div>
-              {!currentPlan && <div className="mt-1 text-xs text-[#8a8577]">{t('bill.noPlanYet', null, 'Subscribe to unlock the full terminal.')}</div>}
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                {status && <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${STATUS_STYLE[status] || 'bg-white/10 text-[#8a8577]'}`}>{status.replace('_', ' ')}</span>}
-                {cancelScheduled && <span className="rounded-full bg-red-500/15 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-red-400">{t('bill.cancelsOn', { date: fmtDate(periodEnd) })}</span>}
-              </div>
-            </div>
+          <div className="ex-page-actions">
+            {stripeEnv ? (
+              <span className={`ex-badge ${stripeEnv === 'live' ? 'ex-badge--up' : 'ex-badge--accent'}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${stripeEnv === 'live' ? 'bg-[var(--ex-up)]' : 'bg-[var(--ex-accent)]'}`} />
+                {stripeEnv === 'live' ? t('bill.stripeLive', null, 'Stripe live') : t('bill.stripeTest', null, 'Stripe test')}
+              </span>
+            ) : null}
+            <Link to="/pricing" className="ex-btn ex-btn--secondary ex-btn--sm">Compare plans <ArrowUpRight /></Link>
           </div>
-          <div className="text-right text-sm text-[#8a8577]">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-300"><ShieldCheck className="h-4 w-4" /> {t('bill.securedBy')}</div>
-            {periodEnd && <div className="mt-2 text-xs">{cancelScheduled ? t('bill.accessUntil') : t('bill.renews')} <span className="font-mono text-[#f0ecdd]">{fmtDate(periodEnd)}</span></div>}
-          </div>
-        </div>
+        </header>
 
-        {hasSub && (
-          <div className="mt-5 flex flex-wrap gap-3 border-t border-white/5 pt-5">
-            {cancelScheduled ? (
-              <GoldButton disabled={busy} onClick={handleResume}>{busy === 'resume' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />} Resume subscription</GoldButton>
-            ) : (
-              <button disabled={busy} onClick={handleCancel} className="flex items-center gap-2 rounded-xl border border-red-500/30 px-4 py-2 text-sm font-medium text-red-400 transition hover:bg-red-500/10 disabled:opacity-60">{busy === 'cancel' ? <RefreshCw className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />} Cancel subscription</button>
-            )}
+        {isAdmin && !configured && (
+          <div className="mb-3">
+            <Note icon={AlertTriangle} tone="accent">
+              <p className="font-semibold text-[var(--ex-text)]">Stripe is not fully configured</p>
+              <p className="mt-1">Set STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET and the STRIPE_PRICE_* values in the API environment.</p>
+            </Note>
           </div>
         )}
-      </Card>
 
-      {/* Plans */}
-      <div className="mb-3 flex items-center gap-3">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">{t('bill.plans')}</h3>
-        <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
-      </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {PAID.map((p) => {
-          const isCurrent = currentPlan === p.id;
-          const canSwitch = hasSub && !isCurrent;
-          return (
-            <div key={p.id} className={`relative flex flex-col overflow-hidden rounded-3xl border p-6 transition-transform duration-300 hover:-translate-y-1 ${p.highlight ? 'border-[#d4af37]/60 bg-gradient-to-b from-[#d4af37]/[0.12] to-[#0f0f14] shadow-[0_24px_80px_-24px_rgba(212,175,55,0.45)]' : 'border-white/[0.07] bg-white/[0.02] backdrop-blur-md'}`}>
-              {p.highlight && (
-                <>
-                  <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
-                  <div className="absolute right-5 top-5 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#0a0a0f]">{t('misc.popular')}</div>
-                </>
-              )}
-              <div className="min-w-0 flex-1">
-                <h4 className="text-lg font-bold text-[#f0ecdd]">{p.name}</h4>
-                <p className="mt-0.5 text-xs text-[#8a8577]">{p.tagline}</p>
-                <div className="mt-3 flex items-end gap-1"><span className="font-mono text-4xl font-bold tb-gold-text">${p.price}</span><span className="mb-1.5 text-sm text-[#8a8577]">/{p.period}</span></div>
-                <ul className="mt-4 space-y-2 text-sm text-[#b3ae9e]">{p.features.slice(0, 5).map((f) => <li key={f} className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-[#d4af37]" />{f}</li>)}</ul>
-              </div>
-              <div className="mt-5 grid shrink-0 grid-cols-1 gap-2">
-                {isCurrent ? (
-                  <div className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.06] py-2.5 text-sm font-bold text-emerald-400"><Check className="h-4 w-4" /> {t('bill.currentPlanBadge')}</div>
-                ) : canSwitch ? (
-                  <GhostButton disabled={busy} onClick={() => handleSwitch(p.id)} className="w-full">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowUpRight className="h-4 w-4" />} {t('bill.switchTo', { name: p.name })}</GhostButton>
-                ) : (
-                  <>
-                    <GoldButton disabled={busy} onClick={() => handleCheckout(p.id)} className="w-full">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />} {t('bill.subscribe')}</GoldButton>
-                    <GhostButton disabled={busy || walletBalance < p.price} onClick={() => handleWalletPay(p.id)} className="w-full">{busy === `wallet-${p.id}` ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Wallet className="h-3 w-3" />} {t('bill.payWallet')}</GhostButton>
-                  </>
-                )}
+        <div className="ex-card mb-3 flex flex-wrap items-center justify-between gap-3 p-3.5">
+          <div className="flex items-center gap-2.5">
+            <span className="ex-empty__icon h-9 w-9"><Wallet className="h-4 w-4" /></span>
+            <div>
+              <div className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-[var(--ex-muted)]">{t('bill.walletBalance', null, 'Wallet balance')}</div>
+              <div className="ex-mono mt-0.5 text-[18px] font-semibold text-[var(--ex-text)]">
+                {money(walletBalance)} <Link to="/app/wallet" className="ml-1 font-sans text-[10px] font-semibold text-[var(--ex-accent)] hover:underline">{t('bill.fundWallet', null, 'Fund wallet')}</Link>
               </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+          <div className="text-[10px] text-[var(--ex-muted)]">{t('bill.payInstant', null, 'Instant payment from your cash balance')}</div>
+        </div>
 
-      {/* Billing history */}
-      <div className="mb-3 flex items-center gap-3">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]"><Receipt className="h-4 w-4" /></span>
-        <h3 className="text-sm font-bold uppercase tracking-wider text-[#f0ecdd]">{t('bill.history')}</h3>
-        <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
-        <span className="rounded-full border border-[#d4af37]/25 px-2 py-0.5 font-mono text-[11px] text-[#d4af37]">{events.length}</span>
-      </div>
-      <Card className="!p-0 overflow-hidden">
-        {loading ? (
-          <div className="px-4 py-10 text-center text-sm text-[#8a8577]">{t('c.loading')}</div>
-        ) : events.length === 0 ? (
-          <EmptyState icon={Receipt} title={t('bill.noActivity')} />
-        ) : (
-          <>
-            {/* Desktop table */}
-            <div className="no-scrollbar hidden overflow-x-auto sm:block">
-              <table className="w-full min-w-[560px] text-sm">
-                <thead><tr className="border-b border-[#d4af37]/12 bg-white/[0.02] text-left text-[11px] font-bold uppercase tracking-[0.14em] text-[#8a8577]">{[t('bill.hDate'), t('bill.hEvent'), t('bill.hPlan'), t('bill.hAmount'), t('bill.hStatus')].map((h) => <th key={h} className="px-5 py-3.5">{h}</th>)}</tr></thead>
+        <Card className="mb-3 p-3.5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[8px] border border-[color-mix(in_srgb,var(--ex-accent)_28%,transparent)] bg-[color-mix(in_srgb,var(--ex-accent)_10%,transparent)] text-[var(--ex-accent)]"><Crown className="h-4 w-4" /></span>
+              <div>
+                <div className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-[var(--ex-muted)]">{t('bill.currentPlan', null, 'Current plan')}</div>
+                <div className="mt-0.5 text-[22px] font-bold tracking-[-0.04em] text-[var(--ex-text)]">{currentPlan ? currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1) : t('bill.noPlan', null, 'No plan')}</div>
+                {!currentPlan && <div className="mt-1 text-[10.5px] text-[var(--ex-muted)]">{t('bill.noPlanYet', null, 'Subscribe to unlock the full terminal.')}</div>}
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  {status && <span className={`ex-badge ${statusBadge(status)}`}>{status.replace('_', ' ')}</span>}
+                  {cancelScheduled && <span className="ex-badge ex-badge--down">{t('bill.cancelsOn', { date: fmtDate(periodEnd) }, `Cancels ${fmtDate(periodEnd)}`)}</span>}
+                </div>
+              </div>
+            </div>
+            <div className="text-right text-[10.5px] text-[var(--ex-muted)]">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--ex-up)_24%,transparent)] bg-[color-mix(in_srgb,var(--ex-up)_8%,transparent)] px-2.5 py-1 font-semibold text-[var(--ex-up)]"><ShieldCheck className="h-3.5 w-3.5" /> {t('bill.securedBy', null, 'Secured by Stripe')}</div>
+              {periodEnd && <div className="mt-2">{cancelScheduled ? t('bill.accessUntil', null, 'Access until') : t('bill.renews', null, 'Renews')} <span className="ex-mono text-[var(--ex-text)]">{fmtDate(periodEnd)}</span></div>}
+            </div>
+          </div>
+
+          {hasSub && (
+            <div className="mt-3 flex flex-wrap gap-2 border-t border-[var(--ex-line)] pt-3">
+              {cancelScheduled ? (
+                <GoldButton disabled={busy} onClick={handleResume} className="ex-btn--sm">{busy === 'resume' ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />} Resume subscription</GoldButton>
+              ) : (
+                <button type="button" disabled={busy} onClick={handleCancel} className="ex-btn ex-btn--danger ex-btn--sm disabled:opacity-60">
+                  {busy === 'cancel' ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />} Cancel subscription
+                </button>
+              )}
+            </div>
+          )}
+        </Card>
+
+        <div className="mb-2 flex items-center gap-2">
+          <h2 className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--ex-text)]">{t('bill.plans', null, 'Plans')}</h2>
+          <span className="h-px flex-1 bg-[var(--ex-line)]" />
+          <span className="text-[10px] text-[var(--ex-muted)]">Fixed monthly pricing · cancel anytime</span>
+        </div>
+
+        <div className="ex-plan-grid">
+          {plans.map((plan) => {
+            const isCurrent = currentPlan === plan.id;
+            const canSwitch = hasSub && !isCurrent;
+            return (
+              <div key={plan.id} className={`ex-plan-card${plan.highlight ? ' is-featured' : ''}${isCurrent ? ' is-current' : ''}`}>
+                {plan.highlight && <span className="ex-plan-badge">{t('misc.popular', null, 'Popular')}</span>}
+                <div className="min-w-0 flex-1">
+                  <h3 className="ex-plan-card__name">{plan.name}</h3>
+                  <p className="ex-plan-card__tagline">{plan.tagline}</p>
+                  <div className="ex-plan-card__price"><strong>${plan.price}</strong><span>/{plan.period}</span></div>
+                  <ul className="ex-plan-card__features">
+                    {plan.features.slice(0, 5).map((feature) => (
+                      <li key={feature}><Check />{feature}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="ex-plan-card__actions">
+                  {isCurrent ? (
+                    <div className="flex min-h-[34px] items-center justify-center gap-1.5 rounded-[6px] border border-[color-mix(in_srgb,var(--ex-up)_28%,transparent)] bg-[color-mix(in_srgb,var(--ex-up)_8%,transparent)] text-[11px] font-semibold text-[var(--ex-up)]"><Check className="h-3.5 w-3.5" /> {t('bill.currentPlanBadge', null, 'Current plan')}</div>
+                  ) : canSwitch ? (
+                    <GhostButton disabled={busy} onClick={() => handleSwitch(plan.id)} className="ex-btn--sm w-full">
+                      {busy === plan.id ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <ArrowUpRight className="h-3.5 w-3.5" />} {t('bill.switchTo', { name: plan.name }, `Switch to ${plan.name}`)}
+                    </GhostButton>
+                  ) : (
+                    <>
+                      <GoldButton disabled={busy} onClick={() => handleCheckout(plan.id)} className="ex-btn--sm w-full">
+                        {busy === plan.id ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />} {t('bill.subscribe', null, 'Subscribe')}
+                      </GoldButton>
+                      <GhostButton disabled={busy || walletBalance < plan.price} onClick={() => handleWalletPay(plan.id)} className="ex-btn--sm w-full">
+                        {busy === `wallet-${plan.id}` ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Wallet className="h-3 w-3" />} {t('bill.payWallet', null, 'Pay with wallet')}
+                      </GhostButton>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mb-2 mt-4 flex items-center gap-2">
+          <Receipt className="h-3.5 w-3.5 text-[var(--ex-muted)]" />
+          <h2 className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--ex-text)]">{t('bill.history', null, 'Billing history')}</h2>
+          <span className="h-px flex-1 bg-[var(--ex-line)]" />
+          <span className="ex-badge">{events.length}</span>
+        </div>
+
+        <Card>
+          {loading ? (
+            <div className="px-4 py-10 text-center text-[12px] text-[var(--ex-muted)]">{t('c.loading', null, 'Loading…')}</div>
+          ) : events.length === 0 ? (
+            <EmptyState icon={Receipt} title={t('bill.noActivity', null, 'No billing activity yet')} sub="Invoices and plan changes will appear here." />
+          ) : (
+            <div className="ex-table-wrap">
+              <table className="ex-table ex-table--cards">
+                <thead>
+                  <tr>
+                    <th>{t('bill.hDate', null, 'Date')}</th>
+                    <th>{t('bill.hEvent', null, 'Event')}</th>
+                    <th>{t('bill.hPlan', null, 'Plan')}</th>
+                    <th>{t('bill.hAmount', null, 'Amount')}</th>
+                    <th>{t('bill.hStatus', null, 'Status')}</th>
+                  </tr>
+                </thead>
                 <tbody>
-                  {events.map((ev) => (
-                    <tr key={ev.id} className="border-b border-white/5 transition last:border-0 hover:bg-[#d4af37]/[0.04]">
-                      <td className="px-5 py-3.5 font-mono text-xs text-[#c9c4b4]">{fmtDate(ev.occurredAt || ev.created)}</td>
-                      <td className="px-4 py-3.5 font-medium text-[#f0ecdd]">{ev.eventType?.replace(/[._]/g, ' ')}</td>
-                      <td className="px-4 py-3.5 text-[#c9c4b4]">{ev.planName || '—'}</td>
-                      <td className="px-4 py-3.5 font-mono font-semibold text-[#d4af37]">{ev.amount ? money(ev.amount, ev.currency) : '—'}</td>
-                      <td className="px-4 py-3.5"><span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${STATUS_STYLE[ev.status] || 'bg-white/10 text-[#8a8577]'}`}>{ev.status || '—'}</span></td>
+                  {events.map((event) => (
+                    <tr key={event.id}>
+                      <td data-label="Date" className="ex-muted">{fmtDate(event.occurredAt || event.created)}</td>
+                      <td data-label="Event" className="ex-table__main">{event.eventType?.replace(/[._]/g, ' ')}</td>
+                      <td data-label="Plan" className="ex-muted">{event.planName || '—'}</td>
+                      <td data-label="Amount" className="ex-table__num text-[var(--ex-accent)]">{event.amount ? money(event.amount, event.currency) : '—'}</td>
+                      <td data-label="Status"><span className={`ex-badge ${statusBadge(event.status)}`}>{event.status || '—'}</span></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            {/* Mobile invoice cards */}
-            <div className="divide-y divide-white/5 sm:hidden">
-              {events.map((ev) => (
-                <div key={ev.id} className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-medium text-[#f0ecdd]">{ev.eventType?.replace(/[._]/g, ' ')}</div>
-                      <div className="mt-0.5 truncate text-xs text-[#8a8577]">{ev.planName || '—'} · {fmtDate(ev.occurredAt || ev.created)}</div>
-                    </div>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${STATUS_STYLE[ev.status] || 'bg-white/10 text-[#8a8577]'}`}>{ev.status || '—'}</span>
-                  </div>
-                  <div className="mt-2 font-mono text-lg font-semibold text-[#f0ecdd]">{ev.amount ? money(ev.amount, ev.currency) : '—'}</div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </Card>
+          )}
+        </Card>
       </div>
     </AppLayout>
   );

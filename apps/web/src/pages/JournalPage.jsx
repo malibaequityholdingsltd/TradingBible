@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   Search, Download, ArrowUpRight, ArrowDownRight, Plug, RefreshCw,
-  Eye, Calendar, Target, Smile, BookOpen,
+  Eye, Calendar, Target, Smile, BookOpen, SlidersHorizontal, X,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { MARKETS, fmtMoney } from '@/lib/mockData';
@@ -16,95 +16,51 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { txt } from '@/lib/safeRender';
-import { GoldButton, GhostButton, EmptyState, Card } from '@/components/ui-kit';
+import { GoldButton, GhostButton, EmptyState, Card, Stat } from '@/components/ui-kit';
 import EvaluationsPanel from '@/components/EvaluationsPanel';
 
 const FIELD_DEFS = [
-  { key: 'symbol', labelKey: 'jou.f_symbol' },
-  { key: 'market', labelKey: 'jou.f_market' },
-  { key: 'direction', labelKey: 'jou.f_direction' },
-  { key: 'entry', labelKey: 'jou.f_entry' },
-  { key: 'exit', labelKey: 'jou.f_exit' },
-  { key: 'sl', labelKey: 'jou.f_sl' },
-  { key: 'tp', labelKey: 'jou.f_tp' },
-  { key: 'size', labelKey: 'jou.f_size' },
-  { key: 'risk', labelKey: 'jou.f_risk' },
-  { key: 'pnl', labelKey: 'jou.f_pnl' },
-  { key: 'strategy', labelKey: 'jou.f_strategy' },
-  { key: 'emotion', labelKey: 'jou.f_emotion' },
+  { key: 'symbol', labelKey: 'jou.f_symbol', fallback: 'Symbol' },
+  { key: 'market', labelKey: 'jou.f_market', fallback: 'Market' },
+  { key: 'direction', labelKey: 'jou.f_direction', fallback: 'Direction' },
+  { key: 'entry', labelKey: 'jou.f_entry', fallback: 'Entry' },
+  { key: 'exit', labelKey: 'jou.f_exit', fallback: 'Exit' },
+  { key: 'sl', labelKey: 'jou.f_sl', fallback: 'Stop loss' },
+  { key: 'tp', labelKey: 'jou.f_tp', fallback: 'Take profit' },
+  { key: 'size', labelKey: 'jou.f_size', fallback: 'Size' },
+  { key: 'risk', labelKey: 'jou.f_risk', fallback: 'Risk' },
+  { key: 'pnl', labelKey: 'jou.f_pnl', fallback: 'P&L' },
+  { key: 'strategy', labelKey: 'jou.f_strategy', fallback: 'Strategy' },
+  { key: 'emotion', labelKey: 'jou.f_emotion', fallback: 'Emotion' },
 ];
 
-function TradeCard({ trade, strategyWinRate, onView }) {
-  const { t } = useI18n();
-  const isLong = (trade.direction || '').toLowerCase().startsWith('l') || (trade.direction || '').toLowerCase() === 'buy';
-  const isProfit = (trade.pnl || 0) >= 0;
+function formatDate(value) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value).slice(0, 10);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+}
+
+function formatNumber(value) {
+  if (value == null || value === '') return '—';
+  const n = Number(value);
+  if (Number.isNaN(n)) return txt(value, '—');
+  return n.toLocaleString('en-US', { maximumFractionDigits: 5 });
+}
+
+function money(value) {
+  if (value == null || Number.isNaN(Number(value))) return '—';
+  return fmtMoney(Number(value));
+}
+
+function SidePill({ direction }) {
+  const value = String(direction || '').toLowerCase();
+  const isLong = value.startsWith('l') || value === 'buy';
   return (
-    <button onClick={() => onView(trade)} className="tb-card tb-card-hover flex flex-col p-3 text-left sm:p-5">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="truncate font-mono text-base font-bold tracking-tight text-[#f0ecdd] sm:text-lg">{txt(trade.symbol, '—')}</div>
-          <div className="mt-0.5 text-[10px] uppercase tracking-wide text-[#8a8577] sm:text-xs">{txt(trade.market, '—')}</div>
-        </div>
-        <span
-          className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold sm:px-2.5 sm:py-1 sm:text-xs ${
-            isLong ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-400' : 'border-red-400/30 bg-red-400/10 text-red-400'
-          }`}
-        >
-          {isLong ? <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> : <ArrowDownRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />}
-          {txt(trade.direction, '—')}
-        </span>
-      </div>
-
-      <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-white/[0.03] p-2.5 sm:mt-4 sm:gap-3 sm:p-3">
-        <div className="min-w-0">
-          <div className="text-[9px] uppercase tracking-wider text-[#6a665a] sm:text-[10px]">{t('jou.f_entry')}</div>
-          <div className="truncate font-mono text-xs text-[#c9c4b4] sm:text-sm">{txt(trade.entry, '—')}</div>
-        </div>
-        <div className="min-w-0">
-          <div className="text-[9px] uppercase tracking-wider text-[#6a665a] sm:text-[10px]">{t('jou.f_exit')}</div>
-          <div className="truncate font-mono text-xs text-[#c9c4b4] sm:text-sm">{txt(trade.exit, '—')}</div>
-        </div>
-      </div>
-
-      <div className="mt-2.5 flex items-center justify-between sm:mt-3">
-        <span className="text-[11px] text-[#8a8577] sm:text-xs">{t('jou.pnl')}</span>
-        <span className={`font-mono text-base font-bold sm:text-lg ${isProfit ? 'text-emerald-400' : 'text-red-400'}`}>{fmtMoney(trade.pnl || 0)}</span>
-      </div>
-
-      {strategyWinRate != null && (
-        <div className="mt-2.5 sm:mt-3">
-          <div className="mb-1 flex items-center justify-between text-[9px] uppercase tracking-wider text-[#6a665a] sm:text-[10px]">
-            <span>{t('jou.stratWin')}</span>
-            <span className="text-[#d4af37]">{strategyWinRate}%</span>
-          </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
-            <div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25]" style={{ width: `${strategyWinRate}%` }} />
-          </div>
-        </div>
-      )}
-
-      <div className="mt-3 flex flex-wrap items-center gap-1.5 sm:mt-4 sm:gap-2">
-        {trade.strategy && (
-          <span className="inline-flex items-center gap-1 rounded-lg border border-[#d4af37]/15 bg-[#d4af37]/5 px-1.5 py-0.5 text-[10px] text-[#d4af37] sm:px-2 sm:py-1 sm:text-[11px]">
-            <Target className="h-3 w-3" /> {trade.strategy}
-          </span>
-        )}
-        {trade.emotion && (
-          <span className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-[#c9c4b4] sm:px-2 sm:py-1 sm:text-[11px]">
-            <Smile className="h-3 w-3" /> {trade.emotion}
-          </span>
-        )}
-      </div>
-
-      <div className="mt-2.5 flex items-center gap-1.5 text-[10px] text-[#6a665a] sm:mt-3 sm:text-[11px]">
-        <Calendar className="h-3 w-3 shrink-0" /> {txt(trade.tradeDate, '').slice(0, 10) || '—'}
-        {trade.source && <span className="ml-1 truncate text-[#5f5b50]">· {trade.source}</span>}
-      </div>
-
-      <div className="mt-3 flex items-center justify-center gap-1.5 border-t border-white/5 pt-2.5 text-[11px] text-[#c9c4b4] sm:pt-3 sm:text-xs">
-        <Eye className="h-3.5 w-3.5" /> View details
-      </div>
-    </button>
+    <span className={`ex-side-pill ${isLong ? 'ex-side-pill--long' : 'ex-side-pill--short'}`}>
+      {isLong ? <ArrowUpRight className="h-2.5 w-2.5" /> : <ArrowDownRight className="h-2.5 w-2.5" />}
+      {txt(direction, '—')}
+    </span>
   );
 }
 
@@ -117,27 +73,42 @@ export default function JournalPage() {
   const [q, setQ] = useState('');
   const [market, setMarket] = useState('All');
   const [direction, setDirection] = useState('All');
+  const [emotion, setEmotion] = useState('All');
+  const [source, setSource] = useState('All');
   const [viewing, setViewing] = useState(null);
   const [syncing, setSyncing] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const stats = useMemo(() => computeStats(trades), [trades]);
   const strategyWinRates = useMemo(() => {
     const map = {};
-    (stats?.strategies || []).forEach((s) => { map[s.name] = s.winRate; });
+    (stats?.strategies || []).forEach((strategy) => { map[strategy.name] = strategy.winRate; });
     return map;
   }, [stats]);
 
-  const rows = useMemo(() => trades.filter((t) =>
-    (market === 'All' || txt(t.market, '') === market) &&
-    (direction === 'All' || txt(t.direction, '').toLowerCase() === direction.toLowerCase()) &&
-    (txt(t.symbol, '').toLowerCase().includes(q.toLowerCase()) || txt(t.strategy, '').toLowerCase().includes(q.toLowerCase()) || txt(t.emotion, '').toLowerCase().includes(q.toLowerCase()))
-  ), [trades, q, market, direction]);
+  const rows = useMemo(() => trades.filter((trade) => (
+    (market === 'All' || txt(trade.market, '') === market) &&
+    (direction === 'All' || txt(trade.direction, '').toLowerCase() === direction.toLowerCase()) &&
+    (emotion === 'All' || txt(trade.emotion, '') === emotion) &&
+    (source === 'All' || txt(trade.source, '') === source) &&
+    (txt(trade.symbol, '').toLowerCase().includes(q.toLowerCase()) ||
+      txt(trade.strategy, '').toLowerCase().includes(q.toLowerCase()) ||
+      txt(trade.emotion, '').toLowerCase().includes(q.toLowerCase()) ||
+      txt(trade.notes, '').toLowerCase().includes(q.toLowerCase()))
+  )), [trades, q, market, direction, emotion, source]);
 
   const exportCsv = () => {
-    const head = 'Symbol,Market,Direction,Entry,Exit,PnL,Strategy,Emotion,Source,Date';
-    const body = rows.map((t) => [t.symbol, t.market, t.direction, t.entry, t.exit, t.pnl, t.strategy, t.emotion, t.source, t.tradeDate].join(',')).join('\n');
-    const url = URL.createObjectURL(new Blob([head + '\n' + body], { type: 'text/csv' }));
-    const a = document.createElement('a'); a.href = url; a.download = 'tradingbible-journal.csv'; a.click(); URL.revokeObjectURL(url);
+    const head = 'Symbol,Market,Direction,Entry,Exit,Size,PnL,Strategy,Emotion,Source,Date';
+    const body = rows.map((trade) => [
+      trade.symbol, trade.market, trade.direction, trade.entry, trade.exit, trade.size,
+      trade.pnl, trade.strategy, trade.emotion, trade.source, trade.tradeDate,
+    ].map((value) => `"${String(value ?? '').replaceAll('"', '""')}"`).join(',')).join('\n');
+    const url = URL.createObjectURL(new Blob([`${head}\n${body}`], { type: 'text/csv' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tradingbible-journal.csv';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const [taxBusy, setTaxBusy] = useState(false);
@@ -150,10 +121,16 @@ export default function JournalPage() {
       if (!res.ok) throw new Error('tax export failed');
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `tradingbible-tax-${new Date().getFullYear()}.csv`; a.click(); URL.revokeObjectURL(url);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `tradingbible-tax-${new Date().getFullYear()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
     } catch {
       toast({ variant: 'destructive', title: 'Tax export failed' });
-    } finally { setTaxBusy(false); }
+    } finally {
+      setTaxBusy(false);
+    }
   };
 
   const syncBrokers = async () => {
@@ -174,81 +151,203 @@ export default function JournalPage() {
     }
   };
 
+  const emotions = useMemo(() => ['All', ...new Set(trades.map((trade) => txt(trade.emotion, '')).filter(Boolean))], [trades]);
+  const sources = useMemo(() => ['All', ...new Set(trades.map((trade) => txt(trade.source, '')).filter(Boolean))], [trades]);
+
+  const resetFilters = () => {
+    setQ('');
+    setMarket('All');
+    setDirection('All');
+    setEmotion('All');
+    setSource('All');
+  };
+
   return (
     <AppLayout title={t('nav.journal')}>
-      <div className="tb-page">
-        <div className="tb-scroll-row journal-filters items-center">
-          <div className="flex min-w-[150px] flex-1 items-center gap-2 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2">
-            <Search className="h-4 w-4 shrink-0 text-[#8a8577]" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('jrn.search')} className="w-full bg-transparent text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none" />
+      <div className="ex-page">
+        <header className="ex-page-head">
+          <div className="ex-page-head__copy">
+            <span className="ex-kicker">Trade record</span>
+            <h1 className="ex-page-title">Journal</h1>
+            <p className="ex-page-sub">Every fill, note and outcome. Filter the record, export it, or send it to SI for review.</p>
           </div>
-          <select value={market} onChange={(e) => setMarket(e.target.value)} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2 text-sm text-[#e9e7df] outline-none">
-            {['All', ...MARKETS].map((m) => <option key={m} className="bg-[#0f0f14]">{m}</option>)}
-          </select>
-          <select value={direction} onChange={(e) => setDirection(e.target.value)} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2 text-sm text-[#e9e7df] outline-none">
-            {['All', 'Long', 'Short', 'Buy', 'Sell'].map((d) => <option key={d} className="bg-[#0f0f14]">{d}</option>)}
-          </select>
-          <GhostButton onClick={exportCsv} className="journal-export !min-h-[42px] !px-3 !py-2"><Download className="h-4 w-4" /> <span className="hidden sm:inline">{t('jou.export')}</span></GhostButton>
-          <GhostButton onClick={exportTax} disabled={taxBusy} className="journal-export !min-h-[42px] !px-3 !py-2"><Download className="h-4 w-4" /> <span className="hidden sm:inline">{taxBusy ? '…' : 'Tax CSV'}</span></GhostButton>
-          <GoldButton onClick={syncBrokers} disabled={syncing} className="journal-sync !min-h-[42px] !px-4 !py-2 disabled:opacity-60">
-            <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? t('jrn.syncing') : t('jrn.syncBrokers')}
-          </GoldButton>
-          {syncOnly && <span className="journal-note rounded-full border border-[#d4af37]/25 bg-[#d4af37]/[0.06] px-3 py-1.5 text-[11px] font-medium text-[#d4af37]">{t('jrn.syncOnly')}</span>}
-        </div>
+          <div className="ex-page-actions">
+            <GhostButton onClick={exportCsv}><Download /> Export</GhostButton>
+            <GhostButton onClick={exportTax} disabled={taxBusy}><Download /> {taxBusy ? 'Preparing…' : 'Tax CSV'}</GhostButton>
+            <GoldButton onClick={syncBrokers} disabled={syncing}>
+              <RefreshCw className={syncing ? 'animate-spin' : ''} /> {syncing ? t('jrn.syncing', null, 'Syncing…') : t('jrn.syncBrokers', null, 'Sync brokers')}
+            </GoldButton>
+          </div>
+        </header>
 
-        {loading ? (
-          <div className="tb-card flex items-center justify-center gap-2 py-16 text-sm text-[#8a8577]"><RefreshCw className="h-4 w-4 animate-spin" /> {t('jrn.loadingTrades')}</div>
-        ) : trades.length === 0 ? (
-          <EmptyState
-            icon={Plug}
-            title={t('jrn.noTrades')}
-            sub={t('jrn.noTradesSub')}
-            action={<GoldButton to="/app/brokers">{t('jrn.connectBroker')}</GoldButton>}
-          />
-        ) : rows.length === 0 ? (
-          <Card><div className="px-6 py-16 text-center text-sm text-[#8a8577]">{t('jrn.noMatch')}</div></Card>
-        ) : (
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
-            {rows.map((t) => (
-              <TradeCard
-                key={t.id}
-                trade={t}
-                strategyWinRate={t.strategy ? strategyWinRates[t.strategy] : null}
-                onView={setViewing}
-              />
-            ))}
+        {stats && (
+          <div className="ex-stat-grid ex-stat-grid--4 ex-journal__stats">
+            <Stat label="Net P&L" value={money(stats.balance - 100000)} tone={stats.balance >= 100000 ? 'ex-up' : 'ex-down'} />
+            <Stat label="Win rate" value={`${stats.winRate}%`} />
+            <Stat label="Profit factor" value={stats.profitFactor.toFixed(2)} />
+            <Stat label="Trades" value={stats.totalTrades} />
           </div>
         )}
 
-        {/* Bought evaluations live here — attempts, gates, payouts */}
-        <EvaluationsPanel />
+        <div className="ex-journal__toolbar">
+          <div className="ex-search ex-journal__search">
+            <Search />
+            <input value={q} onChange={(event) => setQ(event.target.value)} placeholder={t('jrn.search', null, 'Search symbol, strategy, emotion or notes')} />
+            {q && <button type="button" onClick={() => setQ('')} className="ex-icon-btn h-5 w-5" aria-label="Clear search"><X className="h-3 w-3" /></button>}
+          </div>
+          <select value={market} onChange={(event) => setMarket(event.target.value)} className="ex-select w-auto min-w-[110px]">
+            {['All', ...MARKETS].map((value) => <option key={value} value={value}>{value}</option>)}
+          </select>
+          <select value={direction} onChange={(event) => setDirection(event.target.value)} className="ex-select w-auto min-w-[110px]">
+            {['All', 'Long', 'Short', 'Buy', 'Sell'].map((value) => <option key={value} value={value}>{value}</option>)}
+          </select>
+          <button type="button" onClick={() => setFiltersOpen((value) => !value)} className={`ex-btn ex-btn--secondary ex-btn--sm${filtersOpen ? ' is-active' : ''}`}>
+            <SlidersHorizontal /> Filters
+          </button>
+          {(q || market !== 'All' || direction !== 'All' || emotion !== 'All' || source !== 'All') && (
+            <button type="button" onClick={resetFilters} className="ex-btn ex-btn--ghost ex-btn--sm">Reset</button>
+          )}
+          <span className="ml-auto text-[10px] text-[var(--ex-muted)]">{rows.length} of {trades.length} trades</span>
+          {syncOnly && <span className="ex-badge ex-badge--accent">{t('jrn.syncOnly', null, 'Broker sync enforced')}</span>}
+        </div>
 
-        {/* View details dialog */}
-        <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
-          <DialogContent className="tb-card max-h-[85vh] max-w-md overflow-y-auto border-[#d4af37]/20 bg-[#0c0c11] text-[#e9e7df]">
+        {filtersOpen && (
+          <div className="ex-card mb-3 flex flex-wrap items-end gap-2 p-3">
+            <label className="min-w-[140px] flex-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--ex-muted)]">
+              Emotion
+              <select value={emotion} onChange={(event) => setEmotion(event.target.value)} className="ex-select mt-1">
+                {emotions.map((value) => <option key={value} value={value}>{value}</option>)}
+              </select>
+            </label>
+            <label className="min-w-[140px] flex-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--ex-muted)]">
+              Source
+              <select value={source} onChange={(event) => setSource(event.target.value)} className="ex-select mt-1">
+                {sources.map((value) => <option key={value} value={value}>{value}</option>)}
+              </select>
+            </label>
+            <div className="text-[10px] text-[var(--ex-muted)]">
+              Showing {rows.length} of {trades.length} recorded trades.
+            </div>
+          </div>
+        )}
+
+        {loading ? (
+          <Card className="flex items-center justify-center gap-2 py-16 text-[12px] text-[var(--ex-muted)]">
+            <RefreshCw className="h-4 w-4 animate-spin" /> {t('jrn.loadingTrades', null, 'Loading trades…')}
+          </Card>
+        ) : trades.length === 0 ? (
+          <Card>
+            <EmptyState
+              icon={Plug}
+              title={t('jrn.noTrades', null, 'No trades recorded yet')}
+              sub={t('jrn.noTradesSub', null, 'Connect a broker or log your first trade to start building the record.')}
+              action={<GoldButton to="/app/brokers">{t('jrn.connectBroker', null, 'Connect broker')}</GoldButton>}
+            />
+          </Card>
+        ) : rows.length === 0 ? (
+          <Card>
+            <EmptyState icon={Search} title={t('jrn.noMatch', null, 'No trades match those filters')} sub="Clear the search or widen the market and direction filters." action={<GhostButton onClick={resetFilters}>Reset filters</GhostButton>} />
+          </Card>
+        ) : (
+          <Card>
+            <div className="ex-table-wrap">
+              <table className="ex-table ex-table--cards">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Symbol</th>
+                    <th>Side</th>
+                    <th>Entry</th>
+                    <th>Exit</th>
+                    <th>Size</th>
+                    <th>P&amp;L</th>
+                    <th>Strategy</th>
+                    <th>Tags</th>
+                    <th aria-label="Actions" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((trade) => {
+                    const pnl = Number(trade.pnl || 0);
+                    return (
+                      <tr key={trade.id} onClick={() => setViewing(trade)} className="cursor-pointer">
+                        <td data-label="Date" className="ex-muted">{formatDate(trade.tradeDate)}</td>
+                        <td data-label="Symbol" className="ex-table__main">
+                          <span className="flex items-center gap-1.5">
+                            {txt(trade.symbol, '—')}
+                            {trade.source ? <span className="ex-faint text-[9px]">{trade.source}</span> : null}
+                          </span>
+                        </td>
+                        <td data-label="Side"><SidePill direction={trade.direction} /></td>
+                        <td data-label="Entry" className="ex-table__num">{formatNumber(trade.entry)}</td>
+                        <td data-label="Exit" className="ex-table__num">{formatNumber(trade.exit)}</td>
+                        <td data-label="Size" className="ex-table__num">{formatNumber(trade.size)}</td>
+                        <td data-label="P&L" className={`ex-table__num font-semibold ${pnl >= 0 ? 'ex-up' : 'ex-down'}`}>{money(pnl)}</td>
+                        <td data-label="Strategy">
+                          <span className="ex-muted">{txt(trade.strategy, '—')}</span>
+                          {trade.strategy && strategyWinRates[trade.strategy] != null && (
+                            <span className="ml-1.5 text-[9px] text-[var(--ex-accent)]">{strategyWinRates[trade.strategy]}%</span>
+                          )}
+                        </td>
+                        <td data-label="Tags">
+                          <span className="flex flex-wrap gap-1">
+                            {trade.emotion ? <span className="ex-tag"><Smile className="mr-0.5 h-2.5 w-2.5" />{trade.emotion}</span> : null}
+                            {trade.market ? <span className="ex-tag">{trade.market}</span> : null}
+                            {trade.notes ? <span className="ex-tag"><BookOpen className="mr-0.5 h-2.5 w-2.5" />Note</span> : null}
+                          </span>
+                        </td>
+                        <td data-label="Details">
+                          <button type="button" onClick={(event) => { event.stopPropagation(); setViewing(trade); }} className="ex-icon-btn h-7 w-7" aria-label="View trade details">
+                            <Eye className="h-3.5 w-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        )}
+
+        <div className="mt-3">
+          <EvaluationsPanel />
+        </div>
+
+        <Dialog open={!!viewing} onOpenChange={(open) => !open && setViewing(null)}>
+          <DialogContent className="tb-card max-h-[85vh] max-w-lg overflow-y-auto border-[var(--ex-line)] bg-[var(--ex-panel)] text-[var(--ex-text)]">
             <DialogHeader>
-              <DialogTitle className="text-[#f0ecdd]">
-                <span className="font-mono">{txt(viewing?.symbol, '')}</span> {t('jou.details')}
+              <DialogTitle className="flex items-center gap-2 text-[var(--ex-text)]">
+                <span className="ex-mono text-[15px]">{txt(viewing?.symbol, 'Trade')}</span>
+                <span className="text-[var(--ex-muted)]">/</span>
+                <span className="text-[12px] font-medium text-[var(--ex-muted)]">{t('jou.details', null, 'Trade details')}</span>
               </DialogTitle>
             </DialogHeader>
             {viewing && (
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                {FIELD_DEFS.map(({ key, labelKey }) => (
-                  <div key={key} className="rounded-lg bg-white/[0.03] p-2.5">
-                    <div className="text-[10px] uppercase tracking-wider text-[#6a665a]">{t(labelKey)}</div>
-                    <div className={`mt-0.5 font-mono ${key === 'pnl' ? ((viewing.pnl || 0) >= 0 ? 'text-emerald-400' : 'text-red-400') : 'text-[#e9e7df]'}`}>
+              <div className="grid grid-cols-2 gap-2 text-[12px]">
+                {FIELD_DEFS.map(({ key, labelKey, fallback }) => (
+                  <div key={key} className="rounded-[6px] border border-[var(--ex-line)] bg-[var(--ex-panel-2)] p-2.5">
+                    <div className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[var(--ex-muted)]">{t(labelKey, null, fallback)}</div>
+                    <div className={`ex-mono mt-1 ${key === 'pnl' ? ((viewing.pnl || 0) >= 0 ? 'ex-up' : 'ex-down') : 'text-[var(--ex-text)]'}`}>
                       {txt(viewing[key], '—')}
                     </div>
                   </div>
                 ))}
-                <div className="col-span-2 rounded-lg bg-white/[0.03] p-2.5">
-                  <div className="text-[10px] uppercase tracking-wider text-[#6a665a]">{t('jou.notes')}</div>
-                  <div className="mt-0.5 text-[#c9c4b4]">{txt(viewing.notes, '—')}</div>
+                <div className="col-span-2 rounded-[6px] border border-[var(--ex-line)] bg-[var(--ex-panel-2)] p-2.5">
+                  <div className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[var(--ex-muted)]">{t('jou.notes', null, 'Notes')}</div>
+                  <div className="mt-1 whitespace-pre-wrap text-[var(--ex-text-2)]">{txt(viewing.notes, '—')}</div>
                 </div>
-                <div className="col-span-2 rounded-lg bg-white/[0.03] p-2.5">
-                  <div className="text-[10px] uppercase tracking-wider text-[#6a665a]">{t('jou.date')}</div>
-                  <div className="mt-0.5 text-[#c9c4b4]">{viewing.tradeDate ? String(viewing.tradeDate).slice(0, 10) : '—'}</div>
+                <div className="col-span-2 rounded-[6px] border border-[var(--ex-line)] bg-[var(--ex-panel-2)] p-2.5">
+                  <div className="text-[9px] font-semibold uppercase tracking-[0.08em] text-[var(--ex-muted)]">{t('jou.date', null, 'Date')}</div>
+                  <div className="mt-1 flex items-center gap-1.5 text-[var(--ex-text-2)]"><Calendar className="h-3.5 w-3.5" /> {formatDate(viewing.tradeDate)}</div>
                 </div>
+                {viewing.strategy && (
+                  <div className="col-span-2 flex items-center gap-2 rounded-[6px] border border-[var(--ex-line)] bg-[var(--ex-panel-2)] p-2.5 text-[11px] text-[var(--ex-muted)]">
+                    <Target className="h-3.5 w-3.5 text-[var(--ex-accent)]" />
+                    <span>{viewing.strategy}</span>
+                    {strategyWinRates[viewing.strategy] != null && <span className="ml-auto ex-badge ex-badge--accent">{strategyWinRates[viewing.strategy]}% win</span>}
+                  </div>
+                )}
               </div>
             )}
           </DialogContent>

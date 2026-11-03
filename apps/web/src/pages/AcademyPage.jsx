@@ -1560,54 +1560,38 @@ export default function AcademyPage() {
 					</aside>
 
 					<div className="ac-v2-stage">
-						<section className="ac-hero ac-v2-hero">
-							<div className="ac-hero-copy">
-								<span className="ac-eyebrow">Academy 2.0 · The Listening Institute</span>
-								<h1 className="ac-title">
-									Learn the market.
-									<br />
-									<em>Hear it.</em>
-								</h1>
-								<p className="ac-lede">
-									A new Academy built for reading and listening: four schools, thirteen programmes and 233 lessons, with a male or female reader in your language. The story comes first, the professional depth second, and one final exam is the only test.
+						<header className="ex-page-head">
+							<div className="ex-page-head__copy">
+								<span className="ex-kicker">Academy 2.0</span>
+								<h1 className="ex-page-title">Learn the market. Hear it.</h1>
+								<p className="ex-page-sub">
+									Four schools, thirteen programmes and 233 lessons — read or listen in your language, then pass one final exam per programme.
 								</p>
-								<div className="ac-hero-actions">
-									<button type="button" className="ac-btn ac-btn-gold" onClick={studio.nextUp ? continueLearning : enrolled.length ? () => selectTab('certificates') : scrollToPaths}>
-										{studio.nextUp ? 'Continue learning' : enrolled.length ? 'Open credentials' : 'Enter the programme'}
-										<ChevronRight className="h-4 w-4" />
-									</button>
-									<button type="button" className="ac-btn ac-btn-ghost" onClick={() => selectTab('topics')}>
-										Browse the library
-									</button>
-								</div>
-								<p className="ac-hero-note"><span /> Four schools · 13 programmes · Male + female voices · One final gate</p>
-								<div className="ac-v2-voice-strip">
-									<span className="ac-v2-eq" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></span>
-									<div><strong>Two readers. Every lesson.</strong><span>Choose a female or male voice, switch language, and change speed without losing your place.</span></div>
+								<div className="mt-2 flex flex-wrap items-center gap-1.5">
+									<span className="ex-badge">13 programmes</span>
+									<span className="ex-badge">233 lessons</span>
+									<span className="ex-badge">Audio-first</span>
+									<span className="ex-badge">8 languages</span>
+									<span className="ex-badge ex-badge--accent">Overall {studio.pct}%</span>
+									{studio.nextUp?.lesson?.title && (
+										<span className="ex-badge">Next: {studio.nextUp.lesson.title}</span>
+									)}
 								</div>
 							</div>
-							<aside className="ac-progress-card" aria-label="Your Academy progress">
-								<div className="ac-ring" style={{ '--ac-pct': `${studio.pct}%` }}>
-									<div className="ac-ring-inner">
-										<strong>{studio.pct}%</strong>
-										<span>overall progress</span>
-									</div>
-								</div>
-								<div className="ac-progress-stats">
-									<div>
-										<span>Lessons</span>
-										<strong>{studio.total ? `${studio.done} / ${studio.total}` : 'Not started'}</strong>
-									</div>
-									<div>
-										<span>Next up</span>
-										<strong>{studio.nextUp?.lesson?.title || 'Choose a programme'}</strong>
-									</div>
-								</div>
-								<button type="button" className="ac-link-btn" onClick={studio.nextUp ? continueLearning : () => selectTab('certificates')}>
-									{studio.nextUp ? 'Open next lesson' : 'View credential track'} <ChevronRight className="h-3.5 w-3.5" />
+							<div className="ex-page-actions">
+								<button
+									type="button"
+									className="ex-btn ex-btn--primary"
+									onClick={studio.nextUp ? continueLearning : enrolled.length ? () => selectTab('certificates') : scrollToPaths}
+								>
+									{studio.nextUp ? 'Continue learning' : enrolled.length ? 'Open credentials' : 'Enter the programme'}
+									<ChevronRight className="h-4 w-4" />
 								</button>
-							</aside>
-						</section>
+								<button type="button" className="ex-btn ex-btn--secondary" onClick={() => selectTab('topics')}>
+									Browse the library
+								</button>
+							</div>
+						</header>
 
 						<section className="ac-ledger" aria-label="Academy catalogue">
 							<div className="ac-ledger-item"><span>Schools</span><strong>{String(totals.schools).padStart(2, '0')}</strong><small>Foundation to ownership</small></div>

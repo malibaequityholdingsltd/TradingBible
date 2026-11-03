@@ -108,7 +108,7 @@ export function computeStats(trades) {
     weeklyPnl: sumSince(weekAgo),
     monthlyPnl: sumSince(monthAgo),
     winRate, profitFactor,
-    drawdown: +maxDd.toFixed(1),
+    drawdown: +maxDd.toFixed(2),
     traderScore: score,
     equity, monthly, strategies,
     totalTrades: trades.length,
