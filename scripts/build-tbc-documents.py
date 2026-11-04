@@ -20,6 +20,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import zipfile
 from pathlib import Path
 
 import docx
@@ -90,7 +91,7 @@ PUBLIC_META = [
 ]
 
 INTERNAL_META = [
-    ("01_Sole_Member_Written_Consent_and_Manager_Authorization.docx", "sole-member-consent-manager-authorization", "01", "Sole Member Written Consent and Manager Authorization", "Corporate authority", "Authorizes investigation and professional engagement; does not authorize a public sale."),
+    ("01_Sole_Member_Written_Consent_and_Manager_Authorization.docx", "sole-stockholder-consent-director-authorization", "01", "Sole Stockholder Written Consent and Director Authorization", "Corporate authority", "Authorizes investigation and professional engagement; does not authorize a public sale."),
     ("02_Corporate_Issuer_and_Beneficial_Ownership_Profile.docx", "corporate-issuer-beneficial-ownership-profile", "02", "Corporate Issuer and Beneficial Ownership Profile", "Corporate authority", "Issuer identity, ownership, registered office and corporate-record certification inputs."),
     ("03_Instruction_and_Engagement_Letter_to_Regulatory_Counsel.docx", "instruction-engagement-regulatory-counsel", "03", "Instruction and Engagement Letter to Regulatory Counsel", "Corporate authority", "Scope of counsel engagement and information instructions for the TBC review."),
     ("04_TBC_Whitepaper.docx", "tbc-whitepaper-instrument", "04", "TBC Whitepaper — Project, Utility and Network Framework", "Token & economics", "The controlled whitepaper instrument covering utility, network architecture and release gates."),
@@ -154,6 +155,91 @@ def render_table(table: Table) -> str:
         rows.append("<tr>" + "".join(cells) + "</tr>")
     cls = "signature-table" if signature else "data-table"
     return f'<table class="{cls}"><tbody>{"".join(rows)}</tbody></table>'
+
+
+ENTITY_REPLACEMENTS = {
+    "TradingBible LLC": "TradingBible, Inc.",
+    "TradingBible, Inc..": "TradingBible, Inc.",
+    "LLC Conversion": "Corporate Conversion",
+    "Delaware file number: 10728395.": "Delaware, United States.",
+    "Delaware file number: 10728395": "Delaware, United States",
+    "TRADINGBIBLE LLC": "TRADINGBIBLE, INC.",
+    "TradingBible, LLC": "TradingBible, Inc.",
+    "a Delaware limited liability company": "a Delaware corporation",
+    "Delaware limited liability company": "Delaware corporation",
+    "Delaware manager-managed limited liability company": "Delaware corporation",
+    "Sole member and 100% beneficial owner": "Sole stockholder and 100% beneficial owner",
+    "Sole member and manager": "Sole stockholder and director",
+    "Sole member / finance": "Sole stockholder / finance",
+    "Sole member / counsel": "Sole stockholder / counsel",
+    "membership ledger": "stock ledger",
+    "Sole Member": "Sole Stockholder",
+    "sole member": "sole stockholder",
+    "Manager Authorization": "Director Authorization",
+    "manager-managed": "board-managed",
+    "membership interests": "shares of common stock",
+    "Operating Agreement": "Bylaws",
+    "operating agreement": "bylaws",
+    "Certificate of Formation": "Certificate of Incorporation",
+    "certificate of formation": "certificate of incorporation",
+    "Chief Executive Manager": "Chief Executive Officer",
+    "Certifying Manager": "Certifying Director",
+    "Manager (separate capacity, if required)": "Director (separate capacity, if required)",
+    "Manager: Malik Nlem": "Director: Malik Nlem",
+    "Sole Member / Certifying Manager": "Sole Stockholder / Certifying Director",
+    "Delaware file number 10728395": "Delaware, United States",
+    "Delaware file 10728395": "Delaware, United States",
+    "file 10728395": "Delaware, United States",
+    "formed August 10, 2026": "organized under the laws of the State of Delaware",
+    "Formation: August 10, 2026.": "Entity records on file.",
+    "EIN: 30-1505740 (confidential; disclose only to appropriate counterparties).": "EIN: on file (confidential; disclose only to appropriate counterparties).",
+    "Cannot be assumed from LLC registration": "Cannot be assumed from corporate registration",
+    "does not create Delaware LLC membership": "does not create Delaware stockholder rights",
+}
+
+
+def replace_in_docx(path: Path, replacements: dict[str, str]) -> None:
+    temporary = path.with_suffix(".rewrite.docx")
+    with zipfile.ZipFile(path, "r") as source_zip, zipfile.ZipFile(temporary, "w", zipfile.ZIP_DEFLATED) as target_zip:
+        for item in source_zip.infolist():
+            data = source_zip.read(item.filename)
+            if item.filename.startswith("word/") and item.filename.endswith(".xml"):
+                text = data.decode("utf-8")
+                for old, new in replacements.items():
+                    text = text.replace(old, new)
+                data = text.encode("utf-8")
+            target_zip.writestr(item, data)
+    temporary.replace(path)
+
+
+def normalize_docx_runs(path: Path, replacements: dict[str, str]) -> None:
+    document = docx.Document(str(path))
+
+    def fix_paragraph(paragraph) -> None:
+        if not paragraph.runs:
+            return
+        original = paragraph.text
+        updated = original
+        for old, new in replacements.items():
+            updated = updated.replace(old, new)
+        if updated != original:
+            paragraph.runs[0].text = updated
+            for run in paragraph.runs[1:]:
+                run.text = ""
+
+    def walk(container) -> None:
+        for paragraph in container.paragraphs:
+            fix_paragraph(paragraph)
+        for table in container.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    walk(cell)
+
+    walk(document)
+    for section in document.sections:
+        walk(section.header)
+        walk(section.footer)
+    document.save(str(path))
 
 
 def render_document(source: Path) -> str:
@@ -284,12 +370,14 @@ def main() -> None:
             _, slug, number, title, category, summary = match
             subtitle = "Corporate & digital asset governance · controlled instrument"
             status = "Draft — signature block open"
-        html_text = render_document(source)
         html_path = pdf_dir / f"{slug}.html"
         pdf_path = pdf_dir / f"{slug}.pdf"
         docx_path = docx_dir / f"{slug}.docx"
-        html_path.write_text(html_text, encoding="utf-8")
         shutil.copy2(source, docx_path)
+        replace_in_docx(docx_path, ENTITY_REPLACEMENTS)
+        normalize_docx_runs(docx_path, ENTITY_REPLACEMENTS)
+        html_text = render_document(docx_path)
+        html_path.write_text(html_text, encoding="utf-8")
         build_pdf(html_path, pdf_path)
         html_path.unlink(missing_ok=True)
         documents.append({
@@ -303,7 +391,7 @@ def main() -> None:
             "visibility": visibility,
             "classification": "Public summary" if visibility == "public" else "Confidential — internal / counsel",
             "version": "Corrected layout · October 2026",
-            "signatureFields": "Issuer representative + professional reviewer" if visibility == "public" else "Issuer / manager + reviewer / custodian (instrument-specific)",
+            "signatureFields": "Issuer representative + professional reviewer" if visibility == "public" else "Issuer / director + reviewer / custodian (instrument-specific)",
             "signatureStatus": "Open — not executed",
             "pdf": f"pdf/{slug}.pdf",
             "docx": f"docx/{slug}.docx",
@@ -314,7 +402,7 @@ def main() -> None:
 
     manifest = {
         "title": "TradingBible TBC controlled document library",
-        "issuer": "TradingBible LLC",
+        "issuer": "TradingBible, Inc.",
         "jurisdiction": "Delaware, United States",
         "updated": "October 2026",
         "source": "TBC corrected-layout and signature-field packages",

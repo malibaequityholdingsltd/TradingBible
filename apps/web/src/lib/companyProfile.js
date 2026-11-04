@@ -10,48 +10,48 @@ export const COMPANY_DEFAULTS = {
     name: 'TradingBible',
     shortName: 'TB',
     tagline: 'TradingBible',
-    formation: 'August 10, 2026 — TradingBible LLC is the SOLE company. No second entity.',
+    formation: 'TradingBible, Inc. is the official operating company. TradingBible Holdings, Inc. is its parent holding company.',
     mission: 'Empower traders and investors through transparent, data-driven market intelligence, advanced financial technology, trading analytics, risk management, and accessible education.',
     vision: 'Establish TradingBible as a globally recognized financial technology ecosystem connecting professional trading tools, brokerage infrastructure, market intelligence, digital assets, and investment technology.',
     purpose: 'Develop, own, operate, license, and commercialize lawful fintech platforms, software, analytical tools, educational products, data services, and related businesses — subject to applicable licenses.',
     voice: 'Professional, precise, research-driven, globally accessible, transparent about financial risks.',
     responseSLA: 'Team responds within one business day.',
-    officialDescription: 'TradingBible LLC is a Delaware-registered financial technology company developing an integrated ecosystem of professional trading intelligence, market analytics, financial education, and trading software. Website: https://tradingbible.app. Software and education do NOT constitute authorization to provide regulated brokerage, advisory, exchange, or custodial services.',
+    officialDescription: 'TradingBible, Inc. is a Delaware corporation developing an integrated ecosystem of professional trading intelligence, market analytics, financial education, and trading software. Website: https://tradingbible.app. Software and education do NOT constitute authorization to provide regulated brokerage, advisory, exchange, or custodial services.',
   },
   legal: {
-    legalName: 'TradingBible LLC',
-    form: 'Delaware limited liability company',
-    formed: 'August 10, 2026 (Certificate of Formation)',
-    ein: 'Issued — IRS EIN confirmation notice (CP575G).',
+    legalName: 'TradingBible, Inc.',
+    form: 'Delaware corporation',
+    formed: 'Delaware corporation — entity records on file.',
+    ein: 'On file — confidential; disclose only to authorized counterparties.',
     duns: 'D-U-N-S 14-997-6777 — VERIFIED.',
     naics: '511210',
-    agent: 'Delaware Registered Agent, Inc.',
-    holdingCompany: 'NOT FORMED — TradingBible Holdings, Inc. is ON HOLD. No second EIN, corporation, or conversion needed to keep building.',
-    licenseNote: 'Formation certificate, EIN, and D-U-N-S are business credentials — NONE is a brokerage license. No live client deposits until a licensed entity + banking + safeguarding exist.',
+    agent: 'Registered agent on file.',
+    holdingCompany: 'TradingBible Holdings, Inc. — parent holding company.',
+    licenseNote: 'Certificate of incorporation, EIN, and D-U-N-S are business credentials — NONE is a brokerage license. No live client deposits until a licensed entity + banking + safeguarding exist.',
     jurisdiction: 'England & Wales (Terms); U.S. retail forex $20M minimum adjusted net capital; Nigeria substance if managed from Nigeria; brokerage structure decided with U.S. + Nigerian counsel BEFORE onboarding.',
     liabilityCap: 'Greater of 12 months fees or USD 100.',
-    dataController: 'TradingBible LLC',
-    franchiseTax: 'Delaware LLC: $300 annual tax, due June 1 (not the corporate franchise-tax regime).',
-    records: 'Certificate of Formation, EIN notice, operating agreement, ownership records, registered-agent agreement, material contracts, accounting records, tax filings.',
-    taxNote: 'Cross-border Nigeria/US adviser required. Foreign-owned U.S. disregarded LLC may owe Form 5472 + pro forma 1120 even with no U.S. tax liability.',
-    fundraising: 'Distinguish issuing membership interests vs borrowing. NEVER advertise public shares or an IPO as already available.',
+    dataController: 'TradingBible, Inc.',
+    franchiseTax: 'Delaware corporate franchise tax applies; confirm current amount and due date with counsel.',
+    records: 'Certificate of incorporation, bylaws, EIN notice, stock ledger, ownership records, registered-agent agreement, material contracts, accounting records, tax filings.',
+    taxNote: 'Cross-border Nigeria/US adviser required. Corporate tax, transfer-pricing and foreign-owner reporting must be confirmed with counsel.',
+    fundraising: 'Distinguish issuing shares vs borrowing. NEVER advertise public shares or an IPO as already available.',
   },
   holdings: {
-    status: 'ON HOLD — TradingBible LLC remains the official operating company. Holdings is a future option, not a current entity.',
-    parent: 'TradingBible Holdings, Inc. — proposed only, NOT formed, no EIN, no conversion.',
+    status: 'ACTIVE — TradingBible Holdings, Inc. is the parent holding company; TradingBible, Inc. is the official operating company.',
+    parent: 'TradingBible Holdings, Inc. — parent holding company.',
     ticker: 'TB',
     tickerStatus: 'Proposed future ticker — NOT reserved, NOT approved. IPO is a long-term objective, not a guaranteed outcome.',
-    divisions: 'Product divisions & strategic initiatives under ONE LLC (NOT subsidiaries, NOT incorporated): TradingBible Terminal · Intelligence (research/SI/signals/education) · Prop (challenges/analytics) · Developer (APIs/SDKs/white-label) · Brokerage (FUTURE, regulated) · Coin (proposed TBC). Separate entities only later for regulators/investors/tax/risk.',
+    divisions: 'Product divisions & strategic initiatives under TradingBible, Inc. (NOT separate subsidiaries unless approved): TradingBible Terminal · Intelligence (research/SI/signals/education) · Prop (challenges/analytics) · Developer (APIs/SDKs/white-label) · Brokerage (FUTURE, regulated) · Coin (proposed TBC). Separate entities only later for regulators/investors/tax/risk.',
     coin: 'TBC — TradingBible Coin (proposed native asset)',
     coinStatus: 'Max 100,000,000 TBC. Cosmos SDK + CometBFT + Cosmos EVM. No routine minting past max. $50K = testnet budget target (not proof of funding). 90-day public testnet observation planned; mainnet conditional on legal/technical/security approvals. Any sale/staking/yield/listing needs jurisdiction-specific legal analysis. TBC IS NOT equity — never interchangeable with stock.',
-    control: 'No public shares exist. A future Delaware C-Corp may suit institutional investment later; do not create one now.',
+    control: 'No public shares exist. A future listing may be evaluated later; do not represent TB as listed.',
   },
   brand: {
     colors: 'Signature gold · midnight black · light gold · ivory. Gold #d4af37 · light #f4e6a8 · dark #a67c1e · bg #0a0a0f · card #0f0f14 · text #f0ecdd · muted #8a8577 · dim #6a665a.',
     logo: 'Official TB logo + separate TBC token symbol (supplied by founder). Rounded dark square, gold border/chevron + dot. Bundled /logos/tradingbible-logo.png + CDN fallback. Favicon set.',
     typography: 'system-ui stack; ui-monospace for numbers.',
     voice: 'Professional, precise, research-driven, globally accessible, transparent about financial risks.',
-    emailShell: 'Dark #07070a/#0b0b10, gold border, TradingBible header, footer TradingBible LLC · tradingbible.app, tagline: Trade like the 1%. Journal like a fund.',
+    emailShell: 'Dark #07070a/#0b0b10, gold border, TradingBible header, footer TradingBible, Inc. · tradingbible.app, tagline: Trade like the 1%. Journal like a fund.',
     socials: 'twitter.com/tradingbible · discord.gg/tradingbible · github.com/tradingbible (+ facebook/linkedin/instagram/youtube/tiktok @tradingbible in footer).',
     attribution: '“Charts by TradingBible” / “Powered by TradingBible” only if the charting IP is genuinely ours and third-party market-data attribution is satisfied.',
   },
@@ -96,13 +96,13 @@ export const COMPANY_DEFAULTS = {
     kyc: 'Passkeys · session management · KYC-gated profiles (frozen after verification) · suspend/close lifecycle · AML/KYC, sanctions screening, SoF, transaction monitoring, withdrawal approvals, reconciliation, complaint handling.',
     segregation: 'Separate operating money / regulatory capital / client funds / crypto assets. Client assets are never company funding.',
     credentials: 'Certificate + EIN + D-U-N-S are credentials, NOT licenses. Brokerage legal structure decided with counsel BEFORE onboarding or deposits.',
-    filings: 'U.S.: restructuring + audited financials + Form S-1 + prospectus + SEC review + exchange application + underwriting/pricing. Nigeria: issuer eligibility + SEC registration + NGX admission. Delaware LLC cannot assume direct NGX Growth listing.',
+    filings: 'U.S.: restructuring + audited financials + Form S-1 + prospectus + SEC review + exchange application + underwriting/pricing. Nigeria: issuer eligibility + SEC registration + NGX admission. TradingBible, Inc. is a Delaware corporation; a direct NGX Growth listing still requires issuer eligibility and regulatory approval.',
     readiness: 'Cap table · 3-yr projections · audited accounts · licenses · risk disclosures · IP records · material contracts · cybersecurity · litigation · governance · use of proceeds. Costs: brokerage $720K–$2.09M · IPO prep $1.1M–$4M + %.',
   },
   roadmap: {
-    phases: '1 LLC formation Completed → 2 IRS EIN Completed → 3 D-U-N-S Reported obtained → 4 Platform verification Requires current audit → 5 Revenue validation Figures pending → 6 Proprietary terminal Expansion roadmap → 7 Brokerage licensing Planned → 8 TBC testnet/mainnet Planned → 9 Institutional financing Future → 10 Restructuring/IPO Long-term.',
+    phases: '1 Corporate formation Completed → 2 IRS EIN Completed → 3 D-U-N-S Reported obtained → 4 Platform verification Requires current audit → 5 Revenue validation Figures pending → 6 Proprietary terminal Expansion roadmap → 7 Brokerage licensing Planned → 8 TBC testnet/mainnet Planned → 9 Institutional financing Future → 10 Restructuring/IPO Long-term.',
     first90: 'Days 1–30: verify records/ownership/tax, appoint counsel, commission licensing + IPO feasibility. Days 31–60: plan/model/capital/architecture + MT5/liquidity RFQs. Days 61–90: jurisdiction shortlist + vendor quotes + prototype scope + funding/governance plan.',
-    nextPriorities: 'Verify operational + financial records · meet tax/compliance (Delaware $300/yr Jun 1; 5472/1120 if applicable) · strengthen proprietary tech · decide which regulated line to pursue first.',
+    nextPriorities: 'Verify operational + financial records · meet tax/compliance (Delaware corporate franchise tax; cross-border review) · strengthen proprietary tech · decide which regulated line to pursue first.',
     strategy: 'Regulated brokerage + proprietary tech (licensing/market-data/enterprise), not commissions alone. IPO is a milestone earned via performance, not a launch prerequisite. Blueprint is a working master plan — verify all claims before banks/regulators/investors.',
   },
 };
@@ -132,9 +132,18 @@ function readLS() {
   return null;
 }
 
+const LEGACY_COMPANY_COPY = /\bLLC\b|limited liability|ON HOLD|not formed|not yet formed|sole company|sole legal entity|formed August 10, 2026|Delaware LLC|membership interests|operating agreement/i;
+
 function mergeOverDefaults(stored) {
   const merged = {};
-  for (const k of Object.keys(COMPANY_DEFAULTS)) merged[k] = { ...COMPANY_DEFAULTS[k], ...((stored && stored[k]) || {}) };
+  for (const k of Object.keys(COMPANY_DEFAULTS)) {
+    merged[k] = { ...COMPANY_DEFAULTS[k] };
+    for (const [field, fallback] of Object.entries(COMPANY_DEFAULTS[k])) {
+      const value = stored?.[k]?.[field];
+      if (typeof value === 'string' && LEGACY_COMPANY_COPY.test(value)) continue;
+      merged[k][field] = value !== undefined && value !== null && value !== '' ? value : fallback;
+    }
+  }
   return merged;
 }
 
@@ -179,8 +188,9 @@ export async function loadCompanyProfile() {
 
 // Save: API first, direct Supabase upsert second. Throws only when both fail.
 export async function saveCompanyProfile(next) {
+  const sanitized = mergeOverDefaults(next);
   const config = {};
-  for (const k of Object.keys(COMPANY_DEFAULTS)) config[k] = (next && next[k] && typeof next[k] === 'object') ? next[k] : COMPANY_DEFAULTS[k];
+  for (const k of Object.keys(COMPANY_DEFAULTS)) config[k] = sanitized[k];
   let apiErr = null;
   try {
     const res = await fetch(`${API_SERVER_URL}/admin/company`, {
@@ -210,8 +220,7 @@ export async function saveCompanyProfile(next) {
 }
 
 export function buildContextText(c) {
-  const d = {};
-  for (const k of Object.keys(COMPANY_DEFAULTS)) d[k] = { ...COMPANY_DEFAULTS[k], ...((c && c[k]) || {}) };
+  const d = mergeOverDefaults(c);
   const pick = (o) => Object.entries(o || {}).map(([k, v]) => `${k}: ${v}`).join(' | ');
   return [
     `Identity — ${pick(d.identity)}`,

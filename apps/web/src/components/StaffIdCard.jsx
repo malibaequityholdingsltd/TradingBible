@@ -270,7 +270,7 @@ function MicroFooter({ right = 'FORM TB-1 · USA' }) {
       }}
     >
       <div style={{ fontFamily: FONT, fontSize: 9, letterSpacing: 0.5, color: '#c9b77c', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-        TradingBible LLC · Delaware, USA
+        TradingBible, Inc. · Delaware, USA
       </div>
       <div style={{ fontFamily: DISPLAY, fontSize: 9, fontWeight: 700, letterSpacing: 0.5, color: GOLD_LIGHT, whiteSpace: 'nowrap', paddingLeft: 8 }}>
         {right}
@@ -334,7 +334,7 @@ function Front({ staff, bioUrl }) {
             </div>
           </div>
           <div style={{ textAlign: 'right', lineHeight: 1.5, flexShrink: 0 }}>
-            <div style={{ fontFamily: DISPLAY, fontSize: 10, fontWeight: 700, color: '#e6dfcc', whiteSpace: 'nowrap' }}>TradingBible LLC · Delaware</div>
+            <div style={{ fontFamily: DISPLAY, fontSize: 10, fontWeight: 700, color: '#e6dfcc', whiteSpace: 'nowrap' }}>TradingBible, Inc. · Delaware</div>
             <div style={{ fontFamily: DISPLAY, fontSize: 8, fontWeight: 700, color: GOLD_LIGHT, letterSpacing: 0.7, whiteSpace: 'nowrap' }}>TRADINGBIBLE.APP</div>
           </div>
         </div>
@@ -484,7 +484,7 @@ function Back({ staff, bioUrl }) {
       {/* return-to block */}
       <div style={{ position: 'absolute', left: 14, top: 140, width: 330 }}>
         <Label size={12}>If found, please return to</Label>
-        <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: '#ffffff' }}>TradingBible LLC</div>
+        <div style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 800, color: '#ffffff' }}>TradingBible, Inc.</div>
         <div style={{ fontSize: 11.5, fontWeight: 600, color: '#cfc6b0', marginTop: 1.5 }}>Delaware, United States</div>
         <div style={{ fontSize: 11.5, fontWeight: 600, color: '#cfc6b0', marginTop: 1.5 }}>support@tradingbible.app · tradingbible.app</div>
       </div>
@@ -524,7 +524,7 @@ function Back({ staff, bioUrl }) {
 
       {/* fine print — short, readable, and not competing with the footer */}
       <div style={{ position: 'absolute', left: 14, top: 330, width: 330, fontSize: 10.5, lineHeight: 1.45, color: '#cfc6b0', fontWeight: 600 }}>
-        Property of TradingBible LLC. Return on request.<br />
+        Property of TradingBible, Inc. Return on request.<br />
         Not a government-issued ID.
       </div>
 

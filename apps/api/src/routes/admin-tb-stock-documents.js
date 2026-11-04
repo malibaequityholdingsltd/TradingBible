@@ -68,8 +68,8 @@ router.get('/', supabaseAuth, async (req, res, next) => {
 		const documents = publicTbStockDocuments.map(toAdminTbStockDocument);
 		res.setHeader('Cache-Control', 'private, no-store');
 		res.json({
-			issuer: 'TradingBible LLC',
-			proposedIssuer: 'TradingBible, Inc.',
+			issuer: 'TradingBible, Inc.',
+			parentCompany: 'TradingBible Holdings, Inc.',
 			ticker: 'TB',
 			jurisdiction: 'Delaware, United States',
 			updated: 'October 2026',

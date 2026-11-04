@@ -387,7 +387,7 @@ function Whitepaper({ whitepaper, docsLoading, onRead }) {
           <Card className="p-4">
             <SectionHead icon={Coins} title="At a glance" />
             {[
-              ['Issuer', 'TradingBible LLC'],
+              ['Issuer', 'TradingBible, Inc.'],
               ['Jurisdiction', 'Delaware, United States'],
               ['Proposed supply', TBC_PROPOSAL.supplyLabel],
               ['Status', 'Proposal — not issued'],
@@ -497,7 +497,7 @@ function Purchases() {
       <div className="pt-3 sm:pt-5">
         <PageHero kickerIcon={Lock} kicker="Purchase controls" title="Designed now," accent="disabled until authorized" subtitle="The eight-step journey is documented so the controls can be built and tested. Payment collection remains off until legal, compliance, custody, payment provider, refund and launch requirements are satisfied." actions={<GoldButton to="/tbc/eligibility">Check eligibility <ArrowRight className="h-4 w-4" /></GoldButton>} />
       </div>
-      <div className="mt-4 rounded-[10px] border border-red-400/20 bg-red-400/[0.06] px-4 py-3 text-xs leading-relaxed text-[#e9c4c4]"><span className="font-bold text-red-300">Sale disabled.</span> No TBC purchase is possible on this website. Anyone offering a TBC sale, presale, allocation or guaranteed return is not authorized by TradingBible LLC.</div>
+      <div className="mt-4 rounded-[10px] border border-red-400/20 bg-red-400/[0.06] px-4 py-3 text-xs leading-relaxed text-[#e9c4c4]"><span className="font-bold text-red-300">Sale disabled.</span> No TBC purchase is possible on this website. Anyone offering a TBC sale, presale, allocation or guaranteed return is not authorized by TradingBible, Inc.</div>
       <div className="mt-5 grid gap-4 lg:grid-cols-[1.1fr_.9fr]">
         <Card className="p-4 sm:p-5"><SectionHead icon={Workflow} title="Proposed purchaser journey" sub="Each step is a control, not a guarantee that the next exists." /><div className="space-y-2">{TBC_PURCHASE_STEPS.map((step) => <div key={step.n} className="flex items-start gap-3 rounded-lg border border-white/[0.06] bg-black/20 p-3"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[#d4af37]/20 bg-[#d4af37]/[0.07] font-mono text-[10px] font-bold text-[#d4af37]">{step.n}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-1.5"><span className="text-xs font-bold text-[#f0ecdd]">{step.title}</span><Pill status={step.status} /></div><p className="mt-0.5 text-[11px] text-[#8a8577]">{step.body}</p></div></div>)}</div></Card>
         <div className="space-y-3">

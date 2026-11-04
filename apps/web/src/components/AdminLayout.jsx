@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Settings, FileText, CreditCard, IdCard, LibraryBig, BarChart3,
   LogOut, Menu, Search, Shield, X, Plug, Key, Package, User, ChevronDown, ChevronRight, MonitorPlay, Briefcase, Gift,
-  Wallet, UserRound, Building2, Coins, Command, ShieldCheck, Landmark,
+  Wallet, UserRound, Building2, Coins, Command, ShieldCheck, Landmark, FileCheck2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import pb from '@/lib/pocketbaseClient';
@@ -72,6 +72,7 @@ const NAV_GROUPS = [
     items: [
       { to: '/admin/equity', label: 'Equity administration', icon: Landmark },
       { to: '/admin/investor-relations', label: 'Investor relations', icon: FileText },
+      { to: '/admin/tb-stock-documents', label: 'TB stock documents', icon: FileCheck2 },
     ],
   },
   {
@@ -267,7 +268,7 @@ function AdminLayoutContent({ children, title }) {
   );
 
   return (
-    <div className="at-shell tb-admin-shell min-h-screen bg-transparent pt-[var(--header-h)] tabular-nums antialiased">
+    <div className="at-shell tb-admin-shell adm-console min-h-screen bg-transparent pt-[var(--header-h)] tabular-nums antialiased">
       {/* Desktop keeps the persistent operator rail. Phones never render a
           side rail: navigation lives in the header search and the bottom
           More sheet, matching the trader app. */}
@@ -283,7 +284,7 @@ function AdminLayoutContent({ children, title }) {
                 src={TRADINGBIBLE_LOGO}
                 alt=""
                 aria-hidden
-                className="h-8 w-8 shrink-0 rounded-[10px] border border-[var(--at-line-soft)] bg-[var(--at-gold-soft)] object-contain sm:hidden"
+                className="h-10 w-10 shrink-0 rounded-[11px] border border-[var(--at-line-soft)] bg-[var(--at-gold-soft)] object-contain sm:hidden"
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
               <div className="min-w-0">

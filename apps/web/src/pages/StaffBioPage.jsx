@@ -56,7 +56,7 @@ function VirtualCard({ staff }) {
     <section className="relative overflow-hidden rounded-3xl border border-[#d4af37]/30 bg-[#0a0a10] shadow-[0_30px_90px_-45px_rgba(212,175,55,0.45)]">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-[#d4af37]/20 bg-[#06060a] px-4 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-[#d6c47a] sm:px-6 sm:text-[10px]">
         <span>★ United States of America ★</span>
-        <span>TradingBible LLC · Delaware</span>
+        <span>TradingBible, Inc. · Delaware</span>
       </div>
 
       <div className="relative overflow-hidden border-b border-[#d4af37]/20 bg-[linear-gradient(120deg,#141207_0%,#0b0b11_55%,#09090e_100%)] px-4 py-4 sm:px-6">
@@ -108,7 +108,7 @@ function VirtualCard({ staff }) {
           <div className="text-[9px] font-bold uppercase tracking-[0.22em] text-[#6a665a]">Name</div>
           <h1 className="mt-0.5 font-display text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">{staff.name}</h1>
           <div className="mt-1 text-base font-semibold text-[#d4af37]">{staff.title || 'TradingBible team'}</div>
-          <div className="mt-0.5 text-xs text-[#8a8577]">{staff.department ? `${staff.department} · ` : ''}TradingBible LLC</div>
+          <div className="mt-0.5 text-xs text-[#8a8577]">{staff.department ? `${staff.department} · ` : ''}TradingBible, Inc.</div>
 
           <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-left sm:grid-cols-4">
             <Fact label="Employee no." value={staff.employeeId || '—'} mono />
@@ -131,7 +131,7 @@ function VirtualCard({ staff }) {
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-[#d4af37]/15 bg-[#06060a] px-4 py-2.5 text-[9px] font-bold uppercase tracking-[0.16em] text-[#5c584c] sm:px-6">
         <span className="inline-flex items-center gap-1.5">
-          <Building2 className="h-3 w-3 text-[#d4af37]" /> TradingBible LLC · Delaware, USA
+          <Building2 className="h-3 w-3 text-[#d4af37]" /> TradingBible, Inc. · Delaware, USA
         </span>
         <span className="text-[#8a7a3a]">tradingbible.app · employee profile</span>
       </div>
@@ -216,7 +216,7 @@ export default function StaffBioPage() {
         {!loading && (error || !staff) && (
           <div className="mx-auto max-w-lg overflow-hidden rounded-3xl border border-[#d4af37]/20 bg-[#0b0b10] text-center">
             <div className="border-b border-[#d4af37]/15 bg-[#06060a] px-5 py-2.5 text-[9px] font-bold uppercase tracking-[0.22em] text-[#8a7a3a]">
-              ★ TradingBible LLC · Delaware ★
+              ★ TradingBible, Inc. · Delaware ★
             </div>
             <div className="p-8 sm:p-10">
               <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl border border-[#d4af37]/20 bg-[#d4af37]/[0.06]">
@@ -309,7 +309,7 @@ export default function StaffBioPage() {
             </section>
 
             <p className="pb-3 text-center text-[11px] leading-relaxed text-[#5c584c]">
-              This digital card opens from the QR code on a TradingBible LLC employee ID.
+              This digital card opens from the QR code on a TradingBible, Inc. employee ID.
               “Verified staff” has been confirmed by TradingBible administration.
             </p>
           </div>

@@ -279,8 +279,9 @@ export async function getPublicOverview() {
       volume: 'Not available',
       shareTrading: 'Not active',
       dataLicensing: 'Not active',
-      currentEntity: 'TradingBible LLC',
-      proposedIssuer: 'TradingBible, Inc.',
+      currentEntity: 'TradingBible, Inc.',
+      issuer: 'TradingBible, Inc.',
+      parentCompany: 'TradingBible Holdings, Inc.',
     },
     announcements: announcements.rows.map(publicAnnouncement),
     documents: documents.rows.map(publicDocument),
@@ -1576,7 +1577,7 @@ export async function createInvestorContact(body = {}) {
 export async function investorAssistantContext() {
   const overview = await getPublicOverview();
   const lines = [
-    'Issuer: TradingBible LLC (current operating entity). Proposed public issuer: TradingBible, Inc. (not yet formed).',
+    'Issuer: TradingBible, Inc. (official operating company). Parent: TradingBible Holdings, Inc.',
     'Proposed ticker: TB. Target exchange: Nasdaq. Status: pre-IPO, not publicly traded. No stock price, market capitalization, volume or order book is available.',
     'TB is equity (proposed). TBC is a separate proposed blockchain asset. TBC does not represent equity or ownership in TradingBible.',
     `IPO readiness: ${overview.ipo.complete} of ${overview.ipo.total} milestones complete; ${overview.ipo.inProgress} in progress; ${overview.ipo.blocked} blocked.`,
@@ -1612,10 +1613,10 @@ export function investorAssistantFallback(question, overview) {
     return 'TBC is a separate proposed blockchain asset. It does not represent equity, shares or ownership in TradingBible, and its supply, balances and risks are not combined with TB equity. No TBC sale or transfer is active.';
   }
   if (/\b(publicly traded|publicly listed|listed|listing|exchange|ticker|stock market)\b/.test(q)) {
-    return 'TB is a proposed future ticker. It is not publicly traded, and no shares can be bought or sold through TradingBible. TradingBible LLC is the current operating entity; TradingBible, Inc. is a proposed issuer that has not been formed. No share price, market capitalisation, volume, Nasdaq approval or regulatory approval is available.';
+    return 'TB is a proposed future ticker. It is not publicly traded, and no shares can be bought or sold through TradingBible. TradingBible, Inc. is the official operating company; TradingBible Holdings, Inc. is the parent holding company. No share price, market capitalisation, volume, Nasdaq approval or regulatory approval is available because TB is not publicly traded.';
   }
   if (/\b(inc\b|llc|entity|issuer|formed|incorporat)\b/.test(q)) {
-    return 'TradingBible LLC is the current operating entity. TradingBible, Inc. is a proposed issuer that has not yet been formed. No shares have been issued by the proposed entity, and it has no Nasdaq listing or registration statement.';
+    return 'TradingBible, Inc. is the official operating company; TradingBible Holdings, Inc. is the parent holding company. TB is not publicly traded and has no Nasdaq listing or registration statement.';
   }
   if (/\b(ipo|nasdaq|milestone)\b/.test(q)) {
     return `IPO preparation is not complete. ${overview.ipo.complete} of ${overview.ipo.total} milestones are complete, ${overview.ipo.inProgress} are in progress and ${overview.ipo.blocked} are blocked. No Nasdaq listing or regulatory approval is implied.`;

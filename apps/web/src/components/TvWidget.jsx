@@ -57,7 +57,7 @@ function dockClear() {
   const clearance = measureNavClearance();
   // Err on the side of clearing the taller dock when no nav is measurable
   // yet (for example during the first paint or a tablet breakpoint swap).
-  return clearance > 0 ? clearance : 96;
+  return (clearance > 0 ? clearance : 16) + 10;
 }
 
 function clampPanelPos(x, y, panelW, panelH) {

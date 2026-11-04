@@ -5,7 +5,7 @@
 export function measureNavClearance() {
   if (typeof window === 'undefined') return 0;
   let clearance = 0;
-  for (const el of document.querySelectorAll('.tb-dock, .app-nav-footer')) {
+  for (const el of document.querySelectorAll('.tb-dock, .ex-mobile-dock, .app-nav-footer')) {
     const rect = el.getBoundingClientRect();
     if (rect.height > 0 && rect.width > 0) {
       clearance = Math.max(clearance, window.innerHeight - rect.top);
@@ -36,7 +36,7 @@ export function watchNavClearance(callback) {
     : null;
   const observeNavs = () => {
     if (!observer) return;
-    for (const el of document.querySelectorAll('.tb-dock, .app-nav-footer')) {
+    for (const el of document.querySelectorAll('.tb-dock, .ex-mobile-dock, .app-nav-footer')) {
       if (observed.has(el)) continue;
       observed.add(el);
       observer.observe(el);

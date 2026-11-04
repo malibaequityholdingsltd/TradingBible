@@ -139,7 +139,7 @@ export default function Footer({ compact = false }) {
                 </span>
               </Link>
               <span className="hidden h-4 w-px bg-[var(--at-line-soft)] sm:block" />
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)]">TradingBible LLC · Delaware</span>
+              <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)]">TradingBible Holdings, Inc. · Operated by TradingBible, Inc.</span>
             </div>
             <nav aria-label="Capital and investor relations" className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
               {links.map(([label, to]) => (
@@ -153,7 +153,7 @@ export default function Footer({ compact = false }) {
             </p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] text-[var(--at-mut)]">
               {settings.supportEmail && <a href={`mailto:${settings.supportEmail}`} className="transition hover:text-[var(--at-gold)]">{settings.supportEmail}</a>}
-              <span>© {new Date().getFullYear()} TradingBible LLC · {t('fot.rights')}</span>
+              <span>© {new Date().getFullYear()} TradingBible Holdings, Inc. · {t('fot.rights')}</span>
             </div>
           </div>
         </div>
@@ -184,8 +184,8 @@ export default function Footer({ compact = false }) {
             <div className="mt-4 flex items-start gap-3">
               <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-10 w-10 shrink-0 rounded-[10px] border border-[var(--at-line)] bg-[var(--at-panel)] object-contain p-0.5" />
               <p className="text-xs leading-relaxed text-[var(--at-mut-2)]">
-                TradingBible is owned and operated by <span className="font-semibold text-[var(--at-ink-2)]">TradingBible LLC</span>.
-                <br />Registered in Delaware, USA. c/o Delaware Registered Agent, Inc.
+                TradingBible is owned by <span className="font-semibold text-[var(--at-ink-2)]">TradingBible Holdings, Inc.</span> and operated by <span className="font-semibold text-[var(--at-ink-2)]">TradingBible, Inc.</span>.
+                <br />Registered in Delaware, USA.
                 <br />{t('fot.mission')}
               </p>
             </div>
@@ -301,7 +301,7 @@ export default function Footer({ compact = false }) {
               <a href={`mailto:${settings.supportEmail}`} className="transition hover:text-[var(--at-ink)]">{settings.supportEmail}</a>
             )}
           </div>
-          <div>© {new Date().getFullYear()} TradingBible LLC · {t('fot.rights')}</div>
+          <div>© {new Date().getFullYear()} TradingBible Holdings, Inc. · {t('fot.rights')}</div>
         </div>
       </div>
     </footer>

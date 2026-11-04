@@ -86,8 +86,9 @@ router.get('/public/overview', async (req, res, next) => {
     res.json({
       ok: true,
       issuer: {
-        currentEntity: 'TradingBible LLC',
-        proposedIssuer: 'TradingBible, Inc.',
+        currentEntity: 'TradingBible, Inc.',
+        issuer: 'TradingBible, Inc.',
+        parentCompany: 'TradingBible Holdings, Inc.',
         jurisdiction: 'Delaware, United States',
         proposedTicker: 'TB',
         targetExchange: 'Nasdaq',
@@ -119,7 +120,7 @@ router.post('/assistant', assistantLimit, async (req, res, next) => {
       'If the context does not contain the answer, say that the information is not published and direct the person to the IR contact form.',
       'Never invent a share price, market capitalisation, volume, listing status, financial result, shareholder allocation, regulatory approval or date.',
       'TB is a proposed future ticker and is not publicly traded. No Nasdaq listing or application is approved.',
-      'TradingBible LLC is the current operating entity. TradingBible, Inc. is a proposed issuer that has not been formed. Never state or imply that TradingBible, Inc. currently exists, has issued shares, or has filed a registration statement.',
+      'TradingBible, Inc. is the official operating company and issuer. TradingBible Holdings, Inc. is the parent holding company. Never state or imply that TB is publicly traded or that any public share offering, listing approval or registration statement is complete.',
       'TB equity and TBC are separate. TBC does not represent equity or ownership in TradingBible.',
       'Never give investment advice, a recommendation, a valuation, a forecast or a guarantee of returns.',
       'Never reveal confidential shareholder records, personal data, internal notes or security details.',

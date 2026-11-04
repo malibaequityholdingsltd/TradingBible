@@ -12,8 +12,8 @@ export const tbStockDocuments = Array.isArray(manifest.documents) ? manifest.doc
 export const publicTbStockDocuments = tbStockDocuments.filter((doc) => doc.visibility === 'public');
 export const tbStockLibraryMeta = {
 	title: manifest.title || 'TradingBible TB stock document library',
-	issuer: manifest.issuer || 'TradingBible LLC',
-	proposedIssuer: manifest.proposedIssuer || 'TradingBible, Inc.',
+	issuer: manifest.issuer || 'TradingBible, Inc.',
+	parentCompany: manifest.parentCompany || 'TradingBible Holdings, Inc.',
 	ticker: manifest.ticker || 'TB',
 	tickerStatus: manifest.tickerStatus || 'Proposed — not reserved or approved',
 	jurisdiction: manifest.jurisdiction || 'Delaware, United States',

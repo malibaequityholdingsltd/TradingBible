@@ -4565,8 +4565,8 @@ export function AdminSettings() {
 // plus live visual previews (swatches, plan cards, timeline, TB-vs-TBC).
 const COMPANY_SECTIONS_UI = [
   { id: 'identity', label: 'Identity', icon: Fingerprint, blurb: 'Name, mission, vision, voice — who TradingBible is and how it speaks.' },
-  { id: 'legal', label: 'Legal & Entity', icon: Landmark, blurb: 'Delaware LLC reality: formation, agent, DUNS, licence limits, liability.' },
-  { id: 'holdings', label: 'Holdings · TB / TBC', icon: Building2, blurb: 'Proposed parent, requested ticker, and the binding TB ≠ TBC distinction.' },
+  { id: 'legal', label: 'Legal & Entity', icon: Landmark, blurb: 'Delaware corporate reality: formation, agent, DUNS, licence limits, liability.' },
+  { id: 'holdings', label: 'Holdings · TB / TBC', icon: Building2, blurb: 'Parent holding company, official operator, requested ticker, and the binding TB ≠ TBC distinction.' },
   { id: 'brand', label: 'Brand System', icon: Palette, blurb: 'Colors, logo, typography, email shell, socials — the full look.' },
   { id: 'contacts', label: 'Contacts', icon: Mail, blurb: 'Website and every official inbox.' },
   { id: 'leadership', label: 'Leadership', icon: Users, blurb: 'Founder, VP, quant, team profile, adviser stance.' },

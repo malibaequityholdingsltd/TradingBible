@@ -108,10 +108,10 @@ const NAV_GROUPS = [
 ];
 
 const DOCK = [
-  { to: '/app', labelKey: 'nav.dashboard', icon: LayoutDashboard, end: true },
-  { to: '/app/signals', labelKey: 'nav.signals', icon: Radar },
   { to: '/app/terminal-pro', labelKey: 'nav.terminalPro', icon: SquareTerminal },
   { to: '/app/wallet', labelKey: 'nav.wallet', icon: Wallet, requiresSubscriber: true },
+  { to: '/app', labelKey: 'nav.dashboard', icon: LayoutDashboard, end: true, center: true },
+  { to: '/app/challenges', labelKey: 'nav.challenges', icon: Trophy },
 ];
 
 function SidebarBrand({ homeTo, collapsed, onToggle }) {
@@ -475,15 +475,17 @@ function AppLayoutContent({ children, title }) {
         </div>
       </main>
 
+      <div className="ex-mobile-dockfade" aria-hidden />
       <nav className="ex-mobile-dock" aria-label="App sections">
         {dockItems.map((item) => {
           const Icon = item.icon;
           const label = t(item.labelKey, null, item.labelKey);
+          const className = (active) => `ex-mobile-dock__item${item.center ? ' ex-mobile-dock__item--hero' : ''}${active ? ' is-active' : ''}`;
           if (item.locked) {
             return (
-              <button key={item.to} type="button" onClick={goPricing} className="ex-mobile-dock__item is-locked" aria-label={`${label} — upgrade required`}>
-                <Icon aria-hidden />
-                <span>{label}</span>
+              <button key={item.to} type="button" onClick={goPricing} className={`${className(false)} is-locked`} aria-label={`${label} — upgrade required`}>
+                <span className={item.center ? 'ex-mobile-dock__orb' : ''}><Icon aria-hidden /></span>
+                <span className="ex-mobile-dock__label">{label}</span>
               </button>
             );
           }
@@ -492,10 +494,10 @@ function AppLayoutContent({ children, title }) {
               key={item.to}
               to={item.to}
               end={item.end}
-              className={({ isActive: active }) => `ex-mobile-dock__item${active ? ' is-active' : ''}`}
+              className={({ isActive: active }) => className(active)}
             >
-              <Icon aria-hidden />
-              <span>{label}</span>
+              {item.center ? <span className="ex-mobile-dock__orb"><Icon aria-hidden /></span> : <Icon aria-hidden />}
+              <span className="ex-mobile-dock__label">{label}</span>
             </NavLink>
           );
         })}
@@ -507,7 +509,7 @@ function AppLayoutContent({ children, title }) {
           aria-expanded={moreOpen}
         >
           <Menu aria-hidden />
-          <span>More</span>
+          <span className="ex-mobile-dock__label">More</span>
         </button>
       </nav>
 

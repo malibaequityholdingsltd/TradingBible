@@ -3,9 +3,10 @@
 // an allocation, a regulatory approval or a promise that a listing will occur.
 
 export const TB_ISSUER = {
-  currentEntity: 'TradingBible LLC',
-  proposedIssuer: 'TradingBible, Inc.',
-  structure: 'Proposed Delaware C-Corporation',
+  currentEntity: 'TradingBible, Inc.',
+  issuer: 'TradingBible, Inc.',
+  parentCompany: 'TradingBible Holdings, Inc.',
+  structure: 'Delaware corporation',
   jurisdiction: 'Delaware, United States',
   ticker: 'TB',
   tickerStatus: 'Proposed — not reserved or approved',
@@ -80,9 +81,9 @@ export const TB_SEPARATION = [
 export const TB_LEADERSHIP = [
   {
     name: 'Malik Nlem',
-    role: 'Founder & Chief Executive Manager',
+    role: 'Founder & Chief Executive Officer',
     focus: 'Strategy, capital formation and corporate development.',
-    note: 'Serving in the current LLC structure.',
+    note: 'Serving in the current corporate structure.',
   },
   {
     name: 'TradingBible leadership',
@@ -95,7 +96,7 @@ export const TB_LEADERSHIP = [
 export const TB_GOVERNANCE = [
   {
     title: 'Current structure',
-    body: 'TradingBible LLC is the current operating entity. TradingBible, Inc. is a proposed Delaware C-Corporation and has not been presented as formed.',
+    body: 'TradingBible, Inc. is the official operating company; TradingBible Holdings, Inc. is the parent holding company. TB is not publicly traded.',
     status: 'Current',
     tone: 'gold',
   },

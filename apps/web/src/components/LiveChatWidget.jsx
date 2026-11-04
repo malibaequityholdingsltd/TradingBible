@@ -160,7 +160,7 @@ export default function LiveChatWidget() {
   // Sit exactly on the top edge of the live nav bar. navClear is measured
   // from the viewport bottom to the nav's top edge; adding MARGIN here is
   // what previously left the launcher visibly floating above the line.
-  const navBottom = navClear > 0 ? navClear : 82;
+  const navBottom = (navClear > 0 ? navClear : 16) + 10;
   const launcherBottom = navBottom;
   const panelBottom = navBottom;
 

@@ -161,7 +161,7 @@ function Nav({ homeTo, isAuthed, platformName }) {
     <header className={`landing-header fixed inset-x-0 top-[var(--header-h)] z-40 ${scrolled ? 'shadow-xl' : ''}`}>
       <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6">
         <Link to={homeTo} onClick={close} className="flex min-w-0 shrink-0 items-center gap-2.5">
-          <img src={LOGO} alt={`${brand} logo`} className="h-9 w-9 shrink-0 rounded-xl object-contain gold-glow sm:h-10 sm:w-10" />
+          <img src={LOGO} alt={`${brand} logo`} className="h-10 w-10 shrink-0 rounded-xl object-contain gold-glow sm:h-11 sm:w-11" />
           <BrandName name={brand} className="landing-word hidden truncate text-xl font-extrabold tracking-tight sm:inline sm:text-2xl" />
         </Link>
 
@@ -270,7 +270,7 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = React.useState(0);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-transparent text-[#e9e7df]">
+    <div className="landing-page relative min-h-screen overflow-hidden bg-transparent text-[#e9e7df]">
       <Nav homeTo={homeTo} isAuthed={isAuthed} platformName={settings.platformName} />
 
       <section className="relative overflow-hidden pb-10 pt-[calc(8.5rem+var(--safe-top))] sm:pb-14 sm:pt-[calc(10rem+var(--safe-top))]">
@@ -444,7 +444,7 @@ export default function LandingPage() {
                 ))}
               </div>
               <p className="mt-4 text-[10px] leading-relaxed text-[#8a8577]">
-                TradingBible LLC is the current operating entity. TradingBible, Inc. is a proposed issuer. TB is a proposed ticker, not a reserved or approved listing.
+                TradingBible, Inc. is the official operating company. TradingBible Holdings, Inc. is the parent holding company. TB is a proposed ticker, not a reserved or approved listing.
               </p>
             </div>
             <div className="grid gap-2.5 sm:grid-cols-2">

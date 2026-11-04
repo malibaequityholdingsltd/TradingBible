@@ -14,17 +14,31 @@ const IMPACT_DOT = { high: 'bg-red-500', medium: 'bg-amber-500', low: 'bg-slate-
 
 const fmt = (n) => n == null ? '—' : Math.abs(n) >= 1000 ? n.toLocaleString('en-US', { maximumFractionDigits: 0 }) : Math.abs(n) >= 1 ? n.toFixed(2) : n.toFixed(4);
 
-function WidgetShell({ icon: Icon, title, to, children }) {
+function WidgetShell({ icon: Icon, title, to, action, children }) {
   const { t } = useI18n();
   return (
-    <div className="glass rounded-2xl p-4 sm:p-5">
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2"><Icon className="h-4 w-4 text-[#d4af37]" /><h3 className="font-semibold text-[#f0ecdd]">{title}</h3></div>
-        <Link to={to} className="flex items-center gap-1 text-xs text-[#d4af37] hover:underline">{t('wdg.open')} <ArrowRight className="h-3.5 w-3.5" /></Link>
+    <section className="ex-card ex-widget">
+      <div className="ex-card-head">
+        <div className="flex min-w-0 items-center gap-2">
+          <Icon className="h-4 w-4 shrink-0 text-[var(--ex-accent)]" />
+          <h3 className="ex-card-title truncate">{title}</h3>
+        </div>
+        <Link to={to} className="ex-btn ex-btn--ghost ex-btn--sm shrink-0">
+          {t('wdg.open', null, 'Open')} <ArrowRight />
+        </Link>
       </div>
-      {children}
-    </div>
+      <div className="ex-widget__body">{children}</div>
+      <div className="ex-widget__footer">
+        <Link to={to} className="ex-btn ex-btn--secondary ex-btn--sm">
+          {action || t('wdg.open', null, 'Open')}
+        </Link>
+      </div>
+    </section>
   );
+}
+
+function EmptyWidget({ text }) {
+  return <p className="py-8 text-center text-[11px] text-[var(--ex-muted)]">{text}</p>;
 }
 
 function WatchlistWidget() {
@@ -34,15 +48,24 @@ function WatchlistWidget() {
   const symbols = useMemo(() => (Array.isArray(list?.symbols) ? list.symbols.slice(0, 6) : []), [list]);
   const { quotes } = useQuotes(symbols);
   return (
-    <WidgetShell icon={Star} title={list ? list.name : t('wdg.watchlist')} to="/app/watchlists">
-      {symbols.length === 0 ? <p className="py-6 text-center text-xs text-[#8a8577]">{t('wdg.createWl')}</p> : (
-        <div className="space-y-1.5">
-          {symbols.map((s) => { const sym = txt(s, ''); const q = quotes[sym]; const chg = numOrNull(q?.changePercent); const pos = (chg ?? 0) >= 0; return (
-            <div key={sym || s} className="flex items-center justify-between text-sm">
-              <span className="font-mono text-[#e9e7df]">{sym || '—'}</span>
-              <span className="flex items-center gap-3"><span className="font-mono text-[#c9c4b4]">{fmt(q?.price)}</span><span className={`w-16 text-right font-mono text-xs ${pos ? 'text-emerald-400' : 'text-red-400'}`}>{chg == null ? '—' : `${pos ? '+' : ''}${chg}%`}</span></span>
-            </div>
-          ); })}
+    <WidgetShell icon={Star} title={list ? list.name : t('wdg.watchlist')} to="/app/watchlists" action={t('wdg.openWatchlist', null, 'Open watchlists')}>
+      {symbols.length === 0 ? <EmptyWidget text={t('wdg.createWl')} /> : (
+        <div>
+          {symbols.map((s) => {
+            const sym = txt(s, '');
+            const q = quotes[sym];
+            const chg = numOrNull(q?.changePercent);
+            const pos = (chg ?? 0) >= 0;
+            return (
+              <Link key={sym || s} to={`/app/terminal-pro?symbol=${encodeURIComponent(sym)}`} className="ex-widget__row">
+                <span className="ex-widget__symbol">{sym || '—'}</span>
+                <span className="flex items-center gap-2">
+                  <span className="ex-widget__value text-[var(--ex-text-2)]">{fmt(q?.price)}</span>
+                  <span className={`ex-widget__value w-14 text-right text-[10px] ${pos ? 'ex-up' : 'ex-down'}`}>{chg == null ? '—' : `${pos ? '+' : ''}${chg}%`}</span>
+                </span>
+              </Link>
+            );
+          })}
         </div>
       )}
     </WidgetShell>
@@ -54,15 +77,20 @@ function AlertsWidget() {
   const { t } = useI18n();
   const active = alerts.filter((a) => a.status === 'active').slice(0, 5);
   return (
-    <WidgetShell icon={Bell} title={t('wdg.activeAlerts')} to="/app/alerts">
-      {active.length === 0 ? <p className="py-6 text-center text-xs text-[#8a8577]">{t('wdg.noAlerts')}</p> : (
-        <div className="space-y-1.5">
-          {active.map((a) => { const at = String(a.alertType || 'above'); const isPct = at.startsWith('pct'); const up = at.includes('up') || at === 'above'; return (
-            <div key={a.id} className="flex items-center justify-between text-sm">
-              <span className="font-mono text-[#e9e7df]">{txt(a.symbol, '—')}</span>
-              <span className={`text-xs ${up ? 'text-emerald-400' : 'text-red-400'}`}>{up ? '≥' : '≤'} {isPct ? `${txt(a.target, '—')}%` : txt(a.target, '—')}</span>
-            </div>
-          ); })}
+    <WidgetShell icon={Bell} title={t('wdg.activeAlerts')} to="/app/alerts" action={t('wdg.manageAlerts', null, 'Manage alerts')}>
+      {active.length === 0 ? <EmptyWidget text={t('wdg.noAlerts')} /> : (
+        <div>
+          {active.map((a) => {
+            const at = String(a.alertType || 'above');
+            const isPct = at.startsWith('pct');
+            const up = at.includes('up') || at === 'above';
+            return (
+              <div key={a.id} className="ex-widget__row">
+                <span className="ex-widget__symbol">{txt(a.symbol, '—')}</span>
+                <span className={`ex-widget__value text-[10px] ${up ? 'ex-up' : 'ex-down'}`}>{up ? '≥' : '≤'} {isPct ? `${txt(a.target, '—')}%` : txt(a.target, '—')}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </WidgetShell>
@@ -76,18 +104,18 @@ function MiniSignal({ symbol }) {
   const meta = sig ? SIGNAL_META[sig.signalType] : null;
   const Icon = String(sig?.signalType || '').includes('buy') ? ArrowUpRight : String(sig?.signalType || '').includes('sell') ? ArrowDownRight : Minus;
   return (
-    <div className="flex items-center justify-between text-sm">
-      <span className="font-mono text-[#e9e7df]">{txt(symbol, '—')}</span>
-      {meta ? <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ color: meta.color, background: meta.bg }}><Icon className="h-3 w-3" />{t('sig.st_' + sig.signalType)}</span> : <span className="text-xs text-[#8a8577]">…</span>}
-    </div>
+    <Link to={`/app/terminal-pro?symbol=${encodeURIComponent(symbol)}`} className="ex-widget__row">
+      <span className="ex-widget__symbol">{txt(symbol, '—')}</span>
+      {meta ? <span className="flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ color: meta.color, background: meta.bg }}><Icon className="h-3 w-3" />{t('sig.st_' + sig.signalType)}</span> : <span className="text-[10px] text-[var(--ex-muted)]">…</span>}
+    </Link>
   );
 }
 
 function SignalsWidget() {
   const { t } = useI18n();
   return (
-    <WidgetShell icon={Radar} title={t('nav.signals')} to="/app/signals">
-      <div className="space-y-1.5">{['BTCUSD', 'ETHUSD', 'AAPL', 'XAUUSD', 'EURUSD'].map((s) => <MiniSignal key={s} symbol={s} />)}</div>
+    <WidgetShell icon={Radar} title={t('nav.signals')} to="/app/signals" action={t('wdg.viewSignals', null, 'View all signals')}>
+      <div>{['BTCUSD', 'ETHUSD', 'AAPL', 'XAUUSD', 'EURUSD'].map((s) => <MiniSignal key={s} symbol={s} />)}</div>
     </WidgetShell>
   );
 }
@@ -108,14 +136,14 @@ function CalendarWidget() {
     return () => { alive = false; };
   }, []);
   return (
-    <WidgetShell icon={CalendarClock} title={t('wdg.upcomingEv')} to="/app/economic-calendar">
-      {events.length === 0 ? <p className="py-6 text-center text-xs text-[#8a8577]">{t('wdg.noEvents')}</p> : (
-        <div className="space-y-2">
+    <WidgetShell icon={CalendarClock} title={t('wdg.upcomingEv')} to="/app/economic-calendar" action={t('wdg.openCalendar', null, 'Open calendar')}>
+      {events.length === 0 ? <EmptyWidget text={t('wdg.noEvents')} /> : (
+        <div>
           {events.map((e) => (
-            <div key={e.id} className="flex items-center gap-2 text-sm">
+            <div key={e.id} className="ex-widget__row">
               <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${IMPACT_DOT[e.impact] || IMPACT_DOT.low}`} />
-              <span className="min-w-0 flex-1 truncate text-[#e9e7df]">{txt(e.country, '')} · {txt(e.name, '—')}</span>
-              <span className="shrink-0 font-mono text-[10px] text-[#8a8577]">{new Date(e.time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit' })}</span>
+              <span className="ex-widget__symbol flex-1">{txt(e.country, '')} · {txt(e.name, '—')}</span>
+              <span className="ex-widget__value text-[9px] text-[var(--ex-muted)]">{new Date(e.time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit' })}</span>
             </div>
           ))}
         </div>
@@ -126,7 +154,7 @@ function CalendarWidget() {
 
 export default function DashboardWidgets() {
   return (
-    <div className="mt-5 grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <WatchlistWidget />
       <SignalsWidget />
       <AlertsWidget />

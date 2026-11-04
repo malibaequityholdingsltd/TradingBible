@@ -97,7 +97,7 @@ html.light .tb-hero::after {
   background: linear-gradient(105deg, transparent 42%, color-mix(in srgb, var(--tb-gold-deep) 28%, transparent) 50%, transparent 58%);
 }
 
-html.light .tb-kicker { color: #8a6714; }
+html.light .tb-kicker { color: var(--tb-gold-deep); }
 /* Funded featured ticket CTA: black text in light mode, readable on light button. */
 html.light .funded-start-btn {
   background: #ffffff;
@@ -539,15 +539,18 @@ html.light [class*="text-[#6a665a]"] { color: #55524a; }
 html.light [class*="text-[#5f5b50]"] { color: #4f4b43; }
 html.light [class*="text-[#b3ae9e]"] { color: #55503f; }
 html.light [class*="text-[#b8b3a3]"] { color: #55503f; }
-html.light [class*="text-[#d4af37]"] { color: #8a6714; }
-html.light [class*="text-[#f0d675]"] { color: #8a6714; }
-html.light [class*="text-[#f4e6a8]"] { color: #8a6714; }
+html.light [class*="text-[#d4af37]"] { color: var(--tb-gold-deep); }
+html.light [class*="text-[#f0d675]"] { color: var(--tb-gold-deep); }
+html.light [class*="text-[#f4e6a8]"] { color: var(--tb-gold-deep); }
 html.light [class*="text-[#38bdf8]"] { color: #0369a1; }
 html.light [class*="text-white"] { color: #232830; }
 
 /* Gold gradient headlines wash out on ivory — run them deeper in light. */
 html.light .tb-gold-text {
-  background: linear-gradient(120deg, #a67c1e 0%, #8a6714 48%, #6e5410 100%);
+  background: linear-gradient(120deg,
+    color-mix(in srgb, var(--tb-gold-deep) 82%, #000) 0%,
+    var(--tb-gold-deep) 48%,
+    color-mix(in srgb, var(--tb-gold-deep) 76%, #000) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -592,7 +595,7 @@ html.light [class*="divide-white/[0.06]"] > * + * { border-color: rgba(35, 40, 4
 html.light [class*="border-white/15"], html.light [class*="border-white/20"] { border-color: rgba(35, 40, 48, 0.18); }
 
 /* Redesign gold tint + warm grays wash out on ivory — deepen them. */
-html.light [class*="text-[#e8c95a]"] { color: #8a6714; }
+html.light [class*="text-[#e8c95a]"] { color: var(--tb-gold-deep); }
 html.light [class*="text-[#a8a394]"] { color: #57503f; }
 html.light [class*="text-[#d8d3c3]"] { color: #57503f; }
 html.light [class*="text-[#b5b0a2]"] { color: #55503f; }

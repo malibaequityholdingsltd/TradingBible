@@ -823,9 +823,9 @@ export const STATIC_CURRICULA = {
 				courseKey: 'ipo-path',
 				title: 'The IPO & Disclosure Path',
 				minutes: 79,
-				description: 'The real steps from LLC to listed company, and what an S-1 must prove.',
+				description: 'The real steps from private company to listed company, and what an S-1 must prove.',
 				lessons: [
-					{ lessonKey: 'ipo-steps', title: 'From LLC to listed company: the real steps', minutes: 21, tags: ['company'] },
+					{ lessonKey: 'ipo-steps', title: 'From private company to listed company: the real steps', minutes: 21, tags: ['company'] },
 					{ lessonKey: 's1', title: 'What an S-1 must prove', minutes: 20, tags: ['company'] },
 					{ lessonKey: 'governance', title: 'Governance, audits and controls', minutes: 18, tags: ['company'] },
 					{ lessonKey: 'investor-capstone', title: 'Capstone: an owner\'s diligence memo', minutes: 20, tags: ['company'] },

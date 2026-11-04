@@ -1552,7 +1552,7 @@ export default function WalletPage() {
           <div className="wv-card-foot" style={{ borderTop: '1px solid var(--at-line-soft)', paddingLeft: 0, paddingRight: 0 }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
               <ShieldCheck className="h-3.5 w-3.5" style={{ color: 'var(--at-green)' }} />
-              Operated by TradingBible LLC. Deposits via Stripe · payouts via Stripe Connect · crypto is non-custodial.
+              Operated by TradingBible, Inc. Deposits via Stripe · payouts via Stripe Connect · crypto is non-custodial.
             </span>
             <span className="wv-fine">TBC is a platform utility credit, not equity or an investment.</span>
           </div>

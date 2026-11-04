@@ -428,8 +428,8 @@ grant select, insert, update, delete on public.tb_equity_audit_events to service
 insert into public.tb_ipo_milestones
   (slug, phase, title, description, status, owner, sort_order, is_public)
 values
-  ('corporate-conversion', 'Corporate', 'Convert to a Delaware C-Corporation',
-   'Prepare and approve the conversion from the current LLC structure, adopt a certificate of incorporation and bylaws, and appoint a board.', 'not_started', null, 10, true),
+  ('corporate-conversion', 'Corporate', 'Document the Delaware corporate structure',
+   'Maintain the certificate of incorporation, bylaws, board records and stock ledger for TradingBible, Inc.; confirm the conversion record and officer appointments before publishing completion evidence.', 'not_started', null, 10, true),
   ('board-governance', 'Governance', 'Constitute an independent board and committees',
    'Define board composition, independence, audit committee, compensation committee and corporate governance guidelines.', 'not_started', null, 20, true),
   ('audited-financials', 'Financial reporting', 'Complete audited financial statements',

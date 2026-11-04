@@ -23,8 +23,24 @@ export const WL_PRESETS = [
   { id: 'emerald', label: 'Emerald Desk', accentColor: '#34d399', headingColor: '#ecfdf5', bodyColor: '#b8d4c7', mutedColor: '#759084', primaryColor: '#07110d' },
   { id: 'crimson', label: 'Crimson Bull', accentColor: '#fb7185', headingColor: '#fff1f2', bodyColor: '#d8b9be', mutedColor: '#93737b', primaryColor: '#120709' },
   { id: 'violet', label: 'Violet Quant', accentColor: '#a78bfa', headingColor: '#f1edff', bodyColor: '#c2badd', mutedColor: '#857c9e', primaryColor: '#0c0916' },
-  { id: 'amber', label: 'Amber Pit', accentColor: '#f59e0b', headingColor: '#fdf6e9', bodyColor: '#d3c4a6', mutedColor: '#8f8065', primaryColor: '#100c06' },
+  { id: 'ash', label: 'Ash Grey', accentColor: '#a8b0ba', headingColor: '#f3f4f6', bodyColor: '#c7cbd1', mutedColor: '#8b9099', primaryColor: '#121417' },
 ];
+
+const ASH_PRESET = WL_PRESETS.find((preset) => preset.id === 'ash');
+
+function normalizeTheme(t = {}) {
+  if (String(t.accentColor || '').toLowerCase() === '#f59e0b' && ASH_PRESET) {
+    return {
+      ...t,
+      accentColor: ASH_PRESET.accentColor,
+      headingColor: ASH_PRESET.headingColor,
+      bodyColor: ASH_PRESET.bodyColor,
+      mutedColor: ASH_PRESET.mutedColor,
+      primaryColor: ASH_PRESET.primaryColor,
+    };
+  }
+  return t;
+}
 
 function hexToRgb(hex) {
   const h = String(hex || '').replace('#', '');
@@ -155,13 +171,22 @@ function applyAccentOverride() {
 // Push the theme into :root vars so every surface re-themes live.
 export function applyWhiteLabel(t = {}) {
   if (typeof document === 'undefined') return;
-  const th = { ...WL_DEFAULTS, ...t };
+  const th = normalizeTheme({ ...WL_DEFAULTS, ...t });
   const root = document.documentElement;
   const accent = th.accentColor || WL_DEFAULTS.accentColor;
   root.style.setProperty('--tb-gold', accent);
   root.style.setProperty('--tb-gold-hi', mix(accent, [255, 255, 255], 0.45));
   root.style.setProperty('--tb-gold-deep', mix(accent, [0, 0, 0], 0.35));
   root.style.setProperty('--tb-gold-glow', rgba(accent, 0.4));
+  const primary = th.primaryColor || WL_DEFAULTS.primaryColor;
+  root.style.setProperty('--tb-primary', primary);
+  root.style.setProperty('--tb-bg', primary);
+  root.style.setProperty('--tb-bg-2', mix(primary, [255, 255, 255], 0.035));
+  root.style.setProperty('--tb-panel', mix(primary, [255, 255, 255], 0.065));
+  root.style.setProperty('--tb-panel-2', mix(primary, [255, 255, 255], 0.105));
+  root.style.setProperty('--tb-panel-3', mix(primary, [255, 255, 255], 0.15));
+  root.style.setProperty('--tb-line', mix(primary, [255, 255, 255], 0.16));
+  root.style.setProperty('--tb-line-2', mix(primary, [255, 255, 255], 0.24));
   root.style.setProperty('--wl-ink', th.headingColor || WL_DEFAULTS.headingColor);
   root.style.setProperty('--wl-body', th.bodyColor || WL_DEFAULTS.bodyColor);
   root.style.setProperty('--wl-muted', th.mutedColor || WL_DEFAULTS.mutedColor);
@@ -174,7 +199,7 @@ export function loadLocalTheme() {
   try {
     const raw = window.localStorage.getItem(LS_KEY);
     if (!raw) return null;
-    return { ...WL_DEFAULTS, ...JSON.parse(raw) };
+    return normalizeTheme({ ...WL_DEFAULTS, ...JSON.parse(raw) });
   } catch { return null; }
 }
 

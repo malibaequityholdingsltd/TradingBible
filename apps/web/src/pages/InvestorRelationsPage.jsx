@@ -37,7 +37,7 @@ function Hero({ copy, status = [], metrics = null }) {
   return (
     <CapPublicHead
       title={copy.title}
-      sub="The private-company record for TradingBible LLC and the proposed TB ticker. Disclosures are published only after approval; no public market exists."
+      sub="The private-company record for TradingBible, Inc. and the proposed TB ticker. Disclosures are published only after approval; no public market exists."
       aside={(
         <CapRecordCard
           title="Issuer status"
@@ -63,8 +63,8 @@ function OverviewSection({ data, loading, error, reload }) {
       <Hero
         copy={PAGE_COPY.overview}
         status={[
-          ['Current entity', 'TradingBible LLC'],
-          ['Proposed issuer', 'TradingBible, Inc.'],
+          ['Current entity', 'TradingBible, Inc.'],
+          ['Parent company', 'TradingBible Holdings, Inc.'],
           ['Target exchange', 'Nasdaq · target only'],
           ['Public market', 'None'],
           ['Last disclosure', formatDate(data?.generatedAt, 'Not available')],
@@ -357,8 +357,8 @@ function GovernanceSection({ data }) {
   return (
     <>
       <Hero copy={PAGE_COPY.governance} status={[
-        ['Current entity', 'TradingBible LLC'],
-        ['Proposed issuer', 'TradingBible, Inc.'],
+        ['Current entity', 'TradingBible, Inc.'],
+        ['Parent company', 'TradingBible Holdings, Inc.'],
         ['Board', 'Not yet constituted'],
         ['Transfer agent', 'Not engaged'],
         ['Shareholder portal', 'Verified access'],
@@ -369,12 +369,12 @@ function GovernanceSection({ data }) {
         <CapSectionHead title="Corporate structure" action={<AtBadge tone="muted">Two entities</AtBadge>} />
         <div className="cap-grid">
           <div className="cap-span-6">
-            <AtPanel className="cap-panel h-full" title="TradingBible LLC" action={<AtBadge tone="gold">Current</AtBadge>}>
+            <AtPanel className="cap-panel h-full" title="TradingBible, Inc." action={<AtBadge tone="gold">Current</AtBadge>}>
               <div className="ir-list">
                 {[
                   ['Jurisdiction', 'Delaware, United States'],
                   ['Public market', 'None'],
-                  ['Shares', 'LLC interests, not listed shares'],
+                  ['Shares', 'Shares, not listed shares'],
                   ['Investor access', 'Private records only'],
                 ].map(([label, value]) => (
                   <div className="ir-list-row" key={label}>
@@ -387,11 +387,11 @@ function GovernanceSection({ data }) {
             </AtPanel>
           </div>
           <div className="cap-span-6">
-            <AtPanel className="cap-panel h-full" title="TradingBible, Inc." action={<AtBadge tone="amber">Proposed</AtBadge>}>
+            <AtPanel className="cap-panel h-full" title="TradingBible Holdings, Inc." action={<AtBadge tone="muted">Parent</AtBadge>}>
               <div className="ir-list">
                 {[
-                  ['Structure', 'Proposed C-Corporation'],
-                  ['Ticker', 'TB · proposed'],
+                  ['Role', 'Parent holding company'],
+                  ['Issuer of TB', 'TradingBible, Inc.'],
                   ['Target exchange', 'Nasdaq · target only'],
                   ['Listing status', 'No application or approval'],
                 ].map(([label, value]) => (
@@ -401,7 +401,7 @@ function GovernanceSection({ data }) {
                   </div>
                 ))}
               </div>
-              <p className="ir-field-note mt-3">A proposed issuer. It has not been presented as formed.</p>
+              <p className="ir-field-note mt-3">The parent holding company. It is not the public issuer of TB.</p>
             </AtPanel>
           </div>
         </div>

@@ -36,7 +36,7 @@ html.light body {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(7,7,10,0.58) 0%, rgba(7,7,10,0.70) 55%, rgba(7,7,10,0.82) 100%);
+  background: linear-gradient(180deg, rgba(7,7,10,0.30) 0%, rgba(7,7,10,0.42) 55%, rgba(7,7,10,0.58) 100%);
 }
 @media (min-width: 768px) {
   #app-bg {
@@ -62,7 +62,7 @@ html.light #app-bg::after {
   background:
     radial-gradient(900px 520px at 82% -12%, rgba(198, 161, 74, 0.05), transparent 62%),
     radial-gradient(760px 420px at -8% 0%, rgba(91, 141, 239, 0.025), transparent 62%),
-    linear-gradient(180deg, rgba(250,248,242,0.60) 0%, rgba(246,243,235,0.74) 55%, rgba(239,235,225,0.84) 100%);
+    linear-gradient(180deg, rgba(250,248,242,0.30) 0%, rgba(246,243,235,0.44) 55%, rgba(239,235,225,0.60) 100%);
 }
 
 /* Mobile optimization */

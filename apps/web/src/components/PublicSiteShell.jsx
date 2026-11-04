@@ -35,7 +35,7 @@ function PublicNav({ homeTo, isAuthed }) {
     <header className="landing-header fixed inset-x-0 top-[var(--header-h)] z-40">
       <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6">
         <Link to={homeTo} onClick={close} className="flex min-w-0 shrink-0 items-center gap-2.5" aria-label={`${brand} home`}>
-          <img src={TRADINGBIBLE_LOGO} alt="" className="h-9 w-9 shrink-0 rounded-xl object-contain gold-glow sm:h-10 sm:w-10" />
+          <img src={TRADINGBIBLE_LOGO} alt="" className="h-10 w-10 shrink-0 rounded-xl object-contain gold-glow sm:h-11 sm:w-11" />
           <BrandName name={brand} className="landing-word hidden truncate text-xl font-extrabold tracking-tight sm:inline sm:text-2xl" />
         </Link>
 

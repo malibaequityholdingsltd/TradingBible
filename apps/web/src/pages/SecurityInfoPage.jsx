@@ -94,7 +94,7 @@ export default function SecurityInfoPage() {
               security@tradingbible.app
             </a>
             <p className="mt-3 text-[11px] leading-relaxed text-[var(--at-mut)]">
-              TradingBible LLC · Delaware, United States. For account access or billing, use the Help Center or support@tradingbible.app.
+              TradingBible, Inc. · Delaware, United States. For account access or billing, use the Help Center or support@tradingbible.app.
             </p>
           </AtPanel>
         </div>

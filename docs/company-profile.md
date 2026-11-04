@@ -2,14 +2,14 @@
 *Prepared for lenders, investors, partners, and users. All statements below are sourced from the company repository and live product; figures marked TBD are to be supplied by the founder.*
 
 ## 1. Company snapshot
-- **Legal name (current + sole operator):** TradingBible LLC — *sole company; Holdings Inc. ON HOLD, not formed.*
-- **Form & domicile:** Delaware limited liability company, formed **August 10, 2026** (NAICS 511210), c/o Delaware Registered Agent, Inc.
-- **Tax/identity:** IRS EIN **issued** (CP575G); D-U-N-S **14-997-6777 — verified**.
-- **Structure:** one LLC + product divisions (Terminal, Intelligence, Prop, Developer, future Brokerage, proposed Coin) — *divisions, not subsidiaries.*
-- **Proposed public parent:** TradingBible Holdings, Inc. — *proposed only; ticker TB requested, not reserved/confirmed.*
+- **Legal name (official operator):** TradingBible, Inc. — *operating company; parent: TradingBible Holdings, Inc.*
+- **Form & domicile:** Delaware corporation (NAICS 511210); registered agent and entity records on file.
+- **Tax/identity:** IRS EIN and D-U-N-S **14-997-6777** on file — disclose only to authorized counterparties.
+- **Structure:** TradingBible Holdings, Inc. (parent) → TradingBible, Inc. (official operating company) + product divisions (Terminal, Intelligence, Prop, Developer, future Brokerage, proposed Coin) — *divisions, not subsidiaries.*
+- **Parent holding company:** TradingBible Holdings, Inc. — *ticker TB requested, not reserved/confirmed.*
 - **Native coin:** TBC (max 100M, Cosmos SDK baseline, proposed; 90-day testnet planned) — *TBC is not TB equity.*
 - **Regulatory status:** Delaware incorporation is **not** a brokerage license. No live client deposits until a licensed entity + banking + safeguarding are operational.
-- **Owner/operator:** TradingBible LLC owns and operates the platform solely.
+- **Owner/operator:** TradingBible, Inc. is the official operating company; TradingBible Holdings, Inc. is the parent holding company.
 - **Leadership:**
   - Malik Nlem — Founder & Chief Executive
   - Victor Okechukwu — Vice President
@@ -77,7 +77,7 @@ AI-powered trading journal and analytics platform with a Bloomberg-grade termina
 ## 8. For lenders & investors — what to ask for next
 1. Financial statements / projections and use of funds — see illustrative scenarios in §10; founder to confirm actuals.
 2. Traction: registered users, paying subscribers, churn, MRR — see tracking framework in §9; founder to confirm actuals.
-3. Corporate documents: Delaware certificate of formation, EIN letter, operating agreement, registered-agent confirmation.
+3. Corporate documents: Delaware certificate of incorporation, EIN letter, bylaws, stock ledger and registered-agent confirmation.
 4. D-U-N-S 14-997-6777 — D&B shows no financial statements on file; admin downloads draft Balance Sheet + Income Statement CSVs from Billing & Revenue for accountant review and D&B upload.
 5. Product demo: live walkthrough of Terminal Pro, journal + SI Coach, and analytics on tradingbible.app.
 
@@ -96,7 +96,7 @@ AI-powered trading journal and analytics platform with a Bloomberg-grade termina
 Track monthly: new trials, trial→paid conversion, churn by plan, ARPU, CAC, LTV. Product is live (v1.2.0) with full subscription billing via Stripe.
 
 ## 11. Holdings master blueprint alignment (2026 Edition)
-Full text: `docs/holdings-master-blueprint.md` (Official Company Profile & Strategic Master Blueprint — 2026 Edition). Founder decision: **LLC sole entity; Holdings ON HOLD.** Divisions under one LLC (Terminal, Intelligence, Prop, Developer, future Brokerage, proposed Coin). MT Bridge `MT_BRIDGE_URL=https://bridge.tradingbible.app` (proposed, not deployed). Roadmap with statuses: formation/EIN completed, D-U-N-S reported, verification audit required, revenue pending, terminal expansion, licensing planned, TBC planned, financing future, IPO long-term. First-90-day plan + official publication-ready About text in the blueprint. None of Goldman Sachs / Morgan Stanley / J.P. Morgan / Jefferies / Chapel Hill Denham / Renaissance Capital is engaged. Titles (Malik Nlem, Victor Okechukwu, Maliba SI) to be confirmed before publication as formal officers.
+Full text: `docs/holdings-master-blueprint.md` (Official Company Profile & Strategic Master Blueprint — 2026 Edition). Structure: **TradingBible Holdings, Inc. (parent) → TradingBible, Inc. (official operating company).** Divisions under the operating company (Terminal, Intelligence, Prop, Developer, future Brokerage, proposed Coin). MT Bridge `MT_BRIDGE_URL=https://bridge.tradingbible.app` (proposed, not deployed). Roadmap with statuses: formation/EIN completed, D-U-N-S reported, verification audit required, revenue pending, terminal expansion, licensing planned, TBC planned, financing future, IPO long-term. First-90-day plan + official publication-ready About text in the blueprint. None of Goldman Sachs / Morgan Stanley / J.P. Morgan / Jefferies / Chapel Hill Denham / Renaissance Capital is engaged. Titles (Malik Nlem, Victor Okechukwu, Maliba SI) to be confirmed before publication as formal officers.
 
 ## 12. Financial projections & the raise — ILLUSTRATIVE SCENARIOS ONLY
 **These are models, not results and not promises. Every figure below is computed from stated assumptions so a lender/investor can see the mechanics. Founder confirms which scenario (if any) to present.**

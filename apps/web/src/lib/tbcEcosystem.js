@@ -7,7 +7,7 @@
 export const TBC_PROPOSAL = {
   name: 'TradingBible Coin',
   ticker: 'TBC',
-  entity: 'TradingBible LLC',
+  entity: 'TradingBible, Inc.',
   jurisdiction: 'Delaware, United States',
   supply: 100_000_000,
   supplyLabel: '100,000,000 TBC',

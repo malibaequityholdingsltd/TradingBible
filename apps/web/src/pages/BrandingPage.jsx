@@ -216,7 +216,7 @@ export default function BrandingPage() {
         </div>
 
         <Note icon={Building2}>
-          <p className="text-sm leading-relaxed text-[#c9c4b4]">{t('brd.intro', { brand: 'TradingBible LLC' })}</p>
+          <p className="text-sm leading-relaxed text-[#c9c4b4]">{t('brd.intro', { brand: 'TradingBible, Inc.' })}</p>
         </Note>
       </div>
     </AppLayout>

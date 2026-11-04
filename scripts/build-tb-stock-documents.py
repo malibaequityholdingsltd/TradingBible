@@ -51,11 +51,11 @@ DOCUMENTS = [
     },
     {
         "source": "02_LLC_Conversion_and_Corporate_Restructuring_Framework.docx",
-        "slug": "tb-llc-conversion-corporate-restructuring",
+        "slug": "tb-corporate-conversion-restructuring",
         "number": "TB-02",
-        "title": "LLC Conversion and Corporate Restructuring Framework",
+        "title": "Corporate Conversion and Restructuring Framework",
         "category": "Corporate authority",
-        "summary": "Framework for reconciling the LLC record and evaluating a corporate conversion. No conversion, share issuance, or ownership change is effected by this draft.",
+        "summary": "Framework for documenting the completed corporate conversion and restructuring record. No share issuance or ownership change is effected by this draft.",
     },
     {
         "source": "03_TB_Share_Capital_and_Shareholder_Governance.docx",
@@ -116,7 +116,7 @@ DOCUMENTS = [
 ]
 
 PARTY = "Malik Nlem"
-CAPACITY = "Chief Executive Manager"
+CAPACITY = "Chief Executive Officer"
 OPTIONAL_PARTY = "Additional Authorized Signatory"
 OPTIONAL_CAPACITY = "Authorized Signatory"
 
@@ -133,6 +133,35 @@ OPTIONAL_FIELDS = {
     "printedName": "Additional printed name: __________",
     "title": "Additional capacity: ______________",
     "date": "Additional date: __________________",
+}
+
+# The 2026 corporate conversion replaced the retired LLC with the official
+# operating company. Normalize every published instrument at build time so
+# Word and PDF copies cannot drift from the live legal pages.
+ENTITY_REPLACEMENTS = {
+    "TradingBible LLC": "TradingBible, Inc.",
+    "TradingBible, Inc..": "TradingBible, Inc.",
+    "LLC Conversion": "Corporate Conversion",
+    "Delaware file number: 10728395.": "Delaware, United States.",
+    "Delaware file number: 10728395": "Delaware, United States",
+    "TRADINGBIBLE LLC": "TRADINGBIBLE, INC.",
+    "TradingBible, LLC": "TradingBible, Inc.",
+    "a Delaware limited liability company": "a Delaware corporation",
+    "Delaware limited liability company": "Delaware corporation",
+    "Delaware manager-managed limited liability company": "Delaware corporation",
+    "Chief Executive Manager": "Chief Executive Officer",
+    "Sole Member": "Sole Stockholder",
+    "sole member": "sole stockholder",
+    "membership interests": "shares of common stock",
+    "Operating Agreement": "Bylaws",
+    "operating agreement": "bylaws",
+    "Certificate of Formation": "Certificate of Incorporation",
+    "Delaware file number 10728395": "Delaware, United States",
+    "Delaware file 10728395": "Delaware, United States",
+    "file 10728395": "Delaware, United States",
+    "formed August 10, 2026": "organized under the laws of the State of Delaware",
+    "Formation: August 10, 2026.": "Entity records on file.",
+    "Owner or Additional Authorized Signatory": "Stockholder or Additional Authorized Signatory",
 }
 
 
@@ -208,7 +237,8 @@ def prepare_docx(source: Path, target: Path, doc_meta: dict) -> None:
 
     # The source calls the provider "DocSign"; the controlled copy must name
     # the real provider. A zip-level replacement also catches split runs.
-    replace_in_docx(target, {"DocSign": "DocuSign"})
+    replace_in_docx(target, {"DocSign": "DocuSign", **ENTITY_REPLACEMENTS})
+    normalize_docx_runs(target, ENTITY_REPLACEMENTS)
 
 
 def replace_in_docx(path: Path, replacements: dict[str, str]) -> None:
@@ -223,6 +253,37 @@ def replace_in_docx(path: Path, replacements: dict[str, str]) -> None:
                 data = text.encode("utf-8")
             target_zip.writestr(item, data)
     temporary.replace(path)
+
+
+def normalize_docx_runs(path: Path, replacements: dict[str, str]) -> None:
+    """Catch legal-name fragments that Word split across multiple runs."""
+    document = docx.Document(str(path))
+
+    def fix_paragraph(paragraph) -> None:
+        if not paragraph.runs:
+            return
+        original = paragraph.text
+        updated = original
+        for old, new in replacements.items():
+            updated = updated.replace(old, new)
+        if updated != original:
+            paragraph.runs[0].text = updated
+            for run in paragraph.runs[1:]:
+                run.text = ""
+
+    def walk(container) -> None:
+        for paragraph in container.paragraphs:
+            fix_paragraph(paragraph)
+        for table in container.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    walk(cell)
+
+    walk(document)
+    for section in document.sections:
+        walk(section.header)
+        walk(section.footer)
+    document.save(str(path))
 
 
 def iter_blocks(document):
@@ -453,8 +514,8 @@ def main() -> None:
 
     manifest = {
         "title": "TradingBible TB stock document library",
-        "issuer": "TradingBible LLC",
-        "proposedIssuer": "TradingBible, Inc.",
+        "issuer": "TradingBible, Inc.",
+        "parentCompany": "TradingBible Holdings, Inc.",
         "ticker": "TB",
         "tickerStatus": "Proposed — not reserved or approved",
         "jurisdiction": "Delaware, United States",

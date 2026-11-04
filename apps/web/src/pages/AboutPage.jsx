@@ -80,12 +80,12 @@ export default function AboutPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
               <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-14 w-14 shrink-0 rounded-xl object-contain ring-1 ring-[#d4af37]/25" />
               <div>
-                <h2 className="text-lg font-bold tracking-tight text-[#f0ecdd]">{t('abt.ownership', null, 'Owned and operated by TradingBible LLC')}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">TradingBible LLC is a Delaware limited liability company and the sole operating company behind the platform. The company is private and not publicly traded. TB is a proposed future ticker; it is not reserved, listed or approved. TBC is a separate proposed token, not equity, and token operations remain disabled.</p>
+                <h2 className="text-lg font-bold tracking-tight text-[#f0ecdd]">{t('abt.ownership', null, 'Owned and operated by TradingBible, Inc.')}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">TradingBible, Inc. is a Delaware corporation and the official operating company behind the platform. TradingBible Holdings, Inc. is the parent holding company. The company is private and not publicly traded. TB is a proposed future ticker; it is not reserved, listed or approved. TBC is a separate proposed token, not equity, and token operations remain disabled.</p>
               </div>
             </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              {['Delaware LLC', 'Private · pre-IPO', 'TB proposed ticker', 'TBC separate from equity', 'No public share price', 'No listing approval'].map((item) => (
+              {['Delaware corporation', 'Private · pre-IPO', 'TB proposed ticker', 'TBC separate from equity', 'No public share price', 'No listing approval'].map((item) => (
                 <div key={item} className="rounded-lg border border-[#d4af37]/15 bg-[#d4af37]/[0.04] px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.1em] text-[#d4af37]">{item}</div>
               ))}
             </div>

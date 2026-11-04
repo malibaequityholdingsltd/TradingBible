@@ -266,7 +266,7 @@ export async function createEnvelope({
 	const body = {
 		emailSubject: subject,
 		emailBlurb: emailBlurb || [
-			'You are receiving a controlled TradingBible LLC instrument for signature.',
+			'You are receiving a controlled TradingBible, Inc. instrument for signature.',
 			'Open the envelope and complete only the fields assigned to your capacity.',
 			'Do not sign a field allocated to another party.',
 			'A completed signature is not by itself a regulatory approval, license or clearance.',

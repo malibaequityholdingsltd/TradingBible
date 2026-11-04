@@ -74,7 +74,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-#app-bg { display: none !important; }
+#app-bg { display: block !important; z-index: -1; }
+html:has(#app-bg), body:has(#app-bg) { background: transparent !important; }
+html:has(#app-bg) #root { position: relative; z-index: 0; }
 
 ::selection {
   background: color-mix(in srgb, var(--ex-accent) 55%, transparent);
@@ -113,20 +115,20 @@ body {
   height: var(--ex-topbar-h);
   flex: 0 0 auto;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   border-bottom: 1px solid var(--ex-line);
-  padding: 0 14px;
+  padding: 0 12px;
   overflow: hidden;
 }
 
 .ex-sidebar__mark {
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
   flex: 0 0 auto;
   place-items: center;
   overflow: hidden;
-  border-radius: 7px;
+  border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--ex-accent) 30%, var(--ex-line));
   background: color-mix(in srgb, var(--ex-accent) 10%, var(--ex-panel-2));
   color: var(--ex-accent);
@@ -144,9 +146,9 @@ body {
   display: block;
   overflow: hidden;
   color: var(--ex-text);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1144,9 +1146,9 @@ body {
 .ex-mobile-bar__title {
   overflow: hidden;
   color: var(--ex-text);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2093,6 +2095,8 @@ html.light .ex-mobile-dock__item.is-active::before { background: #0a0a0f; }
   color: var(--ex-muted) !important;
   font-size: 10.5px !important;
   line-height: 1.5 !important;
+  flex: 0 0 auto !important;
+  min-height: 3em !important;
 }
 .tb-app-shell .academy-v2 .ac-path-skills { margin-bottom: 8px !important; gap: 3px !important; }
 .tb-app-shell .academy-v2 .ac-skill {
@@ -2137,4 +2141,400 @@ html.light .ex-mobile-dock__item.is-active::before { background: #0a0a0f; }
   .tb-app-shell .academy-v2 .ac-tab { flex: 0 0 auto !important; }
   .ex-guide-banner__row { flex-wrap: wrap; }
   .ex-guide-banner__actions { flex-basis: 100%; }
+}
+
+/* ── Theme bridge ──────────────────────────────────────────────────────
+   White-label presets set --tb-gold / --tb-gold-deep / --wl-*. The exchange
+   layer reads those variables so every shell, card, button and chart accent
+   follows the selected theme instead of staying gold. */
+:root {
+  --ex-accent: var(--tb-gold, #d4af37);
+  --ex-accent-2: var(--tb-gold-hi, #f0c94a);
+  --ex-accent-ink: #0b0e11;
+}
+:root:not(.light) {
+  --ex-text: var(--wl-ink, #eaecef);
+  --ex-text-2: var(--wl-body, #b7bdc6);
+  --ex-muted: var(--wl-muted, #848e9c);
+}
+html.light {
+  --ex-accent: var(--tb-gold-deep, #b8860b);
+  --ex-accent-2: var(--tb-gold, #a67c1e);
+  --ex-accent-ink: #ffffff;
+}
+
+/* Academy 2.0 adopts the exchange palette and selected accent. */
+.tb-app-shell .academy-v2 {
+  --ac-bg: var(--ex-bg);
+  --ac-panel: var(--ex-panel);
+  --ac-panel-2: var(--ex-panel-2);
+  --ac-panel-3: var(--ex-panel-3);
+  --ac-ink: var(--ex-text);
+  --ac-muted: var(--ex-muted);
+  --ac-faint: var(--ex-faint);
+  --ac-line: var(--ex-line);
+  --ac-line-strong: var(--ex-line-2);
+  --ac-gold: var(--ex-accent);
+  --ac-gold-soft: color-mix(in srgb, var(--ex-accent) 10%, transparent);
+  --ac-teal: var(--ex-accent);
+  --ac-blue: var(--ex-accent);
+  --ac-green: var(--ex-up);
+  --ac-red: var(--ex-down);
+  --ac-on-gold: var(--ex-accent-ink);
+  --ac-shadow: none;
+  background: var(--ex-bg) !important;
+}
+.tb-app-shell .academy-v2 :is(.ac-tutor, .ac-side-card, .ac-next-card, .ac-lesson-side, .ac-exam-card, .ac-v2-rail) {
+  border-color: var(--ex-line) !important;
+  background: var(--ex-panel) !important;
+  box-shadow: none !important;
+}
+
+/* Admin console adopts the same palette instead of the old midnight deck. */
+.adm-console {
+  --adm-bg0: var(--ex-bg);
+  --adm-bg1: var(--ex-bg-2);
+  --adm-panel: var(--ex-panel);
+  --adm-line: var(--ex-line);
+  --adm-gold: var(--ex-accent);
+  --adm-ink: var(--ex-text);
+  --adm-mut: var(--ex-muted);
+}
+.adm-console::before,
+.adm-console::after { display: none !important; }
+.adm-console .app-header {
+  background: var(--ex-panel) !important;
+  border-bottom-color: var(--ex-line) !important;
+}
+.adm-console aside {
+  background: var(--ex-panel) !important;
+  border-right-color: var(--ex-line) !important;
+}
+.adm-console :is(.glass, .tb-card, .tb-hero) {
+  border: 1px solid var(--ex-line) !important;
+  border-radius: var(--ex-radius) !important;
+  background: var(--ex-panel) !important;
+  box-shadow: none !important;
+}
+.adm-console .tbl-row--active {
+  background: var(--ex-panel-2) !important;
+  border-color: var(--ex-line-2) !important;
+}
+.adm-console .tbl-row--active::before { background: var(--ex-accent); }
+.adm-console .tbl-row--active .at-navlink-icon { color: var(--ex-text) !important; }
+.adm-console [class*="text-[#e9e7df]"] { color: var(--ex-text) !important; }
+.adm-console [class*="text-[#8a8577]"] { color: var(--ex-muted) !important; }
+.adm-console [class*="text-[#f0ecdd]"] { color: var(--ex-text) !important; }
+.adm-console [class*="bg-[#0f0f14]"] { background-color: var(--ex-panel-2) !important; }
+.adm-console [class*="border-white/"] { border-color: var(--ex-line) !important; }
+
+/* Terminal hard-coded neutrals follow the active light/dark theme. */
+.tb-app-shell .tb-term [class*="text-[#e9e7df]"] { color: var(--ex-text) !important; }
+.tb-app-shell .tb-term [class*="text-[#f0ecdd]"] { color: var(--ex-text) !important; }
+.tb-app-shell .tb-term [class*="text-[#8a8577]"] { color: var(--ex-muted) !important; }
+.tb-app-shell .tb-term [class*="text-[#5f5b50]"] { color: var(--ex-faint) !important; }
+.tb-app-shell .tb-term [class*="bg-[#0f0f14]"] { background-color: var(--ex-panel-2) !important; }
+.tb-app-shell .tb-term [class*="border-white/"] { border-color: var(--ex-line) !important; }
+
+/* ── Tablet navigation ─────────────────────────────────────────────────
+   768–1023px portrait: app bar + bottom dock.
+   1024–1279px landscape: full labelled sidebar (the previous icon-only rail
+   was easy to miss and had no readable section names). */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .ex-sidebar:not(.is-collapsed) { width: var(--ex-sidebar-w); }
+  .ex-sidebar:not(.is-collapsed) .ex-sidebar__brand-text,
+  .ex-sidebar:not(.is-collapsed) .ex-nav-group__label,
+  .ex-sidebar:not(.is-collapsed) .ex-nav-item__label,
+  .ex-sidebar:not(.is-collapsed) .ex-nav-item__badge,
+  .ex-sidebar:not(.is-collapsed) .ex-sidebar__footer-text { display: block; }
+  .ex-sidebar:not(.is-collapsed) .ex-nav-group__label { display: flex; }
+  .ex-sidebar:not(.is-collapsed) .ex-sidebar__brand {
+    justify-content: flex-start;
+    padding: 0 8px 0 10px;
+  }
+  .ex-sidebar:not(.is-collapsed) .ex-nav-item {
+    justify-content: flex-start;
+    padding: 0 9px;
+  }
+  .ex-sidebar:not(.is-collapsed) .ex-nav-group { margin-top: 14px; }
+  .ex-sidebar:not(.is-collapsed) .ex-sidebar__brand .ex-icon-btn { display: inline-grid !important; }
+  .ex-sidebar:not(.is-collapsed) ~ .ex-topbar { left: var(--ex-sidebar-w); }
+  .ex-sidebar:not(.is-collapsed) ~ .ex-main { margin-left: var(--ex-sidebar-w); }
+  .ex-main__inner { max-width: 1360px; }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .ex-mobile-bar { display: flex; }
+  .ex-mobile-dock { display: grid; }
+  .ex-main { padding-top: calc(var(--ex-ticker-h) + 52px); }
+  .ex-main__inner { padding: 14px 16px calc(92px + env(safe-area-inset-bottom)); }
+  .ex-mobile-dock__item { font-size: 9.5px; }
+}
+
+/* ── Widget action visibility ──────────────────────────────────────────
+   Card headers never clip their action buttons; long titles truncate first. */
+.ex-card-head > .ex-card-head__actions,
+.ex-card-head > a,
+.ex-card-head > button { flex: 0 0 auto; }
+.ex-card-head { min-width: 0; }
+.ex-card-head > div:first-child { min-width: 0; }
+.ex-widget { display: flex; min-height: 210px; flex-direction: column; }
+.ex-widget__body { min-height: 0; flex: 1 1 auto; }
+.ex-widget__footer { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--ex-line); }
+.ex-widget__footer .ex-btn { width: 100%; }
+.ex-widget__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 25px;
+  font-size: 11px;
+}
+.ex-widget__row + .ex-widget__row { border-top: 1px solid color-mix(in srgb, var(--ex-line) 60%, transparent); }
+.ex-widget__symbol { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: "JetBrains Mono", monospace; color: var(--ex-text); }
+.ex-widget__value { flex: 0 0 auto; font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; }
+
+/* ── Themed surfaces ──────────────────────────────────────────────────
+   Every preset now carries a background family (primaryColor) as well as an
+   accent, so Midnight, Emerald, Crimson, Violet and Ash visibly change the
+   whole shell instead of only recolouring buttons. Light mode keeps a paper
+   canvas but tints it with the active accent. */
+:root:not(.light) {
+  --ex-bg: var(--tb-bg, #0b0e11);
+  --ex-bg-2: var(--tb-bg-2, #0e1217);
+  --ex-panel: var(--tb-panel, #12161c);
+  --ex-panel-2: var(--tb-panel-2, #171c24);
+  --ex-panel-3: var(--tb-panel-3, #1f252e);
+  --ex-line: var(--tb-line, #252b34);
+  --ex-line-2: var(--tb-line-2, #323a45);
+}
+html.light {
+  --ex-bg: color-mix(in srgb, var(--tb-gold, #b8860b) 3.5%, #f3f5f8);
+  --ex-bg-2: color-mix(in srgb, var(--tb-gold, #b8860b) 2.5%, #f8fafc);
+  --ex-panel: #ffffff;
+  --ex-panel-2: color-mix(in srgb, var(--tb-gold, #b8860b) 3%, #f5f7fa);
+  --ex-panel-3: color-mix(in srgb, var(--tb-gold, #b8860b) 6%, #eef1f5);
+  --ex-line: color-mix(in srgb, var(--tb-gold, #b8860b) 7%, #d8dee7);
+  --ex-line-2: color-mix(in srgb, var(--tb-gold, #b8860b) 12%, #c6ced9);
+}
+html.light body { background: var(--ex-bg) !important; }
+
+/* Landing artwork is intentionally visible. The old exchange layer hid it
+   globally; this scope restores the bull/bear canvas behind the public page. */
+html:has(#app-bg) body,
+html:has(#app-bg) #root { background: transparent !important; }
+#app-bg { z-index: -1 !important; }
+html.light .landing-page { color: #1c2430; }
+html.light .landing-page [class*="text-[#e9e7df]"],
+html.light .landing-page [class*="text-[#f0ecdd]"] { color: #111820 !important; }
+html.light .landing-page [class*="text-[#c9c4b4]"],
+html.light .landing-page [class*="text-[#b8b3a3]"],
+html.light .landing-page [class*="text-[#d8d3c3]"] { color: #3b4655 !important; }
+html.light .landing-page [class*="text-[#8a8577]"] { color: #65707e !important; }
+html.light .landing-page [class*="border-white/"] { border-color: rgba(48, 60, 76, 0.16) !important; }
+html.light .landing-page [class*="bg-white/"] { background-color: rgba(255, 255, 255, 0.42) !important; }
+html.light .landing-page .landing-header { background: rgba(248, 249, 251, 0.78); }
+
+/* Larger brand mark without changing the 56px bar height or overlaying the
+   page title. The text column truncates before the mark ever shrinks. */
+.ex-sidebar__mark { width: 40px; height: 40px; border-radius: 10px; }
+.ex-sidebar__mark img { padding: 2px; }
+.ex-sidebar__brand-text strong { font-size: 15px; letter-spacing: -0.03em; }
+.ex-sidebar__brand-text span { font-size: 7.5px; letter-spacing: 0.16em; }
+.ex-sidebar__brand { min-width: 0; }
+
+/* ── Bottom navigation: old floating dock with a raised centre dashboard ── */
+.ex-mobile-dockfade { display: none; }
+@media (max-width: 1023px) {
+  .ex-mobile-dockfade {
+    display: block;
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 44;
+    height: 112px;
+    pointer-events: none;
+    background: linear-gradient(to top, var(--ex-bg) 26%, color-mix(in srgb, var(--ex-bg) 88%, transparent) 62%, transparent);
+  }
+  .ex-mobile-dock {
+    display: grid;
+    position: fixed;
+    left: 50%;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    z-index: 46;
+    width: min(560px, calc(100vw - 24px));
+    transform: translateX(-50%);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: end;
+    overflow: visible;
+    border: 1px solid var(--ex-line);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--ex-panel) 96%, transparent);
+    padding: 7px 8px 6px;
+    box-shadow: 0 18px 46px -18px rgba(0, 0, 0, 0.72), 0 1px 0 color-mix(in srgb, white 5%, transparent) inset;
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+  }
+  .ex-mobile-dock__item {
+    min-height: 50px;
+    gap: 3px;
+    border-radius: 10px;
+    color: var(--ex-muted);
+    font-size: 9.5px;
+    font-weight: 650;
+  }
+  .ex-mobile-dock__item svg { width: 19px; height: 19px; }
+  .ex-mobile-dock__item.is-active { color: var(--ex-text); }
+  .ex-mobile-dock__item.is-active::before { display: none; }
+  .ex-mobile-dock__item--hero {
+    min-height: 70px;
+    margin-top: -27px;
+    gap: 3px;
+    color: var(--ex-text);
+  }
+  .ex-mobile-dock__orb {
+    display: grid;
+    width: 58px;
+    height: 58px;
+    place-items: center;
+    border: 2px solid var(--ex-accent);
+    border-radius: 50%;
+    background: var(--ex-panel-2);
+    color: var(--ex-text);
+    box-shadow: 0 10px 26px -10px color-mix(in srgb, var(--ex-accent) 58%, transparent), 0 0 0 5px var(--ex-panel);
+  }
+  .ex-mobile-dock__item--hero svg { width: 25px; height: 25px; stroke-width: 2; }
+  .ex-mobile-dock__item--hero.is-active .ex-mobile-dock__orb {
+    border-color: var(--ex-text);
+    background: color-mix(in srgb, var(--ex-accent) 14%, var(--ex-panel-2));
+  }
+  .ex-mobile-dock__item--hero .ex-mobile-dock__label { color: var(--ex-text); }
+  .ex-mobile-dock__label { line-height: 1; }
+  html.light .ex-mobile-dock__item.is-active,
+  html.light .ex-mobile-dock__item--hero { color: #0a0a0f; }
+  html.light .ex-mobile-dock__orb { color: #0a0a0f; }
+  html.light .ex-mobile-dock__item--hero .ex-mobile-dock__label { color: #0a0a0f; }
+}
+
+/* ── Admin console: one exchange surface for every operator page ──────── */
+.tb-admin-shell {
+  --at-bg0: var(--ex-bg);
+  --at-bg1: var(--ex-bg-2);
+  --at-panel: var(--ex-panel);
+  --at-panel-2: var(--ex-panel-2);
+  --at-ink: var(--ex-text);
+  --at-ink-2: var(--ex-text-2);
+  --at-mut: var(--ex-muted);
+  --at-mut-2: var(--ex-faint);
+  --at-accent: var(--ex-accent);
+  --at-gold: var(--ex-accent);
+  --at-gold-bright: var(--ex-accent-2);
+  --at-gold-deep: var(--ex-accent);
+  --at-green: var(--ex-up);
+  --at-red: var(--ex-down);
+  --at-blue: var(--ex-info);
+  --at-line: var(--ex-line);
+  --at-line-soft: var(--ex-line);
+  --at-line-strong: var(--ex-line-2);
+  --at-soft: var(--ex-panel-2);
+  --at-soft-2: var(--ex-panel-3);
+  --at-gold-soft: color-mix(in srgb, var(--ex-accent) 10%, transparent);
+  --at-rail-bg: var(--ex-panel);
+  --at-card-bg: var(--ex-panel);
+  --at-card-bg-hover: var(--ex-panel-2);
+  --at-hero-bg: var(--ex-panel);
+  --at-topbar-bg: var(--ex-panel);
+  --at-shadow: none;
+  background: var(--ex-bg) !important;
+  color: var(--ex-text);
+}
+.tb-admin-shell .at-rail,
+.adm-console aside {
+  background: var(--ex-panel) !important;
+  border-right: 1px solid var(--ex-line) !important;
+}
+.tb-admin-shell .at-topbar,
+.adm-console .app-header {
+  background: color-mix(in srgb, var(--ex-panel) 97%, transparent) !important;
+  border-bottom: 1px solid var(--ex-line) !important;
+  box-shadow: none !important;
+}
+.tb-admin-shell :is(.at-card, .glass, .tb-card, .tb-hero, .at-panel) {
+  border: 1px solid var(--ex-line) !important;
+  border-radius: var(--ex-radius) !important;
+  background: var(--ex-panel) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.tb-admin-shell .at-card:hover,
+.tb-admin-shell .tb-card-hover:hover {
+  border-color: var(--ex-line-2) !important;
+  background: var(--ex-panel-2) !important;
+  transform: none !important;
+}
+.tb-admin-shell :is(.at-page-head, .tb-hero) {
+  border-top: 0 !important;
+}
+.tb-admin-shell :is(h1, h2, h3) { color: var(--ex-text); }
+.tb-admin-shell :is(.at-muted, .at-caption) { color: var(--ex-muted); }
+.tb-admin-shell table { font-variant-numeric: tabular-nums; }
+.tb-admin-shell thead tr { background: var(--ex-panel-2) !important; }
+.tb-admin-shell thead th {
+  border-bottom: 1px solid var(--ex-line) !important;
+  color: var(--ex-faint) !important;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 9px !important;
+  letter-spacing: 0.12em !important;
+}
+.tb-admin-shell tbody td { border-bottom: 1px solid color-mix(in srgb, var(--ex-line) 62%, transparent) !important; }
+.tb-admin-shell tbody tr:hover { background: var(--ex-panel-2) !important; }
+.tb-admin-shell :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]) {
+  border: 1px solid var(--ex-line) !important;
+  border-radius: var(--ex-radius-sm) !important;
+  background: var(--ex-panel-2) !important;
+  color: var(--ex-text) !important;
+}
+.tb-admin-shell :is(input, select, textarea):focus {
+  border-color: color-mix(in srgb, var(--ex-accent) 65%, var(--ex-line)) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ex-accent) 14%, transparent) !important;
+}
+.tb-admin-shell .at-navlink {
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: var(--ex-radius-sm);
+  color: var(--ex-muted);
+  font-size: 12px;
+}
+.tb-admin-shell .at-navlink:hover { background: var(--ex-panel-2); color: var(--ex-text); }
+.tb-admin-shell .at-navlink.is-active {
+  border-color: var(--ex-line-2);
+  background: var(--ex-panel-2);
+  color: var(--ex-text);
+}
+.tb-admin-shell .at-navlink.is-active .at-navlink-icon { color: var(--ex-text); }
+.tb-admin-shell .at-navlink-icon { color: var(--ex-muted); }
+.tb-admin-shell .at-badge { border-radius: 5px; }
+.tb-admin-shell .tb-admin-dock {
+  background: var(--ex-panel) !important;
+  border-color: var(--ex-line) !important;
+}
+.tb-admin-shell .tb-admin-dock__tab { color: var(--ex-muted); }
+.tb-admin-shell .tb-admin-dock__tab.is-active { color: var(--ex-text); }
+.tb-admin-shell .tb-admin-more-sheet,
+.tb-admin-shell .tb-sheet {
+  background: var(--ex-panel) !important;
+  border-color: var(--ex-line) !important;
+}
+.tb-admin-shell [class*="text-[#e9e7df]"] { color: var(--ex-text) !important; }
+.tb-admin-shell [class*="text-[#8a8577]"] { color: var(--ex-muted) !important; }
+.tb-admin-shell [class*="text-[#f0ecdd]"] { color: var(--ex-text) !important; }
+.tb-admin-shell [class*="bg-[#0f0f14]"] { background-color: var(--ex-panel-2) !important; }
+.tb-admin-shell [class*="bg-[#0a0a0f]"] { background-color: var(--ex-bg) !important; }
+
+@media (max-width: 767px) {
+  .ex-main__inner { padding-bottom: calc(106px + env(safe-area-inset-bottom)); }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .ex-main__inner { padding-bottom: calc(112px + env(safe-area-inset-bottom)); }
 }

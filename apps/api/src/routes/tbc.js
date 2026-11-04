@@ -110,7 +110,7 @@ router.get('/ecosystem', (req, res) => {
 		phase: token.phase,
 		status: token.status,
 		updated: 'October 2026',
-		issuer: 'TradingBible LLC',
+		issuer: 'TradingBible, Inc.',
 		jurisdiction: 'Delaware, United States',
 		token: {
 			name: token.name,

@@ -60,9 +60,9 @@ npm run start               # serves the API (web is served statically by nginx)
 - [Environment Variables](docs/environment.md)
 - [Database Schema](docs/database.md)
 - [Deployment (VPS)](docs/deployment.md)
-- [Holdings Master Blueprint 2.0 — TB/TBC strategy](docs/holdings-master-blueprint.md) — proposed Holdings Inc., requested ticker TB (not reserved), TBC ≠ equity, LLC ≠ licensed broker
+- [Holdings Master Blueprint 2.0 — TB/TBC strategy](docs/holdings-master-blueprint.md) — TradingBible Holdings, Inc. parent, TradingBible, Inc. operator, requested ticker TB (not reserved), TBC ≠ equity, Inc. ≠ licensed broker
 
 ## Repository
 
-- **Owner:** TradingBible LLC (current operator). Proposed parent TradingBible Holdings, Inc. + requested ticker TB are not yet formed/listed/reserved — see `docs/holdings-master-blueprint.md`. TBC is not equity.
+- **Owner:** TradingBible Holdings, Inc. (parent) and TradingBible, Inc. (official operating company). Requested ticker TB is not listed or reserved — see `docs/holdings-master-blueprint.md`. TBC is not equity.
 - This repository is managed with [opencode](https://opencode.ai) — an AI-native CLI — see `AGENTS.md` for workspace conventions.
