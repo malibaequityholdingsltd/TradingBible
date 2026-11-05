@@ -13,17 +13,45 @@ export const LOGOS = {
 };
 
 export const PLANS = [
-  { id: 'pro', name: 'Pro', price: 19.99, period: 'mo', tagline: 'For serious retail traders', logo: LOGOS.goldBlack,
-    features: ['Unlimited trades', 'Full analytics suite', 'SI trade scoring', '5 broker accounts', 'Trading calendar'], cta: 'Choose Pro' },
-  { id: 'elite', name: 'Elite SI', price: 49.99, period: 'mo', highlight: true, tagline: 'SI-first performance', logo: LOGOS.goldWhite,
-    features: ['Everything in Pro', 'SI Trading Coach chat', 'Daily & weekly SI reports', 'Mistake detection', '15 broker accounts', 'Priority SI queue'], cta: 'Choose Elite SI' },
-  { id: 'professional', name: 'Professional', price: 99, period: 'mo', tagline: 'For funds & prop desks', logo: LOGOS.goldBlack,
-    features: ['Everything in Elite', 'Unlimited broker accounts', 'White-label branding', 'API & webhooks', 'White-glove onboarding', 'Dedicated success manager'], cta: 'Choose Professional' },
-  { id: 'teams', name: 'Teams', price: 199, period: 'mo', tagline: 'For trading rooms, schools & funds', logo: LOGOS.goldWhite,
-    features: ['Everything in Professional', 'Up to 10 seats', 'Centralised billing', 'Seat provisioning with support', 'Priority support', 'Team onboarding'], cta: 'Choose Teams' },
+  {
+    id: 'free',
+    name: 'Free account',
+    price: 0,
+    period: 'forever',
+    tagline: 'Explore the platform before you subscribe',
+    logo: LOGOS.goldBlack,
+    features: [
+      'Academy catalogue and community',
+      'Paper trading and challenges',
+      'Profile, security and billing',
+      'Public market research',
+      'Upgrade any time',
+    ],
+    cta: 'Create free account',
+  },
+  {
+    id: 'premium',
+    name: 'TradingBible Premium',
+    price: 19.99,
+    annualPrice: 199,
+    period: 'month',
+    annualPeriod: 'year',
+    highlight: true,
+    tagline: 'One subscription. All core premium features.',
+    logo: LOGOS.goldWhite,
+    features: [
+      'Full terminal, charts and order flow',
+      'Unlimited journal and analytics',
+      'SI coach plus daily and weekly reports',
+      'Signals, alerts and heatmaps',
+      'Broker sync and risk tools',
+      'Annual option at $199/year',
+    ],
+    cta: 'Start Premium',
+  },
 ];
 
-const PLAN_I18N_KEY = { pro: 'pro', elite: 'elite', professional: 'prof' };
+const PLAN_I18N_KEY = { free: 'free', premium: 'premium' };
 
 // Localized view of a plan: names, taglines, periods, CTAs and feature lists
 // come from the i18n dictionary so pricing renders in the active language.

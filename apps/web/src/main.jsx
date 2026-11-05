@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from '@/App';
 import '@/index.css';
 import '@/styles/tokens.css';
+import '@/styles/tbc-symbol.css';
 import '@/styles/atelier.css';
 import '@/styles/mobile-app.css';
 import '@/styles/wallet-v3.css';

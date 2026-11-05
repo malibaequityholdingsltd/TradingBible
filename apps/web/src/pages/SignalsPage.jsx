@@ -29,7 +29,13 @@ function SignalCard({ symbol, timeframe, onResult, onSave }) {
   const { t } = useI18n();
   const sig = useMemo(() => analyzeSignal(candles), [candles]);
 
-  useEffect(() => { onResult(symbol, sig); }, [symbol, sig, onResult]);
+  // Don't publish a null result while the first candle request is still in
+  // flight; null means the feed failed and the board should show an empty
+  // state instead of a blank grid.
+  useEffect(() => {
+    if (status === 'loading' && !candles.length) return;
+    onResult(symbol, sig);
+  }, [symbol, sig, status, candles.length, onResult]);
 
   if (status === 'loading' && !candles.length) {
     return <Card className="flex h-40 items-center justify-center text-xs text-[#8a8577]"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {symbol}</Card>;
@@ -242,12 +248,16 @@ export default function SignalsPage() {
   };
 
   const visible = UNIVERSE.filter((sym) => {
-    const s = results[sym]; if (!s) return true; // keep loading cards visible
+    const s = results[sym];
+    if (s === null) return false; // feed failed / no usable candles
+    if (!s) return true; // keep loading cards visible
     if (fType !== 'all' && s.signalType !== fType) return false;
     if (fStrength !== 'all' && s.strength !== fStrength) return false;
     if (fConf !== 'all' && s.confidence !== fConf) return false;
     return true;
   });
+  const unavailable = UNIVERSE.filter((sym) => results[sym] === null).length;
+  const allUnavailable = unavailable === UNIVERSE.length;
 
   const closed = saved.filter((s) => s.outcome === 'win' || s.outcome === 'loss');
   const wins = saved.filter((s) => s.outcome === 'win').length;
@@ -330,9 +340,27 @@ export default function SignalsPage() {
             )}
           </>
         ) : tab === 'live' ? (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {visible.map((sym) => <SignalCard key={`${sym}-${timeframe}`} symbol={sym} timeframe={timeframe} onResult={onResult} onSave={onSave} />)}
-          </div>
+          visible.length === 0 ? (
+            allUnavailable ? (
+              <EmptyState
+                icon={Radar}
+                title="Live signal feed unavailable"
+                sub="The market-data feed did not return usable candles for this view. No signals are being shown rather than displaying stale or fabricated values."
+                action={<GhostButton onClick={() => window.location.reload()}>Retry feed</GhostButton>}
+              />
+            ) : (
+              <EmptyState
+                icon={Radar}
+                title="No signals match these filters"
+                sub="The live board is loaded, but no instruments match the selected type, strength and confidence. Clear the filters to see every market again."
+                action={<GhostButton onClick={() => { setFType('all'); setFStrength('all'); setFConf('all'); }}>Clear filters</GhostButton>}
+              />
+            )
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {visible.map((sym) => <SignalCard key={`${sym}-${timeframe}`} symbol={sym} timeframe={timeframe} onResult={onResult} onSave={onSave} />)}
+            </div>
+          )
         ) : saved.length === 0 ? (
           <EmptyState icon={Radar} title={t('sig.noTracked')} />
         ) : (

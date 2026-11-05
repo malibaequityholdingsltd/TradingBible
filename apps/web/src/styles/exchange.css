@@ -21,7 +21,7 @@
   --ex-text-2: #b7bdc6;
   --ex-muted: #848e9c;
   --ex-faint: #5e6673;
-  --ex-accent: #d4af37;
+  --ex-accent: var(--tb-gold, #d4af37);
   --ex-accent-2: #f0c94a;
   --ex-accent-ink: #0b0e11;
   --ex-up: #0ecb81;
@@ -53,7 +53,7 @@ html.light {
   --ex-muted: #707a8a;
   --ex-faint: #8b95a5;
   --ex-accent: #b8860b;
-  --ex-accent-2: #a67c1e;
+  --ex-accent-2: var(--tb-gold-deep, #a67c1e);
   --ex-accent-ink: #ffffff;
   --ex-up: #0a9e66;
   --ex-down: #d9304a;
@@ -2159,7 +2159,7 @@ html.light .ex-mobile-dock__item.is-active::before { background: #0a0a0f; }
 }
 html.light {
   --ex-accent: var(--tb-gold-deep, #b8860b);
-  --ex-accent-2: var(--tb-gold, #a67c1e);
+  --ex-accent-2: var(--tb-gold, var(--tb-gold-deep, #a67c1e));
   --ex-accent-ink: #ffffff;
 }
 
@@ -2309,13 +2309,15 @@ html.light {
   --ex-line-2: var(--tb-line-2, #323a45);
 }
 html.light {
-  --ex-bg: color-mix(in srgb, var(--tb-gold, #b8860b) 3.5%, #f3f5f8);
-  --ex-bg-2: color-mix(in srgb, var(--tb-gold, #b8860b) 2.5%, #f8fafc);
+  /* True neutral paper: no gold mixed into the canvas, panels or lines.
+     Gold is applied through --ex-accent and interactive states only. */
+  --ex-bg: #f6f7f9;
+  --ex-bg-2: #eef1f5;
   --ex-panel: #ffffff;
-  --ex-panel-2: color-mix(in srgb, var(--tb-gold, #b8860b) 3%, #f5f7fa);
-  --ex-panel-3: color-mix(in srgb, var(--tb-gold, #b8860b) 6%, #eef1f5);
-  --ex-line: color-mix(in srgb, var(--tb-gold, #b8860b) 7%, #d8dee7);
-  --ex-line-2: color-mix(in srgb, var(--tb-gold, #b8860b) 12%, #c6ced9);
+  --ex-panel-2: #f7f8fa;
+  --ex-panel-3: #eef1f5;
+  --ex-line: #e4e7ec;
+  --ex-line-2: #cfd6df;
 }
 html.light body { background: var(--ex-bg) !important; }
 
@@ -2537,4 +2539,130 @@ html.light .landing-page .landing-header { background: rgba(248, 249, 251, 0.78)
 }
 @media (min-width: 768px) and (max-width: 1023px) {
   .ex-main__inner { padding-bottom: calc(112px + env(safe-area-inset-bottom)); }
+}
+
+/* ── Admin console theme lock ──────────────────────────────────────────
+ * The operator suite opts into Atelier, whose variables are defined at
+ * `.at-shell`. Raise the exchange bridge above that scope so the selected
+ * Ash/Midnight/other preset owns every admin surface in both schemes. */
+html .at-shell.tb-admin-shell,
+html.light .at-shell.tb-admin-shell,
+html .tb-admin-shell .at-scope,
+html.light .tb-admin-shell .at-scope {
+  --at-bg0: var(--ex-bg);
+  --at-bg1: var(--ex-bg-2);
+  --at-panel: var(--ex-panel);
+  --at-panel-2: var(--ex-panel-2);
+  --at-ink: var(--ex-text);
+  --at-ink-2: var(--ex-text-2);
+  --at-mut: var(--ex-muted);
+  --at-mut-2: var(--ex-faint);
+  --at-accent: var(--ex-accent);
+  --at-gold: var(--ex-accent);
+  --at-gold-bright: var(--ex-accent-2);
+  --at-gold-deep: var(--ex-accent);
+  --at-green: var(--ex-up);
+  --at-amber: var(--ex-warning);
+  --at-red: var(--ex-down);
+  --at-blue: var(--ex-info);
+  --at-line: var(--ex-line);
+  --at-line-soft: var(--ex-line);
+  --at-line-strong: var(--ex-line-2);
+  --at-soft: var(--ex-panel-2);
+  --at-soft-2: var(--ex-panel-3);
+  --at-gold-soft: color-mix(in srgb, var(--ex-accent) 10%, transparent);
+  --at-rail-bg: var(--ex-panel);
+  --at-card-bg: var(--ex-panel);
+  --at-card-bg-hover: var(--ex-panel-2);
+  --at-hero-bg: var(--ex-panel);
+  --at-topbar-bg: color-mix(in srgb, var(--ex-panel) 97%, transparent);
+  --at-shadow: none;
+}
+html.light .at-shell.tb-admin-shell .at-rail,
+html.light .at-shell.tb-admin-shell .at-topbar {
+  background: var(--ex-panel) !important;
+  border-color: var(--ex-line) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html.light .at-shell.tb-admin-shell :is(.at-card, .at-panel, .at-hero, .at-status-panel, .glass, .tb-card) {
+  background: var(--ex-panel) !important;
+  border-color: var(--ex-line) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html.light .at-shell.tb-admin-shell :is(.at-input, .at-select, .at-textarea) {
+  background: var(--ex-panel) !important;
+  border-color: var(--ex-line-2) !important;
+  color: var(--ex-text) !important;
+}
+html.light .at-shell.tb-admin-shell :is(.at-tabs, .at-segmented) {
+  background: var(--ex-panel-2) !important;
+  border-color: var(--ex-line) !important;
+}
+html.light .at-shell.tb-admin-shell :is(.at-btn--quiet, .at-btn--outline) {
+  background: var(--ex-panel-2) !important;
+  border-color: var(--ex-line-2) !important;
+  color: var(--ex-text-2) !important;
+}
+html.light .at-shell.tb-admin-shell :is(.at-btn--quiet, .at-btn--outline):hover {
+  background: var(--ex-panel-3) !important;
+  color: var(--ex-text) !important;
+}
+html.light .at-shell.tb-admin-shell .at-navlink.is-active {
+  background: var(--ex-panel-2) !important;
+  border-color: var(--ex-line-2) !important;
+  color: var(--ex-text) !important;
+}
+
+/* ── Hard-coded dark utilities bridge ─────────────────────────────────
+ * Legacy screens still carry dark-first hex utilities. Inside the member,
+ * terminal, academy and admin shells, remap them to the selected exchange
+ * surface rather than the old ivory/gold fallback. */
+html.light :is(.tb-app-shell, .at-shell.tb-admin-shell) :is(
+  [class*="bg-[#0f0f14]"], [class*="bg-[#111113]"], [class*="bg-[#17171c]"],
+  [class*="bg-[#1a1a22]"], [class*="bg-[#121209]"], [class*="bg-[#0d0d12]"],
+  [class*="bg-[#0c0c11]"]
+) { background-color: var(--ex-panel-2) !important; }
+html.light :is(.tb-app-shell, .at-shell.tb-admin-shell) :is(
+  [class*="bg-[#0a0a0f]"], [class*="bg-[#07070a]"], [class*="bg-black/30"],
+  [class*="bg-black/40"], [class*="bg-black/50"]
+) { background-color: var(--ex-bg) !important; }
+html.light :is(.tb-app-shell, .at-shell.tb-admin-shell) :is(
+  [class*="text-[#d4af37]"], [class*="text-[#e8c95a]"], [class*="text-[#f0d675]"],
+  [class*="text-[#f4e6a8]"]
+) { color: var(--ex-accent) !important; }
+html.light :is(.tb-app-shell, .at-shell.tb-admin-shell) :is(
+  [class*="text-[#e9e7df]"], [class*="text-[#f0ecdd]"], [class*="text-[#e8e4d8]"],
+  [class*="text-[#d8d3c3]"]
+) { color: var(--ex-text) !important; }
+html.light :is(.tb-app-shell, .at-shell.tb-admin-shell) :is(
+  [class*="text-[#8a8577]"], [class*="text-[#a8a394]"], [class*="text-[#b3ae9e]"],
+  [class*="text-[#b8b3a3]"]
+) { color: var(--ex-muted) !important; }
+html.light :is(.tb-app-shell, .at-shell.tb-admin-shell) :is(
+  [class*="border-[#d4af37]"], [class*="border-white/"], [class*="border-white/8"]
+) { border-color: var(--ex-line) !important; }
+html.light .tb-ticker {
+  background: var(--ex-panel) !important;
+  border-color: var(--ex-line) !important;
+}
+html.light .tb-ticker .tk-sym { color: var(--ex-muted) !important; }
+html.light .tb-ticker .tk-px { color: var(--ex-text) !important; }
+html.light :is(.tb-app-shell, .at-shell.tb-admin-shell) [class*="bg-[#d4af37]/"] {
+  background-color: color-mix(in srgb, var(--ex-accent) 9%, transparent) !important;
+}
+html.light :is(.tb-app-shell, .at-shell.tb-admin-shell) [class*="accent-[#d4af37]"] {
+  accent-color: var(--ex-accent) !important;
+}
+html.light body :is(.tb-app-shell, .at-shell.tb-admin-shell) :is(input, select, textarea)[class*="bg-[#0f0f14]"] {
+  background-color: var(--ex-panel) !important;
+  color: var(--ex-text) !important;
+  border-color: var(--ex-line-2) !important;
+}
+html.light body :is(.tb-app-shell, .at-shell.tb-admin-shell) :is(input, select, textarea)[class*="bg-[#0a0a0f]"] {
+  background-color: var(--ex-panel-2) !important;
+  color: var(--ex-text) !important;
 }

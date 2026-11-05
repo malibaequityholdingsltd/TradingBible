@@ -81,8 +81,8 @@ const MODULES = [
   },
   {
     icon: KeyRound, tag: 'BUILD', title: 'API, desks and white-label',
-    body: 'Professional-tier REST keys, webhooks and white-label presets for funds and prop desks that need their own front door. Teams adds up to ten seats on one invoice.',
-    to: '/pricing', link: 'See Professional',
+    body: 'Enterprise REST keys, webhooks and white-label licensing for funds and prop desks that need their own front door. Quoted separately from Premium.',
+    to: '/contact', link: 'Talk to enterprise sales',
   },
 ];
 
@@ -120,13 +120,13 @@ const COMPANY_LINKS = [
 ];
 
 const FAQS = [
-  ['Do you offer a free trial?', 'No. TradingBible is paid-only: your card is charged at checkout before you enter the terminal. Every first payment carries a 14-day money-back guarantee, so you can test broker sync, analytics, the SI Coach and signals with a real account.'],
+  ['Is there a free account?', 'Yes. You can create a free TradingBible account to explore the Academy catalogue, community, paper trading and profile. TradingBible Premium is $19.99/month (or $199/year) and unlocks the terminal, journal, analytics, SI coach, reports, signals, alerts, heatmaps, broker sync and risk tools. Every first Premium payment carries a 14-day money-back guarantee.'],
   ['Which brokers and platforms are supported?', 'Named brokers only — Binance, Deriv, easyMarkets, Interactive Brokers, Alpaca, Coinbase and more, plus TradingBible Funded evaluations and self-custody wallet tracking for BTC, ETH, USDC and Solana. Live accounts only; trades and balances sync automatically.'],
   ['What does the SI Coach actually do?', 'SI reviews every synced trade for quality, risk and discipline, detects recurring mistakes such as widened stops, revenge trading and overtrading, and answers questions grounded in your real history. Ask “What is my biggest mistake?” and it shows the evidence.'],
-  ['How does the Academy work?', 'One $150 lifetime payment unlocks Academy 2.0. Pro ($199) adds the Pro badge and a commercial internal-training licence, a $299 family pass covers up to four learners, and a $499 team pass covers up to ten. Four schools and thirteen programmes — Forex Mastery A–Z, Crypto Mastery A–Z, Order Flow Mastery, Multi-Asset, Platform Mastery, Funded/Prop Desk, TBC & Digital Assets, Investor & Ownership, AI & Trading Technology and the Company/Creator Business — with 233 SI-written lessons. Every lesson can be read aloud by a male or female voice in eight languages, a tutor sits inside each programme, eight live webinars run every week, and one final certificate exam per programme is the only test.'],
-  ['What do Professional API and white-label include?', 'Professional ($99/mo) unlocks the REST API with personal keys and webhooks, unlimited brokers, white-label presets, white-glove onboarding and a dedicated success manager for funds and prop desks. Teams ($199/mo) adds up to ten seats with centralised billing, priority support and team onboarding.'],
+  ['How does the Academy work?', 'Academy is separate from TradingBible Premium. One $150 lifetime payment unlocks Academy 2.0. Pro ($199) adds the Pro badge and a commercial internal-training licence, a $299 family pass covers up to four learners, and a $499 team pass covers up to ten. Four schools and thirteen programmes — Forex Mastery A–Z, Crypto Mastery A–Z, Order Flow Mastery, Multi-Asset, Platform Mastery, Funded/Prop Desk, TBC & Digital Assets, Investor & Ownership, AI & Trading Technology and the Company/Creator Business — with 233 SI-written lessons. Every lesson can be read aloud by a male or female voice in eight languages, a tutor sits inside each programme, eight live webinars run every week, and one final certificate exam per programme is the only test.'],
+  ['Is enterprise API access included?', 'No. TradingBible Premium includes all core platform features for one trader. REST API licensing, webhooks, white-label technology and desk-level deployment are quoted separately for funds, brokers and enterprises through sales. Every API quote is subject to usage, market-data and licensing review.'],
   ['Is there a community and one-to-one help?', 'Yes. The forum ranks members by real contribution, the public leaderboard shows verified activity without fake P&L, and the SI coach answers questions grounded in your own journal and lessons. Human coaching is not sold as a separate marketplace.'],
-  ['How is TBC different from TB?', 'TBC platform credits are an existing off-chain utility credit used inside TradingBible. The proposed TBC token is a separate, unissued network asset. TB is a proposed equity ticker for TradingBible, Inc. Holding TBC credits does not make you a shareholder, and holding TB equity would not make you a TBC holder.'],
+  ['How is TBC different from TB?', 'TBC platform credits are an existing off-chain utility credit used inside TradingBible. The proposed TBC token is a separate, unissued network asset. TB is a proposed equity ticker for the securities issuer. Holding TBC credits does not make you a shareholder, and holding TB equity would not make you a TBC holder.'],
   ['Is TradingBible listed on Nasdaq?', 'No. TradingBible is a private, pre-IPO company. TB is a proposed ticker; no listing application, exchange approval, share price, market capitalisation, trading volume or investment offer is represented anywhere on this site.'],
 ];
 
@@ -444,7 +444,7 @@ export default function LandingPage() {
                 ))}
               </div>
               <p className="mt-4 text-[10px] leading-relaxed text-[#8a8577]">
-                TradingBible, Inc. is the official operating company. TradingBible Holdings, Inc. is the parent holding company. TB is a proposed ticker, not a reserved or approved listing.
+                TradingBible is owned and operated by TradingBible Holdings, Inc., a Delaware corporation. TB is a proposed ticker, not a reserved or approved listing.
               </p>
             </div>
             <div className="grid gap-2.5 sm:grid-cols-2">
@@ -483,8 +483,8 @@ export default function LandingPage() {
 
       <section id="pricing" className={`scroll-mt-28 border-t border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/55' : 'bg-[#0a0a0f]/55'} backdrop-blur-sm`}>
         <div className="mx-auto w-full max-w-[84rem] px-5 py-14 sm:px-8 sm:py-20">
-          <Head center eyebrow="Pricing" title="Choose the room you want to trade from." sub="Every plan starts with the same live-account journal. Upgrade when you want SI beside you, daily reports or a desk-level API." />
-          <div className="mt-8 grid items-stretch gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <Head center eyebrow="Pricing" title="Start free. Upgrade when the desk is ready." sub="A free account opens the Academy catalogue, community, paper trading and profile. One Premium plan at $19.99/month or $199/year unlocks every core trading feature." />
+          <div className="mx-auto mt-8 grid max-w-4xl items-stretch gap-4 md:grid-cols-2">
             {PLANS.map((raw) => {
               const p = translatePlan(t, raw);
               return (
@@ -494,8 +494,9 @@ export default function LandingPage() {
                     <img src={p.logo} alt="" className="h-10 w-10 rounded-xl object-contain ring-1 ring-[#d4af37]/25" />
                     <div><h3 className="text-base font-bold tracking-tight text-[#f0ecdd]">{p.name}</h3><p className="text-[10px] text-[#8a8577]">{p.tagline}</p></div>
                   </div>
-                  <div className="mt-4 flex items-end gap-1"><span className="font-mono text-3xl font-bold text-[#e8c95a]">${p.price}</span><span className="mb-1 text-xs text-[#8a8577]">/{p.period}</span></div>
+                  <div className="mt-4 flex items-end gap-1"><span className="font-mono text-3xl font-bold text-[#e8c95a]">{p.price === 0 ? "Free" : `$${p.price}`}</span><span className="mb-1 text-xs text-[#8a8577]">/{p.period}</span></div>
                   <div className="my-4 h-px bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
+                  {p.id === "premium" && <p className="mb-2 text-[10px] font-semibold text-[#34d399]">Annual option · $199/year</p>}
                   <ul className="flex-1 space-y-2 text-xs text-[#b3ae9e]">
                     {p.features.slice(0, 5).map((f) => <li key={f} className="flex gap-2"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#34d399]" /><span className="leading-snug">{f}</span></li>)}
                   </ul>
@@ -504,7 +505,7 @@ export default function LandingPage() {
               );
             })}
           </div>
-          <p className="mx-auto mt-5 max-w-2xl text-center text-[10px] leading-relaxed text-[#8a8577]">Every first payment carries a 14-day money-back guarantee. Plans are charged on card; TBC platform credits never pay for a plan. Program terms, market data access and availability apply.</p>
+          <p className="mx-auto mt-5 max-w-2xl text-center text-[10px] leading-relaxed text-[#8a8577]">Every first Premium payment carries a 14-day money-back guarantee. Free accounts do not require a card. TBC platform credits never pay for a plan. Enterprise API, market-data licensing and white-label deployment are quoted separately.</p>
         </div>
       </section>
 
@@ -529,7 +530,7 @@ export default function LandingPage() {
 
       <section className="mx-auto w-full max-w-[84rem] px-5 pb-16 sm:px-8 sm:pb-24">
         <Card className="relative overflow-hidden rounded-2xl border-[#d4af37]/25 p-6 sm:p-10">
-          <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.16),transparent_55%)]" />
+          <div aria-hidden className="pointer-events-none absolute inset-0 tb-art-halo" style={{ background: 'radial-gradient(ellipse at top right, color-mix(in srgb, var(--tb-gold, #d4af37) 16%, transparent), transparent 55%)' }} />
           <div className="relative grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <div className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">Your next session</div>

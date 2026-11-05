@@ -96,7 +96,7 @@ export const TB_LEADERSHIP = [
 export const TB_GOVERNANCE = [
   {
     title: 'Current structure',
-    body: 'TradingBible, Inc. is the official operating company; TradingBible Holdings, Inc. is the parent holding company. TB is not publicly traded.',
+    body: 'TradingBible Holdings, Inc. owns and operates TradingBible; TradingBible, Inc. is the securities issuer. TB is not publicly traded.',
     status: 'Current',
     tone: 'gold',
   },

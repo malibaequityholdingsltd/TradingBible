@@ -8,8 +8,8 @@ export const BRAND = {
   tagline: 'TradingBible',
 
   // Legal entity
-  legalName: 'TradingBible, Inc.',
-  legalEntity: 'TradingBible, Inc.',
+  legalName: 'TradingBible Holdings, Inc.',
+  legalEntity: 'TradingBible Holdings, Inc.',
   parentCompany: 'TradingBible Holdings, Inc.',
 
   // Logo assets (SVG preferred for crisp scaling)

@@ -1084,7 +1084,7 @@ router.post('/pay', async (req, res) => {
 		return res.status(503).json({ error: 'tbc_unavailable', message: 'TBC payments open at token launch.' });
 	}
 	const isAcademy = intent === 'academy';
-	const priceMap = { pro: 19.99, elite: 49.99, professional: 99, teams: 199, academy: 150 };
+	const priceMap = { premium: 19.99, premium_annual: 199, pro: 19.99, elite: 49.99, professional: 99, teams: 199, academy: 150 };
 	const key = isAcademy ? 'academy' : plan;
 	const amount = priceMap[key];
 	if (!amount) return res.status(422).json({ error: 'unknown plan' });
@@ -1106,12 +1106,12 @@ router.post('/pay', async (req, res) => {
 		}
 		const patch = {};
 		if (isAcademy) { patch.academyAccess = true; patch.academyPurchasedAt = new Date().toISOString(); }
-		else { patch.plan = key; patch.subscriptionStatus = 'active'; patch.currentPeriodEnd = new Date(Date.now() + 30*86400000).toISOString(); }
+		else { patch.plan = key === 'premium_annual' ? 'premium' : key; patch.subscriptionStatus = 'active'; patch.currentPeriodEnd = new Date(Date.now() + (key === 'premium_annual' ? 365 : 30)*86400000).toISOString(); }
 		// Try to persist plan/academy - ignore missing columns
 		try { await supabaseRest(`/rest/v1/users?id=eq.${user.id}`, { method: 'PATCH', body: patch, prefer: 'return=representation' }); } catch (e) { logger.warn('wallet pay user patch failed', String(e)); }
 		await addLedgerTx({
 			owner: user.id, kind: 'pay', amount: isAcademy ? -tbcAmount : -amount, status: 'completed',
-			reference: key, counterparty: 'internal', asset: isAcademy ? 'TBC' : key,
+			reference: key, counterparty: 'internal', asset: isAcademy ? 'TBC' : (key === 'premium_annual' ? 'premium' : key),
 			fiatValue: isAcademy ? amount : undefined,
 		});
 		return res.json({ ok: true, balance: await getLedgerBalance(user.id), ...(isAcademy ? { tbcCharged: tbcAmount, kwdCharged: tbcAmount, peg: '1 TBC = 1 KWD' } : {}) });

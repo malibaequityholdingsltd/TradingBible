@@ -782,9 +782,9 @@ export function SignupPage() {
         toast({ variant: 'destructive', title: t('auth.e.enter6'), description: t('auth.e.checkCode') });
         return;
       }
-      const auth = await loginWithCode(email.trim(), token);
-      // No free trial: new accounts must complete a paid checkout to enter.
-      nav('/app/billing', { replace: true });
+      await loginWithCode(email.trim(), token);
+      // New accounts start free and can explore before choosing Premium.
+      nav('/app/welcome', { replace: true });
     } catch (err) {
       if (!sent && isOtpRateLimited(err)) {
         const waitFor = parseRetryAfterSeconds(err);

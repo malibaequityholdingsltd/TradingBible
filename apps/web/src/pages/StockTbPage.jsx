@@ -73,8 +73,8 @@ function MarketPanel({ data, loading }) {
 
 function IssuerFacts({ data }) {
   const rows = [
-    ['Current entity', TB_ISSUER.currentEntity],
-    ['Parent company', TB_ISSUER.parentCompany],
+    ['Issuer entity', TB_ISSUER.issuer],
+    ['Owner & operator', TB_ISSUER.parentCompany],
     ['Jurisdiction', TB_ISSUER.jurisdiction],
     ['Structure', TB_ISSUER.structure],
     ['Ticker', 'TB · proposed'],

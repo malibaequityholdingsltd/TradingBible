@@ -44,6 +44,7 @@
 - [Div](/__tvtest): TradingBible application page.
 - [Economic Calendar](/app/economic-calendar): TradingBible application page.
 - [Faq](/faq): TradingBible application page.
+- [Free Welcome](/app/welcome): TradingBible application page.
 - [Guides](/guides): TradingBible application page.
 - [Heatmaps](/app/heatmaps): TradingBible application page.
 - [Indicators](/app/indicators): TradingBible application page.
@@ -74,7 +75,6 @@
 - [Staff Id Cards](/admin/staff-id-cards): TradingBible application page.
 - [Staff Portal](/staff/*): TradingBible application page.
 - [Staff Profile Gate](/staff/:id): TradingBible application page.
-- [Staking](/app/staking): TradingBible application page.
 - [Stock Tb](/stock/TB): TradingBible application page.
 - [Student Dashboard](/student): TradingBible application page.
 - [Symbol Redirect](/app/charts): TradingBible application page.

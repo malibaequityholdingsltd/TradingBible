@@ -285,7 +285,7 @@ function createSupabaseCompatClient() {
       if (md.dob) provision.dob = md.dob;
       if (md.phone) provision.phone = md.phone;
       if (fallbackRole === 'admin') { provision.role = 'admin'; provision.plan = 'professional'; }
-      else if (md.plan && ['pro', 'elite', 'professional', 'teams'].includes(md.plan)) { provision.plan = md.plan; }
+      else if (md.plan && ['pro', 'premium', 'elite', 'professional', 'teams'].includes(md.plan)) { provision.plan = md.plan; }
       if (fallbackAccountType) provision.accountType = fallbackAccountType;
       if (fallbackCompanyName) provision.companyName = fallbackCompanyName;
       const { data: createdProfile, error: profileError } = await withProfileTimeout(

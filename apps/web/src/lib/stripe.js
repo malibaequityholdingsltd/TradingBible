@@ -30,9 +30,10 @@ function authHeaders() {
 export async function openCheckout(plan) {
   const config = await getStripeConfig();
   const priceId = config.prices?.[plan];
-  // Teams uses the fixed $199/mo inline price on the API, so it does not
-  // require a dashboard price ID before the first checkout.
-  if (!priceId && plan !== 'teams') throw new Error('This plan is not available for checkout yet — missing STRIPE_PRICE_* in apps/api/.env');
+  // Premium monthly/annual and Teams can fall back to fixed inline prices
+  // on the API, so they remain sellable before dashboard price IDs exist.
+  const hasInlinePrice = plan === 'teams' || plan === 'premium' || plan === 'premium_annual';
+  if (!priceId && !hasInlinePrice) throw new Error('This plan is not available for checkout yet — missing STRIPE_PRICE_* in apps/api/.env');
 
   const res = await apiServerClient.fetch('/stripe/checkout-session', {
     method: 'POST',

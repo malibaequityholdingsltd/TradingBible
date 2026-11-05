@@ -23,7 +23,7 @@ const CHAPTERS = [
     title: 'Trade like a desk',
     sub: 'Connect capital, log executions, build the record.',
     steps: [
-      { id: 'trade.plan', title: 'Pick your plan', body: 'Pro unlocks the terminal, Elite adds the SI coach, Professional adds API + white-label.', to: '/pricing', cta: 'Compare plans' },
+      { id: 'trade.plan', title: 'Pick your plan', body: 'Premium unlocks the terminal, journal, analytics, SI coach and reports. Enterprise API and white-label licensing are separate.', to: '/pricing', cta: 'Compare plans' },
       { id: 'trade.broker', title: 'Connect a live broker', body: 'Sync executions automatically — no manual entry, no missing fills.', to: '/app/brokers', cta: 'Connect broker', auto: 'broker' },
       { id: 'trade.trade', title: 'Log your first trades', body: 'Three logged trades unlocks your P&L curve, win rate and trader score.', to: '/app/journal', cta: 'Open journal', auto: 'trades' },
       { id: 'trade.terminal', title: 'Set up the terminal', body: 'Watchlists, quotes and one-tap tickets arranged your way.', to: '/app/terminal-pro', cta: 'Open terminal' },
@@ -37,7 +37,7 @@ const CHAPTERS = [
     steps: [
       { id: 'analyze.dashboard', title: 'Read your dashboard', body: 'Equity curve, profit factor, drawdown — the five numbers that matter.', to: '/app', cta: 'Open dashboard' },
       { id: 'analyze.alerts', title: 'Set a price alert', body: 'Get pinged instead of screen-watching. Start with one level.', to: '/app/alerts', cta: 'Create alert' },
-      { id: 'analyze.coach', title: 'Meet the SI coach', body: 'It reads your journal and names the pattern costing you money. Elite and up.', to: '/app/coach', cta: 'Ask the coach' },
+      { id: 'analyze.coach', title: 'Meet the SI coach', body: 'It reads your journal and names the pattern costing you money. Included with Premium.', to: '/app/coach', cta: 'Ask the coach' },
       { id: 'analyze.tools', title: 'Size with Risk Tools', body: 'Position-size calculator, R-multiples and drawdown guardrails.', to: '/app/tools', cta: 'Open tools' },
     ],
   },
@@ -85,7 +85,7 @@ const CHAPTERS = [
     steps: [
       { id: 'secure.profile', title: 'Complete your profile', body: 'Username, market, experience — personalizes coaching and stats.', to: '/app/profile', cta: 'Edit profile' },
       { id: 'secure.2fa', title: 'Enable 2FA + passkeys', body: 'TOTP and WebAuthn under Security. Five minutes, permanent peace.', to: '/app/security', cta: 'Secure account' },
-      { id: 'secure.reports', title: 'Export your first report', body: 'Tax-ready P&L exports. Elite and up.', to: '/app/reports', cta: 'Open reports' },
+      { id: 'secure.reports', title: 'Export your first report', body: 'Tax-ready P&L exports. Included with Premium.', to: '/app/reports', cta: 'Open reports' },
       { id: 'secure.prop', title: 'Enter a Funded evaluation', body: 'Pass on real journaled fills and trade firm capital.', to: '/app/challenges', cta: 'Get funded' },
     ],
   },

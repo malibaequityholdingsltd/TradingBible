@@ -34,16 +34,12 @@ import {
   Wallet,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import AirdropClaim from '@/components/AirdropClaim';
-import TbcCard from '@/components/TbcCard';
-import { TbcMoney } from '@/components/TbcSign';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useWallet, NETWORK_LIST } from '@/hooks/useWallet';
 import { fmtMoney } from '@/lib/mockData';
 import { useI18n } from '@/lib/i18n';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
-import { TBC_LOGO_URL, useTbc } from '@/lib/tbc';
 import { txt, numOrNull } from '@/lib/safeRender';
 
 const EXPLORER = {
@@ -54,16 +50,14 @@ const EXPLORER = {
   'usdc-base': (a) => `https://basescan.org/address/${a}`,
   'usdc-polygon': (a) => `https://polygonscan.com/address/${a}`,
   solana: (a) => `https://solscan.io/account/${a}`,
-  'tbc-ethereum': (a) => `https://etherscan.io/address/${a}`,
-  'tbc-base': (a) => `https://basescan.org/address/${a}`,
 };
 
 const ACTIVITY_FILTERS = [
   { id: 'all', label: 'All', types: null },
   { id: 'deposits', label: 'Deposits', types: ['deposit'] },
   { id: 'withdrawals', label: 'Withdrawals', types: ['withdraw', 'withdraw_crypto'] },
-  { id: 'transfers', label: 'Transfers', types: ['transfer_out', 'transfer_in', 'tbc_send', 'tbc_receive'] },
-  { id: 'credits', label: 'Credits & fees', types: ['tbc_convert', 'tbc_claim', 'airdrop', 'reward', 'payout', 'affiliate_payout', 'pay', 'mentor_earn', 'fee'] },
+  { id: 'transfers', label: 'Transfers', types: ['transfer_out', 'transfer_in'] },
+  { id: 'credits', label: 'Credits & fees', types: ['reward', 'payout', 'affiliate_payout', 'pay', 'fee'] },
 ];
 
 const TX_LABELS = {
@@ -73,15 +67,9 @@ const TX_LABELS = {
   pay: 'Account payment',
   reward: 'Reward',
   payout: 'Payout',
-  tbc_convert: 'TBC conversion',
-  tbc_claim: 'TBC claim',
-  tbc_send: 'TBC sent',
-  tbc_receive: 'TBC received',
   affiliate_payout: 'Affiliate credit',
-  airdrop: 'Airdrop',
   transfer_out: 'Sent',
   transfer_in: 'Received',
-  mentor_earn: 'Coaching credit',
   fee: 'Platform fee',
 };
 
@@ -131,6 +119,8 @@ function formatDate(value) {
 function formatAmount(value, asset = 'USD', { sign = false } = {}) {
   const n = Number(value) || 0;
   const prefix = sign ? (n > 0 ? '+' : '') : '';
+  // Historic ledger rows may still carry TBC. Render them accurately; new
+  // member-portal surfaces no longer create or promote TBC balances.
   if (asset === 'TBC') {
     return `${prefix}${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TBC`;
   }
@@ -160,18 +150,11 @@ export default function WalletPage() {
   } = wallet;
   const { toast } = useToast();
   const { t } = useI18n();
-  const { tbc } = useTbc();
-
-  const trackNetworks = useMemo(() => [
-    ...NETWORK_LIST,
-    ...(tbc.contracts?.ethereum ? [{ id: 'tbc-ethereum', label: 'TBC · Ethereum' }] : []),
-    ...(tbc.contracts?.base ? [{ id: 'tbc-base', label: 'TBC · Base' }] : []),
-  ], [tbc.contracts]);
+  const trackNetworks = NETWORK_LIST;
 
   const [bankTab, setBankTab] = useState('accounts');
   const [cashMode, setCashMode] = useState('deposit');
   const [hideBalance, setHideBalance] = useState(false);
-  const [tbcPerUsd, setTbcPerUsd] = useState(1 / 3.25);
   const [accounts, setAccounts] = useState([]);
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState({ network: 'bitcoin', address: '', label: '' });
@@ -180,13 +163,8 @@ export default function WalletPage() {
   const [withAmount, setWithAmount] = useState('');
   const [railBusy, setRailBusy] = useState('');
   const [needsSetup, setNeedsSetup] = useState(false);
-  const [defiTab, setDefiTab] = useState('pools');
-  const [openPool, setOpenPool] = useState(null);
-  const [poolInputs, setPoolInputs] = useState({});
-  const [stagedPools, setStagedPools] = useState({});
-  const [lendInputs, setLendInputs] = useState({});
   const [rampForm, setRampForm] = useState({ walletAddress: '', currency: 'USDC', network: 'ethereum', fiatAmount: '100' });
-  const [sendForm, setSendForm] = useState({ to: '', asset: 'TBC', amount: '', memo: '' });
+  const [sendForm, setSendForm] = useState({ to: '', asset: 'USD', amount: '', memo: '' });
   const [sendBusy, setSendBusy] = useState(false);
   const [stmtMonth, setStmtMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [statement, setStatement] = useState(null);
@@ -195,14 +173,9 @@ export default function WalletPage() {
   const [txQuery, setTxQuery] = useState('');
 
   const walletBalance = Number(ledger?.balances?.USD) || 0;
-  const tbcBalance = Number(ledger?.balances?.TBC) || 0;
   const trackedUsd = Number(totalUsd) || 0;
-  const kwdPerTbc = tbcPerUsd > 0 ? 1 / tbcPerUsd : 3.25;
-  const tbcUsd = tbcBalance * kwdPerTbc;
-  const availableUsd = walletBalance + tbcUsd;
-  const portfolioUsd = availableUsd + trackedUsd;
-  const cashAccount = accounts.find((a) => a.asset !== 'TBC');
-  const tbcAccount = accounts.find((a) => a.asset === 'TBC');
+  const portfolioUsd = walletBalance + trackedUsd;
+  const cashAccount = accounts.find((a) => a.asset === 'USD') || accounts[0];
   const kycStatus = rails?.kyc?.status || 'none';
   const connectStatus = rails?.connect?.status || 'none';
   const onrampEnabled = Boolean(rails?.providers?.onramp);
@@ -214,7 +187,6 @@ export default function WalletPage() {
 
   const allocation = ([
     ['cash', walletBalance, 'var(--at-green)'],
-    ['tbc', tbcUsd, 'var(--at-gold)'],
     ['external', trackedUsd, 'var(--at-blue)'],
   ]).map(([key, value, color]) => ({
     key,
@@ -236,7 +208,7 @@ export default function WalletPage() {
 
   const recentTransfers = useMemo(
     () => transactions
-      .filter((tx) => ['transfer_in', 'transfer_out', 'tbc_send', 'tbc_receive'].includes(txt(tx.type, '')))
+      .filter((tx) => ['transfer_in', 'transfer_out'].includes(txt(tx.type, '')))
       .slice(0, 4),
     [transactions],
   );
@@ -248,21 +220,6 @@ export default function WalletPage() {
     { id: 'crypto', label: 'Crypto', icon: Coins },
     { id: 'activity', label: 'Activity', icon: ReceiptText },
   ];
-
-  useEffect(() => {
-    let alive = true;
-    fetch(`${API_SERVER_URL}/tbc/econ`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((econ) => {
-        if (!alive || !econ) return;
-        const direct = Number(econ.tbcPerUsd);
-        const derived = Number(econ.usdPerKwd) > 0 ? 1 / Number(econ.usdPerKwd) : 0;
-        const rate = direct > 0.15 && direct < 0.6 ? direct : derived;
-        if (rate > 0.15 && rate < 0.6) setTbcPerUsd(rate);
-      })
-      .catch(() => {});
-    return () => { alive = false; };
-  }, []);
 
   useEffect(() => {
     try {
@@ -334,15 +291,6 @@ export default function WalletPage() {
   const openSend = () => {
     setBankTab('send');
     window.setTimeout(() => document.getElementById('transfer-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
-  };
-
-  const goCryptoSection = (id) => {
-    setBankTab('crypto');
-    if (id === 'tbc-convert') {
-      try { window.dispatchEvent(new CustomEvent('tb:open-rail', { detail: 'convert' })); } catch { /* ignore */ }
-    }
-    const target = id === 'swap-desk' ? 'defi-section' : id;
-    window.setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 220);
   };
 
   const submit = async (event) => {
@@ -533,13 +481,12 @@ export default function WalletPage() {
   };
 
   const maxSend = () => {
-    const balance = sendForm.asset === 'TBC' ? tbcBalance : walletBalance;
-    setSendForm({ ...sendForm, amount: String(Math.floor(balance * 100) / 100) });
+    setSendForm({ ...sendForm, amount: String(Math.floor(walletBalance * 100) / 100) });
   };
 
   const limitWith = () => setWithAmount(String(Math.floor(walletBalance * 100) / 100));
 
-  const sendAvailable = sendForm.asset === 'TBC' ? `${formatAmount(tbcBalance, 'TBC')} available` : `${fmtMoney(walletBalance)} available`;
+  const sendAvailable = `${fmtMoney(walletBalance)} available`;
   const statusText = syncing
     ? 'Refreshing balances…'
     : loading
@@ -601,14 +548,12 @@ export default function WalletPage() {
                     <button type="button" className="wv-reveal" onClick={() => setHideBalance((v) => !v)} aria-label={hideBalance ? 'Show balance' : 'Hide balance'}>
                       {hideBalance ? <EyeOff /> : <Eye />}
                     </button>
-                    <span className="wv-rate-pill">TBC · 1 KWD</span>
                   </div>
                   <div id="wallet-portfolio-value" className="wv-balance-value">
                     {hideBalance ? '••••••' : fmtMoney(portfolioUsd)}
                   </div>
                   <div className="wv-balance-breakdown">
                     <span><strong>{hideBalance ? '••' : fmtMoney(walletBalance)}</strong> cash</span>
-                    <span><strong>{hideBalance ? '••' : `${tbcBalance.toLocaleString('en-US', { maximumFractionDigits: 2 })} TBC`}</strong> credits</span>
                     <span><strong>{hideBalance ? '••' : fmtMoney(trackedUsd)}</strong> external wallets</span>
                   </div>
                   <div className="wv-allocation">
@@ -619,13 +564,10 @@ export default function WalletPage() {
                     </div>
                     <div className="wv-allocation-legend">
                       <span><i className="wv-dot wv-dot--cash" />Cash {Math.round(allocation[0].pct)}%</span>
-                      <span><i className="wv-dot wv-dot--tbc" />TBC {Math.round(allocation[1].pct)}%</span>
-                      <span><i className="wv-dot wv-dot--external" />External {Math.round(allocation[2].pct)}%</span>
+                      <span><i className="wv-dot wv-dot--external" />External {Math.round(allocation[1].pct)}%</span>
                     </div>
                   </div>
-                  <p className="wv-fine" style={{ marginTop: 10 }}>
-                    TBC is valued at 1 KWD per credit ({fmtMoney(kwdPerTbc)} at the current published rate). External wallet balances are read-only.
-                  </p>
+                  <p className="wv-fine" style={{ marginTop: 10 }}>External wallet balances are read-only and never move funds.</p>
                 </div>
                 <div className="wv-quick-actions" aria-label="Quick actions">
                   <button type="button" className="wv-action" onClick={() => openCash('deposit')}>
@@ -640,9 +582,9 @@ export default function WalletPage() {
                     <span className="wv-action-icon"><Send /></span>
                     <span>Send</span>
                   </button>
-                  <button type="button" className="wv-action" onClick={() => goCryptoSection('tbc-convert')}>
-                    <span className="wv-action-icon"><ArrowLeftRight /></span>
-                    <span>Convert</span>
+                  <button type="button" className="wv-action" onClick={() => setBankTab('crypto')}>
+                    <span className="wv-action-icon"><Coins /></span>
+                    <span>Crypto</span>
                   </button>
                 </div>
               </section>
@@ -653,7 +595,7 @@ export default function WalletPage() {
                     <div className="wv-card-head">
                       <div>
                         <h2 id="wallet-holdings-title" className="wv-section-title">Holdings</h2>
-                        <p className="wv-section-sub">Cash, platform credits and connected wallets</p>
+                        <p className="wv-section-sub">Cash and connected wallets</p>
                       </div>
                       <button type="button" className="wv-link" onClick={() => setBankTab('activity')}>
                         View activity <ArrowRight />
@@ -683,24 +625,6 @@ export default function WalletPage() {
                         <div className="wv-value-cell">{hideBalance ? '••••' : fmtMoney(walletBalance)}</div>
                         <div className="wv-row-action">
                           <button type="button" className="wv-btn wv-btn--secondary wv-btn--sm" onClick={() => openCash('deposit')}>Deposit</button>
-                        </div>
-                      </HoldingRow>
-
-                      <HoldingRow>
-                        <div className="wv-asset-cell">
-                          <span className="wv-asset-icon wv-asset-icon--tbc">
-                            <img src={TBC_LOGO_URL} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                          </span>
-                          <span>
-                            <span className="wv-asset-name">TBC credits</span>
-                            <span className="wv-asset-sub">Utility credits{tbcAccount?.last4 ? ` ···· ${tbcAccount.last4}` : ''}</span>
-                          </span>
-                        </div>
-                        <div className="wv-network-cell">In-app credit</div>
-                        <div className="wv-balance-cell">{hideBalance ? '••••' : `${tbcBalance.toLocaleString('en-US', { maximumFractionDigits: 2 })} TBC`}</div>
-                        <div className="wv-value-cell">{hideBalance ? '••••' : fmtMoney(tbcUsd)}</div>
-                        <div className="wv-row-action">
-                          <button type="button" className="wv-btn wv-btn--secondary wv-btn--sm" onClick={() => goCryptoSection('tbc-convert')}>Convert</button>
                         </div>
                       </HoldingRow>
 
@@ -832,10 +756,6 @@ export default function WalletPage() {
                       <div className="wv-stat-row">
                         <span className="wv-stat-label">Cash available</span>
                         <span className="wv-stat-value">{hideBalance ? '••••' : fmtMoney(walletBalance)}</span>
-                      </div>
-                      <div className="wv-stat-row">
-                        <span className="wv-stat-label">Credits available</span>
-                        <span className="wv-stat-value">{hideBalance ? '••••' : `${tbcBalance.toLocaleString('en-US', { maximumFractionDigits: 2 })} TBC`}</span>
                       </div>
                       <button type="button" className="wv-btn wv-btn--ghost wv-btn--block" style={{ marginTop: 9 }} onClick={() => setBankTab('activity')}>
                         Open ledger <ArrowRight className="h-3.5 w-3.5" />
@@ -985,14 +905,10 @@ export default function WalletPage() {
                         <span className="wv-stat-value">{fmtMoney(walletBalance)}</span>
                       </div>
                       <div className="wv-stat-row">
-                        <span className="wv-stat-label">TBC credits</span>
-                        <span className="wv-stat-value">{formatAmount(tbcBalance, 'TBC')}</span>
-                      </div>
-                      <div className="wv-stat-row">
                         <span className="wv-stat-label">Cash account</span>
                         <span className="wv-stat-value">{cashAccount?.last4 ? `···· ${cashAccount.last4}` : 'Issued on activity'}</span>
                       </div>
-                      <p className="wv-fine" style={{ marginTop: 10 }}>Credits never pay for a subscription. Plans are paid from cash or card.</p>
+                      <p className="wv-fine" style={{ marginTop: 10 }}>Plans are paid from cash or card.</p>
                     </div>
                   </section>
 
@@ -1025,7 +941,7 @@ export default function WalletPage() {
               <div className="wv-page-head">
                 <div>
                   <h2 className="wv-page-heading">Send funds</h2>
-                  <p className="wv-page-sub">Transfer cash or TBC credits to another TradingBible member. Transfers settle instantly inside the ledger.</p>
+                  <p className="wv-page-sub">Transfer cash to another TradingBible member. Transfers settle instantly inside the ledger.</p>
                 </div>
                 <span className="wv-chip wv-chip--green"><Check /> Instant settlement</span>
               </div>
@@ -1054,10 +970,7 @@ export default function WalletPage() {
                     <div className="wv-form-grid">
                       <div className="wv-field-group">
                         <label className="wv-field-label" htmlFor="send-asset">Asset</label>
-                        <select id="send-asset" className="wv-field" value={sendForm.asset} onChange={(e) => setSendForm({ ...sendForm, asset: e.target.value })}>
-                          <option value="TBC">TBC credits</option>
-                          <option value="USD">USD cash</option>
-                        </select>
+                        <input id="send-asset" className="wv-field" value="USD cash" readOnly aria-label="Asset" />
                       </div>
                       <div className="wv-field-group">
                         <label className="wv-field-label" htmlFor="send-amount">Amount</label>
@@ -1097,7 +1010,7 @@ export default function WalletPage() {
                     <p className="wv-fine">Identity verification is required to send funds. Check the recipient details before confirming — ledger transfers are final.</p>
                     <button type="submit" className="wv-btn wv-btn--primary wv-btn--block" disabled={sendBusy}>
                       {sendBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                      {sendBusy ? t('wal.sending') : `Send ${sendForm.asset === 'TBC' ? 'TBC' : 'USD'}`}
+                      {sendBusy ? t('wal.sending') : 'Send USD'}
                     </button>
                   </form>
                 </section>
@@ -1172,16 +1085,10 @@ export default function WalletPage() {
               <div className="wv-page-head">
                 <div>
                   <h2 className="wv-page-heading">Crypto &amp; credits</h2>
-                  <p className="wv-page-sub">Convert USD to TBC credits, track external wallets read-only, or fund your own wallet by card. TradingBible never custodies crypto.</p>
+                  <p className="wv-page-sub">Track external wallets read-only or fund your own wallet by card. TradingBible never custodies crypto.</p>
                 </div>
                 <span className="wv-chip wv-chip--gold"><ShieldCheck /> Non-custodial tracking</span>
               </div>
-
-              <div id="tbc-convert" style={{ scrollMarginTop: 24 }}>
-                <TbcCard onChanged={reload} />
-              </div>
-
-              <AirdropClaim onChanged={reload} />
 
               <section className="wv-card" id="vault" aria-labelledby="external-wallets-title">
                 <div className="wv-card-head">
@@ -1309,111 +1216,6 @@ export default function WalletPage() {
                   </div>
                 </section>
 
-                <details className="wv-advanced" id="defi-section" style={{ scrollMarginTop: 24 }}>
-                  <summary>
-                    <div className="wv-advanced-summary-main">
-                      <Lock />
-                      <div>
-                        <div className="wv-advanced-title">Pre-launch programs</div>
-                        <div className="wv-advanced-sub">Pools, lending and gated DeFi staging</div>
-                      </div>
-                    </div>
-                    <span className="wv-chip wv-chip--amber">Not live</span>
-                  </summary>
-                  <div className="wv-advanced-body">
-                    <div className="wv-segmented" style={{ marginTop: 13 }} role="tablist" aria-label="Program type">
-                      <button type="button" role="tab" aria-selected={defiTab === 'pools'} className={defiTab === 'pools' ? 'is-active' : ''} onClick={() => setDefiTab('pools')}>Pools</button>
-                      <button type="button" role="tab" aria-selected={defiTab === 'lend'} className={defiTab === 'lend' ? 'is-active' : ''} onClick={() => setDefiTab('lend')}>Lend</button>
-                    </div>
-
-                    {defiTab === 'pools' ? (
-                      <div>
-                        {[
-                          { pair: 'TBC / USDC', note: 'Opens with the spot DEX', gate: 'Gate 2 · staging', tokens: ['TBC', 'USDC'] },
-                          { pair: 'WTBC / TBC', note: '1:1 wrap route · WTBC collateral-backed', gate: 'Gate 2 · staging', tokens: ['WTBC', 'TBC'] },
-                          { pair: 'TBC / BTC', note: 'Opens after bridge approval', gate: 'Gate 3 · review', tokens: ['TBC', 'BTC'] },
-                        ].map((pool) => {
-                          const isOpen = openPool === pool.pair;
-                          const values = poolInputs[pool.pair] || { a: '', b: '' };
-                          const staged = stagedPools[pool.pair];
-                          return (
-                            <div key={pool.pair} className="wv-program">
-                              <div className="wv-program-main">
-                                <div className="wv-program-title">{pool.pair}</div>
-                                <div className="wv-program-sub">{pool.note} · {pool.gate}</div>
-                              </div>
-                              {staged ? (
-                                <span className="wv-chip wv-chip--green">Staged locally · nothing moved</span>
-                              ) : (
-                                <button type="button" className="wv-btn wv-btn--secondary wv-btn--sm" onClick={() => setOpenPool(isOpen ? null : pool.pair)}>
-                                  {isOpen ? 'Close' : 'Prepare'}
-                                </button>
-                              )}
-                              {isOpen && !staged && (
-                                <div className="wv-stage-form" style={{ gridColumn: '1 / -1', width: '100%' }}>
-                                  <input className="wv-field" type="number" min="0" value={values.a} onChange={(e) => setPoolInputs({ ...poolInputs, [pool.pair]: { ...values, a: e.target.value } })} placeholder={`Amount ${pool.tokens[0]}`} />
-                                  <input className="wv-field" type="number" min="0" value={values.b} onChange={(e) => setPoolInputs({ ...poolInputs, [pool.pair]: { ...values, b: e.target.value } })} placeholder={`Amount ${pool.tokens[1]}`} />
-                                  <button
-                                    type="button"
-                                    className="wv-btn wv-btn--secondary wv-btn--sm"
-                                    disabled={!(Number(values.a) > 0) || !(Number(values.b) > 0)}
-                                    onClick={() => {
-                                      setStagedPools({ ...stagedPools, [pool.pair]: `${values.a} ${pool.tokens[0]} + ${values.b} ${pool.tokens[1]}` });
-                                      setOpenPool(null);
-                                      toast({ title: 'Position staged', description: `${pool.pair} opens at ${pool.gate.split(' · ')[0]}. Amounts are saved locally; nothing moved.` });
-                                    }}
-                                  >
-                                    Stage
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                        <p className="wv-fine" style={{ marginTop: 10 }}>No pool is funded. TVL and APR publish only with an approved programme.</p>
-                      </div>
-                    ) : (
-                      <div>
-                        {[
-                          { asset: 'USDC', note: 'Isolated collateral · gate-three review' },
-                          { asset: 'TBC', note: 'Borrow caps and funded reserves required' },
-                          { asset: 'BTC', note: 'Representation approval required' },
-                        ].map((market) => {
-                          const amount = lendInputs[market.asset] || '';
-                          return (
-                            <div key={market.asset} className="wv-program">
-                              <div className="wv-program-main">
-                                <div className="wv-program-title">{market.asset}</div>
-                                <div className="wv-program-sub">{market.note} · Gate 3 · staging</div>
-                              </div>
-                              <div className="wv-stage-form" style={{ flex: '1 1 260px', maxWidth: 310 }}>
-                                <input className="wv-field" type="number" min="0" value={amount} onChange={(e) => setLendInputs({ ...lendInputs, [market.asset]: e.target.value })} placeholder={`Amount ${market.asset}`} />
-                                <div style={{ display: 'flex', gap: 5 }}>
-                                  <button type="button" className="wv-btn wv-btn--secondary wv-btn--sm" disabled={!(Number(amount) > 0)} onClick={() => toast({ title: 'Supply staged', description: `${amount} ${market.asset} noted locally. Lending opens at gate three; nothing moved.` })}>Supply</button>
-                                  <button type="button" className="wv-btn wv-btn--secondary wv-btn--sm" disabled={!(Number(amount) > 0)} onClick={() => toast({ title: 'Borrow staged', description: `${amount} ${market.asset} noted locally. Borrow caps apply at gate three; nothing moved.` })}>Borrow</button>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                        <div className="wv-gate-row">
-                          {[
-                            ['Gate 1', 'Transfers + staking', 'live'],
-                            ['Gate 2', 'Spot DEX', 'staging'],
-                            ['Gate 3', 'Lending', 'review'],
-                          ].map(([gate, label, state]) => (
-                            <div key={gate} className="wv-gate">
-                              <div className="wv-gate-label">{gate}</div>
-                              <div className="wv-gate-value">{label}</div>
-                              <span className={`wv-chip ${state === 'live' ? 'wv-chip--green' : state === 'staging' ? 'wv-chip--gold' : ''}`} style={{ marginTop: 4 }}>{state}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <p className="wv-fine" style={{ marginTop: 10 }}>Nothing here moves real funds. Each programme opens only after its policy gate is approved.</p>
-                      </div>
-                    )}
-                  </div>
-                </details>
               </div>
             </>
           )}
@@ -1518,10 +1320,8 @@ export default function WalletPage() {
                       {statement ? (
                         <div className="wv-stmt-result">
                           <div className="wv-stmt-row"><span>Opening cash</span><strong>{fmtMoney(statement.opening?.USD || 0)}</strong></div>
-                          <div className="wv-stmt-row"><span>Opening TBC</span><strong>{Number(statement.opening?.TBC || 0).toLocaleString()} TBC</strong></div>
                           <div className="wv-stmt-row"><span>Lines</span><strong>{statement.count}</strong></div>
                           <div className="wv-stmt-row"><span>Closing cash</span><strong>{fmtMoney(statement.closing?.USD || 0)}</strong></div>
-                          <div className="wv-stmt-row"><span>Closing TBC</span><strong>{Number(statement.closing?.TBC || 0).toLocaleString()} TBC</strong></div>
                         </div>
                       ) : (
                         <p className="wv-fine" style={{ marginTop: 10 }}>Choose a month, then view its opening balance, every line and closing balance.</p>
@@ -1538,7 +1338,7 @@ export default function WalletPage() {
                       <Info className="h-4 w-4" style={{ color: 'var(--at-mut)' }} />
                     </div>
                     <div className="wv-card-body">
-                      <p className="wv-fine">Cash and credits are held in a double-entry ledger. The displayed balance is the sum of every non-failed entry. Deposits credit only after Stripe confirms payment; crypto tracking never moves funds.</p>
+                      <p className="wv-fine">Cash is held in a double-entry ledger. The displayed balance is the sum of every non-failed entry. Deposits credit only after Stripe confirms payment; crypto tracking never moves funds.</p>
                       <Link to="/contact" className="wv-link" style={{ marginTop: 10 }}>
                         Contact support <ArrowUpRight />
                       </Link>
@@ -1552,9 +1352,8 @@ export default function WalletPage() {
           <div className="wv-card-foot" style={{ borderTop: '1px solid var(--at-line-soft)', paddingLeft: 0, paddingRight: 0 }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
               <ShieldCheck className="h-3.5 w-3.5" style={{ color: 'var(--at-green)' }} />
-              Operated by TradingBible, Inc. Deposits via Stripe · payouts via Stripe Connect · crypto is non-custodial.
+              Operated by TradingBible Holdings, Inc. Deposits via Stripe · payouts via Stripe Connect · crypto is non-custodial.
             </span>
-            <span className="wv-fine">TBC is a platform utility credit, not equity or an investment.</span>
           </div>
         </div>
       </div>

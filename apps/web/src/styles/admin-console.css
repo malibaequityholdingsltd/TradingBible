@@ -175,12 +175,13 @@
 
 /* ── Light theme: keep console readable ───────────────────── */
 html.light .adm-console {
-  --adm-bg0: #eceae2;
-  --adm-bg1: #f4f2ea;
-  --adm-panel: #ffffff;
-  --adm-line: rgba(60, 60, 60, 0.14);
-  --adm-ink: #23262d;
-  --adm-mut: #6b7280;
+  --adm-bg0: var(--ex-bg, #f5f7fa);
+  --adm-bg1: var(--ex-bg-2, #eef1f5);
+  --adm-panel: var(--ex-panel, #ffffff);
+  --adm-line: var(--ex-line, #e4e7eb);
+  --adm-gold: var(--ex-accent, #a8b0ba);
+  --adm-ink: var(--ex-text, #1e2329);
+  --adm-mut: var(--ex-muted, #707a8a);
 }
 html.light .adm-console::after {
   opacity: 0.35;
@@ -192,10 +193,10 @@ html.light .adm-console .app-header {
 html.light .adm-console .glass,
 html.light .adm-console .tb-card,
 html.light .adm-console .tb-hero {
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: var(--ex-panel, #fff) !important;
 }
 html.light .adm-console thead tr {
-  background: rgba(244, 242, 234, 0.97) !important;
+  background: var(--ex-panel-2, #f7f8fa) !important;
 }
 html.light .adm-console input:not([type="checkbox"]):not([type="radio"]),
 html.light .adm-console select,

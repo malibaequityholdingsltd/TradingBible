@@ -35,8 +35,12 @@ const ACADEMY_FAMILY_PRICE_ID = process.env.STRIPE_PRICE_ACADEMY_FAMILY || 'pric
 const ACADEMY_PRO_PRICE = { amount: 19900, name: 'TradingBible Academy Pro' };
 const ACADEMY_TEAM_PRICE = { amount: 49900, name: 'TradingBible Academy Teams' };
 const PLATFORM_TEAMS_PRICE = { amount: 19900, name: 'TradingBible Teams', recurring: { interval: 'month' } };
+const PLATFORM_PREMIUM_MONTHLY_PRICE = { amount: 1999, name: 'TradingBible Premium', recurring: { interval: 'month' } };
+const PLATFORM_PREMIUM_ANNUAL_PRICE = { amount: 19900, name: 'TradingBible Premium Annual', recurring: { interval: 'year' } };
 
 const PRICE_MAP = {
+  premium: process.env.STRIPE_PRICE_PREMIUM || process.env.STRIPE_PRICE_PRO || '',
+  premium_annual: process.env.STRIPE_PRICE_PREMIUM_ANNUAL || '',
   pro: process.env.STRIPE_PRICE_PRO || '',
   elite: process.env.STRIPE_PRICE_ELITE || '',
   professional: process.env.STRIPE_PRICE_PROFESSIONAL || '',
@@ -49,7 +53,15 @@ const PRICE_MAP = {
 
 const PLAN_PRICE_SPECS = {
   teams: PLATFORM_TEAMS_PRICE,
+  premium: PLATFORM_PREMIUM_MONTHLY_PRICE,
+  premium_annual: PLATFORM_PREMIUM_ANNUAL_PRICE,
 };
+
+// Annual Premium is a billing interval, not a separate entitlement tier.
+const PLAN_ALIAS = { premium_annual: 'premium' };
+function canonicalPlan(plan) {
+  return PLAN_ALIAS[String(plan || '').toLowerCase()] || String(plan || '').toLowerCase();
+}
 
 async function resolveSubscriptionPrice(stripe, plan) {
   if (PRICE_MAP[plan]) return PRICE_MAP[plan];
@@ -75,7 +87,7 @@ function sendStripeError(res, err) {
 
 const PLAN_BY_PRICE = () => {
   const out = {};
-  for (const [plan, price] of Object.entries(PRICE_MAP)) if (price) out[price] = plan;
+  for (const [plan, price] of Object.entries(PRICE_MAP)) if (price) out[price] = canonicalPlan(plan);
   return out;
 };
 
@@ -195,9 +207,10 @@ router.post('/checkout-session', async (req, res) => {
   const isFamily = intent === 'academy_family' || plan === 'academy_family';
   const isAcademy = isTeamPass || isProPass || isFamily || intent === 'academy' || plan === 'academy';
   const isPlatformTeams = plan === 'teams';
+  const isPlatformPremium = plan === 'premium' || plan === 'premium_annual';
   const academyKey = isTeamPass ? 'academyTeam' : isProPass ? 'academyPro' : isFamily ? 'academyFamily' : 'academy';
   const academySpec = isTeamPass ? ACADEMY_TEAM_PRICE : isProPass ? ACADEMY_PRO_PRICE : null;
-  const platformSpec = isPlatformTeams ? PLATFORM_TEAMS_PRICE : null;
+  const platformSpec = isPlatformTeams ? PLATFORM_TEAMS_PRICE : isPlatformPremium ? PLAN_PRICE_SPECS[plan] : null;
   const priceId = isAcademy ? PRICE_MAP[academyKey] : PRICE_MAP[plan];
   if (!priceId && !academySpec && !platformSpec) return res.status(422).json({ error: 'unknown or unconfigured plan' });
   const groupCode = isFamily || isTeamPass ? (isTeamPass ? generateTeamCode() : generateFamilyCode()) : null;
@@ -268,9 +281,9 @@ router.post('/checkout-session', async (req, res) => {
       success_url: `${origin}/app/billing?checkout=success${isPlatformTeams ? '&teams=1' : ''}`,
       cancel_url: `${origin}/app/billing?checkout=cancel`,
       client_reference_id: user.id,
-      metadata: { user_id: user.id, plan: plan || 'teams' },
+      metadata: { user_id: user.id, plan: canonicalPlan(plan) || 'teams' },
       subscription_data: {
-        metadata: { user_id: user.id, plan: plan || 'teams' },
+        metadata: { user_id: user.id, plan: canonicalPlan(plan) || 'teams' },
       },
     });
     res.json({ url: session.url, id: session.id });
@@ -338,13 +351,14 @@ router.post('/subscription/update', async (req, res) => {
   try {
     const priceId = await resolveSubscriptionPrice(stripe, plan);
     if (!priceId) return res.status(422).json({ error: 'unknown or unconfigured plan' });
+    const targetPlan = canonicalPlan(plan);
     const sub = await stripe.subscriptions.retrieve(user.subscriptionId);
     const itemId = sub.items.data[0]?.id;
     if (!itemId) return res.status(422).json({ error: 'no subscription item' });
     const updated = await stripe.subscriptions.update(user.subscriptionId, {
       items: [{ id: itemId, price: priceId }],
       proration_behavior: 'create_prorations',
-      metadata: { ...(sub.metadata || {}), user_id: user.id, plan },
+      metadata: { ...(sub.metadata || {}), user_id: user.id, plan: targetPlan },
     });
     res.json({ subscription: updated });
   } catch (err) { return sendStripeError(res, err); }

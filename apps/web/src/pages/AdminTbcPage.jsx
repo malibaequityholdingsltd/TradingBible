@@ -427,7 +427,7 @@ function Sale({ gates }) {
             <div className="mt-3"><AtButton to="/tbc/purchases" variant="outline" size="sm" iconRight={ArrowUpRight}>Public controls page</AtButton></div>
           </AtPanel>
           <AtAlert icon={TriangleAlert} tone="red">
-            No TBC sale, presale, allocation or guaranteed return is authorized. Anyone claiming otherwise is not acting for TradingBible, Inc.
+            No TBC sale, presale, allocation or guaranteed return is authorized. Anyone claiming otherwise is not acting for TradingBible Holdings, Inc.
           </AtAlert>
         </div>
       </div>

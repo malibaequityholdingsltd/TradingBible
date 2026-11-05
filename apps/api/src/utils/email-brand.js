@@ -32,7 +32,7 @@ export function brandShell({ title, body, eyebrow, headerTag }) {
       </div>
       <div style="background:#0a0a0f;padding:18px 28px;border-top:1px solid rgba(212,175,55,0.15);color:#8a8577;font-size:12px;line-height:1.6">
         <span style="color:#d4af37;font-weight:600">Trade like the 1%. Journal like a fund.</span><br/>
-        TradingBible, Inc. · tradingbible.app
+        TradingBible Holdings, Inc. · tradingbible.app
       </div>
     </div>
   </div>`;

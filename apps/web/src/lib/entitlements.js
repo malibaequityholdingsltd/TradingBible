@@ -1,10 +1,12 @@
 // Plan entitlements — single source of truth for who may access what.
 //
-// Tiers (ascending): pro ($19.99) < elite ($49.99) < professional ($99) < teams ($199).
-// Admins bypass every check. Users with no plan rank 0.
+// Tiers (ascending): pro < premium/elite < professional < teams.
+// Premium is the public $19.99 plan; legacy tiers remain recognized for
+// existing subscribers and enterprise contracts. Admins bypass every check.
 
 export const PLAN_RANK = {
   pro: 1,
+  premium: 2,
   elite: 2,
   professional: 3,
   teams: 4,
@@ -28,8 +30,9 @@ export function meetsPlan(user, required) {
 }
 
 // Minimum tier per gated feature, mirroring the pricing page:
-// Pro = journal/analytics/scoring; Elite adds SI coach + SI reports +
-// mistake detection; Professional adds API, integrations, white-label.
+// Premium covers the core product including SI coach, reports and mistake
+// detection. Professional/teams add enterprise API, integrations and
+// white-label, which are quoted separately from the public subscription.
 export const FEATURE_PLANS = {
   coach: 'elite',
   reports: 'elite',

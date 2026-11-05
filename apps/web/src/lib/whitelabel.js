@@ -191,6 +191,7 @@ export function applyWhiteLabel(t = {}) {
   root.style.setProperty('--wl-body', th.bodyColor || WL_DEFAULTS.bodyColor);
   root.style.setProperty('--wl-muted', th.mutedColor || WL_DEFAULTS.mutedColor);
   root.setAttribute('data-whitelabel', th.companyName || 'TradingBible');
+  root.setAttribute('data-accent', String(accent).toLowerCase());
   applyAccentOverride();
   try { window.dispatchEvent(new Event('tb:theme-changed')); } catch { /* ignore */ }
 }

@@ -8,6 +8,7 @@ export const tbcDocumentRoot = fileURLToPath(new URL('../../storage/tbc-document
 
 const manifest = JSON.parse(readFileSync(new URL('manifest.json', new URL('../../storage/tbc-documents/', import.meta.url)), 'utf8'));
 
+export const tbcDocumentManifest = manifest;
 export const tbcDocuments = Array.isArray(manifest.documents) ? manifest.documents : [];
 export const publicTbcDocuments = tbcDocuments.filter((doc) => doc.visibility === 'public');
 export const internalTbcDocuments = tbcDocuments.filter((doc) => doc.visibility === 'internal');

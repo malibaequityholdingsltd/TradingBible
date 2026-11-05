@@ -1488,13 +1488,13 @@ html.light .cap-kpi,
 html.light .cap-rail-card,
 html.light .cap-workflow-step,
 html.light .cap-panel.at-card,
-html.light .cap-empty { background: rgba(255, 253, 247, .84); }
-html.light .cap-ir-header { background: rgba(247, 244, 236, .92); }
-html.light .cap-disclosure-strip { background: rgba(255, 251, 241, .75); }
-html.light .cap-market-state { background: rgba(255, 252, 245, .75); }
-html.light .cap-market-cell { background: #fffdf8; }
+html.light .cap-empty { background: rgba(255, 255, 255, .9); }
+html.light .cap-ir-header { background: rgba(255, 255, 255, .92); }
+html.light .cap-disclosure-strip { background: rgba(255, 255, 255, .82); }
+html.light .cap-market-state { background: rgba(255, 255, 255, .84); }
+html.light .cap-market-cell { background: #ffffff; }
 html.light .cap-tabs { background: rgba(20, 24, 30, .035); }
-html.light .cap-tab.is-active { background: #fffdf8; }
+html.light .cap-tab.is-active { background: #ffffff; }
 
 /* The old investor-relations page still uses these responsive helpers.
  * They remain full-bleed and wrap; nothing is hidden behind a swipe. */

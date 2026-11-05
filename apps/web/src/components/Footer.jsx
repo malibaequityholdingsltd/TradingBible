@@ -139,7 +139,7 @@ export default function Footer({ compact = false }) {
                 </span>
               </Link>
               <span className="hidden h-4 w-px bg-[var(--at-line-soft)] sm:block" />
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)]">TradingBible Holdings, Inc. · Operated by TradingBible, Inc.</span>
+              <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)]">TradingBible Holdings, Inc. · Owner & operator</span>
             </div>
             <nav aria-label="Capital and investor relations" className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
               {links.map(([label, to]) => (
@@ -184,7 +184,7 @@ export default function Footer({ compact = false }) {
             <div className="mt-4 flex items-start gap-3">
               <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-10 w-10 shrink-0 rounded-[10px] border border-[var(--at-line)] bg-[var(--at-panel)] object-contain p-0.5" />
               <p className="text-xs leading-relaxed text-[var(--at-mut-2)]">
-                TradingBible is owned by <span className="font-semibold text-[var(--at-ink-2)]">TradingBible Holdings, Inc.</span> and operated by <span className="font-semibold text-[var(--at-ink-2)]">TradingBible, Inc.</span>.
+                TradingBible is owned and operated by <span className="font-semibold text-[var(--at-ink-2)]">TradingBible Holdings, Inc.</span>.
                 <br />Registered in Delaware, USA.
                 <br />{t('fot.mission')}
               </p>
@@ -211,7 +211,7 @@ export default function Footer({ compact = false }) {
               <IosIcon icon={LineChart} size="2xs" tone="blue" />
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.16em]">{t('foot.startEdge')}</span>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-[var(--at-mut)]">{t('foot.paidNote', null, 'Paid plans only. No free trial. Cancel anytime.')}</p>
+            <p className="mt-2 text-xs leading-relaxed text-[var(--at-mut)]">{t('foot.paidNote', null, 'Free account available. Premium is $19.99/month or $199/year. Cancel anytime.')}</p>
             <Link
               to={isAuthed ? '/pricing' : '/signup'}
               className="mt-4 flex min-h-[42px] items-center justify-center rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 text-sm font-bold text-[#121006] shadow-[0_12px_30px_-16px_rgba(212,175,55,0.8)] transition hover:brightness-105"

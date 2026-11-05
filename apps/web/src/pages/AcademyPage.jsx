@@ -3,19 +3,18 @@ import { Link } from 'react-router-dom';
 import {
 	PlayCircle, Clock, CheckCircle2, Lock, GraduationCap, Video, Route, Award, Sparkles,
 	Rocket, BookOpen, Bot, ArrowLeft, RotateCcw, ChevronRight, Trophy, Calendar, Radio, Loader2,
-	MessageSquare, Send, BadgeCheck, CircleDollarSign, Wallet, Search, Globe, Bitcoin,
+	MessageSquare, Send, BadgeCheck, CircleDollarSign, Search, Globe, Bitcoin,
 	Sprout, Zap, Briefcase, Layers, Filter, Timer, Library,
 	Compass, MonitorPlay, Target, Coins, Handshake, Cpu, Building2,
 	Users, Copy, Check, KeyRound, Headphones, AudioLines,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import AcademyListen from '@/components/AcademyListen';
-import { Card, EmptyState, GhostButton, GoldButton, PageHero } from '@/components/ui-kit';
+import { Card, EmptyState, GoldButton, PageHero } from '@/components/ui-kit';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
 import { openAcademyCheckout, getStripeConfig } from '@/lib/stripe';
-import { useWallet } from '@/hooks/useWallet';
 import {
 	getAcademyAccess, enrollInPath, getCurriculum, getLesson,
 	getAcademyExam, gradeAcademyExam,
@@ -261,43 +260,18 @@ function Paywall({ onPurchased }) {
 	const [checked, setChecked] = useState(false);
 	const [familyCode, setFamilyCode] = useState('');
 	const [redeeming, setRedeeming] = useState(false);
-	const { ledger, payWithWallet } = useWallet();
-	const tbcBalance = ledger?.balances?.TBC || 0;
-	// 1 TBC = 1 KWD, NOT 1 USD — $150 list converts at KWD peg (default 150/3.25 ≈ 46.15 TBC)
-	const [tbcPerUsd, setTbcPerUsd] = useState(1 / 3.25);
-	const tbcPrice = Math.round(150 * tbcPerUsd * 100) / 100;
-
 	useEffect(() => {
 		getStripeConfig().then((cfg) => {
 			setConfigured(Boolean(cfg?.prices?.academy));
 			setFamilyConfigured(Boolean(cfg?.prices?.academyFamily));
 		}).catch(() => {}).finally(() => setChecked(true));
 	}, []);
-	useEffect(() => {
-		fetch(`${API_SERVER_URL}/tbc/econ`).then((r) => r.json()).then((e) => {
-			const rt = Number(e?.tbcPerUsd);
-			if (rt > 0.15 && rt < 0.6) setTbcPerUsd(rt); // 1 TBC = 1 KWD — reject 1:1
-			else if (Number(e?.usdPerKwd) >= 2 && Number(e?.usdPerKwd) <= 5) setTbcPerUsd(1 / Number(e.usdPerKwd));
-		}).catch(() => {});
-	}, []);
-
 	const buy = async (tier = 'individual') => {
 		setBusyTier(tier);
 		try {
 			await openAcademyCheckout(tier);
 		} catch (err) {
 			toast({ variant: 'destructive', title: t('c.error'), description: err.message });
-		} finally { setBusyTier(null); }
-	};
-
-	const buyWithWallet = async () => {
-		setBusyTier('wallet');
-		try {
-			await payWithWallet('academy');
-			toast({ title: t('aca.badge'), description: t('bill.payWallet') });
-			onPurchased();
-		} catch (err) {
-			toast({ variant: 'destructive', title: t('bill.payWallet'), description: err.message });
 		} finally { setBusyTier(null); }
 	};
 
@@ -387,14 +361,6 @@ function Paywall({ onPurchased }) {
 										{isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
 										{isBusy ? t('aca.opening') : tier.cta}
 									</GoldButton>
-									{tier.id === 'individual' && (
-										<>
-											<GhostButton onClick={buyWithWallet} disabled={busy || tbcBalance < tbcPrice} className="w-full min-h-[40px] text-xs disabled:opacity-40">
-												<Wallet className="h-3.5 w-3.5" /> Pay with TBC
-											</GhostButton>
-											<div className="text-center text-[11px] leading-relaxed text-[#6a665a] [html.light_&]:text-[#7e786a]">₮{tbcPrice.toLocaleString()} · {tbcBalance.toLocaleString()} TBC available · <Link to="/app/wallet" className="text-[#d4af37] [html.light_&]:text-[#8a6418] hover:underline">Top up</Link></div>
-										</>
-									)}
 								</div>
 							</div>
 						);

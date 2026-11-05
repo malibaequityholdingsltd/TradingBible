@@ -339,7 +339,7 @@ export const LIVE_CHANNELS = [
 function sanitizeRemote(row, i) {
 	const url = String(row?.url || '').trim();
 	if (!/^https:\/\//.test(url)) return null;
-	const plan = ['pro', 'elite', 'professional', 'teams'].includes(String(row?.plan || '').toLowerCase())
+	const plan = ['pro', 'premium', 'elite', 'professional', 'teams'].includes(String(row?.plan || '').toLowerCase())
 		? String(row.plan).toLowerCase()
 		: 'pro';
 	return {

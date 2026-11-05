@@ -83,7 +83,7 @@ export default function PublicSiteShell({ children, className = '' }) {
   const { user, isAuthed } = useAuth();
   const homeTo = homeRouteForUser(isAuthed ? user : null);
   return (
-    <div className={`relative min-h-screen overflow-x-clip bg-transparent text-[#e9e7df] ${className}`}>
+    <div className={`public-site-shell relative min-h-screen overflow-x-clip bg-transparent text-[#e9e7df] ${className}`}>
       <PublicNav homeTo={homeTo} isAuthed={isAuthed} />
       {children}
       <Footer />
@@ -157,7 +157,7 @@ export function PublicCTA({ eyebrow = 'Start here', title, body, primaryTo = '/p
   return (
     <section className="mx-auto w-full max-w-[84rem] px-5 pb-16 sm:px-8 sm:pb-24">
       <Card className="relative overflow-hidden rounded-2xl border-[#d4af37]/25 p-6 sm:p-10">
-        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.16),transparent_55%)]" />
+        <div aria-hidden className="pointer-events-none absolute inset-0 tb-art-halo" style={{ background: 'radial-gradient(ellipse at top right, color-mix(in srgb, var(--tb-gold, #d4af37) 16%, transparent), transparent 55%)' }} />
         <div className="relative grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
             <div className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-[#d4af37]">{eyebrow}</div>

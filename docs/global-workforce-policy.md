@@ -1,7 +1,7 @@
 # TradingBible, Inc. — Global Workforce Strategy & Recruitment Policy
 *Worldwide Recruitment · Remote-First · Compliance-First · Proposed — subject to management approval and jurisdiction-specific legal review*
 
-> Source: founder Global Employment, Legal Protection & Corporate Compliance Blueprint (2026–2027 expansion plan). TradingBible, Inc. (Delaware, USA, managed from Nigeria) is the official operating company under parent TradingBible Holdings, Inc. No legal structure or contract guarantees freedom from suit — the objective is to prevent avoidable disputes, reduce exposure, maintain insurance, and preserve strong defenses.
+> Source: founder Global Employment, Legal Protection & Corporate Compliance Blueprint (2026–2027 expansion plan). TradingBible, Inc. (Delaware, USA, managed from Nigeria) is the group's U.S. employing entity and securities issuer. TradingBible Holdings, Inc. owns and operates TradingBible. No legal structure or contract guarantees freedom from suit — the objective is to prevent avoidable disputes, reduce exposure, maintain insurance, and preserve strong defenses.
 
 ## Official hiring model
 Keep TradingBible, Inc. as the existing company. Combine direct employment (where TradingBible can lawfully register, employ, and run payroll) with qualified Employer-of-Record providers (where it wants an employee but has no suitable local entity). Genuine independent contractors for project-based services only — never label an employee a contractor. Form a local subsidiary only where substantial permanent operations justify the cost. PEO co-employment for some U.S. arrangements (does not eliminate employer responsibilities).

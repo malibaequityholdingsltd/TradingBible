@@ -1,0 +1,23 @@
+/* TradingBible Coin currency mark — installation CSS.
+   Keep this file beside TradingBible-Coin.woff2 and TradingBible-Coin.ttf. */
+@font-face {
+  font-family: 'TradingBible Coin';
+  src: url('./TradingBible-Coin.woff2') format('woff2'),
+       url('./TradingBible-Coin.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.tbc-symbol {
+  display: inline-block;
+  font-family: 'TradingBible Coin', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-variant: normal;
+  line-height: 1;
+  letter-spacing: 0;
+  vertical-align: -0.04em;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+}

@@ -3,8 +3,8 @@ import React, { useMemo, useState } from 'react';
 import { ShieldAlert } from 'lucide-react';
 import { calcRisk, checkAccountRules } from '@/terminal/riskEngine';
 
-const input = 'mt-1 w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 font-mono text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
-const lab = 'term-faint text-xs font-semibold';
+const input = 'mt-1 w-full min-w-0 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 font-mono text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
+const lab = 'term-faint min-w-0 text-xs font-semibold';
 
 export default function RiskPanel({ price, balance = 0 }) {
   const [riskPct, setRiskPct] = useState('1');

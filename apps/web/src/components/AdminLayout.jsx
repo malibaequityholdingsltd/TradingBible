@@ -169,7 +169,11 @@ function AdminLayoutContent({ children, title }) {
         const token = pb.authStore?.token;
         if (!token) return;
         const res = await fetch(`${API_SERVER_URL}/admin/jobs/payroll`, { headers: { Authorization: `Bearer ${token}` } });
-        if (res.ok) setStaff((await res.json()) || []);
+        if (res.ok) {
+          const payload = await res.json().catch(() => null);
+          const list = Array.isArray(payload) ? payload : (payload?.employees || payload?.staff || []);
+          setStaff(Array.isArray(list) ? list : []);
+        }
       } catch { /* staff badge stays empty */ }
     })();
   }, []);

@@ -158,13 +158,21 @@ def render_table(table: Table) -> str:
 
 
 ENTITY_REPLACEMENTS = {
-    "TradingBible LLC": "TradingBible, Inc.",
-    "TradingBible, Inc..": "TradingBible, Inc.",
+    # The platform operator and the securities issuer are different entities.
+    # These specific operator/controller references must name Holdings before
+    # the generic issuer mapping turns every remaining LLC reference into Inc.
+    "TradingBible LLC is the proposed controller": "TradingBible Holdings, Inc. is the proposed controller",
+    "TradingBible LLC is a Delaware limited liability company, file 10728395, formed August 10, 2026, managed from Nigeria and operating under the tradingbible.app website designation for these materials.": "TradingBible Holdings, Inc. is the proposed TBC issuer and operator of the tradingbible.app website. Corporate registration details remain subject to counsel confirmation.",
+    "does not by itself confer an equity interest in TradingBible, Inc.": "does not by itself confer an equity interest in any TradingBible entity.",
+    "TradingBible, Inc..": "TradingBible Holdings, Inc.",
+    "TradingBible, Inc.": "TradingBible Holdings, Inc.",
+    "TradingBible LLC": "TradingBible Holdings, Inc.",
     "LLC Conversion": "Corporate Conversion",
     "Delaware file number: 10728395.": "Delaware, United States.",
     "Delaware file number: 10728395": "Delaware, United States",
-    "TRADINGBIBLE LLC": "TRADINGBIBLE, INC.",
-    "TradingBible, LLC": "TradingBible, Inc.",
+    "TRADINGBIBLE LLC": "TRADINGBIBLE HOLDINGS, INC.",
+    "TRADINGBIBLE, INC.": "TRADINGBIBLE HOLDINGS, INC.",
+    "TradingBible, LLC": "TradingBible Holdings, Inc.",
     "a Delaware limited liability company": "a Delaware corporation",
     "Delaware limited liability company": "Delaware corporation",
     "Delaware manager-managed limited liability company": "Delaware corporation",
@@ -390,7 +398,7 @@ def main() -> None:
             "status": status,
             "visibility": visibility,
             "classification": "Public summary" if visibility == "public" else "Confidential — internal / counsel",
-            "version": "Corrected layout · October 2026",
+            "version": "Corrected layout · November 2026",
             "signatureFields": "Issuer representative + professional reviewer" if visibility == "public" else "Issuer / director + reviewer / custodian (instrument-specific)",
             "signatureStatus": "Open — not executed",
             "pdf": f"pdf/{slug}.pdf",
@@ -402,9 +410,10 @@ def main() -> None:
 
     manifest = {
         "title": "TradingBible TBC controlled document library",
-        "issuer": "TradingBible, Inc.",
+        "issuer": "TradingBible Holdings, Inc.",
+        "operator": "TradingBible Holdings, Inc.",
         "jurisdiction": "Delaware, United States",
-        "updated": "October 2026",
+        "updated": "November 2026",
         "source": "TBC corrected-layout and signature-field packages",
         "documents": documents,
     }

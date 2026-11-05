@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useLayoutEffect, useState 
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, SquareTerminal, BookOpen, Trophy, FlaskConical, Plug, Wallet,
-  Radar, Grid2x2, Activity, CalendarClock, Coins, Medal, Landmark, BarChart3,
+  Radar, Grid2x2, Activity, CalendarClock, Medal, Landmark, BarChart3,
   FileText, Calculator, Code2, GraduationCap, Bot, Users, Compass, MonitorPlay,
   CreditCard, Share2, ShieldCheck, Palette, KeyRound, User, Settings, LogOut,
   Menu, Search, Bell, HelpCircle, ChevronDown, PanelLeftClose, PanelLeftOpen,
@@ -69,7 +69,6 @@ const NAV_GROUPS = [
       { to: '/app/heatmaps', labelKey: 'nav.heatmaps', icon: Grid2x2, requiresSubscriber: true },
       { to: '/app/orderflow', labelKey: 'nav.orderflow', icon: Activity, requiresSubscriber: true },
       { to: '/app/economic-calendar', labelKey: 'nav.economic', icon: CalendarClock },
-      { to: '/app/staking', labelKey: 'nav.staking', icon: Coins },
       { to: '/leaderboard', labelKey: 'nav.leaderboard', icon: Medal },
       { to: '/app/investors', label: 'Investor access', icon: Landmark },
     ],
@@ -208,7 +207,7 @@ function AppLayoutContent({ children, title }) {
 
   const isAdmin = user?.role === 'admin';
   const adminPreview = isAdmin && isAdminPreview();
-  const isSubscriber = isAdmin || ['pro', 'elite', 'professional', 'teams'].includes((user?.plan || '').toLowerCase());
+  const isSubscriber = isAdmin || ['pro', 'premium', 'elite', 'professional', 'teams'].includes((user?.plan || '').toLowerCase());
   const canSeeSignals = isAdmin || features.signals !== false;
   const avatar = avatarUrl(user);
   const homeTo = homeRouteForUser(user);
@@ -548,7 +547,7 @@ function AppLayoutContent({ children, title }) {
                   <ArrowUpRight /><span>Send</span>
                 </Link>
                 <Link to="/app/wallet?tab=crypto" className="ex-sheet__tile" onClick={() => setMoreOpen(false)}>
-                  <RefreshCw /><span>Convert</span>
+                  <RefreshCw /><span>Crypto</span>
                 </Link>
                 <Link to="/app/coach" className="ex-sheet__tile" onClick={() => setMoreOpen(false)}>
                   <Bot /><span>SI Coach</span>

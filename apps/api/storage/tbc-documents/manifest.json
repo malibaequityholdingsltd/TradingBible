@@ -1,8 +1,9 @@
 {
   "title": "TradingBible TBC controlled document library",
-  "issuer": "TradingBible, Inc.",
+  "issuer": "TradingBible Holdings, Inc.",
+  "operator": "TradingBible Holdings, Inc.",
   "jurisdiction": "Delaware, United States",
-  "updated": "October 2026",
+  "updated": "November 2026",
   "source": "TBC corrected-layout and signature-field packages",
   "documents": [
     {
@@ -15,13 +16,13 @@
       "status": "Proposal \u2014 not approved",
       "visibility": "public",
       "classification": "Public summary",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer representative + professional reviewer",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/tbc-whitepaper.pdf",
       "docx": "docx/tbc-whitepaper.docx",
-      "pdfBytes": 135408,
-      "docxBytes": 171128
+      "pdfBytes": 136656,
+      "docxBytes": 171142
     },
     {
       "slug": "tbc-supply-allocation-vesting",
@@ -33,13 +34,13 @@
       "status": "Illustrative \u2014 not approved",
       "visibility": "public",
       "classification": "Public summary",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer representative + professional reviewer",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/tbc-supply-allocation-vesting.pdf",
       "docx": "docx/tbc-supply-allocation-vesting.docx",
-      "pdfBytes": 133773,
-      "docxBytes": 170649
+      "pdfBytes": 135040,
+      "docxBytes": 170669
     },
     {
       "slug": "tbc-purchases-payments-custody-refunds",
@@ -51,13 +52,13 @@
       "status": "Proposed \u2014 not live",
       "visibility": "public",
       "classification": "Public summary",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer representative + professional reviewer",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/tbc-purchases-payments-custody-refunds.pdf",
       "docx": "docx/tbc-purchases-payments-custody-refunds.docx",
-      "pdfBytes": 125870,
-      "docxBytes": 170745
+      "pdfBytes": 127152,
+      "docxBytes": 170762
     },
     {
       "slug": "tbc-jurisdictions-purchaser-eligibility",
@@ -69,13 +70,13 @@
       "status": "Assessment only \u2014 not cleared",
       "visibility": "public",
       "classification": "Public summary",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer representative + professional reviewer",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/tbc-jurisdictions-purchaser-eligibility.pdf",
       "docx": "docx/tbc-jurisdictions-purchaser-eligibility.docx",
-      "pdfBytes": 129099,
-      "docxBytes": 170583
+      "pdfBytes": 130357,
+      "docxBytes": 170600
     },
     {
       "slug": "tbc-brokerage-platform-separation",
@@ -87,13 +88,13 @@
       "status": "Boundary policy \u2014 not a licence",
       "visibility": "public",
       "classification": "Public summary",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer representative + professional reviewer",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/tbc-brokerage-platform-separation.pdf",
       "docx": "docx/tbc-brokerage-platform-separation.docx",
-      "pdfBytes": 134065,
-      "docxBytes": 170821
+      "pdfBytes": 135073,
+      "docxBytes": 170837
     },
     {
       "slug": "sole-stockholder-consent-director-authorization",
@@ -105,13 +106,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/sole-stockholder-consent-director-authorization.pdf",
       "docx": "docx/sole-stockholder-consent-director-authorization.docx",
-      "pdfBytes": 111673,
-      "docxBytes": 169647
+      "pdfBytes": 112942,
+      "docxBytes": 169668
     },
     {
       "slug": "corporate-issuer-beneficial-ownership-profile",
@@ -123,13 +124,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/corporate-issuer-beneficial-ownership-profile.pdf",
       "docx": "docx/corporate-issuer-beneficial-ownership-profile.docx",
-      "pdfBytes": 113641,
-      "docxBytes": 169643
+      "pdfBytes": 114868,
+      "docxBytes": 169664
     },
     {
       "slug": "instruction-engagement-regulatory-counsel",
@@ -141,13 +142,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/instruction-engagement-regulatory-counsel.pdf",
       "docx": "docx/instruction-engagement-regulatory-counsel.docx",
-      "pdfBytes": 113590,
-      "docxBytes": 169606
+      "pdfBytes": 114897,
+      "docxBytes": 169625
     },
     {
       "slug": "tbc-whitepaper-instrument",
@@ -159,13 +160,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/tbc-whitepaper-instrument.pdf",
       "docx": "docx/tbc-whitepaper-instrument.docx",
-      "pdfBytes": 120966,
-      "docxBytes": 170210
+      "pdfBytes": 122184,
+      "docxBytes": 170227
     },
     {
       "slug": "tokenomics-vesting-instrument",
@@ -177,13 +178,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/tokenomics-vesting-instrument.pdf",
       "docx": "docx/tokenomics-vesting-instrument.docx",
-      "pdfBytes": 116548,
-      "docxBytes": 169732
+      "pdfBytes": 117816,
+      "docxBytes": 169752
     },
     {
       "slug": "offering-purchaser-agreement",
@@ -195,13 +196,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/offering-purchaser-agreement.pdf",
       "docx": "docx/offering-purchaser-agreement.docx",
-      "pdfBytes": 115726,
-      "docxBytes": 169744
+      "pdfBytes": 117294,
+      "docxBytes": 169764
     },
     {
       "slug": "digital-asset-risk-factor-disclosure",
@@ -213,13 +214,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/digital-asset-risk-factor-disclosure.pdf",
       "docx": "docx/digital-asset-risk-factor-disclosure.docx",
-      "pdfBytes": 112799,
-      "docxBytes": 169625
+      "pdfBytes": 114362,
+      "docxBytes": 169644
     },
     {
       "slug": "treasury-use-proceeds-financial-controls",
@@ -231,13 +232,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/treasury-use-proceeds-financial-controls.pdf",
       "docx": "docx/treasury-use-proceeds-financial-controls.docx",
-      "pdfBytes": 110614,
-      "docxBytes": 169540
+      "pdfBytes": 111878,
+      "docxBytes": 169557
     },
     {
       "slug": "aml-cdd-sanctions-framework",
@@ -249,13 +250,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/aml-cdd-sanctions-framework.pdf",
       "docx": "docx/aml-cdd-sanctions-framework.docx",
-      "pdfBytes": 113563,
-      "docxBytes": 169621
+      "pdfBytes": 114860,
+      "docxBytes": 169642
     },
     {
       "slug": "privacy-personal-data-protection-notice",
@@ -267,13 +268,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/privacy-personal-data-protection-notice.pdf",
       "docx": "docx/privacy-personal-data-protection-notice.docx",
-      "pdfBytes": 109977,
-      "docxBytes": 169501
+      "pdfBytes": 111503,
+      "docxBytes": 169520
     },
     {
       "slug": "jurisdiction-access-sales-restrictions-register",
@@ -285,13 +286,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/jurisdiction-access-sales-restrictions-register.pdf",
       "docx": "docx/jurisdiction-access-sales-restrictions-register.docx",
-      "pdfBytes": 113667,
-      "docxBytes": 169607
+      "pdfBytes": 114939,
+      "docxBytes": 169626
     },
     {
       "slug": "regulatory-classification-filing-decision",
@@ -303,13 +304,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/regulatory-classification-filing-decision.pdf",
       "docx": "docx/regulatory-classification-filing-decision.docx",
-      "pdfBytes": 110526,
-      "docxBytes": 169515
+      "pdfBytes": 111811,
+      "docxBytes": 169533
     },
     {
       "slug": "token-bridge-blockchain-technical-spec",
@@ -321,13 +322,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/token-bridge-blockchain-technical-spec.pdf",
       "docx": "docx/token-bridge-blockchain-technical-spec.docx",
-      "pdfBytes": 113410,
-      "docxBytes": 169734
+      "pdfBytes": 114654,
+      "docxBytes": 169752
     },
     {
       "slug": "security-incident-management-recovery",
@@ -339,13 +340,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/security-incident-management-recovery.pdf",
       "docx": "docx/security-incident-management-recovery.docx",
-      "pdfBytes": 112903,
-      "docxBytes": 169540
+      "pdfBytes": 114171,
+      "docxBytes": 169559
     },
     {
       "slug": "conflicts-insider-conduct-market-integrity",
@@ -357,13 +358,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/conflicts-insider-conduct-market-integrity.pdf",
       "docx": "docx/conflicts-insider-conduct-market-integrity.docx",
-      "pdfBytes": 111105,
-      "docxBytes": 169509
+      "pdfBytes": 112380,
+      "docxBytes": 169525
     },
     {
       "slug": "regulatory-correspondence-submission-letter",
@@ -375,13 +376,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/regulatory-correspondence-submission-letter.pdf",
       "docx": "docx/regulatory-correspondence-submission-letter.docx",
-      "pdfBytes": 110827,
-      "docxBytes": 169457
+      "pdfBytes": 111994,
+      "docxBytes": 169453
     },
     {
       "slug": "token-sale-launch-authorization-control",
@@ -393,13 +394,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/token-sale-launch-authorization-control.pdf",
       "docx": "docx/token-sale-launch-authorization-control.docx",
-      "pdfBytes": 115627,
-      "docxBytes": 169560
+      "pdfBytes": 116915,
+      "docxBytes": 169578
     },
     {
       "slug": "regulatory-exhibits-evidence-index",
@@ -411,13 +412,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/regulatory-exhibits-evidence-index.pdf",
       "docx": "docx/regulatory-exhibits-evidence-index.docx",
-      "pdfBytes": 114874,
-      "docxBytes": 169465
+      "pdfBytes": 116131,
+      "docxBytes": 169484
     },
     {
       "slug": "direct-website-token-distribution-procedure",
@@ -429,13 +430,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/direct-website-token-distribution-procedure.pdf",
       "docx": "docx/direct-website-token-distribution-procedure.docx",
-      "pdfBytes": 112429,
-      "docxBytes": 169571
+      "pdfBytes": 113688,
+      "docxBytes": 169590
     },
     {
       "slug": "website-tbc-sale-terms-conditions",
@@ -447,13 +448,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/website-tbc-sale-terms-conditions.pdf",
       "docx": "docx/website-tbc-sale-terms-conditions.docx",
-      "pdfBytes": 112628,
-      "docxBytes": 169647
+      "pdfBytes": 114188,
+      "docxBytes": 169666
     },
     {
       "slug": "digital-asset-website-disclosure-marketing",
@@ -465,13 +466,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/digital-asset-website-disclosure-marketing.pdf",
       "docx": "docx/digital-asset-website-disclosure-marketing.docx",
-      "pdfBytes": 111689,
-      "docxBytes": 169496
+      "pdfBytes": 112948,
+      "docxBytes": 169514
     },
     {
       "slug": "customer-complaints-refunds-dispute-resolution",
@@ -483,13 +484,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/customer-complaints-refunds-dispute-resolution.pdf",
       "docx": "docx/customer-complaints-refunds-dispute-resolution.docx",
-      "pdfBytes": 110473,
-      "docxBytes": 169508
+      "pdfBytes": 111761,
+      "docxBytes": 169527
     },
     {
       "slug": "payments-custody-wallets-escrow-governance",
@@ -501,13 +502,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/payments-custody-wallets-escrow-governance.pdf",
       "docx": "docx/payments-custody-wallets-escrow-governance.docx",
-      "pdfBytes": 113278,
-      "docxBytes": 169556
+      "pdfBytes": 114551,
+      "docxBytes": 169575
     },
     {
       "slug": "regulatory-filing-register-application-control",
@@ -519,13 +520,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/regulatory-filing-register-application-control.pdf",
       "docx": "docx/regulatory-filing-register-application-control.docx",
-      "pdfBytes": 112721,
-      "docxBytes": 169453
+      "pdfBytes": 113999,
+      "docxBytes": 169471
     },
     {
       "slug": "tbc-utility-ecosystem-integration-schedule",
@@ -537,13 +538,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/tbc-utility-ecosystem-integration-schedule.pdf",
       "docx": "docx/tbc-utility-ecosystem-integration-schedule.docx",
-      "pdfBytes": 122135,
-      "docxBytes": 170002
+      "pdfBytes": 123407,
+      "docxBytes": 170020
     },
     {
       "slug": "execution-approval-supporting-evidence-register",
@@ -555,13 +556,13 @@
       "status": "Draft \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
-      "version": "Corrected layout \u00b7 October 2026",
+      "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/execution-approval-supporting-evidence-register.pdf",
       "docx": "docx/execution-approval-supporting-evidence-register.docx",
-      "pdfBytes": 113154,
-      "docxBytes": 169469
+      "pdfBytes": 114428,
+      "docxBytes": 169490
     }
   ]
 }

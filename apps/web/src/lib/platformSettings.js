@@ -5,7 +5,7 @@ export const PLATFORM_SETTINGS_DEFAULTS = {
   platformName: 'TradingBible',
   tagline: 'TradingBible',
   supportEmail: 'support@tradingbible.app',
-  // trialDays is legacy (no free trial). Kept at 0 so old cached settings
+  // trialDays is legacy (free account + Premium). Kept at 0 so cached settings
   // never re-enable a trial anywhere.
   trialDays: 0,
   signupsOpen: true,

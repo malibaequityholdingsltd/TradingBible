@@ -63,8 +63,8 @@ function OverviewSection({ data, loading, error, reload }) {
       <Hero
         copy={PAGE_COPY.overview}
         status={[
-          ['Current entity', 'TradingBible, Inc.'],
-          ['Parent company', 'TradingBible Holdings, Inc.'],
+          ['Issuer entity', 'TradingBible, Inc.'],
+          ['Owner & operator', 'TradingBible Holdings, Inc.'],
           ['Target exchange', 'Nasdaq · target only'],
           ['Public market', 'None'],
           ['Last disclosure', formatDate(data?.generatedAt, 'Not available')],
@@ -357,8 +357,8 @@ function GovernanceSection({ data }) {
   return (
     <>
       <Hero copy={PAGE_COPY.governance} status={[
-        ['Current entity', 'TradingBible, Inc.'],
-        ['Parent company', 'TradingBible Holdings, Inc.'],
+        ['Issuer entity', 'TradingBible, Inc.'],
+        ['Owner & operator', 'TradingBible Holdings, Inc.'],
         ['Board', 'Not yet constituted'],
         ['Transfer agent', 'Not engaged'],
         ['Shareholder portal', 'Verified access'],
@@ -369,7 +369,7 @@ function GovernanceSection({ data }) {
         <CapSectionHead title="Corporate structure" action={<AtBadge tone="muted">Two entities</AtBadge>} />
         <div className="cap-grid">
           <div className="cap-span-6">
-            <AtPanel className="cap-panel h-full" title="TradingBible, Inc." action={<AtBadge tone="gold">Current</AtBadge>}>
+            <AtPanel className="cap-panel h-full" title="TradingBible, Inc." action={<AtBadge tone="gold">Issuer</AtBadge>}>
               <div className="ir-list">
                 {[
                   ['Jurisdiction', 'Delaware, United States'],
@@ -383,14 +383,14 @@ function GovernanceSection({ data }) {
                   </div>
                 ))}
               </div>
-              <p className="ir-field-note mt-3">The current operating entity. It is not a public company.</p>
+              <p className="ir-field-note mt-3">The issuer of TB. It is not the public operating company and it is not a public company.</p>
             </AtPanel>
           </div>
           <div className="cap-span-6">
-            <AtPanel className="cap-panel h-full" title="TradingBible Holdings, Inc." action={<AtBadge tone="muted">Parent</AtBadge>}>
+            <AtPanel className="cap-panel h-full" title="TradingBible Holdings, Inc." action={<AtBadge tone="muted">Owner & operator</AtBadge>}>
               <div className="ir-list">
                 {[
-                  ['Role', 'Parent holding company'],
+                  ['Role', 'Owner and operator of TradingBible'],
                   ['Issuer of TB', 'TradingBible, Inc.'],
                   ['Target exchange', 'Nasdaq · target only'],
                   ['Listing status', 'No application or approval'],
@@ -401,7 +401,7 @@ function GovernanceSection({ data }) {
                   </div>
                 ))}
               </div>
-              <p className="ir-field-note mt-3">The parent holding company. It is not the public issuer of TB.</p>
+              <p className="ir-field-note mt-3">The owner and operator of TradingBible. It is not the public issuer of TB.</p>
             </AtPanel>
           </div>
         </div>

@@ -6,7 +6,7 @@
 import { supabase } from '../utils/supabaseClient.js';
 import logger from '../utils/logger.js';
 
-const RANK = { pro: 1, elite: 2, professional: 3, teams: 4 };
+const RANK = { pro: 1, premium: 2, elite: 2, professional: 3, teams: 4 };
 
 export const requirePlan = (minimum) => async (req, res, next) => {
 	const need = RANK[String(minimum || '').toLowerCase()] || 0;

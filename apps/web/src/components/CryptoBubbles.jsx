@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { Search, Move3d, BarChart3, TrendingUp, TrendingDown, Flame, RefreshCw } from 'lucide-react';
+import { Search, Move3d, BarChart3, Grid2x2, TrendingUp, TrendingDown, Flame, RefreshCw } from 'lucide-react';
 import { useHeatmap } from '@/hooks/useHeatmap';
 import { useI18n } from '@/lib/i18n';
 import { txt, numOrNull } from '@/lib/safeRender';
@@ -495,6 +495,33 @@ export default function CryptoBubbles({ type = 'crypto', period, onSelect }) {
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
             <p className="max-w-xs text-sm text-[#8a8577]">{t('mkt.heatFail', null, 'Could not load market data. Start the API server, then retry.')}</p>
             <button onClick={retry} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2 text-xs font-semibold text-[#d4af37] transition hover:border-[#d4af37]/60"><RefreshCw className="h-3.5 w-3.5" />{t('c.retry', null, 'Retry')}</button>
+          </div>
+        ) : status === 'ready' && !cells.length ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl border border-[#d4af37]/20 bg-[#d4af37]/10 text-[#d4af37]"><BarChart3 className="h-5 w-5" /></span>
+            <div>
+              <p className="text-sm font-semibold text-[#f0ecdd]">No {type === 'all' ? 'market' : type} data for {period}</p>
+              <p className="mt-1 max-w-xs text-xs leading-relaxed text-[#8a8577]">The feed returned no instruments for this view. Try another period, or refresh the feed.</p>
+            </div>
+            <button onClick={retry} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2 text-xs font-semibold text-[#d4af37] transition hover:border-[#d4af37]/60"><RefreshCw className="h-3.5 w-3.5" />{t('c.retry', null, 'Retry')}</button>
+          </div>
+        ) : status === 'ready' && !filteredCells.length ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl border border-[#d4af37]/20 bg-[#d4af37]/10 text-[#d4af37]"><Grid2x2 className="h-5 w-5" /></span>
+            <div>
+              <p className="text-sm font-semibold text-[#f0ecdd]">No instruments on {EXCHANGE_LABEL[exchange] || exchange}</p>
+              <p className="mt-1 max-w-xs text-xs leading-relaxed text-[#8a8577]">This venue has no markets in the current view. Show every venue instead.</p>
+            </div>
+            <button onClick={() => setExchange('all')} className="rounded-xl border border-[#d4af37]/25 px-4 py-2 text-xs font-semibold text-[#d4af37] transition hover:border-[#d4af37]/60">Show all venues</button>
+          </div>
+        ) : status === 'ready' && !visibleCells.length ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl border border-[#d4af37]/20 bg-[#d4af37]/10 text-[#d4af37]"><Search className="h-5 w-5" /></span>
+            <div>
+              <p className="text-sm font-semibold text-[#f0ecdd]">No matches for “{query.trim()}”</p>
+              <p className="mt-1 max-w-xs text-xs leading-relaxed text-[#8a8577]">Try a shorter symbol or clear the search to see the full board.</p>
+            </div>
+            <button onClick={() => setQuery('')} className="rounded-xl border border-[#d4af37]/25 px-4 py-2 text-xs font-semibold text-[#d4af37] transition hover:border-[#d4af37]/60">Clear search</button>
           </div>
         ) : (
           <svg width="100%" height="100%" viewBox={`0 0 ${size.w} ${size.h}`}>

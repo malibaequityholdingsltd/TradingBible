@@ -620,16 +620,16 @@
 
 html.light .ia-hero {
   background:
-    radial-gradient(900px 480px at 88% -22%, rgba(166, 124, 30, .14), transparent 65%),
-    linear-gradient(135deg, #fffdf8 0%, #f8f2e4 58%, #f1e8d5 100%);
-  box-shadow: 0 24px 60px -44px rgba(95, 70, 10, .45);
+    radial-gradient(900px 480px at 88% -22%, color-mix(in srgb, var(--tb-gold-deep, #a67c1e) 8%, transparent), transparent 65%),
+    linear-gradient(135deg, #ffffff 0%, #f6f7f9 58%, #f1f3f6 100%);
+  box-shadow: 0 24px 60px -44px rgba(15, 23, 42, .28);
 }
-html.light .ia-hero::after { opacity: .35; }
-html.light .ia-record-card { background: rgba(255, 252, 245, .82); }
-html.light .ia-boundary-card { background: rgba(255, 252, 245, .64); }
+html.light .ia-hero::after { opacity: .22; }
+html.light .ia-record-card { background: rgba(255, 255, 255, .9); }
+html.light .ia-boundary-card { background: rgba(255, 255, 255, .74); }
 html.light .ia-panel,
 html.light .ia-stat,
-html.light .ia-position { background: rgba(255, 252, 245, .8); }
+html.light .ia-position { background: rgba(255, 255, 255, .88); }
 
 @media (max-width: 1100px) {
   .ia-hero { grid-template-columns: minmax(0, 1fr) minmax(280px, .7fr); }

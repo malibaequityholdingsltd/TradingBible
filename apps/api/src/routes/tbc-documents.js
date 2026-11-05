@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import path from 'path';
-import { findTbcDocument, publicTbcDocuments, tbcDocumentRoot, toPublicDocument } from '../data/tbc-documents.js';
+import { findTbcDocument, publicTbcDocuments, tbcDocumentManifest, tbcDocumentRoot, toPublicDocument } from '../data/tbc-documents.js';
 import { getExecution, getPublicExecution } from '../services/tbc-execution.js';
 import { executedDocxPath, hasExecutedDocx, writeExecutedDocx } from '../services/tbc-executed-docx.js';
 
@@ -38,9 +38,10 @@ router.get('/', async (_req, res, next) => {
 		)));
 		res.setHeader('Cache-Control', 'public, max-age=30, must-revalidate');
 		res.json({
-			issuer: 'TradingBible, Inc.',
-			jurisdiction: 'Delaware, United States',
-			updated: 'October 2026',
+			issuer: tbcDocumentManifest.issuer || 'TradingBible Holdings, Inc.',
+			operator: tbcDocumentManifest.operator || 'TradingBible Holdings, Inc.',
+			jurisdiction: tbcDocumentManifest.jurisdiction || 'Delaware, United States',
+			updated: tbcDocumentManifest.updated || 'November 2026',
 			notice: 'TBC is at proposal stage. These documents are not an offer, solicitation, or evidence of a live token sale. Once an instrument is executed, the library serves the execution-record DOCX automatically.',
 			documents,
 		});

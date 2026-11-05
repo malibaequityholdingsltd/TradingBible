@@ -46,19 +46,19 @@
 				transform: translateX(-50%);
 				z-index: 9999;
 				background: linear-gradient(135deg, #0c0c11 0%, #1a1a1a 100%);
-				border: 1px solid #d4af37;
+				border: 1px solid var(--tb-gold, #d4af37);
 				border-radius: 16px;
 				padding: 16px 20px;
 				display: flex;
 				align-items: center;
 				gap: 12px;
-				box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,175,55,0.2);
+				box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px color-mix(in srgb, var(--tb-gold, #d4af37) 20%, transparent);
 				animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 				max-width: 90vw;
 				width: 340px;
 			}
 			#pwa-install-banner.hidden { display: none; }
-			#pwa-install-banner svg { flex-shrink: 0; width: 28px; height: 28px; color: #d4af37; }
+			#pwa-install-banner svg { flex-shrink: 0; width: 28px; height: 28px; color: var(--tb-gold, #d4af37); }
 			#pwa-install-banner .content { flex: 1; min-width: 0; }
 			#pwa-install-banner .title { font-weight: 700; color: #f0ecdd; font-size: 14px; }
 			#pwa-install-banner .desc { font-size: 12px; color: #8a8577; margin-top: 2px; }
@@ -72,7 +72,7 @@
 				transition: all 0.2s;
 			}
 			#pwa-install-banner .install-btn {
-				background: linear-gradient(135deg, #d4af37 0%, #f4e6a8 100%);
+				background: linear-gradient(135deg, var(--tb-gold, #d4af37) 0%, var(--tb-gold-hi, #f4e6a8) 100%);
 				color: #0a0a0f;
 				border: none;
 				font-weight: 700;
@@ -81,10 +81,10 @@
 			#pwa-install-banner .dismiss-btn {
 				background: transparent;
 				color: #8a8577;
-				border: 1px solid #d4af37;
+				border: 1px solid var(--tb-gold, #d4af37);
 				padding: 8px 14px;
 			}
-			#pwa-install-banner .dismiss-btn:hover { background: rgba(212,175,55,0.1); }
+			#pwa-install-banner .dismiss-btn:hover { background: color-mix(in srgb, var(--tb-gold, #d4af37) 10%, transparent); }
 			@media (max-width: 480px) {
 				#pwa-install-banner { left: 12px; right: 12px; transform: none; width: auto; }
 			}
@@ -110,6 +110,41 @@
 	<body>
 		<div id="root"></div>
 		<noscript><div style="min-height:100vh;display:grid;place-items:center;background:#0a0a0f;color:#f0ecdd;font-family:sans-serif;text-align:center;padding:2rem">TradingBible needs JavaScript enabled to run.</div></noscript>
+		<script>
+			// One-time client repair: opening /?reset=1 clears stale service-worker
+			// caches plus saved theme/white-label state, then reloads. Auth tokens
+			// and account data are never touched.
+			(function () {
+				try {
+					var url = new URL(window.location.href);
+					if (url.searchParams.get('reset') !== '1') return;
+					['tb-theme', 'tb-whitelabel', 'tb-accent', 'tb-theme-preset', 'tb:chunk-retries'].forEach(function (key) {
+						try { localStorage.removeItem(key); } catch (e) { /* ignore */ }
+					});
+					var wantedTheme = url.searchParams.get('theme');
+					url.searchParams.delete('reset');
+					url.searchParams.delete('theme');
+					if (wantedTheme === 'light' || wantedTheme === 'dark') {
+						try { localStorage.setItem('tb-theme', wantedTheme); } catch (e) { /* ignore */ }
+					}
+					var jobs = [];
+					if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
+						jobs.push(navigator.serviceWorker.getRegistrations().then(function (regs) {
+							return Promise.all(regs.map(function (reg) { return reg.unregister(); }));
+						}));
+					}
+					if (window.caches && caches.keys) {
+						jobs.push(caches.keys().then(function (keys) {
+							return Promise.all(keys.map(function (key) { return caches.delete(key); }));
+						}));
+					}
+					var finished = function () { window.location.replace(url.toString()); };
+					if (!jobs.length) { finished(); return; }
+					if (Promise.allSettled) Promise.allSettled(jobs).then(finished, finished);
+					else Promise.all(jobs).then(finished, finished);
+				} catch (e) { /* ignore */ }
+			})();
+		</script>
 		<script>
 			// Apply theme class synchronously before React renders to prevent flash/invisible content
 			(function() {

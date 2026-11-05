@@ -109,8 +109,9 @@ router.get('/ecosystem', (req, res) => {
 	return res.json({
 		phase: token.phase,
 		status: token.status,
-		updated: 'October 2026',
-		issuer: 'TradingBible, Inc.',
+		updated: 'November 2026',
+		issuer: 'TradingBible Holdings, Inc.',
+		operator: 'TradingBible Holdings, Inc.',
 		jurisdiction: 'Delaware, United States',
 		token: {
 			name: token.name,

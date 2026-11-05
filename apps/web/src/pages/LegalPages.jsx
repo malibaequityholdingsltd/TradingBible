@@ -22,7 +22,7 @@ function LegalShell({ title, subtitle, children }) {
         eyebrow={`Legal · Last updated ${UPDATED}`}
         title={title}
         description={subtitle}
-        meta={['TradingBible, Inc.', 'Delaware, USA', 'Public record']}
+        meta={['TradingBible Holdings, Inc.', 'Delaware, USA', 'Public record']}
       />
       <div className="mx-auto grid w-full max-w-[84rem] gap-5 px-5 py-10 sm:px-8 sm:py-14 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start">
         <div className="space-y-3">{children}</div>
@@ -36,7 +36,7 @@ function LegalShell({ title, subtitle, children }) {
             </nav>
           </Card>
           <div className="mt-3">
-            <PublicNotice><span className="font-semibold text-[#e9e7df]">Published by TradingBible, Inc.</span>, the official operating company of TradingBible. TradingBible Holdings, Inc. is the parent holding company. These documents apply to the public site and the member platform.</PublicNotice>
+            <PublicNotice><span className="font-semibold text-[#e9e7df]">Published by TradingBible Holdings, Inc.</span>, the Delaware company that owns and operates TradingBible. These documents apply to the public site and the member platform.</PublicNotice>
           </div>
         </aside>
       </div>
@@ -57,7 +57,7 @@ function Section({ id, heading, children }) {
 
 export function TermsPage() {
   return (
-    <LegalShell title="Terms of Service" subtitle="These Terms of Service (the &quot;Terms&quot;) form a binding agreement between you and TradingBible, Inc. (&quot;TradingBible, Inc.&quot;, &quot;we&quot;, &quot;us&quot;), owner and operator of TradingBible (the &quot;Service&quot;). By creating an account or using the Service you accept these Terms in full.">
+    <LegalShell title="Terms of Service" subtitle="These Terms of Service (the &quot;Terms&quot;) form a binding agreement between you and TradingBible Holdings, Inc. (&quot;TradingBible&quot;, &quot;we&quot;, &quot;us&quot;), owner and operator of the TradingBible service (the &quot;Service&quot;). By creating an account or using the Service you accept these Terms in full.">
       <Section heading="1. Eligibility and acceptance">
         <p>You confirm that you are at least 18 years old and legally capable of entering into a binding contract in your jurisdiction. If you use the Service on behalf of an entity, you represent that you are authorised to bind that entity. The Service is not offered where prohibited by law, and you are responsible for compliance with all laws applicable to you.</p>
       </Section>
@@ -74,23 +74,23 @@ export function TermsPage() {
         <p>You are responsible for maintaining the confidentiality of your credentials and for all activity under your account. Enable two-factor authentication where available and notify us immediately of any unauthorised use.</p>
       </Section>
       <Section heading="6. Subscriptions, billing, and taxes">
-        <p>Paid plans are billed in advance on a recurring basis through our payment processor, Stripe. Prices are shown at checkout, are exclusive of applicable taxes unless stated, and may change with prior notice. Your subscription renews automatically until cancelled. Cancellation stops future renewals but does not retroactively refund the current term except as set out in our Refund Policy. You are responsible for any taxes arising from your use of the Service.</p>
+        <p>Premium is billed in advance on a recurring monthly or annual basis through our payment processor, Stripe. Prices are shown at checkout, are exclusive of applicable taxes unless stated, and may change with prior notice. Your Premium subscription renews automatically until cancelled. Cancellation stops future renewals but does not retroactively refund the current term except as set out in our Refund Policy. You are responsible for any taxes arising from your use of the Service.</p>
       </Section>
       <Section heading="7. Acceptable use">
         <p>You agree not to: (a) reverse engineer, decompile, scrape, or resell the Service; (b) upload unlawful, infringing, or misleading content; (c) use the Service to facilitate market manipulation, insider dealing, money laundering, fraud, or any illegal activity; (d) attempt to disrupt, overload, or gain unauthorised access to our systems or other users&apos; data; or (e) circumvent usage limits or security controls. Violations may result in immediate suspension or termination and referral to authorities.</p>
       </Section>
       <Section heading="8. Intellectual property">
-        <p>All software, design, trademarks, and content provided by TradingBible and TradingBible, Inc. remain our exclusive property. You retain ownership of the trade data and notes you submit and grant us a limited, worldwide, royalty-free licence to host and process that data solely to operate and improve the Service for you. &quot;TradingBible&quot; and associated marks may not be used without written permission.</p>
-        <p><strong>8.1 Academy Pro licence.</strong> An Academy Pro purchase grants the purchaser a non-exclusive, non-transferable, revocable licence to use the Academy lessons and materials for the purchaser&apos;s internal training and client-education purposes. The licence does not permit resale, redistribution, public performance, or use in a competing product. It terminates if the purchaser breaches these Terms. All other rights remain with TradingBible, Inc.</p>
+        <p>All software, design, trademarks, and content provided by TradingBible and TradingBible Holdings, Inc. remain our exclusive property. You retain ownership of the trade data and notes you submit and grant us a limited, worldwide, royalty-free licence to host and process that data solely to operate and improve the Service for you. &quot;TradingBible&quot; and associated marks may not be used without written permission.</p>
+        <p><strong>8.1 Academy Pro licence.</strong> An Academy Pro purchase grants the purchaser a non-exclusive, non-transferable, revocable licence to use the Academy lessons and materials for the purchaser&apos;s internal training and client-education purposes. The licence does not permit resale, redistribution, public performance, or use in a competing product. It terminates if the purchaser breaches these Terms. All other rights remain with TradingBible Holdings, Inc.</p>
       </Section>
       <Section heading="9. Disclaimers of warranty">
         <p>The Service is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, whether express, implied, or statutory, including merchantability, fitness for a particular purpose, accuracy, and non-infringement. We do not warrant that the Service will be uninterrupted, error-free, secure, or that data (including third-party market and broker data) is accurate, complete, or timely.</p>
       </Section>
       <Section heading="10. Limitation of liability">
-        <p>To the maximum extent permitted by law, TradingBible, Inc., its affiliates, officers, and suppliers shall not be liable for any trading losses, lost profits, lost data, loss of goodwill, or any indirect, incidental, special, consequential, or punitive damages arising from or related to the Service, even if advised of the possibility. Our aggregate liability for any claim shall not exceed the greater of (a) the total fees you paid to us in the twelve months preceding the event giving rise to the claim, or (b) USD 100. Some jurisdictions do not allow certain exclusions, so parts of this section may not apply to you.</p>
+        <p>To the maximum extent permitted by law, TradingBible Holdings, Inc., its affiliates, officers, and suppliers shall not be liable for any trading losses, lost profits, lost data, loss of goodwill, or any indirect, incidental, special, consequential, or punitive damages arising from or related to the Service, even if advised of the possibility. Our aggregate liability for any claim shall not exceed the greater of (a) the total fees you paid to us in the twelve months preceding the event giving rise to the claim, or (b) USD 100. Some jurisdictions do not allow certain exclusions, so parts of this section may not apply to you.</p>
       </Section>
       <Section heading="11. Indemnification">
-        <p>You agree to defend, indemnify, and hold harmless TradingBible, Inc., its affiliates, and their respective directors, officers, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising out of or connected with your use of the Service, your trading activity, your content, or your breach of these Terms or applicable law.</p>
+        <p>You agree to defend, indemnify, and hold harmless TradingBible Holdings, Inc., its affiliates, and their respective directors, officers, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising out of or connected with your use of the Service, your trading activity, your content, or your breach of these Terms or applicable law.</p>
       </Section>
       <Section heading="12. Termination">
         <p>We may suspend or terminate your account at any time for violation of these Terms, suspected fraud, or legal requirement. You may close your account at any time from your profile settings. Sections that by their nature should survive termination (including IP, disclaimers, liability, indemnity, and governing law) will survive.</p>
@@ -99,7 +99,7 @@ export function TermsPage() {
         <p>These Terms are governed by the laws of the State of Delaware, United States, without regard to conflict-of-law rules. The state and federal courts located in Delaware shall have exclusive jurisdiction, save that we may seek injunctive relief in any competent court. Before commencing formal proceedings, the parties agree to attempt good-faith resolution by contacting legal@tradingbible.app. Nothing in this section affects mandatory consumer-protection rights available to you in your country of residence.</p>
       </Section>
       <Section heading="14. Changes and contact">
-        <p>We may update these Terms from time to time; material changes will be notified in-app or by email, and continued use constitutes acceptance. Questions about these Terms can be sent to legal@tradingbible.app or to TradingBible, Inc., the operator of TradingBible.</p>
+        <p>We may update these Terms from time to time; material changes will be notified in-app or by email, and continued use constitutes acceptance. Questions about these Terms can be sent to legal@tradingbible.app or to TradingBible Holdings, Inc., the operator of TradingBible.</p>
       </Section>
     </LegalShell>
   );
@@ -107,7 +107,7 @@ export function TermsPage() {
 
 export function PolicyPage() {
   return (
-    <LegalShell title="Privacy Policy" subtitle="This policy explains what data TradingBible (operated by TradingBible, Inc., the data controller) collects, why we collect it, and the choices you have. It is designed to comply with the EU/UK GDPR, the California Consumer Privacy Act (CCPA/CPRA), and other applicable data-protection laws.">
+    <LegalShell title="Privacy Policy" subtitle="This policy explains what data TradingBible (operated by TradingBible Holdings, Inc., the data controller) collects, why we collect it, and the choices you have. It is designed to comply with the EU/UK GDPR, the California Consumer Privacy Act (CCPA/CPRA), and other applicable data-protection laws.">
       <Section heading="1. Data we collect">
         <p>We collect: (a) account data (first and last name, date of birth, email, phone, authentication metadata for one-time code access); (b) profile preferences (primary market, experience, goals); (c) trading data synced from brokers and prop firms you connect (symbols, entries, exits, sizes, P&amp;L, balances, timestamps); (d) billing metadata processed by Stripe; and (e) technical logs, device, and usage data needed to secure and operate the Service.</p>
       </Section>
@@ -139,7 +139,7 @@ export function PolicyPage() {
         <p>The Service is not directed to individuals under 18 and we do not knowingly collect their data. If you believe a minor has provided us data, contact us for deletion.</p>
       </Section>
       <Section heading="11. Contact">
-        <p>Privacy questions and data requests can be sent to privacy@tradingbible.app or to the data controller, TradingBible, Inc.</p>
+        <p>Privacy questions and data requests can be sent to privacy@tradingbible.app or to the data controller, TradingBible Holdings, Inc.</p>
       </Section>
     </LegalShell>
   );
@@ -148,8 +148,8 @@ export function PolicyPage() {
 export function RefundPage() {
   return (
     <LegalShell title="Refund Policy" subtitle="We want you to trade with confidence in the platform, not just the markets. Here is exactly how refunds work.">
-      <Section heading="1. No free trial">
-        <p>TradingBible is a paid-only service — there is no free trial. Every new account must complete a paid checkout (card charged immediately) before entering the trading terminal. Paid plans carry the 14-day money-back guarantee below so you can evaluate the Service risk-free.</p>
+      <Section heading="1. Free accounts and Premium">
+        <p>TradingBible offers a free account with access to the Academy catalogue, community, paper trading and profile. TradingBible Premium is $19.99 per month or $199 per year and is required for the live terminal, journal, analytics, SI coach, reports, signals, alerts, heatmaps, broker sync and risk tools. Premium carries the 14-day money-back guarantee below.</p>
       </Section>
       <Section heading="2. 14-day money-back guarantee">
         <p>If you upgrade to a paid plan and are not satisfied, you may request a full refund within 14 days of your first payment on that plan. Contact billing@tradingbible.app from your account email and we will process the refund to your original payment method.</p>
@@ -177,7 +177,7 @@ export const FAQS = [
   { q: 'Is TradingBible financial advice?', a: 'No. TradingBible is a journaling and analytics tool. Our SI reviews and scores are educational and reflect your own historical data — they are never buy/sell recommendations.' },
   { q: 'How does broker sync work?', a: 'You connect a broker using read-oriented API keys or OAuth. We import your historical and ongoing trades automatically into your journal, dashboard, and SI reports. Credentials are encrypted and never used to place trades or withdraw funds.' },
   { q: 'Which brokers and platforms are supported?', a: 'Named brokers only — Binance, Deriv, easyMarkets, Interactive Brokers, Alpaca, Coinbase and more (live accounts only — demo accounts are not supported), plus TradingBible Funded evaluations. You can also track self-custody wallets (BTC, ETH, USDC, Solana) with live on-chain balances. More integrations are added regularly.' },
-  { q: 'Do you offer a free trial?', a: 'No. TradingBible is paid-only — your card is charged at checkout before you enter the terminal. Instead of a trial, every first payment is covered by our 14-day money-back guarantee.' },
+  { q: 'Is there a free account?', a: 'Yes. A free account includes the Academy catalogue, community, paper trading and profile. Premium is $19.99/month or $199/year and unlocks the live terminal and desk tools. Every first Premium payment is covered by our 14-day money-back guarantee.' },
   { q: 'Can I cancel anytime?', a: 'Yes. Cancel from your profile settings in a couple of clicks. You keep access until the end of your current billing period, and no further charges are made.' },
   { q: 'How is my data protected?', a: 'We use row-level security, encrypted storage, isolated per-user data, and protected APIs. Your trade data is only used to generate insights for you.' },
   { q: 'What does the SI Coach actually do?', a: 'It is your 24/7 SI coach: it reviews your synced trades for quality, risk, and discipline, detects recurring mistakes (widened stops, revenge trading, overtrading), grades your discipline, and answers questions grounded in your real history, such as “What is my biggest mistake?” or “Which strategy works best for me?”.' },

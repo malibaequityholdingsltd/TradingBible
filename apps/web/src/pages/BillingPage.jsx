@@ -35,7 +35,7 @@ export default function BillingPage() {
   const { user, updateProfile } = useAuth();
   const { toast } = useToast();
   const { t } = useI18n();
-  const plans = PLANS.map((plan) => translatePlan(t, plan));
+  const plans = PLANS.filter((plan) => plan.id !== 'free').map((plan) => translatePlan(t, plan));
   const [sub, setSub] = useState(null);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);

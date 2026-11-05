@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Send, Sparkles, BarChart3, Cable, Wallet, Target, Info, Wrench, MessageSquare, MessageCircle, Eraser, ExternalLink, Crown, Maximize2 } from 'lucide-react';
+import { X, Send, Sparkles, BarChart3, Cable, Wallet, Target, Info, MessagesSquare, MessageSquare, MessageCircle, Eraser, ExternalLink, Crown, Maximize2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n';
 import { useIntegratedAi } from '@/hooks/use-integrated-ai';
 import { measureNavClearance, watchNavClearance } from '@/lib/navClearance';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import CommunityChatPanel from '@/components/CommunityChatPanel';
 
 const BTN = 56; // button size in px
 const MARGIN = 12;
@@ -21,7 +22,7 @@ const QUICK_PROMPTS = [
 
 const TABS = [
   { id: 'coach', key: 'aiw.coach', icon: MessageSquare },
-  { id: 'tools', key: 'aiw.tools', icon: Wrench },
+  { id: 'chats', key: 'aiw.chats', icon: MessagesSquare },
   { id: 'about', key: 'aiw.about', icon: Info },
 ];
 
@@ -63,8 +64,9 @@ export default function LiveChatWidget() {
   const { isAuthed, user } = useAuth();
   const { theme } = useTheme();
   const isLight = theme === 'light';
-  // The bubble shows on every plan; only Elite+ may actually chat.
-  // Below-Elite users get an upgrade panel instead (the API enforces too).
+  // The bubble shows on every plan; only Premium and above may chat with the
+  // SI coach. Free users still get member-to-member chats, so the lock is
+  // applied inside the Coach tab rather than swallowing the whole panel.
   const coachLocked = isAuthed && !meetsPlan(user, 'elite');
   const { t } = useI18n();
   const nav = useNavigate();
@@ -186,17 +188,18 @@ export default function LiveChatWidget() {
               <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0a0a0f] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
             </div>
             <div className="min-w-0 flex-1 leading-tight">
-              <div className="gold-text font-display truncate text-base">TradingBible SI</div>
+              <div className="gold-text font-display truncate text-base">{tab === 'chats' ? t('aiw.chatsTitle', null, 'Community chats') : 'TradingBible SI'}</div>
+              {tab === 'chats' && <div className="truncate text-[10px] text-[#8a8577]">{t('aiw.chatsSub', null, 'Talk with other TradingBible members.')}</div>}
             </div>
-            {messages.length > 0 && (
+            {tab === 'coach' && messages.length > 0 && (
               <button onClick={clearMessages} aria-label={t('aiw.clearChat')} className={`${iconBtn} ml-auto`}>
                 <Eraser className="h-3.5 w-3.5" />
               </button>
             )}
             <button
-              onClick={openCoachPage}
-              aria-label="Open the SI Coach page"
-              title="Open SI Coach"
+              onClick={tab === 'chats' ? () => { setOpen(false); nav('/app/community'); } : openCoachPage}
+              aria-label={tab === 'chats' ? 'Open the community page' : 'Open the SI Coach page'}
+              title={tab === 'chats' ? 'Open community' : 'Open SI Coach'}
               className={iconBtn}
             >
               <Maximize2 className="h-3.5 w-3.5" />
@@ -210,8 +213,8 @@ export default function LiveChatWidget() {
           <div className="px-3 pt-2">
             <div className="flex items-center gap-1 rounded-full border border-white/[0.07] bg-black/30 p-1">
               {TABS.map(({ id, key, icon: Icon }) => (
-                <button key={id} onClick={() => setTab(id)} aria-pressed={tab === id} disabled={coachLocked && id !== 'about'}
-                  className={`flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full text-[11px] font-bold transition-all disabled:opacity-40 ${tab === id
+                <button key={id} onClick={() => setTab(id)} aria-pressed={tab === id}
+                  className={`flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full text-[11px] font-bold transition-all ${tab === id
                     ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]'
                     : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
                   <Icon className="h-3.5 w-3.5" />
@@ -221,25 +224,33 @@ export default function LiveChatWidget() {
             </div>
           </div>
 
-          {coachLocked ? (
+          {tab === 'coach' && coachLocked && (
             <div className="relative flex flex-1 flex-col items-center justify-center gap-3 overflow-y-auto p-6 text-center">
               <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#d4af37]/12 text-[#d4af37]">
                 <Crown className="h-5 w-5" />
               </span>
               <div>
-                <p className="font-semibold text-[#f0ecdd]">SI Coach is an Elite feature</p>
-                <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">Upgrade to Elite SI for 24/7 trade reviews, mistake detection and reports.</p>
+                <p className="font-semibold text-[#f0ecdd]">SI Coach is a Premium feature</p>
+                <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">Upgrade to Premium for 24/7 trade reviews, mistake detection and reports.</p>
               </div>
-              <button
-                onClick={() => { closePanel(); nav('/pricing'); }}
-                className="flex min-h-[44px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90"
-              >
-                <Crown className="h-4 w-4" /> Upgrade to Elite
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <button
+                  onClick={() => { closePanel(); nav('/pricing'); }}
+                  className="flex min-h-[40px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90"
+                >
+                  <Crown className="h-4 w-4" /> Upgrade to Premium
+                </button>
+                <button
+                  onClick={() => setTab('chats')}
+                  className="flex min-h-[40px] items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 text-xs font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10"
+                >
+                  <MessagesSquare className="h-4 w-4" /> {t('aiw.openChats', null, 'Chat with members')}
+                </button>
+              </div>
             </div>
-          ) : (
-          <>
-          {tab === 'coach' && (
+          )}
+
+          {tab === 'coach' && !coachLocked && (
             <div ref={scrollRef} className="relative flex-1 space-y-3.5 overflow-y-auto px-3.5 py-3">
               {!isAuthed && (
                 <div className="rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/[0.06] p-3 text-xs text-[#c9c4b4]">
@@ -289,34 +300,7 @@ export default function LiveChatWidget() {
             </div>
           )}
 
-          {tab === 'tools' && (
-            <div className="relative flex-1 space-y-2 overflow-y-auto p-3.5">
-              {QUICK_PROMPTS.map(({ key, icon: Icon }) => (
-                <button key={key} onClick={() => send(t(key))} disabled={isStreaming}
-                  className="flex w-full items-center gap-3 rounded-xl border border-[#d4af37]/15 bg-[#d4af37]/[0.04] px-3.5 py-3 text-left transition hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.09] disabled:opacity-50">
-                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-[#f4e6a8]/20 to-[#a67c1e]/20 text-[#d4af37]">
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <div className="text-[13px] font-semibold text-[#f0ecdd]">{t(key)}</div>
-                    <div className="text-[10px] text-[#8a8577]">{t('aiw.sendsPrompt')}</div>
-                  </div>
-                </button>
-              ))}
-              {messages.length > 0 && (
-                <button onClick={clearMessages}
-                  className="flex w-full items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] px-3.5 py-3 text-left transition hover:border-red-400/40 hover:bg-red-400/[0.06]">
-                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#8a8577]">
-                    <Eraser className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <div className="text-[13px] font-semibold text-[#c9c4b4]">{t('aiw.clear')}</div>
-                    <div className="text-[10px] text-[#8a8577]">{t('aiw.clearSub')}</div>
-                  </div>
-                </button>
-              )}
-            </div>
-          )}
+          {tab === 'chats' && <CommunityChatPanel />}
 
           {tab === 'about' && (
             <div className="relative flex-1 space-y-3 overflow-y-auto p-3.5">
@@ -333,8 +317,8 @@ export default function LiveChatWidget() {
             </div>
           )}
 
-          {/* Input */}
-          {tab !== 'tools' && (
+          {/* Input — the coach owns this composer; Chats renders its own. */}
+          {tab === 'coach' && !coachLocked && (
             <div className="relative border-t border-[#d4af37]/12 bg-[#0a0a0f]/70 px-3.5 pb-3 pt-2.5 backdrop-blur-md">
               <div className="flex items-center gap-2 rounded-xl border border-[#d4af37]/20 bg-[#0f0f14]/90 px-3 py-1 transition-colors focus-within:border-[#d4af37]/50 focus-within:shadow-[0_0_0_3px_rgba(212,175,55,0.08)]">
                 <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder={t('aiw.askPh')} className="w-full bg-transparent py-1.5 text-[13px] text-[#e9e7df] placeholder-[#6a665a] outline-none" />
@@ -347,8 +331,6 @@ export default function LiveChatWidget() {
                 {t('aiw.enterSend')} <span className="animate-pulse text-[#d4af37]/70">▊</span>
               </div>
             </div>
-          )}
-          </>
           )}
         </div>
       )}

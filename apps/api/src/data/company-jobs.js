@@ -1,4 +1,4 @@
-// Company-wide hiring plan for TradingBible, Inc.
+// Company-wide hiring plan for TradingBible Holdings, Inc.
 //
 // These are real operating roles across the product the company actually
 // runs: the trading journal/terminal, broker integrations, market data,

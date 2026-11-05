@@ -33,6 +33,7 @@ import { LoginPage, SignupPage, ResetPage, OnboardingPage } from './pages/AuthFl
 // Lazy-load heavy authenticated + secondary pages so the initial bundle stays
 // small and each surface is fetched on demand.
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const FreeWelcomePage = lazy(() => import('./pages/FreeWelcomePage'));
 const JournalPage = lazy(() => import('./pages/JournalPage'));
 const CoachPage = lazy(() => import('./pages/CoachPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
@@ -111,7 +112,6 @@ const AdminTbStockDocumentsPage = lazy(() => import('./pages/AdminTbStockDocumen
 const ChallengesPage = lazy(() => import('./pages/ChallengesPage'));
 const BacktestPage = lazy(() => import('./pages/BacktestPage'));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
-const StakingPage = lazy(() => import('./pages/StakingPage'));
 const PaperPage = lazy(() => import('./pages/PaperPage'));
 const StaffBioPage = lazy(() => import('./pages/StaffBioPage'));
 const StaffIdCardsPage = lazy(() => import('./pages/StaffIdCardsPage'));
@@ -140,7 +140,7 @@ function isSubscriber(user) {
     // Hired staff work here — they pass the subscriber floor without buying
     // a plan. Tier gates (elite/professional) still apply via meetsPlan.
     if (isStaffUser(user)) return true;
-    return ['pro', 'elite', 'professional', 'teams'].includes((user.plan || '').toLowerCase());
+    return ['pro', 'premium', 'elite', 'professional', 'teams'].includes((user.plan || '').toLowerCase());
 }
 
 function SubscriberProtected({ children }) {
@@ -148,7 +148,7 @@ function SubscriberProtected({ children }) {
     if (!isAuthReady) return <PageFallback />;
     if (!isAuthed) return <Navigate to="/login" replace />;
     if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
-    if (!isSubscriber(user)) return <Navigate to="/pricing" replace />;
+    if (!isSubscriber(user)) return <Navigate to="/app/welcome" replace />;
     return children;
 }
 
@@ -164,7 +164,7 @@ function PlanProtected({ plan, gate, children }) {
     if (!isAuthReady) return <PageFallback />;
     if (!isAuthed) return <Navigate to="/login" replace />;
     if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
-    if (!isSubscriber(user)) return <Navigate to="/pricing" replace />;
+    if (!isSubscriber(user)) return <Navigate to="/app/welcome" replace />;
     if (!meetsPlan(user, effective)) return <Navigate to="/pricing" replace />;
     return children;
 }
@@ -207,14 +207,14 @@ function StaffProfileGate() {
   return <StaffProtected><StaffPortal /></StaffProtected>;
 }
 
-// No free trial: paid plan + card required before entering the trading app.
-// Billing + profile stay open so new users can pay and manage their account.
+// Premium plan required before entering the trading terminal and desk tools.
+// Free accounts land on the welcome hub, with billing/profile always open.
 function PaidProtected({ children }) {
     const { isAuthed, isAuthReady, user } = useAuth();
     if (!isAuthReady) return <PageFallback />;
     if (!isAuthed) return <Navigate to="/login" replace />;
     if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
-    if (!isSubscriber(user)) return <Navigate to="/app/billing" replace />;
+    if (!isSubscriber(user)) return <Navigate to="/app/welcome" replace />;
     return children;
 }
 
@@ -229,7 +229,7 @@ function EverPaidProtected({ children }) {
     if (!isAuthed) return <Navigate to="/login" replace />;
     if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
     // Allow if subscriber OR has ever made a successful payment (hasEverPaid flag)
-    if (!isSubscriber(user) && !user?.hasEverPaid) return <Navigate to="/app/billing" replace />;
+    if (!isSubscriber(user) && !user?.hasEverPaid) return <Navigate to="/app/welcome" replace />;
     return children;
 }
 function FeatureGate({ feature, children }) {
@@ -408,11 +408,11 @@ function RoutesWithBoundary() {
                     {/* Public staff profile — opened by scanning an ID-card QR */}
                     <Route path="/staff/:id" element={<StaffProfileGate />} />
                     {/* TBC now lives on the public record; the member TBC page is retired. */}
-                    <Route path="/app/tbc" element={<Navigate to="/app/wallet?tab=crypto" replace />} />
+                    <Route path="/app/tbc" element={<Navigate to="/tbc" replace />} />
                     <Route path="/app/tbc/support" element={<Navigate to="/contact" replace />} />
-                    <Route path="/app/tbc/:tab" element={<Navigate to="/app/wallet?tab=crypto" replace />} />
+                    <Route path="/app/tbc/:tab" element={<Navigate to="/tbc" replace />} />
                     <Route path="/app/support" element={<Navigate to="/contact" replace />} />
-                    <Route path="/app/defi" element={<Navigate to="/app/wallet?tab=crypto" replace />} />
+                    <Route path="/app/defi" element={<Navigate to="/tbc" replace />} />
                     <Route path="/app/market" element={<Navigate to="/app/signals?tab=market" replace />} />
                     <Route path="/app/funded" element={<Navigate to="/app/challenges" replace />} />
                     <Route path="/app/prop-firms" element={<Navigate to="/app/challenges" replace />} />
@@ -423,6 +423,7 @@ function RoutesWithBoundary() {
                     <Route path="/signup" element={<SignupPage />} />
                     <Route path="/reset" element={<ResetPage />} />
                     <Route path="/onboarding" element={<Protected><OnboardingPage /></Protected>} />
+                    <Route path="/app/welcome" element={<Protected><FreeWelcomePage /></Protected>} />
                     <Route path="/app" element={<PaidProtected><DashboardPage /></PaidProtected>} />
                     <Route path="/app/investors" element={<Protected><AppInvestorAccessPage /></Protected>} />
                     <Route path="/app/analytics" element={<PaidProtected><AnalyticsPage /></PaidProtected>} />
@@ -440,7 +441,7 @@ function RoutesWithBoundary() {
                     <Route path="/app/challenges" element={<Protected><ChallengesPage /></Protected>} />
                     <Route path="/app/paper" element={<Protected><PaperPage /></Protected>} />
                     <Route path="/app/backtest" element={<PaidProtected><BacktestPage /></PaidProtected>} />
-                    <Route path="/app/staking" element={<Protected><StakingPage /></Protected>} />
+                    <Route path="/app/staking" element={<Navigate to="/app" replace />} />
                     {/* The SI coach is the only mentor surface. */}
                     <Route path="/app/mentors" element={<Navigate to="/app/coach" replace />} />
                     <Route path="/leaderboard" element={<LeaderboardPage />} />

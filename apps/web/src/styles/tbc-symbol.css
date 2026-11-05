@@ -1,0 +1,24 @@
+/* TradingBible Coin currency mark — U+E000.
+   The custom glyph is derived from the TradingBible TB monogram so the coin
+   symbol renders as one text character everywhere the font is loaded. */
+@font-face {
+  font-family: 'TradingBible Coin';
+  src: url('/fonts/tbc/TradingBible-Coin.woff2') format('woff2'),
+       url('/fonts/tbc/TradingBible-Coin.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.tbc-symbol {
+  display: inline-block;
+  font-family: 'TradingBible Coin', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-variant: normal;
+  line-height: 1;
+  letter-spacing: 0;
+  vertical-align: -0.04em;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+}

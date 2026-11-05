@@ -1,16 +1,16 @@
 # TRADINGBIBLE — Official Company Profile & Strategic Master Blueprint, 2026 Edition
-*TradingBible, Inc. · Delaware, USA · tradingbible.app · Brand: TradingBible (TB) · Proposed coin: TBC · Proposed ticker: TB (subject to exchange approval)*
+*TradingBible Holdings, Inc. · Delaware, USA · tradingbible.app · Brand: TradingBible (TB) · Proposed coin: TBC · Proposed ticker: TB (subject to exchange approval)*
 
-> Corporate structure: **TradingBible Holdings, Inc. is the parent holding company. TradingBible, Inc. is the official operating company.** Divisions below are product lines under the operating company — not subsidiaries. Certificate/EIN/D-U-N-S are credentials, not licenses. No verified revenue/customer figures exist. Verify all claims before banks, regulators, or investors.
+> Corporate structure: **TradingBible Holdings, Inc. owns and operates TradingBible. TradingBible, Inc. is the securities issuer.** Divisions below are product lines under the operating company — not subsidiaries. Certificate/EIN/D-U-N-S are credentials, not licenses. No verified revenue/customer figures exist. Verify all claims before banks, regulators, or investors.
 
 ## 1. Official company identity
-TradingBible, Inc. — Financial Technology · Trading Intelligence · Software. Delaware corporation; entity records on file. IRS EIN and D-U-N-S **14-997-6777** on file. Parent: **TradingBible Holdings, Inc.** Leadership (confirm before publishing as formal officers): Malik Nlem (Founder & Chief Executive), Victor Okechukwu (Vice President), Maliba SI (Head of Quantitative Research).
+TradingBible Holdings, Inc. — Financial Technology · Trading Intelligence · Software. Delaware corporation; entity records on file. IRS EIN and D-U-N-S **14-997-6777** on file. Securities issuer: **TradingBible, Inc.** Leadership (confirm before publishing as formal officers): Malik Nlem (Founder & Chief Executive), Victor Okechukwu (Vice President), Maliba SI (Head of Quantitative Research).
 
 ## 2. Mission, vision, purpose
 Mission: empower traders/investors through transparent data-driven intelligence, advanced fintech, analytics, risk management, accessible education. Vision: globally recognized fintech ecosystem (tools, brokerage infrastructure, intelligence, digital assets, investment tech). Purpose: develop/own/operate/license/commercialize lawful fintech platforms, software, tools, education, data services — subject to licenses. Technology-first; **not established as an authorized broker-dealer, forex dealer, crypto exchange, or custodian**.
 
 ## 3. Business ecosystem (divisions, not subsidiaries)
-TradingBible Holdings, Inc. (parent) → TradingBible, Inc. (official operating company) → Terminal (charts/analytics/execution interfaces) · Intelligence (research/SI/signals/education) · Prop (challenges/account analytics) · Developer (APIs/SDKs/white-label) · Brokerage (**future**, regulated) · Coin (proposed TBC). Separate entities only later for regulators/investors/tax/risk/contracts.
+TradingBible Holdings, Inc. (owner and operator) → TradingBible, Inc. (securities issuer) → Terminal (charts/analytics/execution interfaces) · Intelligence (research/SI/signals/education) · Prop (challenges/account analytics) · Developer (APIs/SDKs/white-label) · Brokerage (**future**, regulated) · Coin (proposed TBC). Separate entities only later for regulators/investors/tax/risk/contracts.
 
 ## 4. Platform scope (documented, not audited)
 Terminal Pro · journal (entries/exits/notes/tagging/broker sync) · analytics (P&L/equity/drawdown/discipline) · SI Trading Coach · signals/indicators (RSI/MACD/MA/Bollinger+) · risk tools (sizing/expectancy/R:R/ruin) · backtesting · paper trading · prop-firm analytics · order flow · heatmaps · Academy · Community · TradingBible TV · developer platform · wallet/billing. Must auto-save drawings/watchlists/layouts/journal/prop activity across sessions; sync must be permission-based.
@@ -46,10 +46,10 @@ TB proposed, not reserved/approved. 1) Sustainable operating company (platform/r
 TB · TradingBible · Professional Trading Intelligence. Signature gold · midnight black · light gold · ivory. Official TB logo + separate TBC symbol. Voice: professional, precise, research-driven, globally accessible, transparent about risk.
 
 ## 15. Official description (publication-ready)
-**TradingBible, Inc.** is a Delaware corporation developing an integrated ecosystem of professional trading intelligence, market analytics, financial education, and trading software. Through **TradingBible.net**: advanced charting, journals, portfolio/performance analytics, risk tools, research, order-flow, heatmaps, intelligent assistance. Mission: accessible pro-grade technology + disciplined risk + education. Vision: globally recognized fintech ecosystem (intelligence, infrastructure, education, digital innovation). Long-term: terminal expansion, APIs/white-label, TBC ecosystem, evaluated licensed brokerage. Delaware corporation; entity records on file. *Software/education ≠ regulated brokerage/advisory/exchange/custody authorization.*
+**TradingBible Holdings, Inc.** is a Delaware corporation that owns and operates TradingBible, an integrated ecosystem of professional trading intelligence, market analytics, financial education, and trading software. Through **TradingBible.net**: advanced charting, journals, portfolio/performance analytics, risk tools, research, order-flow, heatmaps, intelligent assistance. Mission: accessible pro-grade technology + disciplined risk + education. Vision: globally recognized fintech ecosystem (intelligence, infrastructure, education, digital innovation). Long-term: terminal expansion, APIs/white-label, TBC ecosystem, evaluated licensed brokerage. Delaware corporation; entity records on file. *Software/education ≠ regulated brokerage/advisory/exchange/custody authorization.*
 
 ## 16. Roadmap
 1 Corporate formation — Completed · 2 EIN — Completed · 3 D-U-N-S — Reported · 4 Platform verification — Requires audit · 5 Revenue validation — Pending · 6 Terminal — Expansion · 7 Brokerage licensing — Planned · 8 TBC testnet/mainnet — Planned · 9 Institutional financing — Future · 10 Restructuring/IPO — Long-term.
 
 ## 17. Position
-TradingBible, Inc. = official operator (use registration + EIN properly; D-U-N-S for verification/credit). TradingBible Holdings, Inc. = parent holding company. Next: verify records + finances, meet tax/compliance, strengthen tech, choose first regulated line.
+TradingBible Holdings, Inc. = owner and operator of TradingBible (use registration + EIN properly; D-U-N-S for verification/credit). TradingBible, Inc. = securities issuer. Next: verify records + finances, meet tax/compliance, strengthen tech, choose first regulated line.

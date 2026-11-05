@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight, BookOpen, CheckCircle2, ChevronRight, Coins, Code2, Download,
+  ArrowRight, BookOpen, Check, CheckCircle2, ChevronRight, Coins, Code2, Copy, Download,
   FileText, Globe2, Layers, Lock, Network, Radio, ShieldCheck, Sparkles,
   Store, Timer, TriangleAlert, Wallet, Workflow,
 } from 'lucide-react';
@@ -237,6 +237,46 @@ export default function TbcPublicPage({ section = 'overview' }) {
   );
 }
 
+function TbcSymbolPanel() {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText('\uE000');
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
+    }
+  };
+  return (
+    <Card className="mt-5 overflow-hidden p-4 sm:p-5">
+      <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center">
+        <div className="grid h-24 w-24 place-items-center rounded-2xl border border-[#d4af37]/30 bg-[#0a0a0f] text-[54px] text-[#d4af37]" style={{ boxShadow: '0 12px 36px -18px color-mix(in srgb, var(--tb-gold, #d4af37) 55%, transparent)' }}>
+          <span className="tbc-symbol" aria-label="TBC currency symbol">&#xE000;</span>
+        </div>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-sm font-bold text-[#f0ecdd]">The TBC currency mark is a text character.</h2>
+            <AtBadge tone="amber">U+E000</AtBadge>
+          </div>
+          <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-[#8a8577]">
+            A single copyable character, drawn from the approved TB monogram. Inside TradingBible the custom font renders it as the TBC mark. Other apps will only display it when they also load the supplied font.
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button type="button" onClick={copy} className="inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-[#d4af37]/30 bg-[#d4af37]/10 px-3 text-[11px] font-bold text-[#e8c95a] transition hover:border-[#d4af37]/60">
+              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />} {copied ? 'Copied U+E000' : 'Copy TB character'}
+            </button>
+            <a href="/fonts/tbc/TradingBible-Coin.ttf" download className="inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-white/10 px-3 text-[11px] font-semibold text-[#c9c4b4] hover:border-[#d4af37]/40"><Download className="h-3.5 w-3.5" /> Download .TTF</a>
+            <a href="/fonts/tbc/TradingBible-Coin.woff2" download className="inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-white/10 px-3 text-[11px] font-semibold text-[#c9c4b4] hover:border-[#d4af37]/40"><Download className="h-3.5 w-3.5" /> Download .WOFF2</a>
+            <a href="/fonts/tbc/tbc-symbol.css" download className="inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-white/10 px-3 text-[11px] font-semibold text-[#c9c4b4] hover:border-[#d4af37]/40"><Download className="h-3.5 w-3.5" /> Installation CSS</a>
+          </div>
+          <code className="mt-3 block overflow-x-auto rounded-lg border border-white/[0.06] bg-black/25 px-3 py-2 font-mono text-[10px] text-[#a9a494]">&lt;span class=&quot;tbc-symbol&quot;&gt;&amp;#xE000;&lt;/span&gt;</code>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 function Overview({ docs, docsLoading, docsError, onRead }) {
   return (
     <>
@@ -256,6 +296,7 @@ function Overview({ docs, docsLoading, docsError, onRead }) {
           actions={<><GoldButton to="/tbc/documents">Source documents <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/tbc/whitepaper">Read the whitepaper</GhostButton></>}
         />
         <div className="mt-4"><TbcProposalNotice /></div>
+        <TbcSymbolPanel />
       </div>
 
       <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -366,7 +407,7 @@ function Whitepaper({ whitepaper, docsLoading, onRead }) {
           {docsLoading && <div className="grid h-[62vh] place-items-center text-sm text-[#8a8577]">Loading document…</div>}
           {!docsLoading && whitepaper && (
             <div className="relative grid h-[58vh] place-items-center overflow-hidden bg-[#26262b] p-6 text-center">
-              <div aria-hidden className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(212,175,55,0.16),transparent_58%)]" />
+              <div aria-hidden className="absolute inset-0" style={{ background: 'radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--tb-gold, #d4af37) 16%, transparent), transparent 58%)' }} />
               <div className="relative max-w-sm">
                 <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/10 text-[#d4af37]"><FileText className="h-7 w-7" /></span>
                 <div className="mt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-[#d4af37]">Word document · read-only</div>
@@ -387,7 +428,7 @@ function Whitepaper({ whitepaper, docsLoading, onRead }) {
           <Card className="p-4">
             <SectionHead icon={Coins} title="At a glance" />
             {[
-              ['Issuer', 'TradingBible, Inc.'],
+              ['Issuer', 'TradingBible Holdings, Inc.'],
               ['Jurisdiction', 'Delaware, United States'],
               ['Proposed supply', TBC_PROPOSAL.supplyLabel],
               ['Status', 'Proposal — not issued'],
@@ -497,7 +538,7 @@ function Purchases() {
       <div className="pt-3 sm:pt-5">
         <PageHero kickerIcon={Lock} kicker="Purchase controls" title="Designed now," accent="disabled until authorized" subtitle="The eight-step journey is documented so the controls can be built and tested. Payment collection remains off until legal, compliance, custody, payment provider, refund and launch requirements are satisfied." actions={<GoldButton to="/tbc/eligibility">Check eligibility <ArrowRight className="h-4 w-4" /></GoldButton>} />
       </div>
-      <div className="mt-4 rounded-[10px] border border-red-400/20 bg-red-400/[0.06] px-4 py-3 text-xs leading-relaxed text-[#e9c4c4]"><span className="font-bold text-red-300">Sale disabled.</span> No TBC purchase is possible on this website. Anyone offering a TBC sale, presale, allocation or guaranteed return is not authorized by TradingBible, Inc.</div>
+      <div className="mt-4 rounded-[10px] border border-red-400/20 bg-red-400/[0.06] px-4 py-3 text-xs leading-relaxed text-[#e9c4c4]"><span className="font-bold text-red-300">Sale disabled.</span> No TBC purchase is possible on this website. Anyone offering a TBC sale, presale, allocation or guaranteed return is not authorized by TradingBible Holdings, Inc.</div>
       <div className="mt-5 grid gap-4 lg:grid-cols-[1.1fr_.9fr]">
         <Card className="p-4 sm:p-5"><SectionHead icon={Workflow} title="Proposed purchaser journey" sub="Each step is a control, not a guarantee that the next exists." /><div className="space-y-2">{TBC_PURCHASE_STEPS.map((step) => <div key={step.n} className="flex items-start gap-3 rounded-lg border border-white/[0.06] bg-black/20 p-3"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[#d4af37]/20 bg-[#d4af37]/[0.07] font-mono text-[10px] font-bold text-[#d4af37]">{step.n}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-1.5"><span className="text-xs font-bold text-[#f0ecdd]">{step.title}</span><Pill status={step.status} /></div><p className="mt-0.5 text-[11px] text-[#8a8577]">{step.body}</p></div></div>)}</div></Card>
         <div className="space-y-3">

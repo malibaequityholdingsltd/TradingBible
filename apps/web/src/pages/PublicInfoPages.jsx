@@ -45,7 +45,7 @@ function EditorialPage({ eyebrow, title, description, meta, points, cards, cta, 
         </PublicSection>
       )}
       {children}
-      <PublicCTA title={<>Start with the record. <span className="tb-gold-text">Build from there.</span></>} body="Plans are paid only and include a 14-day money-back guarantee. No free trial and no invented performance." primary={cta?.label || 'Create an account'} primaryTo={cta?.to || '/signup'} />
+      <PublicCTA title={<>Start with the record. <span className="tb-gold-text">Build from there.</span></>} body="Start with a free account. Premium is $19.99/month or $199/year, includes every core premium feature and carries a 14-day money-back guarantee." primary={cta?.label || 'Create an account'} primaryTo={cta?.to || '/signup'} />
     </PublicSiteShell>
   );
 }
@@ -55,7 +55,7 @@ function EditorialPage({ eyebrow, title, description, meta, points, cards, cta, 
 /* ------------------------------------------------------------------ */
 
 const GUIDE_STEPS = [
-  ['01', 'Create the account', 'Choose a paid plan, verify your email and finish onboarding. TradingBible is a paid product; there is no free-trial tier that mixes demo results into the record.', '/signup'],
+  ['01', 'Create the account', 'Create a free account, verify your email and finish onboarding. Upgrade to Premium when you want the live terminal, journal, analytics and SI coach; the record never mixes demo results into live performance.', '/signup'],
   ['02', 'Connect a live account', 'Link a broker or prop firm with read-oriented credentials. The connection names the platform, its scope and the last sync so you always know what is being read.', '/features/broker-integrations'],
   ['03', 'Learn the terminal', 'Use Terminal Pro to search symbols, read a chart, set an alert and move between order flow, heatmaps and TV without losing context.', '/features/trading-overview'],
   ['04', 'Write the first journal entry', 'Let the sync bring in the fills. Add the setup, the thesis and the risk you planned before the trade. The note is the part only you can provide.', '/features/trading-journal'],

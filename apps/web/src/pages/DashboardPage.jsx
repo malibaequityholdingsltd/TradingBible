@@ -129,7 +129,6 @@ export default function DashboardPage() {
   const stats = useMemo(() => computeStats(trades), [trades]);
 
   const cash = Number(ledger?.balances?.USD || 0);
-  const tbc = Number(ledger?.balances?.TBC || 0);
   const external = Number(totalUsd || 0);
   const total = cash + external;
   const openTrades = useMemo(() => trades.filter((trade) => !trade.closedAt && !trade.exit), [trades]);
@@ -138,7 +137,8 @@ export default function DashboardPage() {
     .slice(0, 5), [trades]);
 
   const firstName = String(user?.name || user?.username || '').trim().split(/\s+/)[0] || 'Trader';
-  const isSubscriber = user?.role === 'admin' || ['pro', 'elite', 'professional', 'teams'].includes((user?.plan || '').toLowerCase());
+  const isSubscriber = user?.role === 'admin' || ['pro', 'premium', 'elite', 'professional', 'teams'].includes((user?.plan || '').toLowerCase());
+  const planName = user?.plan ? user.plan.charAt(0).toUpperCase() + user.plan.slice(1) : 'Pro';
 
   if (loading) {
     return (
@@ -179,7 +179,6 @@ export default function DashboardPage() {
               <div className="ex-dashboard__balance-value">{walletLoading ? '—' : money(total)}</div>
               <div className="ex-dashboard__balance-sub">
                 <span>Cash <strong className="ex-mono text-[var(--ex-text)]">{money(cash)}</strong></span>
-                <span>TBC <strong className="ex-mono text-[var(--ex-text)]">{tbc.toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong></span>
                 <span>Tracked wallets <strong className="ex-mono text-[var(--ex-text)]">{money(external)}</strong></span>
                 <span className="ex-faint">{wallets.length} wallet{wallets.length === 1 ? '' : 's'} linked</span>
               </div>
@@ -188,7 +187,7 @@ export default function DashboardPage() {
               <Link to="/app/wallet?tab=cash" className="ex-btn ex-btn--primary ex-btn--sm"><ArrowDownToLine /> Deposit</Link>
               <Link to="/app/wallet?tab=cash" className="ex-btn ex-btn--secondary ex-btn--sm"><ArrowUpRight /> Withdraw</Link>
               <Link to="/app/wallet?tab=send" className="ex-btn ex-btn--secondary ex-btn--sm"><Send /> Send</Link>
-              <Link to="/app/wallet?tab=crypto" className="ex-btn ex-btn--secondary ex-btn--sm"><RefreshCw /> Convert</Link>
+              <Link to="/app/wallet?tab=crypto" className="ex-btn ex-btn--secondary ex-btn--sm"><RefreshCw /> Crypto</Link>
             </div>
           </div>
           <div className="ex-dashboard__metrics">
@@ -322,7 +321,7 @@ export default function DashboardPage() {
                   <Link to="/app/wallet?tab=cash" className="ex-quick-action"><ArrowDownToLine /> Deposit</Link>
                   <Link to="/app/wallet?tab=cash" className="ex-quick-action"><ArrowUpRight /> Withdraw</Link>
                   <Link to="/app/wallet?tab=send" className="ex-quick-action"><Send /> Send</Link>
-                  <Link to="/app/wallet?tab=crypto" className="ex-quick-action"><RefreshCw /> Convert</Link>
+                  <Link to="/app/wallet?tab=crypto" className="ex-quick-action"><RefreshCw /> Crypto</Link>
                   <Link to="/app/journal" className="ex-quick-action"><BookOpen /> Journal</Link>
                   <Link to="/app/alerts" className="ex-quick-action"><Radar /> Alerts</Link>
                   <Link to="/app/academy" className="ex-quick-action"><GraduationCap /> Academy</Link>
@@ -387,7 +386,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center justify-between gap-2 text-[11px]">
                     <span className="flex items-center gap-1.5 text-[var(--ex-muted)]"><CreditCard className="h-3.5 w-3.5" /> Plan</span>
-                    <span className="ex-badge">{isSubscriber ? (user?.plan || 'Pro') : 'Free'}</span>
+                    <span className="ex-badge">{isSubscriber ? planName : 'Free'}</span>
                   </div>
                   <div className="flex items-center justify-between gap-2 text-[11px]">
                     <span className="flex items-center gap-1.5 text-[var(--ex-muted)]"><BarChart3 className="h-3.5 w-3.5" /> Broker links</span>

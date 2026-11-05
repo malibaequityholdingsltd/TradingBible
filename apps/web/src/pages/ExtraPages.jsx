@@ -330,9 +330,11 @@ export function PricingPage() {
   const homeTo = homeRouteForUser(isAuthed ? user : null);
   const [busy, setBusy] = useState(null);
   const [hasSub, setHasSub] = useState(false);
+  const [annual, setAnnual] = useState(false);
   const { ledger, payWithWallet } = useWallet();
   const walletBalance = ledger?.balances?.USD || 0;
-  const currentPlan = user?.plan || null;
+  const currentPlan = String(user?.plan || '').toLowerCase();
+  const isPremium = ['premium', 'pro', 'elite', 'professional', 'teams'].includes(currentPlan);
 
   useEffect(() => {
     if (!isAuthed) return;
@@ -340,19 +342,20 @@ export function PricingPage() {
   }, [isAuthed]);
 
   const planAction = async (kind, plan) => {
+    const checkoutPlan = plan.id === 'premium' && annual ? 'premium_annual' : plan.id;
     const key = kind === 'wallet' ? `wallet-${plan.id}` : plan.id;
     setBusy(key);
     try {
       if (kind === 'wallet') {
-        await payWithWallet(plan.id);
+        await payWithWallet(plan.id, 'month');
         await updateProfile({ plan: plan.id });
         toast({ title: t('bill.payWallet'), description: plan.name });
       } else if (hasSub) {
-        await switchPlan(plan.id);
+        await switchPlan(checkoutPlan);
         await updateProfile({ plan: plan.id });
         toast({ title: t('c.done'), description: t('bill.switchTo', { name: plan.name }) });
       } else {
-        await openCheckout(plan.id);
+        await openCheckout(checkoutPlan);
       }
     } catch (err) {
       toast({ variant: 'destructive', title: t('c.error'), description: err?.message || t('c.retry') });
@@ -362,25 +365,36 @@ export function PricingPage() {
   return (
     <PublicSiteShell>
       <PublicPageHead
-        eyebrow="Pricing · Paid plans"
-        title={<>One record. Four plans. <span className="tb-gold-text">No free trial.</span></>}
-        description={t('price.sub', null, 'Start with the plan that fits your desk. Every first payment is covered by a 14-day money-back guarantee, and you can cancel from your profile at any time.')}
-        meta={['Billed through Stripe', '14-day guarantee', 'Cancel anytime']}
+        eyebrow="Pricing · Free + Premium"
+        title={<>Start free. <span className="tb-gold-text">Go Premium when you're ready.</span></>}
+        description="One free account. One simple Premium plan at $19.99/month, or $199/year. Premium includes every core trading feature; enterprise API and white-label licensing are separate."
+        meta={['No card for free account', '14-day Premium guarantee', 'Cancel anytime']}
       >
         {isAuthed && (
           <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#d4af37]/20 bg-[#d4af37]/[0.05] px-4 py-1.5 text-sm text-[#8a8577]">{t('bill.walletBalance')} <span className="font-mono font-bold text-[#f0ecdd]">${walletBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></p>
         )}
       </PublicPageHead>
       <div className="relative mx-auto w-full max-w-[84rem] px-5 py-10 sm:px-8 sm:py-14">
-        <div id="plans" className="grid w-full scroll-mt-28 items-stretch gap-5 md:grid-cols-2 xl:grid-cols-4 lg:gap-6">
+        <div className="mb-6 flex justify-center">
+          <div className="inline-flex rounded-xl border border-[#d4af37]/20 bg-[#0a0a0f]/50 p-1" role="group" aria-label="Premium billing period">
+            <button type="button" aria-pressed={!annual} onClick={() => setAnnual(false)} className={`min-h-[40px] rounded-lg px-4 text-xs font-bold transition ${!annual ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>Monthly · $19.99</button>
+            <button type="button" aria-pressed={annual} onClick={() => setAnnual(true)} className={`min-h-[40px] rounded-lg px-4 text-xs font-bold transition ${annual ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>Annual · $199 <span className="font-medium opacity-70">save $40.88</span></button>
+          </div>
+        </div>
+        <div id="plans" className="mx-auto grid w-full max-w-4xl scroll-mt-28 items-stretch gap-5 md:grid-cols-2 lg:gap-6">
           {PLANS.map((raw) => {
             const p = translatePlan(t, raw);
+            const free = p.id === 'free';
+            const freeCurrent = isAuthed && !isPremium;
+            const premiumCurrent = isAuthed && ['premium', 'pro'].includes(currentPlan);
+            const priceLabel = free ? 'Free' : annual ? `$${p.annualPrice}` : `$${p.price}`;
+            const periodLabel = free ? p.period : annual ? p.annualPeriod : p.period;
             return (
-              <div key={p.id} className={`price-card group relative flex flex-col overflow-hidden rounded-3xl border p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-300 hover:-translate-y-1.5 sm:p-8 ${p.highlight ? 'price-card-pop border-[#d4af37]/60 bg-gradient-to-b from-[#d4af37]/[0.14] via-[#121209] to-[#0f0f14] shadow-[0_32px_90px_-28px_rgba(212,175,55,0.5)] lg:scale-[1.05]' : 'border-white/[0.07] bg-white/[0.02] backdrop-blur-md hover:border-white/[0.14] hover:shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]'}`}>
+              <div key={p.id} className={`price-card group relative flex flex-col overflow-hidden rounded-3xl border p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-300 hover:-translate-y-1.5 sm:p-8 ${p.highlight ? 'price-card-pop border-[#d4af37]/60 bg-gradient-to-b from-[#d4af37]/[0.14] via-[#121209] to-[#0f0f14] shadow-[0_32px_90px_-28px_rgba(212,175,55,0.5)]' : 'border-white/[0.07] bg-white/[0.02] backdrop-blur-md hover:border-white/[0.14] hover:shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]'}`}>
                 {p.highlight && (
                   <>
                     <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#e8c95a] to-transparent" />
-                    <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_35%_at_50%_0%,rgba(212,175,55,0.14),transparent)]" />
+                    <div aria-hidden className="pointer-events-none absolute inset-0 tb-art-halo" style={{ background: 'radial-gradient(ellipse 70% 35% at 50% 0%, color-mix(in srgb, var(--tb-gold, #d4af37) 14%, transparent), transparent)' }} />
                     <div className="absolute right-5 top-5 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#0a0a0f] shadow-[0_6px_18px_-6px_rgba(212,175,55,0.7)]">{t('misc.popular')}</div>
                   </>
                 )}
@@ -392,38 +406,47 @@ export function PricingPage() {
                   </div>
                 </div>
                 <div className="relative mt-6 flex items-end gap-2">
-                  <span className="font-mono text-[2.75rem] font-bold leading-none tracking-tight tb-gold-text drop-shadow-[0_2px_16px_rgba(212,175,55,0.3)]">{p.price === 0 ? 'Free' : `$${p.price}`}</span>
-                  <span className="mb-2 text-sm text-[#8a8577]">/{p.period}</span>
+                  <span className="font-mono text-[2.75rem] font-bold leading-none tracking-tight tb-gold-text drop-shadow-[0_2px_16px_rgba(212,175,55,0.3)]">{priceLabel}</span>
+                  <span className="mb-2 text-sm text-[#8a8577]">/{periodLabel}</span>
                 </div>
+                {!free && annual && <p className="relative mt-2 text-[11px] font-semibold text-[#34d399]">Annual billing · equivalent to $16.58/month</p>}
+                {free && <p className="relative mt-2 text-[11px] text-[#8a8577]">No card required. Premium can be added at any time.</p>}
                 <div className="relative my-6 h-px bg-gradient-to-r from-[#d4af37]/30 via-[#d4af37]/10 to-transparent" />
                 <ul className="relative flex-1 space-y-3 text-sm text-[#c9c4b4]">{p.features.map(f => <li key={f} className="flex gap-2.5"><span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border border-[#d4af37]/25 bg-[#d4af37]/12"><Check className="h-3 w-3 text-[#e8c95a]" /></span><span className="leading-snug">{f}</span></li>)}</ul>
-                {(() => {
-                  const isCurrent = isAuthed && currentPlan === p.id;
-                  const canSwitch = isAuthed && hasSub && !isCurrent;
-                  if (isCurrent) {
-                    return <div className="mt-7 flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 text-sm font-bold text-emerald-400"><Check className="h-4 w-4" /> {t('bill.currentPlanBadge', null, 'Current plan')}</div>;
-                  }
-                  if (!isAuthed) {
-                    return <Link to="/signup" className={`mt-7 flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl text-sm font-bold transition active:scale-[0.98] ${p.highlight ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_8px_28px_-8px_rgba(212,175,55,0.6)] hover:opacity-90' : 'border border-[#d4af37]/25 text-[#e9e7df] hover:border-[#d4af37]/60 hover:bg-[#d4af37]/[0.06]'}`}>{p.cta} <ArrowRight className="h-4 w-4" /></Link>;
-                  }
-                  return (
-                    <div className="mt-7 grid gap-2">
-                      {canSwitch ? (
-                        <button disabled={!!busy} onClick={() => planAction('switch', p)} className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-[#d4af37]/30 text-sm font-bold text-[#e9e7df] transition hover:border-[#d4af37]/60 disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />} {t('bill.switchTo', { name: p.name })}</button>
-                      ) : (
-                        <button disabled={!!busy} onClick={() => planAction('checkout', p)} className={`flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl text-sm font-bold transition active:scale-[0.98] disabled:opacity-60 ${p.highlight ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_8px_28px_-8px_rgba(212,175,55,0.6)] hover:opacity-90' : 'border border-[#d4af37]/25 text-[#e9e7df] hover:border-[#d4af37]/60 hover:bg-[#d4af37]/[0.06]'}`}>{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />} {t('bill.subscribe', null, 'Subscribe')}</button>
-                      )}
+                {free ? (
+                  <div className="mt-7">
+                    {freeCurrent ? (
+                      <div className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 text-sm font-bold text-emerald-400"><Check className="h-4 w-4" /> {t('bill.currentPlanBadge', null, 'Current plan')}</div>
+                    ) : isAuthed ? (
+                      <div className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-white/10 text-sm font-semibold text-[#8a8577]">Included with Premium</div>
+                    ) : (
+                      <Link to="/signup" className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-[#d4af37]/25 text-sm font-bold text-[#e9e7df] transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/[0.06]">{p.cta} <ArrowRight className="h-4 w-4" /></Link>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mt-7 grid gap-2">
+                    {premiumCurrent ? (
+                      <div className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 text-sm font-bold text-emerald-400"><Check className="h-4 w-4" /> {t('bill.currentPlanBadge', null, 'Current plan')}</div>
+                    ) : !isAuthed ? (
+                      <Link to="/signup" className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-sm font-bold text-[#0a0a0f] shadow-[0_8px_28px_-8px_rgba(212,175,55,0.6)] transition hover:opacity-90 active:scale-[0.98]">{p.cta} <ArrowRight className="h-4 w-4" /></Link>
+                    ) : hasSub ? (
+                      <button disabled={!!busy} onClick={() => planAction('switch', p)} className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-[#d4af37]/30 text-sm font-bold text-[#e9e7df] transition hover:border-[#d4af37]/60 disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />} {t('bill.switchTo', { name: p.name })}</button>
+                    ) : (
+                      <button disabled={!!busy} onClick={() => planAction('checkout', p)} className="flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-sm font-bold text-[#0a0a0f] shadow-[0_8px_28px_-8px_rgba(212,175,55,0.6)] transition hover:opacity-90 active:scale-[0.98] disabled:opacity-60">{busy === p.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />} {p.cta}</button>
+                    )}
+                    {isAuthed && !premiumCurrent && !annual && (
                       <button disabled={!!busy || walletBalance < p.price} onClick={() => planAction('wallet', p)} title={walletBalance < p.price ? t('bill.lowBalance', null, 'Insufficient wallet balance') : ''} className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-white/10 text-xs font-semibold text-[#c9c4b4] transition hover:border-[#d4af37]/40 hover:text-[#e9e7df] disabled:opacity-40">{busy === `wallet-${p.id}` ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Wallet className="h-3.5 w-3.5" />} {t('bill.payWallet', null, 'Pay with wallet')}</button>
-                    </div>
-                  );
-                })()}
+                    )}
+                    {annual && <p className="text-center text-[10px] leading-relaxed text-[#8a8577]">Annual billing is card-only. Monthly Premium can also be paid from your USD wallet.</p>}
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
-        <div className="mx-auto mt-12 max-w-xl text-center">
+        <div className="mx-auto mt-12 max-w-2xl text-center">
           <div aria-hidden className="mx-auto mb-5 h-px w-24 bg-gradient-to-r from-transparent via-[#d4af37]/40 to-transparent" />
-          <p className="text-xs leading-relaxed text-[#6a665a]">{t('price.guarantee', null, 'Every first payment is covered by a 14-day money-back guarantee. Cancel anytime from your profile — you keep access until the end of your billing period.')}</p>
+          <p className="text-xs leading-relaxed text-[#6a665a]">Every first Premium payment is covered by a 14-day money-back guarantee. Cancel anytime from your profile — you keep access until the end of your billing period. Academy tuition is separate. Enterprise API, market-data licences and white-label deployment are quoted separately.</p>
         </div>
       </div>
     </PublicSiteShell>

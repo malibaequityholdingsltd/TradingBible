@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Loader2, ChevronLeft, ChevronRight, Lock, Crown, WifiOff, Clock, Bell, BellRing } from 'lucide-react';
+import { MonitorPlay, Play, Pause, Volume2, VolumeX, Maximize, Minimize, ExternalLink, Radio, X, Loader2, ChevronLeft, ChevronRight, Lock, Crown, WifiOff, Clock, Bell, BellRing, ListVideo } from 'lucide-react';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useI18n, localizeAd } from '@/lib/i18n';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,6 +11,7 @@ import { meetsPlan } from '@/lib/entitlements';
 import YoutubePlayer from '@/components/YoutubePlayer';
 import { EmptyState } from '@/components/ui-kit';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import TvProviderGuide from '@/components/TvProviderGuide';
 
 const DEFAULT_SETTINGS = {
   rotationSeconds: 12,
@@ -40,6 +41,7 @@ export default function TvPage() {
   const [uiHidden, setUiHidden] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [channelsOpen, setChannelsOpen] = useState(false);
+  const [guideMode, setGuideMode] = useState('live'); // 'live' | 'providers'
   const [activeChannel, setActiveChannel] = useState(0);
   const [playChannel, setPlayChannel] = useState(null); // index into live channels, or null for ads rotation
   const [frameLoaded, setFrameLoaded] = useState(false);
@@ -66,6 +68,11 @@ export default function TvPage() {
   const retryIdTv = useRef(null);
   const playChannelRef = useRef(playChannel);
   playChannelRef.current = playChannel;
+
+  const openGuide = useCallback((mode = 'live') => {
+    setGuideMode(mode);
+    setChannelsOpen(true);
+  }, []);
 
   const scheduleAutoRetryTv = useCallback(() => {
     clearTimeout(retryTimerTv.current);
@@ -149,14 +156,17 @@ export default function TvPage() {
   }, [isAuthed, nav]);
 
   // Play a live channel full-stage inside the TV (no new tab, no login).
-  const playLiveChannel = useCallback((i) => {
+  // A manual tune closes the guide. Background auto-advance passes
+  // closeGuide:false so a dead player can never yank a member out of the
+  // provider directory while they are reading it.
+  const playLiveChannel = useCallback((i, options = {}) => {
     if (typeof i !== 'number' || i < 0 || i >= liveChannels.length) return;
     const c = liveChannels[i];
     if (c && !canWatch(c)) { goUpgrade(c); return; }
     attemptsRef.current.clear();
     setActiveChannel(i);
     setPlayChannel(i);
-    setChannelsOpen(false);
+    if (options.closeGuide !== false) setChannelsOpen(false);
     setFrameLoaded(false);
   }, [canWatch, goUpgrade, liveChannels]);
 
@@ -215,7 +225,7 @@ export default function TvPage() {
     const next = findNextPlayableTv(playChannel ?? 0);
     if (next >= 0) {
       clearTimeout(advanceTimer.current);
-      advanceTimer.current = setTimeout(() => playLiveChannel(next), 1200);
+      advanceTimer.current = setTimeout(() => playLiveChannel(next, { closeGuide: false }), 1200);
     } else if (blocked) {
       setYtBlocked(true);
       scheduleAutoRetryTv();
@@ -290,7 +300,7 @@ export default function TvPage() {
   }, [index]);
 
   useEffect(() => {
-    if (!channelsOpen) return undefined;
+    if (!channelsOpen || guideMode !== 'live') return undefined;
     const cols = window.innerWidth >= 640 ? 2 : 1;
     const onKey = (e) => {
       if (e.key === 'ArrowDown') { e.preventDefault(); setActiveChannel((a) => Math.min(a + cols, liveChannels.length - 1)); }
@@ -302,14 +312,14 @@ export default function TvPage() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [channelsOpen, activeChannel, playLiveChannel, liveChannels.length]);
+  }, [channelsOpen, guideMode, activeChannel, playLiveChannel, liveChannels.length]);
 
   // Keep the keyboard-selected channel visible.
   useEffect(() => {
-    if (!channelsOpen) return undefined;
+    if (!channelsOpen || guideMode !== 'live') return undefined;
     document.querySelector(`[data-chidx="${activeChannel}"]`)?.scrollIntoView({ block: 'nearest' });
     return undefined;
-  }, [channelsOpen, activeChannel]);
+  }, [channelsOpen, guideMode, activeChannel]);
 
   const wakeUi = useCallback(() => {
     setUiHidden(false);
@@ -372,7 +382,7 @@ export default function TvPage() {
 
   if (loading || !bootDone) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0f]">
+      <div data-force-dark className="tb-tv-stage tv-stage-text flex min-h-screen items-center justify-center bg-[#0a0a0f]">
         <div className="flex flex-col items-center gap-5">
           <div className="relative">
             <div className="absolute -inset-6 animate-ping rounded-full border border-[#d4af37]/20" />
@@ -385,14 +395,14 @@ export default function TvPage() {
   }
 
   return (
-    <div data-force-dark className="tb-enter relative flex h-[100dvh] flex-col overflow-hidden bg-[#0a0a0f] text-[#f0ecdd]" onClick={wakeUi}>
+    <div data-force-dark className="tb-tv-stage tv-stage-text tb-enter relative flex h-[100dvh] flex-col overflow-hidden bg-[#0a0a0f] text-[#f0ecdd]" onClick={wakeUi}>
       {/* ── Full-bleed stage: live channel or ads rotation ────────── */}
       {playChannel !== null ? (
         <ErrorBoundary
           fallback={
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#07070a] p-6 text-center">
               <p className="font-semibold text-[#f0ecdd]">This player hit a snag</p>
-              <button onClick={() => { setPlayChannel(null); setChannelsOpen(true); }} className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f]">
+              <button onClick={() => { setPlayChannel(null); openGuide('live'); }} className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f]">
                 Back to guide
               </button>
             </div>
@@ -425,7 +435,7 @@ export default function TvPage() {
               <p className="font-semibold text-[#f0ecdd]">This desk is off-air right now</p>
               <p className="max-w-sm text-sm text-[#8a8577]">Live shows run at set hours — pick a desk with a LIVE badge in the guide.</p>
               <div className="mt-1 flex items-center gap-2">
-                <button onClick={() => setChannelsOpen(true)} className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90">
+                <button onClick={() => openGuide('live')} className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90">
                   Back to guide
                 </button>
                 <a href={liveChannels[playChannel]?.url} target="_blank" rel="noopener noreferrer" className="min-h-[44px] rounded-xl border border-[#d4af37]/30 px-6 py-3 text-sm font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
@@ -467,7 +477,7 @@ export default function TvPage() {
                 <button onClick={() => { attemptsRef.current.clear(); setUseEndpoint(false); setAltHost(false); setYtError(false); setFrameLoaded(false); setYtRetry((n) => n + 1); }} className="min-h-[44px] rounded-xl border border-[#d4af37]/30 px-6 text-sm font-bold text-[#d4af37] transition hover:bg-[#d4af37]/10">
                   Try again
                 </button>
-                <button onClick={() => setChannelsOpen(true)} className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90">
+                <button onClick={() => openGuide('live')} className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-6 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90">
                   All channels
                 </button>
               </div>
@@ -551,15 +561,26 @@ export default function TvPage() {
             <span className="hidden sm:inline">Dashboard</span>
           </button>
           {!channelsOpen && (
-            <button
-              onClick={() => setChannelsOpen(true)}
-              className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/60 py-2 pl-3.5 pr-2.5 text-xs font-bold text-[#e9e7df] backdrop-blur-md transition hover:border-[#d4af37]/50 hover:text-[#d4af37]"
-              aria-label="All channels"
-              title="All channels"
-            >
-              <span className="hidden sm:inline">All channels</span>
-              <Radio className="h-4 w-4" />
-            </button>
+            <>
+              <button
+                onClick={() => openGuide('providers')}
+                className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/60 py-2 pl-2.5 pr-3.5 text-xs font-bold text-[#e9e7df] backdrop-blur-md transition hover:border-[#d4af37]/50 hover:text-[#d4af37] sm:pl-3.5 sm:pr-2.5"
+                aria-label="TV providers"
+                title="TV providers"
+              >
+                <span className="hidden sm:inline">Providers</span>
+                <ListVideo className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => openGuide('live')}
+                className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/60 py-2 pl-3.5 pr-2.5 text-xs font-bold text-[#e9e7df] backdrop-blur-md transition hover:border-[#d4af37]/50 hover:text-[#d4af37]"
+                aria-label="All channels"
+                title="All channels"
+              >
+                <span className="hidden sm:inline">All channels</span>
+                <Radio className="h-4 w-4" />
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -607,26 +628,52 @@ export default function TvPage() {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#d4af37]/25 bg-[#d4af37]/[0.07] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#d4af37]">
-                  <Radio className="h-3.5 w-3.5" /> Live TV guide
+                  {guideMode === 'live' ? <Radio className="h-3.5 w-3.5" /> : <ListVideo className="h-3.5 w-3.5" />}
+                  {guideMode === 'live' ? 'Live TV guide' : 'TV directory'}
                 </div>
-                <h2 className="mt-2.5 text-2xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-3xl">All channels</h2>
+                <h2 className="mt-2.5 text-2xl font-extrabold tracking-tight text-[#f0ecdd] sm:text-3xl">
+                  {guideMode === 'live' ? 'All channels' : t('tv.providersTitle', null, 'TV providers')}
+                </h2>
                 <p className="mt-1.5 text-xs text-[#8a8577]">
-                  Plays right here on TradingBible TV · <span className="font-mono">↑↓←→</span> browse · <span className="font-mono">Enter</span> watch
+                  {guideMode === 'live'
+                    ? <>Plays right here on TradingBible TV · <span className="font-mono">↑↓←→</span> browse · <span className="font-mono">Enter</span> watch</>
+                    : t('tv.providersSub', null, 'Satellite, digital, free-to-air and streaming services — availability varies by country, package and date.')}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <button onClick={toggleBell} title={bell ? 'Live alerts on — tap to mute' : 'Notify me when a desk goes live'} aria-label="Toggle go-live alerts" className={`grid h-10 w-10 place-items-center rounded-full backdrop-blur-sm transition-colors ${bell ? 'bg-[#d4af37] text-[#0a0a0f]' : 'bg-black/50 text-[#e9e7df] hover:bg-black/70'}`}>
-                  {bell ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
-                </button>
+                {guideMode === 'live' && (
+                  <button onClick={toggleBell} title={bell ? 'Live alerts on — tap to mute' : 'Notify me when a desk goes live'} aria-label="Toggle go-live alerts" className={`grid h-10 w-10 place-items-center rounded-full backdrop-blur-sm transition-colors ${bell ? 'bg-[#d4af37] text-[#0a0a0f]' : 'bg-black/50 text-[#e9e7df] hover:bg-black/70'}`}>
+                    {bell ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+                  </button>
+                )}
                 <button onClick={() => setChannelsOpen(false)} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-black/50 text-[#e9e7df] backdrop-blur-sm transition-colors hover:bg-black/70" aria-label="Close">
                   <X className="h-4 w-4" />
                 </button>
               </div>
             </div>
-            {bell && (
+
+            <div className="mt-4 flex w-full shrink-0 items-center gap-1 rounded-full border border-white/[0.07] bg-black/30 p-1">
+              <button
+                onClick={() => setGuideMode('live')}
+                aria-pressed={guideMode === 'live'}
+                className={`flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full text-[11px] font-bold transition-all ${guideMode === 'live' ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}
+              >
+                <Radio className="h-3.5 w-3.5" /> {t('tv.liveDesks', null, 'Live desks')}
+              </button>
+              <button
+                onClick={() => setGuideMode('providers')}
+                aria-pressed={guideMode === 'providers'}
+                className={`flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full text-[11px] font-bold transition-all ${guideMode === 'providers' ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}
+              >
+                <ListVideo className="h-3.5 w-3.5" /> {t('tv.providers', null, 'Providers & streaming')}
+              </button>
+            </div>
+
+            {guideMode === 'live' && bell && (
               <p className="mt-2 text-xs text-[#8a8577]">Alerts on — we'll ping you the moment an off-air desk goes live.</p>
             )}
-            <div className="no-scrollbar scroll-contain mt-6 grid flex-1 content-start gap-2.5 overflow-y-auto pb-2 sm:grid-cols-2">
+            {guideMode === 'live' ? (
+            <div className="no-scrollbar scroll-contain mt-4 grid flex-1 content-start gap-2.5 overflow-y-auto pb-2 sm:grid-cols-2">
               {liveChannels.map((c, ci) => {
                 const locked = !canWatch(c);
                 const st = liveOf(c);
@@ -667,6 +714,9 @@ export default function TvPage() {
                 );
               })}
             </div>
+            ) : (
+              <TvProviderGuide />
+            )}
           </div>
         </div>
       )}
