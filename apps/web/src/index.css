@@ -468,6 +468,8 @@ html.light .tv-guide-row-active { background-color: color-mix(in srgb, var(--tb-
 html.light .tv-guide-search { background-color: #ffffff !important; border-color: rgba(45, 52, 64, 0.16) !important; }
 html.light .tv-guide-search input { color: #1d2024 !important; }
 html.light .tv-guide-search input::placeholder { color: #5f5b50 !important; }
+html.light .tv-provider-card { background-color: #ffffff !important; border-color: rgba(45, 52, 64, 0.12) !important; }
+html.light .tv-provider-card:hover { background-color: color-mix(in srgb, var(--tb-gold, #d4af37) 7%, #ffffff) !important; border-color: color-mix(in srgb, var(--tb-gold-deep, #a67c1e) 38%, transparent) !important; }
 html.light .tv-live-chip { background-color: rgba(0, 0, 0, 0.5) !important; }
 /* The guide card flips to an ivory surface in light mode, so its labels must
    flip with it. These rules sit above the keep-dark TV tokens by specificity. */

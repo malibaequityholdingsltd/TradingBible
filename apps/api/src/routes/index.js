@@ -37,6 +37,7 @@ import brokersRouter from './brokers.js';
 import terminalRouter from './terminal.js';
 import staffRouter from './staff.js';
 import investorRouter from './investor.js';
+import messagesRouter from './messages.js';
 
 const router = Router();
 
@@ -84,6 +85,7 @@ export default () => {
     router.use('/terminal', terminalRouter);
     router.use('/staff', staffRouter);
     router.use('/investor', investorRouter);
+    router.use('/messages', messagesRouter);
 
     return router;
 };

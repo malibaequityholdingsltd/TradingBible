@@ -34,12 +34,15 @@ import {
   Wallet,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import TbcCard from '@/components/TbcCard';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useWallet, NETWORK_LIST } from '@/hooks/useWallet';
 import { fmtMoney } from '@/lib/mockData';
+import { TBC_LOGO_URL } from '@/lib/tbc';
 import { useI18n } from '@/lib/i18n';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
+import pb from '@/lib/pocketbaseClient';
 import { txt, numOrNull } from '@/lib/safeRender';
 
 const EXPLORER = {
@@ -119,8 +122,8 @@ function formatDate(value) {
 function formatAmount(value, asset = 'USD', { sign = false } = {}) {
   const n = Number(value) || 0;
   const prefix = sign ? (n > 0 ? '+' : '') : '';
-  // Historic ledger rows may still carry TBC. Render them accurately; new
-  // member-portal surfaces no longer create or promote TBC balances.
+  // TBC is the official in-app currency. Render its ledger balance with the
+  // ticker so it is never mistaken for a USD amount.
   if (asset === 'TBC') {
     return `${prefix}${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TBC`;
   }
@@ -171,10 +174,15 @@ export default function WalletPage() {
   const [stmtBusy, setStmtBusy] = useState(false);
   const [activityFilter, setActivityFilter] = useState('all');
   const [txQuery, setTxQuery] = useState('');
+  const [tbcRate, setTbcRate] = useState(0.3077);
+  const [cardBusy, setCardBusy] = useState('');
 
   const walletBalance = Number(ledger?.balances?.USD) || 0;
   const trackedUsd = Number(totalUsd) || 0;
-  const portfolioUsd = walletBalance + trackedUsd;
+  const tbcAccount = accounts.find((a) => a.asset === 'TBC');
+  const tbcBalance = Number(ledger?.balances?.TBC ?? tbcAccount?.balance) || 0;
+  const tbcUsd = tbcRate > 0 ? tbcBalance / tbcRate : 0;
+  const portfolioUsd = walletBalance + trackedUsd + tbcUsd;
   const cashAccount = accounts.find((a) => a.asset === 'USD') || accounts[0];
   const kycStatus = rails?.kyc?.status || 'none';
   const connectStatus = rails?.connect?.status || 'none';
@@ -187,6 +195,7 @@ export default function WalletPage() {
 
   const allocation = ([
     ['cash', walletBalance, 'var(--at-green)'],
+    ['tbc', tbcUsd, 'var(--at-gold)'],
     ['external', trackedUsd, 'var(--at-blue)'],
   ]).map(([key, value, color]) => ({
     key,
@@ -218,6 +227,7 @@ export default function WalletPage() {
     { id: 'money', label: 'Cash & banking', icon: Landmark },
     { id: 'send', label: 'Send', icon: Send },
     { id: 'crypto', label: 'Crypto', icon: Coins },
+    { id: 'cards', label: 'Cards', icon: CreditCard },
     { id: 'activity', label: 'Activity', icon: ReceiptText },
   ];
 
@@ -251,9 +261,21 @@ export default function WalletPage() {
   }, [isAuthReady]);
 
   useEffect(() => {
+    let live = true;
+    fetch(`${API_SERVER_URL}/tbc/econ`)
+      .then((res) => res.json())
+      .then((data) => {
+        const rate = Number(data?.tbcPerUsd);
+        if (live && rate > 0.15 && rate < 0.6) setTbcRate(rate);
+      })
+      .catch(() => {});
+    return () => { live = false; };
+  }, []);
+
+  useEffect(() => {
     try {
       const tab = new URLSearchParams(window.location.search).get('tab');
-      if (['accounts', 'send', 'money', 'crypto', 'activity'].includes(tab)) setBankTab(tab);
+      if (['accounts', 'send', 'money', 'crypto', 'cards', 'activity'].includes(tab)) setBankTab(tab);
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -400,6 +422,34 @@ export default function WalletPage() {
       else toast({ variant: 'destructive', title: 'Identity verification', description: error.message });
     } finally {
       setRailBusy('');
+    }
+  };
+
+  const requestCard = async (type) => {
+    if (!pb.authStore.token) {
+      toast({ variant: 'destructive', title: 'Sign in required', description: 'Sign in to register interest in a card.' });
+      return;
+    }
+    setCardBusy(type);
+    try {
+      const res = await fetch(`${API_SERVER_URL}/tbc/support`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${pb.authStore.token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category: `card-${type}`,
+          message: `Please register my interest in a ${type} TradingBible card. I understand no card is issued until identity verification and the card programme are approved.`,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Could not register interest');
+      toast({
+        title: 'Card interest registered',
+        description: `Your ${type} card request is in the support queue. No card has been issued yet.`,
+      });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Card request failed', description: error.message });
+    } finally {
+      setCardBusy('');
     }
   };
 
@@ -554,6 +604,7 @@ export default function WalletPage() {
                   </div>
                   <div className="wv-balance-breakdown">
                     <span><strong>{hideBalance ? '••' : fmtMoney(walletBalance)}</strong> cash</span>
+                    <span><strong>{hideBalance ? '••' : fmtMoney(tbcUsd)}</strong> TBC</span>
                     <span><strong>{hideBalance ? '••' : fmtMoney(trackedUsd)}</strong> external wallets</span>
                   </div>
                   <div className="wv-allocation">
@@ -564,7 +615,8 @@ export default function WalletPage() {
                     </div>
                     <div className="wv-allocation-legend">
                       <span><i className="wv-dot wv-dot--cash" />Cash {Math.round(allocation[0].pct)}%</span>
-                      <span><i className="wv-dot wv-dot--external" />External {Math.round(allocation[1].pct)}%</span>
+                      <span><i className="wv-dot wv-dot--tbc" />TBC {Math.round(allocation[1].pct)}%</span>
+                      <span><i className="wv-dot wv-dot--external" />External {Math.round(allocation[2].pct)}%</span>
                     </div>
                   </div>
                   <p className="wv-fine" style={{ marginTop: 10 }}>External wallet balances are read-only and never move funds.</p>
@@ -584,7 +636,7 @@ export default function WalletPage() {
                   </button>
                   <button type="button" className="wv-action" onClick={() => setBankTab('crypto')}>
                     <span className="wv-action-icon"><Coins /></span>
-                    <span>Crypto</span>
+                    <span>TBC &amp; crypto</span>
                   </button>
                 </div>
               </section>
@@ -628,6 +680,26 @@ export default function WalletPage() {
                         </div>
                       </HoldingRow>
 
+                      <HoldingRow>
+                        <div className="wv-asset-cell">
+                          <span className="wv-asset-icon wv-asset-icon--tbc">
+                            <img src={TBC_LOGO_URL} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                          </span>
+                          <span>
+                            <span className="wv-asset-name">TBC</span>
+                            <span className="wv-asset-sub">
+                              Official in-app currency{tbcAccount?.last4 ? ` ···· ${tbcAccount.last4}` : ''}
+                            </span>
+                          </span>
+                        </div>
+                        <div className="wv-network-cell">TradingBible TBC ledger</div>
+                        <div className="wv-balance-cell">{hideBalance ? '••••' : formatAmount(tbcBalance, 'TBC')}</div>
+                        <div className="wv-value-cell">{hideBalance ? '••••' : fmtMoney(tbcUsd)}</div>
+                        <div className="wv-row-action">
+                          <button type="button" className="wv-btn wv-btn--secondary wv-btn--sm" onClick={() => setBankTab('crypto')}>Convert</button>
+                        </div>
+                      </HoldingRow>
+
                       {wallets.slice(0, 3).map((item) => (
                         <HoldingRow key={item.id}>
                           <div className="wv-asset-cell">
@@ -657,6 +729,8 @@ export default function WalletPage() {
                       </button>
                     </div>
                   </section>
+
+                  <TbcCard onChanged={reload} />
 
                   <section className="wv-card" aria-labelledby="wallet-recent-title">
                     <div className="wv-card-head">
@@ -741,6 +815,32 @@ export default function WalletPage() {
                     </div>
                   </section>
 
+                  <section className="wv-card" aria-labelledby="wallet-cards-title">
+                    <div className="wv-card-head">
+                      <div>
+                        <h2 id="wallet-cards-title" className="wv-section-title">Cards</h2>
+                        <p className="wv-section-sub">Virtual and physical</p>
+                      </div>
+                      <CreditCard className="h-4 w-4" style={{ color: 'var(--at-gold)' }} />
+                    </div>
+                    <div className="wv-card-body">
+                      <div className="wv-card-mini-grid">
+                        <button type="button" className="wv-card-mini" onClick={() => setBankTab('cards')}>
+                          <span className="wv-card-mini-icon"><CreditCard /></span>
+                          <span><strong>Virtual</strong><small>Not issued</small></span>
+                        </button>
+                        <button type="button" className="wv-card-mini" onClick={() => setBankTab('cards')}>
+                          <span className="wv-card-mini-icon"><Wallet /></span>
+                          <span><strong>Physical</strong><small>Not issued</small></span>
+                        </button>
+                      </div>
+                      <p className="wv-fine" style={{ marginTop: 10 }}>Cards require an approved card programme and identity verification. No card number or balance is shown until a card is actually issued.</p>
+                      <button type="button" className="wv-link" style={{ marginTop: 10 }} onClick={() => setBankTab('cards')}>
+                        Open cards <ArrowRight />
+                      </button>
+                    </div>
+                  </section>
+
                   <section className="wv-card">
                     <div className="wv-card-head">
                       <div>
@@ -756,6 +856,10 @@ export default function WalletPage() {
                       <div className="wv-stat-row">
                         <span className="wv-stat-label">Cash available</span>
                         <span className="wv-stat-value">{hideBalance ? '••••' : fmtMoney(walletBalance)}</span>
+                      </div>
+                      <div className="wv-stat-row">
+                        <span className="wv-stat-label">TBC available</span>
+                        <span className="wv-stat-value">{hideBalance ? '••••' : formatAmount(tbcBalance, 'TBC')}</span>
                       </div>
                       <button type="button" className="wv-btn wv-btn--ghost wv-btn--block" style={{ marginTop: 9 }} onClick={() => setBankTab('activity')}>
                         Open ledger <ArrowRight className="h-3.5 w-3.5" />
@@ -1084,11 +1188,13 @@ export default function WalletPage() {
             <>
               <div className="wv-page-head">
                 <div>
-                  <h2 className="wv-page-heading">Crypto &amp; credits</h2>
-                  <p className="wv-page-sub">Track external wallets read-only or fund your own wallet by card. TradingBible never custodies crypto.</p>
+                  <h2 className="wv-page-heading">TBC &amp; crypto</h2>
+                  <p className="wv-page-sub">TBC is the official in-app currency. Convert, send and hold TBC here, and track external wallets read-only. TradingBible never custodies crypto.</p>
                 </div>
                 <span className="wv-chip wv-chip--gold"><ShieldCheck /> Non-custodial tracking</span>
               </div>
+
+              <TbcCard onChanged={reload} />
 
               <section className="wv-card" id="vault" aria-labelledby="external-wallets-title">
                 <div className="wv-card-head">
@@ -1217,6 +1323,137 @@ export default function WalletPage() {
                 </section>
 
               </div>
+            </>
+          )}
+
+          {bankTab === 'cards' && (
+            <>
+              <div className="wv-page-head">
+                <div>
+                  <h2 className="wv-page-heading">Cards</h2>
+                  <p className="wv-page-sub">Virtual and physical cards for spending TBC and cash across TradingBible. TBC is the official in-app currency.</p>
+                </div>
+                <span className="wv-chip wv-chip--amber">Programme not active</span>
+              </div>
+
+              <div className="wv-two-col">
+                <section className="wv-card" aria-labelledby="virtual-card-title">
+                  <div className="wv-card-head">
+                    <div>
+                      <h2 id="virtual-card-title" className="wv-section-title">Virtual card</h2>
+                      <p className="wv-section-sub">Instant spending once the programme opens</p>
+                    </div>
+                    <CreditCard className="h-4 w-4" style={{ color: 'var(--at-gold)' }} />
+                  </div>
+                  <div className="wv-card-body">
+                    <div className="wv-card-preview wv-card-preview--virtual">
+                      <div className="wv-card-preview-top">
+                        <img src={TBC_LOGO_URL} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                        <span>TradingBible</span>
+                        <span className="wv-card-preview-status">Not issued</span>
+                      </div>
+                      <div className="wv-card-preview-number">•••• •••• •••• ••••</div>
+                      <div className="wv-card-preview-bottom"><span>Virtual</span><span>TBC · USD</span></div>
+                    </div>
+                    <div className="wv-stat-row">
+                      <span className="wv-stat-label">Status</span>
+                      <span className="wv-chip wv-chip--amber">Not issued</span>
+                    </div>
+                    <div className="wv-stat-row">
+                      <span className="wv-stat-label">Identity verification</span>
+                      <span className={`wv-chip wv-chip--${identityTone}`}>{identityLabel}</span>
+                    </div>
+                    <div className="wv-stat-row">
+                      <span className="wv-stat-label">Card issuer</span>
+                      <span className="wv-stat-value">Not connected</span>
+                    </div>
+                    <button type="button" className="wv-btn wv-btn--secondary wv-btn--block" disabled={cardBusy === 'virtual'} onClick={() => requestCard('virtual')}>
+                      {cardBusy === 'virtual' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+                      Register interest
+                    </button>
+                    <p className="wv-fine" style={{ marginTop: 9 }}>Registering interest is not an approval and does not create a card. No card number, expiry, CVV or balance exists until an issuer provisions it.</p>
+                  </div>
+                </section>
+
+                <section className="wv-card" aria-labelledby="physical-card-title">
+                  <div className="wv-card-head">
+                    <div>
+                      <h2 id="physical-card-title" className="wv-section-title">Physical card</h2>
+                      <p className="wv-section-sub">Mailed after approval and identity checks</p>
+                    </div>
+                    <Wallet className="h-4 w-4" style={{ color: 'var(--at-gold)' }} />
+                  </div>
+                  <div className="wv-card-body">
+                    <div className="wv-card-preview wv-card-preview--physical">
+                      <div className="wv-card-preview-top">
+                        <img src={TBC_LOGO_URL} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                        <span>TradingBible</span>
+                        <span className="wv-card-preview-status">Not issued</span>
+                      </div>
+                      <div className="wv-card-preview-number">•••• •••• •••• ••••</div>
+                      <div className="wv-card-preview-bottom"><span>Physical</span><span>TBC · USD</span></div>
+                    </div>
+                    <div className="wv-stat-row">
+                      <span className="wv-stat-label">Status</span>
+                      <span className="wv-chip wv-chip--amber">Not issued</span>
+                    </div>
+                    <div className="wv-stat-row">
+                      <span className="wv-stat-label">Identity verification</span>
+                      <span className={`wv-chip wv-chip--${identityTone}`}>{identityLabel}</span>
+                    </div>
+                    <div className="wv-stat-row">
+                      <span className="wv-stat-label">Delivery</span>
+                      <span className="wv-stat-value">Not scheduled</span>
+                    </div>
+                    <button type="button" className="wv-btn wv-btn--secondary wv-btn--block" disabled={cardBusy === 'physical'} onClick={() => requestCard('physical')}>
+                      {cardBusy === 'physical' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wallet className="h-4 w-4" />}
+                      Register interest
+                    </button>
+                    <p className="wv-fine" style={{ marginTop: 9 }}>Delivery is not scheduled until the card programme is approved. Registering interest does not reserve a card or a delivery date.</p>
+                  </div>
+                </section>
+              </div>
+
+              <section className="wv-card" aria-labelledby="card-readiness-title">
+                <div className="wv-card-head">
+                  <div>
+                    <h2 id="card-readiness-title" className="wv-section-title">Card readiness</h2>
+                    <p className="wv-section-sub">What has to be true before a real card can be issued</p>
+                  </div>
+                  <ShieldCheck className="h-4 w-4" style={{ color: 'var(--at-green)' }} />
+                </div>
+                <div className="wv-card-body">
+                  <div className="wv-steps">
+                    <div className={`wv-step ${kycStatus === 'verified' ? 'is-done' : 'is-active'}`}>
+                      <span className="wv-step-dot">{kycStatus === 'verified' ? <Check /> : '1'}</span>
+                      <div className="wv-step-main">
+                        <div className="wv-step-title">Identity verification</div>
+                        <div className="wv-step-sub">{kycStatus === 'verified' ? 'Verified' : kycStatus === 'pending' ? 'Review in progress' : 'Required before any card application'}</div>
+                      </div>
+                      {kycStatus === 'none' && (
+                        <button type="button" className="wv-btn wv-btn--secondary wv-btn--sm" disabled={railBusy === 'kyc'} onClick={doKyc}>Verify</button>
+                      )}
+                    </div>
+                    <div className="wv-step">
+                      <span className="wv-step-dot">2</span>
+                      <div className="wv-step-main">
+                        <div className="wv-step-title">Card programme approval</div>
+                        <div className="wv-step-sub">An approved issuer, terms and spending controls must be in place</div>
+                      </div>
+                      <span className="wv-chip wv-chip--amber">Pending</span>
+                    </div>
+                    <div className="wv-step">
+                      <span className="wv-step-dot">3</span>
+                      <div className="wv-step-main">
+                        <div className="wv-step-title">Card issuance</div>
+                        <div className="wv-step-sub">The issuer provisions the card and its real number, expiry and CVV</div>
+                      </div>
+                      <span className="wv-chip">Not issued</span>
+                    </div>
+                  </div>
+                  <p className="wv-fine" style={{ marginTop: 10 }}>TBC remains fully available in your wallet now. Cards are a separate regulated programme; this page does not create, activate or fund one.</p>
+                </div>
+              </section>
             </>
           )}
 
@@ -1352,7 +1589,7 @@ export default function WalletPage() {
           <div className="wv-card-foot" style={{ borderTop: '1px solid var(--at-line-soft)', paddingLeft: 0, paddingRight: 0 }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
               <ShieldCheck className="h-3.5 w-3.5" style={{ color: 'var(--at-green)' }} />
-              Operated by TradingBible Holdings, Inc. Deposits via Stripe · payouts via Stripe Connect · crypto is non-custodial.
+              Operated by TradingBible Holdings, Inc. TBC is the official in-app currency · deposits via Stripe · payouts via Stripe Connect · crypto is non-custodial.
             </span>
           </div>
         </div>

@@ -113,7 +113,7 @@ const DOCK = [
   { to: '/app/challenges', labelKey: 'nav.challenges', icon: Trophy },
 ];
 
-function SidebarBrand({ homeTo, collapsed, onToggle }) {
+function SidebarBrand({ homeTo }) {
   return (
     <div className="ex-sidebar__brand">
       <Link to={homeTo} className="flex min-w-0 items-center gap-2.5" aria-label="TradingBible home">
@@ -131,14 +131,6 @@ function SidebarBrand({ homeTo, collapsed, onToggle }) {
           <span>Exchange terminal</span>
         </span>
       </Link>
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
-        className="ex-icon-btn ml-auto hidden xl:inline-grid"
-      >
-        {collapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
-      </button>
     </div>
   );
 }
@@ -358,7 +350,7 @@ function AppLayoutContent({ children, title }) {
   return (
     <div className={`tb-app-shell ex-shell${adminPreview ? ' tb-admin-preview' : ''}`}>
       <aside className={`ex-sidebar${collapsed ? ' is-collapsed' : ''}`} aria-label="Primary navigation">
-        <SidebarBrand homeTo={homeTo} collapsed={collapsed} onToggle={() => setCollapsed((value) => !value)} />
+        <SidebarBrand homeTo={homeTo} />
         <div className="ex-sidebar__scroll">
           {groups.map((group) => (
             <div className="ex-nav-group" key={group.label}>
@@ -390,6 +382,15 @@ function AppLayoutContent({ children, title }) {
 
       <header className="ex-topbar">
         <div className="ex-topbar__lead">
+          <button
+            type="button"
+            onClick={() => setCollapsed((value) => !value)}
+            aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
+            title={collapsed ? 'Expand navigation' : 'Collapse navigation'}
+            className="ex-icon-btn hidden lg:inline-grid"
+          >
+            {collapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
+          </button>
           <span className="ex-topbar__crumb">TradingBible</span>
           <h1 className="ex-topbar__title">{title}</h1>
         </div>

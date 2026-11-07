@@ -1,8 +1,8 @@
-// TBC brand-credit card for the Wallet page.
-// Real ledger-backed TBC credits (off-chain utility credits, NOT on-chain
-// tokens and NOT an investment): convert USD ⇄ TBC at the published rate,
-// send member-to-member, link personal EVM/native addresses, see on-chain
-// balances when launched, queue treasury claims when the admin opens them.
+// TBC wallet card for the Wallet page.
+// TBC is the official in-app currency: real ledger-backed platform credits
+// (NOT on-chain tokens and NOT an investment). Convert USD ⇄ TBC at the
+// published rate, send member-to-member, link personal EVM/native addresses,
+// see on-chain balances when launched, queue treasury claims when opened.
 import React, { useCallback, useEffect, useState } from 'react';
 import { ArrowUpDown, ChevronDown, Coins, Plus, Send, Wallet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -262,8 +262,8 @@ export default function TbcCard({ onChanged }) {
             <img src={TBC_LOGO_URL} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </span>
           <div>
-            <h2 id="tbc-credit-title" className="wv-section-title">{t('tbc.cardEyebrow', null, 'TBC utility credits')}</h2>
-            <p className="wv-section-sub">{t('tbc.cardSub', null, 'Spendable inside TradingBible · not a security')}</p>
+            <h2 id="tbc-credit-title" className="wv-section-title">{t('tbc.cardEyebrow', null, 'TBC · Official in-app currency')}</h2>
+            <p className="wv-section-sub">{t('tbc.cardSub', null, '1 TBC = 1 KWD · spendable across TradingBible')}</p>
           </div>
         </div>
         <span className="wv-tbc-rate">1 TBC = 1 KWD · {fmtMoney(kwdUsd)}</span>
@@ -272,7 +272,7 @@ export default function TbcCard({ onChanged }) {
       <div className="wv-card-body">
         <div className="wv-tbc-balance-row">
           <div>
-            <div className="wv-label">Available credits</div>
+            <div className="wv-label">Available TBC</div>
             <div className="wv-tbc-balance"><TbcMoney amount={bal.tbc} /></div>
             <div className="wv-section-sub">≈ {fmtMoney(tbcUsd)} at the published KWD rate</div>
           </div>

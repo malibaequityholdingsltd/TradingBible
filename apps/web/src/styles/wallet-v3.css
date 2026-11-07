@@ -1597,6 +1597,131 @@ select.wv-field {
 .wv-airdrop-title { color: var(--at-ink); font-size: 11px; font-weight: 650; }
 .wv-airdrop-amount { margin-top: 2px; color: var(--at-gold); font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10px; }
 
+/* ── TBC cards ──────────────────────────────────────────────────────── */
+.wv-card-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.wv-card-mini {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--at-line);
+  border-radius: 9px;
+  background: var(--at-soft);
+  color: var(--at-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+
+.wv-card-mini:hover {
+  border-color: var(--at-gold);
+  background: var(--at-gold-soft);
+}
+
+.wv-card-mini-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--at-gold-soft);
+  color: var(--at-gold);
+}
+
+.wv-card-mini-icon svg { width: 14px; height: 14px; }
+.wv-card-mini > span:last-child { display: flex; flex-direction: column; min-width: 0; }
+.wv-card-mini strong { color: var(--at-ink); font-size: 10px; font-weight: 700; }
+.wv-card-mini small { color: var(--at-mut-2); font-size: 9px; }
+
+.wv-card-preview {
+  position: relative;
+  overflow: hidden;
+  min-height: 184px;
+  padding: 17px 18px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 14px;
+  color: #fff;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, .18);
+}
+
+.wv-card-preview::after {
+  content: "";
+  position: absolute;
+  inset: -35% -20% auto auto;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .24), transparent 68%);
+  pointer-events: none;
+}
+
+.wv-card-preview--virtual {
+  background: linear-gradient(135deg, #1a1710 0%, #4a3a1d 52%, #b18a35 100%);
+}
+
+.wv-card-preview--physical {
+  background: linear-gradient(135deg, #101010 0%, #2b2b2b 55%, #6b6b6b 100%);
+}
+
+.wv-card-preview-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.wv-card-preview-top img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.wv-card-preview-status {
+  margin-left: auto;
+  padding: 4px 7px;
+  border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: 999px;
+  font-size: 8px;
+  letter-spacing: .1em;
+  white-space: nowrap;
+}
+
+.wv-card-preview-number {
+  position: relative;
+  z-index: 1;
+  margin-top: 40px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: clamp(15px, 2vw, 20px);
+  font-weight: 600;
+  letter-spacing: .14em;
+  white-space: nowrap;
+}
+
+.wv-card-preview-bottom {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+  font-size: 9px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  opacity: .82;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────── */
 @media (max-width: 1120px) {
   .wv-overview-grid { grid-template-columns: minmax(0, 1fr) 285px; }
@@ -1681,6 +1806,9 @@ select.wv-field {
   .wv-inline-form { grid-template-columns: 1fr 92px; }
   .wv-inline-form .wv-btn { grid-column: 1 / -1; }
   .wv-onchain-grid { grid-template-columns: 1fr; }
+  .wv-card-mini-grid { grid-template-columns: 1fr; }
+  .wv-card-preview { min-height: 160px; padding: 14px; }
+  .wv-card-preview-number { margin-top: 32px; font-size: 14px; }
   .wv-tbc-foot > span { margin-left: 0; width: 100%; }
 }
 

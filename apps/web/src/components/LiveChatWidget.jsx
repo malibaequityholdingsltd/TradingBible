@@ -8,7 +8,7 @@ import { useI18n } from '@/lib/i18n';
 import { useIntegratedAi } from '@/hooks/use-integrated-ai';
 import { measureNavClearance, watchNavClearance } from '@/lib/navClearance';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
-import CommunityChatPanel from '@/components/CommunityChatPanel';
+import DirectChatPanel from '@/components/DirectChatPanel';
 
 const BTN = 56; // button size in px
 const MARGIN = 12;
@@ -188,7 +188,7 @@ export default function LiveChatWidget() {
               <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0a0a0f] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
             </div>
             <div className="min-w-0 flex-1 leading-tight">
-              <div className="gold-text font-display truncate text-base">{tab === 'chats' ? t('aiw.chatsTitle', null, 'Community chats') : 'TradingBible SI'}</div>
+              <div className="gold-text font-display truncate text-base">{tab === 'chats' ? t('aiw.chatsTitle', null, 'Private chats') : 'TradingBible SI'}</div>
               {tab === 'chats' && <div className="truncate text-[10px] text-[#8a8577]">{t('aiw.chatsSub', null, 'Talk with other TradingBible members.')}</div>}
             </div>
             {tab === 'coach' && messages.length > 0 && (
@@ -300,7 +300,7 @@ export default function LiveChatWidget() {
             </div>
           )}
 
-          {tab === 'chats' && <CommunityChatPanel />}
+          {tab === 'chats' && <DirectChatPanel />}
 
           {tab === 'about' && (
             <div className="relative flex-1 space-y-3 overflow-y-auto p-3.5">
