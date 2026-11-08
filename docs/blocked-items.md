@@ -34,7 +34,7 @@ This is the honest readiness list. It separates work that is complete from work 
 ### 2.1 Live Stripe checkout and webhook acceptance
 
 **Status:** Blocked — external.  
-**Current behaviour:** Test-mode secret/publishable keys have been validated locally. The exact `/stripe/checkout-session` route returned `200` and created a $19.99/month test subscription session; a separate test PaymentIntent succeeded with `pm_card_visa`. The test account currently reports `charges_enabled: false` and `payouts_enabled: false`, so live activation is not complete. No webhook signing secret or real learner session has been observed.  
+**Current behaviour:** Test-mode secret/publishable keys have been validated locally. The exact `/stripe/checkout-session` route returned `200` and created a $19.99/month test subscription session; a separate test PaymentIntent succeeded with `pm_card_visa`. The `/stripe/webhook` handler accepted a correctly signed `customer.subscription.updated` event (`200`) and rejected an invalid signature (`400`) in a local harness with mocked user storage. The supplied test keys belong to a separate Stripe account from the production live keys; they were not written to the repo or production `.env`. The test account currently reports `charges_enabled: false` and `payouts_enabled: false`, so live activation is not complete. No real webhook endpoint or real learner session has been observed.  
 **What is missing:**
 
 - A Stripe test webhook signing secret and a test webhook endpoint.
@@ -134,7 +134,7 @@ These are not bugs and must not be “fixed” by inventing data:
 ### Priority 1 — billing validation
 
 - Stripe **test** secret and publishable key: received and validated in test mode.
-- Stripe test webhook signing secret and a test webhook endpoint.
+- A real Stripe test webhook endpoint and its signing secret (the handler itself has passed a locally signed event test).
 - Stripe test price IDs for Academy individual/family (Premium monthly/annual work through the fixed inline prices).
 - A real test learner account.
 - Stripe account activation for live charges/payouts, plus written authorisation for one live charge and refund **after** test-mode acceptance.
