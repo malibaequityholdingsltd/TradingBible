@@ -33,7 +33,7 @@ const MARKETS = [
 
 const TEAM = [
   { name: 'Malik Nlem', role: 'Founder & CEO', img: '/images/malik-nlem-full.png' },
-  { name: 'Victor Okechukwu', role: 'Product & engineering', img: '/images/victor-okechukwu-full.png' },
+  { name: 'Victor Okechukwu', role: 'Vice President', img: '/images/victor-okechukwu-full.png' },
   { name: 'Maliba SI', role: 'SI review & education' },
 ];
 
@@ -132,7 +132,7 @@ export default function AboutPage() {
       </PublicSection>
 
       <PublicSection id="team" eyebrow="The team" title="Small team. Direct accountability.">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="mx-auto grid max-w-4xl gap-3 sm:grid-cols-3">
           {TEAM.map((member) => (
             <Card key={member.name} className="overflow-hidden rounded-xl p-3">
               <div className="grid aspect-[4/5] w-full place-items-center overflow-hidden rounded-lg border border-white/[0.06] bg-gradient-to-b from-[#d4af37]/10 via-[#0c0c11] to-[#0c0c11]">
