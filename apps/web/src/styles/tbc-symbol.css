@@ -18,7 +18,9 @@
   font-variant: normal;
   line-height: 1;
   letter-spacing: 0;
-  vertical-align: -0.04em;
+  /* The TB glyph sits 152/1000 em above the font baseline. Shift it down so
+     its bottom lands on the same baseline as the adjacent 0.00 figures. */
+  vertical-align: -0.152em;
   text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
 }

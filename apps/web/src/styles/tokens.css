@@ -504,8 +504,7 @@ html.light .tb-card-hover:hover {
 /* TBC currency mark — ₮ Tugrik-style. Inherits size/color. */
 .tbc-sign {
   position: relative;
-  display: inline-flex;
-  align-items: center;
+  display: inline;
   font-weight: 900;
   line-height: 1;
   vertical-align: baseline;

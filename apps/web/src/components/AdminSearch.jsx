@@ -5,7 +5,7 @@ import {
   FileText, MonitorPlay, Plug, Key, Package, Briefcase, Settings,
   LogOut, Eye, HelpCircle, Gift, GraduationCap, Wallet, Bot, Bell,
   Trophy, CalendarDays, MessagesSquare, Newspaper, TrendingUp, ShieldCheck,
-  BookOpen, PiggyBank, Radio, Tv, FlaskConical, LineChart, UserRound, Globe, IdCard,
+  BookOpen, Radio, Tv, FlaskConical, LineChart, UserRound, Globe, IdCard,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { enterAdminPreview } from '@/lib/adminPreview';
@@ -103,7 +103,6 @@ export default function AdminSearch() {
       P('Trader App', CreditCard, 'Billing', 'billing subscription plan upgrade wallet pay', '/app/billing'),
       P('Trader App', Wallet, 'Wallet', 'wallet fund deposit withdraw crypto fiat stripe', '/app/wallet'),
       P('Trader App', Gift, 'Affiliate', 'affiliate referral commission payouts earnings', '/app/affiliate'),
-      P('Trader App', PiggyBank, 'Staking', 'staking yield earn tbc lock apy', '/app/staking'),
       P('Trader App', Key, 'API Docs & Keys', 'api developer docs keys webhooks white label', '/app/api-docs'),
       P('Trader App', UserRound, 'Profile & KYC', 'profile account identity verification kyc settings', '/app/profile'),
       P('Trader App', ShieldCheck, 'Security', 'security passkeys sessions devices deactivate', '/app/security'),
