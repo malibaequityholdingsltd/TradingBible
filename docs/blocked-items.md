@@ -25,6 +25,7 @@ This is the honest readiness list. It separates work that is complete from work 
 | Fund surface | Public `/fund` surface for **TradingBible Capital** explicitly says *in formation*, with no vehicle, AUM, track record or offering. | Public page copy and route checks pass. |
 | Card previews | Realistic virtual/physical card designs with a chip, contactless mark, masked placeholder PAN, `CARDHOLDER NAME`, `MM/YY`, `Not issued` and `Preview only`. No PAN, expiry, CVV, balance, issuer/network claim or activation state is generated. | Playwright found two previews at the ISO/IEC 7810 ID-1 ratio (`1.586`) and no long digit sequences. |
 | Footer company sentence | Removed the doubled full stop after `TradingBible Holdings, Inc.` | Local page text check. |
+| Stripe Managed Payments compatibility | Checkout and wallet-deposit sessions now opt out of Stripe Managed Payments, so inline `price_data` no longer fails with a missing product-tax-code error. | Exact `/stripe/checkout-session` route returned `200` in test mode and created a $19.99/month test subscription session; a test PaymentIntent succeeded with `pm_card_visa`. |
 | Release controls | PWA, DocuSign, TBC, exam-bank, translation and curated-path guards remain intact. | `npm run verify:release` passes. |
 | Lint/build/tests | Web/API lint, production build and unit tests pass after the changes. | `npm run lint`, `npm run build`, `npm test` (26 tests). |
 
@@ -33,11 +34,12 @@ This is the honest readiness list. It separates work that is complete from work 
 ### 2.1 Live Stripe checkout and webhook acceptance
 
 **Status:** Blocked — external.  
-**Current behaviour:** The checkout code is implemented, but no authorised live charge or real learner session has been observed. Test-mode checkout and webhook delivery have not been proven against the production deployment.  
+**Current behaviour:** Test-mode secret/publishable keys have been validated locally. The exact `/stripe/checkout-session` route returned `200` and created a $19.99/month test subscription session; a separate test PaymentIntent succeeded with `pm_card_visa`. The test account currently reports `charges_enabled: false` and `payouts_enabled: false`, so live activation is not complete. No webhook signing secret or real learner session has been observed.  
 **What is missing:**
 
-- Stripe test credentials and a test webhook endpoint.
-- A real non-admin learner account for the purchase flow.
+- A Stripe test webhook signing secret and a test webhook endpoint.
+- A real non-admin learner account for the hosted checkout and seat-redemption flow.
+- Stripe account activation for live charges/payouts.
 - Explicit written authorisation before any live charge.
 - Confirmation of the live price IDs for Premium monthly and annual (and any Academy tier that is offered).
 
@@ -131,10 +133,12 @@ These are not bugs and must not be “fixed” by inventing data:
 
 ### Priority 1 — billing validation
 
-- Stripe **test** secret, publishable key and webhook signing secret.
-- Stripe test price IDs for Premium monthly/annual and the Academy tier(s) to test.
+- Stripe **test** secret and publishable key: received and validated in test mode.
+- Stripe test webhook signing secret and a test webhook endpoint.
+- Stripe test price IDs for Academy individual/family (Premium monthly/annual work through the fixed inline prices).
 - A real test learner account.
-- Written authorisation for one live charge and refund **after** test-mode acceptance.
+- Stripe account activation for live charges/payouts, plus written authorisation for one live charge and refund **after** test-mode acceptance.
+- Rotate the test keys after acceptance because they were shared in chat.
 
 ### Priority 2 — cards
 

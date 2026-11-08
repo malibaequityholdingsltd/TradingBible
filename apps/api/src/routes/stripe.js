@@ -248,6 +248,11 @@ router.post('/checkout-session', async (req, res) => {
           };
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
+        // Managed Payments is enabled by default on some Stripe accounts and
+        // rejects inline price_data without a product tax code. The platform
+        // does not use Managed Payments, so opt out per session instead of
+        // inventing a tax code or blocking checkout.
+        managed_payments: { enabled: false },
         customer: customerId || undefined,
         customer_email: customerId ? undefined : user.email,
         line_items: [lineItem],
@@ -275,6 +280,7 @@ router.post('/checkout-session', async (req, res) => {
         };
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
+      managed_payments: { enabled: false },
       customer: customerId || undefined,
       customer_email: customerId ? undefined : user.email,
       line_items: [lineItem],

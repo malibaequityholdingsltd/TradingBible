@@ -414,6 +414,9 @@ router.post('/deposit', async (req, res) => {
 		// Create a Stripe Checkout Session for wallet funding (payment mode)
 		const session = await stripe.checkout.sessions.create({
 			mode: 'payment',
+			// See routes/stripe.js: inline price_data is incompatible with
+			// Stripe Managed Payments unless a product tax code is set.
+			managed_payments: { enabled: false },
 			customer_email: user.email,
 			line_items: [{ price_data: { currency: 'usd', product_data: { name: 'TradingBible Wallet Funding' }, unit_amount: amount }, quantity: 1 }],
 			success_url: `${origin}/app/wallet?deposit=success`,
