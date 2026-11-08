@@ -83,6 +83,7 @@ Sandbox aliases are `STRIPE_SANDBOX_SECRET_KEY`, `STRIPE_SANDBOX_PUBLISHABLE_KEY
 | `LITHIC_API_KEY` | opt. | Lithic API key. Use a **sandbox** key only until a production programme is approved. |
 | `LITHIC_ENVIRONMENT` | | `sandbox` (default) or `production`. Production issuance is hard-disabled in code for now. |
 | `LITHIC_SANDBOX_ISSUANCE_ENABLED` | | Set to `true` only in a sandbox environment to enable the authenticated sandbox test-card routes. |
+| `LITHIC_SANDBOX_ALLOW_ALL_USERS` | | `false` by default; sandbox test cards are limited to administrators. Set `true` only on a dedicated staging instance. |
 | `LITHIC_WEBHOOK_SECRET` | dep. | Required when Lithic event delivery is enabled; not yet configured. |
 
 The Lithic sandbox key can create and close virtual sandbox cards through `/wallet/cards/*`. PAN/CVV are never stored or returned, and sandbox cards are labeled test-only. No production card is issued or funded; TBC payments return `503 tbc_unavailable` until explicitly authorised. The exact issuer/authorisation requirements are in [blocked-items.md](blocked-items.md).

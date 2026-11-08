@@ -259,10 +259,27 @@ async function listIssuedCards(owner) {
 		.map(toSafeIssuedCard);
 }
 
+function sandboxAllowAllUsers() {
+	return String(process.env.LITHIC_SANDBOX_ALLOW_ALL_USERS || '').toLowerCase() === 'true';
+}
+
+async function canUseSandboxIssuer(user) {
+	if (!getLithicStatus().sandboxIssuanceEnabled) return false;
+	if (sandboxAllowAllUsers()) return true;
+	const profile = await supabase.getUserById(user.id).catch(() => null);
+	return profile?.role === 'admin';
+}
+
 router.get('/cards/issuer', async (req, res) => {
 	const user = await authedUser(req);
 	if (!user) return res.status(401).json({ error: 'unauthorized' });
-	return res.json(getLithicStatus());
+	const status = getLithicStatus();
+	const allowed = status.sandboxIssuanceEnabled ? await canUseSandboxIssuer(user) : false;
+	return res.json({
+		...status,
+		sandboxConfigured: status.sandboxIssuanceEnabled,
+		sandboxIssuanceEnabled: allowed,
+	});
 });
 
 router.get('/cards/issued', async (req, res) => {
@@ -279,11 +296,11 @@ router.get('/cards/issued', async (req, res) => {
 router.post('/cards/sandbox', async (req, res) => {
 	const user = await authedUser(req);
 	if (!user) return res.status(401).json({ error: 'unauthorized' });
-	const status = getLithicStatus();
-	if (!status.sandboxIssuanceEnabled) {
+	const allowed = await canUseSandboxIssuer(user);
+	if (!allowed) {
 		return res.status(503).json({
 			error: 'lithic_sandbox_disabled',
-			message: 'Lithic sandbox card issuance is not enabled. Set LITHIC_API_KEY and LITHIC_SANDBOX_ISSUANCE_ENABLED=true in a sandbox environment.',
+			message: 'Lithic sandbox card issuance is not enabled for this account. Set LITHIC_API_KEY and LITHIC_SANDBOX_ISSUANCE_ENABLED=true in a sandbox environment, or use an administrator account.',
 		});
 	}
 	try {

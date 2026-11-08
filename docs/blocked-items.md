@@ -65,7 +65,7 @@ No API key can substitute for this authorisation.
 ### 2.3 Virtual and physical card issuance
 
 **Status:** Blocked — external.  
-**Current behaviour:** The wallet shows both card products, but every production card is a preview only. `Register interest` creates a real `/tbc/support` ticket. A Lithic **sandbox** key is validated and a sandbox-only integration can create/close a virtual test card for an authenticated user when `LITHIC_SANDBOX_ISSUANCE_ENABLED=true`. The sandbox card is clearly labeled, has no real funds, and its PAN/CVV are never stored or returned. No production card is issued, funded, activated or provisioned.  
+**Current behaviour:** The wallet shows both card products, but every production card is a preview only. `Register interest` creates a real `/tbc/support` ticket. A Lithic **sandbox** key is validated and a sandbox-only integration can create/close a virtual test card for an administrator when `LITHIC_SANDBOX_ISSUANCE_ENABLED=true` (or for all users only when `LITHIC_SANDBOX_ALLOW_ALL_USERS=true` on a dedicated staging instance). The sandbox card is clearly labeled, has no real funds, and its PAN/CVV are never stored or returned. No production card is issued, funded, activated or provisioned.  
 **What is missing:**
 
 - An approved production card issuer and card programme.
