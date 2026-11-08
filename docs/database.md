@@ -16,7 +16,7 @@ All tables sit in the `public` schema. RLS is enabled; the browser only ever see
 | Table | Purpose |
 |---|---|
 | `billing_events` | Paddle webhook event log (idempotency) |
-| `bank_cards` `bank_transactions` | Saved cards and transactions |
+| `bank_cards` `bank_transactions` | Saved cards and transactions. Lithic sandbox test cards store only non-sensitive metadata (token, last4, expiry, state); PAN/CVV are never stored. |
 | `price_alerts` `alert_history` | Alert definitions + delivery log |
 
 ## Trading Data

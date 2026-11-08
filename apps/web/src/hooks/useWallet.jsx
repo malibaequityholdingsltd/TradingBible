@@ -120,6 +120,58 @@ export function useWallet() {
 		loadRails();
 	}, [loadRails]);
 
+	// ── Issued cards (Lithic sandbox only) ────────────────────────
+	const [cardIssuer, setCardIssuer] = useState({
+		provider: 'lithic',
+		environment: 'sandbox',
+		configured: false,
+		sandboxIssuanceEnabled: false,
+		productionIssuanceEnabled: false,
+	});
+	const [issuedCards, setIssuedCards] = useState([]);
+
+	const loadCardIssuer = useCallback(async () => {
+		try {
+			const res = await apiServerClient.fetch('/wallet/cards/issuer', { headers: headers() });
+			if (!res.ok) return null;
+			const data = await res.json();
+			setCardIssuer(data);
+			return data;
+		} catch { return null; }
+	}, []);
+
+	const loadIssuedCards = useCallback(async () => {
+		try {
+			const res = await apiServerClient.fetch('/wallet/cards/issued', { headers: headers() });
+			if (!res.ok) return null;
+			const data = await res.json();
+			setIssuedCards(data.cards || []);
+			return data.cards || [];
+		} catch { return null; }
+	}, []);
+
+	useEffect(() => {
+		if (!pb.authStore.token) return;
+		loadCardIssuer();
+		loadIssuedCards();
+	}, [loadCardIssuer, loadIssuedCards]);
+
+	const createSandboxCard = async () => {
+		const res = await apiServerClient.fetch('/wallet/cards/sandbox', { method: 'POST', headers: headers() });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw codedError(data, 'sandbox card creation failed');
+		await loadIssuedCards();
+		return data.card;
+	};
+
+	const closeSandboxCard = async (id) => {
+		const res = await apiServerClient.fetch(`/wallet/cards/${encodeURIComponent(id)}/close-sandbox`, { method: 'POST', headers: headers() });
+		const data = await res.json().catch(() => ({}));
+		if (!res.ok) throw codedError(data, 'sandbox card close failed');
+		await loadIssuedCards();
+		return data.card;
+	};
+
 	const onboardConnect = async (country) => {
 		const res = await apiServerClient.fetch('/wallet/connect/onboard', { method: 'POST', headers: headers(), body: JSON.stringify({ country: country || 'US' }) });
 		const data = await res.json().catch(() => ({}));
@@ -231,5 +283,5 @@ export function useWallet() {
 		setTimeout(() => URL.revokeObjectURL(url), 5000);
 	};
 
-	return { wallets, totalUsd, ledger, loading, syncing, reload: load, addWallet, removeWallet, deposit, withdraw, payWithWallet, rails, loadRails, onboardConnect, refreshConnectStatus, startKyc, refreshKycStatus, swapTokens, swapQuote, swapIntent, swapConfirm, onrampOrder, getAccounts, transfer, getStatement, downloadStatement };
+	return { wallets, totalUsd, ledger, loading, syncing, reload: load, addWallet, removeWallet, deposit, withdraw, payWithWallet, rails, loadRails, onboardConnect, refreshConnectStatus, startKyc, refreshKycStatus, swapTokens, swapQuote, swapIntent, swapConfirm, onrampOrder, getAccounts, transfer, getStatement, downloadStatement, cardIssuer, issuedCards, loadCardIssuer, loadIssuedCards, createSandboxCard, closeSandboxCard };
 }

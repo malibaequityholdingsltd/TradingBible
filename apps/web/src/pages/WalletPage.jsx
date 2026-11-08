@@ -150,7 +150,8 @@ export default function WalletPage() {
     wallets, totalUsd, ledger, loading, syncing, reload, addWallet, removeWallet,
     deposit, withdraw, rails, loadRails, onboardConnect, refreshConnectStatus,
     startKyc, refreshKycStatus, onrampOrder, transfer, getAccounts,
-    getStatement, downloadStatement,
+    getStatement, downloadStatement, cardIssuer, issuedCards,
+    createSandboxCard, closeSandboxCard,
   } = wallet;
   const { toast } = useToast();
   const { t } = useI18n();
@@ -177,6 +178,7 @@ export default function WalletPage() {
   const [txQuery, setTxQuery] = useState('');
   const [tbcRate, setTbcRate] = useState(0.3077);
   const [cardBusy, setCardBusy] = useState('');
+  const [sandboxBusy, setSandboxBusy] = useState('');
 
   const walletBalance = Number(ledger?.balances?.USD) || 0;
   const trackedUsd = Number(totalUsd) || 0;
@@ -451,6 +453,33 @@ export default function WalletPage() {
       toast({ variant: 'destructive', title: 'Card request failed', description: error.message });
     } finally {
       setCardBusy('');
+    }
+  };
+
+  const createSandboxCardTest = async () => {
+    setSandboxBusy('create');
+    try {
+      const card = await createSandboxCard();
+      toast({
+        title: 'Sandbox test card created',
+        description: `Ending ${card.last4 || '····'}. Test only — no real money or card.`,
+      });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Sandbox card failed', description: error.message });
+    } finally {
+      setSandboxBusy('');
+    }
+  };
+
+  const closeSandboxCardTest = async (id) => {
+    setSandboxBusy(id);
+    try {
+      await closeSandboxCard(id);
+      toast({ title: 'Sandbox test card closed', description: 'The Lithic sandbox card is no longer open.' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Could not close sandbox card', description: error.message });
+    } finally {
+      setSandboxBusy('');
     }
   };
 
@@ -1334,8 +1363,63 @@ export default function WalletPage() {
                   <h2 className="wv-page-heading">Cards</h2>
                   <p className="wv-page-sub">Virtual and physical cards for spending TBC and cash across TradingBible. TBC is the official in-app currency.</p>
                 </div>
-                <span className="wv-chip wv-chip--amber">Programme not active</span>
+                <span className={`wv-chip ${cardIssuer.sandboxIssuanceEnabled ? 'wv-chip--green' : 'wv-chip--amber'}`}>
+                  {cardIssuer.sandboxIssuanceEnabled ? 'Sandbox connected · programme not active' : 'Programme not active'}
+                </span>
               </div>
+
+              {cardIssuer.sandboxIssuanceEnabled && (
+                <section className="wv-card" aria-labelledby="sandbox-card-title" style={{ marginBottom: 14 }}>
+                  <div className="wv-card-head">
+                    <div>
+                      <h2 id="sandbox-card-title" className="wv-section-title">Sandbox card test</h2>
+                      <p className="wv-section-sub">Lithic sandbox · test only · no real money</p>
+                    </div>
+                    <span className="wv-chip wv-chip--amber">Sandbox</span>
+                  </div>
+                  <div className="wv-card-body">
+                    <p className="wv-fine">
+                      This creates a virtual card in the Lithic sandbox to test the issuer connection. It is not a TradingBible card, has no real funds and cannot be used for real spending. PAN and CVV are never stored or returned to this app.
+                    </p>
+                    {issuedCards.length > 0 ? (
+                      <div style={{ display: 'grid', gap: 8, marginTop: 12 }}>
+                        {issuedCards.map((card) => (
+                          <div key={card.id} className="wv-stat-row">
+                            <span className="wv-stat-label">
+                              •••• {card.last4 || '····'} · {card.expiry || '—'} · {card.status === 'sandbox_open' ? 'Open' : card.status === 'sandbox_closed' ? 'Closed' : titleCase(card.status)}
+                            </span>
+                            {card.status === 'sandbox_open' && (
+                              <button
+                                type="button"
+                                className="wv-btn wv-btn--secondary wv-btn--sm"
+                                disabled={sandboxBusy === card.id}
+                                onClick={() => closeSandboxCardTest(card.id)}
+                              >
+                                {sandboxBusy === card.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Close'}
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="wv-fine" style={{ marginTop: 10 }}>No sandbox cards yet.</p>
+                    )}
+                    <button
+                      type="button"
+                      className="wv-btn wv-btn--secondary wv-btn--block"
+                      style={{ marginTop: 12 }}
+                      disabled={sandboxBusy === 'create' || issuedCards.some((card) => card.status === 'sandbox_open')}
+                      onClick={createSandboxCardTest}
+                    >
+                      {sandboxBusy === 'create' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+                      Create sandbox test card
+                    </button>
+                    <p className="wv-fine" style={{ marginTop: 9 }}>
+                      Only visible when the API has a Lithic sandbox key and sandbox issuance is explicitly enabled. This is not programme approval.
+                    </p>
+                  </div>
+                </section>
+              )}
 
               <div className="wv-card-products">
                 <section className="wv-card" aria-labelledby="virtual-card-title">
@@ -1359,7 +1443,7 @@ export default function WalletPage() {
                     </div>
                     <div className="wv-stat-row">
                       <span className="wv-stat-label">Card issuer</span>
-                      <span className="wv-stat-value">Not connected</span>
+                      <span className="wv-stat-value">{cardIssuer.sandboxIssuanceEnabled ? 'Lithic sandbox (test only)' : 'Not connected'}</span>
                     </div>
                     <button type="button" className="wv-btn wv-btn--secondary wv-btn--block" disabled={cardBusy === 'virtual'} onClick={() => requestCard('virtual')}>
                       {cardBusy === 'virtual' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
@@ -1425,7 +1509,10 @@ export default function WalletPage() {
                       <span className="wv-step-dot">2</span>
                       <div className="wv-step-main">
                         <div className="wv-step-title">Card programme approval</div>
-                        <div className="wv-step-sub">An approved issuer, terms and spending controls must be in place</div>
+                        <div className="wv-step-sub">
+                          An approved issuer, terms and spending controls must be in place
+                          {cardIssuer.sandboxIssuanceEnabled ? ' — sandbox connectivity is not approval' : ''}
+                        </div>
                       </div>
                       <span className="wv-chip wv-chip--amber">Pending</span>
                     </div>

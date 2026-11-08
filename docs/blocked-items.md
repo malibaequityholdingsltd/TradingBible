@@ -26,6 +26,7 @@ This is the honest readiness list. It separates work that is complete from work 
 | Card previews | Realistic virtual/physical card designs with a chip, contactless mark, masked placeholder PAN, `CARDHOLDER NAME`, `MM/YY`, `Not issued` and `Preview only`. No PAN, expiry, CVV, balance, issuer/network claim or activation state is generated. | Playwright found two previews at the ISO/IEC 7810 ID-1 ratio (`1.586`) and no long digit sequences. |
 | Footer company sentence | Removed the doubled full stop after `TradingBible Holdings, Inc.` | Local page text check. |
 | Stripe Managed Payments compatibility | Checkout and wallet-deposit sessions now opt out of Stripe Managed Payments, so inline `price_data` no longer fails with a missing product-tax-code error. | Exact `/stripe/checkout-session` route returned `200` in test mode and created a $19.99/month test subscription session; a test PaymentIntent succeeded with `pm_card_visa`. |
+| Lithic sandbox connectivity | A sandbox-only Lithic client and authenticated `/wallet/cards/*` routes can create and close a virtual sandbox card. PAN/CVV are never stored or returned; production issuance is hard-disabled. | Sandbox key validated; route test returned `201` for create and `200` for close; the Lithic card ended in `CLOSED`. |
 | Release controls | PWA, DocuSign, TBC, exam-bank, translation and curated-path guards remain intact. | `npm run verify:release` passes. |
 | Lint/build/tests | Web/API lint, production build and unit tests pass after the changes. | `npm run lint`, `npm run build`, `npm test` (26 tests). |
 
@@ -64,16 +65,16 @@ No API key can substitute for this authorisation.
 ### 2.3 Virtual and physical card issuance
 
 **Status:** Blocked — external.  
-**Current behaviour:** The wallet shows both card products, but every card is a preview only. `Register interest` creates a real `/tbc/support` ticket. No card is issued, funded, activated or provisioned.  
+**Current behaviour:** The wallet shows both card products, but every production card is a preview only. `Register interest` creates a real `/tbc/support` ticket. A Lithic **sandbox** key is validated and a sandbox-only integration can create/close a virtual test card for an authenticated user when `LITHIC_SANDBOX_ISSUANCE_ENABLED=true`. The sandbox card is clearly labeled, has no real funds, and its PAN/CVV are never stored or returned. No production card is issued, funded, activated or provisioned.  
 **What is missing:**
 
-- An approved card issuer and card programme.
+- An approved production card issuer and card programme.
 - Cardholder KYC/AML and terms acceptance.
-- Issuer API credentials, card-product IDs and webhook signing secret.
+- Production issuer credentials, programme/card-product IDs and webhook signing secret.
 - Funding/custody arrangement and spending controls.
 - Cardholder and privacy terms, fee disclosures and complaint handling.
 
-**Recommended path:** Stripe Issuing, because Stripe is already integrated. Required: Stripe account approved for Issuing, `STRIPE_SECRET_KEY` with Issuing scope, `STRIPE_ISSUING_WEBHOOK_SECRET`, virtual/physical card-product IDs, and authorisation to create cardholders/cards. If another issuer is chosen, provide its API base URL, API key, programme ID, card-product IDs and webhook secret.
+**Recommended path:** Continue with Lithic for sandbox integration testing, then complete production programme approval, card-product configuration, KYC/AML, funding and webhook signing before any real card is issued. Stripe Issuing remains an alternative because Stripe is already integrated. Required for production: issuer approval, production API key, programme/card-product IDs, webhook secret, and authorisation to create cardholders/cards.
 
 ### 2.4 First real family/team purchase and seat redemption
 
@@ -142,9 +143,10 @@ These are not bugs and must not be “fixed” by inventing data:
 
 ### Priority 2 — cards
 
-- Issuer choice: **Stripe Issuing (recommended)**, Lithic, Marqeta or another approved programme.
-- Issuer API key, programme/card-product IDs, webhook secret and sandbox access.
-- Confirmation that KYC/AML, cardholder terms and funding are approved.
+- Lithic **sandbox** key: received and validated; sandbox virtual card create/close passed.
+- Production issuer/programme approval, production API key, programme/card-product IDs and webhook secret.
+- Confirmation that KYC/AML, cardholder terms, privacy/fee disclosures and funding are approved.
+- Explicit authorisation before creating any production cardholder or card.
 
 ### Priority 3 — TBC rails
 

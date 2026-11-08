@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import logger from '../utils/logger.js';
 import { supabase, getSupabaseUser, supabaseRest } from '../utils/supabaseClient.js';
 import { NETWORKS, isValidAddress, getBalance, withUsdValue } from '../utils/walletData.js';
+import { getLithicStatus, createSandboxVirtualCard, closeSandboxCard } from '../utils/lithic.js';
 
 // ── Full wallet: internal USD ledger + external address tracker ─────
 // The ledger reuses the pre-existing `bank_transactions` table (no extra
@@ -226,6 +227,147 @@ router.get('/accounts', async (req, res) => {
 	} catch (err) {
 		logger.error('wallet accounts failed', String(err));
 		return res.status(500).json({ error: 'failed' });
+	}
+});
+
+// ── Issued cards (Lithic sandbox only for now) ────────────────────
+// A sandbox card is useful for integration testing but is not a real
+// TradingBible card. Never return or store PAN/CVV here; the API key and
+// card tokens stay server-side.
+function toSafeIssuedCard(row) {
+	const meta = row?.meta || {};
+	return {
+		id: row?.id || null,
+		provider: meta.provider || 'lithic',
+		environment: meta.environment || 'sandbox',
+		sandbox: meta.sandbox === true,
+		brand: row?.brand || 'Lithic Sandbox',
+		last4: row?.last4 || null,
+		expiry: row?.expiry || null,
+		holder: row?.holder || null,
+		status: row?.status || 'unknown',
+		created: row?.created || null,
+	};
+}
+
+async function listIssuedCards(owner) {
+	const rows = await supabaseRest('/rest/v1/bank_cards', {
+		query: { select: '*', owner: `eq.${owner}`, order: 'created.desc', limit: 20 },
+	}).catch(() => []);
+	return (rows || [])
+		.filter((row) => (row?.meta || {}).provider === 'lithic')
+		.map(toSafeIssuedCard);
+}
+
+router.get('/cards/issuer', async (req, res) => {
+	const user = await authedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	return res.json(getLithicStatus());
+});
+
+router.get('/cards/issued', async (req, res) => {
+	const user = await authedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	try {
+		return res.json({ cards: await listIssuedCards(user.id) });
+	} catch (err) {
+		logger.error('issued cards list failed', String(err));
+		return res.status(500).json({ error: 'failed' });
+	}
+});
+
+router.post('/cards/sandbox', async (req, res) => {
+	const user = await authedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	const status = getLithicStatus();
+	if (!status.sandboxIssuanceEnabled) {
+		return res.status(503).json({
+			error: 'lithic_sandbox_disabled',
+			message: 'Lithic sandbox card issuance is not enabled. Set LITHIC_API_KEY and LITHIC_SANDBOX_ISSUANCE_ENABLED=true in a sandbox environment.',
+		});
+	}
+	try {
+		const existing = (await listIssuedCards(user.id)).find((card) => card.status === 'sandbox_open');
+		if (existing) return res.json({ card: existing, existing: true });
+
+		const card = await createSandboxVirtualCard({
+			userId: user.id,
+			memo: `TradingBible sandbox ${user.email || user.id}`,
+		});
+		const expiry = card.exp_month && card.exp_year
+			? `${card.exp_month}/${String(card.exp_year).slice(-2)}`
+			: null;
+		let row;
+		try {
+			const rows = await supabaseRest('/rest/v1/bank_cards', {
+				method: 'POST',
+				body: {
+					owner: user.id,
+					brand: 'Lithic Sandbox',
+					last4: card.last_four || null,
+					holder: user.name || user.username || 'Sandbox Cardholder',
+					expiry,
+					status: 'sandbox_open',
+					meta: {
+						provider: 'lithic',
+						environment: 'sandbox',
+						sandbox: true,
+						token: card.token,
+						account_token: card.account_token || null,
+						card_program_token: card.card_program_token || null,
+						pan_stored: false,
+						cvv_stored: false,
+					},
+				},
+				prefer: 'return=representation',
+			});
+			row = rows?.[0];
+		} catch (err) {
+			await closeSandboxCard(card.token).catch(() => {});
+			throw err;
+		}
+		return res.status(201).json({
+			card: toSafeIssuedCard(row),
+			sandbox: true,
+			message: 'Sandbox test card created. It has no real money and is not a TradingBible card.',
+		});
+	} catch (err) {
+		logger.error('lithic sandbox card create failed', String(err));
+		return res.status(err.status || 502).json({
+			error: err.code || 'lithic_error',
+			message: err.message || 'Sandbox card creation failed',
+		});
+	}
+});
+
+router.post('/cards/:id/close-sandbox', async (req, res) => {
+	const user = await authedUser(req);
+	if (!user) return res.status(401).json({ error: 'unauthorized' });
+	try {
+		const rows = await supabaseRest('/rest/v1/bank_cards', {
+			query: { select: '*', owner: `eq.${user.id}`, id: `eq.${req.params.id}`, limit: 1 },
+		});
+		const row = rows?.[0];
+		if (!row) return res.status(404).json({ error: 'card_not_found' });
+		const meta = row.meta || {};
+		if (meta.provider !== 'lithic' || meta.sandbox !== true) {
+			return res.status(422).json({ error: 'not_a_sandbox_card' });
+		}
+		if (row.status !== 'sandbox_closed' && meta.token) {
+			await closeSandboxCard(meta.token);
+		}
+		const updated = await supabaseRest(`/rest/v1/bank_cards?id=eq.${encodeURIComponent(row.id)}&owner=eq.${encodeURIComponent(user.id)}`, {
+			method: 'PATCH',
+			body: { status: 'sandbox_closed' },
+			prefer: 'return=representation',
+		});
+		return res.json({ card: toSafeIssuedCard(updated?.[0] || { ...row, status: 'sandbox_closed' }) });
+	} catch (err) {
+		logger.error('lithic sandbox card close failed', String(err));
+		return res.status(err.status || 502).json({
+			error: err.code || 'lithic_error',
+			message: err.message || 'Sandbox card close failed',
+		});
 	}
 });
 
