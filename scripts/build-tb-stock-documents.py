@@ -139,13 +139,17 @@ OPTIONAL_FIELDS = {
 # operating company. Normalize every published instrument at build time so
 # Word and PDF copies cannot drift from the live legal pages.
 ENTITY_REPLACEMENTS = {
-    "TradingBible LLC": "TradingBible, Inc.",
-    "TradingBible, Inc..": "TradingBible, Inc.",
+    "TradingBible LLC": "TradingBible Holdings, Inc.",
+    "TradingBible Holdings, Inc..": "TradingBible Holdings, Inc.",
+    "TradingBible, Inc..": "TradingBible Holdings, Inc.",
+    "TradingBible, Inc.": "TradingBible Holdings, Inc.",
+    "TradingBible, Inc": "TradingBible Holdings, Inc.",
+    "TRADINGBIBLE, INC.": "TRADINGBIBLE HOLDINGS, INC.",
+    "TRADINGBIBLE LLC": "TRADINGBIBLE HOLDINGS, INC.",
     "LLC Conversion": "Corporate Conversion",
     "Delaware file number: 10728395.": "Delaware, United States.",
     "Delaware file number: 10728395": "Delaware, United States",
-    "TRADINGBIBLE LLC": "TRADINGBIBLE, INC.",
-    "TradingBible, LLC": "TradingBible, Inc.",
+    "TradingBible, LLC": "TradingBible Holdings, Inc.",
     "a Delaware limited liability company": "a Delaware corporation",
     "Delaware limited liability company": "Delaware corporation",
     "Delaware manager-managed limited liability company": "Delaware corporation",
@@ -514,7 +518,7 @@ def main() -> None:
 
     manifest = {
         "title": "TradingBible TB stock document library",
-        "issuer": "TradingBible, Inc.",
+        "issuer": "TradingBible Holdings, Inc.",
         "parentCompany": "TradingBible Holdings, Inc.",
         "ticker": "TB",
         "tickerStatus": "Proposed — not reserved or approved",

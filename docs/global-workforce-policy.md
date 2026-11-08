@@ -1,10 +1,10 @@
-# TradingBible, Inc. — Global Workforce Strategy & Recruitment Policy
+# TradingBible Holdings, Inc. — Global Workforce Strategy & Recruitment Policy
 *Worldwide Recruitment · Remote-First · Compliance-First · Proposed — subject to management approval and jurisdiction-specific legal review*
 
-> Source: founder Global Employment, Legal Protection & Corporate Compliance Blueprint (2026–2027 expansion plan). TradingBible, Inc. (Delaware, USA, managed from Nigeria) is the group's U.S. employing entity and securities issuer. TradingBible Holdings, Inc. owns and operates TradingBible. No legal structure or contract guarantees freedom from suit — the objective is to prevent avoidable disputes, reduce exposure, maintain insurance, and preserve strong defenses.
+> Source: founder Global Employment, Legal Protection & Corporate Compliance Blueprint (2026–2027 expansion plan). TradingBible Holdings, Inc. (Delaware, USA, managed from Nigeria) is the group's U.S. employing entity, owner/operator and securities issuer. No legal structure or contract guarantees freedom from suit — the objective is to prevent avoidable disputes, reduce exposure, maintain insurance, and preserve strong defenses.
 
 ## Official hiring model
-Keep TradingBible, Inc. as the existing company. Combine direct employment (where TradingBible can lawfully register, employ, and run payroll) with qualified Employer-of-Record providers (where it wants an employee but has no suitable local entity). Genuine independent contractors for project-based services only — never label an employee a contractor. Form a local subsidiary only where substantial permanent operations justify the cost. PEO co-employment for some U.S. arrangements (does not eliminate employer responsibilities).
+Keep TradingBible Holdings, Inc. as the existing company. Combine direct employment (where TradingBible can lawfully register, employ, and run payroll) with qualified Employer-of-Record providers (where it wants an employee but has no suitable local entity). Genuine independent contractors for project-based services only — never label an employee a contractor. Form a local subsidiary only where substantial permanent operations justify the cost. PEO co-employment for some U.S. arrangements (does not eliminate employer responsibilities).
 
 Before evaluating any EOR/PEO provider, verify it accepts a Delaware corporation managed from Nigeria, supports the candidate's country, and handles the specific employment requirements. An EOR does not remove all of TradingBible's legal responsibilities.
 
@@ -29,4 +29,4 @@ Advertise without unnecessary nationality restrictions → evaluate skills/exper
 - **Operational:** EPLI, cyber, tech E&O, workers' comp (state-mandatory), general liability + D&O with U.S.+Nigeria territorial coverage; incident response; legal-response protocol (preserve records, no retaliation, notify insurers, counsel before responding; never delete messages, alter payroll, backdate agreements, or fire whistleblowers).
 
 ## Governance
-Management reviews this policy periodically and updates local procedures as laws change. *Approved entity: TradingBible, Inc. Status: proposed — implement only after qualified U.S. employment counsel, U.S. CPA (foreign-owned U.S. corporations), and Nigerian corporate/employment/tax advisers review.*
+Management reviews this policy periodically and updates local procedures as laws change. *Approved entity: TradingBible Holdings, Inc. Status: proposed — implement only after qualified U.S. employment counsel, U.S. CPA (foreign-owned U.S. corporations), and Nigerian corporate/employment/tax advisers review.*

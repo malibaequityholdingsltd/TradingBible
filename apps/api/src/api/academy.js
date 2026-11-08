@@ -39,9 +39,8 @@ function extractJson(raw) {
 // Mirrors apps/web/src/lib/academyCatalog.js STATIC_CURRICULA — keep in sync.
 // Keys: beginner | forex | crypto | orderflow | intermediate | professional |
 //       multi-asset | platform | funded | digital-assets | investor | ai-tech |
-//       company-business
+//       company-business | derivatives | macro | quant | fund-management
 export const DEFAULT_CURRICULA = {
-{
 	"beginner": {
 		"pathName": "Beginner Foundation",
 		"focus": "A complete A–Z foundation: markets, Forex & Crypto basics, risk, analysis and execution.",

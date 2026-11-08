@@ -9,8 +9,8 @@ AI-powered trading journal and analytics platform with a Bloomberg-grade termina
 - **Trading terminal** — charts, watchlists, terminal, signals, alerts, journal, reports, risk tools, AI coach, economic calendar.
 - **TradingBible TV** — broadcast ad system with rotation settings, view/click tracking.
 - **Broker & prop-firm sync** — connected accounts, P&L tracking.
-- **Community & Academy** — user forum with live leaderboard (ranked by real contributions) and an academy waitlist.
-- **Monetization** — Paddle billing (trial/pro/elite/professional plans), affiliate program, user API keys, admin platform.
+- **Community & Academy** — user forum with live leaderboard (ranked by real contributions) and a 17-path Academy covering trading, forex, derivatives, macro, quant and fund management.
+- **Monetization** — Stripe billing for Free accounts and TradingBible Premium ($19.99/month or $199/year), affiliate program, user API keys, admin platform.
 - **Auth** — Supabase GoTrue (OTP / magic links / webauthn passkeys) with branded emails sent via a verified Send-Email webhook hook.
 
 ## Tech Stack
@@ -21,7 +21,7 @@ AI-powered trading journal and analytics platform with a Bloomberg-grade termina
 | API        | Node.js + Express 5 (ESM), helmut, rate limiting, standardwebhooks |
 | Database   | Supabase (Postgres) — auth, RLS, REST |
 | Email      | Nodemailer via SMTP (Hostinger), Supabase Send Email hook |
-| Billing    | Paddle |
+| Billing    | Stripe (Paddle routes retained for legacy compatibility) |
 | Deployment | VPS (Ubuntu) + PM2 + Nginx + Let's Encrypt |
 
 ## Repository Layout
@@ -60,9 +60,10 @@ npm run start               # serves the API (web is served statically by nginx)
 - [Environment Variables](docs/environment.md)
 - [Database Schema](docs/database.md)
 - [Deployment (VPS)](docs/deployment.md)
-- [Holdings Master Blueprint 2.0 — TB/TBC strategy](docs/holdings-master-blueprint.md) — TradingBible Holdings, Inc. owner and operator, TradingBible, Inc. securities issuer, requested ticker TB (not reserved), TBC ≠ equity, Inc. ≠ licensed broker
+- [Blocked and Non-Working Inventory](docs/blocked-items.md) — provider, legal and production items that are not live yet
+- [Holdings Master Blueprint 2.0 — TB/TBC strategy](docs/holdings-master-blueprint.md) — TradingBible Holdings, Inc. owner, operator and securities issuer, requested ticker TB (not reserved), TBC ≠ equity, incorporation ≠ a brokerage licence
 
 ## Repository
 
-- **Owner and operator:** TradingBible Holdings, Inc. Securities issuer: TradingBible, Inc. Requested ticker TB is not listed or reserved — see `docs/holdings-master-blueprint.md`. TBC is not equity.
+- **Owner, operator and securities issuer:** TradingBible Holdings, Inc. Requested ticker TB is not listed or reserved — see `docs/holdings-master-blueprint.md`. TBC is not equity.
 - This repository is managed with [opencode](https://opencode.ai) — an AI-native CLI — see `AGENTS.md` for workspace conventions.

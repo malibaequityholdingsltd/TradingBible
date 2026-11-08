@@ -45,6 +45,7 @@
 - [Economic Calendar](/app/economic-calendar): TradingBible application page.
 - [Faq](/faq): TradingBible application page.
 - [Free Welcome](/app/welcome): TradingBible application page.
+- [Fund](/fund): TradingBible application page.
 - [Guides](/guides): TradingBible application page.
 - [Heatmaps](/app/heatmaps): TradingBible application page.
 - [Indicators](/app/indicators): TradingBible application page.

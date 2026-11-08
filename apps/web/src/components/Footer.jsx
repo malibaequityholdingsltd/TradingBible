@@ -185,7 +185,7 @@ export default function Footer({ compact = false }) {
             <div className="mt-4 flex items-start gap-3">
               <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-10 w-10 shrink-0 rounded-[10px] border border-[var(--at-line)] bg-[var(--at-panel)] object-contain p-0.5" />
               <p className="text-xs leading-relaxed text-[var(--at-mut-2)]">
-                TradingBible is owned and operated by <span className="font-semibold text-[var(--at-ink-2)]">TradingBible Holdings, Inc.</span>.
+                TradingBible is owned and operated by <span className="font-semibold text-[var(--at-ink-2)]">TradingBible Holdings, Inc.</span>
                 <br />Registered in Delaware, USA.
                 <br />{t('fot.mission')}
               </p>

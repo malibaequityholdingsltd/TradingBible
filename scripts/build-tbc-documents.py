@@ -163,9 +163,9 @@ ENTITY_REPLACEMENTS = {
     # the generic issuer mapping turns every remaining LLC reference into Inc.
     "TradingBible LLC is the proposed controller": "TradingBible Holdings, Inc. is the proposed controller",
     "TradingBible LLC is a Delaware limited liability company, file 10728395, formed August 10, 2026, managed from Nigeria and operating under the tradingbible.app website designation for these materials.": "TradingBible Holdings, Inc. is the proposed TBC issuer and operator of the tradingbible.app website. Corporate registration details remain subject to counsel confirmation.",
-    "does not by itself confer an equity interest in TradingBible, Inc.": "does not by itself confer an equity interest in any TradingBible entity.",
-    "TradingBible, Inc..": "TradingBible Holdings, Inc.",
-    "TradingBible, Inc.": "TradingBible Holdings, Inc.",
+    "does not by itself confer an equity interest in TradingBible Holdings, Inc.": "does not by itself confer an equity interest in any TradingBible entity.",
+    "TradingBible Holdings, Inc..": "TradingBible Holdings, Inc.",
+    "TradingBible Holdings, Inc.": "TradingBible Holdings, Inc.",
     "TradingBible LLC": "TradingBible Holdings, Inc.",
     "LLC Conversion": "Corporate Conversion",
     "Delaware file number: 10728395.": "Delaware, United States.",

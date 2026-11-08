@@ -296,7 +296,7 @@ function Paywall({ onPurchased }) {
 
 	const features = [
 		{ icon: Route, text: `Four schools · ${PATHS.length} programmes — foundation, FX, crypto, multi-asset, platform, funded, TBC, investor, AI and company` },
-		{ icon: Library, text: '233 lessons across every company purpose — no topic left outside the Academy' },
+		{ icon: Library, text: '347 lessons across every company purpose — no topic left outside the Academy' },
 		{ icon: Headphones, text: 'Male and female read-aloud voices in 8 languages — switch reader and speed inside every lesson' },
 		{ icon: Bot, text: 'One-on-one SI tutor inside every lesson' },
 		{ icon: Video, text: '8 live webinars / week with an SI host — FX London lab, crypto on-chain lab, news reactions' },
@@ -307,7 +307,7 @@ function Paywall({ onPurchased }) {
 		{
 			id: 'individual', name: 'Individual', price: 150, tagline: 'One learner. The full Academy.',
 			icon: GraduationCap, cta: t('aca.cta'), disabled: checked && !configured,
-			features: ['All 233 lessons · 13 programmes', 'Four schools, one standard', 'Read-aloud voices in 8 languages', '1:1 SI tutor in every lesson', '8 live webinars every week', 'One final certificate exam'],
+			features: ['All 347 lessons · 17 programmes', 'Four schools, one standard', 'Read-aloud voices in 8 languages', '1:1 SI tutor in every lesson', '8 live webinars every week', 'One final certificate exam'],
 		},
 		{
 			id: 'pro', name: 'Pro', price: 199, tagline: 'For professional traders and creators.',
@@ -1531,11 +1531,11 @@ export default function AcademyPage() {
 								<span className="ex-kicker">Academy 2.0</span>
 								<h1 className="ex-page-title">Learn the market. Hear it.</h1>
 								<p className="ex-page-sub">
-									Four schools, thirteen programmes and 233 lessons — read or listen in your language, then pass one final exam per programme.
+									Four schools, seventeen programmes and 347 lessons — read or listen in your language, then pass one final exam per programme.
 								</p>
 								<div className="mt-2 flex flex-wrap items-center gap-1.5">
-									<span className="ex-badge">13 programmes</span>
-									<span className="ex-badge">233 lessons</span>
+									<span className="ex-badge">17 programmes</span>
+									<span className="ex-badge">347 lessons</span>
 									<span className="ex-badge">Audio-first</span>
 									<span className="ex-badge">8 languages</span>
 									<span className="ex-badge ex-badge--accent">Overall {studio.pct}%</span>
@@ -1600,7 +1600,7 @@ export default function AcademyPage() {
 								<span className="ac-section-kicker">01 — The programme catalogue</span>
 								<h2 className="ac-section-title">Choose a school.</h2>
 							</div>
-							<p className="ac-section-sub">Four schools, thirteen programmes, 233 lessons. Every programme ends at the same gate: finish every lesson, then pass the final exam. No pop quizzes, no filler.</p>
+							<p className="ac-section-sub">Four schools, seventeen programmes, 347 lessons. Every programme ends at the same gate: finish every lesson, then pass the final exam. No pop quizzes, no filler.</p>
 						</div>
 						<div className="ac-v2-school-strip" role="group" aria-label="Filter by school">
 							<button type="button" className={`ac-v2-school ${schoolFilter === 'all' ? 'is-active' : ''}`} onClick={() => setSchoolFilter('all')}>

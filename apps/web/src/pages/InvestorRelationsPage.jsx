@@ -37,7 +37,7 @@ function Hero({ copy, status = [], metrics = null }) {
   return (
     <CapPublicHead
       title={copy.title}
-      sub="The private-company record for TradingBible, Inc. and the proposed TB ticker. Disclosures are published only after approval; no public market exists."
+      sub="The private-company record for TradingBible Holdings, Inc. and the proposed TB ticker. Disclosures are published only after approval; no public market exists."
       aside={(
         <CapRecordCard
           title="Issuer status"
@@ -63,7 +63,7 @@ function OverviewSection({ data, loading, error, reload }) {
       <Hero
         copy={PAGE_COPY.overview}
         status={[
-          ['Issuer entity', 'TradingBible, Inc.'],
+          ['Issuer entity', 'TradingBible Holdings, Inc.'],
           ['Owner & operator', 'TradingBible Holdings, Inc.'],
           ['Target exchange', 'Nasdaq · target only'],
           ['Public market', 'None'],
@@ -357,7 +357,7 @@ function GovernanceSection({ data }) {
   return (
     <>
       <Hero copy={PAGE_COPY.governance} status={[
-        ['Issuer entity', 'TradingBible, Inc.'],
+        ['Issuer entity', 'TradingBible Holdings, Inc.'],
         ['Owner & operator', 'TradingBible Holdings, Inc.'],
         ['Board', 'Not yet constituted'],
         ['Transfer agent', 'Not engaged'],
@@ -366,32 +366,18 @@ function GovernanceSection({ data }) {
       <div className="mt-2.5"><InvestorNotice compact /></div>
 
       <CapSection>
-        <CapSectionHead title="Corporate structure" action={<AtBadge tone="muted">Two entities</AtBadge>} />
+        <CapSectionHead title="Corporate structure" action={<AtBadge tone="muted">One entity</AtBadge>} />
         <div className="cap-grid">
-          <div className="cap-span-6">
-            <AtPanel className="cap-panel h-full" title="TradingBible, Inc." action={<AtBadge tone="gold">Issuer</AtBadge>}>
+          <div className="cap-span-12">
+            <AtPanel className="cap-panel h-full" title="TradingBible Holdings, Inc." action={<AtBadge tone="gold">Issuer, owner & operator</AtBadge>}>
               <div className="ir-list">
                 {[
                   ['Jurisdiction', 'Delaware, United States'],
+                  ['Role', 'Owner and operator of TradingBible'],
+                  ['Issuer of TB', 'TradingBible Holdings, Inc.'],
                   ['Public market', 'None'],
                   ['Shares', 'Shares, not listed shares'],
                   ['Investor access', 'Private records only'],
-                ].map(([label, value]) => (
-                  <div className="ir-list-row" key={label}>
-                    <div className="ir-list-main"><div className="ir-list-sub !mt-0">{label}</div></div>
-                    <div className="ir-list-side"><span className="text-[9px] font-semibold text-[var(--at-ink-2)]">{value}</span></div>
-                  </div>
-                ))}
-              </div>
-              <p className="ir-field-note mt-3">The issuer of TB. It is not the public operating company and it is not a public company.</p>
-            </AtPanel>
-          </div>
-          <div className="cap-span-6">
-            <AtPanel className="cap-panel h-full" title="TradingBible Holdings, Inc." action={<AtBadge tone="muted">Owner & operator</AtBadge>}>
-              <div className="ir-list">
-                {[
-                  ['Role', 'Owner and operator of TradingBible'],
-                  ['Issuer of TB', 'TradingBible, Inc.'],
                   ['Target exchange', 'Nasdaq · target only'],
                   ['Listing status', 'No application or approval'],
                 ].map(([label, value]) => (
@@ -401,7 +387,7 @@ function GovernanceSection({ data }) {
                   </div>
                 ))}
               </div>
-              <p className="ir-field-note mt-3">The owner and operator of TradingBible. It is not the public issuer of TB.</p>
+              <p className="ir-field-note mt-3">TradingBible Holdings, Inc. owns and operates TradingBible and is the issuer of TB. It is not a public company.</p>
             </AtPanel>
           </div>
         </div>

@@ -160,13 +160,13 @@ export const WebinarsPage = () => (
 
 const ACADEMY_TRACKS = [
   [BookOpen, 'Foundation School', 'How markets work, what you are actually trading, and the risk habits that come before any strategy.'],
-  [ShieldCheck, 'Markets School', 'FX, crypto, multi-asset and order flow — read as one connected market rather than disconnected screens.'],
-  [CalendarDays, 'Desk Craft School', 'Edge, psychology, platform mastery, funded-desk rules and the AI guardrails that keep automation in its lane.'],
-  [Briefcase, 'Ownership School', 'The proposed TBC network, investor ownership, the business model and the creator operations behind TradingBible.'],
+  [ShieldCheck, 'Markets School', 'FX, crypto, multi-asset, order flow, derivatives and global macro — read as one connected market rather than disconnected screens.'],
+  [CalendarDays, 'Desk Craft School', 'Edge, psychology, platform mastery, funded-desk rules, quant research and the AI guardrails that keep automation in its lane.'],
+  [Briefcase, 'Ownership School', 'The proposed TBC network, investor ownership, fund management, the business model and the creator operations behind TradingBible.'],
 ];
 
 const ACADEMY_POINTS = [
-  'Four schools, 13 structured programmes and 233 lessons across every company purpose',
+  'Four schools, 17 structured programmes and 347 lessons across every company purpose',
   'Male and female read-aloud voices, with speed and language controls in every lesson',
   'A simple story first and professional depth second, written for kids and adults without weakening risk or compliance',
   'Lessons kept inside the product, next to the journal and Terminal',
@@ -180,11 +180,11 @@ export const AcademyInfoPage = () => (
     <PublicPageHead
       eyebrow="Education · Academy 2.0"
       title={<>Learn the desk. <span className="tb-gold-text">Hear it. Then prove it.</span></>}
-      description="Academy 2.0 is a structured, family-friendly curriculum for the tools, markets and company purposes you actually work with: multi-asset markets, platform mastery, funded desks, TBC, investor ownership, AI and the creator business. Read or listen in your language with a male or female reader. It is education, not a signal service."
-      meta={['4 schools', '13 programmes', 'Male + female voices', '233 lessons']}
+      description="Academy 2.0 is a structured, family-friendly curriculum for the tools, markets and company purposes you actually work with: forex, crypto, multi-asset, order flow, derivatives, global macro, quant research, fund management, platform mastery, funded desks, TBC, investor ownership, AI and the creator business. Read or listen in your language with a male or female reader. It is education, not a signal service."
+      meta={['4 schools', '17 programmes', 'Male + female voices', '347 lessons']}
       actions={<><GoldButton to="/app/academy">Open the Academy <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/guides" className="border px-5 py-3 text-[#e9e7df]">Read the setup guide</GhostButton></>}
     />
-    <PublicSection eyebrow="The four schools" title="Four schools. Thirteen programmes. One standard." sub="Every programme ends with a final certificate exam. No pop quizzes inside lessons. The same standard applies to every learner.">
+    <PublicSection eyebrow="The four schools" title="Four schools. Seventeen programmes. One standard." sub="Every programme ends with a final certificate exam. No pop quizzes inside lessons. The same standard applies to every learner.">
       <div className="grid gap-3 md:grid-cols-2">
         {ACADEMY_TRACKS.map(([icon, title, body]) => {
           const Icon = icon;

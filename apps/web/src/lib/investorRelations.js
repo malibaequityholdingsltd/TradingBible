@@ -3,8 +3,8 @@
 // an allocation, a regulatory approval or a promise that a listing will occur.
 
 export const TB_ISSUER = {
-  currentEntity: 'TradingBible, Inc.',
-  issuer: 'TradingBible, Inc.',
+  currentEntity: 'TradingBible Holdings, Inc.',
+  issuer: 'TradingBible Holdings, Inc.',
   parentCompany: 'TradingBible Holdings, Inc.',
   structure: 'Delaware corporation',
   jurisdiction: 'Delaware, United States',
@@ -64,7 +64,7 @@ export const TB_PILLARS = [
   {
     number: '04',
     title: 'TB is not TBC',
-    body: 'TB represents proposed equity in TradingBible, Inc. TBC is a separate proposed blockchain asset with its own supply and risk profile. No TBC balance is equity, and no TB share is a TBC allocation.',
+    body: 'TB represents proposed equity in TradingBible Holdings, Inc. TBC is a separate proposed blockchain asset with its own supply and risk profile. No TBC balance is equity, and no TB share is a TBC allocation.',
   },
 ];
 
@@ -96,7 +96,7 @@ export const TB_LEADERSHIP = [
 export const TB_GOVERNANCE = [
   {
     title: 'Current structure',
-    body: 'TradingBible Holdings, Inc. owns and operates TradingBible; TradingBible, Inc. is the securities issuer. TB is not publicly traded.',
+    body: 'TradingBible Holdings, Inc. owns and operates TradingBible and is the securities issuer. TB is not publicly traded.',
     status: 'Current',
     tone: 'gold',
   },
@@ -153,7 +153,7 @@ export const TB_FAQ = [
   },
   {
     q: 'Is TB the same as TBC?',
-    a: 'No. TB is proposed equity. TBC is a separate proposed blockchain asset. TBC does not represent shares, equity, dividends or ownership in TradingBible, Inc. Supply, balances and risk are kept separate.',
+    a: 'No. TB is proposed equity. TBC is a separate proposed blockchain asset. TBC does not represent shares, equity, dividends or ownership in TradingBible Holdings, Inc. Supply, balances and risk are kept separate.',
   },
   {
     q: 'What stage is the IPO process at?',

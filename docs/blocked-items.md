@@ -1,0 +1,174 @@
+# Blocked and Non-Working Inventory
+
+**Status:** 8 November 2026  
+**Operator:** TradingBible Holdings, Inc.  
+**Scope:** web app, API, billing, cards, fund, legal/corporate records and production validation.
+
+This is the honest readiness list. It separates work that is complete from work that is blocked by an external provider, a legal/professional review or a product decision. No blocked item is presented in the product as live, funded, issued, registered or approved.
+
+## Status key
+
+| Status | Meaning |
+|---|---|
+| **Fixed** | Implemented and verified in this pass. |
+| **Blocked — external** | Cannot be completed without a provider, credential, authorization or professional review. |
+| **Decision needed** | The product behaviour is not defined; no code should guess. |
+| **Intentionally unavailable** | The UI is deliberately truthful and must stay unavailable until the underlying service exists. |
+
+## 1. Fixed in this pass
+
+| Item | What changed | Verification |
+|---|---|---|
+| Company name | Standardised on **TradingBible Holdings, Inc.** as owner, operator and TB securities issuer across source, legal/public copy, investor records and generated documents. | `rg` found no stale `TradingBible, Inc.` outside replacement rules; TB stock DOCX/PDF library regenerated. |
+| TV widget bounds | The launcher, mini panel and expanded panel now use the painted sidebar, topbar/mobile-bar and bottom navigation edges. Drag, keyboard movement, SI shift and phone layout clamp to those edges. | Playwright at 1440×900, 1024×768 and 390×844; desktop expanded panel sat at sidebar/topbar lines and above the bottom edge; phone panel sat above the dock. |
+| Academy coverage | Expanded to **17 paths · 76 courses · 347 lessons**, including derivatives, macro, quant, fund management, market mechanics and institutional FX. | `npm run verify:academy` passes; web/API catalogs both import at 17/76/347; `academySchools.test.js` passes. |
+| Fund surface | Public `/fund` surface for **TradingBible Capital** explicitly says *in formation*, with no vehicle, AUM, track record or offering. | Public page copy and route checks pass. |
+| Card previews | Realistic virtual/physical card designs with a chip, contactless mark, masked placeholder PAN, `CARDHOLDER NAME`, `MM/YY`, `Not issued` and `Preview only`. No PAN, expiry, CVV, balance, issuer/network claim or activation state is generated. | Playwright found two previews at the ISO/IEC 7810 ID-1 ratio (`1.586`) and no long digit sequences. |
+| Footer company sentence | Removed the doubled full stop after `TradingBible Holdings, Inc.` | Local page text check. |
+| Release controls | PWA, DocuSign, TBC, exam-bank, translation and curated-path guards remain intact. | `npm run verify:release` passes. |
+| Lint/build/tests | Web/API lint, production build and unit tests pass after the changes. | `npm run lint`, `npm run build`, `npm test` (26 tests). |
+
+## 2. Blocked — external
+
+### 2.1 Live Stripe checkout and webhook acceptance
+
+**Status:** Blocked — external.  
+**Current behaviour:** The checkout code is implemented, but no authorised live charge or real learner session has been observed. Test-mode checkout and webhook delivery have not been proven against the production deployment.  
+**What is missing:**
+
+- Stripe test credentials and a test webhook endpoint.
+- A real non-admin learner account for the purchase flow.
+- Explicit written authorisation before any live charge.
+- Confirmation of the live price IDs for Premium monthly and annual (and any Academy tier that is offered).
+
+**Environment names:** `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PREMIUM`, `STRIPE_PRICE_PREMIUM_ANNUAL`, `STRIPE_PRICE_ACADEMY`, `STRIPE_PRICE_ACADEMY_FAMILY`, and optionally `STRIPE_PRICE_ACADEMY_PRO`, `STRIPE_PRICE_ACADEMY_TEAM`, `STRIPE_PRICE_TEAMS`. Sandbox aliases use `STRIPE_SANDBOX_*`.
+
+**Do not** take a live payment without authorisation. The existing fallback inline prices ($19.99/month, $199/year) are intentional and are not a substitute for a completed Stripe test.
+
+### 2.2 TBC payment rails for plans and checkout
+
+**Status:** Intentionally unavailable — authorisation required.  
+**Current behaviour:** `POST /wallet/pay` returns `503 tbc_unavailable` for `intent: "tbc"` or `plan: "tbc"`. Plans and checkout settle in cash. TBC remains the in-app ledger currency, not legal tender, an on-chain token or an investment.  
+**What is missing:**
+
+- Written authorisation to enable TBC as a payment rail.
+- Treasury/ledger policy covering conversion, settlement, refunds, reversals, tax and reconciliation.
+- A price source or fixed conversion policy if TBC is to be valued.
+- Legal confirmation that the rail does not create a security, deposit or e-money product.
+- A deliberate rollout flag and admin controls.
+
+No API key can substitute for this authorisation.
+
+### 2.3 Virtual and physical card issuance
+
+**Status:** Blocked — external.  
+**Current behaviour:** The wallet shows both card products, but every card is a preview only. `Register interest` creates a real `/tbc/support` ticket. No card is issued, funded, activated or provisioned.  
+**What is missing:**
+
+- An approved card issuer and card programme.
+- Cardholder KYC/AML and terms acceptance.
+- Issuer API credentials, card-product IDs and webhook signing secret.
+- Funding/custody arrangement and spending controls.
+- Cardholder and privacy terms, fee disclosures and complaint handling.
+
+**Recommended path:** Stripe Issuing, because Stripe is already integrated. Required: Stripe account approved for Issuing, `STRIPE_SECRET_KEY` with Issuing scope, `STRIPE_ISSUING_WEBHOOK_SECRET`, virtual/physical card-product IDs, and authorisation to create cardholders/cards. If another issuer is chosen, provide its API base URL, API key, programme ID, card-product IDs and webhook secret.
+
+### 2.4 First real family/team purchase and seat redemption
+
+**Status:** Blocked — external.  
+**Current behaviour:** Family and Academy Teams checkout code and share-code redemption exist. No real purchase, seat allocation or redemption has been observed.  
+**What is needed:** An authorised test purchase (test mode first) and a learner account to redeem the seat. This is a validation gap, not a missing UI.
+
+### 2.5 Platform Teams self-serve seat invites
+
+**Status:** Decision needed.  
+**Current behaviour:** The platform Teams plan is not part of the public two-plan pricing surface. Academy Teams uses a share code. Copy describes support provisioning rather than self-serve email invitations.  
+**Decision:** Either keep Teams support-provisioned, or define and build email invitations, seat acceptance, removal and billing rules. Do not add an invite UI until the product rules are approved.
+
+### 2.6 Real-account production acceptance
+
+**Status:** Blocked — external.  
+**Current behaviour:** Production checks used mocked Supabase auth/API. No real production account, real TBC balance or real subscription was observed.  
+**What is needed:** A real non-admin test account (or permission to create one), a real learner session and explicit permission to exercise account, wallet and billing flows. Do not read or copy the production `.env`; set credentials on the server or use a secret manager.
+
+### 2.7 DocuSign
+
+**Status:** Blocked — external.  
+**Current behaviour:** The integration is real-only and refuses to run without complete credentials. No live envelope has been sent or signed.  
+**Environment names:** `DOCUSIGN_INTEGRATION_KEY`, `DOCUSIGN_USER_ID`, `DOCUSIGN_ACCOUNT_ID`, `DOCUSIGN_PRIVATE_KEY`, `DOCUSIGN_CONNECT_HMAC_KEY`, `DOCUSIGN_AUTH_SERVER`, `DOCUSIGN_BASE_URL`, `DOCUSIGN_SEND_ON_CREATE`.
+
+### 2.8 Fund and asset-management offering
+
+**Status:** Blocked — external and intentionally unavailable.  
+**Current behaviour:** `/fund` presents TradingBible Capital as a proposed division **in formation**. There is no fund vehicle, outside capital, AUM, track record, PPM, subscription document or investor offering.  
+**What is missing:** Fund entity, investment-adviser registration or exemption, PPM/LPA and subscription documents, auditor, administrator, prime broker, custody, AML/KYC programme, compliance manual, insurance, seed capital and a real track record. The public page must not claim any of these until they exist.
+
+## 3. Legal and corporate confirmations
+
+| Item | Status | What is needed |
+|---|---|---|
+| Terms of Service §8.1 (Academy Pro licence) | Blocked — counsel | Counsel review of the licence scope, resale/redistribution restriction and termination wording. |
+| Corporate registration details | Blocked — counsel | Confirm Delaware registration, registered agent, authorised shares, par value, officers/directors and the public wording before external reliance. |
+| TB securities-issuer record | Blocked — counsel | Confirm that TradingBible Holdings, Inc. is the issuer of TB and that the private-record, no-offering and no-listing language is accurate. |
+| Employment entity and workforce policy | Blocked — counsel | Confirm TradingBible Holdings, Inc. as the U.S. employing entity and review the global workforce policy. |
+| Fund structure and offering | Blocked — counsel/regulatory | Entity, adviser registration/exemption, PPM, custody, AML/KYC and marketing restrictions. |
+
+## 4. Intentionally unavailable or honest empty states
+
+These are not bugs and must not be “fixed” by inventing data:
+
+- **Card previews:** `Not issued`; no PAN, expiry, CVV, balance, issuer/network claim or activation.
+- **Fund documents:** empty state until real documents exist.
+- **Fund performance/AUM:** no figures until a real vehicle and track record exist.
+- **Signals:** failed feeds render an explicit empty state, never fabricated values.
+- **TV providers:** 15 reference-only provider cards plus 7 streaming services; no fabricated streams. TStv inactive, Luft uncertain, YouTube TV/Pluto TV region-restricted.
+- **Investor portal:** private, read-only records; no share price, market capitalisation or listing claim.
+- **TBC:** ledger-backed in-app currency; member staking retired; no token sale or investment claim.
+
+## 5. Credentials and authorisations requested
+
+**Do not paste secrets into chat.** Set them in the server environment or a secret manager, then confirm they are available. The API `.env` must not be printed, copied or overwritten by an agent.
+
+### Priority 1 — billing validation
+
+- Stripe **test** secret, publishable key and webhook signing secret.
+- Stripe test price IDs for Premium monthly/annual and the Academy tier(s) to test.
+- A real test learner account.
+- Written authorisation for one live charge and refund **after** test-mode acceptance.
+
+### Priority 2 — cards
+
+- Issuer choice: **Stripe Issuing (recommended)**, Lithic, Marqeta or another approved programme.
+- Issuer API key, programme/card-product IDs, webhook secret and sandbox access.
+- Confirmation that KYC/AML, cardholder terms and funding are approved.
+
+### Priority 3 — TBC rails
+
+- Written authorisation to enable TBC payments.
+- Treasury/ledger and refund policy.
+- Legal classification memo.
+- Conversion/price-source decision.
+
+### Priority 4 — legal, corporate and fund
+
+- Counsel memos for Terms §8.1, corporate registration, TB issuer record and employment entity.
+- Fund counsel and the service providers listed in §2.8.
+
+### Priority 5 — production and optional integrations
+
+- Real non-admin test account or permission to create one.
+- DocuSign developer credentials listed in §2.7.
+- SMTP delivery/DKIM access if email verification is in scope.
+- Optional market/AI keys: `ALPHA_VANTAGE_API_KEY`, `FINNHUB_API_KEY`, `DEEPSEEK_API_KEY` or `INTEGRATED_AI_API_URL`/`INTEGRATED_AI_API_KEY`.
+- Optional D&B: `DNB_CLIENT_ID`, `DNB_CLIENT_SECRET`.
+- Optional Circle x402: `CIRCLE_X402_SELLER_ADDRESS` and related settings.
+
+## 6. Current safe state
+
+The app can be deployed and used with the current truthful states:
+
+- Free accounts and TradingBible Premium ($19.99/month or $199/year) remain the public plans.
+- TBC wallet is ledger-backed and shows virtual/physical card products as previews.
+- Card interest creates a support ticket.
+- The fund page is a status page, not an offering.
+- No live payment, card issuance or TBC payment rail is enabled without the authorisations above.

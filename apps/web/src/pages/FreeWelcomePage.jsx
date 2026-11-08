@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { displayName } from '@/lib/displayName';
 
 const ACCESS = [
-  { to: '/app/academy', icon: BookOpen, title: 'Academy catalogue', body: 'Browse the 13 learning paths and see the full 233-lesson curriculum before you upgrade.' },
+  { to: '/app/academy', icon: BookOpen, title: 'Academy catalogue', body: 'Browse the 17 learning paths and see the full 347-lesson curriculum before you upgrade.' },
   { to: '/app/community', icon: MessageSquare, title: 'Community', body: 'Read trader discussions, ask a question and keep your public profile active.' },
   { to: '/app/paper', icon: Target, title: 'Paper trading', body: 'Practise decisions without risking capital while you evaluate Premium.' },
   { to: '/app/challenges', icon: Trophy, title: 'Challenges', body: 'Review funded-program rules and the evidence standards before you enter.' },

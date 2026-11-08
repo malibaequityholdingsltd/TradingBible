@@ -65,7 +65,7 @@ router.get('/tbc-documents', supabaseAuth, async (req, res, next) => {
 		const documents = [...internalTbcDocuments, ...publicTbcDocuments].map(toAdminDocument);
 		res.setHeader('Cache-Control', 'private, no-store');
 		res.json({
-			issuer: 'TradingBible, Inc.',
+			issuer: 'TradingBible Holdings, Inc.',
 			jurisdiction: 'Delaware, United States',
 			updated: 'October 2026',
 			documents,
@@ -803,7 +803,7 @@ router.post('/billing/refund', supabaseAuth, async (req, res, next) => {
 // upload (D-U-N-S 14-997-6777). D&B accepts csv ≤ 10 MB. These are
 // UNaudited summaries — have your accountant finalize before submitting.
 const DUNS_NUMBER = '14-997-6777';
-const COMPANY_LEGAL = 'TradingBible, Inc.';
+const COMPANY_LEGAL = 'TradingBible Holdings, Inc.';
 
 function parseStatementPeriod(query) {
 	const to = query?.to ? new Date(`${String(query.to).slice(0, 10)}T23:59:59Z`) : new Date();
@@ -889,7 +889,7 @@ router.get('/financials/income-statement', supabaseAuth, async (req, res, next) 
 		const feesEst = r.stripe.configured ? gross * 0.029 + r.stripe.count * 0.3 : 0;
 		const net = gross - refunds - feesEst - r.outflowsUsd + r.inflowsUsd;
 		sendStatementCsv(res, `tradingbible-income-statement-${f(from)}-${f(to)}.csv`, [
-			['TradingBible, Inc. — Income Statement (DRAFT, platform records, unaudited)'],
+			['TradingBible Holdings, Inc. — Income Statement (DRAFT, platform records, unaudited)'],
 			['D-U-N-S', DUNS_NUMBER],
 			['Period', `${f(from)} to ${f(to)}`],
 			['Generated (UTC)', new Date().toISOString()],
@@ -928,7 +928,7 @@ router.get('/financials/balance-sheet', supabaseAuth, async (req, res, next) => 
 		const assets = cash + mrr;
 		const equity = assets - pending;
 		sendStatementCsv(res, `tradingbible-balance-sheet-${f(asof)}.csv`, [
-			['TradingBible, Inc. — Balance Sheet (DRAFT, platform records, unaudited)'],
+			['TradingBible Holdings, Inc. — Balance Sheet (DRAFT, platform records, unaudited)'],
 			['D-U-N-S', DUNS_NUMBER],
 			['As of', f(asof)],
 			['Generated (UTC)', new Date().toISOString()],

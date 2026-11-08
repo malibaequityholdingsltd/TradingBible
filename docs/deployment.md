@@ -28,7 +28,7 @@ cd apps/web && npm run build             # rebuild SPA into dist/apps/web/
 pm2 restart tradingbible-api             # restart API (loads apps/api/.env)
 ```
 
-The API reads its secrets from `/var/www/tradingbible/apps/api/.env` (gitignored) — set/update `SEND_EMAIL_HOOK_SECRET`, Supabase keys, Paddle keys there.
+The API reads its secrets from `/var/www/tradingbible/apps/api/.env` (gitignored) — set/update `SEND_EMAIL_HOOK_SECRET`, Supabase keys and Stripe keys there. Never print, copy or overwrite that file from an agent session.
 
 ## Full fresh deploy / repair
 

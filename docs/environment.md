@@ -54,14 +54,31 @@ The domain has an active SPF record and `p=none` DMARC. For inbox placement, ena
 | `OPENAI_BASE_URL` `OPENAI_API_KEY` | opt. | Generic OpenAI-compatible fallback |
 | `OPENCODE_SERVER_URL` `OPENCODE_SERVER_PASSWORD` | opt. | Local opencode gateway (chat-only model) |
 
-## Billing (Paddle)
+## Billing (Stripe — current checkout)
+
+The pricing page and member billing flow use Stripe. Paddle routes remain mounted for legacy compatibility, but the current two-plan surface does not use them.
 
 | Variable | Required | Description |
 |---|---|---|
-| `PADDLE_ENV_OVERRIDE` | yes | `live` or `sandbox` |
-| `PADDLE_LIVE_API_KEY` `PADDLE_LIVE_CLIENT_TOKEN` `PADDLE_LIVE_WEBHOOK_SECRET` | dep. | Live credentials |
-| `PADDLE_SANDBOX_*` | dep. | Sandbox credentials |
-| `PADDLE_PRICE_PRO` `PADDLE_PRICE_ELITE` `PADDLE_PRICE_PROFESSIONAL` | yes | Price IDs for each plan |
+| `STRIPE_SECRET_KEY` | yes | Server key. Use `sk_test_…` for acceptance; use `sk_live_…` only with explicit written authorisation. |
+| `STRIPE_PUBLISHABLE_KEY` | yes | Publishable key returned by `/stripe/config`. |
+| `STRIPE_WEBHOOK_SECRET` | yes | Signing secret for the Stripe webhook endpoint. |
+| `STRIPE_PRICE_PREMIUM` | opt. | Premium monthly price ID. Falls back to the fixed $19.99/month inline price. |
+| `STRIPE_PRICE_PREMIUM_ANNUAL` | opt. | Premium annual price ID. Falls back to the fixed $199/year inline price. |
+| `STRIPE_PRICE_ACADEMY` | opt. | Academy individual price ID. |
+| `STRIPE_PRICE_ACADEMY_FAMILY` | opt. | Academy Family price ID. |
+| `STRIPE_PRICE_ACADEMY_PRO` `STRIPE_PRICE_ACADEMY_TEAM` | opt. | Academy Pro/Teams price IDs; fixed inline prices exist for Pro ($199) and Teams ($499). |
+| `STRIPE_PRICE_TEAMS` | opt. | Platform Teams price ID, only if Teams is offered. |
+
+Sandbox aliases are `STRIPE_SANDBOX_SECRET_KEY`, `STRIPE_SANDBOX_PUBLISHABLE_KEY` and `STRIPE_SANDBOX_WEBHOOK_SECRET`. See [blocked-items.md](blocked-items.md) for the authorisation and acceptance steps.
+
+### Legacy Paddle
+
+`PADDLE_ENV_OVERRIDE`, `PADDLE_LIVE_*`, `PADDLE_SANDBOX_*` and `PADDLE_PRICE_*` still configure the legacy `/api/paddle` routes. They are not required for the current Stripe checkout.
+
+### Card issuing and TBC rails
+
+No card-issuer or TBC payment credential is currently configured. Card previews are non-issued; TBC payments return `503 tbc_unavailable` until explicitly authorised. The exact issuer/authorisation requirements are in [blocked-items.md](blocked-items.md).
 
 ## Dun & Bradstreet (company DUNS verification)
 

@@ -24,7 +24,7 @@ const LOGO = TRADINGBIBLE_LOGO;
 
 const STATS = [
   { value: '20+', label: 'Broker & prop connections', note: 'Live accounts, synced' },
-  { value: '233', label: 'Academy lessons', note: 'Four schools · 13 programmes' },
+  { value: '347', label: 'Academy lessons', note: 'Four schools · 17 programmes' },
   { value: '24/7', label: 'SI coaching', note: 'Grounded in your history' },
   { value: '0 TBC', label: 'Tokens issued', note: '100M max proposed' },
 ];
@@ -71,7 +71,7 @@ const MODULES = [
   },
   {
     icon: GraduationCap, tag: 'LEARN', title: 'A school run by SI',
-    body: 'Academy 2.0: four schools, 13 programmes and 233 lessons, with male and female read-aloud voices in eight languages. Eight live webinars a week, one final certificate exam per programme and one-to-one tutoring. $150 individual, $199 Pro, $299 family of four or $499 team of ten — one lifetime payment.',
+    body: 'Academy 2.0: four schools, 17 programmes and 347 lessons, with male and female read-aloud voices in eight languages. Eight live webinars a week, one final certificate exam per programme and one-to-one tutoring. $150 individual, $199 Pro, $299 family of four or $499 team of ten — one lifetime payment.',
     to: '/academy', link: 'Enter the Academy',
   },
   {
@@ -93,8 +93,8 @@ const REVIEW_ROWS = [
 ];
 
 const ACADEMY = [
-  ['233', 'lessons across four schools'],
-  ['13', 'learning paths, beginner to professional'],
+  ['347', 'lessons across four schools'],
+  ['17', 'learning paths, beginner to professional'],
   ['8', 'live SI-hosted webinars every week'],
   ['4', 'schools, one standard'],
   ['$150', 'individual · lifetime access'],
@@ -123,7 +123,7 @@ const FAQS = [
   ['Is there a free account?', 'Yes. You can create a free TradingBible account to explore the Academy catalogue, community, paper trading and profile. TradingBible Premium is $19.99/month (or $199/year) and unlocks the terminal, journal, analytics, SI coach, reports, signals, alerts, heatmaps, broker sync and risk tools. Every first Premium payment carries a 14-day money-back guarantee.'],
   ['Which brokers and platforms are supported?', 'Named brokers only — Binance, Deriv, easyMarkets, Interactive Brokers, Alpaca, Coinbase and more, plus TradingBible Funded evaluations and self-custody wallet tracking for BTC, ETH, USDC and Solana. Live accounts only; trades and balances sync automatically.'],
   ['What does the SI Coach actually do?', 'SI reviews every synced trade for quality, risk and discipline, detects recurring mistakes such as widened stops, revenge trading and overtrading, and answers questions grounded in your real history. Ask “What is my biggest mistake?” and it shows the evidence.'],
-  ['How does the Academy work?', 'Academy is separate from TradingBible Premium. One $150 lifetime payment unlocks Academy 2.0. Pro ($199) adds the Pro badge and a commercial internal-training licence, a $299 family pass covers up to four learners, and a $499 team pass covers up to ten. Four schools and thirteen programmes — Forex Mastery A–Z, Crypto Mastery A–Z, Order Flow Mastery, Multi-Asset, Platform Mastery, Funded/Prop Desk, TBC & Digital Assets, Investor & Ownership, AI & Trading Technology and the Company/Creator Business — with 233 SI-written lessons. Every lesson can be read aloud by a male or female voice in eight languages, a tutor sits inside each programme, eight live webinars run every week, and one final certificate exam per programme is the only test.'],
+  ['How does the Academy work?', 'Academy is separate from TradingBible Premium. One $150 lifetime payment unlocks Academy 2.0. Pro ($199) adds the Pro badge and a commercial internal-training licence, a $299 family pass covers up to four learners, and a $499 team pass covers up to ten. Four schools and seventeen programmes — Forex Mastery A–Z, Crypto Mastery A–Z, Order Flow Mastery, Multi-Asset, Derivatives & Futures, Global Macro, Quant & Systematic Trading, Platform Mastery, Funded/Prop Desk, TBC & Digital Assets, Investor & Ownership, Fund & Hedge Fund Management, AI & Trading Technology and the Company/Creator Business — with 347 SI-written lessons. Every lesson can be read aloud by a male or female voice in eight languages, a tutor sits inside each programme, eight live webinars run every week, and one final certificate exam per programme is the only test.'],
   ['Is enterprise API access included?', 'No. TradingBible Premium includes all core platform features for one trader. REST API licensing, webhooks, white-label technology and desk-level deployment are quoted separately for funds, brokers and enterprises through sales. Every API quote is subject to usage, market-data and licensing review.'],
   ['Is there a community and one-to-one help?', 'Yes. The forum ranks members by real contribution, the public leaderboard shows verified activity without fake P&L, and the SI coach answers questions grounded in your own journal and lessons. Human coaching is not sold as a separate marketplace.'],
   ['How is TBC different from TB?', 'TBC platform credits are an existing off-chain utility credit used inside TradingBible. The proposed TBC token is a separate, unissued network asset. TB is a proposed equity ticker for the securities issuer. Holding TBC credits does not make you a shareholder, and holding TB equity would not make you a TBC holder.'],
@@ -406,7 +406,7 @@ export default function LandingPage() {
               <IosIcon icon={GraduationCap} size="lg" tone="green" />
               <div><div className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#d4af37]">TradingBible Academy</div><h3 className="text-lg font-semibold tracking-tight text-[#f0ecdd]">From first candle to professional desk.</h3></div>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-[#8a8577]">Academy 2.0: four schools, 13 programmes and 233 lessons, plus eight live webinars a week. Learn first — every lesson is written by SI, read it or hear it in a male or female voice, there are no pop quizzes, and each programme ends with one final certificate exam. $150 individual, $199 Pro, $299 for a family of four or $499 for a team of ten — one lifetime payment.</p>
+            <p className="mt-4 text-sm leading-relaxed text-[#8a8577]">Academy 2.0: four schools, 17 programmes and 347 lessons, plus eight live webinars a week. Learn first — every lesson is written by SI, read it or hear it in a male or female voice, there are no pop quizzes, and each programme ends with one final certificate exam. $150 individual, $199 Pro, $299 for a family of four or $499 for a team of ten — one lifetime payment.</p>
             <div className="mt-5 grid grid-cols-2 gap-2">
               {ACADEMY.map(([value, label]) => (
                 <div key={label} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3"><div className="font-mono text-xl font-bold text-[#e8c95a]">{value}</div><div className="mt-0.5 text-[10px] leading-snug text-[#8a8577]">{label}</div></div>

@@ -1,6 +1,6 @@
 {
   "title": "TradingBible TB stock document library",
-  "issuer": "TradingBible, Inc.",
+  "issuer": "TradingBible Holdings, Inc.",
   "parentCompany": "TradingBible Holdings, Inc.",
   "ticker": "TB",
   "tickerStatus": "Proposed \u2014 not reserved or approved",
@@ -24,8 +24,8 @@
       "pdf": "pdf/tb-public-markets-strategy-board-feasibility.pdf",
       "docx": "docx/tb-public-markets-strategy-board-feasibility.docx",
       "docxProtected": "docx-protected/tb-public-markets-strategy-board-feasibility.docx",
-      "pdfBytes": 141529,
-      "docxBytes": 169428,
+      "pdfBytes": 142973,
+      "docxBytes": 169448,
       "emailSubjectPrefix": "TradingBible TB Stock",
       "signers": [
         {
@@ -134,8 +134,8 @@
       "pdf": "pdf/tb-corporate-conversion-restructuring.pdf",
       "docx": "docx/tb-corporate-conversion-restructuring.docx",
       "docxProtected": "docx-protected/tb-corporate-conversion-restructuring.docx",
-      "pdfBytes": 142813,
-      "docxBytes": 169477,
+      "pdfBytes": 144234,
+      "docxBytes": 169501,
       "emailSubjectPrefix": "TradingBible TB Stock",
       "signers": [
         {
@@ -244,8 +244,8 @@
       "pdf": "pdf/tb-share-capital-shareholder-governance.pdf",
       "docx": "docx/tb-share-capital-shareholder-governance.docx",
       "docxProtected": "docx-protected/tb-share-capital-shareholder-governance.docx",
-      "pdfBytes": 141584,
-      "docxBytes": 169523,
+      "pdfBytes": 143000,
+      "docxBytes": 169543,
       "emailSubjectPrefix": "TradingBible TB Stock",
       "signers": [
         {
@@ -354,8 +354,8 @@
       "pdf": "pdf/tb-sec-registration-prospectus-standard.pdf",
       "docx": "docx/tb-sec-registration-prospectus-standard.docx",
       "docxProtected": "docx-protected/tb-sec-registration-prospectus-standard.docx",
-      "pdfBytes": 142526,
-      "docxBytes": 169575,
+      "pdfBytes": 143941,
+      "docxBytes": 169595,
       "emailSubjectPrefix": "TradingBible TB Stock",
       "signers": [
         {
@@ -464,8 +464,8 @@
       "pdf": "pdf/tb-audit-financial-reporting-readiness.pdf",
       "docx": "docx/tb-audit-financial-reporting-readiness.docx",
       "docxProtected": "docx-protected/tb-audit-financial-reporting-readiness.docx",
-      "pdfBytes": 140899,
-      "docxBytes": 169507,
+      "pdfBytes": 142335,
+      "docxBytes": 169527,
       "emailSubjectPrefix": "TradingBible TB Stock",
       "signers": [
         {
@@ -574,8 +574,8 @@
       "pdf": "pdf/tb-public-company-governance-ethics.pdf",
       "docx": "docx/tb-public-company-governance-ethics.docx",
       "docxProtected": "docx-protected/tb-public-company-governance-ethics.docx",
-      "pdfBytes": 142049,
-      "docxBytes": 169491,
+      "pdfBytes": 143491,
+      "docxBytes": 169509,
       "emailSubjectPrefix": "TradingBible TB Stock",
       "signers": [
         {
@@ -684,8 +684,8 @@
       "pdf": "pdf/tb-exchange-listing-ipo-playbook.pdf",
       "docx": "docx/tb-exchange-listing-ipo-playbook.docx",
       "docxProtected": "docx-protected/tb-exchange-listing-ipo-playbook.docx",
-      "pdfBytes": 142193,
-      "docxBytes": 169465,
+      "pdfBytes": 143632,
+      "docxBytes": 169487,
       "emailSubjectPrefix": "TradingBible TB Stock",
       "signers": [
         {
@@ -794,8 +794,8 @@
       "pdf": "pdf/tb-ipo-due-diligence-evidence.pdf",
       "docx": "docx/tb-ipo-due-diligence-evidence.docx",
       "docxProtected": "docx-protected/tb-ipo-due-diligence-evidence.docx",
-      "pdfBytes": 140892,
-      "docxBytes": 169498,
+      "pdfBytes": 142324,
+      "docxBytes": 169518,
       "emailSubjectPrefix": "TradingBible TB Stock",
       "signers": [
         {
@@ -904,8 +904,8 @@
       "pdf": "pdf/tb-electronic-signature-approval-protocol.pdf",
       "docx": "docx/tb-electronic-signature-approval-protocol.docx",
       "docxProtected": "docx-protected/tb-electronic-signature-approval-protocol.docx",
-      "pdfBytes": 139814,
-      "docxBytes": 169384,
+      "pdfBytes": 141245,
+      "docxBytes": 169406,
       "emailSubjectPrefix": "TradingBible TB Stock",
       "signers": [
         {
