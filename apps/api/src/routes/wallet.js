@@ -1077,11 +1077,12 @@ router.post('/pay', async (req, res) => {
 	const user = await authedUser(req);
 	if (!user) return res.status(401).json({ error: 'unauthorized' });
 	const { intent, plan } = req.body || {};
-	// TBC payments activate with the on-chain payment verifier (treasury +
-	// market price, post token launch). Until then, fail loudly — never
-	// silently take fiat for unissued tokens.
+	// TBC is a ledger-backed in-app currency, not an active payment rail for
+	// plans or checkout. Enabling it requires explicit authorisation plus a
+	// treasury/settlement policy. Until then, fail loudly — never silently
+	// convert a member's ledger balance without that approval.
 	if (intent === 'tbc' || plan === 'tbc') {
-		return res.status(503).json({ error: 'tbc_unavailable', message: 'TBC payments open at token launch.' });
+		return res.status(503).json({ error: 'tbc_unavailable', message: 'TBC payments are not enabled. Use card or bank checkout.' });
 	}
 	const isAcademy = intent === 'academy';
 	const priceMap = { premium: 19.99, premium_annual: 199, pro: 19.99, elite: 49.99, professional: 99, teams: 199, academy: 150 };
