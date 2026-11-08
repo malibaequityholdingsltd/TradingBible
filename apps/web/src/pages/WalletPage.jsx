@@ -34,6 +34,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import CardPreview from '@/components/CardPreview';
 import TbcCard from '@/components/TbcCard';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -1336,7 +1337,7 @@ export default function WalletPage() {
                 <span className="wv-chip wv-chip--amber">Programme not active</span>
               </div>
 
-              <div className="wv-two-col">
+              <div className="wv-card-products">
                 <section className="wv-card" aria-labelledby="virtual-card-title">
                   <div className="wv-card-head">
                     <div>
@@ -1346,15 +1347,8 @@ export default function WalletPage() {
                     <CreditCard className="h-4 w-4" style={{ color: 'var(--at-gold)' }} />
                   </div>
                   <div className="wv-card-body">
-                    <div className="wv-card-preview wv-card-preview--virtual">
-                      <div className="wv-card-preview-top">
-                        <img src={TBC_LOGO_URL} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                        <span>TradingBible</span>
-                        <span className="wv-card-preview-status">Not issued</span>
-                      </div>
-                      <div className="wv-card-preview-number">•••• •••• •••• ••••</div>
-                      <div className="wv-card-preview-bottom"><span>Virtual</span><span>TBC · USD</span></div>
-                    </div>
+                    <CardPreview variant="virtual" />
+                    <p className="wv-fine wv-card-size-note">Standard ISO/IEC 7810 ID-1 proportions · 85.60 × 53.98 mm</p>
                     <div className="wv-stat-row">
                       <span className="wv-stat-label">Status</span>
                       <span className="wv-chip wv-chip--amber">Not issued</span>
@@ -1384,15 +1378,8 @@ export default function WalletPage() {
                     <Wallet className="h-4 w-4" style={{ color: 'var(--at-gold)' }} />
                   </div>
                   <div className="wv-card-body">
-                    <div className="wv-card-preview wv-card-preview--physical">
-                      <div className="wv-card-preview-top">
-                        <img src={TBC_LOGO_URL} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                        <span>TradingBible</span>
-                        <span className="wv-card-preview-status">Not issued</span>
-                      </div>
-                      <div className="wv-card-preview-number">•••• •••• •••• ••••</div>
-                      <div className="wv-card-preview-bottom"><span>Physical</span><span>TBC · USD</span></div>
-                    </div>
+                    <CardPreview variant="physical" />
+                    <p className="wv-fine wv-card-size-note">Standard ISO/IEC 7810 ID-1 proportions · 85.60 × 53.98 mm</p>
                     <div className="wv-stat-row">
                       <span className="wv-stat-label">Status</span>
                       <span className="wv-chip wv-chip--amber">Not issued</span>

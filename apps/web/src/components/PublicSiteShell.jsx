@@ -18,6 +18,7 @@ const NAV = [
   ['Academy', '/academy'],
   ['Community', '/community'],
   ['Company', '/about'],
+  ['Fund', '/fund'],
   ['Investors', '/investors'],
   ['TBC', '/tbc'],
 ];

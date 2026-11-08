@@ -76,6 +76,7 @@ const COLUMNS = [
     headingKey: 'fot.h_company',
     links: [
       { labelKey: 'fot.l_about_tradingbible', to: '/about' },
+      { label: 'TradingBible Capital', to: '/fund' },
       { labelKey: 'fot.l_our_mission', to: '/about#mission' },
       { labelKey: 'fot.l_blog', to: '/blog' },
       { labelKey: 'fot.l_help_center', to: '/faq' },
@@ -254,12 +255,12 @@ export default function Footer({ compact = false }) {
               <h4 className="mb-3 font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--at-gold)]">{t(col.headingKey)}</h4>
               <ul className="space-y-1.5">
                 {col.links.map((link) => (
-                  <li key={`${col.headingKey}-${link.labelKey}`}>
+                  <li key={`${col.headingKey}-${link.labelKey || link.label}`}>
                     <Link
                       to={link.member ? memberHref(link.to) : link.to}
                       className="tb-footer-link group inline-flex items-start gap-1.5 text-[12.5px] leading-6 text-[var(--at-mut)] transition hover:text-[var(--at-ink)]"
                     >
-                      <span>{t(link.labelKey)}</span>
+                      <span>{link.label || t(link.labelKey)}</span>
                       {link.member && <Lock className="mt-1.5 h-2.5 w-2.5 shrink-0 text-[var(--at-mut-2)] group-hover:text-[var(--at-gold)]" />}
                       {link.badge && <span className="mt-1.5 rounded-full border border-[var(--at-line)] bg-[var(--at-gold-soft)] px-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.08em] text-[var(--at-gold)]">{link.badge}</span>}
                     </Link>

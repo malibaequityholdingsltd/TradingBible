@@ -82,6 +82,7 @@ export default function AboutPage() {
               <div>
                 <h2 className="text-lg font-bold tracking-tight text-[#f0ecdd]">{t('abt.ownership', null, 'Owned and operated by TradingBible Holdings, Inc.')}</h2>
                 <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">TradingBible Holdings, Inc. is a Delaware corporation and the holding company that owns and operates TradingBible. The company is private and not publicly traded. TB is a proposed future ticker; it is not reserved, listed or approved. TBC is a separate proposed token, not equity, and token operations remain disabled.</p>
+                <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">TradingBible Capital is the proposed hedge-fund and asset-management division. No fund vehicle, outside capital, AUM, track record or investor offering exists today. <Link to="/fund" className="font-semibold text-[#d4af37] hover:underline">Read the fund status</Link>.</p>
               </div>
             </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">

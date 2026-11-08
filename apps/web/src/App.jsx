@@ -58,6 +58,7 @@ const AlertsPage = lazy(() => import('./pages/AlertsPage'));
 const SignalsPage = lazy(() => import('./pages/SignalsPage'));
 const EconomicCalendarPage = lazy(() => import('./pages/EconomicCalendarPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
+const FundPage = lazy(() => import('./pages/FundPage'));
 const PublicFeaturesPage = lazy(() => import('./pages/PublicFeaturePages').then((m) => ({ default: m.FeatureHubPage })));
 const PublicFeatureDetailPage = lazy(() => import('./pages/PublicFeaturePages').then((m) => ({ default: m.PublicFeaturePage })));
 const CommunityPublicPage = lazy(() => import('./pages/PublicFeaturePages').then((m) => ({ default: m.CommunityPublicPage })));
@@ -366,6 +367,7 @@ function RoutesWithBoundary() {
                     <Route path="/features/:slug" element={<PublicFeatureDetailPage />} />
                     <Route path="/community" element={<CommunityPublicPage />} />
                     <Route path="/about" element={<AboutPage />} />
+                    <Route path="/fund" element={<FundPage />} />
                     <Route path="/guides" element={<GuidesPage />} />
                     <Route path="/webinars" element={<WebinarsPage />} />
                     <Route path="/academy" element={<AcademyInfoPage />} />
