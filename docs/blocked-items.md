@@ -163,7 +163,15 @@ These are not bugs and must not be “fixed” by inventing data:
 - Optional D&B: `DNB_CLIENT_ID`, `DNB_CLIENT_SECRET`.
 - Optional Circle x402: `CIRCLE_X402_SELLER_ADDRESS` and related settings.
 
-## 6. Current safe state
+## 6. Production verification (8 November 2026)
+
+- Web assets deployed; `/`, `/fund`, `/investors`, `/academy`, `/pricing` and `/llms.txt` return `200`.
+- API health returns `200`; PM2 `tradingbible-api` is online.
+- Production TV geometry verified at 1440×900: expanded panel left/top sat on the sidebar/topbar lines and stayed inside the viewport.
+- Production card previews verified at the ISO/IEC 7810 ID-1 ratio (`1.586`), with `NOT ISSUED` / `PREVIEW ONLY` and no long digit sequence.
+- Production acceptance still used mocked Supabase auth/API for the authenticated checks; see §2.6. No real charge, card issuance or TBC payment was performed.
+
+## 7. Current safe state
 
 The app can be deployed and used with the current truthful states:
 
