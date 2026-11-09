@@ -36,15 +36,15 @@ export function PageBar({ meta = [], actions, children, className = '' }) {
 	);
 }
 
-export function PageHero({ kicker, kickerIcon, title, accent, subtitle, stats, actions, children }) {
+export function PageHero({ kicker, kickerIcon, title, accent, subtitle, stats, actions, children, titleAs: TitleTag = 'h2' }) {
 	return (
 		<section className="ex-page-head">
 			<div className="ex-page-head__copy">
 				{kicker && <Kicker icon={kickerIcon}>{kicker}</Kicker>}
 				{title && (
-					<h2 className="ex-page-title">
+					<TitleTag className="ex-page-title">
 						{title} {accent && <span style={{ color: 'var(--ex-accent)' }}>{accent}</span>}
-					</h2>
+					</TitleTag>
 				)}
 				{subtitle && <p className="ex-page-sub">{subtitle}</p>}
 				{stats && stats.length > 0 && (

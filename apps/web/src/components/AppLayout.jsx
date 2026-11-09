@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { avatarUrl } from '@/lib/avatar';
-import { displayInitial } from '@/lib/displayName';
+import { displayName, displayInitial } from '@/lib/displayName';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useI18n } from '@/lib/i18n';
 import OnboardingTutorial from '@/components/OnboardingTutorial';
@@ -21,7 +21,7 @@ import ThemeSwitcher from '@/components/ThemeSwitcher';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { homeRouteForUser } from '@/lib/homeRoute';
-import { meetsPlan } from '@/lib/entitlements';
+import { isStaffUser, meetsPlan } from '@/lib/entitlements';
 import { isAdminPreview, exitAdminPreview } from '@/lib/adminPreview';
 import { WL_PRESETS, WL_DEFAULTS, applyWhiteLabel, loadLocalTheme, saveLocalTheme } from '@/lib/whitelabel';
 import { usePlatformSettings, featureForRoute } from '@/lib/platformSettings';
@@ -42,6 +42,21 @@ const AppChromeTitleContext = createContext(null);
 
 export function AppChromeShell({ children }) {
   const [title, setTitle] = useState('');
+  const { search } = useLocation();
+  // Staff desks embed member pages in a same-origin iframe. Keep the page
+  // body, but do not mount a second sidebar, topbar, dock or ticker.
+  const embedded = new URLSearchParams(search).get('embed') === '1';
+  if (embedded) {
+    return (
+      <AppChromeTitleContext.Provider value={setTitle}>
+        <div className="tb-app-shell ex-shell ex-embed-shell">
+          <main className="ex-main ex-main--embed">
+            <div className="ex-main__inner">{children}</div>
+          </main>
+        </div>
+      </AppChromeTitleContext.Provider>
+    );
+  }
   return (
     <AppLayoutContent title={title || 'TradingBible'}>
       <AppChromeTitleContext.Provider value={setTitle}>{children}</AppChromeTitleContext.Provider>
@@ -198,8 +213,9 @@ function AppLayoutContent({ children, title }) {
   const signOut = () => { logout(); nav('/'); };
 
   const isAdmin = user?.role === 'admin';
+  const isStaff = isStaffUser(user);
   const adminPreview = isAdmin && isAdminPreview();
-  const isSubscriber = isAdmin || ['pro', 'premium', 'elite', 'professional', 'teams'].includes((user?.plan || '').toLowerCase());
+  const isSubscriber = isAdmin || isStaff || ['pro', 'premium', 'elite', 'professional', 'teams'].includes((user?.plan || '').toLowerCase());
   const canSeeSignals = isAdmin || features.signals !== false;
   const avatar = avatarUrl(user);
   const homeTo = homeRouteForUser(user);
@@ -305,7 +321,7 @@ function AppLayoutContent({ children, title }) {
   const accountMenu = (
     <DropdownMenuContent align="end" sideOffset={8} className="tb-avatarmenu ex-menu w-60 rounded-[8px] border border-[var(--ex-line)] bg-[var(--ex-panel)] p-1 text-[var(--ex-text)] shadow-[var(--ex-shadow)]">
       <DropdownMenuLabel className="px-2.5 py-2">
-        <span className="block truncate text-[11px] font-semibold text-[var(--ex-text)]">{user?.name || user?.email || 'Account'}</span>
+        <span className="block truncate text-[11px] font-semibold text-[var(--ex-text)]">{displayName(user) || user?.email || 'Account'}</span>
         <span className="mt-0.5 block truncate text-[10px] text-[var(--ex-muted)]">{user?.email || ''}</span>
       </DropdownMenuLabel>
       <DropdownMenuSeparator className="my-1 bg-[var(--ex-line)]" />
@@ -335,6 +351,11 @@ function AppLayoutContent({ children, title }) {
       {isAdmin && (
         <DropdownMenuItem onClick={() => nav('/admin')} className="ex-menu__item">
           <Building2 /> <span>Admin console</span>
+        </DropdownMenuItem>
+      )}
+      {(isStaff || isAdmin) && (
+        <DropdownMenuItem onClick={() => nav('/staff')} className="ex-menu__item">
+          <ShieldCheck /> <span>Staff workspace</span>
         </DropdownMenuItem>
       )}
       <DropdownMenuSeparator className="my-1 bg-[var(--ex-line)]" />
@@ -373,7 +394,7 @@ function AppLayoutContent({ children, title }) {
               {avatar ? <img src={avatar} alt="" /> : initial}
             </span>
             <span className="ex-sidebar__footer-text">
-              <strong>{user?.name || user?.username || 'Account'}</strong>
+              <strong>{displayName(user) || user?.username || 'Account'}</strong>
               <span>{isAdmin ? 'Administrator' : (user?.plan || 'Free')} · {isAdmin ? 'Full access' : (isSubscriber ? 'Active' : 'Upgrade')}</span>
             </span>
           </Link>

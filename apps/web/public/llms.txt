@@ -56,7 +56,6 @@
 - [Launch Public](/launch): TradingBible application page.
 - [Leaderboard](/leaderboard): TradingBible application page.
 - [Login](/login): TradingBible application page.
-- [Navigate](/teacher): TradingBible application page.
 - [Onboarding](/onboarding): TradingBible application page.
 - [Order Flow](/app/orderflow): TradingBible application page.
 - [Paper](/app/paper): TradingBible application page.
@@ -77,7 +76,7 @@
 - [Signals](/app/signals): TradingBible application page.
 - [Signup](/signup): TradingBible application page.
 - [Staff Id Cards](/admin/staff-id-cards): TradingBible application page.
-- [Staff Portal](/staff/*): TradingBible application page.
+- [Staff Portal](/staff): TradingBible application page.
 - [Staff Profile Gate](/staff/:id): TradingBible application page.
 - [Stock Tb](/stock/TB): TradingBible application page.
 - [Student Dashboard](/student): TradingBible application page.

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, ArrowRight, User, KeyRound, BookOpen, ShieldCheck, LineChart, Bot, Sparkles, Loader2, Link2, Phone, CalendarDays } from 'lucide-react';
 import { MARKETS, EXPERIENCE, GOALS } from '@/lib/mockData';
 import { useAuth } from '@/hooks/useAuth';
@@ -598,9 +598,10 @@ export function LoginPage() {
         step={needTotp ? 2 : (sent ? 2 : 1)}
         totalSteps={2}
         footer={
-          <p className="mt-5 text-center text-sm text-[#8a8577]">
-            {t('auth.newTo')} <Link to="/signup" className="font-medium text-[#d4af37] hover:underline">{t('auth.signup')}</Link>
-          </p>
+          <div className="mt-5 space-y-2 text-center text-sm text-[#8a8577]">
+            <p>{t('auth.newTo')} <Link to="/signup" className="font-medium text-[#d4af37] hover:underline">{t('auth.signup')}</Link></p>
+            <p className="text-xs"><Link to="/reset" className="text-[#8a8577] hover:text-[#d4af37] hover:underline">Trouble signing in?</Link></p>
+          </div>
         }
       >
         {linkState?.status === 'pending' && (
@@ -687,6 +688,7 @@ export function SignupPage() {
   const [busy, setBusy] = useState(false);
   const [oauthBusy, setOauthBusy] = useState('');
   const [sent, setSent] = useState(false);
+  const [accepted, setAccepted] = useState(false);
   const [cooldownUntil, setCooldownUntil] = useState(0);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
 
@@ -738,6 +740,10 @@ export function SignupPage() {
         const tel = phone.trim();
         if (!first || !last) {
           toast({ variant: 'destructive', title: t('auth.firstName', null, 'First name'), description: t('auth.nameRequired', null, 'Please enter your first and last name.') });
+          return;
+        }
+        if (!accepted) {
+          toast({ variant: 'destructive', title: 'Accept the terms', description: 'You must accept the Terms of Service and Privacy Policy to create an account.' });
           return;
         }
         if (!mail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) {
@@ -894,6 +900,18 @@ export function SignupPage() {
               <p className="rounded-xl border border-red-400/25 bg-red-400/[0.05] p-2.5 text-center text-[11px] leading-relaxed text-[#c9c4b4]">
                 <span className="font-bold text-red-400">Use your real government identity.</span> Name and date of birth are used for KYC verification and cannot be changed later — any mistake means opening a new account.
               </p>
+              <label className="flex items-start gap-2 rounded-xl border border-white/10 bg-white/[0.025] p-3 text-[11px] leading-relaxed text-[#a9a494]">
+                <input
+                  type="checkbox"
+                  checked={accepted}
+                  onChange={(event) => setAccepted(event.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[#d4af37]"
+                  required
+                />
+                <span>
+                  I agree to the <Link to="/terms" target="_blank" rel="noreferrer" className="font-medium text-[#d4af37] hover:underline">Terms of Service</Link> and <Link to="/policy" target="_blank" rel="noreferrer" className="font-medium text-[#d4af37] hover:underline">Privacy Policy</Link>, and confirm the identity details above are mine.
+                </span>
+              </label>
               <p className="text-center text-xs text-[#8a8577]">{t('auth.codeHint')}</p>
             </>
           )}
@@ -905,13 +923,18 @@ export function SignupPage() {
               onComplete={() => submit()}
             />
           )}
-          <GoldButton disabled={busy || (!sent && cooldownSeconds > 0)} className="w-full btn-spotlight">{busy ? t('auth.e.plsWait') : (sent ? t('auth.verifyContinue') : t('auth.sendCode'))} <ArrowRight className="h-4 w-4" /></GoldButton>
+          <GoldButton disabled={busy || (!sent && (!accepted || cooldownSeconds > 0))} className="w-full btn-spotlight">{busy ? t('auth.e.plsWait') : (sent ? t('auth.verifyContinue') : t('auth.sendCode'))} <ArrowRight className="h-4 w-4" /></GoldButton>
         </form>
         {sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={resend} className="text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? t('auth.e.resendIn', { n: cooldownSeconds }) : t('auth.e.resend')}</button></div>}
         {!sent && cooldownSeconds <= 0 && (
-          <Card className="mt-4 p-3 sm:p-4">
-            <ProviderButtons busy={oauthBusy} t={t} onGoogle={() => startOAuth('google')} onDiscord={() => startOAuth('discord')} />
-          </Card>
+          <>
+            <Card className="mt-4 p-3 sm:p-4">
+              <ProviderButtons busy={oauthBusy} t={t} onGoogle={() => startOAuth('google')} onDiscord={() => startOAuth('discord')} />
+            </Card>
+            <p className="mt-2 text-center text-[10px] leading-relaxed text-[#6f6b60]">
+              Continuing with a provider means you agree to the <a href="/terms" target="_blank" rel="noreferrer" className="text-[#9c8b55] hover:underline">Terms</a> and <a href="/policy" target="_blank" rel="noreferrer" className="text-[#9c8b55] hover:underline">Privacy Policy</a>.
+            </p>
+          </>
         )}
         {cooldownSeconds > 0 && <p className="mt-2 text-center text-xs text-[#8a8577]">{t('auth.e.coolNote', { dur: formatCooldownDuration(cooldownSeconds) })}</p>}
       </AuthFormFrame>
@@ -921,7 +944,31 @@ export function SignupPage() {
 }
 
 export function ResetPage() {
-  return <Navigate to="/login" replace />;
+  const { settings } = usePlatformSettings();
+  const { t } = useI18n();
+  const support = String(settings.supportEmail || 'support@tradingbible.app');
+  return (
+    <Shell>
+      <div className="mx-auto w-full max-w-md">
+        <Card className="p-6 sm:p-7">
+          <Kicker>Account recovery</Kicker>
+          <h1 className="mt-3 text-2xl font-bold sm:text-3xl">There is no password to reset.</h1>
+          <p className="mt-2 text-sm leading-relaxed text-[#a9a494]">
+            TradingBible signs you in with a one-time email code, Google, Discord or a passkey. Use the option you already control — there is no password stored for us to reset.
+          </p>
+          <div className="mt-5 space-y-2.5 text-xs leading-relaxed text-[#8a8577]">
+            <p><strong className="text-[#d4cebd]">Still have your email?</strong> Return to sign in and request a fresh six-digit code.</p>
+            <p><strong className="text-[#d4cebd]">Lost a passkey?</strong> Sign in with the email code instead, then add a new passkey in Security.</p>
+            <p><strong className="text-[#d4cebd]">Lost access to the email?</strong> Email support from a contact address you still control. We verify identity before changing account access.</p>
+          </div>
+          <div className="mt-6 flex flex-col gap-2">
+            <GoldButton to="/login" className="w-full">{t('auth.login')} <ArrowRight className="h-4 w-4" /></GoldButton>
+            <GhostButton href={`mailto:${support}?subject=Account%20recovery`} className="w-full">Email {support}</GhostButton>
+          </div>
+        </Card>
+      </div>
+    </Shell>
+  );
 }
 
 const Group = ({ title, options, value, onChange }) => (

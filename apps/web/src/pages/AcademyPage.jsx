@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
 	PlayCircle, Clock, CheckCircle2, Lock, GraduationCap, Video, Route, Award, Sparkles,
 	Rocket, BookOpen, Bot, ArrowLeft, RotateCcw, ChevronRight, Trophy, Calendar, Radio, Loader2,
@@ -1045,6 +1045,9 @@ function TopicExplorer({ onStartPath }) {
 // ── Main page ────────────────────────────────────────────────────────
 export default function AcademyPage() {
 	const { t } = useI18n();
+	const [searchParams] = useSearchParams();
+	const requestedTab = String(searchParams.get('tab') || '').toLowerCase();
+	const initialTab = ['learn', 'topics', 'webinars', 'family', 'certificates'].includes(requestedTab) ? requestedTab : 'learn';
 	const { toast } = useToast();
 	const { user } = useAuth();
 	const isAdmin = user?.role === 'admin'; // admins enter free — everyone else chooses a paid tier
@@ -1059,7 +1062,11 @@ export default function AcademyPage() {
 	const [generating, setGenerating] = useState(null); // pathKey being generated
 	const [rsvps, setRsvps] = useState([]);
 	const [attended, setAttended] = useState([]);
-	const [tab, setTab] = useState('learn');
+	const [tab, setTab] = useState(initialTab);
+
+	useEffect(() => {
+		if (requestedTab && ['learn', 'topics', 'webinars', 'family', 'certificates'].includes(requestedTab)) setTab(requestedTab);
+	}, [requestedTab]);
 	const [trackFilter, setTrackFilter] = useState('all');
 	const [schoolFilter, setSchoolFilter] = useState('all');
 	const [family, setFamily] = useState(null);
@@ -1090,9 +1097,12 @@ export default function AcademyPage() {
 		setLoadError(null);
 		try {
 			const res = await getAcademyAccess();
-			setAccess(res.access);
-			setTier(res.tier || null);
-			if (res.access) {
+			// Treat a missing payload as "no access" instead of leaving the
+			// studio on a loader forever. The paywall is the correct safe state.
+			const hasAccess = res?.access === true;
+			setAccess(hasAccess);
+			setTier(res?.tier || null);
+			if (hasAccess) {
 				refreshProgress();
 				refreshFamily();
 			} else {

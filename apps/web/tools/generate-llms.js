@@ -180,11 +180,13 @@ function main() {
 
 	if (pages.length === 0) {
 		const routes = extractRoutes(appJsxPath);
-		pages = [...routes.entries()].map(([componentName, url]) => ({
-			url,
-			title: routeComponentToTitle(componentName),
-			description: 'TradingBible application page.',
-		}));
+		pages = [...routes.entries()]
+			.filter(([componentName, url]) => componentName !== 'Navigate' && url !== '/*')
+			.map(([componentName, url]) => ({
+				url: url.endsWith('/*') ? url.slice(0, -2) || '/' : url,
+				title: routeComponentToTitle(componentName),
+				description: 'TradingBible application page.',
+			}));
 		if (pages.length === 0) {
 			pages = [{ url: '/', title: 'TradingBible', description: 'TradingBible application.' }];
 		}

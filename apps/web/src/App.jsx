@@ -119,6 +119,7 @@ const BacktestPage = lazy(() => import('./pages/BacktestPage'));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
 const PaperPage = lazy(() => import('./pages/PaperPage'));
 const StaffBioPage = lazy(() => import('./pages/StaffBioPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const StaffIdCardsPage = lazy(() => import('./pages/StaffIdCardsPage'));
 
 // Legacy routes merged into Terminal Pro (?symbol= is preserved).
@@ -148,10 +149,16 @@ function isSubscriber(user) {
     return ['pro', 'premium', 'elite', 'professional', 'teams'].includes((user.plan || '').toLowerCase());
 }
 
+function LoginRedirect() {
+    const { pathname, search } = useLocation();
+    const next = `${pathname}${search}`;
+    return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
+}
+
 function SubscriberProtected({ children }) {
     const { isAuthed, isAuthReady, user } = useAuth();
     if (!isAuthReady) return <PageFallback />;
-    if (!isAuthed) return <Navigate to="/login" replace />;
+    if (!isAuthed) return <LoginRedirect />;
     if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
     if (!isSubscriber(user)) return <Navigate to="/app/welcome" replace />;
     return children;
@@ -167,7 +174,7 @@ function PlanProtected({ plan, gate, children }) {
     const { planGates } = usePlatformSettings();
     const effective = (gate && planGates?.[gate]) || plan;
     if (!isAuthReady) return <PageFallback />;
-    if (!isAuthed) return <Navigate to="/login" replace />;
+    if (!isAuthed) return <LoginRedirect />;
     if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
     if (!isSubscriber(user)) return <Navigate to="/app/welcome" replace />;
     if (!meetsPlan(user, effective)) return <Navigate to="/pricing" replace />;
@@ -177,7 +184,7 @@ function PlanProtected({ plan, gate, children }) {
 function Protected({ children }) {
     const { isAuthed, isAuthReady, user } = useAuth();
     if (!isAuthReady) return <PageFallback />;
-    if (!isAuthed) return <Navigate to="/login" replace />;
+    if (!isAuthed) return <LoginRedirect />;
     // Admins live in their own portal, unless they entered "View app" preview.
     if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
     return children;
@@ -186,7 +193,7 @@ function Protected({ children }) {
 function AdminProtected({ children }) {
     const { isAuthed, isAuthReady, user } = useAuth();
     if (!isAuthReady) return <PageFallback />;
-    if (!isAuthed) return <Navigate to="/login" replace />;
+    if (!isAuthed) return <LoginRedirect />;
     // Subscribers cannot access the admin portal.
     if (user?.role !== 'admin') return <Navigate to="/app" replace />;
     return children;
@@ -195,9 +202,10 @@ function AdminProtected({ children }) {
 function StaffProtected({ children }) {
   const { isAuthed, isAuthReady, user } = useAuth();
   if (!isAuthReady) return <PageFallback />;
-  if (!isAuthed) return <Navigate to="/login" replace />;
-  // Only staff (teacher/trader accountType) can access staff portal
-  if (user?.accountType !== 'teacher' && user?.accountType !== 'trader') return <Navigate to="/app" replace />;
+  if (!isAuthed) return <LoginRedirect />;
+  // Hired staff are flagged by the admin hire endpoint. A member's
+  // accountType may be "trader", so it is never proof of staff access.
+  if (user?.role !== 'admin' && !isStaffUser(user)) return <Navigate to="/app" replace />;
   return children;
 }
 
@@ -217,7 +225,7 @@ function StaffProfileGate() {
 function PaidProtected({ children }) {
     const { isAuthed, isAuthReady, user } = useAuth();
     if (!isAuthReady) return <PageFallback />;
-    if (!isAuthed) return <Navigate to="/login" replace />;
+    if (!isAuthed) return <LoginRedirect />;
     if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
     if (!isSubscriber(user)) return <Navigate to="/app/welcome" replace />;
     return children;
@@ -231,7 +239,7 @@ function PaidProtected({ children }) {
 function EverPaidProtected({ children }) {
     const { isAuthed, isAuthReady, user } = useAuth();
     if (!isAuthReady) return <PageFallback />;
-    if (!isAuthed) return <Navigate to="/login" replace />;
+    if (!isAuthed) return <LoginRedirect />;
     if (user?.role === 'admin' && !isAdminPreview()) return <Navigate to="/admin" replace />;
     // Allow if subscriber OR has ever made a successful payment (hasEverPaid flag)
     if (!isSubscriber(user) && !user?.hasEverPaid) return <Navigate to="/app/welcome" replace />;
@@ -285,9 +293,10 @@ function MaintenanceGate({ children }) {
 }
 
 function AppChrome() {
-    const { pathname } = useLocation();
+    const { pathname, search } = useLocation();
+    const embedded = new URLSearchParams(search).get('embed') === '1';
     const isPublicStaffProfile = /^\/staff\/[0-9a-f-]{36}\/?$/i.test(pathname);
-    const hideTicker = ['/login', '/signup', '/reset', '/onboarding'].includes(pathname) || isPublicStaffProfile;
+    const hideTicker = embedded || ['/login', '/signup', '/reset', '/onboarding'].includes(pathname) || isPublicStaffProfile;
     // SI coach + TV widgets live here (above the per-route error boundary)
     // so they mount ONCE and survive page navigation without reloading
     // videos, chats, drag positions or panel state. App routes only —
@@ -304,9 +313,9 @@ function AppChrome() {
             {!hideTicker && <GlobalTicker />}
             <AlertMonitor />
             <ScrollToTop />
-            {inApp && features.aiCoach !== false && <ErrorBoundary fallback={null}><Suspense fallback={null}><LiveChatWidget /></Suspense></ErrorBoundary>}
+            {!embedded && inApp && features.aiCoach !== false && <ErrorBoundary fallback={null}><Suspense fallback={null}><LiveChatWidget /></Suspense></ErrorBoundary>}
             {pathname.startsWith('/admin') && <ErrorBoundary fallback={null}><Suspense fallback={null}><AdminCompanyWidget /></Suspense></ErrorBoundary>}
-            {pathname !== '/tv' && inApp && <ErrorBoundary fallback={null}><Suspense fallback={null}><TvWidget /></Suspense></ErrorBoundary>}
+            {!embedded && pathname !== '/tv' && inApp && <ErrorBoundary fallback={null}><Suspense fallback={null}><TvWidget /></Suspense></ErrorBoundary>}
         </>
     );
 }
@@ -496,6 +505,8 @@ function RoutesWithBoundary() {
                     <Route path="/admin/legal-vault" element={<AdminProtected><AdminTbcDocumentsPage /></AdminProtected>} />
                     <Route path="/admin/tb-stock-documents" element={<AdminProtected><AdminTbStockDocumentsPage /></AdminProtected>} />
                     <Route path="/staff/*" element={<StaffProtected><StaffPortal /></StaffProtected>} />
+                    <Route path="/home" element={<Navigate to="/" replace />} />
+                    <Route path="*" element={<NotFoundPage />} />
                 </Routes>
             </Suspense>
         </ErrorBoundary>
