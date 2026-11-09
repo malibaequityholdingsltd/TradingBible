@@ -58,6 +58,10 @@ const AlertsPage = lazy(() => import('./pages/AlertsPage'));
 const SignalsPage = lazy(() => import('./pages/SignalsPage'));
 const EconomicCalendarPage = lazy(() => import('./pages/EconomicCalendarPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
+const TeamPage = lazy(() => import('./pages/TeamPage'));
+const ProgramsPublicPage = lazy(() => import('./pages/ProgramsPublicPage'));
+const AffiliatesPublicPage = lazy(() => import('./pages/AffiliatesPublicPage'));
+const LaunchPublicPage = lazy(() => import('./pages/LaunchPublicPage'));
 const FundPage = lazy(() => import('./pages/FundPage'));
 const PublicFeaturesPage = lazy(() => import('./pages/PublicFeaturePages').then((m) => ({ default: m.FeatureHubPage })));
 const PublicFeatureDetailPage = lazy(() => import('./pages/PublicFeaturePages').then((m) => ({ default: m.PublicFeaturePage })));
@@ -367,6 +371,10 @@ function RoutesWithBoundary() {
                     <Route path="/features/:slug" element={<PublicFeatureDetailPage />} />
                     <Route path="/community" element={<CommunityPublicPage />} />
                     <Route path="/about" element={<AboutPage />} />
+                    <Route path="/team" element={<TeamPage />} />
+                    <Route path="/programs" element={<ProgramsPublicPage />} />
+                    <Route path="/affiliates" element={<AffiliatesPublicPage />} />
+                    <Route path="/launch" element={<LaunchPublicPage />} />
                     <Route path="/fund" element={<FundPage />} />
                     <Route path="/guides" element={<GuidesPage />} />
                     <Route path="/webinars" element={<WebinarsPage />} />

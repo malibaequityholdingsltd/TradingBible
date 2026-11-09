@@ -74,7 +74,7 @@ function ModuleGrid({ limit }) {
 function DocumentCard({ doc, onRead }) {
   const execution = doc.execution;
   const signed = execution?.signed === true;
-  const executionLabel = signed ? 'Executed copy' : execution?.state && execution.state !== 'not_prepared' ? execution.label : '';
+  const executionLabel = signed ? 'Execution recorded' : execution?.state && execution.state !== 'not_prepared' ? execution.label : '';
   return (
     <Card className="flex h-full flex-col p-4">
       <div className="flex items-start gap-2.5">
@@ -91,18 +91,18 @@ function DocumentCard({ doc, onRead }) {
           <p className="mt-1 text-[11px] leading-relaxed text-[#8a8577]">{doc.summary}</p>
           {signed && (
             <p className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-emerald-300">
-              <ShieldCheck className="h-3 w-3" /> Signed record served automatically
+              <ShieldCheck className="h-3 w-3" /> Execution status recorded · signatory details withheld
             </p>
           )}
         </div>
       </div>
-      <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-3">
+      <div className="mt-auto flex flex-wrap items-center gap-2 pt-3">
         <button type="button" onClick={() => onRead?.(doc)} className="inline-flex min-h-[34px] items-center gap-1 rounded-lg bg-[#d4af37]/10 px-2.5 text-[11px] font-bold text-[#d4af37] hover:bg-[#d4af37]/15">
-          <BookOpen className="h-3.5 w-3.5" /> {signed ? 'Read executed' : 'Read'}
+          <BookOpen className="h-3.5 w-3.5" /> Read in app
         </button>
-        <a href={publicDocxUrl(doc.slug)} download={`${doc.slug}-${signed ? 'executed' : 'readonly'}.docx`} className="inline-flex min-h-[34px] items-center gap-1 rounded-lg border border-white/10 px-2.5 text-[11px] font-semibold text-[#c9c4b4] hover:border-[#d4af37]/30 hover:text-[#f0ecdd]">
-          <FileText className="h-3.5 w-3.5" /> {signed ? 'Executed DOCX' : 'Read-only DOCX'}
-        </a>
+        <span className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-[#6a665a]">
+          <Lock className="h-3 w-3" /> Read-only
+        </span>
       </div>
     </Card>
   );
@@ -217,8 +217,8 @@ export default function TbcPublicPage({ section = 'overview' }) {
           open={Boolean(selectedDoc)}
           doc={selectedDoc}
           docxUrl={selectedDoc ? publicDocxUrl(selectedDoc.slug) : ''}
-          onDownloadDocx={selectedDoc ? () => { window.location.href = publicDocxUrl(selectedDoc.slug); } : undefined}
           onClose={() => setSelectedDoc(null)}
+          redactedSignatories
         />
         {section === 'overview' && <Overview docs={documents} docsLoading={docsLoading} docsError={docsError} onRead={setSelectedDoc} />}
         {section === 'whitepaper' && <Whitepaper whitepaper={whitepaper} docsLoading={docsLoading} onRead={setSelectedDoc} />}
@@ -394,7 +394,7 @@ function Whitepaper({ whitepaper, docsLoading, onRead }) {
   return (
     <>
       <div className="pt-3 sm:pt-5">
-        <PageHero kickerIcon={BookOpen} kicker="Official summary · P-01" title="TBC Whitepaper" accent="& Utility Roadmap" subtitle="Issuer overview, functional design and delivery milestones. Read the current draft in the Word reader, or download a read-only Word copy." actions={<><GoldButton to="/tbc/documents">Document library <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/tbc/faqs">FAQs</GhostButton></>} />
+        <PageHero kickerIcon={BookOpen} kicker="Official summary · P-01" title="TBC Whitepaper" accent="& Utility Roadmap" subtitle="Issuer overview, functional design and delivery milestones. Read the current draft in the secure in-app Word reader. No download is offered." actions={<><GoldButton to="/tbc/documents">Document library <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/tbc/faqs">FAQs</GhostButton></>} />
       </div>
       <div className="mt-4"><TbcProposalNotice /></div>
       <div className="mt-5 grid gap-4 lg:grid-cols-[1.35fr_.65fr]">
@@ -412,7 +412,7 @@ function Whitepaper({ whitepaper, docsLoading, onRead }) {
                 <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/10 text-[#d4af37]"><FileText className="h-7 w-7" /></span>
                 <div className="mt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-[#d4af37]">Word document · read-only</div>
                 <h3 className="mt-2 text-lg font-bold text-[#f0ecdd]">{whitepaper.title}</h3>
-                <p className="mt-2 text-xs leading-relaxed text-[#8a8577]">Opens in the secure Word reader. The downloaded copy has editing restricted; no PDF copy is distributed.</p>
+                <p className="mt-2 text-xs leading-relaxed text-[#8a8577]">Opens in the secure in-app Word reader. Signatory details are withheld and no document download is offered.</p>
                 <button type="button" onClick={() => onRead(whitepaper)} className="mt-4 inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 text-xs font-bold text-[#121006]">
                   <BookOpen className="h-4 w-4" /> Open Word reader
                 </button>
@@ -421,7 +421,7 @@ function Whitepaper({ whitepaper, docsLoading, onRead }) {
           )}
           {!docsLoading && !whitepaper && <div className="p-5"><Note icon={TriangleAlert}>The whitepaper is not available from the document service right now. Please try again shortly.</Note></div>}
           <div className="flex flex-wrap items-center gap-2 border-t border-white/[0.07] p-3">
-            {whitepaper && <><button type="button" onClick={() => onRead(whitepaper)} className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-[#d4af37] px-3 text-xs font-bold text-[#0a0a0f]"><BookOpen className="h-3.5 w-3.5" /> Read in Word</button><a href={publicDocxUrl(whitepaper.slug)} download={`${whitepaper.slug}-readonly.docx`} className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-white/10 px-3 text-xs font-semibold text-[#c9c4b4]"><Download className="h-3.5 w-3.5" /> Read-only DOCX</a></>}
+            {whitepaper && <><button type="button" onClick={() => onRead(whitepaper)} className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-[#d4af37] px-3 text-xs font-bold text-[#0a0a0f]"><BookOpen className="h-3.5 w-3.5" /> Read in app</button><span className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-white/10 px-3 text-xs font-semibold text-[#8a8577]"><Lock className="h-3.5 w-3.5" /> No download</span></>}
           </div>
         </Card>
         <div className="space-y-3">
@@ -525,8 +525,8 @@ function Documents({ docs, loading, error, onRead }) {
       <div className="mt-4"><TbcProposalNotice /></div>
       <div className="mt-5"><DocumentLibrary documents={docs} loading={loading} error={error} onRead={onRead} /></div>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <Card className="p-4"><SectionHead icon={ShieldCheck} title="Controlled legal vault" /><p className="text-xs leading-relaxed text-[#8a8577]">The 26 corporate and governance instruments include confidential issuer information such as tax identifiers, registered-office details and signature blocks. They are streamed only to an authenticated administrator — not bundled into the public site.</p><div className="mt-3">{user?.role === 'admin' ? <Link to="/admin/legal-vault" className="text-xs font-bold text-[#d4af37] hover:underline">Administrator legal vault →</Link> : <span className="text-[10px] text-[#6a665a]">Access is limited to authenticated administrators.</span>}</div></Card>
-        <Card className="p-4"><SectionHead icon={BookOpen} title="How to read a controlled document" /><div className="space-y-1.5 text-[11px] leading-relaxed text-[#8a8577]">{['Check the document number, version and date.', 'Read the status and signature block: a reviewer acknowledgment is not regulatory approval.', 'Open the Word reader for the controlled layout; downloads are read-only DOCX copies.', 'Report a suspected outdated or altered copy to support.'].map((x) => <div key={x} className="flex gap-2"><GoldDot />{x}</div>)}</div></Card>
+        <Card className="p-4"><SectionHead icon={ShieldCheck} title="Controlled legal vault" /><p className="text-xs leading-relaxed text-[#8a8577]">The 26 corporate and governance instruments include confidential issuer information such as tax identifiers, registered-office details and execution records. They are streamed only to an authenticated administrator — not bundled into the public site.</p><div className="mt-3">{user?.role === 'admin' ? <Link to="/admin/legal-vault" className="text-xs font-bold text-[#d4af37] hover:underline">Administrator legal vault →</Link> : <span className="text-[10px] text-[#6a665a]">Access is limited to authenticated administrators.</span>}</div></Card>
+        <Card className="p-4"><SectionHead icon={BookOpen} title="How to read a controlled document" /><div className="space-y-1.5 text-[11px] leading-relaxed text-[#8a8577]">{['Check the document number, version and date.', 'Read the recorded execution status: a reviewer acknowledgment is not regulatory approval.', 'Open the secure in-app reader for the controlled layout; no document download is offered.', 'Report a suspected outdated or altered copy to support.'].map((x) => <div key={x} className="flex gap-2"><GoldDot />{x}</div>)}</div></Card>
       </div>
     </>
   );

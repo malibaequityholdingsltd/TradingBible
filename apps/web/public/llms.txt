@@ -25,6 +25,7 @@
 - [Admin Wallet](/admin/wallet): TradingBible application page.
 - [Ads Demo](/__ads-demo): TradingBible application page.
 - [Affiliate](/app/affiliate): TradingBible application page.
+- [Affiliates Public](/affiliates): TradingBible application page.
 - [Alerts](/app/alerts): TradingBible application page.
 - [Analytics](/app/analytics): TradingBible application page.
 - [Api Docs](/app/api-docs): TradingBible application page.
@@ -52,6 +53,7 @@
 - [Investor Relations](/investors/contact): TradingBible application page.
 - [Journal](/app/journal): TradingBible application page.
 - [Landing](/): TradingBible application page.
+- [Launch Public](/launch): TradingBible application page.
 - [Leaderboard](/leaderboard): TradingBible application page.
 - [Login](/login): TradingBible application page.
 - [Navigate](/teacher): TradingBible application page.
@@ -62,6 +64,7 @@
 - [Pricing](/pricing): TradingBible application page.
 - [Pro Guide](/app/guide): TradingBible application page.
 - [Profile](/app/profile): TradingBible application page.
+- [Programs Public](/programs): TradingBible application page.
 - [Public Feature Detail](/features/:slug): TradingBible application page.
 - [Public Features](/features): TradingBible application page.
 - [Refund](/refund): TradingBible application page.
@@ -82,6 +85,7 @@
 - [Tb Stock Documents](/stock/TB/documents): TradingBible application page.
 - [Tbc Chain](/developers/tbc): TradingBible application page.
 - [Tbc Public](/tbc/faqs): TradingBible application page.
+- [Team](/team): TradingBible application page.
 - [Terminal Premium](/app/terminal-pro): TradingBible application page.
 - [Terms](/terms): TradingBible application page.
 - [Tv](/tv): TradingBible application page.

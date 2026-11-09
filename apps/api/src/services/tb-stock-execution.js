@@ -195,7 +195,8 @@ export async function getExecution(slug) {
 	return summarizeExecution(doc, register.documents[slug] || {});
 }
 
-// Public-safe projection: no emails, internal notes, hashes, or envelope IDs.
+// Public-safe projection: no signatory identities, emails, internal notes,
+// hashes, or envelope IDs. Only the execution state is public.
 export function publicExecutionSummary(execution) {
 	if (!execution) return null;
 	const signed = ['executed', 'approved', 'cleared', 'licensed', 'live'].includes(execution.state);
@@ -205,11 +206,6 @@ export function publicExecutionSummary(execution) {
 		signed,
 		completedAt: execution.completedAt || null,
 		lastSyncedAt: execution.lastSyncedAt || null,
-		signers: (execution.recipients || []).map((recipient) => ({
-			party: recipient.party || recipient.label,
-			capacity: recipient.capacity || '',
-			status: recipient.status || '',
-		})),
 	};
 }
 

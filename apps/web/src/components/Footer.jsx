@@ -76,6 +76,10 @@ const COLUMNS = [
     headingKey: 'fot.h_company',
     links: [
       { labelKey: 'fot.l_about_tradingbible', to: '/about' },
+      { label: 'Team & priority seats', to: '/team' },
+      { label: 'Funded programs', to: '/programs' },
+      { label: 'Affiliates', to: '/affiliates' },
+      { label: 'Launch · 25 Dec 2026', to: '/launch' },
       { label: 'TradingBible Capital', to: '/fund' },
       { labelKey: 'fot.l_our_mission', to: '/about#mission' },
       { labelKey: 'fot.l_blog', to: '/blog' },

@@ -273,8 +273,8 @@ export default function StockTbPage() {
           open={Boolean(selectedDoc)}
           doc={selectedDoc}
           docxUrl={selectedDoc ? publicTbStockDocxUrl(selectedDoc.slug) : ''}
-          onDownloadDocx={selectedDoc ? () => { window.location.href = publicTbStockDocxUrl(selectedDoc.slug); } : undefined}
           onClose={() => setSelectedDoc(null)}
+          redactedSignatories
         />
         <CapPublicHead
           title="TB stock record"

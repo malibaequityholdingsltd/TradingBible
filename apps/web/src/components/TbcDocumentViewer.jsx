@@ -14,6 +14,7 @@ export default function TbcDocumentViewer({
   onClose,
   loading = false,
   error = '',
+  redactedSignatories = false,
 }) {
   const hostRef = useRef(null);
   const [renderState, setRenderState] = useState('idle');
@@ -121,7 +122,7 @@ export default function TbcDocumentViewer({
           </div>
           <div className="flex items-center gap-1.5">
             <span className="hidden items-center gap-1 rounded-md border border-[var(--at-line)] bg-[var(--at-soft)] px-2 py-1 font-mono text-[9px] uppercase tracking-[0.1em] text-[var(--at-mut)] sm:inline-flex">
-              <Lock className="h-3 w-3 text-[var(--at-gold)]" /> Read-only DOCX
+              <Lock className="h-3 w-3 text-[var(--at-gold)]" /> Read-only · in-app
             </span>
             {onDownloadDocx && (
               <button type="button" onClick={onDownloadDocx} className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-[var(--at-line)] bg-[var(--at-card-bg)] px-2.5 text-xs font-semibold text-[var(--at-ink-2)] transition hover:border-[var(--at-line-strong)] hover:text-[var(--at-gold)]">
@@ -135,8 +136,8 @@ export default function TbcDocumentViewer({
         </div>
         {doc?.execution?.signed && (
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-emerald-500/20 bg-emerald-500/[0.07] px-3 py-2 text-[10px] text-emerald-200 sm:px-4">
-            <span className="inline-flex items-center gap-1.5 font-bold"><ShieldCheck className="h-3.5 w-3.5" /> Executed copy</span>
-            <span>DocuSign reports this envelope as completed.</span>
+            <span className="inline-flex items-center gap-1.5 font-bold"><ShieldCheck className="h-3.5 w-3.5" /> {redactedSignatories ? 'Execution recorded' : 'Executed copy'}</span>
+            <span>{redactedSignatories ? 'Signatory details are withheld from the public reading copy.' : 'DocuSign reports this envelope as completed.'}</span>
             {doc.execution.completedAt && <span className="text-emerald-300/70">Completed {new Date(doc.execution.completedAt).toLocaleDateString()}</span>}
           </div>
         )}
@@ -152,8 +153,8 @@ export default function TbcDocumentViewer({
           <div ref={hostRef} className="tbc-docx-host" />
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--at-line-soft)] bg-[var(--at-card-bg)] px-3 py-2 text-[9px] text-[var(--at-mut-2)]">
-          <span className="inline-flex items-center gap-1.5"><Lock className="h-3 w-3 text-[var(--at-gold)]" /> Editing is restricted in the downloaded copy. PDF copies are not distributed.</span>
-          <span className="font-mono uppercase tracking-[0.1em]">{doc?.execution?.signed ? 'Executed DOCX' : docxUrl ? 'DOCX source' : 'Preparing document'}</span>
+          <span className="inline-flex items-center gap-1.5"><Lock className="h-3 w-3 text-[var(--at-gold)]" /> {onDownloadDocx ? 'Administrator copy. PDF copies are not distributed.' : 'Read in the in-app reader only. No document download is offered.'}</span>
+          <span className="font-mono uppercase tracking-[0.1em]">{redactedSignatories ? 'Public reading copy' : doc?.execution?.signed ? 'Executed DOCX' : docxUrl ? 'DOCX source' : 'Preparing document'}</span>
         </div>
       </div>
     </div>,

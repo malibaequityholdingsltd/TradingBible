@@ -158,7 +158,7 @@ function publicAnnouncement(row) {
   };
 }
 
-function publicDocument(row) {
+function publicDocument(row, { includeUrl = false } = {}) {
   return {
     id: row.id,
     slug: row.slug,
@@ -166,7 +166,7 @@ function publicDocument(row) {
     category: row.category,
     documentType: row.document_type,
     summary: row.summary,
-    url: row.url || null,
+    ...(includeUrl ? { url: row.url || null } : {}),
     version: row.version,
     checksumSha256: row.checksum_sha256 || null,
     publishedAt: row.published_at,
@@ -192,7 +192,6 @@ function publicFinancial(row) {
     shareholdersEquity: numberOrNull(row.shareholders_equity),
     eps: numberOrNull(row.eps),
     sourceNote: row.source_note || null,
-    documentUrl: row.document_url || null,
     approvedAt: row.approved_at,
     publishedAt: row.published_at,
     isDemo: Boolean(row.is_demo),
@@ -284,7 +283,7 @@ export async function getPublicOverview() {
       parentCompany: 'TradingBible Holdings, Inc.',
     },
     announcements: announcements.rows.map(publicAnnouncement),
-    documents: documents.rows.map(publicDocument),
+    documents: documents.rows.map((row) => publicDocument(row)),
     financials: financials.rows.map(publicFinancial),
     milestones: publicMilestones,
     capital: publicClasses.length ? {
@@ -1422,7 +1421,7 @@ export async function getShareholderPortal(user) {
       vote: row.vote,
       recordedAt: row.recorded_at,
     })),
-    documents: documents.map(publicDocument),
+    documents: documents.map((row) => publicDocument(row, { includeUrl: true })),
     statements: [],
     security: { mfaRecommended: true },
   };

@@ -14,11 +14,12 @@ import '@/styles/landing-page.css';
 
 const NAV = [
   ['Platform', '/features'],
-  ['Pricing', '/pricing'],
+  ['Programs', '/programs'],
+  ['Affiliates', '/affiliates'],
+  ['Launch', '/launch'],
   ['Academy', '/academy'],
-  ['Community', '/community'],
   ['Company', '/about'],
-  ['Fund', '/fund'],
+  ['Team', '/team'],
   ['Investors', '/investors'],
   ['TBC', '/tbc'],
 ];

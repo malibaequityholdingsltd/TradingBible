@@ -120,6 +120,18 @@ CAPACITY = "Chief Executive Officer"
 OPTIONAL_PARTY = "Additional Authorized Signatory"
 OPTIONAL_CAPACITY = "Authorized Signatory"
 
+# The public reading copies must not disclose who is authorized to sign. The
+# full signed/unsigned instruments remain in docx-protected/ for DocuSign and
+# the authenticated administrator vault. Replace the longest phrases first.
+PUBLIC_SIGNATORY_REDACTIONS = {
+    "Malik Nlem is identified as Chief Executive Officer in the Company records.":
+        "The Company’s authorized officer is identified in the confidential company records.",
+    "AUTHORIZED SIGNATORY Malik Nlem Capacity: Chief Executive Officer":
+        "AUTHORIZED SIGNATORY Name withheld Capacity: Authorized Signatory",
+    "Malik Nlem": "Name withheld",
+    "Capacity: Chief Executive Officer": "Capacity: Authorized Signatory",
+}
+
 # Each tab is anchored to its own line. The labels are unique per signer, so
 # one recipient can never receive a field belonging to the other block.
 ISSUER_FIELDS = {
@@ -290,6 +302,12 @@ def normalize_docx_runs(path: Path, replacements: dict[str, str]) -> None:
     document.save(str(path))
 
 
+def redact_public_docx(path: Path) -> None:
+    """Remove signatory identities from the public reading copy only."""
+    replace_in_docx(path, PUBLIC_SIGNATORY_REDACTIONS)
+    normalize_docx_runs(path, PUBLIC_SIGNATORY_REDACTIONS)
+
+
 def iter_blocks(document):
     for child in document.element.body.iterchildren():
         if child.tag == qn("w:p"):
@@ -458,12 +476,13 @@ def main() -> None:
 
         prepare_docx(source, docx_path, meta)
         shutil.copy2(docx_path, protected_path)
-        html_text = render_document(docx_path)
+        html_text = render_document(protected_path)
         assert_no_net_text(html_text, f"{slug}.html")
         html_path = pdf_dir / f"{slug}.html"
         html_path.write_text(html_text, encoding="utf-8")
         build_pdf(html_path, pdf_path)
         html_path.unlink(missing_ok=True)
+        redact_public_docx(docx_path)
         assert_no_net_docx(docx_path)
 
         documents.append({

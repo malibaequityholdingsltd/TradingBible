@@ -24,3 +24,8 @@ openclaw-workspace-state.json
 
 # Local backups (never committed)
 backups/
+
+# Local screenshot + Python scratch artifacts
+.tmp-shots/
+.tmp-mff-*.png
+scripts/__pycache__/

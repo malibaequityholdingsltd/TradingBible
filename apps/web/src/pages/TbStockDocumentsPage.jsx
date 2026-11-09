@@ -24,8 +24,8 @@ export default function TbStockDocumentsPage() {
           open={Boolean(selected)}
           doc={selected}
           docxUrl={selected ? publicTbStockDocxUrl(selected.slug) : ''}
-          onDownloadDocx={selected ? () => { window.location.href = publicTbStockDocxUrl(selected.slug); } : undefined}
           onClose={() => setSelected(null)}
+          redactedSignatories
         />
 
         <CapPublicHead
@@ -40,11 +40,11 @@ export default function TbStockDocumentsPage() {
               badge="Draft · not executed"
               rows={[
                 ['Instruments', loading ? 'Checking' : `${documents.length} published`],
-                ['Signature', 'DocuSign only'],
-                ['Format', 'DOCX · read-only'],
+                ['Execution', 'DocuSign only'],
+                ['Access', 'In-app reader'],
                 ['Ticker', 'TB · proposed'],
               ]}
-              note="A document is an executed copy only when the execution register reports DocuSign completion. No signature is fabricated."
+              note="A document is marked executed only when the execution register reports DocuSign completion. Signatory identities stay private."
             />
           )}
         />
@@ -67,7 +67,7 @@ export default function TbStockDocumentsPage() {
               <FileSignature className="mt-0.5 h-4 w-4 shrink-0 text-[var(--at-gold)]" />
               <div>
                 <p className="text-[10px] font-semibold text-[var(--at-ink)]">
-                  Authorized signers only. These are not approved, effective, or executed merely because they are published.
+                  Public reading copies. Signatory names, capacities and execution details are withheld; only the recorded execution status is shown.
                 </p>
                 <p className="mt-1 text-[10px] leading-relaxed text-[var(--at-mut)]">
                   {meta?.notice || 'TB is a proposed future ticker. These instruments are not an offer, listing approval, or evidence of a public market.'}{' '}
@@ -94,7 +94,7 @@ export default function TbStockDocumentsPage() {
                 <div>
                   <p className="text-[10px] font-bold text-[var(--at-ink)]">DocuSign is the execution provider</p>
                   <p className="mt-1 text-[10px] leading-relaxed text-[var(--at-mut)]">
-                    Tabs are anchored to each signer’s unique execution block. Envelope status is recorded in a separate TB register.
+                    Execution is managed privately. Signatory identities and tab assignments are never published in the public library.
                   </p>
                 </div>
               </div>

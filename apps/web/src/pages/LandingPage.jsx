@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ArrowRight, ArrowUpRight, BarChart3, BookOpen, Bot, Check,
+  ArrowRight, ArrowUpRight, BarChart3, BookOpen, Bot, CalendarDays, Check,
   GraduationCap, KeyRound, Menu, Plug, Radar,
   ShieldCheck, Target, Trophy, Wallet, X,
 } from 'lucide-react';
@@ -18,13 +18,17 @@ import { useI18n } from '@/lib/i18n';
 import { usePlatformSettings } from '@/lib/platformSettings';
 import { Card, GhostButton, GoldButton, Kicker } from '@/components/ui-kit';
 import { IosIcon } from '@/components/IosIcon';
+import {
+  CountUp, LaunchCountdown, LaunchPill, Marquee, Parallax, Reveal, ScrollProgress,
+  SectionRail, SignalField, Stagger, StaggerItem, TiltCard,
+} from '@/components/PublicMotion';
 import '@/styles/landing-page.css';
 
 const LOGO = TRADINGBIBLE_LOGO;
 
 const STATS = [
-  { value: '20+', label: 'Broker & prop connections', note: 'Live accounts, synced' },
-  { value: '347', label: 'Academy lessons', note: 'Four schools · 17 programmes' },
+  { value: '20+', count: 20, suffix: '+', label: 'Broker & prop connections', note: 'Live accounts, synced' },
+  { value: '347', count: 347, label: 'Academy lessons', note: 'Four schools · 17 programmes' },
   { value: '24/7', label: 'SI coaching', note: 'Grounded in your history' },
   { value: '0 TBC', label: 'Tokens issued', note: '100M max proposed' },
 ];
@@ -112,6 +116,10 @@ const FUNDED = [
 
 const COMPANY_LINKS = [
   ['About TradingBible', '/about'],
+  ['Team & priority seats', '/team'],
+  ['Funded programs', '/programs'],
+  ['Affiliates', '/affiliates'],
+  ['Public launch · 25 Dec 2026', '/launch'],
   ['Careers', '/careers'],
   ['Investor relations', '/investors'],
   ['TB issuer record', '/stock/TB'],
@@ -167,10 +175,12 @@ function Nav({ homeTo, isAuthed, platformName }) {
 
         <nav className="landing-nav-pill hidden items-center gap-0.5 rounded-full p-1 xl:flex" aria-label="Main navigation">
           <a href="#platform" className={navLink}>{t('land.features')}</a>
-          <a href="#si" className={navLink}>SI Coach</a>
+          <Link to="/programs" className={navLink}>Programs</Link>
+          <Link to="/affiliates" className={navLink}>Affiliates</Link>
+          <Link to="/launch" className={navLink}>Launch</Link>
           <a href="#academy" className={navLink}>Academy</a>
-          <a href="#funded" className={navLink}>Funded</a>
           <a href="#company" className={navLink}>Company</a>
+          <Link to="/team" className={navLink}>Team</Link>
           <Link to="/investors" className={navLink}>Investors</Link>
         </nav>
 
@@ -201,10 +211,14 @@ function Nav({ homeTo, isAuthed, platformName }) {
         <div className="landing-menu max-h-[calc(100dvh-var(--header-h)-4rem)] overflow-y-auto px-4 pb-5 pt-2 xl:hidden">
           <nav className="flex flex-col gap-0.5" aria-label="Mobile navigation">
             <a href="#platform" onClick={close} className={mobileLink}>{t('land.features')}</a>
+            <Link to="/programs" onClick={close} className={mobileLink}>Funded programs</Link>
+            <Link to="/affiliates" onClick={close} className={mobileLink}>Affiliates</Link>
+            <Link to="/launch" onClick={close} className={`${mobileLink} landing-menu-link--gold`}>Launch · 25 Dec 2026</Link>
             <a href="#si" onClick={close} className={mobileLink}>SI Coach</a>
             <a href="#academy" onClick={close} className={mobileLink}>Academy</a>
             <a href="#funded" onClick={close} className={mobileLink}>Funded evaluations</a>
             <a href="#company" onClick={close} className={mobileLink}>Company</a>
+            <Link to="/team" onClick={close} className={mobileLink}>Team & priority seats</Link>
             <Link to="/investors" onClick={close} className={`${mobileLink} landing-menu-link--gold`}>Investor relations <span className="ml-1 font-mono text-[9px] uppercase tracking-wider opacity-60">Pre-IPO</span></Link>
             <Link to="/tbc" onClick={close} className={`${mobileLink} landing-menu-link--gold`}>TBC record</Link>
           </nav>
@@ -271,9 +285,13 @@ export default function LandingPage() {
 
   return (
     <div className="landing-page relative min-h-screen overflow-hidden bg-transparent text-[#e9e7df]">
+      <ScrollProgress />
       <Nav homeTo={homeTo} isAuthed={isAuthed} platformName={settings.platformName} />
 
       <section className="relative overflow-hidden pb-10 pt-[calc(8.5rem+var(--safe-top))] sm:pb-14 sm:pt-[calc(10rem+var(--safe-top))]">
+        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-70">
+          <SignalField variant="home" />
+        </div>
         <div aria-hidden className="pointer-events-none absolute inset-0 grain opacity-30" />
         <div className={`pointer-events-none absolute inset-0 bg-gradient-to-b ${isLight ? 'from-white/55 via-white/25 to-white/55' : 'from-[#07070a]/50 via-[#07070a]/20 to-[#07070a]/55'}`} />
         <div aria-hidden className="pointer-events-none absolute -left-40 top-10 h-[32rem] w-[32rem] rounded-full bg-[#d4af37]/10 blur-[130px]" />
@@ -281,7 +299,8 @@ export default function LandingPage() {
 
         <div className="relative mx-auto grid w-full max-w-[84rem] gap-9 px-5 sm:px-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:items-center lg:gap-12">
           <div>
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex flex-wrap items-center gap-2">
+              <LaunchPill />
               <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#d4af37] ${isLight ? 'border-[#d4af37]/45 bg-[#d4af37]/10' : 'border-[#d4af37]/30 bg-[#0a0a0f]/70'}`}>
                 <span className="h-1.5 w-1.5 rounded-full bg-[#d4af37]" />
                 Terminal · Journal · Funded · Academy · TBC
@@ -308,63 +327,82 @@ export default function LandingPage() {
             </motion.div>
           </div>
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.18 }}>
-            <LoopCard />
+            <Parallax distance={14}><LoopCard /></Parallax>
           </motion.div>
         </div>
 
         <div className="relative mx-auto mt-10 grid w-full max-w-[84rem] grid-cols-2 gap-2.5 px-5 sm:mt-12 sm:grid-cols-4 sm:px-8">
-          {STATS.map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3.5 backdrop-blur-sm sm:p-4">
-              <div className="font-mono text-2xl font-bold tracking-tight text-[#e8c95a] sm:text-3xl">{stat.value}</div>
-              <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#b8b3a3]">{stat.label}</div>
-              <div className="mt-0.5 text-[10px] text-[#8a8577]">{stat.note}</div>
-            </div>
+          {STATS.map((stat, index) => (
+            <Reveal key={stat.label} delay={index * 0.05}>
+              <div className="pm-stat h-full rounded-xl border border-white/[0.07] bg-white/[0.025] p-3.5 backdrop-blur-sm sm:p-4">
+                <div className="pm-stat__value">
+                  {stat.count ? <CountUp value={stat.count} suffix={stat.suffix || ''} /> : stat.value}
+                </div>
+                <div className="pm-stat__label">{stat.label}</div>
+                <div className="pm-stat__note">{stat.note}</div>
+              </div>
+            </Reveal>
           ))}
+        </div>
+
+        <div className="relative mx-auto mt-10 w-full max-w-[84rem] px-0 sm:mt-12">
+          <Marquee
+            items={['Live accounts only', 'No demo P&L', 'Journal', 'SI Coach', 'Analytics', 'Funded evaluations', 'Academy 2.0', 'TBC credits', 'Public launch · 25 Dec 2026']}
+            speed={36}
+          />
         </div>
       </section>
 
       <section className="border-y border-[#d4af37]/10">
         <div className="mx-auto grid w-full max-w-[84rem] gap-8 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14">
-          <div>
+          <Reveal>
             <Head eyebrow="Why TradingBible" title={<>Most platforms show you the market. <span className="tb-gold-text">Few help you review the trader.</span></>} sub="Signals are easy to sell. A record is harder to build — and far more useful. TradingBible is designed around the work that happens after the entry." />
             <Link to="/about" className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#d4af37] hover:underline">Read our story <ArrowRight className="h-3.5 w-3.5" /></Link>
-          </div>
-          <div className="grid gap-2.5 sm:grid-cols-2">
+          </Reveal>
+          <Stagger className="grid gap-2.5 sm:grid-cols-2">
             {REASONS.map(([n, title, body]) => (
-              <Card key={n} className="rounded-xl p-4 sm:p-5">
-                <div className="font-mono text-[10px] font-bold tracking-[0.16em] text-[#d4af37]">{n}</div>
-                <h3 className="mt-2 text-[15px] font-semibold tracking-tight text-[#f0ecdd]">{title}</h3>
-                <p className="mt-1.5 text-xs leading-relaxed text-[#8a8577]">{body}</p>
-              </Card>
+              <StaggerItem key={n}>
+                <TiltCard className="h-full">
+                  <Card className="h-full rounded-xl p-4 sm:p-5">
+                    <div className="font-mono text-[10px] font-bold tracking-[0.16em] text-[#d4af37]">{n}</div>
+                    <h3 className="mt-2 text-[15px] font-semibold tracking-tight text-[#f0ecdd]">{title}</h3>
+                    <p className="mt-1.5 text-xs leading-relaxed text-[#8a8577]">{body}</p>
+                  </Card>
+                </TiltCard>
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         </div>
       </section>
 
       <section className="mx-auto w-full max-w-[84rem] px-5 py-14 sm:px-8 sm:py-20">
-        <Head id="platform" eyebrow="The workstation" title={<>Everything you need to run the trade — <span className="tb-gold-text">and the review.</span></>} sub="Eight connected modules. One account. No stitching together a terminal, a spreadsheet, a course and a coach." />
-        <div className="mt-8 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
+        <Reveal><Head id="platform" eyebrow="The workstation" title={<>Everything you need to run the trade — <span className="tb-gold-text">and the review.</span></>} sub="Eight connected modules. One account. No stitching together a terminal, a spreadsheet, a course and a coach." /></Reveal>
+        <Stagger className="mt-8 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
           {MODULES.map((module) => {
             const Icon = module.icon;
             return (
-              <Card key={module.title} hover className="group flex flex-col rounded-xl p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#d4af37]/30 sm:p-5">
-                <div className="flex items-center justify-between gap-2">
-                  <IosIcon icon={Icon} size="md" seed={module.title} />
-                  <span className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#5f5b50]">{module.tag}</span>
-                </div>
-                <h3 className="mt-3 text-[15px] font-semibold tracking-tight text-[#f0ecdd]">{module.title}</h3>
-                <p className="mt-1.5 flex-1 text-xs leading-relaxed text-[#8a8577]">{module.body}</p>
-                <Link to={module.to} className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline">{module.link} <ArrowUpRight className="h-3 w-3" /></Link>
-              </Card>
+              <StaggerItem key={module.title}>
+                <TiltCard className="h-full">
+                  <Card hover className="group flex h-full flex-col rounded-xl p-4 transition duration-200 hover:border-[#d4af37]/30 sm:p-5">
+                    <div className="flex items-center justify-between gap-2">
+                      <IosIcon icon={Icon} size="md" seed={module.title} />
+                      <span className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#5f5b50]">{module.tag}</span>
+                    </div>
+                    <h3 className="mt-3 text-[15px] font-semibold tracking-tight text-[#f0ecdd]">{module.title}</h3>
+                    <p className="mt-1.5 flex-1 text-xs leading-relaxed text-[#8a8577]">{module.body}</p>
+                    <Link to={module.to} className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-[#d4af37] hover:underline">{module.link} <ArrowUpRight className="h-3 w-3" /></Link>
+                  </Card>
+                </TiltCard>
+              </StaggerItem>
             );
           })}
-        </div>
+        </Stagger>
       </section>
 
       <section id="si" className={`scroll-mt-28 border-y border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/55' : 'bg-[#0a0a0f]/55'} backdrop-blur-sm`}>
         <div className="mx-auto grid w-full max-w-[84rem] gap-8 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-14">
           <div>
-            <Head eyebrow="SI Coach" title={<>A coach that remembers <span className="tb-gold-text">the trade you want to forget.</span></>} sub="SI reads your actual journal. It can see the stop you moved, the size you doubled and the session where discipline slipped. Then it gives you one thing to fix." />
+            <Reveal><Head eyebrow="SI Coach" title={<>A coach that remembers <span className="tb-gold-text">the trade you want to forget.</span></>} sub="SI reads your actual journal. It can see the stop you moved, the size you doubled and the session where discipline slipped. Then it gives you one thing to fix." /></Reveal>
             <div className="mt-6 grid gap-2">
               {['What is my biggest recurring mistake?', 'Which setup actually works for me?', 'Where did I widen risk this week?', 'What should I focus on tomorrow?'].map((q) => (
                 <div key={q} className="flex items-center gap-2.5 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3.5 py-2.5 text-[13px] text-[#d8d3c3]">
@@ -374,6 +412,7 @@ export default function LandingPage() {
             </div>
             <GoldButton to="/pricing" className="mt-6 px-6 py-3.5">Meet your SI coach <ArrowRight className="h-4 w-4" /></GoldButton>
           </div>
+          <Reveal delay={0.08}>
           <Card className="relative overflow-hidden rounded-2xl p-5 sm:p-7">
             <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/60 to-transparent" />
             <div className="flex items-center gap-2.5">
@@ -395,6 +434,7 @@ export default function LandingPage() {
               SI does not invent a score, a price or a trade. It reasons from the history your account has actually synced.
             </p>
           </Card>
+          </Reveal>
         </div>
       </section>
 
@@ -462,6 +502,40 @@ export default function LandingPage() {
               </Card>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="border-y border-[#d4af37]/10 bg-[#07070c]/45">
+        <div className="mx-auto grid w-full max-w-[84rem] gap-7 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[1fr_.9fr] lg:items-center">
+          <Reveal>
+            <SectionRail index="05" label="Official launch" />
+            <h2 className="mt-3 max-w-2xl text-balance text-[2rem] font-extrabold leading-[1.02] tracking-[-0.04em] sm:text-[3rem]">
+              Christmas Day, <span className="tb-gold-text">2026.</span>
+            </h2>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#8a8577]">
+              The public launch is set for 25 December 2026. The platform, Academy, funded catalog and company record open together. Regulated surfaces stay behind their own approvals — a launch date is not a licence.
+            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <GoldButton to="/launch" className="px-5 py-3">Read the launch record <ArrowRight className="h-4 w-4" /></GoldButton>
+              <span className="pm-countdown-compact"><span className="pm-live-dot" /> No fake countdown</span>
+            </div>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <Card className="relative overflow-hidden rounded-2xl border-[#7d9cff]/20 p-5 sm:p-7">
+              <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(ellipse at top right, rgba(125,156,255,0.14), transparent 60%)' }} />
+              <div className="relative">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#a8b8ff]">Public launch countdown</div>
+                    <h3 className="mt-1 text-lg font-bold text-[#f0ecdd]">25 December 2026 · Christmas Day</h3>
+                  </div>
+                  <CalendarDays className="h-5 w-5 text-[#a8b8ff]" />
+                </div>
+                <div className="mt-5"><LaunchCountdown /></div>
+                <p className="mt-4 text-[9px] leading-relaxed text-[#6f6a5d]">A company launch target, not a regulatory approval, listing, funding or token issuance.</p>
+              </div>
+            </Card>
+          </Reveal>
         </div>
       </section>
 

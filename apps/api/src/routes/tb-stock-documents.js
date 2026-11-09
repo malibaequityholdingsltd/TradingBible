@@ -7,11 +7,11 @@ import {
 	tbStockLibraryMeta,
 	toPublicTbStockDocument,
 } from '../data/tb-stock-documents.js';
-import { getExecution, getPublicExecution } from '../services/tb-stock-execution.js';
-import { executedDocxPath, hasExecutedDocx, writeExecutedDocx } from '../services/tb-stock-executed-docx.js';
+import { getPublicExecution } from '../services/tb-stock-execution.js';
 
 const router = Router();
 const SLUG = /^[a-z0-9-]+$/;
+const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
 function publicDoc(slug, res) {
 	if (!SLUG.test(String(slug || ''))) {
@@ -24,17 +24,6 @@ function publicDoc(slug, res) {
 		return null;
 	}
 	return doc;
-}
-
-async function docxFor(doc) {
-	const execution = await getExecution(doc.slug);
-	if (execution?.state === 'executed') {
-		if (!(await hasExecutedDocx(doc.slug))) {
-			try { await writeExecutedDocx(doc, execution); } catch { /* serve the source below */ }
-		}
-		if (await hasExecutedDocx(doc.slug)) return { path: executedDocxPath(doc.slug), executed: true };
-	}
-	return { path: path.join(tbStockDocumentRoot, doc.docxProtected || doc.docx), executed: false };
 }
 
 router.get('/', async (_req, res, next) => {
@@ -67,10 +56,16 @@ router.get('/:slug/docx', async (req, res, next) => {
 	try {
 		const doc = publicDoc(req.params.slug, res);
 		if (!doc) return;
-		const served = await docxFor(doc);
 		res.setHeader('Cache-Control', 'private, no-store');
-		res.setHeader('X-TB-Stock-Document-State', served.executed ? 'executed' : 'source');
-		res.download(served.path, `${doc.slug}-${served.executed ? 'executed' : 'readonly'}.docx`, { dotfiles: 'allow' }, (err) => {
+		res.setHeader('X-TB-Stock-Document-State', 'public-reading-copy');
+		res.setHeader('X-Robots-Tag', 'noindex');
+		res.sendFile(path.join(tbStockDocumentRoot, doc.docx), {
+			dotfiles: 'allow',
+			headers: {
+				'Content-Type': DOCX_MIME,
+				'Content-Disposition': `inline; filename="${doc.slug}-reading-copy.docx"`,
+			},
+		}, (err) => {
 			if (err && !res.headersSent) next(err);
 		});
 	} catch (err) {

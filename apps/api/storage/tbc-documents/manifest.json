@@ -21,8 +21,8 @@
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/tbc-whitepaper.pdf",
       "docx": "docx/tbc-whitepaper.docx",
-      "pdfBytes": 136656,
-      "docxBytes": 171142
+      "pdfBytes": 136703,
+      "docxBytes": 171155
     },
     {
       "slug": "tbc-supply-allocation-vesting",
@@ -39,8 +39,8 @@
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/tbc-supply-allocation-vesting.pdf",
       "docx": "docx/tbc-supply-allocation-vesting.docx",
-      "pdfBytes": 135040,
-      "docxBytes": 170669
+      "pdfBytes": 134762,
+      "docxBytes": 170682
     },
     {
       "slug": "tbc-purchases-payments-custody-refunds",
@@ -57,8 +57,8 @@
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/tbc-purchases-payments-custody-refunds.pdf",
       "docx": "docx/tbc-purchases-payments-custody-refunds.docx",
-      "pdfBytes": 127152,
-      "docxBytes": 170762
+      "pdfBytes": 126103,
+      "docxBytes": 170777
     },
     {
       "slug": "tbc-jurisdictions-purchaser-eligibility",
@@ -75,8 +75,8 @@
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/tbc-jurisdictions-purchaser-eligibility.pdf",
       "docx": "docx/tbc-jurisdictions-purchaser-eligibility.docx",
-      "pdfBytes": 130357,
-      "docxBytes": 170600
+      "pdfBytes": 130402,
+      "docxBytes": 170616
     },
     {
       "slug": "tbc-brokerage-platform-separation",
@@ -93,8 +93,8 @@
       "signatureStatus": "Open \u2014 not executed",
       "pdf": "pdf/tbc-brokerage-platform-separation.pdf",
       "docx": "docx/tbc-brokerage-platform-separation.docx",
-      "pdfBytes": 135073,
-      "docxBytes": 170837
+      "pdfBytes": 135124,
+      "docxBytes": 170848
     },
     {
       "slug": "sole-stockholder-consent-director-authorization",

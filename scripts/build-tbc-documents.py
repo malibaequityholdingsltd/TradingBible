@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Build the controlled TBC document library.
 
-The source packages are Word files.  The web app needs stable, browser-
-viewable PDFs plus downloadable originals, so this script converts the
-source documents into a consistent Letter-size paper layout and writes a
-manifest consumed by the API.
+The source packages are Word files.  The web app renders public reading
+copies in the in-app Word reader; PDFs are retained server-side for controlled
+execution workflows and are never exposed as a public download.  This script
+normalizes the Letter-size layout and writes a manifest consumed by the API.
 
 Usage:
   python3 scripts/build-tbc-documents.py
@@ -89,6 +89,13 @@ PUBLIC_META = [
         "status": "Boundary policy — not a licence",
     },
 ]
+
+PUBLIC_SIGNATORY_REDACTIONS = {
+    "Sole stockholder and director: Malik Nlem":
+        "Sole stockholder and director: Name withheld from the public reading copy",
+    "Printed name:  Malik Nlem": "Printed name:  Name withheld",
+    "Malik Nlem": "Name withheld",
+}
 
 INTERNAL_META = [
     ("01_Sole_Member_Written_Consent_and_Manager_Authorization.docx", "sole-stockholder-consent-director-authorization", "01", "Sole Stockholder Written Consent and Director Authorization", "Corporate authority", "Authorizes investigation and professional engagement; does not authorize a public sale."),
@@ -384,6 +391,9 @@ def main() -> None:
         shutil.copy2(source, docx_path)
         replace_in_docx(docx_path, ENTITY_REPLACEMENTS)
         normalize_docx_runs(docx_path, ENTITY_REPLACEMENTS)
+        if visibility == "public":
+            replace_in_docx(docx_path, PUBLIC_SIGNATORY_REDACTIONS)
+            normalize_docx_runs(docx_path, PUBLIC_SIGNATORY_REDACTIONS)
         html_text = render_document(docx_path)
         html_path.write_text(html_text, encoding="utf-8")
         build_pdf(html_path, pdf_path)

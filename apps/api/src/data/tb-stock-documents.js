@@ -36,12 +36,8 @@ export function toPublicTbStockDocument(doc, execution = null) {
 		summary: doc.summary,
 		status: doc.status,
 		version: doc.version,
-		signatureFields: doc.signatureFields,
 		signatureStatus: execution && execution.state !== 'not_prepared' ? execution.label : doc.signatureStatus,
 		execution: execution && execution.state !== 'not_prepared' ? execution : null,
-		docxBytes: doc.docxBytes,
-		downloadFormat: 'docx',
-		readOnlyDownload: true,
 	};
 }
 
@@ -50,6 +46,7 @@ export function toAdminTbStockDocument(doc) {
 		...toPublicTbStockDocument(doc),
 		visibility: doc.visibility,
 		classification: doc.classification,
+		signatureFields: doc.signatureFields,
 		docxBytes: doc.docxBytes,
 		downloadFormat: 'docx',
 		readOnlyDownload: true,

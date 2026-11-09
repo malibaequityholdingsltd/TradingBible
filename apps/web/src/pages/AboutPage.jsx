@@ -34,7 +34,7 @@ const MARKETS = [
 const TEAM = [
   { name: 'Malik Nlem', role: 'Founder & CEO', img: '/images/malik-nlem-full.png' },
   { name: 'Victor Okechukwu', role: 'Vice President', img: '/images/victor-okechukwu-full.png' },
-  { name: 'Maliba SI', role: 'SI review & education' },
+  { name: 'Maliba SI', role: 'Head of Quantitative Research · AI' },
 ];
 
 const TESTIMONIALS = [
@@ -131,7 +131,7 @@ export default function AboutPage() {
         </div>
       </PublicSection>
 
-      <PublicSection id="team" eyebrow="The team" title="Small team. Direct accountability.">
+      <PublicSection id="team" eyebrow="The team" title="Small team. Direct accountability." sub="Only documented roles are named. The wider leadership map is published as open priority seats — never as invented people or placeholder profiles.">
         <div className="mx-auto grid max-w-4xl gap-3 sm:grid-cols-3">
           {TEAM.map((member) => (
             <Card key={member.name} className="overflow-hidden rounded-xl p-3">
@@ -148,6 +148,16 @@ export default function AboutPage() {
               </div>
             </Card>
           ))}
+        </div>
+        <div className="mx-auto mt-5 flex max-w-4xl flex-col gap-3 rounded-xl border border-[#d4af37]/15 bg-[#d4af37]/[0.04] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="text-sm font-semibold text-[#f0ecdd]">COO · CFO · CTO · General Counsel · Risk & Compliance</div>
+            <p className="mt-1 text-[11px] leading-relaxed text-[#8a8577]">Twelve priority seats are marked open. They are hiring priorities, not current appointments.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/team" className="inline-flex min-h-[36px] items-center gap-1 rounded-lg bg-[#d4af37] px-3 text-[11px] font-bold text-[#0a0a0f]">Meet the desk <ArrowRight className="h-3.5 w-3.5" /></Link>
+            <Link to="/careers" className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-[#d4af37]/25 px-3 text-[11px] font-semibold text-[#e9e7df]">Open roles</Link>
+          </div>
         </div>
       </PublicSection>
 

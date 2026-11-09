@@ -145,7 +145,7 @@ export function IrDocumentList({ documents, emptyTitle = 'No public documents pu
               <span className="truncate">Open</span><ArrowUpRight className="h-3.5 w-3.5" />
             </a>
           ) : (
-            <AtBadge tone="amber">Link pending</AtBadge>
+            <AtBadge tone="muted">Read-only · no download</AtBadge>
           )}
         </div>
       ))}
