@@ -355,7 +355,7 @@ function AppLayoutContent({ children, title }) {
       )}
       {(isStaff || isAdmin) && (
         <DropdownMenuItem onClick={() => nav('/staff')} className="ex-menu__item">
-          <ShieldCheck /> <span>Staff workspace</span>
+          <ShieldCheck /> <span>Employee workspace</span>
         </DropdownMenuItem>
       )}
       <DropdownMenuSeparator className="my-1 bg-[var(--ex-line)]" />

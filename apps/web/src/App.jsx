@@ -515,13 +515,17 @@ function RoutesWithBoundary() {
 }
 
 
-// The landing page keeps its original light/dark imagery. Every signed-in
-// dashboard and operator surface now uses a clean mineral canvas instead of
-// the photographic backdrop, so cards and charts never look like a website
-// pasted over a picture.
+// The bull/bear artwork belongs to the public company site and the auth
+// surfaces. Member, admin, staff and student portals keep the clean mineral
+// canvas so charts, tables and cards never sit on a photographic backdrop.
+const PORTAL_ROOTS = ['/app', '/admin', '/staff', '/student', '/leaderboard', '/tv'];
+
 function AppBackdrop() {
     const { pathname } = useLocation();
-    if (pathname !== '/' && pathname !== '/home') return null;
+    const portal = PORTAL_ROOTS.some((root) => pathname === root || pathname.startsWith(`${root}/`))
+        || pathname === '/investors/shareholders'
+        || pathname.startsWith('/investors/shareholders/');
+    if (portal) return null;
     return <div id="app-bg" aria-hidden="true" />;
 }
 

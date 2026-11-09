@@ -44,6 +44,9 @@
 }
 
 /* ── Backdrop ─────────────────────────────────────────────────────────── */
+/* The company bull/bear artwork is the page background on every public
+   surface. These layers add each page's accent colour without painting an
+   opaque canvas over the artwork. */
 .pm-backdrop {
   position: absolute;
   inset: 0;
@@ -52,77 +55,71 @@
   pointer-events: none;
   background:
     radial-gradient(100% 52% at 82% -4%, rgba(212, 175, 55, 0.12), transparent 60%),
-    radial-gradient(80% 46% at 8% 30%, rgba(125, 156, 255, 0.055), transparent 62%),
-    linear-gradient(180deg, #07070a 0%, #08080b 44%, #060608 100%);
+    radial-gradient(80% 46% at 8% 30%, rgba(125, 156, 255, 0.055), transparent 62%);
 }
 
 .pm-backdrop--programs {
   background:
     radial-gradient(80% 48% at 86% 2%, rgba(255, 155, 84, 0.14), transparent 58%),
-    radial-gradient(60% 40% at 5% 34%, rgba(212, 175, 55, 0.08), transparent 60%),
-    linear-gradient(180deg, #0a0807 0%, #0a0908 46%, #070709 100%);
+    radial-gradient(60% 40% at 5% 34%, rgba(212, 175, 55, 0.08), transparent 60%);
 }
 
 .pm-backdrop--affiliates {
   background:
     radial-gradient(75% 46% at 84% 4%, rgba(86, 224, 164, 0.12), transparent 60%),
-    radial-gradient(65% 42% at 6% 28%, rgba(212, 175, 55, 0.08), transparent 62%),
-    linear-gradient(180deg, #070b0a 0%, #080b0a 45%, #060809 100%);
+    radial-gradient(65% 42% at 6% 28%, rgba(212, 175, 55, 0.08), transparent 62%);
 }
 
 .pm-backdrop--launch {
   background:
     radial-gradient(80% 54% at 50% -6%, rgba(125, 156, 255, 0.18), transparent 65%),
-    radial-gradient(60% 40% at 88% 24%, rgba(212, 175, 55, 0.12), transparent 60%),
-    linear-gradient(180deg, #070812 0%, #090a14 44%, #06060b 100%);
+    radial-gradient(60% 40% at 88% 24%, rgba(212, 175, 55, 0.12), transparent 60%);
 }
 
 .pm-backdrop--team {
   background:
     radial-gradient(70% 46% at 78% 0%, rgba(232, 201, 90, 0.12), transparent 62%),
-    radial-gradient(60% 40% at 4% 24%, rgba(212, 175, 55, 0.07), transparent 64%),
-    linear-gradient(180deg, #0a0907 0%, #0b0a08 45%, #070708 100%);
+    radial-gradient(60% 40% at 4% 24%, rgba(212, 175, 55, 0.07), transparent 64%);
 }
 
 .pm-backdrop__fade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(6, 6, 8, 0.12) 42%, rgba(6, 6, 8, 0.82) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(6, 6, 8, 0.04) 42%, rgba(6, 6, 8, 0.28) 100%);
 }
 
 html.light .pm-backdrop {
   background:
     radial-gradient(100% 52% at 82% -4%, rgba(212, 175, 55, 0.2), transparent 60%),
-    radial-gradient(80% 46% at 8% 30%, rgba(125, 156, 255, 0.09), transparent 62%),
-    linear-gradient(180deg, #fbf8ef 0%, #f7f1e4 50%, #f3ecdd 100%);
+    radial-gradient(80% 46% at 8% 30%, rgba(125, 156, 255, 0.09), transparent 62%);
 }
 
 html.light .pm-backdrop--programs {
   background:
     radial-gradient(80% 48% at 86% 2%, rgba(255, 155, 84, 0.19), transparent 58%),
-    linear-gradient(180deg, #fffaf2 0%, #f9f0e3 48%, #f4ecdf 100%);
+    radial-gradient(60% 40% at 5% 34%, rgba(212, 175, 55, 0.1), transparent 60%);
 }
 
 html.light .pm-backdrop--affiliates {
   background:
     radial-gradient(75% 46% at 84% 4%, rgba(48, 180, 126, 0.15), transparent 60%),
-    linear-gradient(180deg, #f7fcf8 0%, #eff8ef 48%, #f3f5e9 100%);
+    radial-gradient(65% 42% at 6% 28%, rgba(212, 175, 55, 0.08), transparent 62%);
 }
 
 html.light .pm-backdrop--launch {
   background:
     radial-gradient(80% 54% at 50% -6%, rgba(101, 131, 255, 0.16), transparent 65%),
-    linear-gradient(180deg, #f6f7ff 0%, #eef0fb 48%, #f6f2e9 100%);
+    radial-gradient(60% 40% at 88% 24%, rgba(212, 175, 55, 0.1), transparent 60%);
 }
 
 html.light .pm-backdrop--team {
   background:
     radial-gradient(70% 46% at 78% 0%, rgba(212, 175, 55, 0.18), transparent 62%),
-    linear-gradient(180deg, #fdfaf1 0%, #f8f2e2 48%, #f4edde 100%);
+    radial-gradient(60% 40% at 4% 24%, rgba(212, 175, 55, 0.08), transparent 64%);
 }
 
 html.light .pm-backdrop__fade {
-  background: linear-gradient(180deg, transparent 0%, rgba(255, 252, 244, 0.18) 40%, rgba(255, 249, 238, 0.8) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(255, 252, 244, 0.04) 40%, rgba(255, 249, 238, 0.26) 100%);
 }
 
 /* ── Signal field ─────────────────────────────────────────────────────── */

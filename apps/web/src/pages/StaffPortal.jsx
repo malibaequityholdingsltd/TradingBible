@@ -27,9 +27,9 @@ const COMPANY = {
 };
 
 const ROLE_LABELS = {
-  trader: 'Trading staff',
-  teacher: 'Academy staff',
-  operator: 'Operator',
+  trader: 'Company employee',
+  teacher: 'Company employee',
+  operator: 'Company operator',
 };
 
 const TOOLS = {
@@ -77,7 +77,7 @@ function roleLabel(user) {
 
 function staffTitle(user) {
   const staff = user?.user_settings?.staff || {};
-  return staff.title || (staffRole(user) === 'teacher' ? 'Academy staff' : 'Trading staff');
+  return staff.title || (staffRole(user) === 'teacher' ? 'Academy operations' : 'Trading operations');
 }
 
 function toolList(user) {
@@ -89,12 +89,12 @@ function buildSearchItems(user) {
     label: tool.label,
     description: tool.desc,
     to: `/staff/${tool.id}`,
-    group: 'Staff workspace',
+    group: 'Employee workspace',
   }));
   return [
-    { label: 'Staff dashboard', description: 'Your workspace overview', to: '/staff', group: 'Staff workspace' },
+    { label: 'Employee dashboard', description: 'Your workspace overview', to: '/staff', group: 'Employee workspace' },
     ...tools,
-    { label: 'Staff settings', description: 'Profile and workspace preferences', to: '/staff/settings', group: 'Staff workspace' },
+    { label: 'Employee settings', description: 'Profile and workspace preferences', to: '/staff/settings', group: 'Employee workspace' },
     { label: 'Member dashboard', description: 'Open the subscriber terminal', to: '/app', group: 'Member account' },
     { label: 'Security & passkeys', description: 'Manage sign-in protection', to: '/app/security', group: 'Member account' },
     { label: 'Public team', description: 'Documented team and open priority seats', to: '/team', group: 'Company' },
@@ -126,7 +126,7 @@ function StaffSearch({ open, onClose, user }) {
   if (!open) return null;
 
   return (
-    <div className="staff-search-layer" role="dialog" aria-modal="true" aria-label="Search staff workspace">
+    <div className="staff-search-layer" role="dialog" aria-modal="true" aria-label="Search employee workspace">
       <button type="button" className="staff-search-scrim" aria-label="Close search" onClick={onClose} />
       <div className="staff-search-panel">
         <div className="staff-search-field">
@@ -136,7 +136,7 @@ function StaffSearch({ open, onClose, user }) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search tools, accounts and records…"
-            aria-label="Search staff workspace"
+            aria-label="Search employee workspace"
           />
           <button type="button" onClick={onClose} className="staff-search-esc">ESC</button>
         </div>
@@ -169,7 +169,7 @@ function StaffLayout({ title, subtitle, user, current, actions, children }) {
   const role = staffRole(user);
   const tools = toolList(user);
   const staff = user?.user_settings?.staff || {};
-  const staffCode = staff.employeeId || staff.employeeNo || 'Staff record';
+  const staffCode = staff.employeeId || staff.employeeNo || 'Employee record';
 
   const closeMobile = () => setMobileOpen(false);
   const signOut = () => { logout(); navigate('/'); };
@@ -188,14 +188,14 @@ function StaffLayout({ title, subtitle, user, current, actions, children }) {
   const navContent = (
     <div className="staff-rail__inner">
       <div className="staff-rail__brand">
-        <Link to="/staff" onClick={closeMobile} className="staff-brand" aria-label="Staff workspace home">
+        <Link to="/staff" onClick={closeMobile} className="staff-brand" aria-label="Employee workspace home">
           <span className="staff-brand__mark">
             <img src={TRADINGBIBLE_LOGO} alt="" draggable={false} onError={(event) => { event.currentTarget.style.display = 'none'; }} />
             <span className="staff-brand__badge"><Shield className="h-2.5 w-2.5" /></span>
           </span>
           <span className="staff-brand__copy">
             <strong>{platformName}</strong>
-            <span>Staff workspace</span>
+            <span>Employee workspace</span>
           </span>
         </Link>
       </div>
@@ -273,8 +273,8 @@ function StaffLayout({ title, subtitle, user, current, actions, children }) {
               <Menu className="h-5 w-5" />
             </button>
             <div className="staff-topbar__title">
-              <span className="staff-badge"><ShieldCheck className="h-3 w-3" /> Staff</span>
-              <strong>{title || 'Staff workspace'}</strong>
+              <span className="staff-badge"><ShieldCheck className="h-3 w-3" /> Employee</span>
+              <strong>{title || 'Employee workspace'}</strong>
               {subtitle && <small>{subtitle}</small>}
             </div>
           </div>
@@ -302,7 +302,7 @@ function StaffLayout({ title, subtitle, user, current, actions, children }) {
         <footer className="staff-footer">
           <span>{COMPANY.operator}</span>
           <span className="staff-footer__dot" />
-          <span>{current === 'dashboard' ? 'Staff workspace' : `Staff workspace / ${title}`}</span>
+          <span>{current === 'dashboard' ? 'Employee workspace' : `Employee workspace / ${title}`}</span>
           <span className="staff-footer__spacer" />
           <Link to="/security">Security</Link>
           <Link to="/contact">Support</Link>
@@ -407,13 +407,13 @@ export function StaffDashboard() {
   const memberSince = prettyDate(user?.created);
 
   return (
-    <StaffLayout title="Dashboard" subtitle="Staff workspace" user={user} current="dashboard">
+    <StaffLayout title="Dashboard" subtitle="Employee workspace" user={user} current="dashboard">
       <section className="staff-hero">
         <div className="staff-hero__glow" aria-hidden />
         <div className="staff-hero__copy">
           <Kicker icon={Sparkles}>{roleLabel(user)} · {staffTitle(user)}</Kicker>
           <h1>Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {first}.</h1>
-          <p>Your staff workspace is connected to the same member record. Open a desk, review the public record, and keep the launch work moving.</p>
+          <p>Your company employee workspace is connected to the same member record. Open a desk, review the public record, and keep the launch work moving.</p>
           <div className="staff-hero__actions">
             <Link to={role === 'teacher' ? '/staff/courses' : '/staff/terminal'} className="staff-btn staff-btn--gold">
               {role === 'teacher' ? 'Open Academy studio' : 'Open Terminal Pro'} <ArrowRight className="h-4 w-4" />
@@ -432,7 +432,7 @@ export function StaffDashboard() {
 
       <div className="staff-stat-grid">
         <Stat label="Workspace" value="Active" note={`${roleLabel(user)} access`} tone="green" />
-        <Stat label="Staff record" value={staff.employeeId || staff.employeeNo || 'Linked'} note={staffTitle(user)} tone="gold" />
+        <Stat label="Employee record" value={staff.employeeId || staff.employeeNo || 'Linked'} note={staffTitle(user)} tone="gold" />
         <Stat label="Public launch" value={`${days} days`} note={COMPANY.launch} tone="blue" />
         <Stat label="Priority seats" value="12 open" note="Documented on /team" tone="violet" />
       </div>
@@ -554,12 +554,12 @@ function StaffAcademyStudio({ mode = 'studio' }) {
     >
       <section className="staff-studio-hero">
         <div className="staff-studio-hero__copy">
-          <Kicker icon={GraduationCap}>Academy 2.0 · {isWebinars ? 'Live room' : 'Staff view'}</Kicker>
+          <Kicker icon={GraduationCap}>Academy 2.0 · {isWebinars ? 'Live room' : 'Employee view'}</Kicker>
           <h1>{isWebinars ? 'The schedule behind the live room.' : 'The curriculum, held to one standard.'}</h1>
           <p>
             {isWebinars
               ? 'Every SI-hosted session, its desk and its weekly slot. Member RSVP, room entry and replay controls stay inside the Academy.'
-              : 'Review the full programme map, learning operations and webinar schedule. This staff view is read-only; learner enrolment and lesson playback stay inside the member Academy.'}
+              : 'Review the full programme map, learning operations and webinar schedule. This employee view is read-only; learner enrolment and lesson playback stay inside the member Academy.'}
           </p>
           <div className="staff-hero__actions">
             <Link to={isWebinars ? '/staff/courses' : '/staff/webinars'} className="staff-btn staff-btn--gold">
@@ -765,7 +765,7 @@ export function StaffSettings() {
     setBusy(true);
     try {
       await updateProfile({ first_name: firstName.trim(), last_name: lastName.trim() });
-      toast({ title: 'Profile updated', description: 'Your staff profile is now up to date.' });
+      toast({ title: 'Profile updated', description: 'Your employee profile is now up to date.' });
     } catch (err) {
       toast({ variant: 'destructive', title: 'Could not save', description: String(err?.message || 'Please try again.') });
     } finally {
@@ -780,7 +780,7 @@ export function StaffSettings() {
           <div className="staff-panel__head">
             <div>
               <Kicker icon={Settings}>Profile</Kicker>
-              <h1>Your staff identity.</h1>
+              <h1>Your employee identity.</h1>
             </div>
           </div>
           <form onSubmit={save} className="staff-form">
@@ -811,7 +811,7 @@ export function StaffSettings() {
         <div className="staff-settings-side">
           <section className="staff-panel">
             <div className="staff-panel__head">
-              <div><Kicker icon={ShieldCheck}>Staff record</Kicker><h2>Read-only facts.</h2></div>
+              <div><Kicker icon={ShieldCheck}>Employee record</Kicker><h2>Read-only facts.</h2></div>
             </div>
             <dl className="staff-record">
               <div><dt>Department</dt><dd>{staff.department || '—'}</dd></div>
@@ -839,13 +839,13 @@ export function StaffSettings() {
 function StaffNotFound() {
   const { user } = useAuth();
   return (
-    <StaffLayout title="Not found" subtitle="Staff workspace" user={user} current="not-found">
+    <StaffLayout title="Not found" subtitle="Employee workspace" user={user} current="not-found">
       <section className="staff-notfound">
         <span className="staff-kicker">404 · Workspace</span>
         <h1>That staff tool does not exist.</h1>
         <p>The workspace has a fixed set of desks and records. Choose a real route below or open the dashboard.</p>
         <div className="staff-hero__actions">
-          <Link to="/staff" className="staff-btn staff-btn--gold">Staff dashboard <ArrowRight className="h-4 w-4" /></Link>
+          <Link to="/staff" className="staff-btn staff-btn--gold">Employee dashboard <ArrowRight className="h-4 w-4" /></Link>
           <Link to="/app" className="staff-btn staff-btn--ghost">Member app</Link>
         </div>
       </section>

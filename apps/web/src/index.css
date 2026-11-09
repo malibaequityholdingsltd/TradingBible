@@ -65,24 +65,71 @@ html.light #app-bg::after {
     linear-gradient(180deg, rgba(248,249,251,0.84) 0%, rgba(246,247,249,0.82) 55%, rgba(242,244,247,0.88) 100%);
 }
 
-/* Public landing: the bull/bear artwork is permanently monochrome. The
-   illustration remains visible but never competes with text, and no theme
-   preset can turn the backdrop gold again. Brand gold stays on the logo,
-   buttons and small accents. */
-body:has(.landing-page) #app-bg {
+/* Public company site + auth: the bull/bear artwork is permanently
+   monochrome. The illustration remains visible but never competes with text,
+   and no theme preset can turn the backdrop gold again. Brand gold stays on
+   the logo, buttons and small accents. Member/admin/staff/student portals do
+   not mount #app-bg at all. */
+body:has(.landing-page) #app-bg,
+body:has(.public-site-shell) #app-bg,
+body:has(.auth-shell) #app-bg,
+body:has(.at-shell) #app-bg {
   filter: grayscale(1) contrast(1.02);
+  opacity: 0.98;
 }
-html.light body:has(.landing-page) #app-bg {
+html.light body:has(.landing-page) #app-bg,
+html.light body:has(.public-site-shell) #app-bg,
+html.light body:has(.auth-shell) #app-bg,
+html.light body:has(.at-shell) #app-bg {
   filter: grayscale(1) contrast(0.98) brightness(1.04);
 }
-html.light body:has(.landing-page) #app-bg::after {
+html.light body:has(.landing-page) #app-bg::after,
+html.light body:has(.public-site-shell) #app-bg::after,
+html.light body:has(.auth-shell) #app-bg::after,
+html.light body:has(.at-shell) #app-bg::after {
   background:
     radial-gradient(900px 520px at 82% -12%, rgba(15, 23, 42, 0.012), transparent 62%),
     radial-gradient(760px 420px at -8% 0%, rgba(15, 23, 42, 0.01), transparent 62%),
     linear-gradient(180deg, rgba(248,249,251,0.86) 0%, rgba(246,247,249,0.84) 55%, rgba(242,244,247,0.90) 100%);
 }
-html:not(.light) body:has(.landing-page) #app-bg::after {
+html:not(.light) body:has(.landing-page) #app-bg::after,
+html:not(.light) body:has(.public-site-shell) #app-bg::after,
+html:not(.light) body:has(.auth-shell) #app-bg::after,
+html:not(.light) body:has(.at-shell) #app-bg::after {
   background: linear-gradient(180deg, rgba(7,7,10,0.46) 0%, rgba(7,7,10,0.54) 55%, rgba(7,7,10,0.64) 100%);
+}
+
+/* Public Atelier pages (investor relations and TBC) use that shell for their
+   typography and cards. When the public artwork is mounted, drop only the
+   shell's opaque canvas and decorative fixed layers so the bull/bear image
+   can show through. Admin, staff and the shareholder portal have no #app-bg
+   and keep the original Atelier canvas. */
+body:has(#app-bg) .at-shell {
+  background: transparent !important;
+}
+body:has(#app-bg) .at-shell::before,
+body:has(#app-bg) .at-shell::after {
+  display: none !important;
+}
+body:has(#app-bg) .ir-shell.at-shell .ir-hero,
+body:has(#app-bg) .ir-shell.at-shell .ir-card,
+body:has(#app-bg) .ir-shell.at-shell .ir-chart,
+body:has(#app-bg) .ir-shell.at-shell .ir-portal-gate,
+body:has(#app-bg) .ir-shell.at-shell .ir-cta-strip,
+body:has(#app-bg) .ir-shell.at-shell .ir-portal-hero,
+body:has(#app-bg) .ir-shell.at-shell .ir-status-panel {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background-color: color-mix(in srgb, var(--at-panel, #12161c) 82%, transparent) !important;
+}
+html.light body:has(#app-bg) .ir-shell.at-shell .ir-hero,
+html.light body:has(#app-bg) .ir-shell.at-shell .ir-card,
+html.light body:has(#app-bg) .ir-shell.at-shell .ir-chart,
+html.light body:has(#app-bg) .ir-shell.at-shell .ir-portal-gate,
+html.light body:has(#app-bg) .ir-shell.at-shell .ir-cta-strip,
+html.light body:has(#app-bg) .ir-shell.at-shell .ir-portal-hero,
+html.light body:has(#app-bg) .ir-shell.at-shell .ir-status-panel {
+  background-color: rgba(255, 255, 255, 0.82) !important;
 }
 /* On the public landing, gradient headline text becomes solid ink in light
    mode. Gold stays on the brand mark and small accents, never the headline. */

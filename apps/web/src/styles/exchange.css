@@ -1795,7 +1795,10 @@ html:has(#app-bg) #root { position: relative; z-index: 0; }
 
 .tb-auth-shell,
 .auth-shell {
-  background: var(--ex-bg) !important;
+  /* The public bull/bear artwork sits behind every auth surface. Keep the
+     shell itself transparent so login, signup, reset and onboarding read as
+     part of the same company site; the form card supplies the contrast. */
+  background: transparent !important;
   color: var(--ex-text) !important;
 }
 
