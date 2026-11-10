@@ -966,15 +966,19 @@ These are intentional product truths:
 | Portal background exclusion | Verified for `/app`, `/admin`, `/staff`, `/student`, `/leaderboard`, `/tv` and `/investors/shareholders` |
 | Public/auth/investor background | Verified live on desktop and mobile, light and dark, 9 November 2026 |
 | Shareholder portal background exclusion | Verified live — no `#app-bg`, Atelier canvas retained |
+| Fundraising/communications deployment | Admin SPA routes return `200`; unauthenticated API routes return `401`; new JS chunks return `200`; packet/communications modules load on the production API |
 | API health | Production `/api/health` returns 200 |
 | Production `.env` | Not read, modified or overwritten |
 
 ### Current production state
 
-- Public rebuild is deployed at **https://tradingbible.app**.
-- Deployed web source commit: **`48e5621`** — `feat(public): unify company artwork and employee framing`.
-- Production build and live-route checks completed on 9 November 2026.
+- Public rebuild and the fundraising/communications consoles are deployed at **https://tradingbible.app**.
+- Deployed web/API source commit: **`8a3ff5a`** — `feat(fundraising): add confidential packet and branded communications`.
+- Production deployment completed on 10 November 2026.
+- `/admin/fundraising-documents` and `/admin/communications` serve the admin SPA shell. Their API routes remain admin-authenticated and returned `401` without a session.
+- The 20-document packet is present under the API storage path. The execution gate remains locked; no `FUNDRAISING_EXECUTION_ENABLED` change was made.
 - The platform is real and usable for the documented public and member surfaces.
+- Authenticated admin UI acceptance still needs a real admin session. No production `.env` value was read or changed.
 - Regulated surfaces remain gated as described above.
 - The absence of a live Stripe charge, card, fund or token is a deliberate truthful state, not a missing screenshot.
 

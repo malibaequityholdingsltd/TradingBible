@@ -213,13 +213,18 @@ These are not bugs and must not be “fixed” by inventing data:
 - Optional D&B: `DNB_CLIENT_ID`, `DNB_CLIENT_SECRET`.
 - Optional Circle x402: `CIRCLE_X402_SELLER_ADDRESS` and related settings.
 
-## 6. Production verification (8 November 2026)
+## 6. Production verification (10 November 2026)
 
-- Web assets deployed; `/`, `/fund`, `/investors`, `/academy`, `/pricing` and `/llms.txt` return `200`.
+- Web assets deployed; `/`, `/fund`, `/investors`, `/academy`, `/pricing`, `/admin/fundraising-documents`, `/admin/communications` and `/llms.txt` return `200`.
 - API health returns `200`; PM2 `tradingbible-api` is online.
+- The production API loads the 20-document fundraising manifest and both new admin routers.
+- `/api/admin/fundraising-documents`, `/api/admin/fundraising-documents/executions` and `/api/admin/communications/templates` return `401` without an admin session; no fundraising packet or template registry is public.
+- The new admin page chunks return `200` from the production build. The packet ZIP was generated and parsed locally: 43 entries, 8.8 MB, including all 20 DOCX/PDF pairs, the manifest, the communications pack and the README.
+- The fundraising execution gate remains locked. No production `FUNDRAISING_EXECUTION_ENABLED`, DocuSign, SMTP or postal-address value was read or changed.
 - Production TV geometry verified at 1440×900: expanded panel left/top sat on the sidebar/topbar lines and stayed inside the viewport.
 - Production card previews verified at the ISO/IEC 7810 ID-1 ratio (`1.586`), with `NOT ISSUED` / `PREVIEW ONLY` and no long digit sequence.
-- Production acceptance still used mocked Supabase auth/API for the authenticated checks; see §2.6. No real charge, card issuance or TBC payment was performed.
+- Production acceptance still used mocked Supabase auth/API for the authenticated checks; see §2.6. No real charge, card issuance, TBC payment, securities issuance or investor communication was performed.
+- Authenticated admin UI acceptance still needs a real admin session.
 
 ## 7. Current safe state
 
