@@ -280,7 +280,11 @@ export const CareersPage = () => {
 
   const apply = async (e) => {
     e?.preventDefault?.();
-    if (!openId || !form.name.trim() || !form.email.trim()) return;
+    if (!openId) return;
+    if (!form.name.trim() || !form.email.trim()) {
+      setApplyErr('Please enter your name and email before sending the application.');
+      return;
+    }
     setBusy(true);
     setApplyErr('');
     try {
@@ -365,7 +369,7 @@ export const CareersPage = () => {
                         <input value={form.website} onChange={(e) => setForm((p) => ({ ...p, website: e.target.value }))} placeholder="Website" tabIndex={-1} autoComplete="off" />
                       </div>
                       {applyErr && <p className="rounded-xl border border-red-400/30 bg-red-400/5 p-2.5 text-center text-xs text-red-300">{applyErr}</p>}
-                      <GoldButton disabled={busy} className="w-full justify-center">{t('job.sendApp')}</GoldButton>
+                      <GoldButton type="submit" disabled={busy} className="w-full justify-center">{t('job.sendApp')}</GoldButton>
                     </form>
                   )
                 )}

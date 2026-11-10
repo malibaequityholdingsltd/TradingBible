@@ -643,7 +643,7 @@ export function LoginPage() {
               onComplete={() => verifyTotpStep()}
             />
           )}
-          <GoldButton disabled={busy || (!needTotp && !sent && cooldownSeconds > 0)} className="w-full btn-spotlight">{busy ? t('auth.e.plsWait') : (needTotp ? t('auth.verifyTotp') : (sent ? t('auth.verifySignin') : t('auth.sendCode')))} <ArrowRight className="h-4 w-4" /></GoldButton>
+          <GoldButton type="submit" disabled={busy || (!needTotp && !sent && cooldownSeconds > 0)} className="w-full btn-spotlight">{busy ? t('auth.e.plsWait') : (needTotp ? t('auth.verifyTotp') : (sent ? t('auth.verifySignin') : t('auth.sendCode')))} <ArrowRight className="h-4 w-4" /></GoldButton>
         </form>
         {needTotp && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy} onClick={() => { setNeedTotp(false); setTotpCode(''); setPendingAuth(null); }} className="text-[#8a8577] hover:text-[#d4af37]">{t('auth.backToEmail')}</button></div>}
         {!needTotp && sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={sendCode} className="text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? t('auth.e.resendIn', { n: cooldownSeconds }) : t('auth.e.resend')}</button></div>}
@@ -923,7 +923,7 @@ export function SignupPage() {
               onComplete={() => submit()}
             />
           )}
-          <GoldButton disabled={busy || (!sent && (!accepted || cooldownSeconds > 0))} className="w-full btn-spotlight">{busy ? t('auth.e.plsWait') : (sent ? t('auth.verifyContinue') : t('auth.sendCode'))} <ArrowRight className="h-4 w-4" /></GoldButton>
+          <GoldButton type="submit" disabled={busy || (!sent && (!accepted || cooldownSeconds > 0))} className="w-full btn-spotlight">{busy ? t('auth.e.plsWait') : (sent ? t('auth.verifyContinue') : t('auth.sendCode'))} <ArrowRight className="h-4 w-4" /></GoldButton>
         </form>
         {sent && <div className="mt-3 text-center text-xs sm:mt-4"><button type="button" disabled={busy || cooldownSeconds > 0} onClick={resend} className="text-[#8a8577] hover:text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-60">{cooldownSeconds > 0 ? t('auth.e.resendIn', { n: cooldownSeconds }) : t('auth.e.resend')}</button></div>}
         {!sent && cooldownSeconds <= 0 && (

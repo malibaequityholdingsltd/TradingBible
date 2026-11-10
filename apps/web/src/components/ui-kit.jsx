@@ -138,10 +138,12 @@ export function Tabs({ tabs, active, onChange }) {
 	);
 }
 
-function ButtonBase({ to, href, onClick, className = '', children, ...rest }) {
+function ButtonBase({ to, href, onClick, type, className = '', children, ...rest }) {
 	if (to) return <Link to={to} className={className} {...rest}>{children}</Link>;
 	if (href) return <a href={href} className={className} {...rest}>{children}</a>;
-	return <button type="button" onClick={onClick} className={className} {...rest}>{children}</button>;
+	// A button with no click handler inside a form is the form's action.
+	// Explicit onClick actions stay type="button" so they never submit.
+	return <button type={type || (onClick ? 'button' : 'submit')} onClick={onClick} className={className} {...rest}>{children}</button>;
 }
 
 export function GoldButton({ to, href, onClick, className = '', children, ...rest }) {

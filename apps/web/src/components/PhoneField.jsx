@@ -2,7 +2,7 @@
 // plus a local-number input. Always stores/returns the full E.164-ish
 // string ("+96551234567"). Existing values are split gracefully: a known
 // leading code is detected, otherwise the default code prefixes digits.
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 export const DIAL_CODES = [
   ['+1', 'US/CA +1'], ['+7', 'KZ/RU +7'], ['+20', 'EG +20'], ['+27', 'ZA +27'],
@@ -80,14 +80,35 @@ export default function PhoneField({
   value, onChange, fallbackCode = '+1', inputClassName = '', selectClassName = '',
   placeholder = '512 345 678', autoComplete = 'tel', disabled = false, id,
 }) {
-  const { code, local } = splitPhone(value, fallbackCode);
+  const parsed = splitPhone(value, fallbackCode);
+  const [selectedCode, setSelectedCode] = useState(parsed.code);
+  const valueHasCode = String(value || '').trim().startsWith('+');
+
+  useEffect(() => {
+    const clean = String(value || '').trim();
+    if (!clean.startsWith('+')) return;
+    const next = splitPhone(clean, fallbackCode).code;
+    setSelectedCode((current) => (current === next ? current : next));
+  }, [value, fallbackCode]);
+
+  // Keep the chosen dial code even before the local number is typed. Deriving
+  // it only from the full value made the select snap back to +1 whenever the
+  // local field was empty.
+  const code = valueHasCode ? parsed.code : selectedCode;
+  const local = parsed.local;
   const known = DIAL_CODES.some(([c]) => c === code);
   const options = known ? DIAL_CODES : [[code, `${code}`], ...DIAL_CODES];
+
+  const pickCode = (nextCode) => {
+    setSelectedCode(nextCode);
+    onChange(joinPhone(nextCode, local));
+  };
+
   return (
     <div className="flex min-w-0 gap-2">
       <select
         value={code}
-        onChange={(e) => onChange(joinPhone(e.target.value, local))}
+        onChange={(e) => pickCode(e.target.value)}
         aria-label="Country code"
         disabled={disabled}
         className={`w-[7.5rem] shrink-0 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2.5 font-mono text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50 ${selectClassName}`}
