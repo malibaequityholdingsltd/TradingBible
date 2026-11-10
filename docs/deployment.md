@@ -20,15 +20,35 @@ The production stack is a single Ubuntu VPS (no Docker):
 
 ## Deploying new code
 
+Production is **not a git checkout**. Build locally, then rsync the built SPA and
+the changed API source. Do not sync `.env`, `node_modules`, or local execution
+state.
+
 ```bash
-ssh root@2.25.166.110
-cd /var/www/tradingbible
-git pull --ff-only                       # fetch latest (origin is github.com/malibaequityholdingsltd/TradingBible.git)
-cd apps/web && npm run build             # rebuild SPA into dist/apps/web/
-pm2 restart tradingbible-api             # restart API (loads apps/api/.env)
+cd /path/to/TradingBible-edit
+npm run lint && npm run build && npm run verify
+
+rsync -az --itemize-changes apps/api/src/ root@2.25.166.110:/var/www/tradingbible/apps/api/src/
+rsync -az --delete dist/apps/web/ root@2.25.166.110:/var/www/tradingbible/dist/apps/web/
+ssh root@2.25.166.110 'pm2 restart tradingbible-api'
 ```
 
-The API reads its secrets from `/var/www/tradingbible/apps/api/.env` (gitignored) — set/update `SEND_EMAIL_HOOK_SECRET`, Supabase keys and Stripe keys there. Never print, copy or overwrite that file from an agent session.
+For controlled document storage, sync the generated library without deleting
+runtime state:
+
+```bash
+rsync -az --exclude='.execution/' --exclude='*.tmp' \
+  apps/api/storage/fundraising-documents/ \
+  root@2.25.166.110:/var/www/tradingbible/apps/api/storage/fundraising-documents/
+```
+
+The API reads its secrets from `/var/www/tradingbible/apps/api/.env` (gitignored) — set/update `SEND_EMAIL_HOOK_SECRET`, Supabase keys and Stripe keys there. Never print, copy or overwrite that file from an agent session. A production deploy does not set `FUNDRAISING_EXECUTION_ENABLED`; leave it unset or `false` until board and counsel authorization are recorded.
+
+Before overwriting API source, take a small remote backup:
+
+```bash
+ssh root@2.25.166.110 'cd /var/www/tradingbible && tar -czf "backups/pre-deploy-$(date -u +%Y%m%dT%H%M%SZ).tar.gz" apps/api/src dist/apps/web apps/api/storage'
+```
 
 ## Full fresh deploy / repair
 
