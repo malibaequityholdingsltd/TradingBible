@@ -59,6 +59,8 @@ export default function TbcExecutionPanel({
   approvalHelp = 'Record an approval only after DocuSign reports the envelope as executed. Approval states are evidence records; they do not enable token sale, staking, governance, migration or chain features.',
   approvalPlaceholder = 'Resolution reference, counsel advice, license number, conditions…',
   scopeNote = 'Each signer receives signature, printed-name, capacity and date tabs anchored only to their own execution block. Optional parties are off by default.',
+  executionEnabled = true,
+  executionDisabledReason = '',
 }) {
   const [state, setState] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -164,7 +166,7 @@ export default function TbcExecutionPanel({
   };
 
   const send = async () => {
-    if (!selected) return;
+    if (!selected || !executionEnabled) return;
     setBusy('send');
     setError('');
     setNotice('');
@@ -195,7 +197,7 @@ export default function TbcExecutionPanel({
   };
 
   const submitDraft = async () => {
-    if (!selected) return;
+    if (!selected || !executionEnabled) return;
     setBusy('submit');
     setError('');
     try {
@@ -246,10 +248,13 @@ export default function TbcExecutionPanel({
   };
 
   const configured = Boolean(state?.configured);
+  const unlocked = configured && executionEnabled;
   const isDraft = selected?.providerStatus === 'created';
-  const canSend = configured && selected && ['not_prepared', 'declined', 'voided'].includes(selected.state)
+  const canSend = unlocked && selected && ['not_prepared', 'declined', 'voided'].includes(selected.state)
     && !selected.envelopeId;
   const canApprove = selected?.state === 'executed' || ['approved', 'cleared', 'licensed', 'live'].includes(selected?.state);
+  const gateLabel = !configured ? 'DocuSign setup required' : !executionEnabled ? 'Execution locked' : 'DocuSign configured';
+  const gateTone = !configured || !executionEnabled ? 'amber' : 'green';
 
   return (
     <section className="mt-5">
@@ -257,7 +262,7 @@ export default function TbcExecutionPanel({
         index="01"
         title={title}
         sub={subtitle}
-        action={<AtBadge tone={configured ? 'green' : 'amber'}>{configured ? 'DocuSign configured' : 'DocuSign setup required'}</AtBadge>}
+        action={<AtBadge tone={gateTone}>{gateLabel}</AtBadge>}
       />
 
       <AtPanel
@@ -272,6 +277,14 @@ export default function TbcExecutionPanel({
               <b className="text-[var(--at-ink)]">DocuSign is not connected on this API server.</b>{' '}
               Add {state?.missing?.length ? state.missing.join(', ') : 'the DocuSign credentials'} to the API environment, then restart the API.
               The register can still be prepared, but envelopes cannot be sent until credentials are present.
+            </AtAlert>
+          </div>
+        )}
+        {configured && !executionEnabled && (
+          <div className="border-b border-[var(--at-line-soft)] p-4">
+            <AtAlert icon={TriangleAlert} tone="amber">
+              <b className="text-[var(--at-ink)]">Execution is locked.</b>{' '}
+              {executionDisabledReason || 'DocuSign envelope creation and sending are disabled until counsel and board authorization are recorded.'}
             </AtAlert>
           </div>
         )}
@@ -344,7 +357,7 @@ export default function TbcExecutionPanel({
                       </AtButton>
                     )}
                     {isDraft && (
-                      <AtButton onClick={submitDraft} disabled={Boolean(busy) || !configured} variant="gold" size="sm" icon={busy === 'submit' ? Loader2 : Send}>
+                      <AtButton onClick={submitDraft} disabled={Boolean(busy) || !unlocked} variant="gold" size="sm" icon={busy === 'submit' ? Loader2 : Send}>
                         Release draft
                       </AtButton>
                     )}
@@ -421,14 +434,15 @@ export default function TbcExecutionPanel({
                       Save signer list
                     </AtButton>
                     <AtButton onClick={send} disabled={Boolean(busy) || !canSend} variant="gold" size="sm" icon={busy === 'send' ? Loader2 : Send}>
-                      {selected.envelopeId ? 'Envelope already sent' : 'Send via DocuSign'}
+                      {selected.envelopeId ? 'Envelope already sent' : !executionEnabled ? 'Execution locked' : 'Send via DocuSign'}
                     </AtButton>
                     <label className="at-check text-[10px] text-[var(--at-mut)]">
-                      <input type="checkbox" checked={sendImmediately} onChange={(event) => setSendImmediately(event.target.checked)} disabled={Boolean(selected.envelopeId)} />
+                      <input type="checkbox" checked={sendImmediately} onChange={(event) => setSendImmediately(event.target.checked)} disabled={Boolean(selected.envelopeId) || !executionEnabled} />
                       Send immediately (uncheck to prepare a DocuSign draft)
                     </label>
                   </div>
                   {!configured && <p className="mt-2 text-[10px] text-[var(--at-amber)]">Sending is disabled until the DocuSign credentials are added to the API environment.</p>}
+                  {configured && !executionEnabled && <p className="mt-2 text-[10px] text-[var(--at-amber)]">Envelope creation and sending are disabled until the execution gate is opened after counsel and board authorization.</p>}
                 </div>
 
                 <div className="mt-5 rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3">

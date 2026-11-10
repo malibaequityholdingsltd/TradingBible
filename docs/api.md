@@ -103,6 +103,19 @@ Ad engagement counters (no auth).
 ### `GET /admin/*` (see `routes/admin.js`)
 Admin portal endpoints — require an authenticated user with role `admin` (JWT via `Authorization: Bearer <token>`).
 
+### `/admin/fundraising-documents`
+Admin-only confidential fundraising packet. No public projection. List,
+DOCX/PDF download, packet ZIP, workflow, DocuSign send/submit/sync and approval
+routes live in `routes/admin-fundraising.js`. Envelope creation and sending
+return `409 fundraising_execution_disabled` unless
+`FUNDRAISING_EXECUTION_ENABLED=true`.
+
+### `/admin/communications`
+Admin-only branded communication registry. List, preview and
+single-recipient test-send routes live in `routes/admin-communications.js`.
+The test-send path delivers only to the signed-in administrator. It is not a
+bulk sender and does not expose a member or investor audience list.
+
 ## Security
 
 ### `POST /security/csp-report`

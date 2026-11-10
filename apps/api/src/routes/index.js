@@ -28,6 +28,8 @@ import adminRouter from './admin.js';
 import legalVaultRouter, { docusignWebhook } from './legal-vault.js';
 import tbStockDocumentsRouter from './tb-stock-documents.js';
 import adminTbStockDocumentsRouter from './admin-tb-stock-documents.js';
+import adminFundraisingRouter from './admin-fundraising.js';
+import adminCommunicationsRouter from './admin-communications.js';
 import academyRouter from './academy.js';
 import digestRouter from './digest.js';
 import dunsRouter from './duns.js';
@@ -74,6 +76,8 @@ export default () => {
     router.use('/ads', adsRouter);
     router.use('/admin/legal-vault', legalVaultRouter);
     router.use('/admin/tb-stock-documents', adminTbStockDocumentsRouter);
+    router.use('/admin/fundraising-documents', adminFundraisingRouter);
+    router.use('/admin/communications', adminCommunicationsRouter);
     router.post('/webhooks/docusign', docusignWebhook);
     router.use('/admin', adminRouter);
     router.use('/admin/digest', digestRouter);

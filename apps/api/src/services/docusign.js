@@ -194,31 +194,65 @@ function fieldTabsFor(signer, recipientId) {
 		width: String(fields[field]?.width || fallbackWidth),
 		height: String(fields[field]?.height || fallbackHeight),
 	});
+	const textTabs = [
+		{
+			...baseFor('printedName'),
+			tabLabel: 'Printed name',
+			...dims('printedName', 210, 18),
+			required: 'true',
+		},
+		{
+			...baseFor('title'),
+			tabLabel: 'Title / firm / capacity',
+			...dims('title', 240, 18),
+			required: 'true',
+		},
+	];
+	const checkboxTabs = [];
+	for (const field of Array.isArray(signer.customFields) ? signer.customFields : []) {
+		const label = String(field?.label || '').trim();
+		const anchor = String(field?.anchor || '').trim();
+		if (!label || !anchor) continue;
+		const tab = {
+			anchorString: anchor,
+			anchorUnits: 'pixels',
+			anchorXOffset: String(field.xOffset ?? '0'),
+			anchorYOffset: String(field.yOffset ?? '0'),
+			anchorMatchWholeWord: 'false',
+			anchorCaseSensitive: 'false',
+			anchorIgnoreIfNotPresent: 'false',
+			documentId: '1',
+			recipientId: String(recipientId),
+			tabLabel: label,
+			width: String(field.width || (field.type === 'checkbox' ? 18 : 240)),
+			height: String(field.height || 18),
+			required: field.required === false ? 'false' : 'true',
+		};
+		if (field.type === 'checkbox') {
+			checkboxTabs.push({
+				...tab,
+				selected: field.value === true ? 'true' : 'false',
+			});
+		} else {
+			textTabs.push({
+				...tab,
+				value: String(field.value || ''),
+			});
+		}
+	}
 	return {
 		signHereTabs: [{
 			...baseFor('signature'),
 			tabLabel: `${signer.party} — signature`,
 			...dims('signature', 180, 24),
 		}],
-		textTabs: [
-			{
-				...baseFor('printedName'),
-				tabLabel: 'Printed name',
-				...dims('printedName', 210, 18),
-				required: 'true',
-			},
-			{
-				...baseFor('title'),
-				tabLabel: 'Title / firm / capacity',
-				...dims('title', 240, 18),
-				required: 'true',
-			},
-		],
+		textTabs,
 		dateSignedTabs: [{
 			...baseFor('date'),
 			tabLabel: 'Date signed',
 			...dims('date', 120, 18),
 		}],
+		...(checkboxTabs.length ? { checkboxTabs } : {}),
 	};
 }
 

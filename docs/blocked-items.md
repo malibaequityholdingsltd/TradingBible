@@ -1,8 +1,8 @@
 # Blocked and Non-Working Inventory
 
-**Status:** 8 November 2026  
+**Status:** 10 November 2026
 **Operator:** TradingBible Holdings, Inc.  
-**Scope:** web app, API, billing, cards, fund, legal/corporate records and production validation.
+**Scope:** web app, API, billing, cards, fund, fundraising packet, company communications, legal/corporate records and production validation.
 
 This is the honest readiness list. It separates work that is complete from work that is blocked by an external provider, a legal/professional review or a product decision. No blocked item is presented in the product as live, funded, issued, registered or approved.
 
@@ -29,6 +29,10 @@ This is the honest readiness list. It separates work that is complete from work 
 | Lithic sandbox connectivity | A sandbox-only Lithic client and authenticated `/wallet/cards/*` routes can create and close a virtual sandbox card. PAN/CVV are never stored or returned; production issuance is hard-disabled. | Sandbox key validated; route test returned `201` for create and `200` for close; the Lithic card ended in `CLOSED`. |
 | Release controls | PWA, DocuSign, TBC, exam-bank, translation and curated-path guards remain intact. | `npm run verify:release` passes. |
 | Lint/build/tests | Web/API lint, production build and unit tests pass after the changes. | `npm run lint`, `npm run build`, `npm test` (26 tests). |
+| Confidential fundraising packet | 20 branded DOCX/PDF drafts covering the readiness memo, board resolutions, officer certificate, SAFE, investor certificates, Form D worksheet, Reg CF readiness and reporting. Admin-only, no public page, no solicitation. | Builder generated all 20 files plus manifest; every one of the 232 DocuSign anchors appears exactly once in its PDF; packet ZIP route tested. |
+| Fundraising DocuSign controls | Custom text and checkbox tabs for investor questionnaires; unique per-document anchors; separate execution register; execution locked behind `FUNDRAISING_EXECUTION_ENABLED=true`. | Module import, route registration, anchor uniqueness and gate checks pass. |
+| Company communications registry | 45 branded email/SMS/in-app templates across seven categories, dark-and-gold shell, absolute logo URL, hidden preheader, marketing footer and compliance labels. | Registry renders 45 templates; welcome and fundraising previews render; Markdown pack exports. |
+| Admin communications console | Admin-only list, preview and single-recipient test-send. No bulk sender or audience list. | Route and UI wired; test sends are limited to the signed-in administrator. |
 
 ## 2. Blocked — external
 
@@ -101,7 +105,38 @@ No API key can substitute for this authorisation.
 **Current behaviour:** The integration is real-only and refuses to run without complete credentials. No live envelope has been sent or signed.  
 **Environment names:** `DOCUSIGN_INTEGRATION_KEY`, `DOCUSIGN_USER_ID`, `DOCUSIGN_ACCOUNT_ID`, `DOCUSIGN_PRIVATE_KEY`, `DOCUSIGN_CONNECT_HMAC_KEY`, `DOCUSIGN_AUTH_SERVER`, `DOCUSIGN_BASE_URL`, `DOCUSIGN_SEND_ON_CREATE`.
 
-### 2.8 Fund and asset-management offering
+### 2.8 Fundraising packet, Form D and Regulation CF
+
+**Status:** Blocked — external, legal and corporate records.
+**Current behaviour:** The 20-document confidential packet is generated, branded and readable only by admins. It is marked `DRAFT · NOT EXECUTED · COUNSEL REVIEW REQUIRED`. There is no public fundraising page, investment button, payment collection or securities issuance. The private-placement track is drafted as Rule 506(b) plus a Regulation S offshore tranche; Regulation CF is a separate later track and is not qualified.
+**What is missing:**
+
+- Counsel review of the exact document version and the communications gate.
+- Confirmed certificate of incorporation date, principal address, fiscal year end, officers/directors and registered agent.
+- Board authorization for the security, offering amount, minimum target, price, valuation cap and use-of-proceeds budget.
+- A reconciled cap table, SAFE register, option pool and related-party disclosures.
+- Audited or reviewed financial statements and the accountant identity.
+- A filed Form D (the packet contains only a preparation worksheet; official Form D is filed through EDGAR).
+- A registered intermediary, CRD number, escrow arrangement and qualified Regulation CF offering through the SEC/portal process.
+- Production DocuSign credentials and a real-account envelope test.
+
+**Environment names:** `FUNDRAISING_EXECUTION_ENABLED` (must remain unset or `false` until board and counsel authorization), plus every `DOCUSIGN_*` credential in §2.7. Do not set the execution flag merely to preview a document.
+
+### 2.9 Company communication delivery
+
+**Status:** Blocked — external and compliance.
+**Current behaviour:** The registry has 45 branded email, SMS and in-app templates. The admin console can preview them and send a single test email only to the signed-in administrator. There is no bulk sender, member list, investor list or marketing automation. SMS is design-only.
+**What is missing:**
+
+- A verified `COMPANY_POSTAL_ADDRESS` before any commercial email is sent.
+- A production SMTP sender with SPF, DKIM and DMARC verification.
+- An SMS provider, documented consent records, quiet hours and opt-out handling.
+- Counsel approval for fundraising templates and a controlled recipient/audience process.
+- A real unsubscribe/preference centre and suppression-list handling for marketing email.
+
+Fundraising templates remain restricted even if ordinary transactional email is configured. A test send to the administrator is not an investor communication or a send authorization.
+
+### 2.10 Fund and asset-management offering
 
 **Status:** Blocked — external and intentionally unavailable.  
 **Current behaviour:** `/fund` presents TradingBible Capital as a proposed division **in formation**. There is no fund vehicle, outside capital, AUM, track record, PPM, subscription document or investor offering.  
@@ -116,6 +151,10 @@ No API key can substitute for this authorisation.
 | TB securities-issuer record | Blocked — counsel | Confirm that TradingBible Holdings, Inc. is the issuer of TB and that the private-record, no-offering and no-listing language is accurate. |
 | Employment entity and workforce policy | Blocked — counsel | Confirm TradingBible Holdings, Inc. as the U.S. employing entity and review the global workforce policy. |
 | Fund structure and offering | Blocked — counsel/regulatory | Entity, adviser registration/exemption, PPM, custody, AML/KYC and marketing restrictions. |
+| Private-placement packet and SAFE terms | Blocked — counsel/board | Confirm Rule 506(b) and Regulation S eligibility, accredited-investor verification, board-authorized terms, valuation cap, minimum target, use of proceeds and closing conditions. |
+| Form D and blue-sky filings | Blocked — filing | The packet contains a worksheet only. File official Form D through EDGAR within the applicable deadline and make any required state notice filings. |
+| Regulation CF offering | Blocked — SEC/portal | Requires a registered FINRA intermediary, Form C qualification, audited or reviewed financials as applicable, escrow and ongoing reporting. The packet is preparation material, not a qualified offering. |
+| Fundraising and investor communications | Blocked — counsel | Approve the exact copy, audience, timing and delivery channel. Private-placement messages must stay one-to-one and relationship-based; Reg CF messages must follow the qualified portal rules. |
 
 ## 4. Intentionally unavailable or honest empty states
 
@@ -159,12 +198,16 @@ These are not bugs and must not be “fixed” by inventing data:
 ### Priority 4 — legal, corporate and fund
 
 - Counsel memos for Terms §8.1, corporate registration, TB issuer record and employment entity.
-- Fund counsel and the service providers listed in §2.8.
+- Fund counsel and the service providers listed in §2.10.
+- Fundraising counsel for the private-placement packet, SAFE terms, Form D worksheet and Regulation CF readiness memorandum.
+- Board authorization for the exact offering terms before any DocuSign execution gate is opened.
 
 ### Priority 5 — production and optional integrations
 
 - Real non-admin test account or permission to create one.
 - DocuSign developer credentials listed in §2.7.
+- Production SMTP sender with SPF/DKIM/DMARC and a verified `COMPANY_POSTAL_ADDRESS` before commercial email.
+- An SMS provider, consent records and opt-out handling before SMS delivery.
 - SMTP delivery/DKIM access if email verification is in scope.
 - Optional market/AI keys: `ALPHA_VANTAGE_API_KEY`, `FINNHUB_API_KEY`, `DEEPSEEK_API_KEY` or `INTEGRATED_AI_API_URL`/`INTEGRATED_AI_API_KEY`.
 - Optional D&B: `DNB_CLIENT_ID`, `DNB_CLIENT_SECRET`.

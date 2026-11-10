@@ -114,6 +114,8 @@ const AdminEquityPage = lazy(() => import('./pages/AdminEquityPage'));
 const AdminTbcPage = lazy(() => import('./pages/AdminTbcPage'));
 const AdminTbcDocumentsPage = lazy(() => import('./pages/AdminTbcDocumentsPage'));
 const AdminTbStockDocumentsPage = lazy(() => import('./pages/AdminTbStockDocumentsPage'));
+const AdminFundraisingDocumentsPage = lazy(() => import('./pages/AdminFundraisingDocumentsPage'));
+const AdminCommunicationsPage = lazy(() => import('./pages/AdminCommunicationsPage'));
 const ChallengesPage = lazy(() => import('./pages/ChallengesPage'));
 const BacktestPage = lazy(() => import('./pages/BacktestPage'));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
@@ -504,6 +506,8 @@ function RoutesWithBoundary() {
                     <Route path="/admin/equity" element={<AdminProtected><AdminEquityPage /></AdminProtected>} />
                     <Route path="/admin/legal-vault" element={<AdminProtected><AdminTbcDocumentsPage /></AdminProtected>} />
                     <Route path="/admin/tb-stock-documents" element={<AdminProtected><AdminTbStockDocumentsPage /></AdminProtected>} />
+                    <Route path="/admin/fundraising-documents" element={<AdminProtected><AdminFundraisingDocumentsPage /></AdminProtected>} />
+                    <Route path="/admin/communications" element={<AdminProtected><AdminCommunicationsPage /></AdminProtected>} />
                     <Route path="/staff/*" element={<StaffProtected><StaffPortal /></StaffProtected>} />
                     <Route path="/home" element={<Navigate to="/" replace />} />
                     <Route path="*" element={<NotFoundPage />} />

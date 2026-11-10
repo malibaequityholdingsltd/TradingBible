@@ -22,6 +22,10 @@ import {
 	findByEnvelopeId as findTbByEnvelopeId,
 	updateProviderStatus as updateTbProviderStatus,
 } from '../services/tb-stock-execution.js';
+import {
+	findByEnvelopeId as findFundraisingByEnvelopeId,
+	updateProviderStatus as updateFundraisingProviderStatus,
+} from '../services/fundraising-execution.js';
 
 const router = Router();
 
@@ -205,6 +209,10 @@ export async function docusignWebhook(req, res) {
 	if (!record) {
 		record = await findTbByEnvelopeId(envelopeId);
 		updateRecord = updateTbProviderStatus;
+	}
+	if (!record) {
+		record = await findFundraisingByEnvelopeId(envelopeId);
+		updateRecord = updateFundraisingProviderStatus;
 	}
 	if (!record) return res.status(202).json({ ok: true, ignored: 'unknown envelope' });
 

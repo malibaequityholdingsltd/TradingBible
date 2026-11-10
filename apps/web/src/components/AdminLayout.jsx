@@ -4,6 +4,7 @@ import {
   LayoutDashboard, Users, Settings, FileText, CreditCard, IdCard, LibraryBig, BarChart3,
   LogOut, Menu, Search, Shield, X, Plug, Key, Package, User, ChevronDown, ChevronRight, MonitorPlay, Briefcase, Gift,
   Wallet, UserRound, Building2, Coins, Command, ShieldCheck, Landmark, FileCheck2,
+  FileSignature, Mail,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import pb from '@/lib/pocketbaseClient';
@@ -73,12 +74,14 @@ const NAV_GROUPS = [
       { to: '/admin/equity', label: 'Equity administration', icon: Landmark },
       { to: '/admin/investor-relations', label: 'Investor relations', icon: FileText },
       { to: '/admin/tb-stock-documents', label: 'TB stock documents', icon: FileCheck2 },
+      { to: '/admin/fundraising-documents', label: 'Fundraising documents', icon: FileSignature },
     ],
   },
   {
     label: 'Publishing',
     items: [
       { to: '/admin/content', label: 'Content', icon: LibraryBig },
+      { to: '/admin/communications', label: 'Brand communications', icon: Mail },
       { to: '/admin/tv', label: 'TradingBible TV', icon: MonitorPlay },
       { to: '/admin/jobs', label: 'Jobs & hiring', icon: Briefcase },
     ],

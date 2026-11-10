@@ -173,6 +173,8 @@ These are product lines under the operating company, not separately formed subsi
 | Admin equity | `/admin/equity` | Private equity and shareholder records |
 | Admin legal vault | `/admin/legal-vault` | Controlled TBC document library |
 | Admin TB stock documents | `/admin/tb-stock-documents` | TB issuer and stock document library |
+| Admin fundraising documents | `/admin/fundraising-documents` | Confidential 20-document fundraising packet, counsel downloads, packet ZIP and separately gated DocuSign execution |
+| Admin brand communications | `/admin/communications` | 45-template branded email, SMS and in-app registry with previews and admin-only test sends |
 | Staff workspace | `/staff` | **Company employee workspace** — dashboard, tools, employee record, launch desk and settings |
 | Staff Academy Studio | `/staff/courses` | Employee tool for curriculum, lessons and learning operations — not an Academy staff roster |
 | Staff webinars | `/staff/webinars` | Employee tool for host schedule, rooms and replays |
@@ -510,6 +512,65 @@ An IPO is a long-term objective earned through performance, not a launch prerequ
 
 Public documents remain readable in-app only. There are no download controls, and public signatory data is not exposed. Private execution records and signatory identities stay inside the controlled vault.
 
+### Fundraising preparation — confidential, admin-only
+
+The company has a **20-document confidential fundraising packet** for counsel
+and board preparation. It is not an offering, a solicitation, a filing, a
+qualification, an approval or an executed agreement. There is no public
+fundraising page and no investment button.
+
+| Track | Documents | Status |
+|---|---|---|
+| Framework | FR-00 readiness memorandum | Draft |
+| Private placement | FR-01, FR-03, FR-04, FR-10 to FR-17 | Draft; Rule 506(b) plus a Regulation S offshore tranche |
+| Regulation CF | FR-02, FR-20 to FR-25 | Separate later track; not qualified |
+| Execution | FR-30 DocuSign execution records policy | Draft |
+
+The private-placement documents include a board resolution, officer
+certificate, insider-participation policy, confidential summary, post-money
+SAFE, accredited-investor and bad-actor questionnaire, Regulation S offshore
+certificate, subscription and closing instructions, SAFE register schedule,
+Form D and blue-sky worksheet, and risk disclosure. The Regulation CF documents
+include a readiness memorandum, Form C preparation workbook, offering narrative
+and risk factors, investor-limit acknowledgment, communications policy and
+ongoing-reporting calendar.
+
+Important limits:
+
+- **Form D is a worksheet here.** The official Form D must be filed through
+  EDGAR, generally within 15 days after the first sale.
+- **The Regulation CF workbook is not a Form C.** A qualified offering needs a
+  registered FINRA intermediary, SEC qualification, escrow and ongoing
+  reporting.
+- **No corporate facts are invented.** Incorporation date, address, officers,
+  directors, authorised shares, cap table, financial statements, valuation cap,
+  minimum target and use of proceeds remain visibly pending until company
+  records and board authorization exist.
+- **DocuSign execution is separately locked.** The API returns
+  `409 fundraising_execution_disabled` unless
+  `FUNDRAISING_EXECUTION_ENABLED=true` is set after board authorization and
+  counsel review. Investor questionnaires use custom text and checkbox tabs
+  anchored to the investor's own completion lines.
+- **No bank details in the request email.** Do not send funds until the
+  document is countersigned and the funding instructions are independently
+  verified.
+
+### Company communications
+
+The company maintains **45 branded communication templates** across seven
+categories: account, billing, platform, investor, fundraising, internal and
+company operations. Every email uses the dark-and-gold TradingBible shell with
+the company logo, absolute logo URL, hidden preheader, company footer and an
+explicit compliance label.
+
+The admin console provides previews and a single-recipient test send to the
+signed-in administrator. It is not a bulk sender and contains no member or
+investor audience list. Marketing email is blocked until
+`COMPANY_POSTAL_ADDRESS` is configured. SMS is design-only until a provider,
+consent records, quiet hours and opt-out handling exist. Fundraising templates
+remain restricted and counsel-gated even when the DocuSign execution gate is
+open.
+
 ---
 
 ## 13. TradingBible Capital — proposed fund
@@ -689,7 +750,8 @@ Gold and Bitcoin are signature markets. Public copy cites five markets and 250+ 
 | Tagline | “Trade like the 1%. Journal like a fund.” |
 | Attribution | “Charts by TradingBible” / “Powered by TradingBible” only where the IP is genuinely owned and data attribution is satisfied |
 | Socials | twitter.com/tradingbible · discord.gg/tradingbible · github.com/tradingbible · Facebook, LinkedIn, Instagram, YouTube and TikTok at @tradingbible |
-| Email shell | Dark `#07070a` / `#0b0b10`, gold border, company header and footer |
+| Email shell | Dark `#07070a` / `#0b0b10`, gold border, company logo, hidden preheader, company header and footer |
+| Communication templates | 45 controlled email/SMS/in-app templates in seven categories, each carrying a compliance label and send policy |
 
 ### Public artwork
 
@@ -843,6 +905,21 @@ This is the honest readiness list. None of these items is presented in the produ
 | AML/KYC, compliance manual, insurance | Draft/pending |
 | Seed capital and track record | Not available |
 
+### Fundraising and communications
+
+| Item | Status |
+|---|---|
+| Private-placement packet and SAFE terms | Draft — counsel/board review required |
+| Corporate registration, cap table and financial statements | Pending — company records |
+| Form D filing | Not filed — worksheet only |
+| Regulation CF offering and Form C | Not qualified — no registered portal |
+| DocuSign production credentials and live envelope | Blocked — external |
+| Fundraising execution gate | Locked until board and counsel authorization |
+| Commercial email postal address | Not configured — marketing blocked |
+| Production SMTP/SPF/DKIM/DMARC | Pending |
+| SMS provider, consent and opt-out handling | Not configured — design-only |
+| Fundraising and investor communications | Restricted — counsel approval required |
+
 ### Other external gates
 
 | Item | Status |
@@ -881,6 +958,9 @@ These are intentional product truths:
 | Production build | Passed |
 | Academy parity | 17 paths · 76 courses · 347 lessons |
 | Release guards | Passed |
+| Fundraising packet | 20 DOCX/PDF drafts generated; 232 DocuSign anchors checked, zero duplicates/misses |
+| Fundraising execution gate | Locked; `FUNDRAISING_EXECUTION_ENABLED` required before envelope creation |
+| Communications registry | 45 templates; email/SMS/in-app render checks passed |
 | Public routes | Verified |
 | Auth routes | Verified |
 | Portal background exclusion | Verified for `/app`, `/admin`, `/staff`, `/student`, `/leaderboard`, `/tv` and `/investors/shareholders` |
@@ -908,6 +988,11 @@ These are intentional product truths:
 | `apps/web/src/lib/fundProfile.js` | TradingBible Capital status, strategies, operating model, readiness and FAQ |
 | `apps/web/src/lib/tbcEcosystem.js` | TBC proposal, allocation, supply lifecycle, roadmap, modules, utility, purchase controls, jurisdictions and separation |
 | `apps/web/src/lib/mockData.js` | Current public plan definitions |
+| `docs/fundraising/` | Source Markdown for the 20 confidential fundraising drafts |
+| `scripts/build-fundraising-documents.py` | Branded DOCX/PDF/manifest builder with DocuSign anchors |
+| `apps/api/src/routes/admin-fundraising.js` | Admin-only packet downloads and separately gated execution API |
+| `apps/api/src/routes/admin-communications.js` | Admin-only template preview and single-recipient test-send API |
+| `apps/api/src/data/communication-templates.js` | 45-template email/SMS/in-app registry and renderer |
 | `apps/web/src/pages/ExtraPages.jsx` | Current pricing page copy |
 | `apps/web/src/pages/TeamPage.jsx` | Documented team and 12 priority seats |
 | `apps/web/src/pages/LaunchPublicPage.jsx` | Launch date, scope and gated items |

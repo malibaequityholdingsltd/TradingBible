@@ -37,6 +37,29 @@ npm run smtp:test -- you@example.com
 
 The domain has an active SPF record and `p=none` DMARC. For inbox placement, enable DKIM for `tradingbible.app` in the Hostinger email panel (the `hostingermail._domainkey` record is currently absent) and keep the From address on the same domain. Never send production mail from a mismatched domain.
 
+## Company communications
+
+| Variable | Required | Description |
+|---|---|---|
+| `COMPANY_POSTAL_ADDRESS` | for commercial email | Physical postal address in the marketing footer. Empty keeps marketing templates blocked. |
+| `EMAIL_LOGO_URL` | opt. | Absolute logo URL for the email shell. Defaults to `APP_URL/logos/tradingbible-logo.png`. |
+| `APP_URL` | yes | Public base URL used for logo, unsubscribe and in-app links. |
+
+The admin **Brand communications** page can preview all 45 templates and send a
+single test email to the signed-in administrator. It is not a bulk sender.
+SMS remains design-only until a provider, consent records, quiet hours and
+opt-out handling exist. Fundraising templates remain restricted and
+counsel-gated.
+
+## Fundraising execution gate
+
+| Variable | Required | Description |
+|---|---|---|
+| `FUNDRAISING_EXECUTION_ENABLED` | no | `true` unlocks DocuSign envelope creation/sending for the confidential fundraising packet. Leave `false` until board authorization and counsel review of the exact document version. The API returns `409 fundraising_execution_disabled` while locked. |
+
+The gate is separate from the TBC legal-vault and TB stock controls. Setting it
+does not make the documents executable or the offering qualified.
+
 ## Market data providers
 
 | Variable | Required | Description |

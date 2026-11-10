@@ -1,0 +1,2791 @@
+{
+  "title": "TradingBible confidential fundraising document packet",
+  "issuer": "TradingBible Holdings, Inc.",
+  "operator": "TradingBible Holdings, Inc.",
+  "jurisdiction": "Delaware, United States",
+  "updated": "10 November 2026",
+  "version": "1.0",
+  "notice": "Drafting packet only. Not an offer, solicitation, filing, qualification, approval or executed instrument. Admin access only; counsel review required before any external use.",
+  "documents": [
+    {
+      "slug": "fr-00-fundraising-structure-readiness-memorandum",
+      "number": "FR-00",
+      "title": "Fundraising Structure and Readiness Memorandum",
+      "subtitle": "Private placement and Regulation CF decision framework",
+      "category": "Strategy & governance",
+      "track": "Framework",
+      "summary": "Internal decision memorandum comparing a Rule 506(b)/Regulation S private placement with a Regulation CF offering, the corporate actions each requires, and the communications and filing gates that must remain closed until counsel clears them.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Outside Counsel \u2014 Counsel",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-00-fundraising-structure-readiness-memorandum.pdf",
+      "docx": "docx/fr-00-fundraising-structure-readiness-memorandum.docx",
+      "docxProtected": "docx-protected/fr-00-fundraising-structure-readiness-memorandum.docx",
+      "pdfBytes": 490476,
+      "docxBytes": 63271,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-00",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-00): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-00): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-00): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-00): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-00): __________________",
+            "printedName": "Company printed name (FR-00): ______________",
+            "capacity": "Company capacity (FR-00): __________________",
+            "date": "Company date (FR-00): ______________________"
+          }
+        },
+        {
+          "id": "counsel",
+          "party": "Outside Counsel",
+          "capacity": "Counsel",
+          "required": false,
+          "label": "Outside Counsel \u2014 Counsel",
+          "anchor": "Counsel EXECUTION \u2014 FR-00",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Counsel signature (FR-00): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Counsel printed name (FR-00): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Counsel capacity (FR-00): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Counsel date (FR-00): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Counsel signature (FR-00): __________________",
+            "printedName": "Counsel printed name (FR-00): ______________",
+            "capacity": "Counsel capacity (FR-00): __________________",
+            "date": "Counsel date (FR-00): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-01-board-resolution-private-placement",
+      "number": "FR-01",
+      "title": "Board Resolution \u2014 Private Placement Authorization",
+      "subtitle": "Rule 506(b) and Regulation S offering authority",
+      "category": "Corporate authority",
+      "track": "Private placement",
+      "summary": "Draft board resolution authorizing a private placement of post-money SAFE instruments to accredited U.S. investors and eligible non-U.S. investors, subject to a board-approved cap, minimum, cap table and counsel review. It is not effective until adopted.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Director \u2014 Director + Secretary \u2014 Secretary",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-01-board-resolution-private-placement.pdf",
+      "docx": "docx/fr-01-board-resolution-private-placement.docx",
+      "docxProtected": "docx-protected/fr-01-board-resolution-private-placement.docx",
+      "pdfBytes": 463636,
+      "docxBytes": 62826,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-01",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-01): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-01): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-01): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-01): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-01): __________________",
+            "printedName": "Company printed name (FR-01): ______________",
+            "capacity": "Company capacity (FR-01): __________________",
+            "date": "Company date (FR-01): ______________________"
+          }
+        },
+        {
+          "id": "director",
+          "party": "Director",
+          "capacity": "Director",
+          "required": false,
+          "label": "Director \u2014 Director",
+          "anchor": "Director EXECUTION \u2014 FR-01",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Director signature (FR-01): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Director printed name (FR-01): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Director capacity (FR-01): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Director date (FR-01): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Director signature (FR-01): __________________",
+            "printedName": "Director printed name (FR-01): ______________",
+            "capacity": "Director capacity (FR-01): __________________",
+            "date": "Director date (FR-01): ______________________"
+          }
+        },
+        {
+          "id": "secretary",
+          "party": "Secretary",
+          "capacity": "Secretary",
+          "required": false,
+          "label": "Secretary \u2014 Secretary",
+          "anchor": "Secretary EXECUTION \u2014 FR-01",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Secretary signature (FR-01): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Secretary printed name (FR-01): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Secretary capacity (FR-01): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Secretary date (FR-01): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Secretary signature (FR-01): __________________",
+            "printedName": "Secretary printed name (FR-01): ______________",
+            "capacity": "Secretary capacity (FR-01): __________________",
+            "date": "Secretary date (FR-01): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-02-board-resolution-regulation-cf-preparation",
+      "number": "FR-02",
+      "title": "Board Resolution \u2014 Regulation CF Preparation",
+      "subtitle": "Portal engagement and Form C preparation authority",
+      "category": "Corporate authority",
+      "track": "Regulation CF",
+      "summary": "Draft board resolution authorizing preparation for a possible Regulation CF offering through a FINRA-registered funding portal, while expressly prohibiting any offer, sale, solicitation or receipt of funds before SEC qualification.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Director \u2014 Director + Secretary \u2014 Secretary",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-02-board-resolution-regulation-cf-preparation.pdf",
+      "docx": "docx/fr-02-board-resolution-regulation-cf-preparation.docx",
+      "docxProtected": "docx-protected/fr-02-board-resolution-regulation-cf-preparation.docx",
+      "pdfBytes": 420385,
+      "docxBytes": 61204,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-02",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-02): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-02): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-02): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-02): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-02): __________________",
+            "printedName": "Company printed name (FR-02): ______________",
+            "capacity": "Company capacity (FR-02): __________________",
+            "date": "Company date (FR-02): ______________________"
+          }
+        },
+        {
+          "id": "director",
+          "party": "Director",
+          "capacity": "Director",
+          "required": false,
+          "label": "Director \u2014 Director",
+          "anchor": "Director EXECUTION \u2014 FR-02",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Director signature (FR-02): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Director printed name (FR-02): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Director capacity (FR-02): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Director date (FR-02): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Director signature (FR-02): __________________",
+            "printedName": "Director printed name (FR-02): ______________",
+            "capacity": "Director capacity (FR-02): __________________",
+            "date": "Director date (FR-02): ______________________"
+          }
+        },
+        {
+          "id": "secretary",
+          "party": "Secretary",
+          "capacity": "Secretary",
+          "required": false,
+          "label": "Secretary \u2014 Secretary",
+          "anchor": "Secretary EXECUTION \u2014 FR-02",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Secretary signature (FR-02): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Secretary printed name (FR-02): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Secretary capacity (FR-02): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Secretary date (FR-02): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Secretary signature (FR-02): __________________",
+            "printedName": "Secretary printed name (FR-02): ______________",
+            "capacity": "Secretary capacity (FR-02): __________________",
+            "date": "Secretary date (FR-02): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-03-officers-certificate-offering-terms-cap-table",
+      "number": "FR-03",
+      "title": "Officer\u2019s Certificate \u2014 Offering Terms and Capitalization",
+      "subtitle": "Verified terms, cap table and disclosure schedule",
+      "category": "Corporate authority",
+      "track": "Private placement",
+      "summary": "Draft officer\u2019s certificate to be completed and signed only after the board approves the round, the cap table is reconciled and counsel confirms the offering terms. Schedules remain blank until verified.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Secretary \u2014 Secretary",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-03-officers-certificate-offering-terms-cap-table.pdf",
+      "docx": "docx/fr-03-officers-certificate-offering-terms-cap-table.docx",
+      "docxProtected": "docx-protected/fr-03-officers-certificate-offering-terms-cap-table.docx",
+      "pdfBytes": 479430,
+      "docxBytes": 61140,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-03",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-03): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-03): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-03): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-03): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-03): __________________",
+            "printedName": "Company printed name (FR-03): ______________",
+            "capacity": "Company capacity (FR-03): __________________",
+            "date": "Company date (FR-03): ______________________"
+          }
+        },
+        {
+          "id": "secretary",
+          "party": "Secretary",
+          "capacity": "Secretary",
+          "required": false,
+          "label": "Secretary \u2014 Secretary",
+          "anchor": "Secretary EXECUTION \u2014 FR-03",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Secretary signature (FR-03): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Secretary printed name (FR-03): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Secretary capacity (FR-03): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Secretary date (FR-03): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Secretary signature (FR-03): __________________",
+            "printedName": "Secretary printed name (FR-03): ______________",
+            "capacity": "Secretary capacity (FR-03): __________________",
+            "date": "Secretary date (FR-03): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-04-insider-participation-related-party-policy",
+      "number": "FR-04",
+      "title": "Insider Participation and Related-Party Acknowledgment",
+      "subtitle": "Same-terms policy for founders, officers and directors",
+      "category": "Corporate authority",
+      "track": "Private placement",
+      "summary": "Draft policy and acknowledgment governing insider participation in the round, conflict disclosure, board approval and the prohibition on side letters or preferential information.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Insider \u2014 Founder / Officer / Director",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-04-insider-participation-related-party-policy.pdf",
+      "docx": "docx/fr-04-insider-participation-related-party-policy.docx",
+      "docxProtected": "docx-protected/fr-04-insider-participation-related-party-policy.docx",
+      "pdfBytes": 361912,
+      "docxBytes": 59437,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-04",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-04): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-04): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-04): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-04): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-04): __________________",
+            "printedName": "Company printed name (FR-04): ______________",
+            "capacity": "Company capacity (FR-04): __________________",
+            "date": "Company date (FR-04): ______________________"
+          }
+        },
+        {
+          "id": "insider",
+          "party": "Insider",
+          "capacity": "Founder / Officer / Director",
+          "required": false,
+          "label": "Insider \u2014 Founder / Officer / Director",
+          "anchor": "Insider EXECUTION \u2014 FR-04",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Insider signature (FR-04): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Insider printed name (FR-04): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Insider capacity (FR-04): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Insider date (FR-04): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Insider signature (FR-04): __________________",
+            "printedName": "Insider printed name (FR-04): ______________",
+            "capacity": "Insider capacity (FR-04): __________________",
+            "date": "Insider date (FR-04): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-10-confidential-private-placement-summary",
+      "number": "FR-10",
+      "title": "Confidential Private Placement Summary and Notice",
+      "subtitle": "Accredited U.S. investors and eligible non-U.S. investors",
+      "category": "Private placement",
+      "track": "Private placement",
+      "summary": "A confidential, one-to-one investor summary that describes the company, proposed SAFE terms, process and risks without general solicitation. It is not a private placement memorandum or an offer capable of acceptance.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Investor \u2014 Investor",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-10-confidential-private-placement-summary.pdf",
+      "docx": "docx/fr-10-confidential-private-placement-summary.docx",
+      "docxProtected": "docx-protected/fr-10-confidential-private-placement-summary.docx",
+      "pdfBytes": 497867,
+      "docxBytes": 62682,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-10",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-10): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-10): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-10): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-10): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-10): __________________",
+            "printedName": "Company printed name (FR-10): ______________",
+            "capacity": "Company capacity (FR-10): __________________",
+            "date": "Company date (FR-10): ______________________"
+          }
+        },
+        {
+          "id": "investor",
+          "party": "Investor",
+          "capacity": "Investor",
+          "required": true,
+          "label": "Investor \u2014 Investor",
+          "anchor": "Investor EXECUTION \u2014 FR-10",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Investor signature (FR-10): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Investor printed name (FR-10): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Investor capacity (FR-10): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Investor date (FR-10): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [
+            {
+              "type": "text",
+              "label": "Investor legal name",
+              "anchor": "Investor legal name: ____________________",
+              "width": "300",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "checkbox",
+              "label": "Risk disclosure acknowledged",
+              "anchor": "\u2610  Risk disclosure acknowledged",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "No advice acknowledged",
+              "anchor": "\u2610  No advice acknowledged",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "Illiquidity acknowledged",
+              "anchor": "\u2610  Illiquidity acknowledged",
+              "width": "18",
+              "height": "18",
+              "required": true
+            }
+          ],
+          "signatureLines": {
+            "signature": "Investor signature (FR-10): __________________",
+            "printedName": "Investor printed name (FR-10): ______________",
+            "capacity": "Investor capacity (FR-10): __________________",
+            "date": "Investor date (FR-10): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-11-post-money-safe",
+      "number": "FR-11",
+      "title": "Post-Money SAFE \u2014 Valuation Cap, No Discount",
+      "subtitle": "Simple agreement for future equity",
+      "category": "Private placement",
+      "track": "Private placement",
+      "summary": "Company-specific draft post-money SAFE with a valuation cap, no discount, pro rata rights and standard conversion, liquidity and dissolution mechanics. Terms remain blank until board approval.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Investor \u2014 Investor",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-11-post-money-safe.pdf",
+      "docx": "docx/fr-11-post-money-safe.docx",
+      "docxProtected": "docx-protected/fr-11-post-money-safe.docx",
+      "pdfBytes": 473323,
+      "docxBytes": 63475,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-11",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-11): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-11): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-11): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-11): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-11): __________________",
+            "printedName": "Company printed name (FR-11): ______________",
+            "capacity": "Company capacity (FR-11): __________________",
+            "date": "Company date (FR-11): ______________________"
+          }
+        },
+        {
+          "id": "investor",
+          "party": "Investor",
+          "capacity": "Investor",
+          "required": true,
+          "label": "Investor \u2014 Investor",
+          "anchor": "Investor EXECUTION \u2014 FR-11",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Investor signature (FR-11): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Investor printed name (FR-11): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Investor capacity (FR-11): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Investor date (FR-11): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [
+            {
+              "type": "text",
+              "label": "Investor legal name",
+              "anchor": "Investor legal name: ____________________",
+              "width": "300",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "text",
+              "label": "Investor email",
+              "anchor": "Investor email: ____________________",
+              "width": "260",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "text",
+              "label": "Purchase amount (US$)",
+              "anchor": "Purchase amount (US$): ____________________",
+              "width": "180",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "text",
+              "label": "Investor jurisdiction",
+              "anchor": "Investor jurisdiction: ____________________",
+              "width": "220",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "checkbox",
+              "label": "Accredited or offshore eligibility confirmed",
+              "anchor": "\u2610  Accredited or offshore eligibility confirmed",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "Risk disclosure acknowledged",
+              "anchor": "\u2610  Risk disclosure acknowledged",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "Electronic signature consent",
+              "anchor": "\u2610  Electronic signature consent",
+              "width": "18",
+              "height": "18",
+              "required": true
+            }
+          ],
+          "signatureLines": {
+            "signature": "Investor signature (FR-11): __________________",
+            "printedName": "Investor printed name (FR-11): ______________",
+            "capacity": "Investor capacity (FR-11): __________________",
+            "date": "Investor date (FR-11): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-12-accredited-investor-bad-actor-questionnaire",
+      "number": "FR-12",
+      "title": "Accredited Investor and Bad Actor Questionnaire",
+      "subtitle": "Investor eligibility, verification and Rule 506(d) certification",
+      "category": "Private placement",
+      "track": "Private placement",
+      "summary": "Investor questionnaire covering accredited-investor categories, verification method, source of funds, sanctions and the Rule 506(d) bad-actor questions. It is designed for DocuSign completion fields.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Investor \u2014 Investor",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-12-accredited-investor-bad-actor-questionnaire.pdf",
+      "docx": "docx/fr-12-accredited-investor-bad-actor-questionnaire.docx",
+      "docxProtected": "docx-protected/fr-12-accredited-investor-bad-actor-questionnaire.docx",
+      "pdfBytes": 463450,
+      "docxBytes": 61152,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "investor",
+          "party": "Investor",
+          "capacity": "Investor",
+          "required": true,
+          "label": "Investor \u2014 Investor",
+          "anchor": "Investor EXECUTION \u2014 FR-12",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Investor signature (FR-12): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Investor printed name (FR-12): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Investor capacity (FR-12): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Investor date (FR-12): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [
+            {
+              "type": "text",
+              "label": "Investor legal name",
+              "anchor": "Investor legal name: ____________________",
+              "width": "300",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "text",
+              "label": "Investor email",
+              "anchor": "Investor email: ____________________",
+              "width": "260",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "text",
+              "label": "Investor entity type",
+              "anchor": "Investor entity type: ____________________",
+              "width": "220",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "text",
+              "label": "Investor jurisdiction",
+              "anchor": "Investor jurisdiction: ____________________",
+              "width": "220",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "checkbox",
+              "label": "Accredited investor certification",
+              "anchor": "\u2610  Accredited investor certification",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "Bad actor questionnaire completed",
+              "anchor": "\u2610  Bad actor questionnaire completed",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "Source of funds reviewed",
+              "anchor": "\u2610  Source of funds reviewed",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "Risk disclosure acknowledged",
+              "anchor": "\u2610  Risk disclosure acknowledged",
+              "width": "18",
+              "height": "18",
+              "required": true
+            }
+          ],
+          "signatureLines": {
+            "signature": "Investor signature (FR-12): __________________",
+            "printedName": "Investor printed name (FR-12): ______________",
+            "capacity": "Investor capacity (FR-12): __________________",
+            "date": "Investor date (FR-12): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-13-regulation-s-offshore-investor-certificate",
+      "number": "FR-13",
+      "title": "Regulation S Offshore Investor Certificate",
+      "subtitle": "Non-U.S. person and offshore transaction representations",
+      "category": "Private placement",
+      "track": "Private placement",
+      "summary": "Certificate for eligible non-U.S. investors covering non-U.S. person status, offshore transaction, no directed selling efforts, resale restrictions, sanctions and tax-form instructions. It does not replace the current IRS Form W-8.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Investor \u2014 Investor",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-13-regulation-s-offshore-investor-certificate.pdf",
+      "docx": "docx/fr-13-regulation-s-offshore-investor-certificate.docx",
+      "docxProtected": "docx-protected/fr-13-regulation-s-offshore-investor-certificate.docx",
+      "pdfBytes": 429917,
+      "docxBytes": 59813,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "investor",
+          "party": "Investor",
+          "capacity": "Investor",
+          "required": true,
+          "label": "Investor \u2014 Investor",
+          "anchor": "Investor EXECUTION \u2014 FR-13",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Investor signature (FR-13): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Investor printed name (FR-13): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Investor capacity (FR-13): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Investor date (FR-13): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [
+            {
+              "type": "text",
+              "label": "Investor legal name",
+              "anchor": "Investor legal name: ____________________",
+              "width": "300",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "text",
+              "label": "Investor email",
+              "anchor": "Investor email: ____________________",
+              "width": "260",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "text",
+              "label": "Tax residence",
+              "anchor": "Tax residence: ____________________",
+              "width": "220",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "text",
+              "label": "Passport or entity jurisdiction",
+              "anchor": "Passport or entity jurisdiction: ____________________",
+              "width": "240",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "checkbox",
+              "label": "Non-U.S. person certification",
+              "anchor": "\u2610  Non-U.S. person certification",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "Offshore transaction certification",
+              "anchor": "\u2610  Offshore transaction certification",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "Resale restriction acknowledged",
+              "anchor": "\u2610  Resale restriction acknowledged",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "Sanctions and AML certification",
+              "anchor": "\u2610  Sanctions and AML certification",
+              "width": "18",
+              "height": "18",
+              "required": true
+            }
+          ],
+          "signatureLines": {
+            "signature": "Investor signature (FR-13): __________________",
+            "printedName": "Investor printed name (FR-13): ______________",
+            "capacity": "Investor capacity (FR-13): __________________",
+            "date": "Investor date (FR-13): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-14-subscription-funding-closing-instructions",
+      "number": "FR-14",
+      "title": "Subscription, Funding and Closing Instructions",
+      "subtitle": "Investor checklist and secure funding controls",
+      "category": "Private placement",
+      "track": "Private placement",
+      "summary": "Step-by-step subscription and closing instructions, including DocuSign execution, independent verification of funding instructions, closing conditions, issuance mechanics and record retention.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Investor \u2014 Investor",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-14-subscription-funding-closing-instructions.pdf",
+      "docx": "docx/fr-14-subscription-funding-closing-instructions.docx",
+      "docxProtected": "docx-protected/fr-14-subscription-funding-closing-instructions.docx",
+      "pdfBytes": 447708,
+      "docxBytes": 60025,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-14",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-14): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-14): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-14): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-14): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-14): __________________",
+            "printedName": "Company printed name (FR-14): ______________",
+            "capacity": "Company capacity (FR-14): __________________",
+            "date": "Company date (FR-14): ______________________"
+          }
+        },
+        {
+          "id": "investor",
+          "party": "Investor",
+          "capacity": "Investor",
+          "required": true,
+          "label": "Investor \u2014 Investor",
+          "anchor": "Investor EXECUTION \u2014 FR-14",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Investor signature (FR-14): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Investor printed name (FR-14): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Investor capacity (FR-14): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Investor date (FR-14): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [
+            {
+              "type": "text",
+              "label": "Investor legal name",
+              "anchor": "Investor legal name: ____________________",
+              "width": "300",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "checkbox",
+              "label": "Risk disclosure acknowledged",
+              "anchor": "\u2610  Risk disclosure acknowledged",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "No advice acknowledged",
+              "anchor": "\u2610  No advice acknowledged",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "Illiquidity acknowledged",
+              "anchor": "\u2610  Illiquidity acknowledged",
+              "width": "18",
+              "height": "18",
+              "required": true
+            }
+          ],
+          "signatureLines": {
+            "signature": "Investor signature (FR-14): __________________",
+            "printedName": "Investor printed name (FR-14): ______________",
+            "capacity": "Investor capacity (FR-14): __________________",
+            "date": "Investor date (FR-14): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-15-safe-register-cap-table-schedule",
+      "number": "FR-15",
+      "title": "SAFE Register and Capitalization Schedule",
+      "subtitle": "Post-closing control record",
+      "category": "Private placement",
+      "track": "Private placement",
+      "summary": "Internal register and cap-table schedule for SAFE issuances, conversions, pro rata rights, amendments and reconciliation. It is a control record, not evidence that any SAFE has been issued.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Outside Counsel \u2014 Counsel",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-15-safe-register-cap-table-schedule.pdf",
+      "docx": "docx/fr-15-safe-register-cap-table-schedule.docx",
+      "docxProtected": "docx-protected/fr-15-safe-register-cap-table-schedule.docx",
+      "pdfBytes": 469611,
+      "docxBytes": 60282,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-15",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-15): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-15): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-15): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-15): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-15): __________________",
+            "printedName": "Company printed name (FR-15): ______________",
+            "capacity": "Company capacity (FR-15): __________________",
+            "date": "Company date (FR-15): ______________________"
+          }
+        },
+        {
+          "id": "counsel",
+          "party": "Outside Counsel",
+          "capacity": "Counsel",
+          "required": false,
+          "label": "Outside Counsel \u2014 Counsel",
+          "anchor": "Counsel EXECUTION \u2014 FR-15",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Counsel signature (FR-15): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Counsel printed name (FR-15): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Counsel capacity (FR-15): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Counsel date (FR-15): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Counsel signature (FR-15): __________________",
+            "printedName": "Counsel printed name (FR-15): ______________",
+            "capacity": "Counsel capacity (FR-15): __________________",
+            "date": "Counsel date (FR-15): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-16-form-d-blue-sky-filing-worksheet",
+      "number": "FR-16",
+      "title": "Form D and Blue Sky Filing Worksheet",
+      "subtitle": "Filing calendar and state notice tracker",
+      "category": "Private placement",
+      "track": "Private placement",
+      "summary": "Worksheet for the Form D filing and state notice process, including the 15-calendar-day deadline after the first sale, issuer and offering data, signature authority and evidence retention. It is not an EDGAR filing.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Outside Counsel \u2014 Counsel",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-16-form-d-blue-sky-filing-worksheet.pdf",
+      "docx": "docx/fr-16-form-d-blue-sky-filing-worksheet.docx",
+      "docxProtected": "docx-protected/fr-16-form-d-blue-sky-filing-worksheet.docx",
+      "pdfBytes": 455845,
+      "docxBytes": 60396,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-16",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-16): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-16): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-16): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-16): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-16): __________________",
+            "printedName": "Company printed name (FR-16): ______________",
+            "capacity": "Company capacity (FR-16): __________________",
+            "date": "Company date (FR-16): ______________________"
+          }
+        },
+        {
+          "id": "counsel",
+          "party": "Outside Counsel",
+          "capacity": "Counsel",
+          "required": false,
+          "label": "Outside Counsel \u2014 Counsel",
+          "anchor": "Counsel EXECUTION \u2014 FR-16",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Counsel signature (FR-16): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Counsel printed name (FR-16): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Counsel capacity (FR-16): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Counsel date (FR-16): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Counsel signature (FR-16): __________________",
+            "printedName": "Counsel printed name (FR-16): ______________",
+            "capacity": "Counsel capacity (FR-16): __________________",
+            "date": "Counsel date (FR-16): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-17-private-placement-risk-disclosure",
+      "number": "FR-17",
+      "title": "Private Placement Risk Disclosure and Acknowledgment",
+      "subtitle": "Investor risk factors and acknowledgment",
+      "category": "Private placement",
+      "track": "Private placement",
+      "summary": "Company-specific risk disclosure covering early-stage uncertainty, illiquidity, dilution, SAFE mechanics, management concentration, regulatory gates, technology and data dependencies, AI limitations and tax risks.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Investor \u2014 Investor",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-17-private-placement-risk-disclosure.pdf",
+      "docx": "docx/fr-17-private-placement-risk-disclosure.docx",
+      "docxProtected": "docx-protected/fr-17-private-placement-risk-disclosure.docx",
+      "pdfBytes": 369655,
+      "docxBytes": 60864,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "investor",
+          "party": "Investor",
+          "capacity": "Investor",
+          "required": true,
+          "label": "Investor \u2014 Investor",
+          "anchor": "Investor EXECUTION \u2014 FR-17",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Investor signature (FR-17): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Investor printed name (FR-17): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Investor capacity (FR-17): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Investor date (FR-17): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [
+            {
+              "type": "text",
+              "label": "Investor legal name",
+              "anchor": "Investor legal name: ____________________",
+              "width": "300",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "checkbox",
+              "label": "Risk disclosure acknowledged",
+              "anchor": "\u2610  Risk disclosure acknowledged",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "No advice acknowledged",
+              "anchor": "\u2610  No advice acknowledged",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "Illiquidity acknowledged",
+              "anchor": "\u2610  Illiquidity acknowledged",
+              "width": "18",
+              "height": "18",
+              "required": true
+            }
+          ],
+          "signatureLines": {
+            "signature": "Investor signature (FR-17): __________________",
+            "printedName": "Investor printed name (FR-17): ______________",
+            "capacity": "Investor capacity (FR-17): __________________",
+            "date": "Investor date (FR-17): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-20-regulation-cf-readiness-portal-memorandum",
+      "number": "FR-20",
+      "title": "Regulation CF Readiness and Portal Engagement Memorandum",
+      "subtitle": "Intermediary selection, budget and qualification gates",
+      "category": "Regulation CF",
+      "track": "Regulation CF",
+      "summary": "Internal memorandum on Regulation CF readiness, FINRA-registered portal selection, disclosure preparation, investor limits, escrow, ongoing reporting and the prohibition on offers before SEC qualification.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Outside Counsel \u2014 Counsel",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-20-regulation-cf-readiness-portal-memorandum.pdf",
+      "docx": "docx/fr-20-regulation-cf-readiness-portal-memorandum.docx",
+      "docxProtected": "docx-protected/fr-20-regulation-cf-readiness-portal-memorandum.docx",
+      "pdfBytes": 455450,
+      "docxBytes": 61035,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-20",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-20): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-20): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-20): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-20): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-20): __________________",
+            "printedName": "Company printed name (FR-20): ______________",
+            "capacity": "Company capacity (FR-20): __________________",
+            "date": "Company date (FR-20): ______________________"
+          }
+        },
+        {
+          "id": "counsel",
+          "party": "Outside Counsel",
+          "capacity": "Counsel",
+          "required": false,
+          "label": "Outside Counsel \u2014 Counsel",
+          "anchor": "Counsel EXECUTION \u2014 FR-20",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Counsel signature (FR-20): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Counsel printed name (FR-20): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Counsel capacity (FR-20): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Counsel date (FR-20): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Counsel signature (FR-20): __________________",
+            "printedName": "Counsel printed name (FR-20): ______________",
+            "capacity": "Counsel capacity (FR-20): __________________",
+            "date": "Counsel date (FR-20): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-21-form-c-preparation-workbook",
+      "number": "FR-21",
+      "title": "Form C Preparation Workbook",
+      "subtitle": "Field-by-field disclosure and evidence schedule",
+      "category": "Regulation CF",
+      "track": "Regulation CF",
+      "summary": "Preparation workbook for the information required in a Form C offering statement. It is not an official SEC form and must not be filed or treated as a complete disclosure document.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Outside Counsel \u2014 Counsel",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-21-form-c-preparation-workbook.pdf",
+      "docx": "docx/fr-21-form-c-preparation-workbook.docx",
+      "docxProtected": "docx-protected/fr-21-form-c-preparation-workbook.docx",
+      "pdfBytes": 562275,
+      "docxBytes": 62500,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-21",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-21): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-21): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-21): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-21): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-21): __________________",
+            "printedName": "Company printed name (FR-21): ______________",
+            "capacity": "Company capacity (FR-21): __________________",
+            "date": "Company date (FR-21): ______________________"
+          }
+        },
+        {
+          "id": "counsel",
+          "party": "Outside Counsel",
+          "capacity": "Counsel",
+          "required": false,
+          "label": "Outside Counsel \u2014 Counsel",
+          "anchor": "Counsel EXECUTION \u2014 FR-21",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Counsel signature (FR-21): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Counsel printed name (FR-21): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Counsel capacity (FR-21): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Counsel date (FR-21): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Counsel signature (FR-21): __________________",
+            "printedName": "Counsel printed name (FR-21): ______________",
+            "capacity": "Counsel capacity (FR-21): __________________",
+            "date": "Counsel date (FR-21): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-22-offering-statement-narrative-risk-factors",
+      "number": "FR-22",
+      "title": "Offering Statement Narrative and Risk Factors",
+      "subtitle": "Regulation CF disclosure drafting template",
+      "category": "Regulation CF",
+      "track": "Regulation CF",
+      "summary": "Draft narrative and risk-factor template for a possible Regulation CF offering, with explicit placeholders for verified financials, ownership, management and use-of-proceeds information. No SEC qualification is implied.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Outside Counsel \u2014 Counsel",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-22-offering-statement-narrative-risk-factors.pdf",
+      "docx": "docx/fr-22-offering-statement-narrative-risk-factors.docx",
+      "docxProtected": "docx-protected/fr-22-offering-statement-narrative-risk-factors.docx",
+      "pdfBytes": 493906,
+      "docxBytes": 62711,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-22",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-22): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-22): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-22): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-22): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-22): __________________",
+            "printedName": "Company printed name (FR-22): ______________",
+            "capacity": "Company capacity (FR-22): __________________",
+            "date": "Company date (FR-22): ______________________"
+          }
+        },
+        {
+          "id": "counsel",
+          "party": "Outside Counsel",
+          "capacity": "Counsel",
+          "required": false,
+          "label": "Outside Counsel \u2014 Counsel",
+          "anchor": "Counsel EXECUTION \u2014 FR-22",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Counsel signature (FR-22): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Counsel printed name (FR-22): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Counsel capacity (FR-22): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Counsel date (FR-22): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Counsel signature (FR-22): __________________",
+            "printedName": "Counsel printed name (FR-22): ______________",
+            "capacity": "Counsel capacity (FR-22): __________________",
+            "date": "Counsel date (FR-22): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-23-regulation-cf-investor-limit-acknowledgment",
+      "number": "FR-23",
+      "title": "Regulation CF Investor Limit Acknowledgment",
+      "subtitle": "Eligibility and investment-limit certification",
+      "category": "Regulation CF",
+      "track": "Regulation CF",
+      "summary": "Investor acknowledgment of the Regulation CF investment limits, portal eligibility determination, cancellation rights and the requirement to use verified income and net-worth figures.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Investor \u2014 Investor",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-23-regulation-cf-investor-limit-acknowledgment.pdf",
+      "docx": "docx/fr-23-regulation-cf-investor-limit-acknowledgment.docx",
+      "docxProtected": "docx-protected/fr-23-regulation-cf-investor-limit-acknowledgment.docx",
+      "pdfBytes": 424160,
+      "docxBytes": 59647,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "investor",
+          "party": "Investor",
+          "capacity": "Investor",
+          "required": true,
+          "label": "Investor \u2014 Investor",
+          "anchor": "Investor EXECUTION \u2014 FR-23",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Investor signature (FR-23): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Investor printed name (FR-23): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Investor capacity (FR-23): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Investor date (FR-23): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [
+            {
+              "type": "text",
+              "label": "Investor legal name",
+              "anchor": "Investor legal name: ____________________",
+              "width": "300",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "text",
+              "label": "Investor email",
+              "anchor": "Investor email: ____________________",
+              "width": "260",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "text",
+              "label": "Annual income (US$)",
+              "anchor": "Annual income (US$): ____________________",
+              "width": "180",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "text",
+              "label": "Net worth excluding primary residence (US$)",
+              "anchor": "Net worth excluding primary residence (US$): ____________________",
+              "width": "240",
+              "height": "18",
+              "required": true,
+              "value": ""
+            },
+            {
+              "type": "checkbox",
+              "label": "Investment limit acknowledged",
+              "anchor": "\u2610  Investment limit acknowledged",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "Portal eligibility confirmed",
+              "anchor": "\u2610  Portal eligibility confirmed",
+              "width": "18",
+              "height": "18",
+              "required": true
+            },
+            {
+              "type": "checkbox",
+              "label": "Risk disclosure acknowledged",
+              "anchor": "\u2610  Risk disclosure acknowledged",
+              "width": "18",
+              "height": "18",
+              "required": true
+            }
+          ],
+          "signatureLines": {
+            "signature": "Investor signature (FR-23): __________________",
+            "printedName": "Investor printed name (FR-23): ______________",
+            "capacity": "Investor capacity (FR-23): __________________",
+            "date": "Investor date (FR-23): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-24-regulation-cf-communications-policy",
+      "number": "FR-24",
+      "title": "Regulation CF Communications and Campaign Policy",
+      "subtitle": "Pre-qualification, live-campaign and closing rules",
+      "category": "Regulation CF",
+      "track": "Regulation CF",
+      "summary": "Policy for issuer communications before qualification, during a live campaign and after closing, including portal-approved materials, records, social media, corrections and complaints.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Outside Counsel \u2014 Counsel",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-24-regulation-cf-communications-policy.pdf",
+      "docx": "docx/fr-24-regulation-cf-communications-policy.docx",
+      "docxProtected": "docx-protected/fr-24-regulation-cf-communications-policy.docx",
+      "pdfBytes": 404284,
+      "docxBytes": 60104,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-24",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-24): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-24): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-24): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-24): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-24): __________________",
+            "printedName": "Company printed name (FR-24): ______________",
+            "capacity": "Company capacity (FR-24): __________________",
+            "date": "Company date (FR-24): ______________________"
+          }
+        },
+        {
+          "id": "counsel",
+          "party": "Outside Counsel",
+          "capacity": "Counsel",
+          "required": false,
+          "label": "Outside Counsel \u2014 Counsel",
+          "anchor": "Counsel EXECUTION \u2014 FR-24",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Counsel signature (FR-24): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Counsel printed name (FR-24): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Counsel capacity (FR-24): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Counsel date (FR-24): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Counsel signature (FR-24): __________________",
+            "printedName": "Counsel printed name (FR-24): ______________",
+            "capacity": "Counsel capacity (FR-24): __________________",
+            "date": "Counsel date (FR-24): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-25-regulation-cf-ongoing-reporting-calendar",
+      "number": "FR-25",
+      "title": "Regulation CF Ongoing Reporting Calendar",
+      "subtitle": "Annual reports, current reports and termination",
+      "category": "Regulation CF",
+      "track": "Regulation CF",
+      "summary": "Control calendar for Regulation CF annual reports, current-event reports, termination, bad-actor re-certification and recordkeeping. Deadlines and obligations must be confirmed with counsel and the portal.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Outside Counsel \u2014 Counsel",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-25-regulation-cf-ongoing-reporting-calendar.pdf",
+      "docx": "docx/fr-25-regulation-cf-ongoing-reporting-calendar.docx",
+      "docxProtected": "docx-protected/fr-25-regulation-cf-ongoing-reporting-calendar.docx",
+      "pdfBytes": 424836,
+      "docxBytes": 59965,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-25",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-25): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-25): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-25): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-25): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-25): __________________",
+            "printedName": "Company printed name (FR-25): ______________",
+            "capacity": "Company capacity (FR-25): __________________",
+            "date": "Company date (FR-25): ______________________"
+          }
+        },
+        {
+          "id": "counsel",
+          "party": "Outside Counsel",
+          "capacity": "Counsel",
+          "required": false,
+          "label": "Outside Counsel \u2014 Counsel",
+          "anchor": "Counsel EXECUTION \u2014 FR-25",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Counsel signature (FR-25): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Counsel printed name (FR-25): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Counsel capacity (FR-25): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Counsel date (FR-25): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Counsel signature (FR-25): __________________",
+            "printedName": "Counsel printed name (FR-25): ______________",
+            "capacity": "Counsel capacity (FR-25): __________________",
+            "date": "Counsel date (FR-25): ______________________"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "fr-30-docusign-execution-records-policy",
+      "number": "FR-30",
+      "title": "DocuSign Execution and Records Retention Policy",
+      "subtitle": "Signer authority, envelope controls and evidence",
+      "category": "Execution controls",
+      "track": "Execution",
+      "summary": "Policy for preparing, sending, completing and retaining fundraising envelopes in DocuSign, including signer verification, anchored fields, certificate of completion, executed PDF and access controls.",
+      "status": "Draft \u2014 not executed",
+      "visibility": "internal",
+      "classification": "Confidential \u2014 internal / counsel / prospective investor",
+      "version": "1.0 \u00b7 10 November 2026",
+      "signatureFields": "Malik Nlem \u2014 Chief Executive Officer + Outside Counsel \u2014 Counsel",
+      "signatureStatus": "Open \u2014 not executed",
+      "counselReviewRequired": true,
+      "pdf": "pdf/fr-30-docusign-execution-records-policy.pdf",
+      "docx": "docx/fr-30-docusign-execution-records-policy.docx",
+      "docxProtected": "docx-protected/fr-30-docusign-execution-records-policy.docx",
+      "pdfBytes": 417121,
+      "docxBytes": 60146,
+      "emailSubjectPrefix": "TradingBible Confidential",
+      "signers": [
+        {
+          "id": "company",
+          "party": "Malik Nlem",
+          "capacity": "Chief Executive Officer",
+          "required": true,
+          "label": "Malik Nlem \u2014 Chief Executive Officer",
+          "anchor": "Company EXECUTION \u2014 FR-30",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Company signature (FR-30): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Company printed name (FR-30): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Company capacity (FR-30): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Company date (FR-30): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Company signature (FR-30): __________________",
+            "printedName": "Company printed name (FR-30): ______________",
+            "capacity": "Company capacity (FR-30): __________________",
+            "date": "Company date (FR-30): ______________________"
+          }
+        },
+        {
+          "id": "counsel",
+          "party": "Outside Counsel",
+          "capacity": "Counsel",
+          "required": false,
+          "label": "Outside Counsel \u2014 Counsel",
+          "anchor": "Counsel EXECUTION \u2014 FR-30",
+          "tabOffsetsPx": {
+            "signature": 15,
+            "printedName": 46,
+            "title": 76,
+            "date": 106
+          },
+          "fieldAnchors": {
+            "signature": {
+              "anchor": "Counsel signature (FR-30): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "24"
+            },
+            "printedName": {
+              "anchor": "Counsel printed name (FR-30): ______________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "190",
+              "height": "18"
+            },
+            "title": {
+              "anchor": "Counsel capacity (FR-30): __________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "210",
+              "height": "18"
+            },
+            "date": {
+              "anchor": "Counsel date (FR-30): ______________________",
+              "xOffset": "0",
+              "yOffset": "0",
+              "width": "130",
+              "height": "18"
+            }
+          },
+          "customFields": [],
+          "signatureLines": {
+            "signature": "Counsel signature (FR-30): __________________",
+            "printedName": "Counsel printed name (FR-30): ______________",
+            "capacity": "Counsel capacity (FR-30): __________________",
+            "date": "Counsel date (FR-30): ______________________"
+          }
+        }
+      ]
+    }
+  ]
+}

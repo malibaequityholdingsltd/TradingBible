@@ -6,11 +6,13 @@
 - [Admin Analytics](/admin/analytics): TradingBible application page.
 - [Admin Api Keys](/admin/api-keys): TradingBible application page.
 - [Admin Billing](/admin/billing): TradingBible application page.
+- [Admin Communications](/admin/communications): TradingBible application page.
 - [Admin Company](/admin/company): TradingBible application page.
 - [Admin Content](/admin/content): TradingBible application page.
 - [Admin Dashboard](/admin): TradingBible application page.
 - [Admin Employees](/admin/employees): TradingBible application page.
 - [Admin Equity](/admin/equity): TradingBible application page.
+- [Admin Fundraising Documents](/admin/fundraising-documents): TradingBible application page.
 - [Admin Integrations](/admin/integrations): TradingBible application page.
 - [Admin Investor Relations](/admin/investor-relations): TradingBible application page.
 - [Admin Jobs](/admin/jobs): TradingBible application page.
