@@ -586,11 +586,11 @@ function Support({ tickets, loading, onRefresh, onUpdate }) {
 function Legal({ counts }) {
   return (
     <div className="grid gap-3 lg:grid-cols-[1.05fr_.95fr]">
-      <AtPanel title="Controlled document library" sub="Five public summaries, 26 admin-only instruments.">
+      <AtPanel title="Controlled document library" sub="Public summaries and admin-only controlled instruments.">
         <div className="grid gap-2 sm:grid-cols-3">
           {[
             ['Public summaries', counts.publicDocuments ?? 5, 'Public'],
-            ['Controlled instruments', counts.controlledDocuments ?? 26, 'Admin only'],
+            ['Controlled instruments', counts.controlledDocuments ?? '—', 'Admin only'],
             ['Execution register', 'Open', 'Unsigned'],
           ].map(([label, value, note]) => (
             <div key={label} className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3">

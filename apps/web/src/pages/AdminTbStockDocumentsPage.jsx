@@ -171,7 +171,7 @@ export default function AdminTbStockDocumentsPage() {
           onChanged={load}
           apiBase="/admin/tb-stock-documents"
           title="TB stock execution & approvals"
-          subtitle="Nine signature-ready TB stock instruments · each signer receives only the tabs anchored inside their own execution block · status syncs by webhook or manual pull"
+          subtitle={`${counts.all || 0} signature-ready TB stock instruments · each signer receives only the tabs anchored inside their own execution block · status syncs by webhook or manual pull`}
           panelSub="TB stock instruments"
           documentListLabel="TB stock documents"
           emptySub="Provision the TB stock document package in the API storage root before preparing execution."
@@ -190,7 +190,7 @@ export default function AdminTbStockDocumentsPage() {
           index="02"
           title="TB stock document library"
           sub="Read every signature-ready instrument as Word and download the current read-only copy"
-          action={<span className="font-mono text-[9px] uppercase tracking-[0.13em] text-[var(--at-mut-2)]">9 records · public drafts</span>}
+          action={<span className="font-mono text-[9px] uppercase tracking-[0.13em] text-[var(--at-mut-2)]">{counts.all || 0} records · public drafts</span>}
         />
 
         <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-[var(--at-line-soft)] bg-[var(--at-card-bg)] p-3 sm:flex-row sm:items-center">

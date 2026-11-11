@@ -181,7 +181,7 @@ function main() {
 	if (pages.length === 0) {
 		const routes = extractRoutes(appJsxPath);
 		pages = [...routes.entries()]
-			.filter(([componentName, url]) => componentName !== 'Navigate' && url !== '/*')
+			.filter(([componentName, url]) => componentName !== 'Navigate' && url !== '/*' && !url.startsWith('/admin') && !url.startsWith('/__') && !url.startsWith('/staff'))
 			.map(([componentName, url]) => ({
 				url: url.endsWith('/*') ? url.slice(0, -2) || '/' : url,
 				title: routeComponentToTitle(componentName),

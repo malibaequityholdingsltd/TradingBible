@@ -4,8 +4,10 @@ import { supabase, getSupabaseUser, supabaseRest } from '../utils/supabaseClient
 
 const router = Router();
 
-// TradingBible affiliate program — 15% recurring commission (per product settings).
-export const COMMISSION_RATE = 0.10;
+// TradingBible affiliate program — 15% recurring commission on eligible
+// referred Premium subscriptions. The public page, dossier and backend must
+// agree on this rate.
+export const COMMISSION_RATE = 0.15;
 
 function cleanCode(raw) {
 	return String(raw || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 40);

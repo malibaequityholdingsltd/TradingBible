@@ -1,10 +1,8 @@
 import React, { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Users, Settings, FileText, CreditCard, IdCard, LibraryBig, BarChart3,
-  LogOut, Menu, Search, Shield, X, Plug, Key, Package, User, ChevronDown, ChevronRight, MonitorPlay, Briefcase, Gift,
-  Wallet, UserRound, Building2, Coins, Command, ShieldCheck, Landmark, FileCheck2,
-  FileSignature, Mail,
+  LayoutDashboard, Users, Settings, LogOut, Menu, Search, Shield, X, User,
+  ChevronDown, ChevronRight, Briefcase, Coins,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import pb from '@/lib/pocketbaseClient';
@@ -18,6 +16,7 @@ import { IosIcon } from '@/components/IosIcon';
 import { displayInitial } from '@/lib/displayName';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { enterAdminPreview } from '@/lib/adminPreview';
+import { ADMIN_NAV_GROUPS } from '@/lib/adminRoutes';
 import { AtBadge } from '@/components/AtelierUI';
 import {
   DropdownMenu,
@@ -41,62 +40,7 @@ export function AdminChromeShell({ children }) {
   );
 }
 
-const NAV_GROUPS = [
-  {
-    label: 'Command',
-    items: [
-      { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
-      { to: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
-      { to: '/admin/reports', label: 'Reports & logs', icon: FileText },
-    ],
-  },
-  {
-    label: 'Customers',
-    items: [
-      { to: '/admin/users', label: 'User management', icon: Users },
-      { to: '/admin/employees', label: 'Employees', icon: UserRound },
-      { to: '/admin/staff-id-cards', label: 'ID cards', icon: IdCard },
-      { to: '/admin/billing', label: 'Billing & revenue', icon: CreditCard },
-    ],
-  },
-  {
-    label: 'Ecosystem',
-    items: [
-      { to: '/admin/tbc', label: 'TBC control center', icon: Coins },
-      { to: '/admin/legal-vault', label: 'TBC legal vault', icon: ShieldCheck },
-      { to: '/admin/airdrops', label: 'Airdrops', icon: Gift },
-      { to: '/admin/wallet', label: 'Wallet & staking', icon: Wallet },
-    ],
-  },
-  {
-    label: 'Capital & IR',
-    items: [
-      { to: '/admin/equity', label: 'Equity administration', icon: Landmark },
-      { to: '/admin/investor-relations', label: 'Investor relations', icon: FileText },
-      { to: '/admin/tb-stock-documents', label: 'TB stock documents', icon: FileCheck2 },
-      { to: '/admin/fundraising-documents', label: 'Fundraising documents', icon: FileSignature },
-    ],
-  },
-  {
-    label: 'Publishing',
-    items: [
-      { to: '/admin/content', label: 'Content', icon: LibraryBig },
-      { to: '/admin/communications', label: 'Brand communications', icon: Mail },
-      { to: '/admin/tv', label: 'TradingBible TV', icon: MonitorPlay },
-      { to: '/admin/jobs', label: 'Jobs & hiring', icon: Briefcase },
-    ],
-  },
-  {
-    label: 'Company & system',
-    items: [
-      { to: '/admin/company', label: 'Company Bible', icon: Building2 },
-      { to: '/admin/integrations', label: 'Integrations', icon: Plug },
-      { to: '/admin/api-keys', label: 'API keys', icon: Key },
-      { to: '/admin/plugins', label: 'Plugins', icon: Package },
-      { to: '/admin/settings', label: 'Settings', icon: Settings },
-    ],
-  },
-];
+const NAV_GROUPS = ADMIN_NAV_GROUPS;
 
 function Brand({ homeTo }) {
   return (
@@ -115,7 +59,7 @@ function Brand({ homeTo }) {
       </span>
       <span className="min-w-0 leading-tight">
         <BrandName name="TradingBible" className="at-rail-word block truncate" />
-        <span className="at-rail-sub mt-1 block">Operator suite</span>
+        <span className="at-rail-sub mt-1 block">Company operator suite</span>
       </span>
     </Link>
   );
@@ -212,8 +156,8 @@ function AdminLayoutContent({ children, title }) {
       </div>
 
       <div className="tb-admin-session">
-        <span><i />Secure operator session</span>
-        <span className="at-kbd">Live</span>
+        <span><i />Private company session</span>
+        <span className="at-kbd">25 Dec 2026</span>
       </div>
 
       <button
@@ -241,7 +185,7 @@ function AdminLayoutContent({ children, title }) {
                 >
                   <span className="at-navlink-icon"><Icon strokeWidth={1.9} /></span>
                   <span className="min-w-0 flex-1 truncate text-left">{label}</span>
-                  {label === 'TBC control center' && <span className="h-1.5 w-1.5 rounded-full bg-[var(--at-amber)]/70" />}
+                  {label === 'TBC control centre' && <span className="h-1.5 w-1.5 rounded-full bg-[var(--at-amber)]/70" />}
                 </NavLink>
               ))}
             </div>
@@ -327,30 +271,30 @@ function AdminLayoutContent({ children, title }) {
                 </button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="relative hidden h-8 w-8 shrink-0 place-items-center rounded-lg text-[var(--tb-nav-glyph)] transition hover:bg-[var(--at-gold-soft)] hover:text-[var(--tb-nav-glyph)] sm:grid" aria-label="Staff directory" title="Staff">
+                    <button className="relative hidden h-8 w-8 shrink-0 place-items-center rounded-lg text-[var(--tb-nav-glyph)] transition hover:bg-[var(--at-gold-soft)] hover:text-[var(--tb-nav-glyph)] sm:grid" aria-label="Employee directory" title="Employees">
                       <Users className="h-3.5 w-3.5" />
                       {staff.length > 0 && (
                         <span className="absolute -right-0.5 -top-0.5 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-[var(--at-gold)] px-1 font-mono text-[9px] font-bold text-[#0a0a0f]">{staff.length}</span>
                       )}
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={8} className="w-64 rounded-xl border-[var(--at-line)] bg-[#111113] tabular-nums text-[#e9e7df]">
-                    <DropdownMenuLabel className="px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-[#8a8577]">Staff · {staff.length}</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-white/5" />
+                  <DropdownMenuContent align="end" sideOffset={8} className="w-64 rounded-xl border-[var(--at-line)] bg-[var(--at-panel)] tabular-nums text-[var(--at-ink)]">
+                    <DropdownMenuLabel className="px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-[var(--at-mut)]">Company employees · {staff.length}</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-[var(--at-line-soft)]" />
                     {orderedStaff.length ? orderedStaff.slice(0, 8).map((s) => (
                       <DropdownMenuItem key={s.appId || s.email} onClick={() => nav('/admin/employees')} className="cursor-pointer gap-2.5">
-                        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[#d4af37]/12 text-[11px] font-bold text-[#d4af37]">{String(s.name || s.email || '?').slice(0, 1).toUpperCase()}</span>
+                        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[var(--at-gold-soft)] text-[11px] font-bold text-[var(--at-gold)]">{String(s.name || s.email || '?').slice(0, 1).toUpperCase()}</span>
                         <span className="min-w-0">
-                          <span className="block truncate text-xs font-semibold">{s.name || 'Staff member'}</span>
-                          <span className="block truncate text-[10px] text-[#8a8577]">{s.title || 'Opening'}</span>
+                          <span className="block truncate text-xs font-semibold">{s.name || 'Employee'}</span>
+                          <span className="block truncate text-[10px] text-[var(--at-mut)]">{s.title || 'Opening'}</span>
                         </span>
                       </DropdownMenuItem>
                     )) : (
-                      <div className="px-3 py-4 text-xs text-[#8a8577]">No hired staff yet.</div>
+                      <div className="px-3 py-4 text-xs text-[var(--at-mut)]">No employees hired yet.</div>
                     )}
-                    <DropdownMenuSeparator className="bg-white/5" />
+                    <DropdownMenuSeparator className="bg-[var(--at-line-soft)]" />
                     <DropdownMenuItem onClick={() => nav('/admin/employees')} className="cursor-pointer gap-2.5">
-                      <Users className="h-4 w-4 text-[#d4af37]" /> All employees
+                      <Users className="h-4 w-4 text-[var(--at-gold)]" /> All employees
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -375,19 +319,19 @@ function AdminLayoutContent({ children, title }) {
                       <ChevronDown className="h-3 w-3 text-[var(--tb-nav-glyph)]" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" sideOffset={8} className="w-56 rounded-xl border-[#d4af37]/15 bg-[#111113] tabular-nums text-[#e9e7df]">
-                    <DropdownMenuLabel className="px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-[#8a8577]">Admin</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-white/5" />
+                  <DropdownMenuContent align="end" sideOffset={8} className="w-56 rounded-xl border-[var(--at-line)] bg-[var(--at-panel)] tabular-nums text-[var(--at-ink)]">
+                    <DropdownMenuLabel className="px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-[var(--at-mut)]">Admin</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-[var(--at-line-soft)]" />
                     <DropdownMenuItem onClick={() => { enterAdminPreview(); nav('/app'); }} className="cursor-pointer gap-2.5">
-                      <LayoutDashboard className="h-4 w-4 text-[#d4af37]" /> View app
+                      <LayoutDashboard className="h-4 w-4 text-[var(--at-gold)]" /> View app
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => { enterAdminPreview(); nav('/app/profile'); }} className="cursor-pointer gap-2.5">
-                      <User className="h-4 w-4 text-[#d4af37]" /> View profile
+                      <User className="h-4 w-4 text-[var(--at-gold)]" /> View profile
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => nav('/admin/settings')} className="cursor-pointer gap-2.5">
-                      <Settings className="h-4 w-4 text-[#d4af37]" /> Settings
+                      <Settings className="h-4 w-4 text-[var(--at-gold)]" /> Settings
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-white/5" />
+                    <DropdownMenuSeparator className="bg-[var(--at-line-soft)]" />
                     <DropdownMenuItem onClick={signOut} className="cursor-pointer gap-2.5 text-red-400 focus:text-red-300">
                       <LogOut className="h-4 w-4" /> Sign out
                     </DropdownMenuItem>
@@ -399,7 +343,7 @@ function AdminLayoutContent({ children, title }) {
         </header>
 
         <main className="mx-auto w-full max-w-none flex-1 px-1.5 pb-28 pt-[calc(4rem+1rem)] sm:px-2 sm:pb-8 lg:px-3 xl:px-4">
-          {children}
+          <div className="at-scope min-h-full">{children}</div>
         </main>
 
         {!open && !searchOpen && (

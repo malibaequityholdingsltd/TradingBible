@@ -50,7 +50,7 @@ export default function TbcExecutionPanel({
   onChanged,
   apiBase = '/admin/legal-vault',
   title = 'Execution & approvals',
-  subtitle = 'DocuSign envelopes for the five public summaries and 26 controlled instruments · each signer gets only their own anchored fields · status syncs by webhook or manual pull',
+  subtitle = 'DocuSign envelopes for public summaries and controlled instruments · each signer gets only their own anchored fields · status syncs by webhook or manual pull',
   panelSub = 'public and controlled instruments',
   documentListLabel = 'TBC documents',
   emptySub = 'Provision the TBC document package on the API host to prepare execution.',
@@ -59,8 +59,8 @@ export default function TbcExecutionPanel({
   approvalHelp = 'Record an approval only after DocuSign reports the envelope as executed. Approval states are evidence records; they do not enable token sale, staking, governance, migration or chain features.',
   approvalPlaceholder = 'Resolution reference, counsel advice, license number, conditions…',
   scopeNote = 'Each signer receives signature, printed-name, capacity and date tabs anchored only to their own execution block. Optional parties are off by default.',
-  executionEnabled = true,
-  executionDisabledReason = '',
+  executionEnabled = false,
+  executionDisabledReason = 'DocuSign execution is locked in this console. Open it only after written authorization, signer verification and legal review of the exact document version.',
 }) {
   const [state, setState] = useState(null);
   const [loading, setLoading] = useState(true);

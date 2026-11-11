@@ -32,8 +32,8 @@ export const PLATFORM_FEATURES_DEFAULTS = {
 // Minimum plan per PlanProtected route. Admin-editable in Settings —
 // changing these re-gates the user portal with no code deploy.
 export const PLAN_GATES_DEFAULTS = {
-  reports: 'elite',
-  coach: 'elite',
+  reports: 'premium',
+  coach: 'premium',
   apiDocs: 'professional',
   branding: 'professional',
   apiKeys: 'professional',

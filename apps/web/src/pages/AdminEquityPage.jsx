@@ -64,14 +64,14 @@ function OverviewTab({ data }) {
   const m = data?.metrics || {};
   const classes = data?.shareClasses || [];
   const active = (data?.positions || []).filter((row) => row.status === 'active');
-  const authorized = classes.reduce((sum, row) => sum + (Number(row.authorized_shares) || 0), 0);
-  const issued = classes.reduce((sum, row) => sum + (Number(row.issued_shares) || 0), 0);
-  const outstanding = classes.reduce((sum, row) => sum + (Number(row.outstanding_shares) || 0), 0);
+  const authorized = classes.filter((row) => ['authorized', 'active'].includes(row.status)).reduce((sum, row) => sum + (Number(row.authorized_shares) || 0), 0);
+  const issued = classes.filter((row) => row.status !== 'proposed' && row.status !== 'retired').reduce((sum, row) => sum + (Number(row.issued_shares) || 0), 0);
+  const outstanding = classes.filter((row) => row.status !== 'proposed' && row.status !== 'retired').reduce((sum, row) => sum + (Number(row.outstanding_shares) || 0), 0);
   return (
     <div className="ir-stack-lg">
       <AtAlert icon={LockKeyhole} tone="amber"><span className="font-bold">Evidence and approval only.</span> This console records executed corporate decisions. It does not mint shares, move certificates, execute a transfer, connect to a transfer agent or enable a trade.</AtAlert>
       <CapKpiGrid items={[
-        { label: 'Authorized shares', value: formatNumber(authorized), note: 'Across recorded classes' },
+        { label: 'Authorized shares', value: formatNumber(authorized), note: 'Authorized/active classes only' },
         { label: 'Issued shares', value: formatNumber(issued), note: 'Company records only' },
         { label: 'Outstanding shares', value: formatNumber(outstanding), note: 'Not a public market figure' },
         { label: 'Active positions', value: String(active.length), note: `${m.pendingProposals ?? 0} proposal(s) awaiting decision`, tone: 'gold' },

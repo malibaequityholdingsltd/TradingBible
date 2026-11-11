@@ -96,12 +96,12 @@ export function CapSectionHead({ index, title, sub, action, className = '' }) {
 }
 
 export function CapAdminHead({ title, actions, className = '' }) {
+  if (!actions) return null;
   return (
-    <header className={`cap-admin-head cap-admin-head--compact ${className}`}>
+    <header className={`cap-admin-head cap-admin-head--compact ${className}`} aria-label={title}>
       <div className="cap-admin-head-main">
         <div className="cap-admin-title-row">
-          <h1>{title}</h1>
-          {actions && <div className="cap-admin-actions">{actions}</div>}
+          <div className="cap-admin-actions">{actions}</div>
         </div>
       </div>
     </header>

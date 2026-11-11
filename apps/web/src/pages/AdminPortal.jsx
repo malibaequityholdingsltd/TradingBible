@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   Users, CreditCard, DollarSign, Activity, Search, Trash2, RefreshCw, Shield,
   Save, LibraryBig, FileText, BarChart3, TrendingUp, AlertTriangle, CheckCircle,
@@ -9,7 +9,7 @@ import {
   Wifi, Package, Plus, Copy, RotateCcw, Plug, TestTube, AlertCircle, Check,
   Upload,   ChevronDown, MoreVertical, Power, Code, Layers, MonitorPlay, Target,
   GraduationCap, LayoutDashboard, Type, Trophy, Coins, Ban, Wallet, Bot,
-  Building2, Landmark, Palette, Rocket, ShieldCheck, Fingerprint, ExternalLink, Sparkles, Printer
+  Building2, Landmark, Palette, Rocket, ShieldCheck, Fingerprint, ExternalLink, Sparkles, Printer, Briefcase
 } from 'lucide-react';
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar,
@@ -17,7 +17,7 @@ import {
 } from 'recharts';
 import AdminLayout from '@/components/AdminLayout';
 import {
-  AtAlert, AtBadge, AtButton, AtPageBar, AtLink, AtMetric, AtPanel, AtProgress,
+  AtAlert, AtBadge, AtButton, AtEmpty, AtPageBar, AtLink, AtMetric, AtPanel, AtProgress,
   AtRing, AtSectionHeading, AtSparkline, AtTabs,
 } from '@/components/AtelierUI';
 import pb from '@/lib/pocketbaseClient';
@@ -28,40 +28,29 @@ import { COMPANY_DEFAULTS, loadCompanyProfile, saveCompanyProfile, buildContextT
 import { LIVE_CHANNELS } from '@/lib/liveChannels';
 import { ABTestingEngine } from '@/lib/ads/abtesting.js';
 import { useToast } from '@/hooks/use-toast';
-
-const GOLD = '#d4af37';
-const PLAN_COLORS = { none: '#6a665a', pro: '#3b82f6', premium: GOLD, elite: GOLD, professional: '#a855f7', teams: '#22c55e' };
-const PLAN_PRICES = { premium: 19.99, pro: 19.99, elite: 49.99, professional: 99.00, teams: 199.00 };
-const ACADEMY_PRICE = 150; // one-time lifetime fee
-// Accounts may be free or Premium. Helpers treat legacy 'trial' rows as no plan.
-const PAID_PLANS = ['pro', 'premium', 'elite', 'professional', 'teams'];
-const planKey = (p) => (!p || p === 'trial' ? null : p);
-const isPaidPlan = (p) => PAID_PLANS.includes(planKey(p));
-const displayPlan = (p) => planKey(p) || 'none';
-const planLabel = (p) => { const k = displayPlan(p); return k === 'none' ? 'No plan' : k.charAt(0).toUpperCase() + k.slice(1); };
-
-/* M1–M12 forecast from the financial model (loan file): M6 = 185 users / $7,102 MRR, M12 = 600 users / $23,034 MRR */
-const PLAN_FORECAST = (() => {
-  const anchors = [
-    { m: 1, users: 40, mrr: 1000 },
-    { m: 6, users: 185, mrr: 7102 },
-    { m: 12, users: 600, mrr: 23034 },
-  ];
-  const rows = [];
-  for (let m = 1; m <= 12; m += 1) {
-    const idx = anchors.findIndex((a, i) => m >= a.m && (i === anchors.length - 1 || m < anchors[i + 1].m));
-    const seg = anchors[idx];
-    const next = anchors[idx + 1] || seg;
-    const span = next.m - seg.m || 1;
-    const step = m - seg.m;
-    rows.push({
-      m: `M${m}`,
-      users: Math.round(seg.users * Math.pow(next.users / seg.users, step / span)),
-      mrr: Math.round(seg.mrr * Math.pow(next.mrr / seg.mrr, step / span)),
-    });
-  }
-  return rows;
-})();
+import {
+  ACADEMY_MINIMUM_PRICE,
+  ACADEMY_TIERS,
+  ASSIGNABLE_PLANS,
+  COMPANY_FACTS,
+  FUNDED_FACTS,
+  GOLD,
+  PAID_PLANS,
+  PLAN_COLORS,
+  PLAN_PRICES,
+  PREMIUM_ANNUAL,
+  PREMIUM_MONTHLY,
+  academyMinimumValue,
+  displayPlan,
+  estimatedMrr,
+  formatNumber,
+  formatUsd,
+  isPaidPlan,
+  planDisplayLabel as planLabel,
+  planKey,
+  planMonthlyPrice,
+  planTone,
+} from '@/lib/adminCatalog';
 
 // Legacy trial end-date passthrough (no trials are issued anymore;
 // existing rows keep whatever the database holds, otherwise null).
@@ -158,37 +147,32 @@ function Stat({ icon: Icon, label, value, sub, color = GOLD, trend }) {
   return (
     <div className="glass rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:scale-[1.02]">
       <div className="flex items-center justify-between">
-        <span className="text-xs uppercase tracking-wider text-[#8a8577]">{label}</span>
+        <span className="text-xs uppercase tracking-wider text-[var(--at-mut)]">{label}</span>
         <div style={{ background: `${color}18` }} className="grid h-8 w-8 place-items-center rounded-lg shrink-0">
           <Icon className="h-4 w-4" style={{ color }} />
         </div>
       </div>
-      <div className="mt-3 font-mono text-xl sm:text-2xl font-semibold text-[#f0ecdd] truncate">{value}</div>
-      {sub && <div className={`mt-1 text-xs ${trend === 'up' ? 'text-emerald-400' : trend === 'down' ? 'text-red-400' : 'text-[#8a8577]'}`}>{sub}</div>}
+      <div className="mt-3 font-mono text-xl sm:text-2xl font-semibold text-[var(--at-ink)] truncate">{value}</div>
+      {sub && <div className={`mt-1 text-xs ${trend === 'up' ? 'text-emerald-400' : trend === 'down' ? 'text-red-400' : 'text-[var(--at-mut)]'}`}>{sub}</div>}
     </div>
   );
 }
 
 function Badge({ children, color = 'gold' }) {
   const cls = {
-    gold: 'bg-[#d4af37]/15 text-[#d4af37]',
+    gold: 'bg-[#d4af37]/15 text-[var(--at-gold)]',
     green: 'bg-emerald-500/15 text-emerald-400',
     red: 'bg-red-500/15 text-red-400',
     blue: 'bg-blue-500/15 text-blue-400',
     purple: 'bg-purple-500/15 text-purple-400',
-    muted: 'bg-white/8 text-[#8a8577]',
+    violet: 'bg-violet-500/15 text-violet-300',
+    muted: 'bg-white/8 text-[var(--at-mut)]',
     orange: 'bg-orange-500/15 text-orange-400',
-  }[color] || 'bg-white/8 text-[#8a8577]';
+  }[color] || 'bg-white/8 text-[var(--at-mut)]';
   return <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${cls}`}>{children}</span>;
 }
 
-const planBadge = (plan) => {
-  if (!planKey(plan)) return <Badge color="muted">No plan</Badge>;
-  if (planKey(plan) === 'pro') return <Badge color="blue">Pro</Badge>;
-  if (planKey(plan) === 'premium') return <Badge color="gold">Premium</Badge>;
-  if (planKey(plan) === 'elite') return <Badge color="gold">Elite</Badge>;
-  return <Badge color="purple">Professional</Badge>;
-};
+const planBadge = (plan) => <Badge color={planTone(plan)}>{planLabel(plan)}</Badge>;
 
 function Spinner() {
   return (
@@ -207,10 +191,10 @@ function Collapse({ title, sub, count, defaultOpen = true, children }) {
   return (
     <details open={defaultOpen} className="glass rounded-[10px]">
       <summary className="flex cursor-pointer list-none items-center gap-2 p-4 sm:px-5 [&::-webkit-details-marker]:hidden">
-        <span className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">{title}</span>
-        {count != null && <span className="rounded-md bg-[#d4af37]/12 px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums text-[#d4af37]">{count}</span>}
-        {sub && <span className="truncate text-[11px] text-[#8a8577]">{sub}</span>}
-        <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-[#8a8577] transition-transform open:rotate-180" />
+        <span className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">{title}</span>
+        {count != null && <span className="rounded-md bg-[#d4af37]/12 px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums text-[var(--at-gold)]">{count}</span>}
+        {sub && <span className="truncate text-[11px] text-[var(--at-mut)]">{sub}</span>}
+        <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-[var(--at-mut)] transition-transform open:rotate-180" />
       </summary>
       <div className="border-t border-white/[0.07] p-4 sm:px-5">{children}</div>
     </details>
@@ -221,13 +205,13 @@ function Pagination({ page, total, perPage, onChange }) {
   const pages = Math.ceil(total / perPage);
   if (pages <= 1) return null;
   return (
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-[#8a8577]">
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-[var(--at-mut)]">
       <span>{total} results — page {page} of {pages}</span>
       <div className="flex gap-2">
-        <button onClick={() => onChange(page - 1)} disabled={page <= 1} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/15 disabled:opacity-30 hover:border-[#d4af37]/40">
+        <button onClick={() => onChange(page - 1)} disabled={page <= 1} className="grid h-8 w-8 place-items-center rounded-lg border border-[var(--at-line-soft)] disabled:opacity-30 hover:border-[#d4af37]/40">
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <button onClick={() => onChange(page + 1)} disabled={page >= pages} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/15 disabled:opacity-30 hover:border-[#d4af37]/40">
+        <button onClick={() => onChange(page + 1)} disabled={page >= pages} className="grid h-8 w-8 place-items-center rounded-lg border border-[var(--at-line-soft)] disabled:opacity-30 hover:border-[#d4af37]/40">
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
@@ -255,7 +239,16 @@ function EditUserModal({ user, userSource, onClose, onSaved }) {
     setSaving(true);
     try {
       let updated;
-      if (userSource === 'profiles') {
+      if (userSource === 'api-admin') {
+        const res = await fetch(`${API_SERVER_URL}/admin/users/${encodeURIComponent(user.id)}/profile`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pb.authStore.token}` },
+          body: JSON.stringify(form),
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(payload?.error || `Update failed (${res.status})`);
+        updated = { ...user, ...(payload.user || form) };
+      } else if (userSource === 'profiles') {
         updated = await pb.collection('profiles').update(user.id, {
           user_role: ['admin', 'trader', 'teacher', 'student'].includes(form.role) ? form.role : 'student',
         });
@@ -281,59 +274,59 @@ function EditUserModal({ user, userSource, onClose, onSaved }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
       <div className="glass w-full max-w-lg rounded-2xl p-4 sm:p-5 max-h-[90vh] overflow-y-auto">
         <div className="mb-5 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-[#f0ecdd]">Edit User</h3>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-[#8a8577] hover:bg-white/8 hover:text-[#f0ecdd]"><X className="h-5 w-5" /></button>
+          <h3 className="text-lg font-semibold text-[var(--at-ink)]">Edit User</h3>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-[var(--at-mut)] hover:bg-white/8 hover:text-[var(--at-ink)]"><X className="h-5 w-5" /></button>
         </div>
         <form onSubmit={save} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[['first_name', 'First name'], ['last_name', 'Last name'], ['dob', 'Date of birth'], ['name', 'Display Name']].map(([k, l]) => (
               <div key={k}>
-                <label className="mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">{l}</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--at-mut)] uppercase tracking-wider">{l}</label>
                 <input value={form[k] ?? ''} onChange={e => setForm({ ...form, [k]: e.target.value })}
                   type={k === 'dob' ? 'date' : 'text'}
                   disabled={userSource === 'profiles'}
-                  className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50 disabled:opacity-50" />
+                  className="w-full rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50 disabled:opacity-50" />
               </div>
             ))}
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">Phone</label>
+            <label className="mb-1.5 block text-xs font-medium text-[var(--at-mut)] uppercase tracking-wider">Phone</label>
             <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
               disabled={userSource === 'profiles'}
-              className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50 disabled:opacity-50" />
+              className="w-full rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50 disabled:opacity-50" />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">Email (read-only)</label>
-            <input value={form.email} disabled className="w-full rounded-xl border border-white/5 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#6a665a] outline-none opacity-60" />
+            <label className="mb-1.5 block text-xs font-medium text-[var(--at-mut)] uppercase tracking-wider">Email (read-only)</label>
+            <input value={form.email} disabled className="w-full rounded-xl border border-white/5 bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-mut-2)] outline-none opacity-60" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">Plan</label>
+              <label className="mb-1.5 block text-xs font-medium text-[var(--at-mut)] uppercase tracking-wider">Plan</label>
               <select value={form.plan} onChange={e => setForm({ ...form, plan: e.target.value })}
                 disabled={userSource === 'profiles'}
-                className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50 disabled:opacity-50">
-                {['none', 'premium', 'pro', 'elite', 'professional', 'teams'].map(p => <option key={p} value={p === 'none' ? '' : p} className="bg-[#0f0f14]">{planLabel(p === 'none' ? null : p)}</option>)}
+                className="w-full rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50 disabled:opacity-50">
+                {ASSIGNABLE_PLANS.map((option) => <option key={option.value || 'none'} value={option.value} className="bg-[var(--at-panel-2)]">{option.label}</option>)}
               </select>
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">Role</label>
+              <label className="mb-1.5 block text-xs font-medium text-[var(--at-mut)] uppercase tracking-wider">Role</label>
               <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}
-                className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50">
-                <option value="user" className="bg-[#0f0f14]">User</option>
-                <option value="admin" className="bg-[#0f0f14]">Admin</option>
-                <option value="teacher" className="bg-[#0f0f14]">Teacher</option>
-                <option value="student" className="bg-[#0f0f14]">Student</option>
-                <option value="trader" className="bg-[#0f0f14]">Trader</option>
+                className="w-full rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50">
+                <option value="user" className="bg-[var(--at-panel-2)]">User</option>
+                <option value="admin" className="bg-[var(--at-panel-2)]">Admin</option>
+                <option value="teacher" className="bg-[var(--at-panel-2)]">Teacher</option>
+                <option value="student" className="bg-[var(--at-panel-2)]">Student</option>
+                <option value="trader" className="bg-[var(--at-panel-2)]">Trader</option>
               </select>
             </div>
           </div>
           {userSource === 'profiles' && (
-            <p className="rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/8 px-3 py-2 text-xs text-[#c9c4b4]">
+            <p className="rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/8 px-3 py-2 text-xs text-[var(--at-ink-2)]">
               This account comes from the Supabase profiles table. Role updates are enabled; billing-plan fields are read-only here.
             </p>
           )}
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-[#d4af37]/15 py-2.5 text-sm text-[#8a8577] hover:border-[#d4af37]/30">Cancel</button>
+            <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-[var(--at-line-soft)] py-2.5 text-sm text-[var(--at-mut)] hover:border-[var(--at-line)]">Cancel</button>
             <button type="submit" disabled={saving} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90 disabled:opacity-60">
               {saving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Changes
             </button>
@@ -369,21 +362,21 @@ function UserDetailModal({ user, onClose }) {
       <div className="glass w-full max-w-lg rounded-2xl p-4 sm:p-5 max-h-[80vh] overflow-y-auto">
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-full bg-[#d4af37]/15 text-lg font-bold text-[#d4af37]">
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-[#d4af37]/15 text-lg font-bold text-[var(--at-gold)]">
               {displayInitial(user)}
             </div>
             <div>
-              <div className="font-semibold text-[#f0ecdd]">{displayName(user)}</div>
-              <div className="text-xs text-[#8a8577]">User Profile</div>
+              <div className="font-semibold text-[var(--at-ink)]">{displayName(user)}</div>
+              <div className="text-xs text-[var(--at-mut)]">User Profile</div>
             </div>
           </div>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-[#8a8577] hover:bg-white/8"><X className="h-5 w-5" /></button>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-[var(--at-mut)] hover:bg-white/8"><X className="h-5 w-5" /></button>
         </div>
         <div className="divide-y divide-white/5">
           {fields.map(([k, v]) => (
             <div key={k} className="flex justify-between py-2.5 text-sm gap-4">
-              <span className="text-[#8a8577] shrink-0">{k}</span>
-              <span className="font-mono text-[#e9e7df] max-w-[60%] truncate text-right">{String(v)}</span>
+              <span className="text-[var(--at-mut)] shrink-0">{k}</span>
+              <span className="font-mono text-[var(--at-ink)] max-w-[60%] truncate text-right">{String(v)}</span>
             </div>
           ))}
         </div>
@@ -399,12 +392,13 @@ export function AdminDashboard() {
 
   const stats = useMemo(() => {
     const paid = users.filter(u => isPaidPlan(u.plan));
-    const mrr = paid.reduce((s, u) => s + (PLAN_PRICES[u.plan] || 0), 0);
+    const mrr = estimatedMrr(paid);
     const verified = users.filter(u => u.verified).length;
     const academyBuyers = users.filter(u => u.academyAccess).length;
-    const academyRevenue = academyBuyers * ACADEMY_PRICE;
+    const academyMinimum = academyMinimumValue(academyBuyers);
+    const enterpriseCount = paid.filter((u) => ['professional', 'teams'].includes(planKey(u.plan))).length;
     const customers = users.filter(u => isPaidPlan(u.plan) || u.academyAccess).length;
-    return { total: users.length, paid: paid.length, mrr, verified, trades: trades.length, academyBuyers, academyRevenue, customers };
+    return { total: users.length, paid: paid.length, mrr, verified, trades: trades.length, academyBuyers, academyMinimum, enterpriseCount, customers };
   }, [users, trades]);
 
   const growth = useMemo(() => {
@@ -420,29 +414,12 @@ export function AdminDashboard() {
 
   const recent = useMemo(() => users.slice(0, 8), [users]);
 
-  const milestones = useMemo(() => {
-    const first = users.map(u => (u.created || '').slice(0, 7)).filter(Boolean).sort()[0];
-    let monthsLive = null;
-    if (first) {
-      const [fy, fm] = first.split('-').map(Number);
-      const now = new Date();
-      monthsLive = (now.getFullYear() - fy) * 12 + (now.getMonth() + 1 - fm) + 1;
-    }
-    const m6 = { label: 'M6 Target', users: 185, mrr: 7102 };
-    const m12 = { label: 'M12 Target', users: 600, mrr: 23034 };
-    return [
-      { ...m6, uPct: Math.min(100, Math.round(stats.total / m6.users * 100)), rPct: Math.min(100, Math.round(stats.mrr / m6.mrr * 100)) },
-      { ...m12, uPct: Math.min(100, Math.round(stats.total / m12.users * 100)), rPct: Math.min(100, Math.round(stats.mrr / m12.mrr * 100)) },
-    ].map(m => ({ ...m, monthsLive }));
-  }, [users, stats]);
-
   const [sysHealth, setSysHealth] = useState([
     { label: 'Database', status: 'unknown', icon: Database },
     { label: 'API Server', status: 'unknown', icon: Server },
     { label: 'Auth Service', status: 'unknown', icon: Shield },
     { label: 'Email Service', status: 'unknown', icon: Mail },
     { label: 'Billing (Stripe)', status: 'unknown', icon: CreditCard },
-    { label: 'Billing (Paddle)', status: 'unknown', icon: CreditCard },
     { label: 'Market Data', status: 'unknown', icon: Activity },
     { label: 'D&B (DUNS)', status: 'unknown', icon: Globe },
   ]);
@@ -480,19 +457,17 @@ export function AdminDashboard() {
           { label: 'Auth Service', status: ok(c.supabase), detail: c.supabase ? 'GoTrue' : 'unreachable', icon: Shield },
           { label: 'Email Service', status: ok(c.smtp), detail: c.smtp ? 'SMTP set' : 'not configured', icon: Mail },
           { label: 'Billing (Stripe)', status: ok(c.stripe), detail: c.stripe ? 'keys set' : 'not configured', icon: CreditCard },
-          { label: 'Billing (Paddle)', status: ok(c.paddle), detail: c.paddle ? 'keys set' : 'not configured', icon: CreditCard },
           { label: 'Market Data', status: ok(c.market), detail: c.market ? 'feeds reachable' : 'unreachable', icon: Activity },
           { label: 'D&B (DUNS)', status: ok(c.dnb), detail: c.dnb ? 'Direct+ live' : 'sandbox stub', icon: Globe },
         ]);
       } catch {
-        setSysHealth((prev) => prev.map((s) => ({ ...s, status: s.label === 'API Server' ? 'ok' : 'off' })));
+        setSysHealth((prev) => prev.map((s) => ({ ...s, status: s.label === 'API Server' ? 'off' : 'off', detail: 'health check failed' })));
       }
     })();
   }, []);
 
   const todayLabel = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
   const verifiedRate = stats.total ? Math.round((stats.verified / stats.total) * 100) : 0;
-  const planTone = (plan) => (planKey(plan) === 'pro' ? 'blue' : (planKey(plan) === 'premium' || planKey(plan) === 'elite') ? 'gold' : planKey(plan) === 'professional' ? 'violet' : planKey(plan) === 'teams' ? 'green' : 'muted');
 
   return (
     <AdminLayout title="Admin Dashboard">
@@ -516,16 +491,99 @@ export function AdminDashboard() {
             <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
               <AtMetric icon={Users} label="Total users" value={stats.total.toLocaleString()} note={`${stats.verified} verified · ${verifiedRate}% of accounts`} />
               <AtMetric icon={CreditCard} label="Paid subscribers" value={stats.paid.toLocaleString()} note={`${Math.max(0, stats.total - stats.paid).toLocaleString()} accounts without a plan`} />
-              <AtMetric icon={DollarSign} label="Monthly recurring" value={`$${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note="Estimated from active plan prices" tone="text-[var(--at-green)]" />
-              <AtMetric icon={GraduationCap} label="Academy students" value={stats.academyBuyers.toLocaleString()} note={`$${stats.academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })} lifetime revenue`} />
+              <AtMetric icon={DollarSign} label="Est. MRR" value={`$${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note={stats.enterpriseCount ? `Premium-derived; excludes ${stats.enterpriseCount} enterprise contract${stats.enterpriseCount === 1 ? '' : 's'}` : 'Premium-derived; annual plans normalised monthly'} tone="text-[var(--at-green)]" />
+              <AtMetric icon={GraduationCap} label="Academy students" value={stats.academyBuyers.toLocaleString()} note={`${formatUsd(stats.academyMinimum)} minimum tuition value at $150 entry tier`} />
               <AtMetric icon={Activity} label="Journaled trades" value={stats.trades.toLocaleString()} note="Across all member accounts" />
             </div>
 
             <div className="mt-6">
               <AtSectionHeading
+                index="00"
+                title="Company & product truth"
+                sub="Canonical facts from the Company Bible and the live web application."
+                action={<AtButton to="/admin/company" variant="quiet" size="sm" icon={Building2}>Open Company Bible</AtButton>}
+              />
+              <div className="grid gap-3 xl:grid-cols-[1.45fr_.75fr]">
+                <AtPanel
+                  title={COMPANY_FACTS.legalName}
+                  sub={`${COMPANY_FACTS.formation} · public launch ${COMPANY_FACTS.launchDate}`}
+                  action={<AtBadge tone="gold">Pre-launch</AtBadge>}
+                >
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {[
+                      { label: 'Public plans', value: 'Free · Premium', note: `$${PREMIUM_MONTHLY}/mo or $${PREMIUM_ANNUAL}/yr` },
+                      { label: 'Academy', value: '17 paths · 76 courses', note: '347 lessons · $150–$499 lifetime tiers' },
+                      { label: 'Funded evaluations', value: `${FUNDED_FACTS.products} programs`, note: `$${FUNDED_FACTS.maxAccount.toLocaleString()} max · ${FUNDED_FACTS.maxSplit}% split · ${FUNDED_FACTS.payoutDays}-day payouts` },
+                      { label: 'TBC token', value: 'Not issued', note: `${(COMPANY_FACTS.tbc.maxSupply / 1_000_000).toFixed(0)}M proposed max · sale disabled` },
+                      { label: 'Fundraising', value: 'Gate closed', note: `${COMPANY_FACTS.fundraising.packetDocuments} private drafts · no public offering` },
+                      { label: 'Communications', value: `${COMPANY_FACTS.communications.templates} templates`, note: 'Email · SMS · in-app · admin test-send only' },
+                    ].map((fact) => (
+                      <div key={fact.label} className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3">
+                        <div className="at-kpi-label">{fact.label}</div>
+                        <div className="mt-1 text-[13px] font-semibold text-[var(--at-ink)]">{fact.value}</div>
+                        <div className="mt-0.5 text-[9px] leading-relaxed text-[var(--at-mut)]">{fact.note}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3">
+                    <AtAlert icon={ShieldCheck} tone="amber">
+                      <b className="text-[var(--at-ink)]">Company employees, not Academy staff.</b>{' '}
+                      The operator suite is the company workspace. Academy learners and instructors are product users, not employees.
+                      No regulated activity is open, and no figure on this page is an audited result.
+                    </AtAlert>
+                  </div>
+                </AtPanel>
+
+                <AtPanel title="From the web app" sub="Jump to the canonical public and member surfaces.">
+                  <div className="space-y-1">
+                    {[
+                      { to: '/', label: 'Public website', note: 'Landing, company and legal pages' },
+                      { to: '/pricing', label: 'Public pricing', note: 'Free and Premium' },
+                      { to: '/academy', label: 'Academy catalogue', note: '17 paths · 76 courses · 347 lessons' },
+                      { to: '/app/challenges', label: 'Challenges & funded', note: '16 programs · $200K max' },
+                      { to: '/tbc', label: 'TBC proposal', note: 'Not issued · no sale' },
+                      { to: '/fundraising', label: 'Fundraising status', note: 'No offering is open' },
+                    ].map((link) => (
+                      <Link key={link.to} to={link.to} className="flex items-center gap-2.5 rounded-lg border border-transparent px-2 py-2 transition hover:border-[var(--at-line)] hover:bg-[var(--at-soft)]">
+                        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-[var(--at-line)] bg-[var(--at-gold-soft)] text-[var(--at-gold)]"><Globe className="h-3.5 w-3.5" /></span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-[11px] font-semibold text-[var(--at-ink)]">{link.label}</span>
+                          <span className="block truncate text-[9px] text-[var(--at-mut)]">{link.note}</span>
+                        </span>
+                        <ExternalLink className="h-3 w-3 shrink-0 text-[var(--at-mut-2)]" />
+                      </Link>
+                    ))}
+                  </div>
+                </AtPanel>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                { to: '/admin/product-surfaces', icon: Layers, title: 'Product surfaces', note: 'Every member route and plan gate' },
+                { to: '/admin/academy', icon: GraduationCap, title: 'Academy operations', note: '17 paths · 76 courses · 347 lessons' },
+                { to: '/admin/challenges', icon: Trophy, title: 'Challenges & funded', note: '16 programs · $200K max · 14-day payouts' },
+                { to: '/admin/signals', icon: Activity, title: 'Signals & alerts', note: 'Published signals and delivery gates' },
+                { to: '/admin/community', icon: Users, title: 'Community & moderation', note: 'Threads, replies and flags' },
+                { to: '/admin/affiliates', icon: Users, title: 'Affiliates', note: '15% recurring · TBC settlement' },
+                { to: '/admin/public-site', icon: Globe, title: 'Public site & launch', note: 'Route inventory and launch checks' },
+                { to: '/admin/compliance', icon: ShieldCheck, title: 'Compliance & gates', note: 'Closed, blocked and open items' },
+              ].map(({ to, icon: Icon, title, note }) => (
+                <Link key={to} to={to} className="at-card at-card--hover flex items-center gap-3 p-3.5">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[var(--at-line)] bg-[var(--at-gold-soft)] text-[var(--at-gold)]"><Icon className="h-4 w-4" /></span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[11px] font-semibold text-[var(--at-ink)]">{title}</span>
+                    <span className="block truncate text-[9px] text-[var(--at-mut)]">{note}</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+
+            <div className="mt-6">
+              <AtSectionHeading
                 index="01"
-                title="Growth & trajectory"
-                sub="Cumulative registrations against the illustrative operating plan."
+                title="Growth & registrations"
+                sub="Cumulative registered accounts from stored records. No target line is implied."
                 action={<AtBadge tone="gold">{growth.length} months of data</AtBadge>}
               />
               <div className="grid gap-3 lg:grid-cols-5">
@@ -574,34 +632,29 @@ export function AdminDashboard() {
                 </AtPanel>
 
                 <div className="space-y-3 lg:col-span-2">
-                  {milestones.map((m) => (
-                    <AtPanel
-                      key={m.label}
-                      title={m.label}
-                      sub={m.monthsLive != null ? `Operating month ${m.monthsLive} · illustrative loan model` : 'Illustrative loan model'}
-                      action={<AtBadge tone="amber">Model</AtBadge>}
-                    >
-                      <div className="flex items-center gap-4">
-                        <AtRing value={m.uPct} size={62} label={`${m.uPct}%`} />
-                        <div className="min-w-0 flex-1 space-y-3">
-                          <div>
-                            <div className="mb-1 flex items-center justify-between gap-2 text-[10px] text-[var(--at-mut)]">
-                              <span>Users</span>
-                              <span className="font-mono text-[var(--at-ink-2)]">{stats.total.toLocaleString()} / {m.users.toLocaleString()}</span>
-                            </div>
-                            <AtProgress value={m.uPct} />
+                  <AtPanel
+                    title="Account state"
+                    sub="Measured records only. No forecast, target or valuation is implied."
+                    action={<AtBadge tone="muted">Live</AtBadge>}
+                  >
+                    <div className="space-y-3">
+                      {[
+                        ['Registered accounts', stats.total.toLocaleString(), 'All visible user records'],
+                        ['Paid subscribers', stats.paid.toLocaleString(), 'Premium and historical paid plans'],
+                        ['Verified accounts', `${stats.verified.toLocaleString()} · ${verifiedRate}%`, 'Email-confirmed records'],
+                        ['Academy students', stats.academyBuyers.toLocaleString(), 'Accounts with Academy access'],
+                        ['Journaled trades', stats.trades.toLocaleString(), 'Entries across member journals'],
+                      ].map(([label, value, note]) => (
+                        <div key={label} className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--at-mut)]">{label}</span>
+                            <span className="font-mono text-[12px] font-bold text-[var(--at-ink)]">{value}</span>
                           </div>
-                          <div>
-                            <div className="mb-1 flex items-center justify-between gap-2 text-[10px] text-[var(--at-mut)]">
-                              <span>MRR</span>
-                              <span className="font-mono text-[var(--at-ink-2)]">${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })} / ${m.mrr.toLocaleString()}</span>
-                            </div>
-                            <AtProgress value={m.rPct} tone="green" />
-                          </div>
+                          <div className="mt-0.5 text-[9px] text-[var(--at-mut-2)]">{note}</div>
                         </div>
-                      </div>
-                    </AtPanel>
-                  ))}
+                      ))}
+                    </div>
+                  </AtPanel>
                 </div>
               </div>
             </div>
@@ -614,11 +667,11 @@ export function AdminDashboard() {
                 action={<AtLink to="/admin/billing">Open billing</AtLink>}
               />
               <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
-                <AtMetric icon={DollarSign} label="Est. MRR" value={`$${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note="Monthly recurring revenue" tone="text-[var(--at-green)]" />
+                <AtMetric icon={DollarSign} label="Est. MRR" value={`$${stats.mrr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note="Premium-derived; annual plans normalised" tone="text-[var(--at-green)]" />
                 <AtMetric icon={Activity} label="Ledger in · 30d" value={money ? `$${Math.round(money.inUsd30d).toLocaleString()}` : '—'} note="All USD inflows, incl. non-subscription" />
                 <AtMetric icon={DollarSign} label="Ledger in · all time" value={money ? `$${Math.round(money.inUsd).toLocaleString()}` : '—'} note="USD inflows since launch" />
                 <AtMetric icon={Wallet} label="Pending payouts" value={money ? `$${Math.round(money.pendingUsd).toLocaleString()}` : '—'} note="Awaiting release" tone="text-[var(--at-amber)]" />
-                <AtMetric icon={GraduationCap} label="Academy revenue" value={`$${stats.academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note="One-time lifetime access" />
+                <AtMetric icon={GraduationCap} label="Academy tuition · min." value={formatUsd(stats.academyMinimum)} note="At $150 entry tier; actual tier is not stored" />
               </div>
 
               <div className="mt-3 grid gap-3 lg:grid-cols-[.85fr_1.15fr]">
@@ -631,8 +684,8 @@ export function AdminDashboard() {
                     {[
                       { label: 'Monthly ledger inflow', value: money ? `$${Math.round(money.inUsd30d).toLocaleString()}` : '—', note: 'Last 30 days' },
                       { label: 'Pending payouts', value: money ? `$${Math.round(money.pendingUsd).toLocaleString()}` : '—', note: 'Requires release review' },
-                      { label: 'Academy lifetime revenue', value: `$${stats.academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, note: `${stats.academyBuyers} students` },
-                      { label: 'Paying customers', value: stats.customers.toLocaleString(), note: `${stats.paid} subscriptions + ${stats.academyBuyers} academy` },
+                      { label: 'Academy tuition · minimum', value: formatUsd(stats.academyMinimum), note: `${stats.academyBuyers} students · $150 entry tier` },
+                      { label: 'Paid or Academy access', value: stats.customers.toLocaleString(), note: `${stats.paid} subscriptions + ${stats.academyBuyers} academy access records` },
                     ].map((row) => (
                       <div key={row.label} className="flex items-baseline justify-between gap-3 border-b border-[var(--at-line-soft)] pb-3 last:border-0 last:pb-0">
                         <div>
@@ -749,7 +802,7 @@ export function AdminDashboard() {
                 {[
                   { to: '/admin/users', icon: Users, title: 'Manage users', sub: 'Plans, roles and verification' },
                   { to: '/admin/tbc', icon: Coins, title: 'Review TBC gates', sub: 'Read-only control room' },
-                  { to: '/admin/legal-vault', icon: ShieldCheck, title: 'Open legal vault', sub: '31 controlled instruments' },
+                  { to: '/admin/legal-vault', icon: ShieldCheck, title: 'Open legal vault', sub: 'Controlled instruments · admin only' },
                   { to: '/admin/company', icon: Building2, title: 'Company Bible', sub: 'The single source of truth' },
                 ].map(({ to, icon: Icon, title, sub }) => (
                   <Link key={to} to={to} className="at-card at-card--hover flex items-center gap-3 p-3.5">
@@ -802,15 +855,30 @@ export function AdminUsers() {
 
   const toggleOne = (id) => setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
+  const deleteUserRecord = async (u) => {
+    if (source === 'api-admin') {
+      const res = await fetch(`${API_SERVER_URL}/admin/users/${encodeURIComponent(u.id)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${pb.authStore.token}` },
+      });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload?.error || `Delete failed (${res.status})`);
+      }
+      return;
+    }
+    await pb.collection('users').delete(u.id);
+  };
+
   const remove = async (u) => {
     if (source === 'profiles') {
       toast({ variant: 'destructive', title: 'Direct delete disabled', description: 'Delete profile-backed users in Supabase Auth > Users.' });
       return;
     }
     if (u.role === 'admin') return toast({ variant: 'destructive', title: 'Cannot delete admin' });
-    if (!window.confirm(`Delete ${u.email}?`)) return;
+    if (!window.confirm(`Delete ${u.email}? This cannot be undone.`)) return;
     try {
-      await pb.collection('users').delete(u.id);
+      await deleteUserRecord(u);
       setUsers(prev => prev.filter(x => x.id !== u.id));
       toast({ title: 'User deleted', description: u.email });
     } catch (err) { toast({ variant: 'destructive', title: 'Failed', description: err?.message }); }
@@ -843,7 +911,9 @@ export function AdminUsers() {
     if (!window.confirm(`Delete ${toDelete.length} user(s)? This cannot be undone.`)) return;
     let deleted = 0;
     for (const id of toDelete) {
-      try { await pb.collection('users').delete(id); deleted++; } catch { /* skip */ }
+      const target = users.find((x) => x.id === id);
+      if (!target) continue;
+      try { await deleteUserRecord(target); deleted++; } catch { /* skip */ }
     }
     setUsers(prev => prev.filter(u => !toDelete.includes(u.id)));
     setSelected(new Set());
@@ -869,7 +939,7 @@ export function AdminUsers() {
     let deleted = 0;
     for (const u of nonAdminUsers) {
       try {
-        await pb.collection('users').delete(u.id);
+        await deleteUserRecord(u);
         deleted++;
       } catch {
         // continue deleting remaining users
@@ -892,44 +962,58 @@ export function AdminUsers() {
 
   return (
     <AdminLayout title="User Management">
-      {editing && <EditUserModal user={editing} userSource={source} onClose={() => setEditing(null)} onSaved={onSaved} />}
-      {viewing && <UserDetailModal user={viewing} onClose={() => setViewing(null)} />}
+      <div className="at-page at-scope at-enter">
+        {editing && <EditUserModal user={editing} userSource={source} onClose={() => setEditing(null)} onSaved={onSaved} />}
+        {viewing && <UserDetailModal user={viewing} onClose={() => setViewing(null)} />}
 
-      {/* Toolbar */}
-      <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
+        <AtPageBar
+          meta={[
+            `${users.length.toLocaleString()} accounts`,
+            `${users.filter((u) => isPaidPlan(u.plan)).length.toLocaleString()} paid`,
+            `${users.filter((u) => u.verified).length.toLocaleString()} verified`,
+            source === 'api-admin' ? 'Live admin API' : `Fallback · ${source}`,
+          ]}
+          actions={(
+            <>
+              <AtButton to="/admin/employees" variant="quiet" icon={Users}>Employees</AtButton>
+              <AtButton onClick={exportCSV} variant="outline" icon={Download}>Export CSV</AtButton>
+              <AtButton onClick={reload} variant="gold" icon={RefreshCw} disabled={loading}>Refresh</AtButton>
+            </>
+          )}
+        >
+          <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-[var(--at-mut)]">
+            Manage company platform accounts, public-plan access and roles. Pro, Elite, Professional and Teams are historical account values,
+            not current public plans. Suspension keeps the account signed in but blocks platform access.
+          </p>
+        </AtPageBar>
+
+        {/* Toolbar */}
+        <div className="mb-4 mt-4 flex flex-wrap items-center gap-2 sm:gap-3">
         {source === 'profiles' && (
-          <div className="w-full rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/8 px-3 py-2 text-xs text-[#c9c4b4]">
+          <div className="w-full rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/8 px-3 py-2 text-xs text-[var(--at-ink-2)]">
             Users are being read from Supabase <span className="font-mono">profiles</span>. Role edit works here; deleting users must be done in Supabase Auth.
           </div>
         )}
-        <div className="flex flex-1 min-w-[180px] items-center gap-2 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5">
-          <Search className="h-4 w-4 shrink-0 text-[#8a8577]" />
+        <div className="flex flex-1 min-w-[180px] items-center gap-2 rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5">
+          <Search className="h-4 w-4 shrink-0 text-[var(--at-mut)]" />
           <input value={q} onChange={e => { setQ(e.target.value); setPage(1); }} placeholder="Search by email, name, or phone…"
-            className="w-full bg-transparent text-sm text-[#e9e7df] placeholder-[#6a665a] outline-none" />
-          {q && <button onClick={() => setQ('')}><X className="h-4 w-4 text-[#6a665a] hover:text-[#c9c4b4]" /></button>}
+            className="w-full bg-transparent text-sm text-[var(--at-ink)] placeholder-[#6a665a] outline-none" />
+          {q && <button onClick={() => setQ('')}><X className="h-4 w-4 text-[var(--at-mut-2)] hover:text-[var(--at-ink-2)]" /></button>}
         </div>
         <select value={planFilter} onChange={e => { setPlanFilter(e.target.value); setPage(1); }}
-          className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none">
-          <option value="all" className="bg-[#0f0f14]">All Plans</option>
-          {['none', 'premium', 'pro', 'elite', 'professional', 'teams'].map(p => <option key={p} value={p} className="bg-[#0f0f14]">{planLabel(p === 'none' ? null : p)}</option>)}
+          className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-ink)] outline-none">
+          <option value="all" className="bg-[var(--at-panel-2)]">All plans</option>
+          {['none', 'free', 'premium', 'pro', 'elite', 'professional', 'teams'].map(p => <option key={p} value={p} className="bg-[var(--at-panel-2)]">{planLabel(p === 'none' ? null : p)}</option>)}
         </select>
         <select value={roleFilter} onChange={e => { setRoleFilter(e.target.value); setPage(1); }}
-          className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none">
-          <option value="all" className="bg-[#0f0f14]">All Roles</option>
-          <option value="user" className="bg-[#0f0f14]">User</option>
-          <option value="admin" className="bg-[#0f0f14]">Admin</option>
-          <option value="student" className="bg-[#0f0f14]">Student</option>
-          <option value="teacher" className="bg-[#0f0f14]">Teacher</option>
-          <option value="trader" className="bg-[#0f0f14]">Trader</option>
+          className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-ink)] outline-none">
+          <option value="all" className="bg-[var(--at-panel-2)]">All Roles</option>
+          <option value="user" className="bg-[var(--at-panel-2)]">User</option>
+          <option value="admin" className="bg-[var(--at-panel-2)]">Admin</option>
+          <option value="student" className="bg-[var(--at-panel-2)]">Student</option>
+          <option value="teacher" className="bg-[var(--at-panel-2)]">Teacher</option>
+          <option value="trader" className="bg-[var(--at-panel-2)]">Trader</option>
         </select>
-        <div className="flex gap-2">
-          <button onClick={reload} className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/15 px-3 py-2.5 text-sm text-[#d4af37] hover:border-[#d4af37]/40">
-            <RefreshCw className="h-4 w-4" /> <span className="hidden sm:inline">Refresh list</span>
-          </button>
-          <button onClick={exportCSV} className="flex items-center gap-1.5 rounded-xl border border-[#d4af37]/15 px-3 py-2.5 text-sm text-[#8a8577] hover:text-[#e9e7df]">
-            <Download className="h-4 w-4" /> <span className="hidden sm:inline">Export CSV</span>
-          </button>
-        </div>
         <button onClick={purgeAllNonAdminUsers} className="flex items-center gap-1.5 rounded-xl border border-red-500/35 px-3 py-2.5 text-sm text-red-400 hover:bg-red-500/10">
           <Trash2 className="h-4 w-4" /> <span className="hidden sm:inline">Purge non-admin users</span>
         </button>
@@ -942,69 +1026,67 @@ export function AdminUsers() {
 
       {loading ? <Spinner /> : (
         <>
-          <div className="glass overflow-x-auto rounded-2xl">
-            <table className="tb-mobile-actions w-full sm:min-w-[600px] text-sm">
+          <div className="at-table-wrap">
+            <table className="at-table min-w-[760px]">
               <thead>
-                <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
-                  <th className="px-4 py-3"><input type="checkbox" checked={allPageSelected} onChange={toggleAll} className="h-4 w-4 accent-[#d4af37]" /></th>
-                  <th className="px-4 py-3 font-medium">User</th>
-                  <th className="px-4 py-3 font-medium hidden sm:table-cell">Plan</th>
-                  <th className="px-4 py-3 font-medium hidden sm:table-cell">Role</th>
-                  <th className="px-4 py-3 font-medium hidden md:table-cell">Status</th>
-                  <th className="px-4 py-3 font-medium hidden lg:table-cell">Joined</th>
-                  <th className="px-4 py-3 font-medium text-right">Actions</th>
+                <tr>
+                  <th className="w-9"><input type="checkbox" checked={allPageSelected} onChange={toggleAll} className="h-4 w-4 accent-[var(--at-gold)]" /></th>
+                  <th>User</th>
+                  <th>Plan</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {paged.map(u => (
-                  <tr key={u.id} className={`border-b border-white/5 transition hover:bg-white/[0.03] ${selected.has(u.id) ? 'bg-[#d4af37]/5' : ''} ${u.role === 'admin' ? 'bg-[#d4af37]/[0.05]' : ''}`}>
-                    <td className="px-4 py-3"><input type="checkbox" checked={selected.has(u.id)} onChange={() => toggleOne(u.id)} className="h-4 w-4 accent-[#d4af37]" /></td>
-                    <td className="px-4 py-3">
+                  <tr key={u.id} className={selected.has(u.id) ? 'bg-[var(--at-gold-soft)]' : ''}>
+                    <td><input type="checkbox" checked={selected.has(u.id)} onChange={() => toggleOne(u.id)} className="h-4 w-4 accent-[var(--at-gold)]" /></td>
+                    <td>
                       <div className="flex items-center gap-2.5">
-                        <div className={`relative grid h-9 w-9 shrink-0 place-items-center rounded-full text-xs font-bold ${u.role === 'admin' ? 'bg-[#d4af37]/20 text-[#d4af37] ring-1 ring-[#d4af37]/50' : 'bg-[#d4af37]/10 text-[#d4af37]'}`}>
+                        <div className={`relative grid h-9 w-9 shrink-0 place-items-center rounded-full text-xs font-bold ${u.role === 'admin' ? 'bg-[#d4af37]/20 text-[var(--at-gold)] ring-1 ring-[#d4af37]/50' : 'bg-[var(--at-gold-soft)] text-[var(--at-gold)]'}`}>
                           {displayInitial(u)}
-                          {u.role === 'admin' && <Crown className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full bg-[#0a0a0f] p-0.5 text-[#d4af37]" />}
+                          {u.role === 'admin' && <Crown className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full bg-[var(--at-bg0)] p-0.5 text-[var(--at-gold)]" />}
                         </div>
                         <div className="min-w-0">
                           <div className="flex min-w-0 items-center gap-1.5">
-                            <span className="truncate font-medium text-[#f0ecdd]">{displayName(u)}</span>
-                            {u.role === 'admin' && <span className="shrink-0 rounded-full bg-[#d4af37]/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#d4af37]">Admin</span>}
+                            <span className="truncate font-semibold !text-[var(--at-ink)]">{displayName(u)}</span>
+                            {u.role === 'admin' && <span className="shrink-0 rounded-full bg-[var(--at-gold-soft)] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[var(--at-gold)]">Admin</span>}
                           </div>
-                          <div className="truncate text-xs text-[#8a8577] max-w-[200px] sm:max-w-[260px]" title={u.email}>{u.email}</div>
-                          {u.phone && (
-                            <div className="truncate font-mono text-[11px] text-[#6a665a] max-w-[200px]">{u.phone}</div>
-                          )}
+                          <div className="max-w-[240px] truncate text-[10px] !text-[var(--at-mut)]" title={u.email}>{u.email}</div>
+                          {u.phone && <div className="max-w-[200px] truncate font-mono text-[10px] !text-[var(--at-mut-2)]">{u.phone}</div>}
                           <div className="mt-1 flex flex-wrap items-center gap-1.5 sm:hidden">{planBadge(u.plan)}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 hidden sm:table-cell">{planBadge(u.plan)}</td>
-                    <td className="px-4 py-3 hidden sm:table-cell">
+                    <td>{planBadge(u.plan)}</td>
+                    <td>
                       {u.user_settings?.suspended && <Badge color="red"><Ban className="h-3 w-3" /> Suspended</Badge>}
-                      {u.role === 'admin'
+                      {!u.user_settings?.suspended && (u.role === 'admin'
                         ? <Badge color="gold"><Shield className="h-3 w-3" /> Admin</Badge>
-                        : <Badge color="muted">{(u.role || 'user').charAt(0).toUpperCase() + (u.role || 'user').slice(1)}</Badge>}
+                        : <Badge color="muted">{(u.role || 'user').charAt(0).toUpperCase() + (u.role || 'user').slice(1)}</Badge>)}
                     </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
+                    <td>
                       {u.verified
                         ? <Badge color="green"><CheckCircle className="h-3 w-3" /> Verified</Badge>
                         : <Badge color="muted">Unverified</Badge>}
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-[#8a8577] hidden lg:table-cell">{(u.created || '').slice(0, 10)}</td>
-                    <td className="px-4 py-3">
+                    <td className="font-mono text-[10px] !text-[var(--at-mut)]">{(u.created || '').slice(0, 10)}</td>
+                    <td>
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => setViewing(u)} title="View" className="rounded-lg p-1.5 text-[#8a8577] hover:bg-white/8 hover:text-[#c9c4b4]"><Eye className="h-4 w-4" /></button>
-                        <button onClick={() => setEditing(u)} title="Edit" className="rounded-lg p-1.5 text-[#8a8577] hover:bg-white/8 hover:text-[#d4af37]"><Edit2 className="h-4 w-4" /></button>
+                        <button onClick={() => setViewing(u)} title="View" className="rounded-lg p-1.5 text-[var(--at-mut)] hover:bg-[var(--at-soft)] hover:text-[var(--at-ink)]"><Eye className="h-4 w-4" /></button>
+                        <button onClick={() => setEditing(u)} title="Edit" className="rounded-lg p-1.5 text-[var(--at-mut)] hover:bg-[var(--at-gold-soft)] hover:text-[var(--at-gold)]"><Edit2 className="h-4 w-4" /></button>
                         {u.user_settings?.suspended
                           ? <button onClick={() => setSuspended(u, false)} disabled={u.role === 'admin'} title="Restore account" className="rounded-lg p-1.5 text-emerald-400/80 hover:bg-emerald-500/10 hover:text-emerald-400 disabled:opacity-20"><Ban className="h-4 w-4" /></button>
-                          : <button onClick={() => setSuspended(u, true)} disabled={u.role === 'admin'} title="Suspend account" className="rounded-lg p-1.5 text-[#8a8577] hover:bg-red-500/10 hover:text-red-400 disabled:opacity-20"><Ban className="h-4 w-4" /></button>}
+                          : <button onClick={() => setSuspended(u, true)} disabled={u.role === 'admin'} title="Suspend account" className="rounded-lg p-1.5 text-[var(--at-mut)] hover:bg-red-500/10 hover:text-red-400 disabled:opacity-20"><Ban className="h-4 w-4" /></button>}
                         <button onClick={() => remove(u)} disabled={u.role === 'admin' || source === 'profiles'} title={source === 'profiles' ? 'Delete in Supabase Auth' : 'Delete'} className="rounded-lg p-1.5 text-red-400/60 hover:bg-red-500/10 hover:text-red-400 disabled:opacity-20"><Trash2 className="h-4 w-4" /></button>
                       </div>
                     </td>
                   </tr>
                 ))}
                 {!paged.length && (
-                  <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-[#8a8577]">No users match your filters.</td></tr>
+                  <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-[var(--at-mut)]">No users match your filters.</td></tr>
                 )}
               </tbody>
             </table>
@@ -1012,6 +1094,7 @@ export function AdminUsers() {
           <Pagination page={page} total={filtered.length} perPage={PER_PAGE} onChange={setPage} />
         </>
       )}
+      </div>
     </AdminLayout>
   );
 }
@@ -1025,7 +1108,7 @@ export function AdminAnalytics() {
   const planDist = useMemo(() => {
     const counts = { none: 0, premium: 0, pro: 0, elite: 0, professional: 0, teams: 0 };
     users.forEach(u => { const k = displayPlan(u.plan); counts[k] = (counts[k] || 0) + 1; });
-    return Object.entries(counts).map(([name, value]) => ({ name: name === 'none' ? 'No plan' : name.charAt(0).toUpperCase() + name.slice(1), value, color: PLAN_COLORS[name] }));
+    return Object.entries(counts).map(([name, value]) => ({ name: planLabel(name === 'none' ? null : name), value, color: PLAN_COLORS[name] }));
   }, [users]);
 
   const monthlyNew = useMemo(() => {
@@ -1044,101 +1127,80 @@ export function AdminAnalytics() {
   }, [trades]);
 
   const paid = users.filter(u => isPaidPlan(u.plan));
-  const mrr = paid.reduce((s, u) => s + (PLAN_PRICES[u.plan] || 0), 0);
+  const mrr = estimatedMrr(paid);
   const academyBuyers = users.filter(u => u.academyAccess).length;
-  const academyRevenue = academyBuyers * ACADEMY_PRICE;
+  const academyMinimum = academyMinimumValue(academyBuyers);
 
   const churn = useMemo(() => {
     const everPaid = users.filter(u => isPaidPlan(u.plan) || u.subscriptionStatus);
     const canceled = users.filter(u => u.subscriptionStatus === 'canceled' || u.subscriptionStatus === 'past_due');
-    return everPaid.length ? canceled.length / everPaid.length : 0;
+    return everPaid.length ? canceled.length / everPaid.length : null;
   }, [users]);
   const arpu = paid.length ? mrr / paid.length : 0;
-  const ltv = churn > 0 ? arpu / churn : null;
-  const CAC = 150;
-  const ltvCac = ltv != null ? ltv / CAC : null;
-
-  const forecastRows = useMemo(() => {
-    const keys = users.map(u => (u.created || '').slice(0, 7)).filter(Boolean).sort();
-    const launch = keys[0];
-    if (!launch) return [];
-    const [ly, lm] = launch.split('-').map(Number);
-    const liveByMonth = {};
-    const mrrByMonth = {};
-    users.forEach(u => {
-      const d = (u.created || '').slice(0, 7);
-      if (!d) return;
-      liveByMonth[d] = (liveByMonth[d] || 0) + 1;
-      if (isPaidPlan(u.plan)) mrrByMonth[d] = (mrrByMonth[d] || 0) + (PLAN_PRICES[u.plan] || 0);
-    });
-    return PLAN_FORECAST.map((row, i) => {
-      const d = new Date(ly, lm - 1 + i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const liveUsers = liveByMonth[key] || 0;
-      const liveMrr = mrrByMonth[key] || 0;
-      return {
-        ...row,
-        liveUsers,
-        liveMrr,
-        win: row.users ? Math.min(100, Math.round((liveUsers / row.users) * 100)) : 0,
-      };
-    });
-  }, [users]);
-
-  const exportForecastCSV = () => {
-    const header = ['Month', 'Target Users', 'Live Users', 'Win Rate %', 'Target MRR', 'Live MRR', 'MRR Win %'];
-    const lines = forecastRows.map(r => [r.m, r.users, r.liveUsers, r.win, r.mrr, r.liveMrr, r.mrr ? Math.round((r.liveMrr / r.mrr) * 100) : 0]);
-    const csv = [header, ...lines].map(l => l.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const a = document.createElement('a');
-    a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
-    a.download = `forecast_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    toast({ title: 'Exported', description: 'Live vs forecast saved as CSV.' });
-  };
+  const verifiedRate = users.length ? users.filter((u) => u.verified).length / users.length : 0;
+  const enterpriseCount = paid.filter((u) => ['professional', 'teams'].includes(planKey(u.plan))).length;
 
   return (
     <AdminLayout title="Analytics">
       <div className="at-page at-scope at-enter pb-10">
+        <AtPageBar
+          meta={[
+            `${users.length.toLocaleString()} accounts`,
+            `${paid.length.toLocaleString()} paid`,
+            `${formatUsd(mrr)} estimated MRR`,
+            'Measured account records only',
+          ]}
+          actions={(
+            <>
+              <AtButton to="/admin/users" variant="quiet" icon={Users}>Users</AtButton>
+              <AtButton to="/admin/billing" variant="outline" icon={CreditCard}>Billing</AtButton>
+              <AtButton to="/admin/reports" variant="gold" icon={FileText}>Reports</AtButton>
+            </>
+          )}
+        >
+          <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-[var(--at-mut)]">
+            Measured platform activity only. There is no forecast, target, valuation, CAC, LTV or company guidance on this page.
+          </p>
+        </AtPageBar>
       {loading ? <Spinner /> : (
         <>
           <div className="mb-4 mt-5 grid gap-3 grid-cols-2 xl:grid-cols-4">
-            <AtMetric icon={Users} label="Total users" value={users.length} note="Registered" />
-            <AtMetric icon={UserCheck} label="Verified" value={users.filter(u => u.verified).length} note="Email confirmed" tone="text-[var(--at-green)]" />
-            <AtMetric icon={Crown} label="Paid" value={paid.length} note={`${users.length ? Math.round(paid.length / users.length * 100) : 0}% conversion`} tone="text-[var(--at-gold)]" />
-            <AtMetric icon={TrendingUp} label="Est. MRR" value={`$${mrr.toFixed(0)}`} note="Monthly recurring" />
+            <AtMetric icon={Users} label="Total users" value={users.length} note="Registered accounts" />
+            <AtMetric icon={UserCheck} label="Verified" value={users.filter(u => u.verified).length} note={`${Math.round(verifiedRate * 100)}% of accounts`} tone="text-[var(--at-green)]" />
+            <AtMetric icon={Crown} label="Paid subscribers" value={paid.length} note={`${users.length ? Math.round(paid.length / users.length * 100) : 0}% of accounts${enterpriseCount ? ` · ${enterpriseCount} enterprise` : ''}`} tone="text-[var(--at-gold)]" />
+            <AtMetric icon={TrendingUp} label="Est. MRR" value={formatUsd(mrr)} note="Premium-derived; annual normalised monthly" />
           </div>
 
-          <div className="mb-5 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+          <div className="mb-5 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
             <AtMetric icon={GraduationCap} label="Academy students" value={academyBuyers.toLocaleString()} note="Lifetime access" />
-            <AtMetric icon={DollarSign} label="Academy revenue" value={`$${academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note="One-time, lifetime" />
-            <AtMetric icon={UserCheck} label="Est. churn" value={`${(churn * 100).toFixed(1)}%`} note="Canceled / ever subscribed" tone={churn > 0.3 ? 'text-[var(--at-red)]' : 'text-[var(--at-green)]'} />
-            <AtMetric icon={DollarSign} label="ARPU" value={`$${arpu.toFixed(2)}`} note="MRR per paid user" />
-            <AtMetric icon={Crown} label="LTV : CAC" value={ltvCac != null ? `${ltvCac.toFixed(1)}x` : '—'} note={`LTV $${(ltv ?? 0).toFixed(0)} / CAC $${CAC}`} tone={ltvCac >= 3 ? 'text-[var(--at-green)]' : 'text-[var(--at-amber)]'} />
-            <AtMetric icon={Target} label="Plan fit" value={forecastRows.length && mrr > 0 ? `${Math.round(mrr / PLAN_FORECAST[0].mrr * 100)}%` : '—'} note="Live MRR vs M1 target" tone="text-[var(--at-gold)]" />
+            <AtMetric icon={DollarSign} label="Academy tuition · min." value={formatUsd(academyMinimum)} note="At $150 entry tier; actual tier not stored" />
+            <AtMetric icon={UserCheck} label="Canceled / ever subscribed" value={churn == null ? '—' : `${(churn * 100).toFixed(1)}%`} note="Not a cohort churn rate" tone={churn != null && churn > 0.3 ? 'text-[var(--at-red)]' : 'text-[var(--at-green)]'} />
+            <AtMetric icon={DollarSign} label="ARPU" value={formatUsd(arpu, { decimals: 2 })} note="Estimated MRR per paid account" />
+            <AtMetric icon={Target} label="Verified rate" value={`${Math.round(verifiedRate * 100)}%`} note="Email-confirmed accounts" tone="text-[var(--at-gold)]" />
           </div>
 
           <div className="mb-5 grid gap-4 lg:grid-cols-2">
             <div className="glass rounded-[10px] p-4 sm:p-5">
-              <h3 className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">New Registrations / Month</h3>
+              <h3 className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">New Registrations / Month</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={monthlyNew} margin={{ left: -12 }}>
                   <XAxis dataKey="m" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
-                  <Tooltip contentStyle={{ background: '#0f0f14', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, fontSize: 12 }} />
+                  <Tooltip contentStyle={{ background: 'var(--at-panel-2)', border: '1px solid var(--at-line)', borderRadius: 8, fontSize: 12, color: 'var(--at-ink)' }} />
                   <Bar dataKey="new" name="New Users" fill={GOLD} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
 
             <div className="glass rounded-[10px] p-4 sm:p-5">
-              <h3 className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Plan Distribution</h3>
+              <h3 className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">Plan Distribution</h3>
               <div className="flex items-center gap-4">
                 <ResponsiveContainer width="50%" height={180}>
                   <PieChart>
                     <Pie data={planDist} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
                       {planDist.map((e, i) => <Cell key={i} fill={e.color} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ background: '#0f0f14', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, fontSize: 12 }} />
+                    <Tooltip contentStyle={{ background: 'var(--at-panel-2)', border: '1px solid var(--at-line)', borderRadius: 8, fontSize: 12, color: 'var(--at-ink)' }} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="flex-1 space-y-2">
@@ -1146,9 +1208,9 @@ export function AdminAnalytics() {
                     <div key={name} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: color }} />
-                        <span className="text-[#c9c4b4]">{name}</span>
+                        <span className="text-[var(--at-ink-2)]">{name}</span>
                       </div>
-                      <span className="font-mono text-[#f0ecdd]">{value}</span>
+                      <span className="font-mono text-[var(--at-ink)]">{value}</span>
                     </div>
                   ))}
                 </div>
@@ -1162,60 +1224,30 @@ export function AdminAnalytics() {
                 <BarChart data={tradesByMarket} layout="vertical" margin={{ left: 0, right: 30 }}>
                   <XAxis type="number" tick={{ fill: '#6a665a', fontSize: 11 }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="name" tick={{ fill: '#c9c4b4', fontSize: 12 }} axisLine={false} tickLine={false} width={65} />
-                  <Tooltip contentStyle={{ background: '#0f0f14', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, fontSize: 12 }} />
+                  <Tooltip contentStyle={{ background: 'var(--at-panel-2)', border: '1px solid var(--at-line)', borderRadius: 8, fontSize: 12, color: 'var(--at-ink)' }} />
                   <Bar dataKey="value" name="Trades" fill={GOLD} radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </Collapse>
           )}
 
-          {forecastRows.length > 0 && (
-            <Collapse title="Live vs Plan — M1–M12 Forecast" sub="M6: 185 users / $7,102 · M12: 600 / $23,034" defaultOpen={false}>
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs text-[#8a8577]">Targets from the financial model.</p>
-                <button onClick={exportForecastCSV} className="flex items-center gap-1.5 rounded-[10px] border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/60">
-                  <Download className="h-4 w-4" /> Export live vs-forecast CSV
-                </button>
-              </div>
+          {monthlyNew.length > 0 && (
+            <Collapse title="Registration history — measured" sub="New accounts by month from stored user records." defaultOpen={false}>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[640px] text-sm tabular-nums">
-                  <thead className="sticky top-0 z-10">
-                    <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
+                <table className="w-full min-w-[420px] text-sm tabular-nums">
+                  <thead>
+                    <tr className="text-left text-[10px] uppercase tracking-[0.14em] text-[var(--at-mut)]">
                       <th className="py-2.5 font-semibold">Month</th>
-                      <th className="py-2.5 font-semibold">Target Users</th>
-                      <th className="py-2.5 font-semibold">Live Users</th>
-                      <th className="py-2.5 font-semibold">Win Rate</th>
-                      <th className="py-2.5 font-semibold">Target MRR</th>
-                      <th className="py-2.5 font-semibold">Live MRR</th>
-                      <th className="py-2.5 font-semibold">Status</th>
+                      <th className="py-2.5 font-semibold">New accounts</th>
                     </tr>
                   </thead>
-                  <tbody className="[&_tr]:border-t [&_tr]:border-white/5 [&_tr:hover]:bg-white/[0.02]">
-                    {forecastRows.map(r => {
-                      const ahead = r.liveUsers >= r.users;
-                      return (
-                        <tr key={r.m} className="border-b border-white/5">
-                          <td className="py-3 font-semibold text-[#f0ecdd]">{r.m}</td>
-                          <td className="py-3 font-mono text-[#c9c4b4]">{r.users.toLocaleString()}</td>
-                          <td className="py-3 font-mono text-[#f0ecdd]">{r.liveUsers.toLocaleString()}</td>
-                          <td className="py-3">
-                            <div className="flex items-center gap-2">
-                              <div className="h-1.5 w-24 rounded-full bg-white/8">
-                                <div className="h-full rounded-full" style={{ width: `${r.win}%`, background: ahead ? '#10b981' : GOLD }} />
-                              </div>
-                              <span className="font-mono text-xs text-[#8a8577]">{r.win}%</span>
-                            </div>
-                          </td>
-                          <td className="py-3 font-mono text-[#c9c4b4]">${r.mrr.toLocaleString()}</td>
-                          <td className="py-3 font-mono text-emerald-400">${r.liveMrr.toLocaleString()}</td>
-                          <td className="py-3">
-                            {r.win >= 100
-                              ? <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-2 py-0.5 text-xs text-emerald-400"><CheckCircle className="h-3 w-3" /> On track</span>
-                              : <span className="inline-flex items-center gap-1 rounded-full bg-[#d4af37]/10 px-2 py-0.5 text-xs text-[#d4af37]"><Clock className="h-3 w-3" /> {ahead ? 'Ahead' : 'Catching up'}</span>}
-                          </td>
-                        </tr>
-                      );
-                    })}
+                  <tbody>
+                    {monthlyNew.map((row) => (
+                      <tr key={row.m} className="border-t border-[var(--at-line-soft)]">
+                        <td className="py-2.5 font-mono text-[var(--at-ink-2)]">{row.m}</td>
+                        <td className="py-2.5 font-mono text-[var(--at-ink)]">{row.new.toLocaleString()}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -1368,55 +1400,78 @@ export function AdminBilling() {
 
   const paid = useMemo(() => users.filter(u => isPaidPlan(u.plan)), [users]);
   const noPlan = users.filter(u => !planKey(u.plan));
-  const mrr = paid.reduce((s, u) => s + (PLAN_PRICES[u.plan] || 0), 0);
-  const arr = mrr * 12;
+  const mrr = estimatedMrr(paid);
+  const effectiveMrr = live?.configured ? Number(live.mrr || 0) : mrr;
+  const arr = effectiveMrr * 12;
   const academyBuyers = users.filter(u => u.academyAccess).length;
-  const academyRevenue = academyBuyers * ACADEMY_PRICE;
+  const academyMinimum = academyMinimumValue(academyBuyers);
 
   const planBreakdown = useMemo(() => {
     const counts = {};
     paid.forEach(u => { counts[u.plan] = (counts[u.plan] || 0) + 1; });
-    return Object.entries(counts).map(([plan, n]) => ({ plan, n, rev: n * PLAN_PRICES[plan] }));
+    return Object.entries(counts).map(([plan, n]) => {
+      const unit = planMonthlyPrice(plan);
+      return { plan, n, unit, rev: unit == null ? null : n * unit };
+    });
   }, [paid]);
 
   return (
     <AdminLayout title="Billing & Revenue">
       <div className="at-page at-scope at-enter pb-10">
-      <div className="mb-5 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
-        <AtMetric icon={DollarSign} label={live?.configured ? 'Live MRR' : 'Est. MRR'} value={`$${(live?.configured ? live.mrr : mrr).toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note={live?.configured ? `Stripe live · ${live.activeCount} active` : 'Monthly recurring (est)'} tone="text-[var(--at-green)]" />
-        <AtMetric icon={TrendingUp} label="Est. ARR" value={`$${arr.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note="Annual recurring" />
-        <AtMetric icon={CreditCard} label="Paid subscribers" value={paid.length} note={`$${paid.length ? (mrr / paid.length).toFixed(2) : 0} ARPU`} />
+      <AtPageBar
+        meta={[
+          live?.configured ? 'Stripe connected' : 'Stripe not configured',
+          `${paid.length.toLocaleString()} paid accounts`,
+          `${formatUsd(effectiveMrr)} ${live?.configured ? 'live' : 'estimated'} MRR`,
+          'Academy tuition tracked separately',
+        ]}
+        actions={(
+          <>
+            <AtButton to="/admin/users" variant="quiet" icon={Users}>Users</AtButton>
+            <AtButton to="/admin/reports" variant="outline" icon={FileText}>Reports</AtButton>
+            <AtButton to="/admin/company" variant="gold" icon={Building2}>Company Bible</AtButton>
+          </>
+        )}
+      >
+        <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-[var(--at-mut)]">
+          Subscription revenue, settlement and Academy tuition are separate. Estimated MRR normalises annual Premium to a monthly equivalent and excludes enterprise contracts quoted separately.
+        </p>
+      </AtPageBar>
+      <div className="mb-5 mt-4 grid gap-3 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+        <AtMetric icon={DollarSign} label={live?.configured ? 'Live MRR' : 'Est. MRR'} value={formatUsd(effectiveMrr)} note={live?.configured ? `Stripe live · ${live.activeCount} active` : 'Premium-derived estimate'} tone="text-[var(--at-green)]" />
+        <AtMetric icon={TrendingUp} label="Est. ARR" value={formatUsd(arr)} note={live?.configured ? 'Live MRR × 12' : 'Estimated MRR × 12'} />
+        <AtMetric icon={CreditCard} label="Paid subscribers" value={paid.length} note={`${formatUsd(effectiveMrr / Math.max(paid.length, 1), { decimals: 2 })} ARPU estimate`} />
         <AtMetric icon={Users} label="No plan" value={noPlan.length} note={`${users.length ? Math.round(noPlan.length / users.length * 100) : 0}% of total`} />
-        <AtMetric icon={GraduationCap} label="Academy sales" value={academyBuyers.toLocaleString()} note="Lifetime access" />
-        <AtMetric icon={DollarSign} label="Academy revenue" value={`$${academyRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} note="One-time, lifetime" />
+        <AtMetric icon={GraduationCap} label="Academy students" value={academyBuyers.toLocaleString()} note="Lifetime access" />
+        <AtMetric icon={DollarSign} label="Academy tuition · min." value={formatUsd(academyMinimum)} note="At $150 entry tier; actual tier not stored" />
       </div>
 
       {planBreakdown.length > 0 && (
-        <Collapse title="Revenue by Plan" sub="By subscription tier" defaultOpen={false}>
+        <Collapse title="Revenue by plan" sub="Premium-derived estimate · enterprise contracts excluded" defaultOpen={false}>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[460px] text-sm tabular-nums">
               <thead className="sticky top-0 z-10">
-                <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
+                <tr className="bg-[var(--at-panel-2)] text-left text-[10px] uppercase tracking-[0.14em] text-[var(--at-mut)]">
                   <th className="py-2.5 font-semibold">Plan</th>
                   <th className="py-2.5 font-semibold">Subscribers</th>
-                  <th className="py-2.5 font-semibold">Unit Price</th>
-                  <th className="py-2.5 font-semibold">Monthly Rev</th>
+                  <th className="py-2.5 font-semibold">Unit price</th>
+                  <th className="py-2.5 font-semibold">Monthly estimate</th>
                   <th className="py-2.5 font-semibold hidden sm:table-cell">Share</th>
                 </tr>
               </thead>
               <tbody className="[&_tr]:border-t [&_tr]:border-white/5 [&_tr:hover]:bg-white/[0.02]">
-                {planBreakdown.map(({ plan, n, rev }) => (
+                {planBreakdown.map(({ plan, n, unit, rev }) => (
                   <tr key={plan} className="border-b border-white/5">
                     <td className="py-3">{planBadge(plan)}</td>
-                    <td className="py-3 font-mono text-[#f0ecdd]">{n}</td>
-                    <td className="py-3 font-mono text-[#c9c4b4]">${PLAN_PRICES[plan]}</td>
-                    <td className="py-3 font-mono text-emerald-400">${rev.toFixed(2)}</td>
+                    <td className="py-3 font-mono text-[var(--at-ink)]">{n}</td>
+                    <td className="py-3 font-mono text-[var(--at-ink-2)]">{unit == null ? 'Quoted' : formatUsd(unit, { decimals: 2 })}</td>
+                    <td className="py-3 font-mono text-emerald-400">{rev == null ? 'Excluded' : formatUsd(rev, { decimals: 2 })}</td>
                     <td className="py-3 hidden sm:table-cell">
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 flex-1 rounded-full bg-white/8">
-                          <div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25]" style={{ width: mrr > 0 ? `${(rev / mrr) * 100}%` : '0%' }} />
+                          <div className="h-full rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25]" style={{ width: rev != null && mrr > 0 ? `${(rev / mrr) * 100}%` : '0%' }} />
                         </div>
-                        <span className="w-10 text-right font-mono text-xs text-[#8a8577]">{mrr > 0 ? `${Math.round(rev / mrr * 100)}%` : '0%'}</span>
+                        <span className="w-10 text-right font-mono text-xs text-[var(--at-mut)]">{rev != null && mrr > 0 ? `${Math.round(rev / mrr * 100)}%` : '—'}</span>
                       </div>
                     </td>
                   </tr>
@@ -1431,26 +1486,26 @@ export function AdminBilling() {
         <Collapse title="Active Subscriptions" sub="Plans, status and actions" defaultOpen={true}>
           <div className="space-y-2 px-3 pb-3 sm:hidden">
             {paid.length ? paid.map((u) => (
-              <div key={u.id} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14]/60 p-3">
+              <div key={u.id} className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)]/60 p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="truncate text-[#f0ecdd]">{displayName(u)}</div>
-                    <div className="truncate text-xs text-[#8a8577]">{u.email}</div>
+                    <div className="truncate text-[var(--at-ink)]">{displayName(u)}</div>
+                    <div className="truncate text-xs text-[var(--at-mut)]">{u.email}</div>
                   </div>
                   <Badge color={u.subscriptionStatus === 'active' ? 'green' : 'muted'}>{u.subscriptionStatus || 'active'}</Badge>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   {planBadge(u.plan)}
-                  <button onClick={() => openPayments(u)} disabled={busy === `pay:${u.id}`} className="ml-auto rounded-lg border border-[#d4af37]/25 px-3 py-1.5 text-xs text-[#d4af37] disabled:opacity-60">Payments</button>
+                  <button onClick={() => openPayments(u)} disabled={busy === `pay:${u.id}`} className="ml-auto rounded-lg border border-[var(--at-line)] px-3 py-1.5 text-xs text-[var(--at-gold)] disabled:opacity-60">Payments</button>
                   <button onClick={() => cancelSub(u)} disabled={busy === `cancel:${u.id}`} className="rounded-lg border border-red-500/35 px-3 py-1.5 text-xs text-red-400 disabled:opacity-60">Cancel</button>
                 </div>
               </div>
-            )) : <p className="py-6 text-center text-sm text-[#8a8577]">No paid subscriptions yet.</p>}
+            )) : <p className="py-6 text-center text-sm text-[var(--at-mut)]">No paid subscriptions yet.</p>}
           </div>
           <div className="hidden overflow-x-auto sm:block">
           <table className="tb-mobile-actions w-full sm:min-w-[560px] text-sm tabular-nums">
             <thead className="sticky top-0 z-10">
-                <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
+                <tr className="bg-[var(--at-panel-2)] text-left text-[10px] uppercase tracking-[0.14em] text-[var(--at-mut)]">
                   <th className="px-5 py-2.5 font-semibold">User</th>
                   <th className="px-5 py-2.5 font-semibold hidden sm:table-cell">Plan</th>
                   <th className="px-5 py-2.5 font-semibold hidden sm:table-cell">Status</th>
@@ -1463,23 +1518,23 @@ export function AdminBilling() {
                 {paid.map(u => (
                   <tr key={u.id} className="border-b border-white/5 hover:bg-white/[0.03]">
                     <td className="px-5 py-3">
-                      <div className="text-[#f0ecdd] truncate max-w-[140px]">{displayName(u)}</div>
-                      <div className="text-xs text-[#8a8577] truncate max-w-[160px]">{u.email}</div>
+                      <div className="text-[var(--at-ink)] truncate max-w-[140px]">{displayName(u)}</div>
+                      <div className="text-xs text-[var(--at-mut)] truncate max-w-[160px]">{u.email}</div>
                       <div className="mt-1 flex flex-wrap items-center gap-1.5 sm:hidden">{planBadge(u.plan)}</div>
                     </td>
                     <td className="px-5 py-3 hidden sm:table-cell">{planBadge(u.plan)}</td>
                     <td className="px-5 py-3 hidden sm:table-cell"><Badge color={u.subscriptionStatus === 'active' ? 'green' : 'muted'}>{u.subscriptionStatus || 'active'}</Badge></td>
-                    <td className="px-5 py-3 font-mono text-xs text-[#8a8577] hidden md:table-cell">{u.currentPeriodEnd ? u.currentPeriodEnd.slice(0, 10) : '—'}</td>
-                    <td className="px-5 py-3 font-mono text-xs text-[#6a665a] max-w-[120px] truncate hidden lg:table-cell">{u.subscriptionId || '—'}</td>
+                    <td className="px-5 py-3 font-mono text-xs text-[var(--at-mut)] hidden md:table-cell">{u.currentPeriodEnd ? u.currentPeriodEnd.slice(0, 10) : '—'}</td>
+                    <td className="px-5 py-3 font-mono text-xs text-[var(--at-mut-2)] max-w-[120px] truncate hidden lg:table-cell">{u.subscriptionId || '—'}</td>
                     <td className="px-5 py-3">
                       <div className="flex gap-2">
-                        <button onClick={() => openPayments(u)} disabled={busy === `pay:${u.id}`} className="rounded-lg border border-[#d4af37]/25 px-2.5 py-1.5 text-xs text-[#d4af37] disabled:opacity-60">Payments</button>
+                        <button onClick={() => openPayments(u)} disabled={busy === `pay:${u.id}`} className="rounded-lg border border-[var(--at-line)] px-2.5 py-1.5 text-xs text-[var(--at-gold)] disabled:opacity-60">Payments</button>
                         <button onClick={() => cancelSub(u)} disabled={busy === `cancel:${u.id}`} className="rounded-lg border border-red-500/35 px-2.5 py-1.5 text-xs text-red-400 disabled:opacity-60">Cancel</button>
                       </div>
                     </td>
                   </tr>
                 ))}
-                {!paid.length && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#8a8577]">No paid subscriptions yet.</td></tr>}
+                {!paid.length && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[var(--at-mut)]">No paid subscriptions yet.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -1487,11 +1542,11 @@ export function AdminBilling() {
         )}
 
         <Collapse title="Wallet Payouts & Swaps" sub="View-only money movement" defaultOpen={false}>
-          <p className="mb-3 text-xs text-[#8a8577]">Automatic Stripe Connect transfers and non-custodial swap records. View-only — money moves without admin action.</p>
+          <p className="mb-3 text-xs text-[var(--at-mut)]">Automatic Stripe Connect transfers and non-custodial swap records. View-only — money moves without admin action.</p>
           <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-sm tabular-nums">
             <thead className="sticky top-0 z-10">
-                <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
+                <tr className="bg-[var(--at-panel-2)] text-left text-[10px] uppercase tracking-[0.14em] text-[var(--at-mut)]">
                   <th className="px-5 py-2.5 font-semibold">User</th>
                   <th className="px-5 py-2.5 font-semibold">Type</th>
                   <th className="px-5 py-2.5 font-semibold">Amount</th>
@@ -1504,29 +1559,29 @@ export function AdminBilling() {
               {payouts.map(w => (
                 <tr key={w.id} className="border-b border-white/5 hover:bg-white/[0.03]">
                   <td className="px-5 py-3">
-                    <div className="truncate text-[#f0ecdd] max-w-[180px]">{w.userEmail || '—'}</div>
-                    <div className="font-mono text-[11px] text-[#6a665a]">{w.created ? String(w.created).slice(0, 16).replace('T', ' ') : ''}</div>
+                    <div className="truncate text-[var(--at-ink)] max-w-[180px]">{w.userEmail || '—'}</div>
+                    <div className="font-mono text-[11px] text-[var(--at-mut-2)]">{w.created ? String(w.created).slice(0, 16).replace('T', ' ') : ''}</div>
                   </td>
                   <td className="px-5 py-3"><Badge color={w.type === 'swap' ? 'muted' : 'gold'}>{w.type}</Badge></td>
-                  <td className="px-5 py-3 font-mono text-[#f0ecdd]">{Number(w.amount) > 0 ? '+' : ''}{Number(w.amount).toFixed(2)} {w.currency}</td>
+                  <td className="px-5 py-3 font-mono text-[var(--at-ink)]">{Number(w.amount) > 0 ? '+' : ''}{Number(w.amount).toFixed(2)} {w.currency}</td>
                   <td className="px-5 py-3"><Badge color={w.status === 'completed' ? 'green' : w.status === 'failed' ? 'red' : 'gold'}>{w.status}</Badge></td>
-                  <td className="px-5 py-3 text-xs text-[#8a8577] hidden md:table-cell">{[w.connectStatus, w.kycStatus].filter(Boolean).join(' · ') || '—'}</td>
-                  <td className="px-5 py-3 font-mono text-xs text-[#6a665a] max-w-[160px] truncate hidden lg:table-cell">{w.reference || '—'}</td>
+                  <td className="px-5 py-3 text-xs text-[var(--at-mut)] hidden md:table-cell">{[w.connectStatus, w.kycStatus].filter(Boolean).join(' · ') || '—'}</td>
+                  <td className="px-5 py-3 font-mono text-xs text-[var(--at-mut-2)] max-w-[160px] truncate hidden lg:table-cell">{w.reference || '—'}</td>
                 </tr>
               ))}
-              {payoutsLoaded && !payouts.length && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#8a8577]">No payouts or swaps yet.</td></tr>}
-              {!payoutsLoaded && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#8a8577]">Loading…</td></tr>}
+              {payoutsLoaded && !payouts.length && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[var(--at-mut)]">No payouts or swaps yet.</td></tr>}
+              {!payoutsLoaded && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[var(--at-mut)]">Loading…</td></tr>}
             </tbody>
           </table>
           </div>
         </Collapse>
 
         <Collapse title="TradingBible Funded — Attempts" sub="Pass rewards, one click" defaultOpen={false}>
-          <p className="mb-3 text-xs text-[#8a8577]">Passed attempts pay the product pass reward to the trader's TBC credit wallet. One click.</p>
+          <p className="mb-3 text-xs text-[var(--at-mut)]">Passed attempts pay the product pass reward to the trader's TBC credit wallet. One click.</p>
           <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] text-sm tabular-nums">
             <thead className="sticky top-0 z-10">
-                <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
+                <tr className="bg-[var(--at-panel-2)] text-left text-[10px] uppercase tracking-[0.14em] text-[var(--at-mut)]">
                   <th className="px-5 py-2.5 font-semibold">User</th>
                   <th className="px-5 py-2.5 font-semibold">Program</th>
                   <th className="px-5 py-2.5 font-semibold">Fee</th>
@@ -1542,19 +1597,19 @@ export function AdminBilling() {
                 return (
                   <tr key={a.id} className="border-b border-white/5 hover:bg-white/[0.03]">
                     <td className="px-5 py-3">
-                      <div className="truncate text-[#f0ecdd] max-w-[180px]">{a.userEmail || '—'}</div>
-                      <div className="font-mono text-[11px] text-[#6a665a]">{a.created_at ? String(a.created_at).slice(0, 10) : ''}</div>
+                      <div className="truncate text-[var(--at-ink)] max-w-[180px]">{a.userEmail || '—'}</div>
+                      <div className="font-mono text-[11px] text-[var(--at-mut-2)]">{a.created_at ? String(a.created_at).slice(0, 10) : ''}</div>
                     </td>
-                    <td className="px-5 py-3 text-[#c9c4b4]">{a.product_name}</td>
-                    <td className="px-5 py-3 font-mono text-xs text-[#8a8577]">${Number(a.fee_paid || 0).toLocaleString()}</td>
-                    <td className="px-5 py-3 font-mono text-xs text-[#8a8577]">
+                    <td className="px-5 py-3 text-[var(--at-ink-2)]">{a.product_name}</td>
+                    <td className="px-5 py-3 font-mono text-xs text-[var(--at-mut)]">${Number(a.fee_paid || 0).toLocaleString()}</td>
+                    <td className="px-5 py-3 font-mono text-xs text-[var(--at-mut)]">
                       {s.equity !== undefined ? `+${s.profitPct}% · DD ${s.maxDdPct}% · day ${s.worstDayPct}% · ${s.days}d · ${s.trades}t` : '—'}
                       {failRule && <span className="block text-[11px] text-red-400">Breach: {failRule.label}</span>}
                     </td>
                     <td className="px-5 py-3"><Badge color={a.status === 'passed' || a.status === 'paid' ? 'green' : a.status === 'failed' ? 'red' : 'gold'}>{a.status}</Badge></td>
                     <td className="px-5 py-3 text-right">
                       {a.status === 'passed' && (
-                        <button onClick={() => payChallenge(a)} disabled={busy === `chalpay:${a.id}`} className="rounded-lg border border-[#d4af37]/30 px-3 py-1.5 text-xs font-bold text-[#d4af37] disabled:opacity-50">
+                        <button onClick={() => payChallenge(a)} disabled={busy === `chalpay:${a.id}`} className="rounded-lg border border-[var(--at-line)] px-3 py-1.5 text-xs font-bold text-[var(--at-gold)] disabled:opacity-50">
                           {busy === `chalpay:${a.id}` ? 'Paying…' : 'Pay reward'}
                         </button>
                       )}
@@ -1563,51 +1618,51 @@ export function AdminBilling() {
                   </tr>
                 );
               })}
-              {chLoaded && !chAttempts.length && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#8a8577]">No attempts yet.</td></tr>}
-              {!chLoaded && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#8a8577]">Loading…</td></tr>}
+              {chLoaded && !chAttempts.length && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[var(--at-mut)]">No attempts yet.</td></tr>}
+              {!chLoaded && <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[var(--at-mut)]">Loading…</td></tr>}
             </tbody>
           </table>
           </div>
         </Collapse>
         <Collapse title="D&B financial statements" sub="D-U-N-S 14-997-6777 · CSV downloads" defaultOpen={false}>
-          <p className="mb-3 text-xs leading-relaxed text-[#8a8577]">
-            D-U-N-S <span className="font-mono text-[#c9c4b4]">14-997-6777</span> · D&amp;B requires a Balance Sheet and an Income Statement
-            (doc, pdf, csv, jpg, png, docx — max 10 MB). Downloads below are <span className="text-[#d4af37]">draft CSVs from platform records, unaudited</span>.
+          <p className="mb-3 text-xs leading-relaxed text-[var(--at-mut)]">
+            D-U-N-S <span className="font-mono text-[var(--at-ink-2)]">14-997-6777</span> · D&amp;B requires a Balance Sheet and an Income Statement
+            (doc, pdf, csv, jpg, png, docx — max 10 MB). Downloads below are <span className="text-[var(--at-gold)]">draft CSVs from platform records, unaudited</span>.
           </p>
           <div className="mt-3 flex flex-wrap items-end gap-2">
             <div>
-              <label className="mb-1 block text-[11px] uppercase tracking-wider text-[#8a8577]">From</label>
-              <input type="date" value={stFrom} onChange={(e) => setStFrom(e.target.value)} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
+              <label className="mb-1 block text-[11px] uppercase tracking-wider text-[var(--at-mut)]">From</label>
+              <input type="date" value={stFrom} onChange={(e) => setStFrom(e.target.value)} className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50" />
             </div>
             <div>
-              <label className="mb-1 block text-[11px] uppercase tracking-wider text-[#8a8577]">To</label>
-              <input type="date" value={stTo} onChange={(e) => setStTo(e.target.value)} className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
+              <label className="mb-1 block text-[11px] uppercase tracking-wider text-[var(--at-mut)]">To</label>
+              <input type="date" value={stTo} onChange={(e) => setStTo(e.target.value)} className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50" />
             </div>
             <button disabled={stBusy} onClick={() => downloadStatement('income')} className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90 disabled:opacity-60">
               <Download className="h-4 w-4" /> {stBusy === 'income' ? 'Preparing…' : 'Income Statement (CSV)'}
             </button>
-            <button disabled={stBusy} onClick={() => downloadStatement('balance')} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/30 px-4 py-2.5 text-sm font-semibold text-[#d4af37] hover:bg-[#d4af37]/10 disabled:opacity-60">
+            <button disabled={stBusy} onClick={() => downloadStatement('balance')} className="flex items-center gap-2 rounded-xl border border-[var(--at-line)] px-4 py-2.5 text-sm font-semibold text-[var(--at-gold)] hover:bg-[#d4af37]/10 disabled:opacity-60">
               <Download className="h-4 w-4" /> {stBusy === 'balance' ? 'Preparing…' : 'Balance Sheet (CSV)'}
             </button>
           </div>
-          {stMsg && <p className="mt-2 text-xs text-[#c9c4b4]">{stMsg}</p>}
+          {stMsg && <p className="mt-2 text-xs text-[var(--at-ink-2)]">{stMsg}</p>}
         </Collapse>
         {payUser && (
           <div className="glass mt-4 rounded-2xl p-4 sm:p-5">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-semibold text-[#f0ecdd]">Recent payments · {payUser.email}</h3>
-              <button onClick={() => { setPayUser(null); setPayments([]); }} className="text-xs text-[#8a8577] hover:text-[#e9e7df]">Close</button>
+              <h3 className="font-semibold text-[var(--at-ink)]">Recent payments · {payUser.email}</h3>
+              <button onClick={() => { setPayUser(null); setPayments([]); }} className="text-xs text-[var(--at-mut)] hover:text-[var(--at-ink)]">Close</button>
             </div>
             {busy === `pay:${payUser.id}` ? <Spinner /> : payments.length ? (
               <div className="space-y-2">
                 {payments.map((p) => (
-                  <div key={p.id} className="flex items-center justify-between rounded-lg border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2 text-sm">
-                    <div className="font-mono text-xs text-[#c9c4b4]">${p.amount} {String(p.currency || '').toUpperCase()} · {p.status} · {p.created ? p.created.slice(0, 10) : '—'}</div>
+                  <div key={p.id} className="flex items-center justify-between rounded-lg border border-[#d4af37]/10 bg-[var(--at-panel-2)] px-3 py-2 text-sm">
+                    <div className="font-mono text-xs text-[var(--at-ink-2)]">${p.amount} {String(p.currency || '').toUpperCase()} · {p.status} · {p.created ? p.created.slice(0, 10) : '—'}</div>
                     <button onClick={() => refundPayment(p)} disabled={busy === `refund:${p.id}` || p.status === 'refunded'} className="rounded-lg border border-red-500/35 px-2.5 py-1.5 text-xs text-red-400 disabled:opacity-60">Refund</button>
                   </div>
                 ))}
               </div>
-            ) : <p className="text-sm text-[#8a8577]">No Stripe payments found for this user.</p>}
+            ) : <p className="text-sm text-[var(--at-mut)]">No Stripe payments found for this user.</p>}
           </div>
         )}
       </div>
@@ -1684,8 +1739,8 @@ function useAdminApi(prefix, base) {
 
 function SignalForm({ initial, onSave, onCancel }) {
   const [f, setF] = useState({ symbol: 'BTCUSD', side: 'long', entry: '', target: '', stop: '', status: 'draft', timeframe: '', signalType: '', strength: '', reason: '', ...(initial || {}) });
-  const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
-  const label = 'mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider';
+  const input = 'w-full rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-4 py-3 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50';
+  const label = 'mb-1.5 block text-xs font-medium text-[var(--at-mut)] uppercase tracking-wider';
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSave(f); }} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div><label className={label}>Symbol *</label><input required className={input} value={f.symbol} onChange={(e) => setF({ ...f, symbol: e.target.value })} /></div>
@@ -1707,7 +1762,7 @@ function SignalForm({ initial, onSave, onCancel }) {
         <textarea rows="3" className={input} value={f.reason ?? ''} onChange={(e) => setF({ ...f, reason: e.target.value })} /></div>
       <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-3">
         <button type="submit" className="rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90"><Save className="h-4 w-4" /> Save</button>
-        {onCancel && <button type="button" onClick={onCancel} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
+        {onCancel && <button type="button" onClick={onCancel} className="rounded-xl border border-[var(--at-line)] px-5 py-2.5 text-sm text-[var(--at-gold)]">Cancel</button>}
       </div>
     </form>
   );
@@ -1747,13 +1802,13 @@ function SignalsTab() {
   return (
     <div className="space-y-5">
       <div className="flex justify-between">
-        <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Trading Signals</h3>
+        <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">Trading Signals</h3>
         <button onClick={() => { setCreating(true); setEditing(null); }} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-semibold text-[#0a0a0f] hover:opacity-90"><Plus className="h-4 w-4" /> New signal</button>
       </div>
 
       {(creating || editing) && (
         <div className="glass rounded-[10px] p-4 sm:p-5">
-          <h4 className="mb-4 text-sm font-semibold text-[#f0ecdd]">{editing ? `Edit ${editing.symbol}` : 'New signal'}</h4>
+          <h4 className="mb-4 text-sm font-semibold text-[var(--at-ink)]">{editing ? `Edit ${editing.symbol}` : 'New signal'}</h4>
           <SignalForm initial={editing} onSave={saveSignal} onCancel={() => { setCreating(false); setEditing(null); }} />
         </div>
       )}
@@ -1762,30 +1817,30 @@ function SignalsTab() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[680px] text-sm">
             <thead className="sticky top-0 z-10">
-              <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
+              <tr className="bg-[var(--at-panel-2)] text-left text-[10px] uppercase tracking-[0.14em] text-[var(--at-mut)]">
                 <th className="px-5 py-3">Symbol</th><th className="px-5 py-3">Side</th><th className="px-5 py-3">Entry</th>
                 <th className="px-5 py-3">Target</th><th className="px-5 py-3">Stop</th><th className="px-5 py-3">Status</th>
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {loading ? <tr><td colSpan="7" className="px-5 py-10 text-center text-[#8a8577]">Loading signals…</td></tr>
-                : items.length === 0 ? <tr><td colSpan="7" className="px-5 py-10 text-center text-[#8a8577]">No signals yet.</td></tr>
+              {loading ? <tr><td colSpan="7" className="px-5 py-10 text-center text-[var(--at-mut)]">Loading signals…</td></tr>
+                : items.length === 0 ? <tr><td colSpan="7" className="px-5 py-10 text-center text-[var(--at-mut)]">No signals yet.</td></tr>
                 : items.map((s) => (
                   <tr key={s.id} className="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
-                    <td className="px-5 py-3 font-medium text-[#f0ecdd]">{s.symbol}</td>
+                    <td className="px-5 py-3 font-medium text-[var(--at-ink)]">{s.symbol}</td>
                     <td className="px-5 py-3"><span className={s.side === 'long' ? 'text-emerald-400' : 'text-red-400'}>{s.side}</span></td>
-                    <td className="px-5 py-3 text-[#c9c4b4]">{s.entry ?? '—'}</td>
-                    <td className="px-5 py-3 text-[#c9c4b4]">{s.target ?? '—'}</td>
-                    <td className="px-5 py-3 text-[#c9c4b4]">{s.stop ?? '—'}</td>
+                    <td className="px-5 py-3 text-[var(--at-ink-2)]">{s.entry ?? '—'}</td>
+                    <td className="px-5 py-3 text-[var(--at-ink-2)]">{s.target ?? '—'}</td>
+                    <td className="px-5 py-3 text-[var(--at-ink-2)]">{s.stop ?? '—'}</td>
                     <td className="px-5 py-3">
-                      <select value={s.status} onChange={(e) => setStatus(s.id, e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-1 text-xs text-[#c9c4b4] outline-none">
+                      <select value={s.status} onChange={(e) => setStatus(s.id, e.target.value)} className="rounded-lg border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-2 py-1 text-xs text-[var(--at-ink-2)] outline-none">
                         {SIGNAL_STATUSES.map((st) => <option key={st} value={st}>{st}</option>)}
                       </select>
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => { setEditing(s); setCreating(false); }} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
+                        <button onClick={() => { setEditing(s); setCreating(false); }} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[var(--at-gold)] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
                         <button onClick={() => removeSignal(s.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/20 text-red-400 hover:border-red-500/60" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
                       </div>
                     </td>
@@ -1837,37 +1892,37 @@ function ForumTab() {
 
   return (
     <div className="space-y-5">
-      <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Community Forum</h3>
+      <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">Community Forum</h3>
       <div className="glass overflow-hidden rounded-[10px]">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[680px] text-sm">
             <thead className="sticky top-0 z-10">
-              <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
+              <tr className="bg-[var(--at-panel-2)] text-left text-[10px] uppercase tracking-[0.14em] text-[var(--at-mut)]">
                 <th className="px-5 py-3">Thread</th><th className="px-5 py-3">Author</th><th className="px-5 py-3">Replies</th>
                 <th className="px-5 py-3">Flags</th><th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {loading ? <tr><td colSpan="5" className="px-5 py-10 text-center text-[#8a8577]">Loading threads…</td></tr>
-                : threads.length === 0 ? <tr><td colSpan="5" className="px-5 py-10 text-center text-[#8a8577]">No threads yet.</td></tr>
+              {loading ? <tr><td colSpan="5" className="px-5 py-10 text-center text-[var(--at-mut)]">Loading threads…</td></tr>
+                : threads.length === 0 ? <tr><td colSpan="5" className="px-5 py-10 text-center text-[var(--at-mut)]">No threads yet.</td></tr>
                 : threads.map((t) => (
                   <tr key={t.id} className="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
                     <td className="px-5 py-3">
-                      <div className="font-medium text-[#f0ecdd]">{t.title}</div>
-                      <div className="text-xs text-[#6a665a] line-clamp-1">{t.content}</div>
+                      <div className="font-medium text-[var(--at-ink)]">{t.title}</div>
+                      <div className="text-xs text-[var(--at-mut-2)] line-clamp-1">{t.content}</div>
                     </td>
-                    <td className="px-5 py-3 text-[#c9c4b4]">{t.authorName || t.owner || '—'}</td>
-                    <td className="px-5 py-3 text-[#c9c4b4]">{t.replyCount ?? 0}</td>
+                    <td className="px-5 py-3 text-[var(--at-ink-2)]">{t.authorName || t.owner || '—'}</td>
+                    <td className="px-5 py-3 text-[var(--at-ink-2)]">{t.replyCount ?? 0}</td>
                     <td className="px-5 py-3">
                       <div className="flex gap-1.5">
-                        {t.pinned && <span className="rounded-full bg-[#d4af37]/15 px-2 py-0.5 text-[10px] text-[#d4af37]">PINNED</span>}
-                        {t.locked && <span className="rounded-full bg-white/8 px-2 py-0.5 text-[10px] text-[#8a8577]">LOCKED</span>}
+                        {t.pinned && <span className="rounded-full bg-[#d4af37]/15 px-2 py-0.5 text-[10px] text-[var(--at-gold)]">PINNED</span>}
+                        {t.locked && <span className="rounded-full bg-white/8 px-2 py-0.5 text-[10px] text-[var(--at-mut)]">LOCKED</span>}
                       </div>
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => toggle(t.id, 'pinned')} className="rounded-lg border border-[#d4af37]/20 px-2.5 py-1.5 text-xs text-[#d4af37] hover:border-[#d4af37]/60">{t.pinned ? 'Unpin' : 'Pin'}</button>
-                        <button onClick={() => toggle(t.id, 'locked')} className="rounded-lg border border-[#d4af37]/20 px-2.5 py-1.5 text-xs text-[#d4af37] hover:border-[#d4af37]/60">{t.locked ? 'Unlock' : 'Lock'}</button>
+                        <button onClick={() => toggle(t.id, 'pinned')} className="rounded-lg border border-[#d4af37]/20 px-2.5 py-1.5 text-xs text-[var(--at-gold)] hover:border-[#d4af37]/60">{t.pinned ? 'Unpin' : 'Pin'}</button>
+                        <button onClick={() => toggle(t.id, 'locked')} className="rounded-lg border border-[#d4af37]/20 px-2.5 py-1.5 text-xs text-[var(--at-gold)] hover:border-[#d4af37]/60">{t.locked ? 'Unlock' : 'Lock'}</button>
                         <button onClick={() => removeThread(t.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/20 text-red-400 hover:border-red-500/60" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
                       </div>
                     </td>
@@ -1886,8 +1941,8 @@ function GenericContentTab({ prefix, title, fields, subtitle }) {
   const [form, setForm] = useState(() => Object.fromEntries(fields.map((f) => [f.key, f.default ?? ''])));
   const [editing, setEditing] = useState(null);
   const [saveError, setSaveError] = useState(null);
-  const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
-  const label = 'mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider';
+  const input = 'w-full rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-4 py-3 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50';
+  const label = 'mb-1.5 block text-xs font-medium text-[var(--at-mut)] uppercase tracking-wider';
 
   const submit = async (e) => {
     e.preventDefault();
@@ -1909,12 +1964,12 @@ function GenericContentTab({ prefix, title, fields, subtitle }) {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">{title}</h3>
-        {subtitle && <p className="mt-1 text-xs text-[#8a8577]">{subtitle}</p>}
+        <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">{title}</h3>
+        {subtitle && <p className="mt-1 text-xs text-[var(--at-mut)]">{subtitle}</p>}
       </div>
 
       <form onSubmit={submit} className="glass rounded-[10px] p-4 sm:p-5">
-        <h4 className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">{editing ? `Edit ${editing.title || ''}` : 'New item'}</h4>
+        <h4 className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">{editing ? `Edit ${editing.title || ''}` : 'New item'}</h4>
         {saveError && <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-400">Save failed: {String(saveError)}</div>}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {fields.map((f) => (
@@ -1927,14 +1982,14 @@ function GenericContentTab({ prefix, title, fields, subtitle }) {
                   : <input required={f.required} className={input} value={form[f.key] ?? ''} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.placeholder} />}
             </div>
           ))}
-          <label className="flex items-center gap-3 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
-            <input type="checkbox" checked={form.enabled !== false} onChange={(e) => setForm({ ...form, enabled: e.target.checked })} className="h-5 w-5 accent-[#d4af37]" />
-            <span className="text-sm text-[#c9c4b4]">Published</span>
+          <label className="flex items-center gap-3 rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-4 py-3 cursor-pointer">
+            <input type="checkbox" checked={form.enabled !== false} onChange={(e) => setForm({ ...form, enabled: e.target.checked })} className="h-5 w-5 accent-[var(--at-gold)]" />
+            <span className="text-sm text-[var(--at-ink-2)]">Published</span>
           </label>
         </div>
         <div className="mt-4 flex items-center gap-2">
           <button type="submit" className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90"><Save className="h-4 w-4" /> {editing ? 'Update' : 'Publish'}</button>
-          {editing && <button type="button" onClick={() => { setEditing(null); setForm(Object.fromEntries(fields.map((f) => [f.key, f.default ?? '']))); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
+          {editing && <button type="button" onClick={() => { setEditing(null); setForm(Object.fromEntries(fields.map((f) => [f.key, f.default ?? '']))); }} className="rounded-xl border border-[var(--at-line)] px-5 py-2.5 text-sm text-[var(--at-gold)]">Cancel</button>}
         </div>
       </form>
 
@@ -1942,23 +1997,23 @@ function GenericContentTab({ prefix, title, fields, subtitle }) {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[680px] text-sm">
             <thead className="sticky top-0 z-10">
-              <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
+              <tr className="bg-[var(--at-panel-2)] text-left text-[10px] uppercase tracking-[0.14em] text-[var(--at-mut)]">
                 <th className="px-5 py-3">Title</th><th className="px-5 py-3">Status</th><th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {loading ? <tr><td colSpan="3" className="px-5 py-10 text-center text-[#8a8577]">Loading…</td></tr>
-                : items.length === 0 ? <tr><td colSpan="3" className="px-5 py-10 text-center text-[#8a8577]">Nothing published yet.</td></tr>
+              {loading ? <tr><td colSpan="3" className="px-5 py-10 text-center text-[var(--at-mut)]">Loading…</td></tr>
+                : items.length === 0 ? <tr><td colSpan="3" className="px-5 py-10 text-center text-[var(--at-mut)]">Nothing published yet.</td></tr>
                 : items.map((item) => (
                   <tr key={item.id} className="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
                     <td className="px-5 py-3">
-                      <div className="font-medium text-[#f0ecdd]">{item.title || item.config?.title || item.key}</div>
-                      {item.config?.headline && <div className="text-xs text-[#6a665a]">{item.config.headline}</div>}
+                      <div className="font-medium text-[var(--at-ink)]">{item.title || item.config?.title || item.key}</div>
+                      {item.config?.headline && <div className="text-xs text-[var(--at-mut-2)]">{item.config.headline}</div>}
                     </td>
-                    <td className="px-5 py-3"><span className={`rounded-full px-2.5 py-1 text-xs ${item.enabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[#8a8577]'}`}>{item.enabled ? 'Published' : 'Draft'}</span></td>
+                    <td className="px-5 py-3"><span className={`rounded-full px-2.5 py-1 text-xs ${item.enabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[var(--at-mut)]'}`}>{item.enabled ? 'Published' : 'Draft'}</span></td>
                     <td className="px-5 py-3">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => startEdit(item)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
+                        <button onClick={() => startEdit(item)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[var(--at-gold)] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
                         <button onClick={() => remove(item.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/20 text-red-400 hover:border-red-500/60" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
                       </div>
                     </td>
@@ -2000,8 +2055,8 @@ function SiteCopyTab() {
   const [value, setValue] = useState('');
   const [editing, setEditing] = useState(null);
   const [busy, setBusy] = useState(false);
-  const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
-  const label = 'mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider';
+  const input = 'w-full rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-4 py-3 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50';
+  const label = 'mb-1.5 block text-xs font-medium text-[var(--at-mut)] uppercase tracking-wider';
 
   const byKey = Object.fromEntries((items || []).map((i) => [i?.config?.key || '', i]));
 
@@ -2046,33 +2101,33 @@ function SiteCopyTab() {
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Site Copy</h3>
-        <p className="mt-1 text-xs text-[#8a8577]">Rewrite page headlines and buttons without code. Applies to English text; other languages keep shipped translations. Changes go live on next page view.</p>
+        <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">Site Copy</h3>
+        <p className="mt-1 text-xs text-[var(--at-mut)]">Rewrite page headlines and buttons without code. Applies to English text; other languages keep shipped translations. Changes go live on next page view.</p>
       </div>
       <form onSubmit={submit} className="glass rounded-[10px] p-4 sm:p-5">
-        <h4 className="mb-4 text-sm font-semibold text-[#f0ecdd]">{editing ? `Edit ${editing?.config?.key}` : 'New override'}</h4>
+        <h4 className="mb-4 text-sm font-semibold text-[var(--at-ink)]">{editing ? `Edit ${editing?.config?.key}` : 'New override'}</h4>
         <div className="grid gap-4">
           <div><label className={label}>Text to rewrite</label>
             <select className={input} value={key} onChange={(e) => { setKey(e.target.value); setEditing(null); }}>
-              {SITE_COPY_KEYS.map((k) => <option key={k.key} value={k.key} className="bg-[#0f0f14]">{k.key} — {k.where}</option>)}
+              {SITE_COPY_KEYS.map((k) => <option key={k.key} value={k.key} className="bg-[var(--at-panel-2)]">{k.key} — {k.where}</option>)}
             </select>
           </div>
           <div><label className={label}>New text</label>
             <textarea rows="3" className={input} value={value} onChange={(e) => setValue(e.target.value)} placeholder="Replacement text shown to users…" />
           </div>
-          {byKey[key] && !editing && <p className="text-xs text-[#d4af37]">This text already has an override — saving creates a second row. Edit the existing one below instead.</p>}
+          {byKey[key] && !editing && <p className="text-xs text-[var(--at-gold)]">This text already has an override — saving creates a second row. Edit the existing one below instead.</p>}
         </div>
         <div className="mt-4 flex gap-2">
           <button type="submit" disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90 disabled:opacity-50">
             <Save className="h-4 w-4" /> {editing ? 'Update text' : 'Publish text'}
           </button>
-          {editing && <button type="button" onClick={() => { setEditing(null); setValue(''); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
+          {editing && <button type="button" onClick={() => { setEditing(null); setValue(''); }} className="rounded-xl border border-[var(--at-line)] px-5 py-2.5 text-sm text-[var(--at-gold)]">Cancel</button>}
         </div>
       </form>
       <div className="glass overflow-hidden rounded-[10px]">
         <table className="w-full min-w-[520px] text-sm">
           <thead className="sticky top-0 z-10">
-            <tr className="bg-[#0c0c11] text-left text-[10px] uppercase tracking-[0.14em] text-[#8a8577]">
+            <tr className="bg-[var(--at-panel-2)] text-left text-[10px] uppercase tracking-[0.14em] text-[var(--at-mut)]">
               <th className="px-5 py-3">Key</th>
               <th className="px-5 py-3">Live text</th>
               <th className="px-5 py-3 text-right">Actions</th>
@@ -2080,16 +2135,16 @@ function SiteCopyTab() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="3" className="px-5 py-10 text-center text-[#8a8577]">Loading…</td></tr>
+              <tr><td colSpan="3" className="px-5 py-10 text-center text-[var(--at-mut)]">Loading…</td></tr>
             ) : (items || []).length === 0 ? (
-              <tr><td colSpan="3" className="px-5 py-10 text-center text-[#8a8577]">No overrides — the app shows built-in text everywhere.</td></tr>
+              <tr><td colSpan="3" className="px-5 py-10 text-center text-[var(--at-mut)]">No overrides — the app shows built-in text everywhere.</td></tr>
             ) : (items || []).map((item) => (
               <tr key={item.id} className="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
-                <td className="px-5 py-3 font-mono text-xs text-[#d4af37]">{item?.config?.key}</td>
-                <td className="px-5 py-3 text-[#e9e7df]">{item?.config?.value}</td>
+                <td className="px-5 py-3 font-mono text-xs text-[var(--at-gold)]">{item?.config?.key}</td>
+                <td className="px-5 py-3 text-[var(--at-ink)]">{item?.config?.value}</td>
                 <td className="px-5 py-3">
                   <div className="flex justify-end gap-2">
-                    <button onClick={() => startEdit(item)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => startEdit(item)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[var(--at-gold)] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
                     <button onClick={() => remove(item)} className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/20 text-red-400 hover:border-red-500/60" aria-label="Revert"><Trash2 className="h-3.5 w-3.5" /></button>
                   </div>
                 </td>
@@ -2103,11 +2158,25 @@ function SiteCopyTab() {
 }
 
 export function AdminContent() {
-  const [tab, setTab] = useState('signals');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const [tab, setTab] = useState(() => (CONTENT_TABS.some((t) => t.id === requestedTab) ? requestedTab : 'signals'));
+  useEffect(() => {
+    if (requestedTab && CONTENT_TABS.some((t) => t.id === requestedTab) && requestedTab !== tab) setTab(requestedTab);
+  }, [requestedTab, tab]);
+  const changeTab = (nextTab) => {
+    setTab(nextTab);
+    const next = new URLSearchParams(searchParams);
+    next.set('tab', nextTab);
+    setSearchParams(next, { replace: true });
+  };
   return (
     <AdminLayout title="Content Management">
       <div className="at-page at-scope at-enter pb-10">
-      <AtTabs tabs={CONTENT_TABS} active={tab} onChange={setTab} className="mb-6 w-fit max-w-full" />
+      <AtPageBar meta={['Signals', 'Community', 'Academy', 'Challenges', 'Calendar', 'Site copy']} actions={<AtButton to="/admin/product-surfaces" variant="quiet" icon={Layers}>Product surfaces</AtButton>}>
+        <p className="mt-2 max-w-3xl text-[11px] leading-relaxed text-[var(--at-mut)]">Publish and correct member-facing content. Changes here do not open payment, securities or TBC gates.</p>
+      </AtPageBar>
+      <AtTabs tabs={CONTENT_TABS} active={tab} onChange={changeTab} className="mb-6 mt-4 w-fit max-w-full" />
 
       {tab === 'signals' && <SignalsTab />}
       {tab === 'forum' && <ForumTab />}
@@ -2129,7 +2198,7 @@ export function AdminContent() {
             { key: 'maxDdUsd', label: 'Max drawdown $ (futures, 0 = use %)', type: 'number', default: '0', full: false },
             { key: 'maxLossMode', label: 'Max-loss mode (static / eod-trailing)', default: 'static', full: false },
             { key: 'dailyLossPct', label: 'Max daily loss %', type: 'number', default: '5', full: false },
-            { key: 'dailyLossUsd', label: 'Daily loss $ (futures Pro, 0 = none/%)', type: 'number', default: '0', full: false },
+            { key: 'dailyLossUsd', label: 'Daily loss $ (futures prop, 0 = none/%)', type: 'number', default: '0', full: false },
             { key: 'bestDayMaxPct', label: 'Best-day gate % (1-step, 0 = off)', type: 'number', default: '0', full: false },
             { key: 'consistencyMaxPct', label: 'Consistency gate % (futures, 0 = off)', type: 'number', default: '0', full: false },
             { key: 'consistencyBase', label: 'Consistency base (total / positive)', default: 'total', full: false },
@@ -2144,7 +2213,7 @@ export function AdminContent() {
             { key: 'leverage', label: 'Leverage', default: '1:100', full: false },
             { key: 'platforms', label: 'Platforms', default: 'MT5 · cTrader · TradingBible Terminal', full: true },
             { key: 'instruments', label: 'Instruments', default: 'Forex · Metals · Indices · Crypto · Stocks', full: true },
-            { key: 'scaling', label: 'Scaling plan', default: 'Qualify every 4 months: +25% capital, up to $400K', full: true },
+            { key: 'scaling', label: 'Scaling plan', default: 'Qualify every 4 months: +25% capital, up to $200K', full: true },
             { key: 'payout', label: 'Pass reward paid out (USD)', type: 'number', default: '500', full: false },
           ]} />
       )}
@@ -2203,51 +2272,9 @@ export function AdminReports() {
   const { trades } = useTrades();
   const { toast } = useToast();
 
-  const exportReport = () => {
-    const lines = [
-      'TradingBible — System Report',
-      `Generated: ${new Date().toISOString()}`,
-      '',
-      `Total Users: ${users.length}`,
-      `Verified: ${users.filter(u => u.verified).length}`,
-      `Paid: ${users.filter(u => isPaidPlan(u.plan)).length}`,
-      `No plan: ${users.filter(u => !planKey(u.plan)).length}`,
-      `Admins: ${users.filter(u => u.role === 'admin').length}`,
-      `Total Trades: ${trades.length}`,
-    ];
-    const a = document.createElement('a');
-    a.href = `data:text/plain;charset=utf-8,${encodeURIComponent(lines.join('\n'))}`;
-    a.download = `report_${new Date().toISOString().slice(0, 10)}.txt`;
-    a.click();
-  };
-
-  const exportFinancialCSV = () => {
-    const conv = 0.05;
-    const header = ['Month', 'Total Users', 'Paid Users (5% conv)', 'MRR', 'ARR', 'Avg Ticket', 'LTV (est, 20% churn)', 'LTV:CAC'];
-    const lines = PLAN_FORECAST.map(r => {
-      const paid = Math.round(r.users * conv);
-      const avg = paid ? r.mrr / paid : 0;
-      const ltv = avg / 0.2;
-      return [r.m, r.users, paid, r.mrr.toFixed(0), (r.mrr * 12).toFixed(0), avg.toFixed(2), ltv.toFixed(0), (ltv / 150).toFixed(2)];
-    });
-    const csv = [header, ...lines].map(l => l.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const a = document.createElement('a');
-    a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
-    a.download = `financial_model_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    toast({ title: 'Exported', description: 'Financial model saved as CSV.' });
-  };
-
-  const rows = [
-    { label: 'Total registered users', value: users.length, icon: Users },
-    { label: 'Verified users', value: users.filter(u => u.verified).length, icon: CheckCircle },
-    { label: 'Paid subscribers', value: users.filter(u => isPaidPlan(u.plan)).length, icon: CreditCard },
-    { label: 'No-plan users', value: users.filter(u => !planKey(u.plan)).length, icon: Clock },
-    { label: 'Admin accounts', value: users.filter(u => u.role === 'admin').length, icon: Shield },
-    { label: 'Total trades logged', value: trades.length, icon: Activity },
-    { label: 'Est. MRR', value: `$${users.filter(u => isPaidPlan(u.plan)).reduce((s, u) => s + (PLAN_PRICES[u.plan] || 0), 0).toFixed(0)}`, icon: DollarSign },
-  ];
-
+  const paid = useMemo(() => users.filter((u) => isPaidPlan(u.plan)), [users]);
+  const mrr = estimatedMrr(paid);
+  const academyBuyers = users.filter((u) => u.academyAccess).length;
   const [sysLogs, setSysLogs] = useState([]);
 
   useEffect(() => {
@@ -2261,45 +2288,137 @@ export function AdminReports() {
     })();
   }, []);
 
+  const exportActivityCSV = () => {
+    const planCounts = users.reduce((acc, user) => {
+      const key = displayPlan(user.plan);
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    const rows = [
+      ['metric', 'value', 'definition'],
+      ['generated_at', new Date().toISOString(), 'UTC timestamp'],
+      ['company', COMPANY_FACTS.legalName, 'Canonical company record'],
+      ['public_launch', COMPANY_FACTS.launchDate, 'Planned public launch'],
+      ['users_total', users.length, 'Registered auth accounts visible to the admin API'],
+      ['users_verified', users.filter((u) => u.verified).length, 'Email-confirmed accounts'],
+      ['users_admin', users.filter((u) => u.role === 'admin').length, 'Admin-role accounts'],
+      ['users_no_plan', users.filter((u) => !planKey(u.plan)).length, 'Accounts with no subscription plan'],
+      ['paid_subscribers', paid.length, 'Accounts carrying a paid plan value (including legacy/enterprise)'],
+      ['mrr_estimate_usd', mrr.toFixed(2), 'Premium-derived estimate; annual normalised monthly; enterprise excluded'],
+      ['academy_students', academyBuyers, 'Accounts with Academy access recorded'],
+      ['academy_minimum_tuition_usd', academyMinimumValue(academyBuyers).toFixed(2), 'At $150 entry tier; actual tier is not stored'],
+      ['trades_logged', trades.length, 'Journal entries visible through the admin client'],
+      ['notice', 'Measured platform records only. No forecast, CAC, LTV, valuation or audited result is implied.', 'Read before sharing'],
+      ...Object.entries(planCounts).map(([plan, count]) => [`plan_count:${plan}`, count, 'Accounts by raw plan value']),
+    ];
+    const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
+    a.download = `tradingbible-platform-activity-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    toast({ title: 'Activity report exported', description: 'Measured platform records only — no forecast or valuation.' });
+  };
+
   return (
     <AdminLayout title="Reports & Logs">
-      <div className="mb-4 flex flex-wrap justify-end gap-2">
-        <button onClick={exportFinancialCSV} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/60">
-          <Download className="h-4 w-4" /> Generate Financial Model CSV
-        </button>
-        <button onClick={exportReport} className="flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/60">
-          <Download className="h-4 w-4" /> Export Report
-        </button>
-      </div>
+      <div className="at-page at-scope at-enter pb-10">
+        <AtPageBar
+          meta={[
+            `${users.length.toLocaleString()} accounts`,
+            `${trades.length.toLocaleString()} journal entries`,
+            `${sysLogs.length} recent log lines`,
+            'Measured records only',
+          ]}
+          actions={(
+            <>
+              <AtButton to="/admin/analytics" variant="quiet" icon={BarChart3}>Analytics</AtButton>
+              <AtButton to="/admin/billing" variant="outline" icon={CreditCard}>Billing</AtButton>
+              <AtButton onClick={exportActivityCSV} variant="gold" icon={Download}>Export activity CSV</AtButton>
+            </>
+          )}
+        >
+          <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-[var(--at-mut)]">
+            Exports contain platform records, their definitions and the date generated. They do not assert a forecast, CAC, LTV,
+            valuation or audited financial result. No forecast or target model is exported.
+          </p>
+        </AtPageBar>
 
-      {loading ? <Spinner /> : (
-        <div className="mb-5 glass rounded-2xl p-4 sm:p-5">
-          <h3 className="mb-4 font-semibold text-[#f0ecdd]">Platform Summary</h3>
-          <div className="divide-y divide-white/5">
-            {rows.map(({ label, value, icon: Icon }) => (
-              <div key={label} className="flex items-center justify-between py-3 gap-4">
-                <div className="flex items-center gap-2.5 text-sm text-[#c9c4b4]">
-                  <Icon className="h-4 w-4 shrink-0 text-[#8a8577]" />
-                  <span className="truncate">{label}</span>
-                </div>
-                <span className="font-mono text-[#f0ecdd] shrink-0">{String(value)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="glass rounded-2xl p-4 sm:p-5">
-        <h3 className="mb-4 font-semibold text-[#f0ecdd]">System Logs (Latest)</h3>
-        <div className="space-y-2 font-mono text-xs overflow-x-auto">
-          {sysLogs.length ? sysLogs.slice().reverse().map((l, i) => (
-            <div key={i} className="flex items-start gap-2 sm:gap-3 rounded-lg bg-white/[0.03] px-3 py-2 min-w-0">
-              <span className="text-[#6a665a] shrink-0">{String(l.ts || '').slice(11, 19)}</span>
-              <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${String(l.level).toLowerCase() === 'error' || String(l.level).toLowerCase() === 'fatal' ? 'bg-red-500/20 text-red-400' : String(l.level).toLowerCase() === 'warn' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-emerald-500/15 text-emerald-400'}`}>{String(l.level || 'info').toUpperCase()}</span>
-              <span className="text-[#c9c4b4] break-all">{l.msg}</span>
+        {loading ? <div className="mt-5"><Spinner /></div> : (
+          <>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              <AtMetric icon={Users} label="Registered accounts" value={users.length.toLocaleString()} note="Visible to the admin API" />
+              <AtMetric icon={CheckCircle} label="Verified" value={users.filter((u) => u.verified).length.toLocaleString()} note={`${users.length ? Math.round((users.filter((u) => u.verified).length / users.length) * 100) : 0}% of accounts`} tone="text-[var(--at-green)]" />
+              <AtMetric icon={CreditCard} label="Paid subscribers" value={paid.length.toLocaleString()} note="Includes legacy and enterprise account values" tone="text-[var(--at-gold)]" />
+              <AtMetric icon={DollarSign} label="Est. MRR" value={formatUsd(mrr)} note="Premium-derived; enterprise excluded" />
             </div>
-          )) : <p className="py-6 text-center font-sans text-sm text-[#8a8577]">No log entries yet — they appear as the API runs.</p>}
-        </div>
+
+            <div className="mt-5 grid gap-3 lg:grid-cols-[1.1fr_.9fr]">
+              <AtPanel title="Platform summary" sub="What this report can and cannot say.">
+                <div className="space-y-1">
+                  {[
+                    { label: 'Registered users', value: users.length, icon: Users },
+                    { label: 'Verified users', value: users.filter((u) => u.verified).length, icon: CheckCircle },
+                    { label: 'Paid subscribers', value: paid.length, icon: CreditCard },
+                    { label: 'No-plan users', value: users.filter((u) => !planKey(u.plan)).length, icon: Clock },
+                    { label: 'Admin accounts', value: users.filter((u) => u.role === 'admin').length, icon: Shield },
+                    { label: 'Academy students', value: academyBuyers, icon: GraduationCap },
+                    { label: 'Journal entries', value: trades.length, icon: Activity },
+                    { label: 'Estimated MRR (Premium-derived)', value: formatUsd(mrr), icon: DollarSign },
+                  ].map(({ label, value, icon: Icon }) => (
+                    <div key={label} className="at-listrow">
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-[var(--at-line)] bg-[var(--at-soft)] text-[var(--at-mut)]"><Icon className="h-3.5 w-3.5" /></span>
+                      <span className="min-w-0 flex-1 truncate text-[11px] text-[var(--at-ink-2)]">{label}</span>
+                      <span className="shrink-0 font-mono text-[11px] font-semibold text-[var(--at-ink)]">{String(value)}</span>
+                    </div>
+                  ))}
+                </div>
+              </AtPanel>
+
+              <AtPanel title="Export contract" sub="Every file states its source and limits.">
+                <div className="space-y-3">
+                  <AtAlert icon={FileText}>
+                    <b className="text-[var(--at-ink)]">Measured records.</b> The CSV is generated in the browser from the account and journal rows visible to this session.
+                    It is not a statutory report, management account or audit.
+                  </AtAlert>
+                  <AtAlert icon={ShieldCheck} tone="amber">
+                    <b className="text-[var(--at-ink)]">No invented financial model.</b> The previous 5% conversion, 20% churn and $150 CAC export has been removed.
+                    Those figures had no source and must never be presented to a bank, investor or regulator as company performance.
+                  </AtAlert>
+                  <div className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3 text-[10px] leading-relaxed text-[var(--at-mut)]">
+                    Canonical company facts: {COMPANY_FACTS.legalName} · public launch {COMPANY_FACTS.launchDate} ·
+                    public plans Free and Premium ${PREMIUM_MONTHLY}/mo or ${PREMIUM_ANNUAL}/yr.
+                  </div>
+                </div>
+              </AtPanel>
+            </div>
+          </>
+        )}
+
+        <AtPanel
+          className="mt-3"
+          title="System logs"
+          sub="Latest 50 in-memory API log lines, newest first."
+          action={<AtBadge tone={sysLogs.length ? 'green' : 'muted'}>{sysLogs.length} lines</AtBadge>}
+          flush
+        >
+          {sysLogs.length ? (
+            <div className="space-y-1.5 p-3 font-mono text-[11px]">
+              {sysLogs.slice().reverse().map((line, index) => {
+                const level = String(line.level || 'info').toLowerCase();
+                const tone = level === 'error' || level === 'fatal' ? 'text-[var(--at-red)]' : level === 'warn' ? 'text-[var(--at-amber)]' : 'text-[var(--at-green)]';
+                return (
+                  <div key={index} className="flex min-w-0 items-start gap-2 rounded-lg border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-2.5 py-2">
+                    <span className="shrink-0 text-[var(--at-mut-2)]">{String(line.ts || '').slice(11, 19)}</span>
+                    <span className={`shrink-0 font-bold uppercase ${tone}`}>{String(line.level || 'info')}</span>
+                    <span className="min-w-0 break-all text-[var(--at-ink-2)]">{line.msg}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <AtEmpty icon={FileText} title="No log lines yet" sub="Entries appear as the API handles requests." />
+          )}
+        </AtPanel>
       </div>
     </AdminLayout>
   );
@@ -2358,14 +2477,14 @@ function IntegrationCard({ preset, record, onSave, onTest, onDelete }) {
   };
 
   return (
-    <div className={`glass rounded-2xl border transition-all ${expanded ? 'border-[#d4af37]/30' : 'border-transparent'}`}>
+    <div className={`glass rounded-2xl border transition-all ${expanded ? 'border-[var(--at-line)]' : 'border-transparent'}`}>
       <button className="w-full flex items-center gap-3 p-4 sm:p-5 text-left" onClick={() => setExpanded(v => !v)}>
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl" style={{ background: `${preset.color}18` }}>
           <Icon className="h-5 w-5" style={{ color: preset.color }} />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-medium text-[#f0ecdd]">{preset.name}</div>
-          <div className="text-xs text-[#8a8577]">Last tested: {lastTested}</div>
+          <div className="font-medium text-[var(--at-ink)]">{preset.name}</div>
+          <div className="text-xs text-[var(--at-mut)]">Last tested: {lastTested}</div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {status === 'connected'
@@ -2373,27 +2492,27 @@ function IntegrationCard({ preset, record, onSave, onTest, onDelete }) {
             : status === 'error'
             ? <Badge color="red"><AlertCircle className="h-3 w-3" /> Error</Badge>
             : <Badge color="muted">Disconnected</Badge>}
-          <ChevronDown className={`h-4 w-4 text-[#8a8577] transition-transform ${expanded ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`h-4 w-4 text-[var(--at-mut)] transition-transform ${expanded ? 'rotate-180' : ''}`} />
         </div>
       </button>
 
       {expanded && (
         <div className="border-t border-[#d4af37]/10 p-4 sm:p-5 space-y-4">
-          {preset.note && <p className="text-xs leading-relaxed text-[#8a8577]">{preset.note}</p>}
+          {preset.note && <p className="text-xs leading-relaxed text-[var(--at-mut)]">{preset.note}</p>}
           {preset.fields.map(f => (
             <div key={f.key}>
-              <label className="mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">{f.label}</label>
+              <label className="mb-1.5 block text-xs font-medium text-[var(--at-mut)] uppercase tracking-wider">{f.label}</label>
               <div className="flex gap-2">
                 <input
                   type={show[f.key] ? 'text' : f.type === 'password' ? 'password' : 'text'}
                   value={form[f.key] || ''}
                   onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
                   placeholder={f.type === 'password' ? '••••••••••••••••' : `Enter ${f.label.toLowerCase()}…`}
-                  className="flex-1 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50 font-mono"
+                  className="flex-1 rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50 font-mono"
                 />
                 {f.type === 'password' && (
                   <button type="button" onClick={() => setShow(p => ({ ...p, [f.key]: !p[f.key] }))}
-                    className="rounded-xl border border-[#d4af37]/15 px-3 text-[#8a8577] hover:text-[#c9c4b4]">
+                    className="rounded-xl border border-[var(--at-line-soft)] px-3 text-[var(--at-mut)] hover:text-[var(--at-ink-2)]">
                     {show[f.key] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 )}
@@ -2401,8 +2520,8 @@ function IntegrationCard({ preset, record, onSave, onTest, onDelete }) {
             </div>
           ))}
 
-          <label className="flex items-center justify-between rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
-            <span className="text-sm text-[#c9c4b4]">Enable this integration</span>
+          <label className="flex items-center justify-between rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-4 py-3 cursor-pointer">
+            <span className="text-sm text-[var(--at-ink-2)]">Enable this integration</span>
             <div onClick={() => setForm(p => ({ ...p, enabled: !p.enabled }))}
               className={`relative h-6 w-11 rounded-full transition-colors cursor-pointer ${form.enabled ? 'bg-[#d4af37]' : 'bg-white/12'}`}>
               <div className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${form.enabled ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -2417,7 +2536,7 @@ function IntegrationCard({ preset, record, onSave, onTest, onDelete }) {
 
           <div className="flex flex-wrap gap-2">
             <button onClick={handleTest} disabled={testing || (!form.apiKey && !preset.noKey && !preset.testKind)}
-              className="flex items-center gap-2 rounded-xl border border-[#d4af37]/25 px-4 py-2 text-sm text-[#d4af37] hover:border-[#d4af37]/50 disabled:opacity-40">
+              className="flex items-center gap-2 rounded-xl border border-[var(--at-line)] px-4 py-2 text-sm text-[var(--at-gold)] hover:border-[#d4af37]/50 disabled:opacity-40">
               {testing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <TestTube className="h-4 w-4" />} Test Connection
             </button>
             <button onClick={handleSave} disabled={saving}
@@ -2536,7 +2655,21 @@ export function AdminIntegrations() {
 
   return (
     <AdminLayout title="Integrations">
-      <AtPageBar actions={<AtButton onClick={load} variant="quiet" size="sm" icon={RefreshCw}>Refresh</AtButton>} />
+      <div className="at-page at-scope at-enter pb-10">
+      <AtPageBar
+        meta={[
+          `${INTEGRATION_PRESETS.length} provider templates`,
+          `${records.filter((r) => r.status === 'connected').length} connected`,
+          health?.checks ? `${Object.values(health.checks).filter(Boolean).length}/${Object.keys(health.checks).length} live checks` : 'Health check pending',
+          'Secrets stay server-side',
+        ]}
+        actions={<AtButton onClick={load} variant="quiet" size="sm" icon={RefreshCw}>Refresh</AtButton>}
+      >
+        <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-[var(--at-mut)]">
+          Provider status and test results for the operator stack. Saving a connection here does not authorise a regulated activity,
+          issue a security, enable a payment rail or change a public product claim.
+        </p>
+      </AtPageBar>
 
       {loading ? <Spinner /> : (
         <>
@@ -2553,7 +2686,7 @@ export function AdminIntegrations() {
                 <div key={label} className="glass flex items-center gap-2 rounded-[10px] px-3 py-2.5">
                   <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${on ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
                   <span className="min-w-0">
-                    <span className="block truncate text-[11px] font-bold text-[#f0ecdd]">{label}</span>
+                    <span className="block truncate text-[11px] font-bold text-[var(--at-ink)]">{label}</span>
                     <span className={`block font-mono text-[10px] ${on ? 'text-emerald-400' : 'text-red-400'}`}>{on ? 'Live' : 'Not set'}</span>
                   </span>
                 </div>
@@ -2574,6 +2707,7 @@ export function AdminIntegrations() {
           </div>
         </>
       )}
+      </div>
     </AdminLayout>
   );
 }
@@ -2670,6 +2804,7 @@ export function AdminApiKeys() {
 
   return (
     <AdminLayout title="API Keys">
+      <div className="at-page at-scope at-enter pb-10">
       {/* New key revealed */}
       {newKeyPlain && (
         <div className="mb-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/8 p-4">
@@ -2684,60 +2819,65 @@ export function AdminApiKeys() {
                 </button>
               </div>
             </div>
-            <button onClick={() => setNewKeyPlain('')} className="text-[#8a8577] hover:text-[#c9c4b4]"><X className="h-4 w-4" /></button>
+            <button onClick={() => setNewKeyPlain('')} className="text-[var(--at-mut)] hover:text-[var(--at-ink-2)]"><X className="h-4 w-4" /></button>
           </div>
         </div>
       )}
 
       <AtPageBar
-        meta={[`${keys.length} key${keys.length !== 1 ? 's' : ''}`]}
+        meta={[`${keys.length} key${keys.length !== 1 ? 's' : ''}`, `${keys.filter((k) => k.status === 'active').length} active`, 'Scoped · expirable · revocable', 'Server-issued']}
         actions={<AtButton onClick={() => setShowModal(true)} variant="gold" size="sm" icon={Plus}>Generate key</AtButton>}
-      />
+      >
+        <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-[var(--at-mut)]">
+          Developer credentials for the public API. Keys are shown once, stored hashed and can be revoked immediately.
+          Creating a key does not grant a licence, white-label right or regulatory permission.
+        </p>
+      </AtPageBar>
 
       {/* Create modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md" onClick={() => setShowModal(false)}>
-          <div className="overlay-pop relative w-full max-w-lg overflow-hidden rounded-3xl border border-[#d4af37]/25 bg-[#0c0c11]/95 p-5 shadow-[0_32px_100px_rgba(0,0,0,0.8)] backdrop-blur-2xl sm:p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="overlay-pop relative w-full max-w-lg overflow-hidden rounded-3xl border border-[var(--at-line)] bg-[var(--at-panel-2)]/95 p-5 shadow-[0_32px_100px_rgba(0,0,0,0.8)] backdrop-blur-2xl sm:p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
             <div className="mb-5 flex items-center gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[#d4af37]">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#d4af37]/12 text-[var(--at-gold)]">
                 <Key className="h-5 w-5" />
               </span>
               <div className="min-w-0 flex-1">
-                <h3 className="text-lg font-bold text-[#f0ecdd]">Generate API Key</h3>
-                <p className="text-xs text-[#8a8577]">Scoped, expirable, revocable</p>
+                <h3 className="text-lg font-bold text-[var(--at-ink)]">Generate API Key</h3>
+                <p className="text-xs text-[var(--at-mut)]">Scoped, expirable, revocable</p>
               </div>
-              <button onClick={() => setShowModal(false)} aria-label="Close" className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[#8a8577] transition hover:bg-white/5 hover:text-[#e9e7df]"><X className="h-4 w-4" /></button>
+              <button onClick={() => setShowModal(false)} aria-label="Close" className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[var(--at-mut)] transition hover:bg-white/5 hover:text-[var(--at-ink)]"><X className="h-4 w-4" /></button>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">Key Name *</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--at-mut)] uppercase tracking-wider">Key Name *</label>
                 <input value={newForm.name} onChange={e => setNewForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Mobile App Key"
-                  className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
+                  className="w-full rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50" />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">Assigned To (email/user)</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--at-mut)] uppercase tracking-wider">Assigned To (email/user)</label>
                 <input value={newForm.assignedTo} onChange={e => setNewForm(f => ({ ...f, assignedTo: e.target.value }))} placeholder="user@example.com"
-                  className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
+                  className="w-full rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50" />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">Expires At (optional)</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--at-mut)] uppercase tracking-wider">Expires At (optional)</label>
                 <input type="date" value={newForm.expiresAt} onChange={e => setNewForm(f => ({ ...f, expiresAt: e.target.value }))}
-                  className="w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
+                  className="w-full rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50" />
               </div>
               <div>
-                <label className="mb-2 block text-xs font-medium text-[#8a8577] uppercase tracking-wider">Permissions</label>
+                <label className="mb-2 block text-xs font-medium text-[var(--at-mut)] uppercase tracking-wider">Permissions</label>
                 <div className="grid grid-cols-2 gap-2">
                   {ALL_PERMISSIONS.map(p => (
-                    <label key={p} className={`flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer text-xs transition-colors ${newForm.permissions.includes(p) ? 'border-[#d4af37]/40 bg-[#d4af37]/8 text-[#d4af37]' : 'border-white/8 text-[#8a8577] hover:border-white/20'}`}>
-                      <input type="checkbox" checked={newForm.permissions.includes(p)} onChange={() => togglePerm(p)} className="h-3.5 w-3.5 accent-[#d4af37]" />
+                    <label key={p} className={`flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer text-xs transition-colors ${newForm.permissions.includes(p) ? 'border-[#d4af37]/40 bg-[#d4af37]/8 text-[var(--at-gold)]' : 'border-white/8 text-[var(--at-mut)] hover:border-white/20'}`}>
+                      <input type="checkbox" checked={newForm.permissions.includes(p)} onChange={() => togglePerm(p)} className="h-3.5 w-3.5 accent-[var(--at-gold)]" />
                       {p}
                     </label>
                   ))}
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={() => setShowModal(false)} className="flex-1 rounded-xl border border-[#d4af37]/15 py-2.5 text-sm text-[#8a8577]">Cancel</button>
+                <button onClick={() => setShowModal(false)} className="flex-1 rounded-xl border border-[var(--at-line-soft)] py-2.5 text-sm text-[var(--at-mut)]">Cancel</button>
                 <button onClick={create} disabled={creating} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90 disabled:opacity-60">
                   {creating ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Key className="h-4 w-4" />} Generate
                 </button>
@@ -2752,7 +2892,7 @@ export function AdminApiKeys() {
           <div className="overflow-x-auto">
           <table className="tb-mobile-actions w-full min-w-[560px] text-sm">
             <thead>
-              <tr className="border-b border-[#d4af37]/12 bg-white/[0.02] text-left text-[11px] font-bold uppercase tracking-[0.14em] text-[#8a8577]">
+              <tr className="border-b border-[#d4af37]/12 bg-white/[0.02] text-left text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)]">
                 <th className="px-5 py-3.5">Name</th>
                 <th className="px-4 py-3.5">Key Prefix</th>
                 <th className="px-4 py-3.5 hidden sm:table-cell">Assigned To</th>
@@ -2766,29 +2906,29 @@ export function AdminApiKeys() {
                 <tr key={k.id} className="group border-b border-white/5 transition last:border-0 hover:bg-[#d4af37]/[0.04]">
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-2.5">
-                      <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${k.status === 'active' ? 'bg-[#d4af37]/12 text-[#d4af37]' : 'bg-white/[0.04] text-[#6a665a]'}`}>
+                      <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${k.status === 'active' ? 'bg-[#d4af37]/12 text-[var(--at-gold)]' : 'bg-white/[0.04] text-[var(--at-mut-2)]'}`}>
                         <Key className="h-3.5 w-3.5" />
                       </span>
                       <div className="min-w-0">
-                        <div className="truncate font-semibold text-[#f0ecdd]">{k.name}</div>
-                        <div className="truncate text-xs text-[#8a8577]">{(k.permissions || []).slice(0, 2).join(', ')}{(k.permissions || []).length > 2 ? `+${k.permissions.length - 2}` : ''}</div>
+                        <div className="truncate font-semibold text-[var(--at-ink)]">{k.name}</div>
+                        <div className="truncate text-xs text-[var(--at-mut)]">{(k.permissions || []).slice(0, 2).join(', ')}{(k.permissions || []).length > 2 ? `+${k.permissions.length - 2}` : ''}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3.5"><code className="rounded-md bg-black/30 px-2 py-1 font-mono text-xs text-[#c9c4b4]">{k.keyPrefix}•••••</code></td>
-                  <td className="px-4 py-3.5 text-xs text-[#8a8577] hidden sm:table-cell">{k.assignedTo || '—'}</td>
+                  <td className="px-4 py-3.5"><code className="rounded-md bg-black/30 px-2 py-1 font-mono text-xs text-[var(--at-ink-2)]">{k.keyPrefix}•••••</code></td>
+                  <td className="px-4 py-3.5 text-xs text-[var(--at-mut)] hidden sm:table-cell">{k.assignedTo || '—'}</td>
                   <td className="px-4 py-3.5 hidden md:table-cell">
                     <Badge color={k.status === 'active' ? 'green' : 'red'}>{k.status}</Badge>
                   </td>
-                  <td className="px-4 py-3.5 font-mono text-xs text-[#8a8577] hidden lg:table-cell">{(k.created || '').slice(0, 10)}</td>
+                  <td className="px-4 py-3.5 font-mono text-xs text-[var(--at-mut)] hidden lg:table-cell">{(k.created || '').slice(0, 10)}</td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center justify-end gap-1.5">
                       {k.status === 'active' ? (
-                        <button onClick={() => revoke(k.id)} title="Revoke" className="grid h-8 w-8 place-items-center rounded-lg text-[#8a8577] transition hover:bg-orange-500/10 hover:text-orange-400">
+                        <button onClick={() => revoke(k.id)} title="Revoke" className="grid h-8 w-8 place-items-center rounded-lg text-[var(--at-mut)] transition hover:bg-orange-500/10 hover:text-orange-400">
                           <Power className="h-4 w-4" />
                         </button>
                       ) : (
-                        <button onClick={() => setEnabled(k.id, true)} title="Re-enable" className="grid h-8 w-8 place-items-center rounded-lg text-[#8a8577] transition hover:bg-emerald-500/10 hover:text-emerald-400">
+                        <button onClick={() => setEnabled(k.id, true)} title="Re-enable" className="grid h-8 w-8 place-items-center rounded-lg text-[var(--at-mut)] transition hover:bg-emerald-500/10 hover:text-emerald-400">
                           <RotateCcw className="h-4 w-4" />
                         </button>
                       )}
@@ -2799,12 +2939,13 @@ export function AdminApiKeys() {
                   </td>
                 </tr>
               ))}
-              {!keys.length && <tr><td colSpan={6} className="px-4 py-12 text-center"><div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-white/[0.04] text-[#6a665a]"><Key className="h-5 w-5" /></div><p className="mt-3 text-sm text-[#8a8577]">No API keys yet. Generate your first key above.</p></td></tr>}
+              {!keys.length && <tr><td colSpan={6} className="px-4 py-12 text-center"><div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-white/[0.04] text-[var(--at-mut-2)]"><Key className="h-5 w-5" /></div><p className="mt-3 text-sm text-[var(--at-mut)]">No API keys yet. Generate your first key above.</p></td></tr>}
             </tbody>
           </table>
           </div>
         </div>
       )}
+      </div>
     </AdminLayout>
   );
 }
@@ -2922,10 +3063,15 @@ export function AdminPlugins() {
 
   return (
     <AdminLayout title="Plugins">
+      <div className="at-page at-scope at-enter pb-10">
       <AtPageBar
-        meta={[`${plugins.filter(p => p.enabled).length} of ${plugins.length} active`]}
+        meta={[`${plugins.filter(p => p.enabled).length} of ${plugins.length} active`, `${plugins.filter((p) => p._builtin).length} built-in`, 'Feature switches wired', 'Uploads require review']}
         actions={<AtButton onClick={handleUpload} disabled={uploading} variant="quiet" size="sm" icon={uploading ? RefreshCw : Upload}>{uploading ? 'Uploading…' : 'Upload plugin'}</AtButton>}
-      />
+      >
+        <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-[var(--at-mut)]">
+          Built-in modules gate real product features. Uploading a manifest does not execute third-party code, grant a licence or bypass a security review.
+        </p>
+      </AtPageBar>
       <input ref={fileRef} type="file" accept=".json,application/json" onChange={handleManifestFile} className="hidden" />
 
       {loading ? <Spinner /> : (
@@ -2935,17 +3081,17 @@ export function AdminPlugins() {
             return (
               <div key={plugin.slug} className={`glass rounded-2xl p-4 sm:p-5 flex flex-wrap sm:flex-nowrap items-start sm:items-center gap-4 transition-all ${!plugin.enabled ? 'opacity-60' : ''}`}>
                 <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#d4af37]/10">
-                  <Icon className="h-5 w-5 text-[#d4af37]" />
+                  <Icon className="h-5 w-5 text-[var(--at-gold)]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-0.5">
-                    <span className="font-medium text-[#f0ecdd]">{plugin.name}</span>
+                    <span className="font-medium text-[var(--at-ink)]">{plugin.name}</span>
                     <Badge color="muted">v{plugin.version}</Badge>
                     {plugin._builtin && <Badge color="blue">Built-in</Badge>}
                     <Badge color={plugin.status === 'installed' ? 'green' : plugin.status === 'error' ? 'red' : 'muted'}>{plugin.status}</Badge>
                   </div>
-                  <p className="text-xs text-[#8a8577] leading-relaxed">{plugin.description}</p>
-                  <p className="text-xs text-[#6a665a] mt-1">Author: {plugin.author}</p>
+                  <p className="text-xs text-[var(--at-mut)] leading-relaxed">{plugin.description}</p>
+                  <p className="text-xs text-[var(--at-mut-2)] mt-1">Author: {plugin.author}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <div onClick={() => toggle(plugin)}
@@ -2963,6 +3109,7 @@ export function AdminPlugins() {
           })}
         </div>
       )}
+      </div>
     </AdminLayout>
   );
 }
@@ -2975,7 +3122,7 @@ export function AdminJobs() {
   const [postings, setPostings] = useState([]);
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ title: '', department: 'Academy', employmentType: 'full-time', location: 'Remote', description: '', requirements: '' });
+  const [form, setForm] = useState({ title: '', department: 'Product', employmentType: 'full-time', location: 'Remote', description: '', requirements: '' });
   const [editingId, setEditingId] = useState(null);
   const [busy, setBusy] = useState(false);
   const [postQ, setPostQ] = useState('');
@@ -3017,7 +3164,7 @@ export function AdminJobs() {
 
   useEffect(() => { load(); }, [load]);
 
-  const resetForm = () => { setForm({ title: '', department: 'Academy', employmentType: 'full-time', location: 'Remote', description: '', requirements: '' }); setEditingId(null); };
+  const resetForm = () => { setForm({ title: '', department: 'Product', employmentType: 'full-time', location: 'Remote', description: '', requirements: '' }); setEditingId(null); };
 
   const seedCompanyRoles = async () => {
     if (!window.confirm('Add every missing company role from the operating plan? Existing postings are not changed.')) return;
@@ -3051,7 +3198,7 @@ export function AdminJobs() {
 
   const startEdit = (p) => {
     setEditingId(p.id);
-    setForm({ title: p.title || '', department: p.department || 'Academy', employmentType: p.employmentType || 'full-time', location: p.location || 'Remote', description: p.description || '', requirements: p.requirements || '' });
+    setForm({ title: p.title || '', department: p.department || 'Product', employmentType: p.employmentType || 'full-time', location: p.location || 'Remote', description: p.description || '', requirements: p.requirements || '' });
   };
 
   const togglePosting = async (p) => {
@@ -3098,7 +3245,7 @@ export function AdminJobs() {
       .filter((x) => x.tbc > 0);
     if (!payments.length) { toast({ variant: 'destructive', title: 'Nothing to allocate', description: 'Enter a platform-credit amount per person first.' }); return; }
     const total = payments.reduce((n, x) => n + x.tbc, 0);
-    if (!window.confirm(`Allocate ${total} existing platform credits to ${payments.length} staff from YOUR credit balance? This is not a token issuance or fiat salary payment.`)) return;
+    if (!window.confirm(`Allocate ${total} existing platform credits to ${payments.length} employees from YOUR credit balance? This is not a token issuance or fiat salary payment.`)) return;
     setPayBusy(true);
     try {
       const res = await call('/payroll', { method: 'POST', body: { payments } });
@@ -3199,7 +3346,7 @@ export function AdminJobs() {
     try {
       await call(`/trials/${u.id}/confirm`, { method: 'POST' });
       setTrials((prev) => prev.filter((x) => x.id !== u.id));
-      toast({ title: `Probation cleared — ${u.email} is now full staff` });
+      toast({ title: `Probation cleared — ${u.email} is now a full employee` });
     } catch (err) {
       toast({ variant: 'destructive', title: 'Confirm failed', description: err.message });
     }
@@ -3214,30 +3361,40 @@ export function AdminJobs() {
     }
   };
 
-  const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
+  const input = 'w-full rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50';
 
   return (
     <AdminLayout title="Jobs & Hiring">
       <div className="at-page at-scope at-enter pb-10">
       <AtPageBar
+        meta={[
+          `${postings.filter((p) => p.status === 'open').length} open openings`,
+          `${apps.filter((a) => a.status !== 'hired' && a.status !== 'rejected').length} active applicants`,
+          `${roster.length} company employees`,
+          'Company roles · not Academy roles',
+        ]}
         actions={(
           <>
             <AtButton onClick={seedCompanyRoles} disabled={busy} variant="outline" size="sm" icon={Sparkles}>Seed roles</AtButton>
             <AtButton onClick={() => { load(); loadRoster(); loadTrials(); }} variant="quiet" size="sm" icon={RefreshCw}>Refresh</AtButton>
           </>
         )}
-      />
+      >
+        <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-[var(--at-mut)]">
+          Hiring for TradingBible Holdings, Inc. Academy learners and instructors are product users, not employees. Applications are processed through this desk only.
+        </p>
+      </AtPageBar>
       <div className="mb-4 mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
         <AtMetric index="01" label="Open openings" value={postings.filter((p) => p.status === 'open').length} note="Published and collecting" />
         <AtMetric index="02" label="Active applicants" value={apps.filter((a) => a.status !== 'hired' && a.status !== 'rejected').length} note="In review" tone="text-[var(--at-green)]" />
         <AtMetric index="03" label="On probation" value={trials.length} note="Awaiting confirmation" tone={trials.length ? 'text-[var(--at-amber)]' : undefined} />
-        <AtMetric index="04" label="Employed staff" value={roster.length} note="Hired through this desk" />
+        <AtMetric index="04" label="Company employees" value={roster.length} note="Hired through this desk" />
       </div>
 
       <div className="grid min-w-0 items-start gap-4 xl:grid-cols-5">
         {/* ── Left: posting form + openings ── */}
         <div className="glass min-w-0 w-full rounded-2xl p-4 sm:p-5 xl:col-span-2">
-          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">{editingId ? 'Edit opening' : 'New opening'}</h3>
+          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">{editingId ? 'Edit opening' : 'New opening'}</h3>
           <div className="mt-3 space-y-2">
             <input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="e.g. Trading Coach (Forex)" className={input} />
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -3249,55 +3406,55 @@ export function AdminJobs() {
             <textarea value={form.requirements} onChange={(e) => setForm((p) => ({ ...p, requirements: e.target.value }))} placeholder="Requirements" className={`${input} min-h-[60px]`} />
             <div className="flex gap-2">
               <button onClick={savePosting} disabled={busy} className="rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2 text-sm font-bold text-[#0a0a0f] disabled:opacity-60">{editingId ? 'Save' : 'Publish'}</button>
-              {editingId && <button onClick={resetForm} className="rounded-[10px] border border-white/10 px-4 py-2 text-sm text-[#8a8577]">Cancel</button>}
+              {editingId && <button onClick={resetForm} className="rounded-[10px] border border-white/10 px-4 py-2 text-sm text-[var(--at-mut)]">Cancel</button>}
             </div>
           </div>
           <div className="mb-2 mt-5 flex items-center gap-2">
-            <h3 className="shrink-0 text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Openings ({postings.length})</h3>
+            <h3 className="shrink-0 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">Openings ({postings.length})</h3>
             <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-lg border border-white/10 bg-black/20 px-2 py-1">
-              <Search className="h-3 w-3 shrink-0 text-[#6a665a]" />
-              <input value={postQ} onChange={(e) => setPostQ(e.target.value)} placeholder="Filter openings…" className="w-full min-w-0 bg-transparent text-[11px] text-[#e9e7df] outline-none placeholder:text-[#5f5b50]" />
-              {postQ && <button onClick={() => setPostQ('')}><X className="h-3 w-3 text-[#6a665a]" /></button>}
+              <Search className="h-3 w-3 shrink-0 text-[var(--at-mut-2)]" />
+              <input value={postQ} onChange={(e) => setPostQ(e.target.value)} placeholder="Filter openings…" className="w-full min-w-0 bg-transparent text-[11px] text-[var(--at-ink)] outline-none placeholder:text-[#5f5b50]" />
+              {postQ && <button onClick={() => setPostQ('')}><X className="h-3 w-3 text-[var(--at-mut-2)]" /></button>}
             </div>
             {['all', 'open', 'closed'].map((s) => (
-              <button key={s} onClick={() => setPostFilter(s)} className={`shrink-0 rounded-md px-1.5 py-1 font-mono text-[10px] font-bold uppercase ${postFilter === s ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'text-[#6a665a] hover:text-[#c9c4b4]'}`}>{s}</button>
+              <button key={s} onClick={() => setPostFilter(s)} className={`shrink-0 rounded-md px-1.5 py-1 font-mono text-[10px] font-bold uppercase ${postFilter === s ? 'bg-[#d4af37]/15 text-[var(--at-gold)]' : 'text-[var(--at-mut-2)] hover:text-[var(--at-ink-2)]'}`}>{s}</button>
             ))}
           </div>
           <div className="max-h-[560px] space-y-1.5 overflow-y-auto pr-1 nice-scroll">
             {filteredPostings.map((p) => (
-              <div key={p.id} className={`rounded-[10px] border bg-[#0f0f14] px-2.5 py-2 ${p.status === 'open' ? 'border-[#d4af37]/20' : 'border-white/[0.07] opacity-70'}`}>
+              <div key={p.id} className={`rounded-[10px] border bg-[var(--at-panel-2)] px-2.5 py-2 ${p.status === 'open' ? 'border-[#d4af37]/20' : 'border-white/[0.07] opacity-70'}`}>
                 <div className="flex items-center gap-2">
                   <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${p.status === 'open' ? 'bg-emerald-400' : 'bg-[#5f5b50]'}`} />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[13px] font-semibold text-[#f0ecdd]">{p.title}</div>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] text-[#6a665a]">
+                    <div className="truncate text-[13px] font-semibold text-[var(--at-ink)]">{p.title}</div>
+                    <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] text-[var(--at-mut-2)]">
                       <span className="truncate">{p.department} · {p.employmentType} · {p.location}</span>
-                      {Number(p.hiring?.salary_tbc) > 0 && <span className="font-mono font-bold text-[#d4af37]">{p.hiring.salary_tbc} credits/{p.hiring.salary_freq === 'weekly' ? 'wk' : 'mo'}</span>}
+                      {Number(p.hiring?.salary_tbc) > 0 && <span className="font-mono font-bold text-[var(--at-gold)]">{p.hiring.salary_tbc} credits/{p.hiring.salary_freq === 'weekly' ? 'wk' : 'mo'}</span>}
                       {appCountFor(p.id) > 0 && <span className="rounded bg-[#38bdf8]/10 px-1 font-mono font-bold text-[#38bdf8]">{appCountFor(p.id)} applying</span>}
                       {p.auto_accept === true && <span className="rounded bg-emerald-400/10 px-1 font-mono font-bold uppercase text-emerald-300">auto</span>}
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-0.5">
-                    <button onClick={() => startEdit(p)} title="Edit" className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#d4af37]"><Edit2 className="h-3.5 w-3.5" /></button>
-                    <button onClick={() => togglePosting(p)} title={p.status === 'open' ? 'Close' : 'Reopen'} className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-white/5 hover:text-[#d4af37]"><Power className="h-3.5 w-3.5" /></button>
-                    <button onClick={() => toggleAutoAccept(p)} title="Auto-hire every applicant" className={`grid h-7 w-7 place-items-center rounded-lg hover:bg-white/5 ${p.auto_accept === true ? 'text-emerald-300' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}><Zap className="h-3.5 w-3.5" /></button>
-                    <button onClick={() => (hiringId === p.id ? setHiringId(null) : openHiring(p))} title="Gates: screening, trial, salary" className={`grid h-7 w-7 place-items-center rounded-lg hover:bg-white/5 ${hiringId === p.id ? 'text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}><Settings2 className="h-3.5 w-3.5" /></button>
-                    <button onClick={() => removePosting(p)} title="Delete" className="grid h-7 w-7 place-items-center rounded-lg text-[#8a8577] hover:bg-red-500/10 hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => startEdit(p)} title="Edit" className="grid h-7 w-7 place-items-center rounded-lg text-[var(--at-mut)] hover:bg-white/5 hover:text-[var(--at-gold)]"><Edit2 className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => togglePosting(p)} title={p.status === 'open' ? 'Close' : 'Reopen'} className="grid h-7 w-7 place-items-center rounded-lg text-[var(--at-mut)] hover:bg-white/5 hover:text-[var(--at-gold)]"><Power className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => toggleAutoAccept(p)} title="Auto-hire every applicant" className={`grid h-7 w-7 place-items-center rounded-lg hover:bg-white/5 ${p.auto_accept === true ? 'text-emerald-300' : 'text-[var(--at-mut)] hover:text-[var(--at-ink)]'}`}><Zap className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => (hiringId === p.id ? setHiringId(null) : openHiring(p))} title="Gates: screening, trial, salary" className={`grid h-7 w-7 place-items-center rounded-lg hover:bg-white/5 ${hiringId === p.id ? 'text-[var(--at-gold)]' : 'text-[var(--at-mut)] hover:text-[var(--at-ink)]'}`}><Settings2 className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => removePosting(p)} title="Delete" className="grid h-7 w-7 place-items-center rounded-lg text-[var(--at-mut)] hover:bg-red-500/10 hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>
                   </div>
                 </div>
                 {hiringId === p.id && (
-                  <div className="mt-2 space-y-2 rounded-[10px] border border-[#d4af37]/15 bg-black/20 p-3">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#d4af37]">Knockout questions (one per line)</div>
+                  <div className="mt-2 space-y-2 rounded-[10px] border border-[var(--at-line-soft)] bg-black/20 p-3">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--at-gold)]">Knockout questions (one per line)</div>
                     <textarea value={hiringDraft.questions} onChange={(e) => setHiringDraft({ ...hiringDraft, questions: e.target.value })} placeholder={"e.g. Link your live trading journal\nHow many years profitable?"} className={`${input} min-h-[64px]`} />
-                    <label className="flex items-center gap-2 text-xs text-[#c9c4b4]">
-                      <input type="checkbox" checked={hiringDraft.samples_required} onChange={(e) => setHiringDraft({ ...hiringDraft, samples_required: e.target.checked })} className="h-4 w-4 accent-[#d4af37]" />
+                    <label className="flex items-center gap-2 text-xs text-[var(--at-ink-2)]">
+                      <input type="checkbox" checked={hiringDraft.samples_required} onChange={(e) => setHiringDraft({ ...hiringDraft, samples_required: e.target.checked })} className="h-4 w-4 accent-[var(--at-gold)]" />
                       Require proof-of-work links
                     </label>
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#d4af37]">Trial task brief</div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--at-gold)]">Trial task brief</div>
                     <textarea value={hiringDraft.trial_task} onChange={(e) => setHiringDraft({ ...hiringDraft, trial_task: e.target.value })} placeholder="e.g. Record a 5-min XAUUSD breakdown…" className={`${input} min-h-[56px]`} />
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#d4af37]">Proposed platform credit</div>
+                        <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[var(--at-gold)]">Proposed platform credit</div>
                         <div className="flex gap-2">
                           <input type="number" min="0" value={hiringDraft.salary_tbc} onChange={(e) => setHiringDraft({ ...hiringDraft, salary_tbc: e.target.value })} placeholder="e.g. 300" className={`${input} min-w-0 flex-1`} />
                           <select value={hiringDraft.salary_freq} onChange={(e) => setHiringDraft({ ...hiringDraft, salary_freq: e.target.value })} className={`${input} !w-24`}>
@@ -3307,12 +3464,12 @@ export function AdminJobs() {
                         </div>
                       </div>
                       <div>
-                        <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#d4af37]">Apply by</div>
+                        <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[var(--at-gold)]">Apply by</div>
                         <input type="date" value={hiringDraft.closes_at} onChange={(e) => setHiringDraft({ ...hiringDraft, closes_at: e.target.value })} className={`${input} w-full`} />
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-[#8a8577]">Probation (days)</span>
+                      <span className="text-xs text-[var(--at-mut)]">Probation (days)</span>
                       <input type="number" min="1" max="90" value={hiringDraft.trial_days} onChange={(e) => setHiringDraft({ ...hiringDraft, trial_days: e.target.value })} className={`${input} !w-20`} />
                       <button onClick={() => saveHiring(p)} disabled={busy} className="ml-auto rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1.5 text-xs font-bold text-[#0a0a0f] disabled:opacity-50">Save gates</button>
                     </div>
@@ -3320,21 +3477,21 @@ export function AdminJobs() {
                 )}
               </div>
             ))}
-            {!filteredPostings.length && !loading && <p className="text-sm text-[#8a8577]">{postings.length ? 'No openings match the filter.' : 'No openings yet — publish the first above.'}</p>}
+            {!filteredPostings.length && !loading && <p className="text-sm text-[var(--at-mut)]">{postings.length ? 'No openings match the filter.' : 'No openings yet — publish the first above.'}</p>}
           </div>
         </div>
 
         {/* ── Right: applicant pipeline ── */}
         <div className="glass min-w-0 w-full rounded-2xl p-4 sm:p-5 xl:col-span-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Applicants ({apps.length})</h3>
-            {hiredCreds && <button onClick={() => setHiredCreds(null)} className="text-[11px] text-[#8a8577] hover:text-[#e9e7df]">Dismiss hire notice</button>}
+            <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">Applicants ({apps.length})</h3>
+            {hiredCreds && <button onClick={() => setHiredCreds(null)} className="text-[11px] text-[var(--at-mut)] hover:text-[var(--at-ink)]">Dismiss hire notice</button>}
           </div>
           {hiredCreds && (
             <div className="mt-3 rounded-[10px] border border-emerald-400/30 bg-emerald-400/5 p-3 text-xs">
               <div className="font-bold text-emerald-300">Hired — login ready for {hiredCreds.email} ({hiredCreds.role})</div>
-              <div className="mt-1 font-mono text-[#f0ecdd]">Temp password: {hiredCreds.tempPassword}</div>
-              <div className="mt-1 text-[#8a8577]">Share it with them directly + invite email sent.</div>
+              <div className="mt-1 font-mono text-[var(--at-ink)]">Temp password: {hiredCreds.tempPassword}</div>
+              <div className="mt-1 text-[var(--at-mut)]">Share it with them directly + invite email sent.</div>
             </div>
           )}
           <div className="mt-3 overflow-x-auto -mx-2 px-2">
@@ -3378,8 +3535,8 @@ export function AdminJobs() {
                   const hasDetail = Boolean(a.coverLetter || trialBrief || hasChecks);
                   const cand = (
                     <>
-                      <div className="font-semibold text-[#f0ecdd]">{a.name}</div>
-                      <div className="font-mono text-[11px] text-[#6a665a]">{a.email}{a.phone ? ` · ${a.phone}` : ''} · {(a.created || '').slice(0, 10)}</div>
+                      <div className="font-semibold text-[var(--at-ink)]">{a.name}</div>
+                      <div className="font-mono text-[11px] text-[var(--at-mut-2)]">{a.email}{a.phone ? ` · ${a.phone}` : ''} · {(a.created || '').slice(0, 10)}</div>
                     </>
                   );
                   return (
@@ -3387,25 +3544,25 @@ export function AdminJobs() {
                     <td className="py-2.5 pr-2">
                       {hasDetail ? (
                         <details>
-                          <summary className="cursor-pointer list-none">{cand}<span className="mt-0.5 block text-[10px] font-bold uppercase tracking-wider text-[#d4af37]/70">+ file</span></summary>
+                          <summary className="cursor-pointer list-none">{cand}<span className="mt-0.5 block text-[10px] font-bold uppercase tracking-wider text-[var(--at-gold)]/70">+ file</span></summary>
                           <div className="mt-1.5 max-w-[320px] space-y-1.5 rounded-lg border border-white/5 bg-black/20 p-2">
-                            {a.coverLetter && <p className="max-h-20 overflow-y-auto text-[11px] leading-relaxed text-[#c9c4b4]">{a.coverLetter}</p>}
-                            {trialBrief && <p className="rounded-md border border-[#d4af37]/20 bg-[#d4af37]/5 p-1.5 text-[11px] leading-relaxed text-[#c9c4b4]">Trial brief: {trialBrief}</p>}
+                            {a.coverLetter && <p className="max-h-20 overflow-y-auto text-[11px] leading-relaxed text-[var(--at-ink-2)]">{a.coverLetter}</p>}
+                            {trialBrief && <p className="rounded-md border border-[#d4af37]/20 bg-[#d4af37]/5 p-1.5 text-[11px] leading-relaxed text-[var(--at-ink-2)]">Trial brief: {trialBrief}</p>}
                             {a.checks && typeof a.checks === 'object' && (
                               <>
                                 {typeof a.checks.risk_score === 'number' && (
-                                  <div className={`inline-block rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold ${a.checks.risk_score >= 60 ? 'bg-red-400/10 text-red-300' : a.checks.risk_score >= 30 ? 'bg-[#d4af37]/10 text-[#d4af37]' : 'bg-emerald-400/10 text-emerald-300'}`}>
+                                  <div className={`inline-block rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold ${a.checks.risk_score >= 60 ? 'bg-red-400/10 text-red-300' : a.checks.risk_score >= 30 ? 'bg-[#d4af37]/10 text-[var(--at-gold)]' : 'bg-emerald-400/10 text-emerald-300'}`}>
                                     Originality {a.checks.risk_score >= 60 ? 'high' : a.checks.risk_score >= 30 ? 'review' : 'low'} ({a.checks.risk_score})
                                   </div>
                                 )}
                                 {a.checks.samples && a.checks.samples.length > 0 && (
-                                  <div className="text-[11px] text-[#8a8577]">
-                                    Work: {a.checks.samples.map((u, i) => <a key={i} href={u} target="_blank" rel="noreferrer" className="mr-2 font-mono text-[#d4af37] hover:underline">[link {i + 1}]</a>)}
-                                    <span className="ml-1 text-[#6a665a]">({a.checks.samples_note || 'unverified'})</span>
+                                  <div className="text-[11px] text-[var(--at-mut)]">
+                                    Work: {a.checks.samples.map((u, i) => <a key={i} href={u} target="_blank" rel="noreferrer" className="mr-2 font-mono text-[var(--at-gold)] hover:underline">[link {i + 1}]</a>)}
+                                    <span className="ml-1 text-[var(--at-mut-2)]">({a.checks.samples_note || 'unverified'})</span>
                                   </div>
                                 )}
                                 {a.checks.answers && typeof a.checks.answers === 'object' && Object.keys(a.checks.answers).length > 0 && Object.entries(a.checks.answers).map(([q, ans], i) => (
-                                  <div key={i} className="text-[11px]"><span className="font-semibold text-[#d4af37]">{q}: </span><span className="text-[#c9c4b4]">{ans}</span></div>
+                                  <div key={i} className="text-[11px]"><span className="font-semibold text-[var(--at-gold)]">{q}: </span><span className="text-[var(--at-ink-2)]">{ans}</span></div>
                                 ))}
                               </>
                             )}
@@ -3413,16 +3570,16 @@ export function AdminJobs() {
                         </details>
                       ) : cand}
                     </td>
-                    <td className="whitespace-nowrap px-2 py-2.5 text-xs text-[#8a8577]">{a.job_postings?.title || 'Opening'}</td>
+                    <td className="whitespace-nowrap px-2 py-2.5 text-xs text-[var(--at-mut)]">{a.job_postings?.title || 'Opening'}</td>
                     <td className="whitespace-nowrap px-2 py-2.5">
                       {typeof a.checks?.risk_score === 'number'
-                        ? <span className={`rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold ${a.checks.risk_score >= 60 ? 'bg-red-400/10 text-red-300' : a.checks.risk_score >= 30 ? 'bg-[#d4af37]/10 text-[#d4af37]' : 'bg-emerald-400/10 text-emerald-300'}`}>{a.checks.risk_score}</span>
+                        ? <span className={`rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold ${a.checks.risk_score >= 60 ? 'bg-red-400/10 text-red-300' : a.checks.risk_score >= 30 ? 'bg-[#d4af37]/10 text-[var(--at-gold)]' : 'bg-emerald-400/10 text-emerald-300'}`}>{a.checks.risk_score}</span>
                         : <span className="font-mono text-[10px] text-[#5f5b50]">—</span>}
                     </td>
                     <td className="whitespace-nowrap px-2 py-2.5">
                       {a.status === 'hired'
                         ? <span className="rounded-md bg-emerald-400/10 px-1.5 py-0.5 text-[10px] font-bold uppercase text-emerald-300">Hired</span>
-                        : <select value={a.status} onChange={(e) => setAppStatus(a.id, e.target.value)} className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-1.5 py-1 text-[11px] text-[#e9e7df]">
+                        : <select value={a.status} onChange={(e) => setAppStatus(a.id, e.target.value)} className="rounded-lg border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-1.5 py-1 text-[11px] text-[var(--at-ink)]">
                           {APP_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                         </select>}
                     </td>
@@ -3436,16 +3593,16 @@ export function AdminJobs() {
                 })}
               </tbody>
             </table>
-            {!apps.length && !loading && <p className="py-6 text-center text-sm text-[#8a8577]">No applications yet.</p>}
+            {!apps.length && !loading && <p className="py-6 text-center text-sm text-[var(--at-mut)]">No applications yet.</p>}
           </div>
           {apps.length > 0 && (
-            <p className="mt-2 text-[11px] text-[#6a665a]">Click a candidate for cover letter, checks and trial brief.</p>
+            <p className="mt-2 text-[11px] text-[var(--at-mut-2)]">Click a candidate for cover letter, checks and trial brief.</p>
           )}
 
           <div className="mb-2 mt-6 flex items-center gap-3">
-            <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Probation ({trials.length})</h3>
+            <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">Probation ({trials.length})</h3>
             <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
-            <button onClick={loadTrials} className="text-[11px] text-[#8a8577] hover:text-[#e9e7df]">Refresh</button>
+            <button onClick={loadTrials} className="text-[11px] text-[var(--at-mut)] hover:text-[var(--at-ink)]">Refresh</button>
           </div>
           <div className="space-y-2">
             {trials.map((u) => {
@@ -3453,27 +3610,27 @@ export function AdminJobs() {
               return (
                 <div key={u.id} className="flex flex-wrap items-center gap-2 rounded-[10px] border border-white/[0.07] bg-black/20 px-3 py-2">
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-semibold text-[#f0ecdd]">{u.username || u.name || u.email}</div>
-                    <div className="font-mono text-[11px] text-[#8a8577]">{u.email} · {u.role}{days !== null ? ` · ${days}d left` : ''}</div>
+                    <div className="truncate text-sm font-semibold text-[var(--at-ink)]">{u.username || u.name || u.email}</div>
+                    <div className="font-mono text-[11px] text-[var(--at-mut)]">{u.email} · {u.role}{days !== null ? ` · ${days}d left` : ''}</div>
                   </div>
                   <button onClick={() => confirmTrial(u)} className="rounded-lg bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1.5 text-[11px] font-bold text-[#0a0a0f] transition hover:opacity-90">Confirm ✓</button>
                 </div>
               );
             })}
-            {!trials.length && <p className="text-xs text-[#6a665a]">Nobody on probation — new hires land here automatically for review.</p>}
+            {!trials.length && <p className="text-xs text-[var(--at-mut-2)]">Nobody on probation — new hires land here automatically for review.</p>}
           </div>
 
           <div className="mb-2 mt-6 flex items-center gap-3">
-            <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Platform credit payroll ({roster.length})</h3>
+            <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">Platform credit payroll ({roster.length})</h3>
             <span className="h-px flex-1 bg-gradient-to-r from-[#d4af37]/30 to-transparent" />
-            <button onClick={loadRoster} className="text-[11px] text-[#8a8577] hover:text-[#e9e7df]">Refresh</button>
+            <button onClick={loadRoster} className="text-[11px] text-[var(--at-mut)] hover:text-[var(--at-ink)]">Refresh</button>
           </div>
-          <p className="mb-2 text-[11px] leading-relaxed text-[#6a665a]">These are existing off-chain platform credits, not the proposed TBC token. They are not a fiat salary or evidence that any token has been issued. Cash compensation is handled separately through payroll or an employer of record.</p>
+          <p className="mb-2 text-[11px] leading-relaxed text-[var(--at-mut-2)]">These are existing off-chain platform credits, not the proposed TBC token. They are not a fiat salary or evidence that any token has been issued. Cash compensation is handled separately through payroll or an employer of record.</p>
           <div className="overflow-x-auto -mx-2 px-2">
             <table className="tb-mobile-actions w-full min-w-[480px] text-sm">
               <thead>
                 <tr className="text-left text-[10px] uppercase tracking-wider text-[#5f5b50]">
-                  <th className="pb-2 font-semibold">Staff</th>
+                  <th className="pb-2 font-semibold">Employee</th>
                   <th className="pb-2 font-semibold">Contract credit</th>
                   <th className="pb-2 text-right font-semibold">Allocate (credits)</th>
                 </tr>
@@ -3482,10 +3639,10 @@ export function AdminJobs() {
                 {roster.map((r) => (
                   <tr key={r.email}>
                     <td className="py-2 pr-2">
-                      <div className="truncate text-sm font-semibold text-[#f0ecdd]">{r.name || r.email}</div>
-                      <div className="truncate font-mono text-[11px] text-[#6a665a]">{r.email} · {r.title}</div>
+                      <div className="truncate text-sm font-semibold text-[var(--at-ink)]">{r.name || r.email}</div>
+                      <div className="truncate font-mono text-[11px] text-[var(--at-mut-2)]">{r.email} · {r.title}</div>
                     </td>
-                    <td className="whitespace-nowrap px-2 py-2 font-mono text-[11px] text-[#8a8577]">{Number(r.salary_tbc) > 0 ? `${r.salary_tbc} credits/${r.salary_freq === 'weekly' ? 'wk' : 'mo'}` : '—'}</td>
+                    <td className="whitespace-nowrap px-2 py-2 font-mono text-[11px] text-[var(--at-mut)]">{Number(r.salary_tbc) > 0 ? `${r.salary_tbc} credits/${r.salary_freq === 'weekly' ? 'wk' : 'mo'}` : '—'}</td>
                     <td className="py-2 pl-2 text-right">
                       <input type="number" min="0" value={payAmounts[r.email] ?? ''} onChange={(e) => setPayAmounts({ ...payAmounts, [r.email]: e.target.value })} placeholder="0" className={`${input} !w-24 !py-1.5 text-right font-mono`} />
                     </td>
@@ -3493,7 +3650,7 @@ export function AdminJobs() {
                 ))}
               </tbody>
             </table>
-            {!roster.length && <p className="py-4 text-center text-xs text-[#6a665a]">No hired staff yet — payroll fills as you hire.</p>}
+            {!roster.length && <p className="py-4 text-center text-xs text-[var(--at-mut-2)]">No employees yet — payroll fills as you hire.</p>}
           </div>
           {roster.length > 0 && (
             <button onClick={runPayroll} disabled={payBusy} className="mt-3 w-full rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-bold text-[#0a0a0f] transition hover:opacity-90 disabled:opacity-50">
@@ -3502,11 +3659,11 @@ export function AdminJobs() {
           )}
           {payResult && (
             <div className="mt-2 rounded-[10px] border border-[#d4af37]/20 bg-black/20 p-3 text-xs">
-              <div className="font-bold text-[#f0ecdd]">Run {payResult.run}: {payResult.paid} credited · {payResult.failed} failed · {payResult.total} platform credits</div>
+              <div className="font-bold text-[var(--at-ink)]">Run {payResult.run}: {payResult.paid} credited · {payResult.failed} failed · {payResult.total} platform credits</div>
               {(payResult.results || []).filter((x) => !x.ok).map((x) => (
                 <div key={x.email} className="mt-1 text-red-300">{x.email}: {x.error}</div>
               ))}
-              <button onClick={() => setPayResult(null)} className="mt-2 text-[#8a8577] hover:text-[#e9e7df]">Dismiss</button>
+              <button onClick={() => setPayResult(null)} className="mt-2 text-[var(--at-mut)] hover:text-[var(--at-ink)]">Dismiss</button>
             </div>
           )}
         </div>
@@ -3517,45 +3674,45 @@ export function AdminJobs() {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setHireFor(null)} />
           <div className="glass relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl p-5 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
             <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
-            <h4 className="text-sm font-extrabold text-[#f0ecdd]">Hire {hireFor.name}?</h4>
-            <p className="mt-0.5 font-mono text-[11px] text-[#8a8577]">{hireFor.email} · creates their employee login immediately</p>
-            {hireWarnFor(hireFor) && <p className="mt-2 rounded-lg border border-[#d4af37]/25 bg-[#d4af37]/[0.06] px-3 py-2 text-[11px] text-[#e8c95a]">{hireWarnFor(hireFor)}</p>}
-            <p className="mt-3 text-[11px] font-bold uppercase tracking-wider text-[#d4af37]">Lawful-hiring confirmation</p>
-            <p className="mt-0.5 text-[11px] leading-relaxed text-[#8a8577]">No work starts until every item is confirmed. Stored on the application.</p>
+            <h4 className="text-sm font-extrabold text-[var(--at-ink)]">Hire {hireFor.name}?</h4>
+            <p className="mt-0.5 font-mono text-[11px] text-[var(--at-mut)]">{hireFor.email} · creates their employee login immediately</p>
+            {hireWarnFor(hireFor) && <p className="mt-2 rounded-lg border border-[var(--at-line)] bg-[#d4af37]/[0.06] px-3 py-2 text-[11px] text-[#e8c95a]">{hireWarnFor(hireFor)}</p>}
+            <p className="mt-3 text-[11px] font-bold uppercase tracking-wider text-[var(--at-gold)]">Lawful-hiring confirmation</p>
+            <p className="mt-0.5 text-[11px] leading-relaxed text-[var(--at-mut)]">No work starts until every item is confirmed. Stored on the application.</p>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <div>
-                <label className="mb-1 block text-[11px] font-semibold text-[#8a8577]">Work country</label>
+                <label className="mb-1 block text-[11px] font-semibold text-[var(--at-mut)]">Work country</label>
                 <input value={hireCompliance.workCountry} onChange={(e) => setHireCompliance({ ...hireCompliance, workCountry: e.target.value })} placeholder="e.g. Nigeria" className={input} />
               </div>
               <div>
-                <label className="mb-1 block text-[11px] font-semibold text-[#8a8577]">State / region</label>
+                <label className="mb-1 block text-[11px] font-semibold text-[var(--at-mut)]">State / region</label>
                 <input value={hireCompliance.workRegion} onChange={(e) => setHireCompliance({ ...hireCompliance, workRegion: e.target.value })} placeholder="e.g. Lagos / Texas" className={input} />
               </div>
             </div>
             <div className="mt-2">
-              <label className="mb-1 block text-[11px] font-semibold text-[#8a8577]">Hiring arrangement</label>
+              <label className="mb-1 block text-[11px] font-semibold text-[var(--at-mut)]">Hiring arrangement</label>
               <select value={hireCompliance.arrangement} onChange={(e) => setHireCompliance({ ...hireCompliance, arrangement: e.target.value })} className={input}>
-                <option value="direct" className="bg-[#0f0f14]">Direct employment (registered payroll)</option>
-                <option value="eor" className="bg-[#0f0f14]">Employer of Record (no local entity)</option>
-                <option value="contractor" className="bg-[#0f0f14]">Independent contractor (genuine)</option>
-                <option value="subsidiary" className="bg-[#0f0f14]">Local subsidiary</option>
-                <option value="peo" className="bg-[#0f0f14]">PEO co-employment (U.S.)</option>
+                <option value="direct" className="bg-[var(--at-panel-2)]">Direct employment (registered payroll)</option>
+                <option value="eor" className="bg-[var(--at-panel-2)]">Employer of Record (no local entity)</option>
+                <option value="contractor" className="bg-[var(--at-panel-2)]">Independent contractor (genuine)</option>
+                <option value="subsidiary" className="bg-[var(--at-panel-2)]">Local subsidiary</option>
+                <option value="peo" className="bg-[var(--at-panel-2)]">PEO co-employment (U.S.)</option>
               </select>
             </div>
             <div className="mt-2 space-y-1.5">
               {[['agreementSigned', 'Localized employment agreement signed'], ['ipAssigned', 'IP assignment + confidentiality confirmed'], ['payrollReady', 'Payroll registration / EOR coverage confirmed'], ['managerApproved', 'Manager approval to hire']].map(([k, label]) => (
-                <label key={k} className="flex cursor-pointer items-center justify-between gap-2 rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2">
-                  <span className="text-[13px] text-[#c9c4b4]">{label}</span>
-                  <input type="checkbox" checked={hireCompliance[k]} onChange={(e) => setHireCompliance({ ...hireCompliance, [k]: e.target.checked })} className="h-5 w-5 shrink-0 accent-[#d4af37]" />
+                <label key={k} className="flex cursor-pointer items-center justify-between gap-2 rounded-[10px] border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2">
+                  <span className="text-[13px] text-[var(--at-ink-2)]">{label}</span>
+                  <input type="checkbox" checked={hireCompliance[k]} onChange={(e) => setHireCompliance({ ...hireCompliance, [k]: e.target.checked })} className="h-5 w-5 shrink-0 accent-[var(--at-gold)]" />
                 </label>
               ))}
             </div>
             <div className="mt-2">
-              <label className="mb-1 block text-[11px] font-semibold text-[#8a8577]">Compliance note (optional)</label>
+              <label className="mb-1 block text-[11px] font-semibold text-[var(--at-mut)]">Compliance note (optional)</label>
               <input value={hireCompliance.note} onChange={(e) => setHireCompliance({ ...hireCompliance, note: e.target.value })} placeholder="EOR provider, work authorization, …" className={input} />
             </div>
             <div className="mt-4 grid grid-cols-2 gap-2">
-              <button onClick={() => setHireFor(null)} className="min-h-[44px] rounded-xl border border-white/10 px-4 text-sm font-bold text-[#c9c4b4] transition hover:border-[#d4af37]/40 hover:text-[#f0ecdd]">Cancel</button>
+              <button onClick={() => setHireFor(null)} className="min-h-[44px] rounded-xl border border-white/10 px-4 text-sm font-bold text-[var(--at-ink-2)] transition hover:border-[#d4af37]/40 hover:text-[var(--at-ink)]">Cancel</button>
               <button onClick={confirmHire} disabled={busy} className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 text-sm font-bold text-[#0a0a0f] transition hover:brightness-105 disabled:opacity-50">{busy ? 'Hiring…' : 'Confirm hire ✓'}</button>
             </div>
           </div>
@@ -3594,7 +3751,7 @@ export function AdminTvAds() {
   const [channels, setChannels] = useState([]);
   const [chEditing, setChEditing] = useState(null);
   const [chBusy, setChBusy] = useState(false);
-  const [chForm, setChForm] = useState({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true, plan: 'pro' });
+  const [chForm, setChForm] = useState({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true, plan: 'premium' });
   // ── Experiments (server-aggregated exposures/conversions) ──
   const [experiments, setExperiments] = useState([]);
   const [expLoaded, setExpLoaded] = useState(false);
@@ -3737,7 +3894,7 @@ export function AdminTvAds() {
         toast({ title: 'Channel added' });
       }
       setChEditing(null);
-      setChForm({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true, plan: 'pro' });
+      setChForm({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true, plan: 'premium' });
       await load();
     } catch (err) {
       toast({ title: 'Save failed', description: String(err.message || err) });
@@ -3784,8 +3941,8 @@ export function AdminTvAds() {
 
   const setF = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
 
-  const input = 'w-full rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 text-sm text-[#e9e7df] outline-none focus:border-[#d4af37]/50';
-  const label = 'mb-1.5 block text-xs font-medium text-[#8a8577] uppercase tracking-wider';
+  const input = 'w-full rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-4 py-3 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50';
+  const label = 'mb-1.5 block text-xs font-medium text-[var(--at-mut)] uppercase tracking-wider';
 
   return (
     <AdminLayout title="TradingBible TV">
@@ -3807,7 +3964,7 @@ export function AdminTvAds() {
 
       {/* TV settings */}
       <div className="at-card mb-5 p-4 sm:p-5">
-        <h3 className="mb-4 flex items-center gap-2 font-semibold text-[#f0ecdd]"><Settings2 className="h-4 w-4 text-[#d4af37]" /> TV Settings</h3>
+        <h3 className="mb-4 flex items-center gap-2 font-semibold text-[var(--at-ink)]"><Settings2 className="h-4 w-4 text-[var(--at-gold)]" /> TV Settings</h3>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div><label className={label}>Rotation (seconds)</label>
             <input type="number" min="4" max="60" className={input} value={settings.rotationSeconds}
@@ -3826,7 +3983,7 @@ export function AdminTvAds() {
 
       {/* Create / edit form */}
       <div className="at-card mb-5 p-4 sm:p-5">
-        <h3 className="mb-4 font-semibold text-[#f0ecdd]">{editing ? `Edit broadcast — ${editing.title || editing.key}` : 'New broadcast'}</h3>
+        <h3 className="mb-4 font-semibold text-[var(--at-ink)]">{editing ? `Edit broadcast — ${editing.title || editing.key}` : 'New broadcast'}</h3>
         <form onSubmit={saveAd} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div><label className={label}>Title *</label><input required className={input} value={form.title} onChange={setF('title')} placeholder="e.g. Acme Trading Summit" /></div>
           <div><label className={label}>Headline</label><input className={input} value={form.headline} onChange={setF('headline')} placeholder="Short punchy line" /></div>
@@ -3835,11 +3992,11 @@ export function AdminTvAds() {
           <div><label className={label}>Video URL (optional — plays in place of image)</label><input className={input} value={form.videoUrl} onChange={setF('videoUrl')} placeholder="https://…/clip.mp4 (autoplay, looped)" /></div>
           <div><label className={label}>Logo URL</label><input className={input} value={form.logoUrl} onChange={setF('logoUrl')} placeholder="https://…" /></div>
           <div><label className={label}>Link URL (opens on click)</label><input className={input} value={form.linkUrl} onChange={setF('linkUrl')} placeholder="https://…" /></div>
-          <div><label className={label}>Accent color</label><input type="color" className="h-12 w-full cursor-pointer rounded-xl border border-[#d4af37]/15 bg-[#0f0f14]" value={form.accent} onChange={setF('accent')} /></div>
+          <div><label className={label}>Accent color</label><input type="color" className="h-12 w-full cursor-pointer rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)]" value={form.accent} onChange={setF('accent')} /></div>
           <div><label className={label}>Duration (seconds)</label><input type="number" min="4" max="60" className={input} value={form.durationSeconds} onChange={setF('durationSeconds')} /></div>
           <div><label className={label}>Format</label>
             <select className={input} value={form.type || 'banner'} onChange={setF('type')}>
-              {AD_TYPE_OPTIONS.map((t) => <option key={t} value={t} className="bg-[#0f0f14]">{t}</option>)}
+              {AD_TYPE_OPTIONS.map((t) => <option key={t} value={t} className="bg-[var(--at-panel-2)]">{t}</option>)}
             </select>
           </div>
           <div><label className={label}>Weight (rotation)</label><input type="number" min="0" step="1" className={input} value={form.weight} onChange={setF('weight')} /></div>
@@ -3848,7 +4005,7 @@ export function AdminTvAds() {
             <label className={label}>In-app slots (none = everywhere)</label>
             <div className="flex flex-wrap gap-2">
               {PLACEMENT_OPTIONS.map((p) => (
-                <label key={p.id} className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-xs transition ${form.placementIds?.includes(p.id) ? 'border-[#d4af37]/60 bg-[#d4af37]/10 text-[#f0ecdd]' : 'border-[#d4af37]/15 text-[#8a8577]'}`}>
+                <label key={p.id} className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-xs transition ${form.placementIds?.includes(p.id) ? 'border-[#d4af37]/60 bg-[#d4af37]/10 text-[var(--at-ink)]' : 'border-[var(--at-line-soft)] text-[var(--at-mut)]'}`}>
                   <input
                     type="checkbox"
                     checked={form.placementIds?.includes(p.id) || false}
@@ -3856,7 +4013,7 @@ export function AdminTvAds() {
                       const cur = Array.isArray(f.placementIds) ? f.placementIds : [];
                       return { ...f, placementIds: e.target.checked ? [...cur, p.id] : cur.filter((x) => x !== p.id) };
                     })}
-                    className="h-4 w-4 accent-[#d4af37]"
+                    className="h-4 w-4 accent-[var(--at-gold)]"
                   />
                   {p.name}
                 </label>
@@ -3864,41 +4021,41 @@ export function AdminTvAds() {
             </div>
           </div>
           <div className="sm:col-span-2 lg:col-span-3"><label className={label}>Advanced serving JSON (optional: targeting, frequencyCaps, dayparting, pages, vastXml, vmapXml, storyDurationSeconds)</label>
-            <textarea rows="4" spellCheck="false" className={`${input} font-mono text-xs`} value={advancedJson} onChange={(e) => setAdvancedJson(e.target.value)} placeholder='{"frequencyCaps": [{"type": "impressions_per_day", "max": 3}], "targeting": [{"type": "user_segment", "segments": ["pro"]}]}' />
+            <textarea rows="4" spellCheck="false" className={`${input} font-mono text-xs`} value={advancedJson} onChange={(e) => setAdvancedJson(e.target.value)} placeholder='{"frequencyCaps": [{"type": "impressions_per_day", "max": 3}], "targeting": [{"type": "user_segment", "segments": ["premium"]}]}' />
             {advJsonError && <p className="mt-1 text-xs text-red-400">{advJsonError}</p>}
           </div>
           <div className="sm:col-span-2 lg:col-span-3"><label className={label}>Snippet (body text)</label>
             <textarea rows="4" className={input} value={form.snippet} onChange={setF('snippet')} placeholder="Longer description shown under the headline…" /></div>
           <div className="sm:col-span-2 lg:col-span-3">
             <label className={label}>Live creative preview</label>
-            <div className="overflow-hidden rounded-xl border border-[#d4af37]/15 bg-[#0a0a0f]">
+            <div className="overflow-hidden rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-bg0)]">
               {form.imageUrl ? (
                 <img src={form.imageUrl} alt="" className="max-h-56 w-full object-cover" onError={e => { e.currentTarget.style.display = 'none'; }} />
               ) : (
-                <div className="grid h-24 place-items-center text-xs text-[#6a665a]">No image — add a Background image URL to preview</div>
+                <div className="grid h-24 place-items-center text-xs text-[var(--at-mut-2)]">No image — add a Background image URL to preview</div>
               )}
               <div className="flex items-center gap-3 p-3">
                 {form.logoUrl && <img src={form.logoUrl} alt="" className="h-9 w-9 rounded-lg object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />}
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-semibold text-[#f0ecdd]">{form.headline || form.title || 'Headline preview'}</div>
-                  <div className="truncate text-xs text-[#8a8577]">{form.snippet || 'Snippet preview'}</div>
+                  <div className="truncate text-sm font-semibold text-[var(--at-ink)]">{form.headline || form.title || 'Headline preview'}</div>
+                  <div className="truncate text-xs text-[var(--at-mut)]">{form.snippet || 'Snippet preview'}</div>
                 </div>
                 <span className="shrink-0 rounded-full bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-3 py-1.5 text-xs font-bold text-[#0a0a0f]">{form.cta || 'Learn more'}</span>
               </div>
-              <div className="border-t border-white/5 px-3 py-2 font-mono text-[11px] text-[#6a665a]">
+              <div className="border-t border-white/5 px-3 py-2 font-mono text-[11px] text-[var(--at-mut-2)]">
                 {(form.type || 'banner')} · weight {form.weight ?? 1} · priority {form.priority ?? 0} · {(form.placementIds?.length ? form.placementIds.join(', ') : 'everywhere')}
               </div>
             </div>
           </div>
-          <label className="flex items-center gap-3 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
-            <input type="checkbox" checked={form.enabled} onChange={setF('enabled')} className="h-5 w-5 accent-[#d4af37]" />
-            <span className="text-sm text-[#c9c4b4]">Live now</span>
+          <label className="flex items-center gap-3 rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-4 py-3 cursor-pointer">
+            <input type="checkbox" checked={form.enabled} onChange={setF('enabled')} className="h-5 w-5 accent-[var(--at-gold)]" />
+            <span className="text-sm text-[var(--at-ink-2)]">Live now</span>
           </label>
           <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-3">
             <button type="submit" disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90 disabled:opacity-50">
               <Save className="h-4 w-4" /> {editing ? 'Update broadcast' : 'Publish broadcast'}
             </button>
-            {editing && <button type="button" onClick={() => { setEditing(null); setForm({ ...EMPTY_AD_FORM }); setAdvancedJson(''); setAdvJsonError(''); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
+            {editing && <button type="button" onClick={() => { setEditing(null); setForm({ ...EMPTY_AD_FORM }); setAdvancedJson(''); setAdvJsonError(''); }} className="rounded-xl border border-[var(--at-line)] px-5 py-2.5 text-sm text-[var(--at-gold)]">Cancel</button>}
           </div>
         </form>
       </div>
@@ -3908,7 +4065,7 @@ export function AdminTvAds() {
         <div className="overflow-x-auto">
           <table className="tb-mobile-actions at-table w-full min-w-[720px]">
             <thead>
-              <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
+              <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[var(--at-mut-2)]">
                 <th className="px-5 py-3">Broadcast</th>
                 <th className="px-5 py-3">Format</th>
                 <th className="px-5 py-3">Slots</th>
@@ -3921,9 +4078,9 @@ export function AdminTvAds() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="8" className="px-5 py-10 text-center text-[#8a8577]">Loading broadcasts…</td></tr>
+                <tr><td colSpan="8" className="px-5 py-10 text-center text-[var(--at-mut)]">Loading broadcasts…</td></tr>
               ) : ads.length === 0 ? (
-                <tr><td colSpan="8" className="px-5 py-10 text-center text-[#8a8577]">No broadcasts yet — create one above.</td></tr>
+                <tr><td colSpan="8" className="px-5 py-10 text-center text-[var(--at-mut)]">No broadcasts yet — create one above.</td></tr>
               ) : ads.map((ad) => {
                 const c = ad.config || {};
                 const clicks = Number(c.clicks) || 0;
@@ -3936,20 +4093,20 @@ export function AdminTvAds() {
                       <div className="flex items-center gap-3">
                         {c.logoUrl && <img src={c.logoUrl} alt="" className="h-9 w-9 rounded-lg object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />}
                         <div>
-                          <div className="font-medium text-[#f0ecdd]">{ad.title || ad.key}</div>
-                          <div className="text-xs text-[#6a665a]">{c.headline || ad.key}</div>
+                          <div className="font-medium text-[var(--at-ink)]">{ad.title || ad.key}</div>
+                          <div className="text-xs text-[var(--at-mut-2)]">{c.headline || ad.key}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-4"><span className="rounded-full bg-[#d4af37]/10 px-2.5 py-1 font-mono text-xs text-[#d4af37]">{c.type || 'banner'}</span></td>
-                    <td className="px-5 py-4 font-mono text-xs text-[#8a8577]">{slots.join(', ')}</td>
-                    <td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-xs ${ad.enabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[#8a8577]'}`}>{ad.enabled ? 'Live' : 'Paused'}</span></td>
-                    <td className="px-5 py-4 text-[#c9c4b4]">{views.toLocaleString()}</td>
-                    <td className="px-5 py-4 text-[#c9c4b4]">{clicks.toLocaleString()}</td>
-                    <td className="px-5 py-4 text-[#c9c4b4]">{ctr}</td>
+                    <td className="px-5 py-4"><span className="rounded-full bg-[#d4af37]/10 px-2.5 py-1 font-mono text-xs text-[var(--at-gold)]">{c.type || 'banner'}</span></td>
+                    <td className="px-5 py-4 font-mono text-xs text-[var(--at-mut)]">{slots.join(', ')}</td>
+                    <td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-xs ${ad.enabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[var(--at-mut)]'}`}>{ad.enabled ? 'Live' : 'Paused'}</span></td>
+                    <td className="px-5 py-4 text-[var(--at-ink-2)]">{views.toLocaleString()}</td>
+                    <td className="px-5 py-4 text-[var(--at-ink-2)]">{clicks.toLocaleString()}</td>
+                    <td className="px-5 py-4 text-[var(--at-ink-2)]">{ctr}</td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => startEdit(ad)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
+                        <button onClick={() => startEdit(ad)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[var(--at-gold)] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
                         <button onClick={() => removeAd(ad.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/20 text-red-400 hover:border-red-500/60" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
                       </div>
                     </td>
@@ -3965,19 +4122,19 @@ export function AdminTvAds() {
       <div className="at-card mt-5 overflow-hidden">
         <div className="border-b border-[var(--at-line)] px-5 py-3.5">
           <h3 className="flex items-center gap-2 font-semibold text-[var(--at-ink)]"><TestTube className="h-4 w-4 text-[var(--at-gold)]" /> Experiments</h3>
-          <p className="mt-0.5 text-xs text-[#8a8577]">Exposures and conversions mirrored from clients. Assignment stays client-side; counts aggregate here across devices.</p>
+          <p className="mt-0.5 text-xs text-[var(--at-mut)]">Exposures and conversions mirrored from clients. Assignment stays client-side; counts aggregate here across devices.</p>
         </div>
         {!expLoaded ? (
-          <p className="px-5 py-10 text-center text-sm text-[#8a8577]">Loading experiments…</p>
+          <p className="px-5 py-10 text-center text-sm text-[var(--at-mut)]">Loading experiments…</p>
         ) : expReports.length === 0 ? (
-          <p className="px-5 py-10 text-center text-sm text-[#8a8577]">No experiment data yet — it appears once clients with experiments report exposures.</p>
+          <p className="px-5 py-10 text-center text-sm text-[var(--at-mut)]">No experiment data yet — it appears once clients with experiments report exposures.</p>
         ) : expReports.map(({ exp, significance }) => (
           <div key={exp.id} className="border-b border-white/5 px-5 py-4 last:border-0">
-            <div className="font-mono text-sm font-semibold text-[#f0ecdd]">{exp.id}</div>
+            <div className="font-mono text-sm font-semibold text-[var(--at-ink)]">{exp.id}</div>
             <div className="mt-2 overflow-x-auto">
               <table className="w-full min-w-[520px] text-sm">
                 <thead>
-                  <tr className="text-left text-xs uppercase tracking-wider text-[#6a665a]">
+                  <tr className="text-left text-xs uppercase tracking-wider text-[var(--at-mut-2)]">
                     <th className="py-2 pr-4 font-medium">Variant</th>
                     <th className="py-2 pr-4 font-medium">Exposures</th>
                     <th className="py-2 pr-4 font-medium">Conversions</th>
@@ -3992,13 +4149,13 @@ export function AdminTvAds() {
                     const isControl = varId === Object.keys(exp.variants || {})[0];
                     return (
                       <tr key={varId} className="border-t border-white/5">
-                        <td className="py-2 pr-4 font-mono text-[#c9c4b4]">{varId}{isControl && <span className="ml-2 text-[10px] uppercase text-[#6a665a]">control</span>}</td>
-                        <td className="py-2 pr-4 font-mono text-[#f0ecdd]">{(v.exposures || 0).toLocaleString()}</td>
-                        <td className="py-2 pr-4 font-mono text-[#f0ecdd]">{metric ? `${(v.metrics[metric] || 0).toLocaleString()} ${metric}` : '—'}</td>
-                        <td className="py-2 pr-4 font-mono text-[#c9c4b4]">{sig && Number.isFinite(sig.lift) ? `${sig.lift > 0 ? '+' : ''}${sig.lift.toFixed(1)}%` : '—'}</td>
+                        <td className="py-2 pr-4 font-mono text-[var(--at-ink-2)]">{varId}{isControl && <span className="ml-2 text-[10px] uppercase text-[var(--at-mut-2)]">control</span>}</td>
+                        <td className="py-2 pr-4 font-mono text-[var(--at-ink)]">{(v.exposures || 0).toLocaleString()}</td>
+                        <td className="py-2 pr-4 font-mono text-[var(--at-ink)]">{metric ? `${(v.metrics[metric] || 0).toLocaleString()} ${metric}` : '—'}</td>
+                        <td className="py-2 pr-4 font-mono text-[var(--at-ink-2)]">{sig && Number.isFinite(sig.lift) ? `${sig.lift > 0 ? '+' : ''}${sig.lift.toFixed(1)}%` : '—'}</td>
                         <td className="py-2 font-mono">
                           {sig ? (
-                            <span className={sig.significant ? 'text-emerald-400' : 'text-[#8a8577]'}>
+                            <span className={sig.significant ? 'text-emerald-400' : 'text-[var(--at-mut)]'}>
                               {sig.pValue.toFixed(4)}{sig.significant ? ' ✓' : ''}
                             </span>
                           ) : '—'}
@@ -4016,7 +4173,7 @@ export function AdminTvAds() {
       {/* Live channels — manual channel guide for TV widget + TV page */}
       <div className="at-card mt-5 p-4 sm:p-5">
         <h3 className="mb-1 font-semibold text-[var(--at-ink)]">{chEditing ? `Edit channel — ${chEditing.config?.title || chEditing.key}` : 'New live channel'}</h3>
-        <p className="mb-4 text-xs text-[#8a8577]">Channels appear in the floating TV widget and on the TV page after the 10 built-in desks. Use an embed URL (e.g. a YouTube <span className="font-mono">/embed/live_stream</span>) for instant in-player playback, otherwise the channel page loads in the player.</p>
+        <p className="mb-4 text-xs text-[var(--at-mut)]">Channels appear in the floating TV widget and on the TV page after the 10 built-in desks. Use an embed URL (e.g. a YouTube <span className="font-mono">/embed/live_stream</span>) for instant in-player playback, otherwise the channel page loads in the player.</p>
         <form onSubmit={saveChannel} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div><label className={label}>Title *</label><input required className={input} value={chForm.title} onChange={setCF('title')} placeholder="e.g. Bloomberg Europe" /></div>
           <div><label className={label}>Desk badge</label><input className={input} value={chForm.desk} onChange={setCF('desk')} placeholder="Europe" /></div>
@@ -4024,26 +4181,27 @@ export function AdminTvAds() {
           <div><label className={label}>Embed URL (optional)</label><input className={input} value={chForm.embedUrl} onChange={setCF('embedUrl')} placeholder="https://…/embed/…" /></div>
           <div className="sm:col-span-2"><label className={label}>Blurb</label><input className={input} value={chForm.blurb} onChange={setCF('blurb')} placeholder="One-line description shown in the guide…" /></div>
           <div><label className={label}>Minimum plan</label>
-            <select className={input} value={chForm.plan || 'pro'} onChange={setCF('plan')}>
-              <option value="pro" className="bg-[#0f0f14]">Pro — every paid plan</option>
-              <option value="elite" className="bg-[#0f0f14]">Elite SI and up</option>
-              <option value="professional" className="bg-[#0f0f14]">Professional only</option>
-              <option value="teams" className="bg-[#0f0f14]">Teams only</option>
+            <select className={input} value={chForm.plan || 'premium'} onChange={setCF('plan')}>
+              <option value="premium" className="bg-[var(--at-panel-2)]">Premium — all paid members</option>
+              <option value="professional" className="bg-[var(--at-panel-2)]">Professional (enterprise)</option>
+              <option value="teams" className="bg-[var(--at-panel-2)]">Teams (enterprise)</option>
+              <option value="elite" className="bg-[var(--at-panel-2)]">Elite (legacy)</option>
+              <option value="pro" className="bg-[var(--at-panel-2)]">Pro (legacy)</option>
             </select>
           </div>
-          <label className="flex items-center gap-3 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
-            <input type="checkbox" checked={chForm.isNew} onChange={setCF('isNew')} className="h-5 w-5 accent-[#d4af37]" />
-            <span className="text-sm text-[#c9c4b4]">Mark as NEW badge</span>
+          <label className="flex items-center gap-3 rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-4 py-3 cursor-pointer">
+            <input type="checkbox" checked={chForm.isNew} onChange={setCF('isNew')} className="h-5 w-5 accent-[var(--at-gold)]" />
+            <span className="text-sm text-[var(--at-ink-2)]">Mark as NEW badge</span>
           </label>
-          <label className="flex items-center gap-3 rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-3 cursor-pointer">
-            <input type="checkbox" checked={chForm.enabled} onChange={setCF('enabled')} className="h-5 w-5 accent-[#d4af37]" />
-            <span className="text-sm text-[#c9c4b4]">Live now</span>
+          <label className="flex items-center gap-3 rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-4 py-3 cursor-pointer">
+            <input type="checkbox" checked={chForm.enabled} onChange={setCF('enabled')} className="h-5 w-5 accent-[var(--at-gold)]" />
+            <span className="text-sm text-[var(--at-ink-2)]">Live now</span>
           </label>
           <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-3">
             <button type="submit" disabled={chBusy} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-semibold text-[#0a0a0f] hover:opacity-90 disabled:opacity-50">
               <Save className="h-4 w-4" /> {chEditing ? 'Update channel' : 'Add channel'}
             </button>
-            {chEditing && <button type="button" onClick={() => { setChEditing(null); setChForm({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true, plan: 'pro' }); }} className="rounded-xl border border-[#d4af37]/25 px-5 py-2.5 text-sm text-[#d4af37]">Cancel</button>}
+            {chEditing && <button type="button" onClick={() => { setChEditing(null); setChForm({ title: '', desk: 'Live', url: '', embedUrl: '', blurb: '', isNew: false, enabled: true, plan: 'premium' }); }} className="rounded-xl border border-[var(--at-line)] px-5 py-2.5 text-sm text-[var(--at-gold)]">Cancel</button>}
           </div>
         </form>
       </div>
@@ -4052,7 +4210,7 @@ export function AdminTvAds() {
         <div className="overflow-x-auto">
           <table className="tb-mobile-actions at-table w-full min-w-[640px]">
             <thead>
-              <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[#6a665a]">
+              <tr className="border-b border-[#d4af37]/10 text-left text-xs uppercase tracking-wider text-[var(--at-mut-2)]">
                 <th className="px-5 py-3">Channel</th>
                 <th className="px-5 py-3">URL</th>
                 <th className="px-5 py-3">Status</th>
@@ -4061,25 +4219,25 @@ export function AdminTvAds() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="4" className="px-5 py-10 text-center text-[#8a8577]">Loading channels…</td></tr>
+                <tr><td colSpan="4" className="px-5 py-10 text-center text-[var(--at-mut)]">Loading channels…</td></tr>
               ) : channels.length === 0 ? (
-                <tr><td colSpan="4" className="px-5 py-10 text-center text-[#8a8577]">No manual channels yet — the 10 built-in desks always show. Add one above.</td></tr>
+                <tr><td colSpan="4" className="px-5 py-10 text-center text-[var(--at-mut)]">No manual channels yet — the 10 built-in desks always show. Add one above.</td></tr>
               ) : channels.map((ch) => {
                 const c = ch.config || {};
                 return (
                   <tr key={ch.id} className="border-b border-[#d4af37]/5 hover:bg-white/[0.02]">
                     <td className="px-5 py-4">
-                      <div className="font-medium text-[#f0ecdd]">{c.title || ch.key}</div>
-                      <div className="text-xs text-[#6a665a]">{c.desk || 'Live'}{c.isNew ? ' · NEW' : ''}{c.blurb ? ` — ${c.blurb}` : ''} · <span className="text-[#d4af37]">{c.plan || 'pro'}</span></div>
+                      <div className="font-medium text-[var(--at-ink)]">{c.title || ch.key}</div>
+                      <div className="text-xs text-[var(--at-mut-2)]">{c.desk || 'Live'}{c.isNew ? ' · NEW' : ''}{c.blurb ? ` — ${c.blurb}` : ''} · <span className="text-[var(--at-gold)]">{planLabel(c.plan || 'premium')}</span></div>
                     </td>
-                    <td className="max-w-[220px] truncate px-5 py-4 font-mono text-xs text-[#8a8577]">{c.embedUrl || c.url}</td>
-                    <td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-xs ${ch.enabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[#8a8577]'}`}>{ch.builtin ? 'Built-in' : ch.enabled ? 'Live' : 'Paused'}</span></td>
+                    <td className="max-w-[220px] truncate px-5 py-4 font-mono text-xs text-[var(--at-mut)]">{c.embedUrl || c.url}</td>
+                    <td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-xs ${ch.enabled ? 'bg-emerald-400/10 text-emerald-400' : 'bg-white/8 text-[var(--at-mut)]'}`}>{ch.builtin ? 'Built-in' : ch.enabled ? 'Live' : 'Paused'}</span></td>
                     <td className="px-5 py-4">
                       {ch.builtin ? (
                         <div className="flex justify-end"><span className="text-[11px] text-[#5f5b50]">Ships with the app</span></div>
                       ) : (
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => startChannelEdit(ch)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
+                        <button onClick={() => startChannelEdit(ch)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[var(--at-gold)] hover:border-[#d4af37]/60" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></button>
                         <button onClick={() => removeChannel(ch.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-red-500/20 text-red-400 hover:border-red-500/60" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
                       </div>
                       )}
@@ -4126,13 +4284,13 @@ function DigestPanel() {
 
   return (
     <div className="glass rounded-[10px] p-4 sm:p-5">
-      <h3 className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]"><Mail className="h-4 w-4 text-[#d4af37]" /> Sunday Email Digest</h3>
-      <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">
+      <h3 className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]"><Mail className="h-4 w-4 text-[var(--at-gold)]" /> Sunday Email Digest</h3>
+      <p className="mt-1 text-xs leading-relaxed text-[var(--at-mut)]">
         Summarizes the coming week's economic calendar and emails every user on Sundays at the configured hour (UTC).
-        Enable it with the toggle above, then install the server cron once via <span className="font-mono text-[#d4af37]">bash deploy/digest-cron.sh</span> on the VPS.
+        Enable it with the toggle above, then install the server cron once via <span className="font-mono text-[var(--at-gold)]">bash deploy/digest-cron.sh</span> on the VPS.
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
-        <button disabled={busy} onClick={() => run(true)} className="flex items-center gap-2 rounded-[10px] border border-[#d4af37]/25 px-4 py-2.5 text-sm font-semibold text-[#e9e7df] transition hover:border-[#d4af37]/60 disabled:opacity-60">
+        <button disabled={busy} onClick={() => run(true)} className="flex items-center gap-2 rounded-[10px] border border-[var(--at-line)] px-4 py-2.5 text-sm font-semibold text-[var(--at-ink)] transition hover:border-[#d4af37]/60 disabled:opacity-60">
           <Eye className="h-4 w-4" /> Preview
         </button>
         <button disabled={busy} onClick={() => run(false)} className="flex items-center gap-2 rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-2.5 text-sm font-bold text-[#0a0a0f] transition hover:brightness-105 disabled:opacity-60">
@@ -4140,10 +4298,10 @@ function DigestPanel() {
         </button>
       </div>
       {last && (
-        <div className="mt-4 rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] p-3 text-xs text-[#c9c4b4]">
-          {last.subject && <p className="font-semibold text-[#f0ecdd]">{last.subject}</p>}
+        <div className="mt-4 rounded-[10px] border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] p-3 text-xs text-[var(--at-ink-2)]">
+          {last.subject && <p className="font-semibold text-[var(--at-ink)]">{last.subject}</p>}
           {last.summary && <p className="mt-1 whitespace-pre-line leading-relaxed">{last.summary}</p>}
-          {last.sent !== undefined && <p className="mt-1 text-[#8a8577]">Sent {last.sent}/{last.total} · {last.eventCount ?? 0} events</p>}
+          {last.sent !== undefined && <p className="mt-1 text-[var(--at-mut)]">Sent {last.sent}/{last.total} · {last.eventCount ?? 0} events</p>}
         </div>
       )}
     </div>
@@ -4180,7 +4338,7 @@ export function AdminEmployees() {
         fetch(`${API_SERVER_URL}/admin/jobs/payroll/history`, { headers: { Authorization: `Bearer ${pb.authStore.token}` } }).then((x) => (x.ok ? x.json() : [])).catch(() => []),
       ]);
       if (r.status === 'fulfilled') setRoster(Array.isArray(r.value) ? r.value : []);
-      else { setRoster([]); toast({ variant: 'destructive', title: 'Staff roster failed to load', description: String(r.reason?.message || r.reason) }); }
+      else { setRoster([]); toast({ variant: 'destructive', title: 'Employee roster failed to load', description: String(r.reason?.message || r.reason) }); }
       const posts = p.status === 'fulfilled' ? p.value : [];
       if (p.status === 'rejected') toast({ variant: 'destructive', title: 'Postings failed to load', description: String(p.reason?.message || p.reason) });
       setAiWork((Array.isArray(posts) ? posts : []).filter((x) => /ai-executed/i.test(x.title || '')));
@@ -4221,78 +4379,69 @@ export function AdminEmployees() {
 
   return (
     <AdminLayout title="Employees">
-      <div className="grid gap-3 grid-cols-2 xl:grid-cols-4">
-        <Stat icon={Users} label="Employed Staff" value={roster.length.toLocaleString()} sub="Hired via Jobs & Hiring" color="#10b981" />
-        <Stat icon={Wallet} label="Monthly platform credits" value={`${roster.reduce((n, r) => n + (String(r.salary_freq) === 'monthly' ? Number(r.salary_tbc) || 0 : 0), 0).toLocaleString()} credits`} sub="Existing off-chain credits · not token" color="#d4af37" />
-        <Stat icon={DollarSign} label="Credits allocated" value={`${Math.round(totalPaidAll).toLocaleString()} credits`} sub="All allocation runs, all time" color="#10b981" />
-        <Stat icon={Bot} label="AI Work Records" value={aiWork.length.toLocaleString()} sub="$0 · never payroll" color="#38bdf8" />
-      </div>
-      <div className="glass mt-4 rounded-2xl p-4 sm:p-5">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <h3 className="flex items-center gap-2 font-semibold text-[#f0ecdd]"><Users className="h-4 w-4 text-[#d4af37]" /> Employed staff</h3>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/admin/staff-id-cards"
-              className="inline-flex items-center gap-2 rounded-xl border border-[#d4af37]/30 px-3 py-2 text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/10"
-            >
-              <Printer className="h-4 w-4" /> Print ID cards
-            </Link>
-            <button onClick={load} className="rounded-xl border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><RefreshCw className="h-4 w-4" /></button>
-          </div>
+      <div className="at-page at-scope at-enter pb-10">
+        <AtPageBar
+          meta={[`${roster.length} company employees`, 'Company roles', 'Credits are not salary', 'AI work is never payroll']}
+          actions={<><AtButton to="/admin/jobs" variant="quiet" icon={Briefcase}>Jobs & hiring</AtButton><AtButton to="/admin/staff-id-cards" variant="outline" icon={Printer}>ID cards</AtButton><AtButton onClick={load} variant="gold" icon={RefreshCw}>Refresh</AtButton></>}
+        >
+          <p className="mt-2 max-w-3xl text-[11px] leading-relaxed text-[var(--at-mut)]">Company employee directory, contract credit allocations and AI work records. Employees are hired through Jobs &amp; Hiring. Academy learners and instructors are product users, not employees.</p>
+        </AtPageBar>
+
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <AtMetric icon={Users} label="Company employees" value={roster.length.toLocaleString()} note="Hired through Jobs & hiring" tone="text-[var(--at-green)]" />
+          <AtMetric icon={Wallet} label="Monthly platform credits" value={`${roster.reduce((n, r) => n + (String(r.salary_freq) === 'monthly' ? Number(r.salary_tbc) || 0 : 0), 0).toLocaleString()} credits`} note="Existing off-chain credits · not token" tone="text-[var(--at-gold)]" />
+          <AtMetric icon={DollarSign} label="Credits allocated" value={`${Math.round(totalPaidAll).toLocaleString()} credits`} note="All allocation runs, all time" />
+          <AtMetric icon={Bot} label="AI work records" value={aiWork.length.toLocaleString()} note="$0 · never payroll" />
         </div>
-        {loading ? <p className="text-sm text-[#8a8577]">Loading…</p> : roster.length ? (
-          <div className="overflow-x-auto -mx-2 px-2">
-            <table className="w-full min-w-[760px] text-sm">
-              <thead>
-                <tr className="border-b border-[#d4af37]/12 text-left text-xs uppercase tracking-wider text-[#8a8577]">
-                  <th className="pb-2 font-medium">Name</th>
-                  <th className="pb-2 font-medium">Title</th>
-                  <th className="pb-2 font-medium">Contract credit</th>
-                  <th className="pb-2 font-medium">Hired</th>
-                  <th className="pb-2 font-medium">Last allocated</th>
-                  <th className="pb-2 font-medium">Total credits</th>
-                  <th className="pb-2 font-medium text-right">Runs</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orderedRoster.map((r) => {
-                  const h = histFor(r.email);
-                  return (
-                    <tr key={r.appId || r.email} className="border-b border-white/5">
-                      <td className="py-2.5">
-                        <div className="font-semibold text-[#f0ecdd]">{r.name || 'Staff member'}</div>
-                        <div className="font-mono text-[11px] text-[#6a665a]">{r.email}</div>
-                      </td>
-                      <td className="py-2.5 text-[#c9c4b4]">{r.title || 'Opening'}</td>
-                      <td className="py-2.5 font-mono text-xs text-[#d4af37]">{Number(r.salary_tbc) > 0 ? `${r.salary_tbc} credits/${r.salary_freq === 'weekly' ? 'wk' : 'mo'}` : '—'}</td>
-                      <td className="py-2.5 font-mono text-xs text-[#8a8577]">{r.hiredAt ? String(r.hiredAt).slice(0, 10) : '—'}</td>
-                      <td className="py-2.5 font-mono text-xs text-[#8a8577]">{h?.lastPaidAt ? String(h.lastPaidAt).slice(0, 10) : 'Never'}</td>
-                      <td className="py-2.5 font-mono text-xs text-[#f0ecdd]">{h ? `${Math.round(Number(h.totalPaidTbc) || 0).toLocaleString()} credits` : '0 credits'}</td>
-                      <td className="py-2.5 text-right font-mono text-xs text-[#8a8577]">{h?.runs ?? 0}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : <p className="text-sm text-[#8a8577]">No hired staff yet. Hire from an application in Jobs &amp; Hiring and they appear here.</p>}
-      </div>
-      <Collapse title="AI-executed work log" sub="$0 · never employment, never payroll" count={aiWork.length} defaultOpen={false}>
-        {aiWork.length ? (
-          <div className="space-y-2">
-            {aiWork.map((w) => (
-              <div key={w.id} className="rounded-[10px] border border-[#38bdf8]/20 bg-[#0f0f14] px-3 py-2.5">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="text-sm font-semibold text-[#f0ecdd]">{w.title}</div>
-                  <span className="rounded-md bg-[#38bdf8]/10 px-2 py-0.5 font-mono text-[10px] text-[#38bdf8]">{w.status} · $0</span>
+
+        <AtPanel className="mt-4" title="Employee directory" sub="Company employees only. Contract credits are existing platform credits, not TBC tokens." action={<AtButton to="/admin/staff-id-cards" variant="quiet" size="sm" icon={Printer}>Print ID cards</AtButton>} flush>
+          {loading ? <div className="p-5"><AtProgress value={45} /></div> : roster.length ? (
+            <div className="at-table-wrap !rounded-none !border-0 !bg-transparent">
+              <table className="at-table min-w-[760px]">
+                <thead><tr><th>Employee</th><th>Title</th><th>Contract credit</th><th>Hired</th><th>Last allocated</th><th>Total credits</th><th className="text-right">Runs</th></tr></thead>
+                <tbody>
+                  {orderedRoster.map((r) => {
+                    const h = histFor(r.email);
+                    return (
+                      <tr key={r.appId || r.email}>
+                        <td>
+                          <div className="font-semibold text-[var(--at-ink)]">{r.name || 'Employee'}</div>
+                          <div className="font-mono text-[9px] text-[var(--at-mut-2)]">{r.email}</div>
+                        </td>
+                        <td className="text-[var(--at-ink-2)]">{r.title || 'Opening'}</td>
+                        <td className="font-mono text-[10px] text-[var(--at-gold)]">{Number(r.salary_tbc) > 0 ? `${r.salary_tbc} credits/${r.salary_freq === 'weekly' ? 'wk' : 'mo'}` : '—'}</td>
+                        <td className="font-mono text-[10px] text-[var(--at-mut)]">{r.hiredAt ? String(r.hiredAt).slice(0, 10) : '—'}</td>
+                        <td className="font-mono text-[10px] text-[var(--at-mut)]">{h?.lastPaidAt ? String(h.lastPaidAt).slice(0, 10) : 'Never'}</td>
+                        <td className="font-mono text-[10px] text-[var(--at-ink)]">{h ? `${Math.round(Number(h.totalPaidTbc) || 0).toLocaleString()} credits` : '0 credits'}</td>
+                        <td className="text-right font-mono text-[10px] text-[var(--at-mut)]">{h?.runs ?? 0}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : <AtEmpty icon={Users} title="No company employees" sub="Hire from an application in Jobs & hiring and the employee appears here." />}
+        </AtPanel>
+
+        <div className="mt-3"><AtAlert icon={Bot} tone="blue"><b className="text-[var(--at-ink)]">AI work is not employment.</b> AI-executed work records are $0 internal work logs. They never create payroll, equity, token or employment rights.</AtAlert></div>
+
+        <AtPanel className="mt-4" title="AI-executed work log" sub="$0 · never employment, never payroll" action={<AtBadge tone="blue">{aiWork.length}</AtBadge>} flush>
+          {aiWork.length ? (
+            <div className="space-y-2 p-3">
+              {aiWork.map((w) => (
+                <div key={w.id} className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-3 py-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-[11px] font-semibold text-[var(--at-ink)]">{w.title}</div>
+                    <AtBadge tone="blue">{w.status || 'recorded'} · $0</AtBadge>
+                  </div>
+                  {w.description && <p className="mt-1 text-[10px] leading-relaxed text-[var(--at-mut)]">{w.description}</p>}
+                  <div className="mt-1 font-mono text-[9px] text-[var(--at-mut-2)]">{w.department || 'Engineering'} · {String(w.created || '').slice(0, 10)}</div>
                 </div>
-                {w.description && <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{w.description}</p>}
-                <div className="mt-1 font-mono text-[11px] text-[#6a665a]">{w.department || 'Engineering'} · {String(w.created || '').slice(0, 10)}</div>
-              </div>
-            ))}
-          </div>
-        ) : <p className="text-sm text-[#8a8577]">No AI work records yet.</p>}
-      </Collapse>
+              ))}
+            </div>
+          ) : <AtEmpty icon={Bot} title="No AI work records" sub="Internal AI work logs appear here when created." />}
+        </AtPanel>
+      </div>
     </AdminLayout>
   );
 }
@@ -4301,52 +4450,64 @@ export function AdminEmployees() {
 export function AdminWallet() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const load = useCallback(async () => {
-    setLoading(true);
+    setLoading(true); setError('');
     try {
       const token = pb.authStore.token;
       const res = await fetch(`${API_SERVER_URL}/admin/wallet/overview`, { headers: { Authorization: `Bearer ${token}` } });
-      setData(res.ok ? await res.json() : null);
-    } catch {
+      if (!res.ok) throw new Error(`Wallet overview failed (${res.status})`);
+      setData(await res.json());
+    } catch (err) {
       setData(null);
+      setError(String(err.message || err));
     } finally {
       setLoading(false);
     }
   }, []);
   useEffect(() => { load(); }, [load]);
 
+  const rows = data?.recentTransactions || [];
   return (
-    <AdminLayout title="Wallet & Staking">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          ['Tracked wallets', data?.trackedWallets ?? '—'],
-          ['Rails onboarded', data?.railsOnboarded ?? '—'],
-          ['KYC verified', data?.kycVerified ?? '—'],
-          ['Crypto accounts', data?.cryptoAccounts ?? '—'],
-        ].map(([label, value]) => (
-          <div key={label} className="glass rounded-2xl p-4">
-            <div className="text-[11px] uppercase tracking-wider text-[#8a8577]">{label}</div>
-            <div className="mt-1 font-mono text-xl font-bold text-[#f0ecdd]">{value}</div>
-          </div>
-        ))}
-      </div>
-      <Collapse title="Recent money movement" sub="Read-only oversight" count={data?.recentTransactions?.length ?? 0} defaultOpen={false}>
-        <div className="mb-3 flex justify-end">
-          <button onClick={load} className="rounded-[10px] border border-[#d4af37]/25 px-3 py-2 text-sm text-[#d4af37]"><RefreshCw className="h-4 w-4" /></button>
+    <AdminLayout title="Wallet & settlement">
+      <div className="at-page at-scope at-enter pb-10">
+        <AtPageBar
+          meta={['USD + TBC credit ledger', 'Read-only oversight', 'TBC rails closed']}
+          actions={<><AtButton to="/admin/billing" variant="quiet" icon={CreditCard}>Billing</AtButton><AtButton to="/admin/tbc" variant="outline" icon={Coins}>TBC control</AtButton><AtButton onClick={load} variant="gold" icon={RefreshCw}>Refresh</AtButton></>}
+        >
+          <p className="mt-2 max-w-3xl text-[11px] leading-relaxed text-[var(--at-mut)]">Wallet and settlement oversight. This page never moves money. Withdrawals, refunds and per-user funding stay in their own authorised routes.</p>
+        </AtPageBar>
+
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <AtMetric icon={Wallet} label="Tracked wallets" value={data?.trackedWallets ?? '—'} note="Accounts with wallet records" />
+          <AtMetric icon={Plug} label="Rails onboarded" value={data?.railsOnboarded ?? '—'} note="Provider rails connected" />
+          <AtMetric icon={ShieldCheck} label="KYC verified" value={data?.kycVerified ?? '—'} note="Identity-verified wallets" tone="text-[var(--at-green)]" />
+          <AtMetric icon={Coins} label="Crypto accounts" value={data?.cryptoAccounts ?? '—'} note="TBC ledger accounts" tone="text-[var(--at-gold)]" />
         </div>
-        {loading ? <p className="text-sm text-[#8a8577]">Loading…</p> : data?.recentTransactions?.length ? (
-          <div className="space-y-2">
-            {data.recentTransactions.map((t) => (
-              <div key={t.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-[#d4af37]/10 bg-[#0f0f14] px-3 py-2 text-sm">
-                <div className="min-w-0 truncate text-[#c9c4b4]">{t.kind || 'transfer'} · <span className="font-mono text-xs tabular-nums text-[#8a8577]">{t.reference || String(t.id).slice(0, 8)}</span></div>
-                <div className="font-mono text-xs tabular-nums text-[#d4af37]">{t.amount} {String(t.currency || 'USD').toUpperCase()} · {t.status}</div>
-              </div>
-            ))}
-          </div>
-        ) : <p className="text-sm text-[#8a8577]">No transactions yet. Withdrawal approvals live under Billing &amp; Revenue; per-user funding detail under User Management.</p>}
-        <p className="mt-3 text-xs text-[#6a665a]">Read-only oversight — value movement stays in user-scoped wallet routes and billing refunds.</p>
-      </Collapse>
+
+        <AtPanel className="mt-4" title="Recent money movement" sub="Read-only. Withdrawal approvals live under Billing & revenue; per-user funding under User management." action={<AtBadge tone="gold">{rows.length} recent</AtBadge>} flush>
+          {loading ? <div className="p-5"><AtProgress value={45} /></div> : error ? (
+            <div className="p-5"><AtAlert icon={AlertTriangle} tone="red">{error}</AtAlert></div>
+          ) : rows.length ? (
+            <div className="at-table-wrap !rounded-none !border-0 !bg-transparent">
+              <table className="at-table min-w-[640px]">
+                <thead><tr><th>Kind</th><th>Reference</th><th>Amount</th><th>Status</th></tr></thead>
+                <tbody>{rows.map((t) => (
+                  <tr key={t.id}>
+                    <td className="font-semibold text-[var(--at-ink)]">{t.kind || 'transfer'}</td>
+                    <td className="font-mono text-[10px] text-[var(--at-mut)]">{t.reference || String(t.id).slice(0, 8)}</td>
+                    <td className="font-mono text-[11px] text-[var(--at-gold)]">{t.amount} {String(t.currency || 'USD').toUpperCase()}</td>
+                    <td><AtBadge tone={/complete|paid|settled/i.test(String(t.status)) ? 'green' : /fail|reject|cancel/i.test(String(t.status)) ? 'red' : 'amber'}>{t.status || 'recorded'}</AtBadge></td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          ) : <AtEmpty icon={Wallet} title="No wallet movement" sub="Transactions appear here once a wallet, refund or settlement record exists." />}
+        </AtPanel>
+
+        <div className="mt-3"><AtAlert icon={Lock} tone="amber"><b className="text-[var(--at-ink)]">TBC payment rails remain closed.</b> /wallet/pay returns 503 tbc_unavailable. No card, token sale, staking or crypto payment is authorised by this page.</AtAlert></div>
+      </div>
     </AdminLayout>
   );
 }
@@ -4371,7 +4532,7 @@ export function AdminSettings() {
     allowManualPropAccounts: false,
     digestEnabled: false,
     digestHourUTC: 18,
-    planGates: { reports: 'elite', coach: 'elite', apiDocs: 'professional', branding: 'professional', apiKeys: 'professional' },
+    planGates: { reports: 'premium', coach: 'premium', apiDocs: 'professional', branding: 'professional', apiKeys: 'professional' },
   });
   const [features, setFeatures] = useState({
     aiCoach: true,
@@ -4439,40 +4600,59 @@ export function AdminSettings() {
   return (
     <AdminLayout title="System Settings">
       <div className="at-page at-scope at-enter pb-10">
-      <AtTabs tabs={TABS} active={tab} onChange={setTab} className="mb-6 w-fit max-w-full" />
+      <AtPageBar
+        meta={[
+          saveState === 'saving' ? 'Autosaving' : saveState === 'saved' ? 'Autosaved' : saveState === 'error' ? 'Save failed' : 'Autosave on',
+          settings.signupsOpen ? 'Sign-ups open' : 'Sign-ups closed',
+          settings.maintenance ? 'Maintenance mode' : 'Platform live',
+          'Public plans: Free + Premium',
+        ]}
+        actions={(
+          <>
+            <AtButton to="/admin/company" variant="quiet" icon={Building2}>Company Bible</AtButton>
+            <AtButton to="/admin/integrations" variant="outline" icon={Plug}>Integrations</AtButton>
+          </>
+        )}
+      >
+        <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-[var(--at-mut)]">
+          Platform identity, feature availability and Premium-tier gates. Changes autosave to <span className="font-mono">admin_platform_settings</span> and
+          take effect on the next page view. A plan gate never grants a licence for a regulated service.
+        </p>
+      </AtPageBar>
+      <AtTabs tabs={TABS} active={tab} onChange={setTab} className="mb-6 mt-4 w-fit max-w-full" />
 
       {tab === 'general' && (
         <form onSubmit={save} className="grid items-start gap-4 xl:grid-cols-2">
-          <div className="glass rounded-[10px] p-4 sm:p-5">
-            <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Identity</h3>
-            <p className="mb-4 mt-1 text-xs text-[#8a8577]">Name, contact and schedule.</p>
+          <div className="at-card p-4 sm:p-5">
+            <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">Identity</h3>
+            <p className="mb-4 mt-1 text-xs text-[var(--at-mut)]">Name, contact and schedule.</p>
             <div className="space-y-3">
             {[['platformName', 'Platform Name', 'text'], ['tagline', 'Tagline', 'text'], ['supportEmail', 'Support Email', 'email'], ['digestHourUTC', 'Weekly Digest Hour (UTC, Sundays)', 'number']].map(([k, l, t]) => (
               <div key={k}>
-                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[#8a8577]">{l}</label>
+                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-[var(--at-mut)]">{l}</label>
                 <input type={t} value={settings[k]} onChange={e => setSettings({ ...settings, [k]: t === 'number' ? Number(e.target.value) : e.target.value })}
-                  className="w-full rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 text-sm tabular-nums text-[#e9e7df] outline-none focus:border-[#d4af37]/50" />
+                  className="w-full rounded-[10px] border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-4 py-2.5 text-sm tabular-nums text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50" />
               </div>
             ))}
             </div>
           </div>
           <div className="space-y-4">
-            <div className="glass rounded-[10px] p-4 sm:p-5">
+            <div className="at-card p-4 sm:p-5">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Access & automation</h3>
-                <span className="font-mono text-[10px] tabular-nums text-[#8a8577]">
+                <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">Access & automation</h3>
+                <span className="font-mono text-[10px] tabular-nums text-[var(--at-mut)]">
                   {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved ✓' : saveState === 'error' ? 'Save failed' : 'Autosave on'}
                 </span>
               </div>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {[['signupsOpen', 'Allow new sign-ups'], ['maintenance', 'Maintenance mode'], ['emailVerification', 'Require email verification'], ['enforceBrokerSync', 'Broker-sync-only trades'], ['allowManualPropAccounts', 'Manual prop accounts'], ['digestEnabled', 'Sunday email digest']].map(([k, l]) => (
-                <label key={k} className="flex items-center justify-between gap-2 rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5 cursor-pointer">
-                  <span className="text-[13px] text-[#c9c4b4]">{l}</span>
-                  <input type="checkbox" checked={settings[k]} onChange={e => setSettings({ ...settings, [k]: e.target.checked })} className="h-5 w-5 shrink-0 accent-[#d4af37]" />
+                <label key={k} className="flex items-center justify-between gap-2 rounded-[10px] border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-3 py-2.5 cursor-pointer">
+                  <span className="text-[13px] text-[var(--at-ink-2)]">{l}</span>
+                  <input type="checkbox" checked={settings[k]} onChange={e => setSettings({ ...settings, [k]: e.target.checked })} className="h-5 w-5 shrink-0 accent-[var(--at-gold)]" />
                 </label>
               ))}
               </div>
-              <button className="mt-3 flex items-center gap-2 rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-bold text-[#0a0a0f] hover:brightness-105"><Save className="h-4 w-4" /> Save Settings</button>
+              <AtButton type="submit" variant="gold" icon={Save} className="mt-3">Save settings</AtButton>
             </div>
             <DigestPanel />
           </div>
@@ -4480,16 +4660,16 @@ export function AdminSettings() {
       )}
 
       {tab === 'features' && (
-        <div className="glass max-w-3xl rounded-[10px] p-4 sm:p-5">
-          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd] mb-4">Feature Toggles</h3>
+        <div className="at-card max-w-3xl p-4 sm:p-5">
+          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)] mb-4">Feature Toggles</h3>
           <div className="grid grid-cols-2 gap-2.5">
           {Object.entries(features).map(([k, v]) => {
             const labels = { aiCoach: 'SI Coach', academy: 'Academy', community: 'Community', economicCalendar: 'Economic Calendar', riskTools: 'Risk Tools', chartBuilder: 'Chart Builder', signals: 'Trading Signals', wallet: 'Wallet & Banking' };
             return (
-              <label key={k} className="flex items-center justify-between rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 cursor-pointer hover:border-[#d4af37]/25 transition-colors">
+              <label key={k} className="flex items-center justify-between rounded-[10px] border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-4 py-2.5 cursor-pointer hover:border-[var(--at-line)] transition-colors">
                 <div>
-                  <div className="text-sm text-[#c9c4b4]">{labels[k] || k}</div>
-                  <div className="text-xs text-[#6a665a]">{v ? 'Enabled — visible to users' : 'Disabled — hidden from navigation'}</div>
+                  <div className="text-sm text-[var(--at-ink-2)]">{labels[k] || k}</div>
+                  <div className="text-xs text-[var(--at-mut-2)]">{v ? 'Enabled — visible to users' : 'Disabled — hidden from navigation'}</div>
                 </div>
                 <div onClick={() => setFeatures(p => ({ ...p, [k]: !p[k] }))}
                   className={`relative h-6 w-11 rounded-full transition-colors cursor-pointer ml-4 shrink-0 ${v ? 'bg-[#d4af37]' : 'bg-white/12'}`}>
@@ -4499,14 +4679,14 @@ export function AdminSettings() {
             );
           })}
           </div>
-          <button onClick={() => toast({ title: 'Feature settings saved' })} className="mt-3 flex items-center gap-2 rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-bold text-[#0a0a0f] hover:brightness-105"><Save className="h-4 w-4" /> Save</button>
+          <AtButton onClick={() => toast({ title: 'Feature settings saved' })} variant="gold" icon={Save} className="mt-3">Save feature switches</AtButton>
         </div>
       )}
 
       {tab === 'features' && (
-        <div className="glass mt-4 max-w-3xl rounded-[10px] p-4 sm:p-5 space-y-3">
-          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd] mb-1">Plan Gates</h3>
-          <p className="text-xs text-[#8a8577] -mt-2">Minimum plan required per premium page. Takes effect on next page view — no deploy needed.</p>
+        <div className="at-card mt-4 max-w-3xl p-4 sm:p-5 space-y-3">
+          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)] mb-1">Plan Gates</h3>
+          <p className="text-xs text-[var(--at-mut)] -mt-2">Minimum plan required per premium page. Takes effect on next page view — no deploy needed.</p>
           <div className="grid gap-2.5 sm:grid-cols-2">
           {[
             ['reports', 'Reports & Analytics (/app/reports)'],
@@ -4515,17 +4695,18 @@ export function AdminSettings() {
             ['branding', 'White-label Branding (/app/branding)'],
             ['apiKeys', 'API Keys (/app/api-keys)'],
           ].map(([k, label]) => (
-            <label key={k} className="flex items-center justify-between gap-3 rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-3 py-2.5">
-              <span className="truncate text-[13px] text-[#c9c4b4]">{label}</span>
+            <label key={k} className="flex items-center justify-between gap-3 rounded-[10px] border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-3 py-2.5">
+              <span className="truncate text-[13px] text-[var(--at-ink-2)]">{label}</span>
               <select
-                value={settings.planGates?.[k] || 'elite'}
+                value={settings.planGates?.[k] || 'premium'}
                 onChange={(e) => setSettings((p) => ({ ...p, planGates: { ...(p.planGates || {}), [k]: e.target.value } }))}
-                className="shrink-0 rounded-lg border border-[#d4af37]/25 bg-[#0f0f14] px-2 py-2 text-[13px] text-[#f0ecdd] outline-none"
+                className="shrink-0 rounded-lg border border-[var(--at-line)] bg-[var(--at-panel-2)] px-2 py-2 text-[13px] text-[var(--at-ink)] outline-none"
               >
-                <option value="pro" className="bg-[#0f0f14]">Pro and up</option>
-                <option value="elite" className="bg-[#0f0f14]">Elite and up</option>
-                <option value="professional" className="bg-[#0f0f14]">Professional only</option>
-              <option value="teams" className="bg-[#0f0f14]">Teams only</option>
+                <option value="premium" className="bg-[var(--at-panel-2)]">Premium</option>
+                <option value="professional" className="bg-[var(--at-panel-2)]">Professional (enterprise)</option>
+                <option value="teams" className="bg-[var(--at-panel-2)]">Teams (enterprise)</option>
+                <option value="elite" className="bg-[var(--at-panel-2)]">Elite (legacy)</option>
+                <option value="pro" className="bg-[var(--at-panel-2)]">Pro (legacy)</option>
               </select>
             </label>
           ))}
@@ -4534,27 +4715,25 @@ export function AdminSettings() {
       )}
 
       {tab === 'security' && (
-        <div className="glass max-w-3xl rounded-[10px] p-4 sm:p-5 space-y-4">
-          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[#f0ecdd]">Security Settings</h3>
+        <div className="at-card max-w-3xl p-4 sm:p-5 space-y-4">
+          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--at-ink)]">Security Settings</h3>
           {[['twoFARequired', 'Require 2FA for all users', 'Forces two-factor authentication on every account'],
             ['emailVerification', 'Enforce email verification', 'Users cannot trade until email is verified']].map(([k, l, d]) => (
-            <label key={k} className="flex items-start justify-between gap-4 rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5 cursor-pointer">
+            <label key={k} className="flex items-start justify-between gap-4 rounded-[10px] border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-4 py-2.5 cursor-pointer">
               <div>
-                <div className="text-sm text-[#c9c4b4]">{l}</div>
-                <div className="text-xs text-[#6a665a] mt-0.5">{d}</div>
+                <div className="text-sm text-[var(--at-ink-2)]">{l}</div>
+                <div className="text-xs text-[var(--at-mut-2)] mt-0.5">{d}</div>
               </div>
-              <input type="checkbox" checked={settings[k]} onChange={e => setSettings({ ...settings, [k]: e.target.checked })} className="mt-0.5 h-5 w-5 accent-[#d4af37] shrink-0" />
+              <input type="checkbox" checked={settings[k]} onChange={e => setSettings({ ...settings, [k]: e.target.checked })} className="mt-0.5 h-5 w-5 accent-[var(--at-gold)] shrink-0" />
             </label>
           ))}
-          <div className="rounded-[10px] border border-[#d4af37]/15 bg-[#0f0f14] px-4 py-2.5">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[#c9c4b4]">Session Timeout</span>
-              <select className="bg-transparent text-sm text-[#e9e7df] outline-none">
-                <option>7 days</option><option>30 days</option><option>90 days</option>
-              </select>
+          <div className="rounded-[10px] border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-4 py-2.5">
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span className="text-[var(--at-ink-2)]">Session timeout</span>
+              <span className="text-right font-mono text-[11px] text-[var(--at-mut)]">Managed by Supabase GoTrue · not editable here</span>
             </div>
           </div>
-          <button onClick={() => toast({ title: 'Security settings saved' })} className="flex items-center gap-2 rounded-[10px] bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-5 py-2.5 text-sm font-bold text-[#0a0a0f] hover:brightness-105"><Save className="h-4 w-4" /> Save</button>
+          <AtButton onClick={() => toast({ title: 'Security settings saved' })} variant="gold" icon={Save}>Save security settings</AtButton>
         </div>
       )}
       </div>
@@ -4711,7 +4890,7 @@ export function AdminCompany() {
   if (!profile) {
     return (
       <AdminLayout title="Company Bible">
-        <p className="py-10 text-center text-sm text-[#8a8577]">Preparing company bible…</p>
+        <p className="py-10 text-center text-sm text-[var(--at-mut)]">Preparing company bible…</p>
       </AdminLayout>
     );
   }

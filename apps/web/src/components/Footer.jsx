@@ -96,6 +96,7 @@ const COLUMNS = [
       { labelKey: 'fot.l_refund_policy', to: '/refund' },
       { labelKey: 'fot.l_cookie_policy', to: '/policy#cookies' },
       { labelKey: 'fot.l_security', to: '/security' },
+      { label: 'Fundraising status', to: '/fundraising' },
     ],
   },
 ];

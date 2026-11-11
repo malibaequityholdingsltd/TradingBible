@@ -158,7 +158,7 @@ export default function AdminTbcDocumentsPage() {
           index="02"
           title="Document library"
           sub="Read every controlled instrument as Word and download a read-only copy"
-          action={<span className="font-mono text-[9px] uppercase tracking-[0.13em] text-[var(--at-mut-2)]">31 records · 26 controlled</span>}
+          action={<span className="font-mono text-[9px] uppercase tracking-[0.13em] text-[var(--at-mut-2)]">{counts.all || 0} records · {counts.controlled || 0} controlled</span>}
         />
 
         <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-[var(--at-line-soft)] bg-[var(--at-card-bg)] p-3 sm:flex-row sm:items-center">

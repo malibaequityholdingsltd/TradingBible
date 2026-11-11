@@ -146,6 +146,134 @@ router.get('/users', supabaseAuth, async (req, res, next) => {
 	}
 });
 
+// PATCH /api/admin/users/:id/profile — operator edit of profile fields.
+// Auth users may not have a public.users row yet, so the endpoint upserts.
+router.patch('/users/:id/profile', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const id = String(req.params.id || '').trim();
+		if (!id) return res.status(422).json({ error: 'user id required' });
+		const allowed = ['first_name', 'last_name', 'name', 'dob', 'phone', 'plan', 'role'];
+		const patch = {};
+		for (const key of allowed) {
+			if (req.body?.[key] !== undefined) patch[key] = req.body[key];
+		}
+		if (patch.plan === '') patch.plan = null;
+		if (patch.role && !['user', 'admin', 'trader', 'teacher', 'student'].includes(patch.role)) {
+			return res.status(422).json({ error: 'invalid role' });
+		}
+		if (!Object.keys(patch).length) return res.status(422).json({ error: 'no editable fields supplied' });
+		patch.updated_at = new Date().toISOString();
+		const existing = await supabaseRest('/rest/v1/users', {
+			query: { select: 'id', id: `eq.${id}`, limit: 1 },
+		}).catch(() => null);
+		let row;
+		if (existing?.[0]) {
+			const rows = await supabaseRest(`/rest/v1/users?id=eq.${encodeURIComponent(id)}`, {
+				method: 'PATCH', body: patch, prefer: 'return=representation',
+			});
+			row = rows?.[0];
+		} else {
+			const rows = await supabaseRest('/rest/v1/users', {
+				method: 'POST',
+				body: { id, ...patch },
+				prefer: 'return=representation,resolution=merge-duplicates',
+			});
+			row = rows?.[0];
+		}
+		logger.info(`admin profile update ${id}: ${Object.keys(patch).join(', ')}`);
+		res.json({ ok: true, user: row || { id, ...patch } });
+	} catch (err) { next(err); }
+});
+
+// DELETE /api/admin/users/:id — remove an auth account and its public row.
+// Admin accounts are protected. This is irreversible and is audited.
+router.delete('/users/:id', supabaseAuth, async (req, res, next) => {
+	try {
+		const admin = await assertAdmin(req);
+		const id = String(req.params.id || '').trim();
+		if (!id) return res.status(422).json({ error: 'user id required' });
+		if (String(admin?.id || '') === id) return res.status(409).json({ error: 'you cannot delete your own admin account here' });
+		const rows = await supabaseRest('/rest/v1/users', {
+			query: { select: 'id,email,role', id: `eq.${id}`, limit: 1 },
+		}).catch(() => null);
+		let authUser = null;
+		if (rows?.[0]?.role !== 'admin') {
+			authUser = await supabaseRest(`/auth/v1/admin/users/${encodeURIComponent(id)}`).catch(() => null);
+		}
+		if (rows?.[0]?.role === 'admin' || authUser?.user_metadata?.role === 'admin' || authUser?.role === 'admin') {
+			return res.status(409).json({ error: 'admin accounts cannot be deleted here' });
+		}
+		await supabaseRest(`/rest/v1/users?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE' }).catch(() => null);
+		await supabaseRest(`/auth/v1/admin/users/${encodeURIComponent(id)}`, { method: 'DELETE' }).catch((err) => {
+			logger.warn(`auth delete failed for ${id}: ${err.message}`);
+		});
+		logger.warn(`admin deleted user ${id}${rows?.[0]?.email ? ` (${rows[0].email})` : ''}`);
+		res.json({ ok: true, deleted: id });
+	} catch (err) { next(err); }
+});
+
+// GET /api/admin/affiliates — affiliate codes, referrals and commission
+// totals. Read-only: payouts remain member-initiated and settle in TBC credits.
+router.get('/affiliates', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const [codes, signups] = await Promise.all([
+			supabaseRest('/rest/v1/affiliate_codes', {
+				query: { select: '*', order: 'created_at.desc', limit: 500 },
+			}).catch(() => []),
+			supabaseRest('/rest/v1/affiliate_signups', {
+				query: { select: '*', order: 'created_at.desc', limit: 1000 },
+			}).catch(() => []),
+		]);
+		const ownerIds = [...new Set((codes || []).map((c) => c.owner).filter(Boolean))];
+		let emailById = {};
+		if (ownerIds.length) {
+			const users = await supabaseRest('/rest/v1/users', {
+				query: { select: 'id,email,name', id: `in.(${ownerIds.map(encodeURIComponent).join(',')})`, limit: 500 },
+			}).catch(() => []);
+			emailById = Object.fromEntries((users || []).map((u) => [u.id, u.email || u.name || null]));
+		}
+		const byCode = {};
+		for (const s of signups || []) {
+			const key = s.code || s.codeId;
+			if (!key) continue;
+			if (!byCode[key]) byCode[key] = { count: 0, pending: 0, paid: 0 };
+			byCode[key].count += 1;
+			const amount = Number(s.commission) || 0;
+			if (s.status === 'paid') byCode[key].paid += amount;
+			else if (['signed_up', 'active'].includes(s.status)) byCode[key].pending += amount;
+		}
+		const rows = (codes || []).map((c) => {
+			const agg = byCode[c.code] || byCode[c.id] || { count: 0, pending: 0, paid: 0 };
+			return {
+				id: c.id,
+				code: c.code,
+				owner: c.owner,
+				ownerEmail: emailById[c.owner] || null,
+				clicks: Number(c.clicks) || 0,
+				signups: Number(c.signups) || agg.count,
+				rate: Number(c.commissionRate) || 0.15,
+				pending: agg.pending,
+				paid: agg.paid,
+				created: c.created_at || c.created || null,
+			};
+		});
+		res.setHeader('Cache-Control', 'private, no-store');
+		res.json({
+			rate: 0.15,
+			totals: {
+				codes: rows.length,
+				clicks: rows.reduce((n, r) => n + r.clicks, 0),
+				signups: rows.reduce((n, r) => n + r.signups, 0),
+				pending: rows.reduce((n, r) => n + r.pending, 0),
+				paid: rows.reduce((n, r) => n + r.paid, 0),
+			},
+			codes: rows,
+		});
+	} catch (err) { next(err); }
+});
+
 // PATCH /api/admin/users/:id — suspend / unsuspend (identity-review gate).
 // Body: { suspended: boolean, reason?: string }
 router.patch('/users/:id', supabaseAuth, async (req, res, next) => {
@@ -475,6 +603,8 @@ export const COMPANY_DEFAULTS = {
 		name: 'TradingBible',
 		shortName: 'TB',
 		tagline: 'TradingBible',
+		publicLaunch: '25 December 2026 — planned public launch. Confirm the date internally before any public announcement.',
+		stage: 'Pre-launch · private company · no public offering and no live regulated brokerage.',
 		formation: 'TradingBible Holdings, Inc. is a Delaware corporation that owns and operates TradingBible.',
 		mission: 'Empower traders and investors through transparent, data-driven market intelligence, advanced financial technology, trading analytics, risk management, and accessible education.',
 		vision: 'Establish TradingBible as a globally recognized financial technology ecosystem connecting professional trading tools, brokerage infrastructure, market intelligence, digital assets, and investment technology.',
@@ -488,7 +618,7 @@ export const COMPANY_DEFAULTS = {
 		form: 'Delaware corporation',
 		formed: 'Delaware corporation — entity records on file.',
 		ein: 'On file — confidential; disclose only to authorized counterparties.',
-		duns: 'D-U-N-S 14-997-6777 — VERIFIED.',
+		duns: 'D-U-N-S 14-997-6777 — reported; verify before external reliance.',
 		naics: '511210',
 		agent: 'Registered agent on file.',
 		holdingCompany: 'TradingBible Holdings, Inc. — owner and operator of TradingBible.',
@@ -545,8 +675,8 @@ export const COMPANY_DEFAULTS = {
 	},
 	product: {
 		version: '1.2.0 live (documented scope — not an independent audit).',
-		stack: 'React 18 + Vite + Tailwind · Node + Express 5 · Supabase Postgres RLS · Paddle/Stripe · VPS Ubuntu + PM2 + Nginx + Lets Encrypt.',
-		surfaces: 'Terminal Pro · journal · analytics · SI reports/coach (Elite+) · signals/indicators · risk tools · backtest/paper · challenges/prop analytics · broker sync · alerts/heatmaps/order-flow · community · academy/webinars · TV · wallet/billing · API/white-label (Professional) · TBC page · admin portal · 24-mission Pro-Guide.',
+		stack: 'React 18 + Vite + Tailwind · Node + Express 5 · Supabase Postgres RLS · Stripe (card and wallet subscription billing) · VPS Ubuntu + PM2 + Nginx + Lets Encrypt.',
+		surfaces: 'Terminal Pro · journal · analytics · SI reports/coach (Premium) · signals/indicators · risk tools · backtest/paper · challenges/prop analytics · broker sync · alerts/heatmaps/order-flow · community · academy/webinars · TV · wallet/billing · API/white-label (enterprise, quoted) · TBC page · admin portal · 24-mission Pro-Guide.',
 		terminal: 'Proprietary Terminal Pro + future Chart SDK as licensable assets. A charting terminal is NOT an exchange or broker — execution, custody, data redistribution, client accounts need separate agreements + authorization.',
 		persistence: 'Auto-save drawings, annotations, watchlists, layouts, journal entries, prop-firm activity across sessions. Broker/prop sync must be permission-based with provider integrations.',
 		auth: 'Supabase GoTrue (OTP / magic links / WebAuthn passkeys) + branded Send-Email webhook hook. RBAC, RLS, hardware-backed admin auth, key rotation, audit logs, backups, DR, pen-tests, incident response as we scale.',
@@ -554,6 +684,8 @@ export const COMPANY_DEFAULTS = {
 	monetization: {
 		plans: 'Free account (Academy catalogue/community/paper trading/profile) · TradingBible Premium $19.99/mo or $199/year (all core premium features for one trader). Enterprise API, white-label and desk deployment are quoted separately. Stripe, card required for Premium. 14-day money-back on first Premium subscription.',
 		lines: 'Subscriptions + developer licensing + chart widgets + institutional software + ads + education/Academy + affiliates + eligible prop-firm services. Future brokerage commissions/spreads/fees ONLY after legal + regulatory clearance.',
+		academy: 'Academy catalogue: 17 learning paths, 76 courses and 347 lessons. Lifetime tuition is separate from Premium: Individual $150, Pro $199 (commercial internal-training licence), Family $299 (up to four learners), Teams $499 (up to ten learners).',
+		funded: 'Funded evaluations: 16 products, maximum account $200,000, standard 80% profit split scaling to 90%, 14-day payouts to the TBC credit wallet. First funded payout refunds the entry fee in TBC credits.',
 		tractionNote: 'NO verified revenue, profit, valuation, MRR, customer, or growth figures supplied — all pending confirmation, never estimated as achievements. (ARPU ~$19.99 illustrative only.)',
 		payouts: 'CFD withdrawals every 14 days to TBC credit wallet (80% standard → 90% scaling; 1-step fixed 90%). First funded payout refunds entry fee in TBC credits.',
 	},
@@ -562,10 +694,10 @@ export const COMPANY_DEFAULTS = {
 		segregation: 'Separate operating money / regulatory capital / client funds / crypto assets. Client assets are never company funding.',
 		credentials: 'Certificate + EIN + D-U-N-S are credentials, NOT licenses. Brokerage legal structure decided with counsel BEFORE onboarding or deposits.',
 		filings: 'U.S.: restructuring + audited financials + Form S-1 + prospectus + SEC review + exchange application + underwriting/pricing. Nigeria: issuer eligibility + SEC registration + NGX admission. The TradingBible group is Delaware-domiciled; a direct NGX Growth listing still requires issuer eligibility and regulatory approval.',
-		readiness: 'Cap table · 3-yr projections · audited accounts · licenses · risk disclosures · IP records · material contracts · cybersecurity · litigation · governance · use of proceeds. Costs: brokerage $720K–$2.09M · IPO prep $1.1M–$4M + %.',
+		readiness: 'Cap table · 3-yr projections · audited accounts · licenses · risk disclosures · IP records · material contracts · cybersecurity · litigation · governance · use of proceeds. Cost ranges are not verified; obtain current counsel and provider quotes before budgeting.',
 	},
 	roadmap: {
-		phases: '1 Corporate formation Completed → 2 IRS EIN Completed → 3 D-U-N-S Reported obtained → 4 Platform verification Requires current audit → 5 Revenue validation Figures pending → 6 Proprietary terminal Expansion roadmap → 7 Brokerage licensing Planned → 8 TBC testnet/mainnet Planned → 9 Institutional financing Future → 10 Restructuring/IPO Long-term.',
+		phases: '0 Public launch planned 25 December 2026 → 1 Corporate formation Completed → 2 IRS EIN Completed → 3 D-U-N-S Reported obtained → 4 Platform verification Requires current audit → 5 Revenue validation Figures pending → 6 Proprietary terminal Expansion roadmap → 7 Brokerage licensing Planned → 8 TBC testnet/mainnet Planned → 9 Institutional financing Future → 10 Restructuring/IPO Long-term.',
 		first90: 'Days 1–30: verify records/ownership/tax, appoint counsel, commission licensing + IPO feasibility. Days 31–60: plan/model/capital/architecture + MT5/liquidity RFQs. Days 61–90: jurisdiction shortlist + vendor quotes + prototype scope + funding/governance plan.',
 		nextPriorities: 'Verify operational + financial records · meet tax/compliance (Delaware corporate franchise tax; cross-border review) · strengthen proprietary tech · decide which regulated line to pursue first.',
 		strategy: 'Regulated brokerage + proprietary tech (licensing/market-data/enterprise), not commissions alone. IPO is a milestone earned via performance, not a launch prerequisite. Blueprint is a working master plan — verify all claims before banks/regulators/investors.',
@@ -657,7 +789,6 @@ router.get('/health', supabaseAuth, async (req, res, next) => {
 			supabase: false,
 			smtp: Boolean(process.env.SMTP_HOST && process.env.SMTP_USER),
 			stripe: Boolean(process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SANDBOX_SECRET_KEY),
-			paddle: Boolean(process.env.PADDLE_LIVE_API_KEY || process.env.PADDLE_SANDBOX_API_KEY),
 			dnb: Boolean(process.env.DNB_CLIENT_ID && process.env.DNB_CLIENT_SECRET),
 			alphaVantage: Boolean(process.env.ALPHA_VANTAGE_API_KEY),
 			finnhub: Boolean(process.env.FINNHUB_API_KEY),

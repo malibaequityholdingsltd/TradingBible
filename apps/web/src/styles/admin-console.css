@@ -204,3 +204,21 @@ html.light .adm-console textarea {
   background: #ffffff !important;
   color: #23262d !important;
 }
+
+/* ── Legacy palette bridge ────────────────────────────────────
+ * Older admin modules still carry literal gold/midnight utility classes.
+ * These selectors map the most common values onto the active Atelier theme
+ * so those pages remain readable in light mode without a risky mass rewrite.
+ * New work should use var(--at-*) tokens directly. */
+.adm-console .at-scope [class*="text-[#f0ecdd]"],
+.adm-console .at-scope [class*="text-[#e9e7df]"] { color: var(--at-ink) !important; }
+.adm-console .at-scope [class*="text-[#c9c4b4]"] { color: var(--at-ink-2) !important; }
+.adm-console .at-scope [class*="text-[#8a8577]"] { color: var(--at-mut) !important; }
+.adm-console .at-scope [class*="text-[#6a665a]"] { color: var(--at-mut-2) !important; }
+.adm-console .at-scope [class*="text-[#d4af37]"] { color: var(--at-gold) !important; }
+.adm-console .at-scope [class*="text-[#38bdf8]"] { color: var(--at-blue) !important; }
+.adm-console .at-scope [class*="bg-[#0f0f14]"],
+.adm-console .at-scope [class*="bg-[#0c0c11]"] { background-color: var(--at-panel-2) !important; }
+.adm-console .at-scope [class*="bg-[#0a0a0f]"] { background-color: var(--at-bg0) !important; }
+.adm-console .at-scope [class*="border-[#d4af37]"] { border-color: var(--at-line) !important; }
+.adm-console .at-scope [class*="bg-[#d4af37]"] { background-color: var(--at-gold-soft) !important; }

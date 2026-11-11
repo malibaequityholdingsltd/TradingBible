@@ -34,8 +34,8 @@ export function meetsPlan(user, required) {
 // detection. Professional/teams add enterprise API, integrations and
 // white-label, which are quoted separately from the public subscription.
 export const FEATURE_PLANS = {
-  coach: 'elite',
-  reports: 'elite',
+  coach: 'premium',
+  reports: 'premium',
   'api-docs': 'professional',
   integrations: 'professional',
   'api-keys': 'professional',

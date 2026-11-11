@@ -63,6 +63,7 @@ const ProgramsPublicPage = lazy(() => import('./pages/ProgramsPublicPage'));
 const AffiliatesPublicPage = lazy(() => import('./pages/AffiliatesPublicPage'));
 const LaunchPublicPage = lazy(() => import('./pages/LaunchPublicPage'));
 const FundPage = lazy(() => import('./pages/FundPage'));
+const FundraisingStatusPage = lazy(() => import('./pages/FundraisingStatusPage'));
 const PublicFeaturesPage = lazy(() => import('./pages/PublicFeaturePages').then((m) => ({ default: m.FeatureHubPage })));
 const PublicFeatureDetailPage = lazy(() => import('./pages/PublicFeaturePages').then((m) => ({ default: m.PublicFeaturePage })));
 const CommunityPublicPage = lazy(() => import('./pages/PublicFeaturePages').then((m) => ({ default: m.CommunityPublicPage })));
@@ -86,6 +87,14 @@ const AdminWallet = lazy(() => import('./pages/AdminPortal').then((m) => ({ defa
 const AdminCompany = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminCompany })));
 const AdminTvAds = lazy(() => import('./pages/AdminPortal').then((m) => ({ default: m.AdminTvAds })));
 const AdminAirdrops = lazy(() => import('./pages/AdminAirdrops'));
+const AdminProductSurfacesPage = lazy(() => import('./pages/AdminOperationsPages').then((m) => ({ default: m.AdminProductSurfacesPage })));
+const AdminAcademyPage = lazy(() => import('./pages/AdminOperationsPages').then((m) => ({ default: m.AdminAcademyPage })));
+const AdminChallengesPage = lazy(() => import('./pages/AdminOperationsPages').then((m) => ({ default: m.AdminChallengesPage })));
+const AdminSignalsPage = lazy(() => import('./pages/AdminOperationsPages').then((m) => ({ default: m.AdminSignalsPage })));
+const AdminCommunityPage = lazy(() => import('./pages/AdminOperationsPages').then((m) => ({ default: m.AdminCommunityPage })));
+const AdminAffiliatesPage = lazy(() => import('./pages/AdminOperationsPages').then((m) => ({ default: m.AdminAffiliatesPage })));
+const AdminPublicSitePage = lazy(() => import('./pages/AdminOperationsPages').then((m) => ({ default: m.AdminPublicSitePage })));
+const AdminCompliancePage = lazy(() => import('./pages/AdminOperationsPages').then((m) => ({ default: m.AdminCompliancePage })));
 const StaffPortal = lazy(() => import('./pages/StaffPortal'));
 const PricingPage = lazy(() => import('./pages/ExtraPages').then((m) => ({ default: m.PricingPage })));
 const UserApiKeysPage = lazy(() => import('./pages/UserApiKeysPage'));
@@ -387,6 +396,7 @@ function RoutesWithBoundary() {
                     <Route path="/affiliates" element={<AffiliatesPublicPage />} />
                     <Route path="/launch" element={<LaunchPublicPage />} />
                     <Route path="/fund" element={<FundPage />} />
+                    <Route path="/fundraising" element={<FundraisingStatusPage />} />
                     <Route path="/guides" element={<GuidesPage />} />
                     <Route path="/webinars" element={<WebinarsPage />} />
                     <Route path="/academy" element={<AcademyInfoPage />} />
@@ -485,6 +495,14 @@ function RoutesWithBoundary() {
                     <Route path="/teacher" element={<Navigate to="/app" replace />} />
                     <Route path="/student" element={<Protected><StudentDashboardPage /></Protected>} />
                     <Route path="/admin" element={<AdminProtected><AdminDashboard /></AdminProtected>} />
+                    <Route path="/admin/product-surfaces" element={<AdminProtected><AdminProductSurfacesPage /></AdminProtected>} />
+                    <Route path="/admin/academy" element={<AdminProtected><AdminAcademyPage /></AdminProtected>} />
+                    <Route path="/admin/challenges" element={<AdminProtected><AdminChallengesPage /></AdminProtected>} />
+                    <Route path="/admin/signals" element={<AdminProtected><AdminSignalsPage /></AdminProtected>} />
+                    <Route path="/admin/community" element={<AdminProtected><AdminCommunityPage /></AdminProtected>} />
+                    <Route path="/admin/affiliates" element={<AdminProtected><AdminAffiliatesPage /></AdminProtected>} />
+                    <Route path="/admin/public-site" element={<AdminProtected><AdminPublicSitePage /></AdminProtected>} />
+                    <Route path="/admin/compliance" element={<AdminProtected><AdminCompliancePage /></AdminProtected>} />
                     <Route path="/admin/users" element={<AdminProtected><AdminUsers /></AdminProtected>} />
                     <Route path="/admin/employees" element={<AdminProtected><AdminEmployees /></AdminProtected>} />
                     <Route path="/admin/staff-id-cards" element={<AdminProtected><StaffIdCardsPage /></AdminProtected>} />
