@@ -226,6 +226,16 @@ These are not bugs and must not be “fixed” by inventing data:
 - Production acceptance still used mocked Supabase auth/API for the authenticated checks; see §2.6. No real charge, card issuance, TBC payment, securities issuance or investor communication was performed.
 - Authenticated admin UI acceptance still needs a real admin session.
 
+### Admin rebuild deployment (10 November 2026)
+
+- Commit `a4645d6` deployed: Atelier admin shell, centralized route catalogue, product/Academy/challenges/signals/community/affiliates/public-site/compliance operator pages, and the public no-offering fundraising page.
+- Production returns `200` for `/fundraising`, `/admin`, `/admin/product-surfaces`, `/admin/academy`, `/admin/challenges`, `/admin/signals`, `/admin/community`, `/admin/affiliates`, `/admin/public-site`, `/admin/compliance`, `/admin/fundraising-documents` and `/admin/communications`.
+- The new admin chunks (`AdminOperationsPages`, `AdminPortal`, `FundraisingStatusPage`) and the current CSS/entry bundles return `200`.
+- `/api/admin/users`, `/api/admin/affiliates`, `/api/admin/health`, `/api/admin/fundraising-documents` and `/api/admin/communications/templates` return `401` without an admin session.
+- `/llms.txt` no longer lists `/admin`, `/staff` or test-only routes.
+- The production `/fundraising` bundle contains the no-offering, no-sale and Form D not-filed language; no investment button or payment link is present.
+- Authenticated admin UI acceptance still needs a real admin session; no authentication was bypassed.
+
 ## 7. Current safe state
 
 The app can be deployed and used with the current truthful states:

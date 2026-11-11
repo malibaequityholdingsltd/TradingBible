@@ -116,7 +116,7 @@ export const LAUNCH_CHECKS = [
   { id: 'academy', area: 'Commercial', title: 'Academy catalogue and tuition', status: 'done', detail: '17 paths, 76 courses, 347 lessons; Individual $150, Pro $199, Family $299, Teams $499.', owner: 'Academy' },
   { id: 'funded', area: 'Commercial', title: 'Funded-program facts', status: 'done', detail: '16 products, maximum $200,000 account, 80%→90% split, 14-day payouts.', owner: 'Funded' },
   { id: 'tbc', area: 'TBC', title: 'TBC public status and gates', status: 'done', detail: 'Proposed token, 0 issued, sale disabled, public risk and separation pages live.', owner: 'TBC' },
-  { id: 'fundraising-status', area: 'Capital', title: 'Public fundraising status page', status: 'pending', detail: 'Page is built locally and states no offering is open. It must be deployed and checked on production.', owner: 'Capital' },
+  { id: 'fundraising-status', area: 'Capital', title: 'Public fundraising status page', status: 'done', detail: 'Live at /fundraising and states no offering is open, no funds are requested and no investment function exists.', owner: 'Capital' },
   { id: 'legal', area: 'Legal', title: 'Public legal pages', status: 'done', detail: 'Terms, privacy, refund and security pages exist; counsel review items remain open.', owner: 'Legal' },
   { id: 'auth', area: 'Platform', title: 'Auth and OTP flows', status: 'done', detail: 'Login, signup, reset and OTP submission verified locally and on production.', owner: 'Platform' },
   { id: 'careers', area: 'People', title: 'Careers application flow', status: 'done', detail: 'Careers submission verified; honeypot stored no applicant.', owner: 'People' },
