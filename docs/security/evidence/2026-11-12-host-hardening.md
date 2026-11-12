@@ -75,12 +75,16 @@ was used.
 
 ### Audit logging
 
-`auditd` is active. Rules were loaded from `/etc/audit/rules.d/99-tradingbible.rules` and confirmed with `auditctl -l`. They watch:
+`auditd` is active. 38 rules were loaded from
+`/etc/audit/rules.d/99-tradingbible.rules` and confirmed with `auditctl -l`.
+They watch:
 
 - identity files, sudoers and root SSH keys;
-- SSH, Nginx and TLS configuration;
+- SSH, Nginx site/snippet configuration, UFW, fail2ban, audit rules and TLS material;
 - cron, systemd units and other persistence locations;
-- the production API `.env`, source tree and controlled storage;
+- the production API `.env`, API source subdirectories and the security,
+  workforce and investor-letter storage directories;
+- the local backup passphrase directory; and
 - privilege-transition syscalls for interactive accounts.
 
 Audit records are local only. There is no central log destination or SIEM and no tested alert route yet.

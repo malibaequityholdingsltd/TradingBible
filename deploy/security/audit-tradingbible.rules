@@ -11,13 +11,23 @@
 -w /etc/gshadow -p wa -k identity
 -w /etc/sudoers -p wa -k privilege
 -w /etc/sudoers.d/ -p wa -k privilege
+-w /root/.ssh/authorized_keys -p wa -k ssh_keys
 -w /root/.ssh/ -p wa -k ssh_keys
 
-## SSH, edge and TLS configuration
+## SSH, edge, firewall and TLS configuration
 -w /etc/ssh/sshd_config -p wa -k sshd_config
 -w /etc/ssh/sshd_config.d/ -p wa -k sshd_config
--w /etc/nginx/ -p wa -k nginx_config
--w /etc/letsencrypt/ -p wa -k tls_material
+-w /etc/nginx/nginx.conf -p wa -k nginx_config
+-w /etc/nginx/sites-available/ -p wa -k nginx_config
+-w /etc/nginx/sites-enabled/ -p wa -k nginx_config
+-w /etc/nginx/snippets/ -p wa -k nginx_config
+-w /etc/nginx/conf.d/ -p wa -k nginx_config
+-w /etc/letsencrypt/live/ -p wa -k tls_material
+-w /etc/letsencrypt/renewal/ -p wa -k tls_material
+-w /etc/letsencrypt/archive/ -p wa -k tls_material
+-w /etc/ufw/ -p wa -k firewall_config
+-w /etc/fail2ban/ -p wa -k fail2ban_config
+-w /etc/audit/rules.d/ -p wa -k audit_config
 
 ## Persistence and scheduled execution
 -w /etc/crontab -p wa -k persistence
@@ -27,8 +37,16 @@
 
 ## Production application, secrets and controlled records
 -w /var/www/tradingbible/apps/api/.env -p rwa -k app_secrets
--w /var/www/tradingbible/apps/api/src/ -p wa -k app_source
--w /var/www/tradingbible/apps/api/storage/ -p wa -k app_storage
+-w /var/www/tradingbible/apps/api/src/routes/ -p wa -k app_source
+-w /var/www/tradingbible/apps/api/src/services/ -p wa -k app_source
+-w /var/www/tradingbible/apps/api/src/middleware/ -p wa -k app_source
+-w /var/www/tradingbible/apps/api/src/utils/ -p wa -k app_source
+-w /var/www/tradingbible/apps/api/src/data/ -p wa -k app_source
+-w /var/www/tradingbible/apps/api/src/constants/ -p wa -k app_source
+-w /var/www/tradingbible/apps/api/storage/security/ -p wa -k app_storage
+-w /var/www/tradingbible/apps/api/storage/workforce/ -p wa -k app_storage
+-w /var/www/tradingbible/apps/api/storage/investor-letters/ -p wa -k app_storage
+-w /root/.config/tradingbible/ -p wa -k backup_key
 
 ## Privilege transitions by interactive accounts
 -a always,exit -F arch=b64 -S setuid -S setgid -S setreuid -S setregid -F auid>=1000 -F auid!=4294967295 -k privilege_change
