@@ -32,6 +32,12 @@ External scan from the development machine to `2.25.166.110`:
 
 The API now binds only to `127.0.0.1:3001`. Nginx proxies `/api/` to that loopback listener. The public Node port is closed.
 
+`ss -tulpn` showed only these public listeners: `22/tcp`, `80/tcp` and
+`443/tcp`. The API (`127.0.0.1:3001`), Ollama (`127.0.0.1:11434`) and
+`llama-server` (`127.0.0.1:38527`) are loopback-only. Tailscale's UDP/41641
+listener exists but is denied externally by UFW; external scans of 11434, 38527
+and 41641 returned closed.
+
 ### SSH
 
 Effective configuration after installing `/etc/ssh/sshd_config.d/10-tradingbible-hardening.conf`:
