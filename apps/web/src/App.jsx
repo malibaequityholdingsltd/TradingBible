@@ -127,6 +127,7 @@ const AdminFundraisingDocumentsPage = lazy(() => import('./pages/AdminFundraisin
 const AdminCommunicationsPage = lazy(() => import('./pages/AdminCommunicationsPage'));
 const AdminInvestorLettersPage = lazy(() => import('./pages/AdminInvestorLettersPage'));
 const AdminWorkforceCompliancePage = lazy(() => import('./pages/AdminWorkforceCompliancePage'));
+const AdminSecurityProgrammePage = lazy(() => import('./pages/AdminSecurityProgrammePage'));
 const ChallengesPage = lazy(() => import('./pages/ChallengesPage'));
 const BacktestPage = lazy(() => import('./pages/BacktestPage'));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
@@ -530,6 +531,7 @@ function RoutesWithBoundary() {
                     <Route path="/admin/communications" element={<AdminProtected><AdminCommunicationsPage /></AdminProtected>} />
                     <Route path="/admin/investor-letters" element={<AdminProtected><AdminInvestorLettersPage /></AdminProtected>} />
                     <Route path="/admin/workforce" element={<AdminProtected><AdminWorkforceCompliancePage /></AdminProtected>} />
+                    <Route path="/admin/security" element={<AdminProtected><AdminSecurityProgrammePage /></AdminProtected>} />
                     <Route path="/staff/*" element={<StaffProtected><StaffPortal /></StaffProtected>} />
                     <Route path="/home" element={<Navigate to="/" replace />} />
                     <Route path="*" element={<NotFoundPage />} />

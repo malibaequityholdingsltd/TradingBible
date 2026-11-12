@@ -74,6 +74,7 @@ export const ADMIN_NAV_GROUPS = [
       { to: '/admin/company', label: 'Company Bible', short: 'Company', icon: Building2, keywords: 'identity legal leadership roadmap company facts' },
       { to: '/admin/public-site', label: 'Public site & launch', short: 'Public site', icon: Globe, keywords: 'public routes launch readiness seo legal pages' },
       { to: '/admin/compliance', label: 'Compliance & gates', short: 'Compliance', icon: ShieldAlert, keywords: 'gates blocked legal securities payments tbc counsel' },
+      { to: '/admin/security', label: 'Security & resilience', short: 'Security', icon: ShieldCheck, keywords: 'cyber security controls rls waf firewall mfa incident risk vendor backup penetration assurance' },
       { to: '/admin/integrations', label: 'Integrations', short: 'Integrations', icon: Plug, keywords: 'providers smtp stripe supabase docusign' },
       { to: '/admin/api-keys', label: 'API keys', short: 'API keys', icon: Key, keywords: 'developer credentials tokens' },
       { to: '/admin/plugins', label: 'Plugins', short: 'Plugins', icon: Package, keywords: 'extensions modules packages' },

@@ -6,6 +6,7 @@ import { supabase, getSupabaseUser } from '../utils/supabaseClient.js';
 import { generateSecret, verifyTOTP, otpauthUri } from '../utils/totp.js';
 import { decodeCbor, b64url, b64urlDecode } from '../utils/cbor.js';
 import { brandShell, escapeHtml, infoBox, buttonLink } from '../utils/email-brand.js';
+import { publicAuthRateLimit } from '../middleware/auth-rate-limit.js';
 
 const router = Router();
 const CHALLENGE_TTL_MS = 5 * 60 * 1000;
@@ -224,7 +225,7 @@ router.post('/webauthn/register', async (req, res) => {
 // Login step 1 (public, pre-auth): build options for a passkey assertion.
 // The challenge is stored on the matched user's row so verify-login can
 // validate against it without an active session.
-router.post('/webauthn/login-options', async (req, res) => {
+router.post('/webauthn/login-options', publicAuthRateLimit, async (req, res) => {
 	const email = normalizeEmail(req.body?.email);
 	if (!email) return res.status(422).json({ error: 'email required' });
 	try {
@@ -247,7 +248,7 @@ router.post('/webauthn/login-options', async (req, res) => {
 
 // Login step 2 (public, pre-auth): verify the Face ID / passkey assertion,
 // then mint a real one-time Supabase session via an admin magic link token.
-router.post('/webauthn/verify-login', async (req, res) => {
+router.post('/webauthn/verify-login', publicAuthRateLimit, async (req, res) => {
 	const { id, response } = req.body || {};
 	try {
 		const userRow = await supabase.findUserWithPasskey(id || '');

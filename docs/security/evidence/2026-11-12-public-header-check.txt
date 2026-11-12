@@ -1,0 +1,89 @@
+2026-11-12T13:43:37Z
+
+## HTTPS response headers — https://tradingbible.app
+HTTP/2 200 
+server: nginx
+date: Thu, 12 Nov 2026 13:43:37 GMT
+content-type: text/html
+content-length: 15757
+last-modified: Thu, 12 Nov 2026 04:26:19 GMT
+etag: "6af53feb-3d8d"
+expires: Thu, 12 Nov 2026 13:43:36 GMT
+cache-control: no-cache
+cache-control: no-cache, must-revalidate
+accept-ranges: bytes
+
+
+## API health headers — https://tradingbible.app/api/health
+HTTP/2 200 
+server: nginx
+date: Thu, 12 Nov 2026 13:43:38 GMT
+content-type: application/json; charset=utf-8
+content-length: 15
+content-security-policy: default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests
+cross-origin-opener-policy: same-origin
+cross-origin-resource-policy: same-origin
+origin-agent-cluster: ?1
+referrer-policy: no-referrer
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-dns-prefetch-control: off
+x-download-options: noopen
+x-frame-options: SAMEORIGIN
+x-permitted-cross-domain-policies: none
+x-xss-protection: 0
+vary: Origin
+access-control-allow-credentials: true
+ratelimit-policy: 300;w=300
+ratelimit-limit: 300
+ratelimit-remaining: 299
+ratelimit-reset: 300
+etag: W/"f-VaSQ4oDUiZblZNAEkkN+sX+q3Sg"
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+referrer-policy: strict-origin-when-cross-origin
+permissions-policy: camera=(), microphone=(), geolocation=()
+
+
+## Unauthenticated admin API — /api/admin/users
+HTTP/2 401 
+server: nginx
+date: Thu, 12 Nov 2026 13:43:39 GMT
+content-type: application/json; charset=utf-8
+content-length: 156
+content-security-policy: default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests
+cross-origin-opener-policy: same-origin
+cross-origin-resource-policy: same-origin
+origin-agent-cluster: ?1
+referrer-policy: no-referrer
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-dns-prefetch-control: off
+x-download-options: noopen
+x-frame-options: SAMEORIGIN
+x-permitted-cross-domain-policies: none
+x-xss-protection: 0
+vary: Origin
+access-control-allow-credentials: true
+ratelimit-policy: 300;w=300
+ratelimit-limit: 300
+ratelimit-remaining: 298
+ratelimit-reset: 300
+etag: W/"9c-p4M/uNVsEJXOg3rfoioF5WU2Hq4"
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+referrer-policy: strict-origin-when-cross-origin
+permissions-policy: camera=(), microphone=(), geolocation=()
+
+
+## HTTP redirect
+HTTP/1.1 301 Moved Permanently
+Server: nginx/1.30.4 (Ubuntu)
+Date: Thu, 12 Nov 2026 13:43:40 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: https://tradingbible.app/
+

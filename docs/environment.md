@@ -9,6 +9,9 @@ Both apps load `.env` from their own directory (`node --env-file=.env` for the A
 | `NODE_ENV` | yes | `production` |
 | `PORT` | | API port (3001) |
 | `CORS_ORIGIN` | yes | Allowed web origin (`https://tradingbible.app`) |
+| `CORS_ORIGINS` | opt. | Comma-separated additional allowed origins. Do not use `*` with credentials. |
+| `TRUST_PROXY` | opt. | Number of trusted reverse-proxy hops. Production defaults to `1` (local Nginx). Set `false` only when the API is directly exposed. |
+| `HELMET_HSTS` | opt. | Set `false` only when Nginx is the sole owner of the HSTS header. Keep one owner for each security header. |
 
 ## Supabase (primary data layer)
 
@@ -109,6 +112,40 @@ register. No environment flag makes a document adopted, an EIN issued, a
 payroll registration active, an insurance policy effective or a benefit
 entitlement real.
 
+## Security programme
+
+The admin **Security and resilience** console at `/admin/security` is the live
+control register for the security programme. It records control status,
+evidence references, risks, incidents, supplier assessments, acceptance tests,
+training and access reviews.
+
+Runtime state is stored in `apps/api/storage/security/programme.json` with mode
+`0600`. It contains evidence references and incident summaries, not
+credentials, private keys, customer records or full incident evidence. Preserve
+it during deployment and include it in encrypted backups.
+
+A control marked `implemented` or `verified` must have a real evidence
+reference. A `verified` control is expected to have dated test evidence. A
+`not_applicable` control requires an explanatory note. The platform does not
+configure Cloudflare, Hostinger, Tailscale, Supabase or the host firewall; those
+changes are controlled by the runbooks in `docs/security/`.
+
+Run the repository preflight:
+
+```sh
+npm run security:audit
+```
+
+The script checks for tracked environment files, common credential patterns,
+server-side Supabase keys in browser source, explicit proxy trust, auth rate
+limits, security route protection, restricted register permissions and required
+security artefacts. It is not a substitute for dependency scanning, SAST, DAST
+or independent penetration testing.
+
+The production hardening templates are in `deploy/security/`. Do not apply them
+without the preflight, backup, recovery path and authorization in
+`docs/security/12-PRODUCTION-HARDENING-RUNBOOK.md`.
+
 ## Fundraising execution gate
 
 | Variable | Required | Description |
@@ -177,6 +214,14 @@ The Lithic sandbox key can create and close virtual sandbox cards through `/wall
 | `DNB_CLIENT_ID` `DNB_CLIENT_SECRET` | opt. | Direct+ OAuth credentials (paid contract). Empty = sandbox stub: `/duns/verify` stores the number as `pending` with labeled test data until credentials are wired |
 
 Go-live checklist (when the DUNS number + Direct+ contract arrive): apply `supabase/migrations/20260820000000_duns_verification.sql`, set `DNB_CLIENT_ID`/`DNB_CLIENT_SECRET` on the VPS `.env`, restart the API, re-verify from `/company` → status flips `pending` → `verified`.
+
+## Broker credential vault
+
+| Variable | Required | Description |
+|---|---|---|
+| `VAULT_ENCRYPTION_KEY` | for broker sync | 32-byte hex key (`openssl rand -hex 32`) used for AES-256-GCM encryption of broker credentials. Keep it server-side, never in the browser, and back it up separately from the ciphertext. |
+
+The vault returns only metadata to clients. Broker passwords are never requested or stored. Read-only OAuth or API keys are preferred for journaling integrations.
 
 ## Circle (optional x402 paywall)
 

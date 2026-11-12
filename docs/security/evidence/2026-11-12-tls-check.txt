@@ -1,0 +1,12 @@
+2026-11-12T13:43:37Z
+
+## TLS certificate and negotiated protocol
+subject=CN=tradingbible.app
+issuer=C=US, O=Let's Encrypt, CN=YE1
+notBefore=Oct 25 08:06:39 2026 GMT
+notAfter=Jan 23 08:06:38 2027 GMT
+sha256 Fingerprint=A5:9E:80:E0:8C:2C:BB:98:6D:5B:E8:05:84:42:D8:21:14:72:09:8B:D6:DC:3D:2B:6E:93:85:FF:2E:97:F3:FA
+
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Protocol: TLSv1.3
+Verify return code: 0 (ok)

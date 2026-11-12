@@ -1,0 +1,16 @@
+# TradingBible — Cloudflare Tunnel ingress example.
+# Replace placeholders. Do not commit the real credentials file or tunnel UUID
+# if the repository is not restricted. Keep the file root-owned with mode 0600.
+#
+# Install at /etc/cloudflared/config.yml using the official cloudflared package
+# instructions. The tunnel should route to the loopback Nginx listener.
+
+tunnel: REPLACE_WITH_TUNNEL_UUID
+credentials-file: /etc/cloudflared/REPLACE_WITH_TUNNEL_UUID.json
+
+ingress:
+  - hostname: tradingbible.app
+    service: http://127.0.0.1:8080
+  - hostname: www.tradingbible.app
+    service: http://127.0.0.1:8080
+  - service: http_status:404

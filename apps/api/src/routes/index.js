@@ -42,12 +42,14 @@ import investorRouter from './investor.js';
 import messagesRouter from './messages.js';
 import investorLettersRouter from './investor-letters.js';
 import workforceRouter from './workforce.js';
+import securityProgrammeRouter from './security-programme.js';
+import { authSendEmailRateLimit } from '../middleware/auth-rate-limit.js';
 
 const router = Router();
 
 export default () => {
     router.get('/health', healthCheck);
-    router.post('/auth/send-email', authSendEmail);
+    router.post('/auth/send-email', authSendEmailRateLimit, authSendEmail);
     router.get('/auth/send-email/status', authSendEmailStatus);
     router.use('/integrated-ai', integratedAiRouter);
     router.get('/market-data', marketData);
@@ -94,6 +96,7 @@ export default () => {
     router.use('/messages', messagesRouter);
     router.use('/investor-letters', investorLettersRouter);
     router.use('/workforce', workforceRouter);
+    router.use('/security-programme', securityProgrammeRouter);
 
     return router;
 };

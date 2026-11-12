@@ -9,7 +9,7 @@ import {
   Wifi, Package, Plus, Copy, RotateCcw, Plug, TestTube, AlertCircle, Check,
   Upload,   ChevronDown, MoreVertical, Power, Code, Layers, MonitorPlay, Target,
   GraduationCap, LayoutDashboard, Type, Trophy, Coins, Ban, Wallet, Bot,
-  Building2, Landmark, Palette, Rocket, ShieldCheck, Fingerprint, ExternalLink, Sparkles, Printer, Briefcase, Loader2
+  Building2, Landmark, Palette, Rocket, ShieldCheck, ShieldAlert, Fingerprint, ExternalLink, Sparkles, Printer, Briefcase, Loader2
 } from 'lucide-react';
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar,
@@ -573,6 +573,7 @@ export function AdminDashboard() {
                 { to: '/admin/affiliates', icon: Users, title: 'Affiliates', note: '15% recurring · TBC settlement' },
                 { to: '/admin/public-site', icon: Globe, title: 'Public site & launch', note: 'Route inventory and launch checks' },
                 { to: '/admin/compliance', icon: ShieldCheck, title: 'Compliance & gates', note: 'Closed, blocked and open items' },
+                { to: '/admin/security', icon: ShieldAlert, title: 'Security & resilience', note: 'Evidence-backed controls, risks and incident readiness' },
               ].map(({ to, icon: Icon, title, note }) => (
                 <Link key={to} to={to} className="at-card at-card--hover flex items-center gap-3 p-3.5">
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[var(--at-line)] bg-[var(--at-gold-soft)] text-[var(--at-gold)]"><Icon className="h-4 w-4" /></span>
