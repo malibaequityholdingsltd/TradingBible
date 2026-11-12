@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 const shared = {
   standardHeaders: true,
@@ -12,7 +12,7 @@ export const authSendEmailRateLimit = rateLimit({
   ...shared,
   windowMs: 15 * 60 * 1000,
   limit: 12,
-  keyGenerator: (req) => `${req.ip || 'unknown'}:${String(req.body?.email || req.body?.email_data?.email || req.body?.user?.email || '').trim().toLowerCase()}`,
+  keyGenerator: (req) => `${ipKeyGenerator(req.ip || '')}:${String(req.body?.email || req.body?.email_data?.email || req.body?.user?.email || '').trim().toLowerCase()}`,
   message: { error: 'Too many verification requests. Wait a few minutes and try again.' },
 });
 
