@@ -53,6 +53,14 @@ window. A post-deploy snapshot, `app-20261112T211620Z.tar.gz.gpg`, completed wit
 exit status 0. The earlier snapshot's decrypt/restore test is recorded in
 `2026-11-12-encrypted-app-backup-test.md`.
 
+## Responsible disclosure
+
+`/.well-known/security.txt` is published with the
+`security@tradingbible.app` contact, a one-year expiry, the canonical URL and
+the `/security` policy link. It returned HTTP 200 with `content-type:
+text/plain` and the public security headers. Mailbox monitoring and delivery
+still depend on the SMTP repair tracked separately.
+
 ## Workforce document availability
 
 The production `docs/hr` directory was missing during the earlier deployment.

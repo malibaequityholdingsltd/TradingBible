@@ -1,0 +1,5 @@
+Contact: mailto:security@tradingbible.app
+Expires: 2027-11-12T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://tradingbible.app/.well-known/security.txt
+Policy: https://tradingbible.app/security
