@@ -70,13 +70,20 @@ The platform records what an operator enters. It does not create counsel approva
 
 ## Current baseline observations
 
-Read-only checks on **12 November 2026** are preserved in `evidence/`:
+Initial read-only checks on **12 November 2026** are preserved in `evidence/`:
 
-- `2026-11-12-public-header-check.txt` — HTTPS, API headers, unauthenticated admin API response and HTTP redirect.
+- `2026-11-12-public-header-check.txt` — pre-hardening HTTPS, API headers, unauthenticated admin API response and HTTP redirect.
 - `2026-11-12-dns-check.txt` — nameservers, A/AAAA, CAA, MX, SPF, DMARC and DNSSEC records.
 - `2026-11-12-tls-check.txt` — certificate subject, issuer, validity, fingerprint and negotiated TLS.
 
-Observed gaps include public DNS at Hostinger parking nameservers, no observed DNSSEC, no CAA record, DMARC at `p=none`, no observed Cloudflare edge, a directly reachable origin, no observed public HTML security headers, duplicate API/Nginx headers and a disclosed nginx version on the HTTP redirect. These are evidence inputs, not permission to change a live server.
+Host hardening performed on **12 November 2026** is recorded in:
+
+- `2026-11-12-host-hardening.md` — UFW, external port scan, key-only SSH, fail2ban, auditd and API loopback binding.
+- `2026-11-12-public-header-check-after.txt` — HSTS, CSP, frame, content-type, referrer and permissions headers after removing duplicate edge/API copies.
+- `2026-11-12-csp-browser-check.txt` — Chromium check of eight public routes with zero CSP violations or page errors.
+- `2026-11-12-app-restore-test.md` — 33 MB application archive restored, syntax-checked and served successfully.
+
+Remaining observed gaps include public DNS at Hostinger parking nameservers, no observed DNSSEC, no CAA record, DMARC at `p=none`, no observed Cloudflare edge, a directly reachable origin, public SSH on port 22 without private access or administrator MFA, no WAF/DDoS provider, no central SIEM or alert destination, and no database restore test. These are evidence inputs and open risks, not permission to change a live server.
 
 ## Change boundary
 

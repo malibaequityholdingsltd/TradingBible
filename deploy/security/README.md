@@ -5,7 +5,9 @@ These files are reviewed templates, not an automatic deployment. Do not apply th
 | File | Purpose |
 | --- | --- |
 | `nginx-tradingbible-tunnel.conf` | Loopback Nginx listener for a Cloudflare Tunnel deployment, with security headers and API proxy |
-| `sshd-99-tradingbible.conf` | SSH hardening for named accounts and private access |
+| `nginx-security-headers.conf` | Shared public-edge headers and CSP; include it inside HTML/static locations, never on the API proxy |
+| `sshd-10-tradingbible-hardening.conf` | Immediate key-only SSH hardening; sorts before cloud-init drop-ins |
+| `sshd-99-tradingbible.conf` | Future named-account and private-access target; do not apply while root is the only admin |
 | `ufw-tradingbible.sh` | Inspect-first UFW helper; it stops before enabling the firewall |
 | `cloudflared-config.yml.example` | Tunnel ingress example; replace all placeholders |
 | `hostinger-firewall.md` | Provider firewall design for the tunnel architecture |

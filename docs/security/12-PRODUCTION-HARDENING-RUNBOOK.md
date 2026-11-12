@@ -111,9 +111,46 @@ sudo chmod 750 /opt/tradingbible
 
 Use `tbadmin` for administration and `tbapp` for the application service. Do not run the application as root.
 
-### 4.4 SSH hardening
+### 4.4a Immediate key-only hardening (root-only host)
 
-Create `/etc/ssh/sshd_config.d/99-tradingbible.conf`:
+While root is the only administrative account, install
+`/etc/ssh/sshd_config.d/10-tradingbible-hardening.conf`. The `10-` prefix is
+required: OpenSSH keeps the first value it reads, and the Ubuntu cloud image
+ships `50-cloud-init.conf` with `PasswordAuthentication yes`. A `99-*` file is
+processed too late to override it.
+
+```text
+PermitRootLogin prohibit-password
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+PermitEmptyPasswords no
+MaxAuthTries 3
+LoginGraceTime 30
+X11Forwarding no
+AllowAgentForwarding no
+ClientAliveInterval 300
+ClientAliveCountMax 2
+```
+
+Validate, reload and prove a fresh key-authenticated session before keeping the
+change:
+
+```bash
+sudo sshd -t
+sudo systemctl reload ssh
+ssh -o BatchMode=yes root@HOST 'echo SSH_OK'
+sudo sshd -T | grep -Ei 'passwordauthentication|permitrootlogin|maxauthtries'
+```
+
+The live production host uses this immediate hardening as of 12 November 2026.
+Public SSH is still reachable on port 22; private access and administrator MFA
+are not yet implemented.
+
+### 4.4b Named-account target
+
+After creating and testing `tbadmin`, and after private access is proven,
+replace the immediate file with `/etc/ssh/sshd_config.d/99-tradingbible.conf`:
 
 ```text
 PermitRootLogin no
@@ -128,14 +165,8 @@ AllowTcpForwarding no
 PermitTunnel no
 ```
 
-Validate before reloading:
-
-```bash
-sudo sshd -t
-sudo systemctl reload ssh
-```
-
-Test a new private SSH session in a second terminal. If it fails, restore the previous configuration from the console.
+Do not set `PermitRootLogin no` while root is the only way in. Validate with
+`sshd -t` and test a second private session before disconnecting the original.
 
 ## 5. Stage 2 — Firewalls
 

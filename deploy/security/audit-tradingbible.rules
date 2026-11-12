@@ -1,0 +1,35 @@
+# TradingBible auditd rules.
+# Install at /etc/audit/rules.d/99-tradingbible.rules and load with:
+#   augenrules --load
+# These rules record security-relevant changes. They do not block activity.
+# A central SIEM/alert destination is still required for real-time detection.
+
+## Identity, privilege and administrator access
+-w /etc/passwd -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/group -p wa -k identity
+-w /etc/gshadow -p wa -k identity
+-w /etc/sudoers -p wa -k privilege
+-w /etc/sudoers.d/ -p wa -k privilege
+-w /root/.ssh/ -p wa -k ssh_keys
+
+## SSH, edge and TLS configuration
+-w /etc/ssh/sshd_config -p wa -k sshd_config
+-w /etc/ssh/sshd_config.d/ -p wa -k sshd_config
+-w /etc/nginx/ -p wa -k nginx_config
+-w /etc/letsencrypt/ -p wa -k tls_material
+
+## Persistence and scheduled execution
+-w /etc/crontab -p wa -k persistence
+-w /etc/cron.d/ -p wa -k persistence
+-w /var/spool/cron/ -p wa -k persistence
+-w /etc/systemd/system/ -p wa -k persistence
+
+## Production application, secrets and controlled records
+-w /var/www/tradingbible/apps/api/.env -p rwa -k app_secrets
+-w /var/www/tradingbible/apps/api/src/ -p wa -k app_source
+-w /var/www/tradingbible/apps/api/storage/ -p wa -k app_storage
+
+## Privilege transitions by interactive accounts
+-a always,exit -F arch=b64 -S setuid -S setgid -S setreuid -S setregid -F auid>=1000 -F auid!=4294967295 -k privilege_change
+-a always,exit -F arch=b32 -S setuid -S setgid -S setreuid -S setregid -F auid>=1000 -F auid!=4294967295 -k privilege_change

@@ -1,0 +1,25 @@
+Playwright browser check after enforcing the public CSP
+Date: 2026-11-12
+Browser: Chromium headless (Playwright 1.65.0)
+Service workers: blocked for the check
+Viewport: 1440 × 1000
+
+Routes checked:
+/ status=200 bytes=13627 errors=0
+/auth status=200 bytes=3292 errors=0
+/academy status=200 bytes=5155 errors=0
+/pricing status=200 bytes=4152 errors=0
+/security status=200 bytes=5511 errors=0
+/privacy status=200 bytes=3295 errors=0
+/terms status=200 bytes=10613 errors=0
+/admin/security status=200 bytes=718 errors=0
+
+Captured: console errors, uncaught page errors, failed requests and CSP
+violation messages.
+
+TOTAL csp/page/request/nav findings: 0; pageerror: 0
+
+Scope note: this proves the public/authentication entry routes render without
+CSP violations in Chromium. It does not replace authenticated admin testing or
+cross-browser testing. Authenticated admin acceptance remains pending a real
+admin session.

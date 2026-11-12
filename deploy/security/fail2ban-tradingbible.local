@@ -1,0 +1,32 @@
+# TradingBible host intrusion prevention.
+# Install at /etc/fail2ban/jail.d/tradingbible.local
+# The firewall is already default-deny; this adds temporary source bans for
+# repeated SSH and web scanning without changing the persistent allow-list.
+
+[DEFAULT]
+bantime = 1h
+findtime = 10m
+maxretry = 5
+backend = systemd
+ignoreip = 127.0.0.1/8 ::1
+
+[sshd]
+enabled = true
+mode = aggressive
+maxretry = 4
+bantime = 1h
+
+[nginx-botsearch]
+enabled = true
+port = http,https
+logpath = /var/log/nginx/access.log
+maxretry = 5
+bantime = 1h
+
+[recidive]
+enabled = true
+logpath = /var/log/fail2ban.log
+banaction = iptables-allports
+bantime = 1w
+findtime = 1d
+maxretry = 3
