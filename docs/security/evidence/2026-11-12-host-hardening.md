@@ -67,7 +67,11 @@ A fresh SSH connection using the existing key succeeded after the reload. Root i
 At test time: zero currently banned, zero total failed for the SSH jail. A
 controlled ban of the TEST-NET address `192.0.2.123` created an nftables
 `addr-set-sshd` element and a reject rule on TCP/22; unbanning removed the
-element. No production client address was used.
+element. The Nginx jail was corrected to read `/var/log/nginx/access.log`
+rather than the Nginx systemd journal; a TEST-NET ban on `192.0.2.124` created
+an nftables set with reject rules on TCP/80 and TCP/443 and was then removed.
+The recidive jail reads `/var/log/fail2ban.log`. No production client address
+was used.
 
 ### Audit logging
 

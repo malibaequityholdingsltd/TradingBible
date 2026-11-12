@@ -18,6 +18,7 @@ bantime = 1h
 
 [nginx-botsearch]
 enabled = true
+backend = auto
 port = http,https
 logpath = /var/log/nginx/access.log
 maxretry = 5
@@ -25,6 +26,7 @@ bantime = 1h
 
 [recidive]
 enabled = true
+backend = auto
 logpath = /var/log/fail2ban.log
 banaction = iptables-allports
 bantime = 1w
