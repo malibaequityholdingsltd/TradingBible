@@ -58,7 +58,10 @@ A fresh SSH connection using the existing key succeeded after the reload. Root i
 - `nginx-botsearch` (web scanning, one-hour ban)
 - `recidive` (repeat offenders, one-week all-port ban)
 
-At test time: zero currently banned, zero total failed for the SSH jail.
+At test time: zero currently banned, zero total failed for the SSH jail. A
+controlled ban of the TEST-NET address `192.0.2.123` created an nftables
+`addr-set-sshd` element and a reject rule on TCP/22; unbanning removed the
+element. No production client address was used.
 
 ### Audit logging
 
@@ -71,6 +74,15 @@ At test time: zero currently banned, zero total failed for the SSH jail.
 - privilege-transition syscalls for interactive accounts.
 
 Audit records are local only. There is no central log destination or SIEM and no tested alert route yet.
+
+### Tailscale (installed, authentication pending)
+
+Tailscale `1.104.6` was installed from the vendor package repository and
+`tailscaled` is active. `tailscale up --accept-dns=false --ssh=false` is waiting
+for device authorization. `tailscale status` still reports `Logged out`, so no
+private path is claimed yet. A UFW rule allows TCP/22 only on the future
+`tailscale0` interface; public SSH on 22 remains enabled as the fallback until a
+fresh session over Tailscale is proven.
 
 ### Nginx and API headers
 

@@ -1,0 +1,19 @@
+[Unit]
+Description=TradingBible encrypted application and runtime snapshot
+Documentation=file:/var/www/tradingbible/docs/security/12-PRODUCTION-HARDENING-RUNBOOK.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/tradingbible-app-backup
+User=root
+Group=root
+UMask=0077
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/var/backups/tradingbible /run/lock

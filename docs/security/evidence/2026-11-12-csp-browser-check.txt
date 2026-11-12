@@ -19,6 +19,18 @@ violation messages.
 
 TOTAL csp/page/request/nav findings: 0; pageerror: 0
 
+Post-deploy repeat after the final production build:
+
+/ status=200 bytes=13629 errors=0
+/auth status=200 bytes=3294 errors=0
+/academy status=200 bytes=5157 errors=0
+/pricing status=200 bytes=4154 errors=0
+/security status=200 bytes=5513 errors=0
+/privacy status=200 bytes=3297 errors=0
+/terms status=200 bytes=10615 errors=0
+/admin/security status=200 bytes=718 errors=0
+TOTAL csp/page/request/nav findings: 0; pageerror: 0
+
 Scope note: this proves the public/authentication entry routes render without
 CSP violations in Chromium. It does not replace authenticated admin testing or
 cross-browser testing. Authenticated admin acceptance remains pending a real

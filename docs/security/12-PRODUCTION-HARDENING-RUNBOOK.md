@@ -72,6 +72,29 @@ sudo chmod 600 /root/tradingbible-recovery/*.tar.gz
 
 Take a database backup through the approved provider procedure. Verify that the backup can be listed and that the recovery key is available offline.
 
+### 3.1 Encrypted application and runtime snapshot
+
+`deploy/security/tradingbible-app-backup.sh` and the matching systemd unit and
+timer create an AES256-encrypted snapshot of the API source, SPA, controlled
+documents and runtime JSON stores. They exclude `.env` and `node_modules`.
+
+```bash
+sudo install -m 755 deploy/security/tradingbible-app-backup.sh /usr/local/sbin/tradingbible-app-backup
+sudo install -m 644 deploy/security/tradingbible-app-backup.service /etc/systemd/system/
+sudo install -m 644 deploy/security/tradingbible-app-backup.timer /etc/systemd/system/
+sudo install -d -m 700 /var/backups/tradingbible /root/.config/tradingbible
+sudo test -s /root/.config/tradingbible/backup.key || openssl rand -base64 48 | sudo tee /root/.config/tradingbible/backup.key >/dev/null
+sudo chmod 600 /root/.config/tradingbible/backup.key
+sudo systemctl daemon-reload
+sudo systemctl start tradingbible-app-backup.service
+sudo systemctl enable --now tradingbible-app-backup.timer
+```
+
+This is a **local** recovery aid. Escrow the passphrase offline and copy the
+encrypted snapshots to a separate account with immutability/restricted deletion
+before treating the backup control as complete. It does not back up Supabase
+data or storage objects.
+
 ## 4. Stage 1 — Private administrator access
 
 ### 4.1 Install Tailscale
@@ -348,7 +371,7 @@ Do not mark a control verified because the command was run. Mark it verified onl
 
 1. Open the Hostinger browser console.
 2. If SSH is lost, disable UFW or restore the previous rules.
-3. Restore `/etc/ssh/sshd_config.d/99-tradingbible.conf` from the backup and reload SSH.
+3. Remove or restore the active SSH drop-in from the backup. If the immediate `10-tradingbible-hardening.conf` change caused the loss, remove it and reload SSH; if the named-account `99-tradingbible.conf` change caused the loss, restore the previous file and reload SSH.
 4. Restore the previous Nginx site and reload.
 5. Restore the previous Hostinger firewall group.
 6. Revert DNS if the edge cutover caused the outage.

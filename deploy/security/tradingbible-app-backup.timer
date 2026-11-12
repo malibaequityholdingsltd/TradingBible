@@ -1,0 +1,12 @@
+[Unit]
+Description=Daily TradingBible encrypted application snapshot
+Documentation=file:/var/www/tradingbible/docs/security/12-PRODUCTION-HARDENING-RUNBOOK.md
+
+[Timer]
+OnCalendar=*-*-* 03:15:00 UTC
+Persistent=true
+RandomizedDelaySec=10m
+Unit=tradingbible-app-backup.service
+
+[Install]
+WantedBy=timers.target

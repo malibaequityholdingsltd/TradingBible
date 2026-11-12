@@ -82,6 +82,8 @@ Host hardening performed on **12 November 2026** is recorded in:
 - `2026-11-12-public-header-check-after.txt` — HSTS, CSP, frame, content-type, referrer and permissions headers after removing duplicate edge/API copies.
 - `2026-11-12-csp-browser-check.txt` — Chromium check of eight public routes with zero CSP violations or page errors.
 - `2026-11-12-app-restore-test.md` — 33 MB application archive restored, syntax-checked and served successfully.
+- `2026-11-12-encrypted-app-backup-test.md` — daily AES256 snapshot, checksum verification, decryption, register/handbook restore and SPA HTTP 200.
+- `2026-11-12-postdeploy-verification.md` — final build gate, route status, headers, ownership normalization and backup timer state.
 
 Remaining observed gaps include public DNS at Hostinger parking nameservers, no observed DNSSEC, no CAA record, DMARC at `p=none`, no observed Cloudflare edge, a directly reachable origin, public SSH on port 22 without private access or administrator MFA, no WAF/DDoS provider, no central SIEM or alert destination, and no database restore test. These are evidence inputs and open risks, not permission to change a live server.
 
