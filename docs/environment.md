@@ -20,7 +20,7 @@ Both apps load `.env` from their own directory (`node --env-file=.env` for the A
 | `SUPABASE_URL` | yes | `https://<project-ref>.supabase.co` |
 | `SUPABASE_ANON_KEY` | yes | Publishable key (web + server) |
 | `SUPABASE_SERVICE_ROLE_KEY` | yes | Server-only key (RLS bypass) |
-| `SEND_EMAIL_HOOK_SECRET` | dep. | `whsec_…` secret for the Supabase Send Email hook. **Must match** the secret configured in the Supabase dashboard (stored as `v1,whsec_…`); the API strips the `v1,` prefix on verify. Empty disables signature verification. |
+| `SEND_EMAIL_HOOK_SECRET` | yes in production | `whsec_…` secret for the Supabase Send Email hook. **Must match** the secret configured in the Supabase dashboard (stored as `v1,whsec_…`); the API strips the `v1,` prefix on verify. When empty, development may accept unsigned hook calls; production returns `503`. |
 
 ## SMTP (branded auth emails)
 

@@ -119,6 +119,10 @@ export async function authSendEmailHandler(req, res, next) {
         throw err;
       }
     } else {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('[auth-email] SEND_EMAIL_HOOK_SECRET is not configured; refusing an unsigned Supabase email hook request.');
+        return res.status(503).json({ error: 'Email hook is not configured' });
+      }
       parsed = JSON.parse(payload);
     }
 
