@@ -1460,6 +1460,188 @@ router.post('/jobs/applications/:id/hire', supabaseAuth, async (req, res, next) 
 	} catch (err) { next(err); }
 });
 
+// ── POST /admin/jobs/staff — add a company employee directly ──────────
+// The admin does not need a public job application to create an employee.
+// This route writes the controlled application record, provisions the login,
+// staff role, employee number, ID-card profile, payroll metadata and
+// onboarding checklist in one transaction-like sequence. The compliance
+// confirmations are still required; the route never invents a signed
+// agreement, work authorization or payroll registration.
+router.post('/jobs/staff', supabaseAuth, async (req, res, next) => {
+	try {
+		await assertAdmin(req);
+		const body = req.body && typeof req.body === 'object' ? req.body : {};
+		const name = String(body.name || '').trim().slice(0, 120);
+		const email = String(body.email || '').trim().toLowerCase().slice(0, 200);
+		const title = String(body.title || '').trim().slice(0, 120);
+		const department = String(body.department || '').trim().slice(0, 120) || 'Company';
+		const workCountry = String(body.workCountry || '').trim().slice(0, 80);
+		const workRegion = String(body.workRegion || '').trim().slice(0, 80);
+		const arrangement = String(body.arrangement || '').trim().toLowerCase();
+		const location = String(body.location || '').trim().slice(0, 120);
+		const phone = String(body.phone || '').trim().slice(0, 40);
+		const salaryTbc = Math.max(0, Math.round((Number(body.salary_tbc) || 0) * 100) / 100);
+		const salaryFreq = ['weekly', 'monthly'].includes(String(body.salary_freq || '').toLowerCase())
+			? String(body.salary_freq).toLowerCase()
+			: 'monthly';
+		const trialDays = Math.max(1, Math.min(90, Number(body.trial_days) || 14));
+		const startDate = body.startDate && !Number.isNaN(Date.parse(body.startDate))
+			? new Date(body.startDate).toISOString()
+			: new Date().toISOString();
+		const validArrangements = ['direct', 'eor', 'contractor', 'subsidiary', 'peo'];
+		const compliance = body.compliance && typeof body.compliance === 'object' ? body.compliance : {};
+		const missing = [];
+		if (!name) missing.push('full name');
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) missing.push('valid work email');
+		if (!title) missing.push('job title');
+		if (!department) missing.push('department');
+		if (!workCountry) missing.push('work country');
+		if (!workRegion) missing.push('work state/region');
+		if (!validArrangements.includes(arrangement)) missing.push('hiring arrangement');
+		if (compliance.agreementSigned !== true) missing.push('signed employment agreement');
+		if (compliance.ipAssigned !== true) missing.push('IP assignment and confidentiality');
+		if (compliance.payrollReady !== true) missing.push('payroll registration or EOR coverage');
+		if (compliance.managerApproved !== true) missing.push('manager approval');
+		if (missing.length) return res.status(422).json({ error: `compliance gate: confirm ${missing.join('; ')}`, missing });
+
+		const existing = await supabaseRest('/rest/v1/job_applications', {
+			query: { select: 'id,email,status', email: `eq.${email}`, status: 'eq.hired', limit: 1 },
+		}).catch(() => []);
+		if (existing?.[0]) {
+			return res.status(409).json({ error: 'An employee with this work email already exists in the company roster.' });
+		}
+
+		const now = new Date().toISOString();
+		const complianceRecord = {
+			workCountry, workRegion, arrangement,
+			agreementSigned: true, ipAssigned: true, payrollReady: true, managerApproved: true,
+			note: String(compliance.note || '').slice(0, 500),
+			confirmedAt: now,
+			source: 'direct-admin-appointment',
+		};
+		const baseApplication = {
+			name,
+			email,
+			phone: phone || null,
+			coverLetter: 'Direct company appointment recorded by an administrator. No public job application was submitted.',
+			status: 'hired',
+		};
+		const staffCardSeed = {
+			source: 'direct',
+			title,
+			department,
+			workEmail: email,
+			phone: phone || null,
+			location: location || null,
+			workCountry,
+			workRegion,
+			arrangement,
+			salary_tbc: salaryTbc,
+			salary_freq: salaryFreq,
+			startDate,
+			updatedAt: now,
+		};
+		let applicationRows;
+		try {
+			applicationRows = await supabaseRest('/rest/v1/job_applications', {
+				method: 'POST',
+				body: { ...baseApplication, compliance: complianceRecord, checks: { staffCard: staffCardSeed } },
+				prefer: 'return=representation',
+				query: { select: '*' },
+			});
+		} catch (err) {
+			// Older projects may not have the checks/compliance columns yet.
+			// The employee profile and users.user_settings.staff still carry
+			// the complete record; retry with the core application fields.
+			if (!/checks|compliance|column/i.test(`${err?.message || err}`)) throw err;
+			logger.warn('direct employee: optional application columns missing, retrying core row');
+			applicationRows = await supabaseRest('/rest/v1/job_applications', {
+				method: 'POST',
+				body: baseApplication,
+				prefer: 'return=representation',
+				query: { select: '*' },
+			});
+		}
+		const application = applicationRows?.[0];
+		if (!application?.id) throw new Error('could not create the employee record');
+
+		const onboarding = {
+			status: 'in_progress',
+			createdAt: now,
+			checklist: [
+				{ id: 'profile', label: 'Employee profile and ID card', done: true },
+				{ id: 'workspace', label: 'Company workspace access', done: true },
+				{ id: 'payroll', label: 'Payroll and contract-credit setup', done: salaryTbc > 0 },
+				{ id: 'agreement', label: 'Signed employment agreement', done: true },
+				{ id: 'ip', label: 'IP assignment and confidentiality', done: true },
+				{ id: 'security', label: 'Account security and two-factor authentication', done: false },
+			],
+		};
+		const result = await provisionEmployee({
+			name,
+			email,
+			posting: { title, department, hiring: { trial_days: trialDays, salary_tbc: salaryTbc, salary_freq: salaryFreq } },
+			staffMeta: {
+				appId: application.id,
+				title,
+				department,
+				workCountry,
+				workRegion,
+				arrangement,
+				phone,
+				location,
+				salary_tbc: salaryTbc,
+				salary_freq: salaryFreq,
+				workEmail: email,
+				startDate,
+				onboarding,
+			},
+			roleOverride: { role: 'trader', accountType: 'trader' },
+		});
+
+		const card = {
+			...(result.staff || {}),
+			source: 'direct',
+			title,
+			department,
+			workEmail: email,
+			phone: phone || null,
+			location: location || null,
+			workCountry,
+			workRegion,
+			arrangement,
+			salary_tbc: salaryTbc,
+			salary_freq: salaryFreq,
+			startDate,
+			updatedAt: now,
+		};
+		await supabaseRest(`/rest/v1/job_applications?id=eq.${encodeURIComponent(application.id)}`, {
+			method: 'PATCH',
+			body: { checks: { ...(application.checks || {}), staffCard: card } },
+			query: { select: 'id' },
+		}).catch((err) => logger.warn('direct employee: staff card mirror failed', String(err)));
+
+		res.status(201).json({
+			created: true,
+			applicationId: application.id,
+			employee: {
+				id: result.authId,
+				name,
+				email,
+				title,
+				department,
+				employeeId: result.employeeId,
+				startDate,
+				salary_tbc: salaryTbc,
+				salary_freq: salaryFreq,
+				onboarding,
+			},
+			loginCreated: result.created,
+			tempPassword: result.tempPassword,
+		});
+	} catch (err) { next(err); }
+});
+
 // ── Probation review queue ─────────────────────────────────────────
 // Every hire starts on probation (trial_ends_at, default 14 days — per
 // posting trial_days). Confirm graduates them to full employee.
@@ -1528,11 +1710,11 @@ router.get('/jobs/payroll', supabaseAuth, async (req, res, next) => {
 			return {
 				id: a.id, appId: a.id,
 				name: s.profileName || a.name, email: a.email,
-				// Manual overrides (set in the ID-card editor) win over the
-				// posting defaults.
+				// Manual overrides (set in the ID-card editor or by a direct
+				// appointment) win over the posting defaults.
 				title: s.title || hiringById[a.jobId]?.title || 'Opening',
-				salary_tbc: Number(hiringById[a.jobId]?.hiring?.salary_tbc) || 0,
-				salary_freq: hiringById[a.jobId]?.hiring?.salary_freq || 'monthly',
+				salary_tbc: Number(s.salary_tbc) || Number(hiringById[a.jobId]?.hiring?.salary_tbc) || 0,
+				salary_freq: s.salary_freq || hiringById[a.jobId]?.hiring?.salary_freq || 'monthly',
 				hiredAt: s.hiredAt || a.created || null,
 				userId: s.userId || null,
 				photoUrl: s.photoUrl || null,

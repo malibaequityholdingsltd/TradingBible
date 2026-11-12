@@ -1,4 +1,4 @@
-> **Draft disclosure narrative.** This is a drafting template for a possible Regulation CF offering. It is not a Form C, an offering statement, a prospectus or a solicitation. Do not publish it. Financial, ownership, management and use-of-proceeds fields must be completed from verified records and reviewed by counsel before any filing.
+> **Controlled disclosure record.** This is a controlled narrative for a possible Regulation CF offering. It is not a Form C, an offering statement, a prospectus or a solicitation. Do not publish it. Financial, ownership, management and use-of-proceeds fields are completed from verified records and reviewed by counsel before any filing.
 
 ## 1. Summary of the company
 
@@ -6,7 +6,7 @@
 
 The company’s public launch date is **25 December 2026**. The public plans are a **Free** account and **TradingBible Premium** at **US$19.99 per month or US$199 per year**. Academy 2.0 is offered through the Academy surface and has its own enrollment and pricing. The company is not a broker-dealer, investment adviser, exchange, custodian or fund.
 
-> **Drafting note.** Do not add revenue, subscriber, AUM, approval, partnership or performance claims unless the figure is supported by a current company record and, where required, a reviewed or audited financial statement.
+> **Preparation standard.** Do not add revenue, subscriber, AUM, approval, partnership or performance claims unless the figure is supported by a current company record and, where required, a reviewed or audited financial statement.
 
 ## 2. The problem
 
@@ -41,7 +41,7 @@ The company does not promise that any plan will remain at the same price, that a
 
 The company’s thesis is that traders and investors will pay for a connected record that helps them make better decisions, not for another isolated chart. The market includes trading software, market data, education, journaling, analytics, AI research and funded-evaluation products.
 
-> **Drafting note.** Add market-size figures only if they come from a cited, current source and counsel approves their use. Do not present a total addressable market as the company’s revenue opportunity.
+> **Preparation standard.** Add market-size figures only if they come from a cited, current source and counsel approves their use. Do not present a total addressable market as the company’s revenue opportunity.
 
 ## 6. Use of proceeds
 
@@ -145,7 +145,7 @@ This narrative contains forward-looking statements about product plans, launch t
 
 ## 11. No offer until qualification
 
-This narrative is not an offer to sell or a solicitation of an offer to buy securities. No offer will be made until the SEC qualifies the offering statement and the registered intermediary opens the campaign. Do not send money, provide payment details or reserve an allocation in response to this draft.
+This narrative is not an offer to sell or a solicitation of an offer to buy securities. No offer will be made until the SEC qualifies the offering statement and the registered intermediary opens the campaign. Do not send money, provide payment details or reserve an allocation in response to this document.
 
 ## 12. Certification
 

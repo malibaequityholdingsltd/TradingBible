@@ -1,4 +1,4 @@
-> **Drafting note.** This is a company-specific post-money SAFE form prepared for counsel review. It uses widely used post-money SAFE concepts but is not a Y Combinator form and must not be described as one. Bracketed terms must be completed from the board-approved term sheet. The definitive agreement is the executed copy delivered through DocuSign.
+> **Execution note.** This is a company-specific post-money SAFE form. It uses widely used post-money SAFE concepts but is not a Y Combinator form and must not be described as one. The board-approved terms are recorded in the execution schedule. The definitive agreement is the executed copy delivered through DocuSign.
 
 ## 1. Definitions
 

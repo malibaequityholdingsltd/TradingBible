@@ -31,11 +31,11 @@ const cleanUsername = (name, email) => {
 // the staff-revoke endpoint, which clears this flag.
 // Returns { authId, created, tempPassword|null, role }. tempPassword is only
 // ever returned to admin callers — never to the public apply flow.
-export async function provisionEmployee({ name, email, posting, staffMeta }) {
+export async function provisionEmployee({ name, email, posting, staffMeta, roleOverride }) {
 	const cleanEmail = String(email || '').trim().toLowerCase();
 	if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) throw new Error('valid email required');
 	const cleanName = String(name || '').trim().slice(0, 120) || cleanEmail.split('@')[0];
-	const { role, accountType } = roleForPosting(posting);
+	const { role, accountType } = roleOverride || roleForPosting(posting);
 
 	// 1. Existing profile → existing login.
 	const existing = await supabaseRest('/rest/v1/users', {
@@ -86,6 +86,27 @@ export async function provisionEmployee({ name, email, posting, staffMeta }) {
 		}).catch(() => null);
 		if (cur?.[0]?.user_settings && typeof cur[0].user_settings === 'object') baseSettings = cur[0].user_settings;
 	} catch { /* fresh row — start empty */ }
+	const previousStaff = baseSettings?.staff && typeof baseSettings.staff === 'object' ? baseSettings.staff : {};
+	const employeeId = previousStaff.employeeId || deriveEmployeeNo(staffMeta?.appId || authId);
+	const nowIso = new Date().toISOString();
+	const salaryTbc = staffMeta?.salary_tbc ?? previousStaff.salary_tbc ?? null;
+	const salaryFreq = staffMeta?.salary_freq || previousStaff.salary_freq || null;
+	const onboarding = staffMeta?.onboarding && typeof staffMeta.onboarding === 'object'
+		? staffMeta.onboarding
+		: previousStaff.onboarding && typeof previousStaff.onboarding === 'object'
+			? previousStaff.onboarding
+			: {
+				status: 'in_progress',
+				createdAt: nowIso,
+				checklist: [
+					{ id: 'profile', label: 'Employee profile and ID card', done: true },
+					{ id: 'workspace', label: 'Company workspace access', done: true },
+					{ id: 'payroll', label: 'Payroll and contract-credit setup', done: salaryTbc !== null && Number(salaryTbc) > 0 },
+					{ id: 'agreement', label: 'Signed employment agreement', done: false },
+					{ id: 'ip', label: 'IP assignment and confidentiality', done: false },
+					{ id: 'security', label: 'Account security and two-factor authentication', done: false },
+				],
+			};
 	const profileRow = {
 		id: authId,
 		email: cleanEmail,
@@ -96,17 +117,25 @@ export async function provisionEmployee({ name, email, posting, staffMeta }) {
 		user_settings: {
 			...baseSettings,
 			staff: {
-				...(baseSettings?.staff && typeof baseSettings.staff === 'object' ? baseSettings.staff : {}),
+				...previousStaff,
 				hired: true,
 				// Registered once and kept across re-hires; deterministic from
 				// the application id (or the auth id where no application row
 				// exists yet) so it matches the web-side fallback.
-				employeeId: baseSettings?.staff?.employeeId || deriveEmployeeNo(staffMeta?.appId || authId),
-				title: posting?.title || staffMeta?.title || null,
-				arrangement: staffMeta?.arrangement || null,
-				workCountry: staffMeta?.workCountry || null,
-				workRegion: staffMeta?.workRegion || null,
-				hiredAt: new Date().toISOString(),
+				employeeId,
+				title: posting?.title || staffMeta?.title || previousStaff.title || null,
+				department: staffMeta?.department || posting?.department || previousStaff.department || null,
+				workEmail: staffMeta?.workEmail || previousStaff.workEmail || cleanEmail,
+				phone: staffMeta?.phone || previousStaff.phone || null,
+				location: staffMeta?.location || previousStaff.location || null,
+				salary_tbc: salaryTbc,
+				salary_freq: salaryFreq,
+				startDate: staffMeta?.startDate || previousStaff.startDate || nowIso,
+				arrangement: staffMeta?.arrangement || previousStaff.arrangement || null,
+				workCountry: staffMeta?.workCountry || previousStaff.workCountry || null,
+				workRegion: staffMeta?.workRegion || previousStaff.workRegion || null,
+				onboarding,
+				hiredAt: previousStaff.hiredAt || nowIso,
 			},
 		},
 	};
@@ -132,7 +161,7 @@ export async function provisionEmployee({ name, email, posting, staffMeta }) {
 		await supabaseRest('/auth/v1/admin/invite', { method: 'POST', body: { email: cleanEmail } });
 	} catch (err) { logger.warn('hire: invite email failed', String(err)); }
 
-	return { authId, created, tempPassword, role };
+	return { authId, created, tempPassword, role, employeeId, staff: profileRow.user_settings.staff };
 }
 
 // ── Application originality signals (heuristic flags, NOT proof) ─────

@@ -115,6 +115,7 @@ router.post('/templates/:id/preview', supabaseAuth, async (req, res, next) => {
 		const rendered = renderCommunicationTemplate(req.params.id, {
 			channel,
 			variables: req.body?.variables || {},
+			colorScheme: String(req.body?.colorScheme || 'auto').toLowerCase(),
 			baseUrl: String(process.env.APP_URL || 'https://tradingbible.app').replace(/\/+$/, ''),
 		});
 		res.setHeader('Cache-Control', 'private, no-store');

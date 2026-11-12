@@ -21,7 +21,7 @@ const fmtBytes = (bytes) => {
 
 const FILTERS = [
   { id: 'all', label: 'All TB documents' },
-  { id: 'open', label: 'Not executed' },
+  { id: 'open', label: 'Signature required' },
   { id: 'executed', label: 'Executed' },
 ];
 
@@ -161,7 +161,7 @@ export default function AdminTbStockDocumentsPage() {
 
         <div className="mt-3">
           <AtAlert icon={TriangleAlert} tone="amber">
-            <b className="text-[var(--at-ink)]">Real DocuSign execution only.</b> These instruments are signature-ready drafts,
+            <b className="text-[var(--at-ink)]">Real DocuSign execution only.</b> These instruments are signature-ready execution copies,
             not approved, effective, or executed. Confirm signer identity, capacity, consent, and the required legal and
             regulatory review before creating or releasing an envelope. TB stock records remain separate from TBC token records.
           </AtAlert>
@@ -190,7 +190,7 @@ export default function AdminTbStockDocumentsPage() {
           index="02"
           title="TB stock document library"
           sub="Read every signature-ready instrument as Word and download the current read-only copy"
-          action={<span className="font-mono text-[9px] uppercase tracking-[0.13em] text-[var(--at-mut-2)]">{counts.all || 0} records · public drafts</span>}
+          action={<span className="font-mono text-[9px] uppercase tracking-[0.13em] text-[var(--at-mut-2)]">{counts.all || 0} records · public execution copies</span>}
         />
 
         <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-[var(--at-line-soft)] bg-[var(--at-card-bg)] p-3 sm:flex-row sm:items-center">
@@ -297,7 +297,7 @@ function DocumentCard({ doc, execution, busySlug, onOpen, onDownload }) {
       <div className="relative p-4">
         <span className="at-doc-number">{doc.number}</span>
         <div className="flex flex-wrap items-center gap-1.5 pr-14">
-          <AtBadge tone="green">Public draft</AtBadge>
+          <AtBadge tone="green">Public execution copy</AtBadge>
           <span className="font-mono text-[9px] text-[var(--at-mut-2)]">{doc.category}</span>
         </div>
         <h3 className="mt-3 max-w-[92%] text-[13px] font-semibold leading-snug tracking-[-0.015em] text-[var(--at-ink)]">{doc.title}</h3>
@@ -346,7 +346,7 @@ function DocumentTable({ docs, executions, busySlug, onOpen, onDownload }) {
                   </div>
                 </td>
                 <td className="text-[10px]">{doc.category}</td>
-                <td><AtBadge tone="green">Public draft</AtBadge></td>
+                <td><AtBadge tone="green">Public execution copy</AtBadge></td>
                 <td>
                   <div className="text-[10px]">{doc.signatureFields}</div>
                   <div className={`text-[9px] !text-[var(--at-${EXECUTION_TONE[state] || 'muted'})]`}>

@@ -103,7 +103,7 @@ INTERNAL_META = [
     ("03_Instruction_and_Engagement_Letter_to_Regulatory_Counsel.docx", "instruction-engagement-regulatory-counsel", "03", "Instruction and Engagement Letter to Regulatory Counsel", "Corporate authority", "Scope of counsel engagement and information instructions for the TBC review."),
     ("04_TBC_Whitepaper.docx", "tbc-whitepaper-instrument", "04", "TBC Whitepaper — Project, Utility and Network Framework", "Token & economics", "The controlled whitepaper instrument covering utility, network architecture and release gates."),
     ("05_Tokenomics_and_Vesting.docx", "tokenomics-vesting-instrument", "05", "Token Supply, Allocation and Vesting Instrument", "Token & economics", "Supply policy, illustrative allocation and proposed vesting controls."),
-    ("06_Offering_and_Purchaser_Agreement.docx", "offering-purchaser-agreement", "06", "Token Offering and Purchaser Agreement", "Token & economics", "Draft purchaser agreement and offering terms, subject to legal and regulatory clearance."),
+    ("06_Offering_and_Purchaser_Agreement.docx", "offering-purchaser-agreement", "06", "Token Offering and Purchaser Agreement", "Token & economics", "Purchaser agreement and offering terms, subject to legal and regulatory clearance."),
     ("07_Digital_Asset_Risk_Factor_Disclosure.docx", "digital-asset-risk-factor-disclosure", "07", "Digital Asset Risk Factor Disclosure", "Token & economics", "Risk factors for token utility, liquidity, custody, technology and regulatory treatment."),
     ("08_Treasury_Use_of_Proceeds_and_Financial_Controls_Policy.docx", "treasury-use-proceeds-financial-controls", "08", "Treasury, Use of Proceeds and Financial Controls Policy", "Operations & controls", "Segregation of funds, treasury authorization, reporting and proceeds controls."),
     ("09_AML_Customer_Due_Diligence_and_Sanctions_Framework.docx", "aml-cdd-sanctions-framework", "09", "AML, Customer Due Diligence and Sanctions Framework", "Compliance", "Customer due diligence, beneficial ownership, sanctions and escalation controls."),
@@ -117,7 +117,7 @@ INTERNAL_META = [
     ("17_Token_Sale_Launch_Authorization_and_Control_Certificate.docx", "token-sale-launch-authorization-control", "17", "Token Sale Launch Authorization and Control Certificate", "Corporate authority", "Launch authorization gate requiring legal, technical, treasury and operational sign-off."),
     ("18_Regulatory_Exhibits_and_Evidence_Assembly_Index.docx", "regulatory-exhibits-evidence-index", "18", "Regulatory Exhibits and Evidence Assembly Index", "Corporate authority", "Index of exhibits, evidence and supporting records for the TBC file."),
     ("19_Direct_Website_Token_Distribution_Operating_Procedure.docx", "direct-website-token-distribution-procedure", "19", "Direct Website Token Distribution Operating Procedure", "Operations & controls", "Operating procedure for any permitted direct website distribution."),
-    ("20_Website_TBC_Sale_Terms_and_Conditions.docx", "website-tbc-sale-terms-conditions", "20", "Website TBC Sale Terms and Conditions", "Operations & controls", "Draft sale terms, purchaser acknowledgments and website conditions."),
+    ("20_Website_TBC_Sale_Terms_and_Conditions.docx", "website-tbc-sale-terms-conditions", "20", "Website TBC Sale Terms and Conditions", "Operations & controls", "Sale terms, purchaser acknowledgments and website conditions."),
     ("21_Digital_Asset_Website_Disclosure_and_Marketing_Standard.docx", "digital-asset-website-disclosure-marketing", "21", "Digital Asset Website Disclosure and Marketing Standard", "Compliance", "Disclosure, marketing and communications standards for the website."),
     ("22_Customer_Complaints_Refunds_and_Dispute_Resolution_Procedure.docx", "customer-complaints-refunds-dispute-resolution", "22", "Customer Complaints, Refunds and Dispute Resolution Procedure", "Operations & controls", "Complaint handling, refund assessment and dispute-resolution procedure."),
     ("23_Payments_Custody_Wallets_and_Escrow_Governance.docx", "payments-custody-wallets-escrow-governance", "23", "Payments, Custody, Wallets and Escrow Governance", "Operations & controls", "Payment providers, custody, wallet controls, escrow and reconciliation."),
@@ -384,7 +384,7 @@ def main() -> None:
                 raise SystemExit(f"No internal metadata for {source.name}")
             _, slug, number, title, category, summary = match
             subtitle = "Corporate & digital asset governance · controlled instrument"
-            status = "Draft — signature block open"
+            status = "Execution copy — signature block open"
         html_path = pdf_dir / f"{slug}.html"
         pdf_path = pdf_dir / f"{slug}.pdf"
         docx_path = docx_dir / f"{slug}.docx"
@@ -410,7 +410,7 @@ def main() -> None:
             "classification": "Public summary" if visibility == "public" else "Confidential — internal / counsel",
             "version": "Corrected layout · November 2026",
             "signatureFields": "Issuer representative + professional reviewer" if visibility == "public" else "Issuer / director + reviewer / custodian (instrument-specific)",
-            "signatureStatus": "Open — not executed",
+            "signatureStatus": "Signature required",
             "pdf": f"pdf/{slug}.pdf",
             "docx": f"docx/{slug}.docx",
             "pdfBytes": pdf_path.stat().st_size,

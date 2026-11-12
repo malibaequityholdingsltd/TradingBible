@@ -9,7 +9,7 @@ import {
   Wifi, Package, Plus, Copy, RotateCcw, Plug, TestTube, AlertCircle, Check,
   Upload,   ChevronDown, MoreVertical, Power, Code, Layers, MonitorPlay, Target,
   GraduationCap, LayoutDashboard, Type, Trophy, Coins, Ban, Wallet, Bot,
-  Building2, Landmark, Palette, Rocket, ShieldCheck, Fingerprint, ExternalLink, Sparkles, Printer, Briefcase
+  Building2, Landmark, Palette, Rocket, ShieldCheck, Fingerprint, ExternalLink, Sparkles, Printer, Briefcase, Loader2
 } from 'lucide-react';
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar,
@@ -50,6 +50,7 @@ import {
   planKey,
   planMonthlyPrice,
   planTone,
+  publicPlanKey,
 } from '@/lib/adminCatalog';
 
 // Legacy trial end-date passthrough (no trials are issued anymore;
@@ -227,7 +228,11 @@ function EditUserModal({ user, userSource, onClose, onSaved }) {
     last_name: user.last_name || '',
     dob: (user.dob || '').slice(0, 10),
     name: user.name || '',
-    plan: planKey(user.plan),
+    plan: ['professional', 'teams'].includes(planKey(user.plan))
+      ? 'professional'
+      : ['pro', 'elite'].includes(planKey(user.plan))
+        ? 'premium'
+        : planKey(user.plan),
     role: user.role || 'user',
     email: user.email || '',
     phone: user.phone || '',
@@ -396,7 +401,7 @@ export function AdminDashboard() {
     const verified = users.filter(u => u.verified).length;
     const academyBuyers = users.filter(u => u.academyAccess).length;
     const academyMinimum = academyMinimumValue(academyBuyers);
-    const enterpriseCount = paid.filter((u) => ['professional', 'teams'].includes(planKey(u.plan))).length;
+    const enterpriseCount = paid.filter((u) => publicPlanKey(u.plan) === 'enterprise').length;
     const customers = users.filter(u => isPaidPlan(u.plan) || u.academyAccess).length;
     return { total: users.length, paid: paid.length, mrr, verified, trades: trades.length, academyBuyers, academyMinimum, enterpriseCount, customers };
   }, [users, trades]);
@@ -515,7 +520,7 @@ export function AdminDashboard() {
                       { label: 'Academy', value: '17 paths · 76 courses', note: '347 lessons · $150–$499 lifetime tiers' },
                       { label: 'Funded evaluations', value: `${FUNDED_FACTS.products} programs`, note: `$${FUNDED_FACTS.maxAccount.toLocaleString()} max · ${FUNDED_FACTS.maxSplit}% split · ${FUNDED_FACTS.payoutDays}-day payouts` },
                       { label: 'TBC token', value: 'Not issued', note: `${(COMPANY_FACTS.tbc.maxSupply / 1_000_000).toFixed(0)}M proposed max · sale disabled` },
-                      { label: 'Fundraising', value: 'Gate closed', note: `${COMPANY_FACTS.fundraising.packetDocuments} private drafts · no public offering` },
+                      { label: 'Fundraising', value: 'Gate closed', note: `${COMPANY_FACTS.fundraising.packetDocuments} execution instruments · no public offering` },
                       { label: 'Communications', value: `${COMPANY_FACTS.communications.templates} templates`, note: 'Email · SMS · in-app · admin test-send only' },
                     ].map((fact) => (
                       <div key={fact.label} className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3">
@@ -840,7 +845,7 @@ export function AdminUsers() {
   const filtered = useMemo(() => {
     let out = users;
     if (q) out = out.filter(u => (u.email + (u.first_name || '') + (u.last_name || '') + (u.name || '') + (u.phone || '')).toLowerCase().includes(q.toLowerCase()));
-    if (planFilter !== 'all') out = out.filter(u => displayPlan(u.plan) === planFilter);
+    if (planFilter !== 'all') out = out.filter(u => publicPlanKey(u.plan) === planFilter);
     if (roleFilter !== 'all') out = out.filter(u => (u.role || 'user') === roleFilter);
     return out;
   }, [users, q, planFilter, roleFilter]);
@@ -952,7 +957,7 @@ export function AdminUsers() {
 
   const exportCSV = () => {
     const rows = [['id', 'email', 'first_name', 'last_name', 'name', 'dob', 'phone', 'plan', 'role', 'verified', 'created', 'subscriptionStatus']];
-    filtered.forEach(u => rows.push([u.id, u.email, u.first_name || '', u.last_name || '', u.name || '', (u.dob || '').slice(0, 10), u.phone || '', displayPlan(u.plan), u.role || 'user', u.verified ? 'true' : 'false', (u.created || '').slice(0, 10), u.subscriptionStatus || '']));
+    filtered.forEach(u => rows.push([u.id, u.email, u.first_name || '', u.last_name || '', u.name || '', (u.dob || '').slice(0, 10), u.phone || '', publicPlanKey(u.plan), u.role || 'user', u.verified ? 'true' : 'false', (u.created || '').slice(0, 10), u.subscriptionStatus || '']));
     const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
     const a = document.createElement('a'); a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`; a.download = `users_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
     toast({ title: 'Exported', description: `${filtered.length} users downloaded.` });
@@ -982,8 +987,7 @@ export function AdminUsers() {
           )}
         >
           <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-[var(--at-mut)]">
-            Manage company platform accounts, public-plan access and roles. Pro, Elite, Professional and Teams are historical account values,
-            not current public plans. Suspension keeps the account signed in but blocks platform access.
+            Manage company platform accounts, current plan access and roles. The public product is Free and Premium; Enterprise is a separate quoted agreement. Suspension keeps the account signed in but blocks platform access.
           </p>
         </AtPageBar>
 
@@ -1003,7 +1007,7 @@ export function AdminUsers() {
         <select value={planFilter} onChange={e => { setPlanFilter(e.target.value); setPage(1); }}
           className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-ink)] outline-none">
           <option value="all" className="bg-[var(--at-panel-2)]">All plans</option>
-          {['none', 'free', 'premium', 'pro', 'elite', 'professional', 'teams'].map(p => <option key={p} value={p} className="bg-[var(--at-panel-2)]">{planLabel(p === 'none' ? null : p)}</option>)}
+          {['none', 'free', 'premium', 'enterprise'].map(p => <option key={p} value={p} className="bg-[var(--at-panel-2)]">{planLabel(p === 'none' ? null : p)}</option>)}
         </select>
         <select value={roleFilter} onChange={e => { setRoleFilter(e.target.value); setPage(1); }}
           className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-ink)] outline-none">
@@ -1106,9 +1110,19 @@ export function AdminAnalytics() {
   const { toast } = useToast();
 
   const planDist = useMemo(() => {
-    const counts = { none: 0, premium: 0, pro: 0, elite: 0, professional: 0, teams: 0 };
-    users.forEach(u => { const k = displayPlan(u.plan); counts[k] = (counts[k] || 0) + 1; });
-    return Object.entries(counts).map(([name, value]) => ({ name: planLabel(name === 'none' ? null : name), value, color: PLAN_COLORS[name] }));
+    const counts = { free: 0, premium: 0, enterprise: 0 };
+    users.forEach((u) => {
+      const key = publicPlanKey(u.plan);
+      const bucket = key === 'premium' ? 'premium' : key === 'enterprise' ? 'enterprise' : 'free';
+      counts[bucket] += 1;
+    });
+    return Object.entries(counts)
+      .filter(([, value]) => value > 0)
+      .map(([name, value]) => ({
+        name: name === 'free' ? 'Free / no paid plan' : planLabel(name),
+        value,
+        color: PLAN_COLORS[name],
+      }));
   }, [users]);
 
   const monthlyNew = useMemo(() => {
@@ -1138,7 +1152,7 @@ export function AdminAnalytics() {
   }, [users]);
   const arpu = paid.length ? mrr / paid.length : 0;
   const verifiedRate = users.length ? users.filter((u) => u.verified).length / users.length : 0;
-  const enterpriseCount = paid.filter((u) => ['professional', 'teams'].includes(planKey(u.plan))).length;
+  const enterpriseCount = paid.filter((u) => publicPlanKey(u.plan) === 'enterprise').length;
 
   return (
     <AdminLayout title="Analytics">
@@ -1399,7 +1413,7 @@ export function AdminBilling() {
   };
 
   const paid = useMemo(() => users.filter(u => isPaidPlan(u.plan)), [users]);
-  const noPlan = users.filter(u => !planKey(u.plan));
+  const noPlan = users.filter((u) => ['none', 'free'].includes(publicPlanKey(u.plan)));
   const mrr = estimatedMrr(paid);
   const effectiveMrr = live?.configured ? Number(live.mrr || 0) : mrr;
   const arr = effectiveMrr * 12;
@@ -1408,11 +1422,16 @@ export function AdminBilling() {
 
   const planBreakdown = useMemo(() => {
     const counts = {};
-    paid.forEach(u => { counts[u.plan] = (counts[u.plan] || 0) + 1; });
-    return Object.entries(counts).map(([plan, n]) => {
-      const unit = planMonthlyPrice(plan);
-      return { plan, n, unit, rev: unit == null ? null : n * unit };
+    paid.forEach((u) => {
+      const key = publicPlanKey(u.plan);
+      counts[key] = (counts[key] || 0) + 1;
     });
+    return Object.entries(counts)
+      .filter(([, n]) => n > 0)
+      .map(([plan, n]) => {
+        const unit = planMonthlyPrice(plan);
+        return { plan, n, unit, rev: unit == null ? null : n * unit };
+      });
   }, [paid]);
 
   return (
@@ -1441,7 +1460,7 @@ export function AdminBilling() {
         <AtMetric icon={DollarSign} label={live?.configured ? 'Live MRR' : 'Est. MRR'} value={formatUsd(effectiveMrr)} note={live?.configured ? `Stripe live · ${live.activeCount} active` : 'Premium-derived estimate'} tone="text-[var(--at-green)]" />
         <AtMetric icon={TrendingUp} label="Est. ARR" value={formatUsd(arr)} note={live?.configured ? 'Live MRR × 12' : 'Estimated MRR × 12'} />
         <AtMetric icon={CreditCard} label="Paid subscribers" value={paid.length} note={`${formatUsd(effectiveMrr / Math.max(paid.length, 1), { decimals: 2 })} ARPU estimate`} />
-        <AtMetric icon={Users} label="No plan" value={noPlan.length} note={`${users.length ? Math.round(noPlan.length / users.length * 100) : 0}% of total`} />
+        <AtMetric icon={Users} label="Free / no paid plan" value={noPlan.length} note={`${users.length ? Math.round(noPlan.length / users.length * 100) : 0}% of total`} />
         <AtMetric icon={GraduationCap} label="Academy students" value={academyBuyers.toLocaleString()} note="Lifetime access" />
         <AtMetric icon={DollarSign} label="Academy tuition · min." value={formatUsd(academyMinimum)} note="At $150 entry tier; actual tier not stored" />
       </div>
@@ -1627,7 +1646,7 @@ export function AdminBilling() {
         <Collapse title="D&B financial statements" sub="D-U-N-S 14-997-6777 · CSV downloads" defaultOpen={false}>
           <p className="mb-3 text-xs leading-relaxed text-[var(--at-mut)]">
             D-U-N-S <span className="font-mono text-[var(--at-ink-2)]">14-997-6777</span> · D&amp;B requires a Balance Sheet and an Income Statement
-            (doc, pdf, csv, jpg, png, docx — max 10 MB). Downloads below are <span className="text-[var(--at-gold)]">draft CSVs from platform records, unaudited</span>.
+            (doc, pdf, csv, jpg, png, docx — max 10 MB). Downloads below are <span className="text-[var(--at-gold)]">working CSVs from platform records, unaudited</span>.
           </p>
           <div className="mt-3 flex flex-wrap items-end gap-2">
             <div>
@@ -2290,7 +2309,7 @@ export function AdminReports() {
 
   const exportActivityCSV = () => {
     const planCounts = users.reduce((acc, user) => {
-      const key = displayPlan(user.plan);
+      const key = publicPlanKey(user.plan);
       acc[key] = (acc[key] || 0) + 1;
       return acc;
     }, {});
@@ -2302,8 +2321,8 @@ export function AdminReports() {
       ['users_total', users.length, 'Registered auth accounts visible to the admin API'],
       ['users_verified', users.filter((u) => u.verified).length, 'Email-confirmed accounts'],
       ['users_admin', users.filter((u) => u.role === 'admin').length, 'Admin-role accounts'],
-      ['users_no_plan', users.filter((u) => !planKey(u.plan)).length, 'Accounts with no subscription plan'],
-      ['paid_subscribers', paid.length, 'Accounts carrying a paid plan value (including legacy/enterprise)'],
+      ['users_no_plan', users.filter((u) => publicPlanKey(u.plan) === 'none').length, 'Accounts without a paid plan'],
+      ['paid_subscribers', paid.length, 'Accounts carrying Premium or Enterprise access'],
       ['mrr_estimate_usd', mrr.toFixed(2), 'Premium-derived estimate; annual normalised monthly; enterprise excluded'],
       ['academy_students', academyBuyers, 'Accounts with Academy access recorded'],
       ['academy_minimum_tuition_usd', academyMinimumValue(academyBuyers).toFixed(2), 'At $150 entry tier; actual tier is not stored'],
@@ -2348,7 +2367,7 @@ export function AdminReports() {
             <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
               <AtMetric icon={Users} label="Registered accounts" value={users.length.toLocaleString()} note="Visible to the admin API" />
               <AtMetric icon={CheckCircle} label="Verified" value={users.filter((u) => u.verified).length.toLocaleString()} note={`${users.length ? Math.round((users.filter((u) => u.verified).length / users.length) * 100) : 0}% of accounts`} tone="text-[var(--at-green)]" />
-              <AtMetric icon={CreditCard} label="Paid subscribers" value={paid.length.toLocaleString()} note="Includes legacy and enterprise account values" tone="text-[var(--at-gold)]" />
+              <AtMetric icon={CreditCard} label="Paid subscribers" value={paid.length.toLocaleString()} note="Premium and Enterprise accounts" tone="text-[var(--at-gold)]" />
               <AtMetric icon={DollarSign} label="Est. MRR" value={formatUsd(mrr)} note="Premium-derived; enterprise excluded" />
             </div>
 
@@ -2359,7 +2378,7 @@ export function AdminReports() {
                     { label: 'Registered users', value: users.length, icon: Users },
                     { label: 'Verified users', value: users.filter((u) => u.verified).length, icon: CheckCircle },
                     { label: 'Paid subscribers', value: paid.length, icon: CreditCard },
-                    { label: 'No-plan users', value: users.filter((u) => !planKey(u.plan)).length, icon: Clock },
+                    { label: 'Free / no paid plan', value: users.filter((u) => publicPlanKey(u.plan) === 'none' || publicPlanKey(u.plan) === 'free').length, icon: Clock },
                     { label: 'Admin accounts', value: users.filter((u) => u.role === 'admin').length, icon: Shield },
                     { label: 'Academy students', value: academyBuyers, icon: GraduationCap },
                     { label: 'Journal entries', value: trades.length, icon: Activity },
@@ -3916,7 +3935,9 @@ export function AdminTvAds() {
 
   const startChannelEdit = (ch) => {
     setChEditing(ch);
-    setChForm({ ...(ch.config || {}), title: ch.config?.title || '', enabled: ch.enabled !== false });
+    const rawPlan = String(ch.config?.plan || 'premium').toLowerCase();
+    const plan = rawPlan === 'professional' || rawPlan === 'teams' ? 'professional' : 'premium';
+    setChForm({ ...(ch.config || {}), plan, title: ch.config?.title || '', enabled: ch.enabled !== false });
   };
 
   const setCF = (k) => (e) => setChForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
@@ -4183,10 +4204,7 @@ export function AdminTvAds() {
           <div><label className={label}>Minimum plan</label>
             <select className={input} value={chForm.plan || 'premium'} onChange={setCF('plan')}>
               <option value="premium" className="bg-[var(--at-panel-2)]">Premium — all paid members</option>
-              <option value="professional" className="bg-[var(--at-panel-2)]">Professional (enterprise)</option>
-              <option value="teams" className="bg-[var(--at-panel-2)]">Teams (enterprise)</option>
-              <option value="elite" className="bg-[var(--at-panel-2)]">Elite (legacy)</option>
-              <option value="pro" className="bg-[var(--at-panel-2)]">Pro (legacy)</option>
+              <option value="professional" className="bg-[var(--at-panel-2)]">Enterprise — quoted separately</option>
             </select>
           </div>
           <label className="flex items-center gap-3 rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-4 py-3 cursor-pointer">
@@ -4316,6 +4334,18 @@ export function AdminEmployees() {
   const [history, setHistory] = useState({});
   const [aiWork, setAiWork] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addBusy, setAddBusy] = useState(false);
+  const [createdLogin, setCreatedLogin] = useState(null);
+  const inputClass = 'w-full rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2.5 text-sm text-[var(--at-ink)] outline-none focus:border-[#d4af37]/50';
+  const emptyAddForm = () => ({
+    name: '', email: '', title: '', department: 'Company',
+    workCountry: '', workRegion: '', arrangement: 'direct',
+    location: 'Remote', phone: '', salary_tbc: 0, salary_freq: 'monthly',
+    startDate: new Date().toISOString().slice(0, 10), trial_days: 14,
+    compliance: { agreementSigned: false, ipAssigned: false, payrollReady: false, managerApproved: false, note: '' },
+  });
+  const [addForm, setAddForm] = useState(emptyAddForm);
 
   const call = async (path) => {
     const res = await fetch(`${API_SERVER_URL}/admin/jobs${path}`, {
@@ -4357,6 +4387,54 @@ export function AdminEmployees() {
   }, [toast]);
   useEffect(() => { load(); }, [load]);
 
+  const createEmployee = async () => {
+    setAddBusy(true);
+    try {
+      const res = await fetch(`${API_SERVER_URL}/admin/jobs/staff`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${pb.authStore.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(addForm),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || `Could not add employee (${res.status})`);
+      setCreatedLogin({
+        name: addForm.name,
+        email: addForm.email,
+        employeeId: data?.employee?.employeeId || '',
+        password: data?.tempPassword || '',
+        loginCreated: Boolean(data?.loginCreated),
+      });
+      setAddOpen(false);
+      setAddForm(emptyAddForm());
+      toast({ title: 'Employee created', description: `${addForm.name} now has a company profile, employee number and onboarding record.` });
+      await load();
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Employee not created', description: String(err?.message || err) });
+    } finally {
+      setAddBusy(false);
+    }
+  };
+
+  const copyCredentials = async () => {
+    if (!createdLogin) return;
+    const text = [
+      `TradingBible employee: ${createdLogin.name}`,
+      `Work email: ${createdLogin.email}`,
+      createdLogin.employeeId ? `Employee number: ${createdLogin.employeeId}` : '',
+      createdLogin.password ? `Temporary password: ${createdLogin.password}` : 'Existing company login linked.',
+      'Sign in at https://tradingbible.app/login',
+    ].filter(Boolean).join('\n');
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: 'Credentials copied', description: 'Share them through a secure channel.' });
+    } catch {
+      toast({ variant: 'destructive', title: 'Copy failed', description: 'Copy the details manually.' });
+    }
+  };
+
   const emailToId = useMemo(() => {
     const m = {};
     for (const u of users || []) if (u.email) m[String(u.email).toLowerCase()] = u.id;
@@ -4382,9 +4460,9 @@ export function AdminEmployees() {
       <div className="at-page at-scope at-enter pb-10">
         <AtPageBar
           meta={[`${roster.length} company employees`, 'Company roles', 'Credits are not salary', 'AI work is never payroll']}
-          actions={<><AtButton to="/admin/jobs" variant="quiet" icon={Briefcase}>Jobs & hiring</AtButton><AtButton to="/admin/staff-id-cards" variant="outline" icon={Printer}>ID cards</AtButton><AtButton onClick={load} variant="gold" icon={RefreshCw}>Refresh</AtButton></>}
+          actions={<><AtButton onClick={() => { setCreatedLogin(null); setAddOpen(true); }} variant="gold" icon={Plus}>Add employee</AtButton><AtButton to="/admin/jobs" variant="quiet" icon={Briefcase}>Jobs & hiring</AtButton><AtButton to="/admin/staff-id-cards" variant="outline" icon={Printer}>ID cards</AtButton><AtButton onClick={load} variant="quiet" icon={RefreshCw}>Refresh</AtButton></>}
         >
-          <p className="mt-2 max-w-3xl text-[11px] leading-relaxed text-[var(--at-mut)]">Company employee directory, contract credit allocations and AI work records. Employees are hired through Jobs &amp; Hiring. Academy learners and instructors are product users, not employees.</p>
+          <p className="mt-2 max-w-3xl text-[11px] leading-relaxed text-[var(--at-mut)]">Company employee directory, contract credit allocations and AI work records. Add an employee directly here, or hire from an application in Jobs &amp; Hiring. The employee profile, company login, employee number, ID card, payroll metadata and onboarding checklist are generated together. Academy learners and instructors are product users, not employees.</p>
         </AtPageBar>
 
         <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -4394,7 +4472,7 @@ export function AdminEmployees() {
           <AtMetric icon={Bot} label="AI work records" value={aiWork.length.toLocaleString()} note="$0 · never payroll" />
         </div>
 
-        <AtPanel className="mt-4" title="Employee directory" sub="Company employees only. Contract credits are existing platform credits, not TBC tokens." action={<AtButton to="/admin/staff-id-cards" variant="quiet" size="sm" icon={Printer}>Print ID cards</AtButton>} flush>
+        <AtPanel className="mt-4" title="Employee directory" sub="Company employees only. Contract credits are existing platform credits, not TBC tokens." action={<div className="flex gap-1.5"><AtButton onClick={() => { setCreatedLogin(null); setAddOpen(true); }} variant="gold" size="sm" icon={Plus}>Add employee</AtButton><AtButton to="/admin/staff-id-cards" variant="quiet" size="sm" icon={Printer}>Print ID cards</AtButton></div>} flush>
           {loading ? <div className="p-5"><AtProgress value={45} /></div> : roster.length ? (
             <div className="at-table-wrap !rounded-none !border-0 !bg-transparent">
               <table className="at-table min-w-[760px]">
@@ -4420,7 +4498,7 @@ export function AdminEmployees() {
                 </tbody>
               </table>
             </div>
-          ) : <AtEmpty icon={Users} title="No company employees" sub="Hire from an application in Jobs & hiring and the employee appears here." />}
+          ) : <AtEmpty icon={Users} title="No company employees" sub="Add an employee directly or hire from an application in Jobs & hiring. The full employee record is generated automatically." action={<AtButton onClick={() => setAddOpen(true)} variant="gold" icon={Plus}>Add employee</AtButton>} />}
         </AtPanel>
 
         <div className="mt-3"><AtAlert icon={Bot} tone="blue"><b className="text-[var(--at-ink)]">AI work is not employment.</b> AI-executed work records are $0 internal work logs. They never create payroll, equity, token or employment rights.</AtAlert></div>
@@ -4442,6 +4520,84 @@ export function AdminEmployees() {
           ) : <AtEmpty icon={Bot} title="No AI work records" sub="Internal AI work logs appear here when created." />}
         </AtPanel>
       </div>
+
+      {addOpen && (
+        <div className="at-scope fixed inset-0 z-[90] grid place-items-center p-4" role="dialog" aria-modal="true" aria-label="Add company employee">
+          <div className="absolute inset-0 bg-black/65 backdrop-blur-sm" onClick={() => !addBusy && setAddOpen(false)} />
+          <div className="relative max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--at-line)] bg-[var(--at-panel)] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.55)]">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-base font-extrabold tracking-[-0.02em] text-[var(--at-ink)]">Add company employee</h2>
+                <p className="mt-1 text-[11px] leading-relaxed text-[var(--at-mut)]">Creates the company login, staff role, employee number, ID-card profile, payroll metadata and onboarding checklist together. The compliance confirmations below are recorded against your admin account; the platform does not sign the agreement for the employee.</p>
+              </div>
+              <button type="button" onClick={() => !addBusy && setAddOpen(false)} className="rounded-lg p-1.5 text-[var(--at-mut)] hover:bg-white/5 hover:text-[var(--at-ink)]" aria-label="Close"><X className="h-4 w-4" /></button>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="block"><span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut)]">Full name</span><input value={addForm.name} onChange={(e) => setAddForm((f) => ({ ...f, name: e.target.value }))} className={inputClass} placeholder="e.g. Ada Okafor" /></label>
+              <label className="block"><span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut)]">Work email</span><input type="email" value={addForm.email} onChange={(e) => setAddForm((f) => ({ ...f, email: e.target.value }))} className={inputClass} placeholder="name@tradingbible.app" /></label>
+              <label className="block"><span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut)]">Job title</span><input value={addForm.title} onChange={(e) => setAddForm((f) => ({ ...f, title: e.target.value }))} className={inputClass} placeholder="e.g. Market Data Engineer" /></label>
+              <label className="block"><span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut)]">Department</span><input value={addForm.department} onChange={(e) => setAddForm((f) => ({ ...f, department: e.target.value }))} className={inputClass} placeholder="Engineering, Markets, Operations…" /></label>
+              <label className="block"><span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut)]">Work country</span><input value={addForm.workCountry} onChange={(e) => setAddForm((f) => ({ ...f, workCountry: e.target.value }))} className={inputClass} placeholder="e.g. Nigeria" /></label>
+              <label className="block"><span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut)]">State / region</span><input value={addForm.workRegion} onChange={(e) => setAddForm((f) => ({ ...f, workRegion: e.target.value }))} className={inputClass} placeholder="e.g. Lagos" /></label>
+              <label className="block"><span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut)]">Work location</span><input value={addForm.location} onChange={(e) => setAddForm((f) => ({ ...f, location: e.target.value }))} className={inputClass} placeholder="Remote / city" /></label>
+              <label className="block"><span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut)]">Phone (optional)</span><input value={addForm.phone} onChange={(e) => setAddForm((f) => ({ ...f, phone: e.target.value }))} className={inputClass} placeholder="+234…" /></label>
+              <label className="block"><span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut)]">Hiring arrangement</span><select value={addForm.arrangement} onChange={(e) => setAddForm((f) => ({ ...f, arrangement: e.target.value }))} className={inputClass}><option value="direct">Direct employment</option><option value="eor">Employer of Record</option><option value="contractor">Independent contractor</option><option value="subsidiary">Local subsidiary</option><option value="peo">PEO co-employment</option></select></label>
+              <label className="block"><span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut)]">Start date</span><input type="date" value={addForm.startDate} onChange={(e) => setAddForm((f) => ({ ...f, startDate: e.target.value }))} className={inputClass} /></label>
+              <label className="block"><span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut)]">Contract credits</span><input type="number" min="0" step="0.01" value={addForm.salary_tbc} onChange={(e) => setAddForm((f) => ({ ...f, salary_tbc: e.target.value }))} className={inputClass} placeholder="0" /></label>
+              <label className="block"><span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut)]">Credit period</span><select value={addForm.salary_freq} onChange={(e) => setAddForm((f) => ({ ...f, salary_freq: e.target.value }))} className={inputClass}><option value="monthly">Monthly</option><option value="weekly">Weekly</option></select></label>
+              <label className="block"><span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--at-mut)]">Probation (days)</span><input type="number" min="1" max="90" value={addForm.trial_days} onChange={(e) => setAddForm((f) => ({ ...f, trial_days: e.target.value }))} className={inputClass} /></label>
+            </div>
+
+            <div className="mt-4 rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--at-gold)]">Lawful-hiring confirmation</p>
+              <p className="mt-1 text-[10px] leading-relaxed text-[var(--at-mut)]">Every item must be true before the employee record is created. The confirmation is stored on the employee record with your admin identity and timestamp.</p>
+              <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+                {[['agreementSigned', 'Localized employment agreement signed'], ['ipAssigned', 'IP assignment and confidentiality confirmed'], ['payrollReady', 'Payroll registration or EOR coverage confirmed'], ['managerApproved', 'Manager approval recorded']].map(([key, label]) => (
+                  <label key={key} className="flex cursor-pointer items-center justify-between gap-2 rounded-[10px] border border-[var(--at-line-soft)] bg-[var(--at-panel-2)] px-3 py-2">
+                    <span className="text-[11px] text-[var(--at-ink-2)]">{label}</span>
+                    <input type="checkbox" checked={Boolean(addForm.compliance[key])} onChange={(e) => setAddForm((f) => ({ ...f, compliance: { ...f.compliance, [key]: e.target.checked } }))} className="h-4 w-4 shrink-0 accent-[var(--at-gold)]" />
+                  </label>
+                ))}
+              </div>
+              <input value={addForm.compliance.note} onChange={(e) => setAddForm((f) => ({ ...f, compliance: { ...f.compliance, note: e.target.value } }))} className={`${inputClass} mt-2`} placeholder="Compliance note (EOR provider, work authorization, approval reference…)" />
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+              <p className="max-w-md text-[9px] leading-relaxed text-[var(--at-mut-2)]">The account is created immediately. The employee must complete security setup and can sign in with the temporary password shown next.</p>
+              <div className="flex gap-2">
+                <AtButton onClick={() => setAddOpen(false)} variant="quiet" disabled={addBusy}>Cancel</AtButton>
+                <AtButton onClick={createEmployee} variant="gold" icon={addBusy ? Loader2 : Plus} disabled={addBusy}>{addBusy ? 'Creating…' : 'Create employee'}</AtButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {createdLogin && (
+        <div className="at-scope fixed inset-0 z-[95] grid place-items-center p-4" role="dialog" aria-modal="true" aria-label="Employee login details">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setCreatedLogin(null)} />
+          <div className="relative w-full max-w-md rounded-2xl border border-[var(--at-line)] bg-[var(--at-panel)] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
+            <div className="flex items-start justify-between gap-3">
+              <div><h2 className="text-base font-extrabold text-[var(--at-ink)]">Employee created</h2><p className="mt-1 text-[11px] text-[var(--at-mut)]">The company profile, employee number, ID card and onboarding record are ready.</p></div>
+              <button type="button" onClick={() => setCreatedLogin(null)} className="rounded-lg p-1.5 text-[var(--at-mut)] hover:bg-white/5 hover:text-[var(--at-ink)]" aria-label="Close"><X className="h-4 w-4" /></button>
+            </div>
+            <div className="mt-4 space-y-2 rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3 text-[12px]">
+              <div className="flex justify-between gap-3"><span className="text-[var(--at-mut)]">Employee</span><span className="font-semibold text-[var(--at-ink)]">{createdLogin.name}</span></div>
+              <div className="flex justify-between gap-3"><span className="text-[var(--at-mut)]">Work email</span><span className="font-mono text-[10px] text-[var(--at-ink)]">{createdLogin.email}</span></div>
+              <div className="flex justify-between gap-3"><span className="text-[var(--at-mut)]">Employee number</span><span className="font-mono text-[10px] text-[var(--at-gold)]">{createdLogin.employeeId || 'Generated in ID cards'}</span></div>
+              <div className="flex justify-between gap-3"><span className="text-[var(--at-mut)]">Login</span><span className="font-mono text-[10px] text-[var(--at-ink)]">{createdLogin.loginCreated ? 'New account created' : 'Existing account linked'}</span></div>
+              {createdLogin.password && <div className="flex justify-between gap-3"><span className="text-[var(--at-mut)]">Temporary password</span><span className="font-mono text-[10px] text-[var(--at-ink)]">{createdLogin.password}</span></div>}
+            </div>
+            <p className="mt-3 text-[10px] leading-relaxed text-[var(--at-mut)]">Share these details once through a secure channel. Do not post them in a group chat. The employee should change the temporary password after signing in.</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <AtButton onClick={copyCredentials} variant="gold" icon={Copy}>Copy credentials</AtButton>
+              <AtButton to="/admin/staff-id-cards" variant="outline" icon={Printer}>View ID cards</AtButton>
+              <AtButton onClick={() => setCreatedLogin(null)} variant="quiet">Done</AtButton>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }
@@ -4703,10 +4859,7 @@ export function AdminSettings() {
                 className="shrink-0 rounded-lg border border-[var(--at-line)] bg-[var(--at-panel-2)] px-2 py-2 text-[13px] text-[var(--at-ink)] outline-none"
               >
                 <option value="premium" className="bg-[var(--at-panel-2)]">Premium</option>
-                <option value="professional" className="bg-[var(--at-panel-2)]">Professional (enterprise)</option>
-                <option value="teams" className="bg-[var(--at-panel-2)]">Teams (enterprise)</option>
-                <option value="elite" className="bg-[var(--at-panel-2)]">Elite (legacy)</option>
-                <option value="pro" className="bg-[var(--at-panel-2)]">Pro (legacy)</option>
+                <option value="professional" className="bg-[var(--at-panel-2)]">Enterprise — quoted separately</option>
               </select>
             </label>
           ))}

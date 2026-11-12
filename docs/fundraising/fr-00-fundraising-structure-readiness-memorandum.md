@@ -98,7 +98,7 @@ A Regulation CF offering may be considered only after the company has:
 - adopted a communications policy that distinguishes pre-qualification education from a live offering; and
 - accepted that the campaign will be public and that the company cannot control who sees it.
 
-The company should not describe a Regulation CF campaign as “approved,” “live” or “open” until the SEC has qualified the offering statement and the portal has opened the campaign. A portal application, a draft Form C or a testing-the-waters communication is not qualification.
+The company should not describe a Regulation CF campaign as “approved,” “live” or “open” until the SEC has qualified the offering statement and the portal has opened the campaign. A portal application, a working Form C or a testing-the-waters communication is not qualification.
 
 ## 7. Use of proceeds
 

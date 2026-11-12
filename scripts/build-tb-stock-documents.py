@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the controlled TB stock document library.
 
-The nine source instruments are the signature-ready Word drafts in the
+The nine source instruments are the signature-ready execution copies in the
 TradingBible TB stock package.  This script makes three deterministic changes
 to each source before publishing it to the API storage area:
 
@@ -55,7 +55,7 @@ DOCUMENTS = [
         "number": "TB-02",
         "title": "Corporate Conversion and Restructuring Framework",
         "category": "Corporate authority",
-        "summary": "Framework for documenting the completed corporate conversion and restructuring record. No share issuance or ownership change is effected by this draft.",
+        "summary": "Framework for documenting the completed corporate conversion and restructuring record. No share issuance or ownership change is effected by this instrument.",
     },
     {
         "source": "03_TB_Share_Capital_and_Shareholder_Governance.docx",
@@ -488,12 +488,12 @@ def main() -> None:
         documents.append({
             **{key: meta[key] for key in ("slug", "number", "title", "category", "summary")},
             "subtitle": "TB stock preparation · signature-ready instrument",
-            "status": "Draft — signature block open",
+            "status": "Execution copy — signature block open",
             "visibility": "public",
-            "classification": "Public draft — signature-ready instrument",
+            "classification": "Public execution copy — signature-ready instrument",
             "version": "October 2026",
             "signatureFields": "Authorized signatory + conditional additional authorized signatory",
-            "signatureStatus": "Open — not executed",
+            "signatureStatus": "Signature required",
             "pdf": f"pdf/{slug}.pdf",
             "docx": f"docx/{slug}.docx",
             "docxProtected": f"docx-protected/{slug}.docx",

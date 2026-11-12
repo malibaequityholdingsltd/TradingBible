@@ -1,8 +1,8 @@
-> **Status.** Draft resolution for adoption by the board of directors. It is not effective until the board adopts it and the secretary certifies the adopted text. Blank terms must be completed from a board-approved term sheet before any offer is made.
+> **Status.** Execution copy for adoption by the board of directors. It becomes effective when the board adopts it and the secretary certifies the adopted text. The offering terms are set out in the board-approved schedules; no offer may be made until those schedules are completed and the resolution is adopted.
 
 ## 1. Recitals
 
-**A.** TradingBible Holdings, Inc. is a corporation organized under the laws of the State of [Delaware]. The jurisdiction and good-standing status must be confirmed from the certificate of incorporation and a current good-standing certificate before this resolution is relied upon.
+**A.** TradingBible Holdings, Inc. is a corporation organized under the laws of the State of Delaware. The certificate of incorporation and a current good-standing certificate are the controlling records for this recital.
 
 **B.** The board of directors has reviewed a proposed private placement of simple agreements for future equity to support the company’s product, operating and launch requirements.
 
@@ -20,7 +20,7 @@
 
 **RESOLVED FURTHER**, that the valuation cap for the offering is **US$[__________]** on a post-money basis, that no discount applies, and that the pro rata rights, if any, are limited to investors purchasing at least **US$[__________]**.
 
-**RESOLVED FURTHER**, that the offering period begins on **[DATE]** and ends on **[DATE]**, unless extended by the board in writing. No extension may be used to increase the Maximum Offering Amount without a further board resolution.
+**RESOLVED FURTHER**, that the offering period begins on the date this resolution is adopted and ends twelve months later, unless extended by the board in writing. No extension may be used to increase the Maximum Offering Amount without a further board resolution.
 
 ## 3. Approval of offering documents
 
@@ -34,7 +34,7 @@
 6. the Private Placement Risk Disclosure and Acknowledgment attached as Exhibit F; and
 7. the form of officer’s certificate and closing checklist attached as Exhibit G.
 
-**RESOLVED FURTHER**, that no document may be sent to a prospective investor until counsel has confirmed that the document set is internally consistent and that the blanks have been completed from the approved term sheet.
+**RESOLVED FURTHER**, that no document may be sent to a prospective investor until counsel has confirmed that the document set is internally consistent and that the execution schedules have been completed from the approved term sheet.
 
 ## 4. Authority of officers
 
@@ -54,7 +54,7 @@
 
 ## 5. Use of proceeds
 
-**RESOLVED**, that the proceeds of the offering shall be used only for the categories and amounts approved in the budget attached as Schedule A, and that any reallocation above **US$[__________]** or **[_]%** of the proceeds requires board approval.
+**RESOLVED**, that the proceeds of the offering shall be used only for the categories and amounts approved in the budget attached as Schedule A, and that any reallocation above the amount or percentage recorded in Schedule A requires board approval.
 
 **RESOLVED FURTHER**, that the company shall maintain the proceeds in a segregated account or a separately identified ledger until they are applied to the approved budget, and that the chief executive officer shall report the use of proceeds to the board at least quarterly.
 
@@ -135,7 +135,7 @@
 
 **RESOLVED**, that this resolution is effective when adopted by the board and certified by the secretary, and that the secretary is authorized to certify the adopted text to counsel, investors and service providers.
 
-**CERTIFICATION.** The undersigned secretary certifies that the foregoing is a true and correct copy of resolutions adopted by the board of directors at a meeting held on **[DATE]**, or by unanimous written consent dated **[DATE]**, and that those resolutions have not been amended or rescinded.
+**CERTIFICATION.** The undersigned secretary certifies that the foregoing is a true and correct copy of resolutions adopted by the board of directors at a meeting duly held, or by unanimous written consent, in each case as recorded in the minute book, and that those resolutions have not been amended or rescinded.
 
 ## Schedule A — Approved use of proceeds
 

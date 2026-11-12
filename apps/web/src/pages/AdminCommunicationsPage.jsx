@@ -50,6 +50,7 @@ export default function AdminCommunicationsPage() {
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState('');
   const [channel, setChannel] = useState('email');
+  const [previewScheme, setPreviewScheme] = useState('auto');
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -122,7 +123,7 @@ export default function AdminCommunicationsPage() {
           Authorization: `Bearer ${token()}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ channel: nextChannel }),
+        body: JSON.stringify({ channel: nextChannel, colorScheme: previewScheme }),
       });
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(payload?.message || `Preview failed (${res.status})`);
@@ -133,7 +134,7 @@ export default function AdminCommunicationsPage() {
     } finally {
       setPreviewLoading(false);
     }
-  }, []);
+  }, [previewScheme]);
 
   useEffect(() => {
     if (!selected) { setPreview(null); return; }
@@ -218,9 +219,9 @@ export default function AdminCommunicationsPage() {
 
         <div className="mt-3 space-y-3">
           <AtAlert icon={ShieldCheck} tone="green">
-            <b className="text-[var(--at-ink)]">One brand system.</b> Every email uses the dark-and-gold TradingBible shell with the company logo,
-            company name, website, support address and an absolute logo URL. Transactional, security, billing, platform, investor, fundraising and
-            internal templates live in one registry, so the company does not drift into inconsistent copy or missing footers.
+            <b className="text-[var(--at-ink)]">Seven category designs, one brand.</b> Account, billing, platform, investor, private-placement,
+            Regulation CF and internal emails each use a visibly different layout, typography and colour system, while every message keeps the
+            company logo, company name, website, support address and an absolute logo URL. Each design carries explicit light and dark colour schemes.
           </AtAlert>
           <AtAlert icon={TriangleAlert} tone="amber">
             <b className="text-[var(--at-ink)]">Test-send only.</b> The only delivery path in this console sends to the signed-in administrator.
@@ -258,7 +259,7 @@ export default function AdminCommunicationsPage() {
             />
           </div>
           <div className="flex items-center gap-1.5 xl:ml-auto">
-            <AtBadge tone="green">Branded shell</AtBadge>
+            <AtBadge tone="green">7 category designs</AtBadge>
             <AtBadge tone={data?.smsConfigured ? 'green' : 'amber'}>{data?.smsConfigured ? 'SMS configured' : 'SMS design-only'}</AtBadge>
             <AtBadge tone="muted">No bulk send</AtBadge>
           </div>
@@ -418,11 +419,19 @@ export default function AdminCommunicationsPage() {
                         <div className="mt-2 text-[10px] text-[var(--at-mut-2)]">Preheader</div>
                         <div className="mt-0.5 text-[10px] text-[var(--at-mut)]">{preview.preheader}</div>
                       </div>
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--at-line-soft)] bg-[var(--at-soft)] px-4 py-2">
+                        <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--at-mut)]">Colour scheme</span>
+                        <div className="at-segmented">
+                          {[['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']].map(([id, label]) => (
+                            <button key={id} type="button" onClick={() => setPreviewScheme(id)} className={previewScheme === id ? 'is-active' : ''}>{label}</button>
+                          ))}
+                        </div>
+                      </div>
                       <iframe
                         title={`${selected.name} email preview`}
                         srcDoc={preview.html}
                         sandbox=""
-                        className="h-[640px] w-full border-0 bg-[#07070a]"
+                        className="h-[700px] w-full border-0 bg-[#eef3f9]"
                       />
                       <details className="border-t border-[var(--at-line-soft)] px-4 py-3">
                         <summary className="cursor-pointer text-[10px] font-semibold text-[var(--at-mut)]">Plain-text version</summary>
@@ -481,7 +490,7 @@ export default function AdminCommunicationsPage() {
         )}
 
         <div className="mt-5 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-4 py-3 text-[10px] text-[var(--at-mut)]">
-          <span className="flex items-center gap-2"><TriangleAlert className="h-3.5 w-3.5 text-[var(--at-amber)]" /> Fundraising templates remain draft, restricted and counsel-gated even when the DocuSign execution gate is open.</span>
+          <span className="flex items-center gap-2"><TriangleAlert className="h-3.5 w-3.5 text-[var(--at-amber)]" /> Fundraising templates remain controlled, restricted and counsel-gated even when the DocuSign execution gate is open.</span>
           <AtButton to="/admin/fundraising-documents" variant="quiet" size="sm" className="ml-auto">Open the fundraising packet</AtButton>
         </div>
       </div>

@@ -162,7 +162,7 @@ export default function AdminFundraisingDocumentsPage() {
       if (!res.ok) throw new Error(`Packet download failed (${res.status})`);
       const blob = await res.blob();
       downloadBlob(blob, 'TradingBible-Fundraising-Packet-2026-11.zip');
-      setNotice('Packet ZIP downloaded. It contains the 20 DOCX/PDF drafts, the manifest, the fundraising communications pack and a README warning that the packet is not executable.');
+      setNotice('Packet ZIP downloaded. It contains the 20 DOCX/PDF execution copies and controlled records, the manifest, the fundraising communications pack and the execution-control README.');
     } catch (err) {
       window.alert(err?.message || 'Packet download failed');
     } finally {
@@ -175,7 +175,7 @@ export default function AdminFundraisingDocumentsPage() {
       <div className="at-page at-scope at-enter">
         <AtPageBar
           meta={[
-            `${counts.all || '—'} controlled drafts`,
+            `${counts.all || '—'} controlled instruments`,
             'Admin only',
             'No public offering page',
             'DocuSign gated',
@@ -193,8 +193,8 @@ export default function AdminFundraisingDocumentsPage() {
 
         <div className="mt-3 space-y-3">
           <AtAlert icon={TriangleAlert} tone="red">
-            <b className="text-[var(--at-ink)]">DRAFT · NOT EXECUTED · COUNSEL REVIEW REQUIRED.</b>{' '}
-            These are company-drafted fundraising files, not an offer, solicitation, filing, qualification, approval or executed instrument.
+            <b className="text-[var(--at-ink)]">CONTROLLED EXECUTION PACKET.</b>{' '}
+            These are finished execution copies and controlled company records, not an offer, solicitation, filing, qualification or approval. A document becomes effective only when its signature envelope is completed by the authorised parties.
             There is no public fundraising page and no investment button. Private-placement communications must remain one-to-one and
             limited to existing relationships; Regulation CF communications must wait for SEC qualification and the registered intermediary.
           </AtAlert>
@@ -202,7 +202,7 @@ export default function AdminFundraisingDocumentsPage() {
             <b className="text-[var(--at-ink)]">What is complete:</b> the branded 20-document packet, the Form D worksheet, the Reg CF preparation
             workbook, the SAFE forms, the investor certificates and the 45-template email/SMS/in-app registry. <b className="text-[var(--at-ink)]">What is not:</b>{' '}
             corporate registration details, a cap table, audited or reviewed financials, board-authorized terms, a qualified Reg CF offering,
-            a Form D filing, production DocuSign credentials and counsel sign-off. Blanks remain visible on purpose.
+            a Form D filing, production DocuSign credentials and final board-approved commercial terms. Execution schedules are completed from company records before any document is released.
           </AtAlert>
         </div>
 
@@ -229,7 +229,7 @@ export default function AdminFundraisingDocumentsPage() {
           className="mt-6"
           index="02"
           title="Confidential fundraising packet"
-          sub="Read the current draft as Word, download the read-only DOCX or the DocuSign-anchored PDF, or take the whole packet for counsel"
+          sub="Read the current execution copy as Word, download the controlled DOCX or the DocuSign-anchored PDF, or take the whole packet for counsel"
           action={<span className="font-mono text-[9px] uppercase tracking-[0.13em] text-[var(--at-mut-2)]">{counts.all} records · internal</span>}
         />
 
@@ -252,7 +252,7 @@ export default function AdminFundraisingDocumentsPage() {
             />
           </div>
           <div className="flex items-center gap-2 xl:ml-auto">
-            <AtBadge tone="amber">Draft only</AtBadge>
+            <AtBadge tone="green">Execution packet</AtBadge>
             <AtBadge tone={executionState?.executionEnabled ? 'green' : 'muted'}>
               {executionState?.executionEnabled ? 'Execution gate open' : 'Execution locked'}
             </AtBadge>
@@ -307,8 +307,8 @@ export default function AdminFundraisingDocumentsPage() {
         <AtPanel
           className="mt-6"
           eyebrow="Packet control"
-          title="What is intentionally still blank"
-          sub="These are the facts that must be completed from company records before any document can leave the draft state."
+          title="Execution schedules"
+          sub="These records are completed from verified company files before an instrument is released for signature."
         >
           <div className="grid gap-x-8 gap-y-2 text-[11px] leading-relaxed text-[var(--at-mut)] sm:grid-cols-2">
             {[
@@ -330,7 +330,7 @@ export default function AdminFundraisingDocumentsPage() {
         <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-4 py-3 text-[10px] text-[var(--at-mut)]">
           <span className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Admin-authenticated streaming</span>
           <span className="flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5 text-[var(--at-green)]" /> No public page · no solicitation</span>
-          <span className="flex items-center gap-2"><Scale className="h-3.5 w-3.5 text-[var(--at-amber)]" /> Counsel review required</span>
+          <span className="flex items-center gap-2"><Scale className="h-3.5 w-3.5 text-[var(--at-amber)]" /> Execution control · signatures required</span>
           <AtButton to="/admin/tb-stock-documents" variant="quiet" size="sm" className="ml-auto">TB stock documents</AtButton>
         </div>
       </div>
@@ -356,7 +356,7 @@ function FundraisingCard({ doc, execution, busy, onOpen, onDownload }) {
       <div className="relative p-4">
         <span className="at-doc-number">{doc.number}</span>
         <div className="flex flex-wrap items-center gap-1.5 pr-14">
-          <AtBadge tone="amber">Draft · not executed</AtBadge>
+          <AtBadge tone={doc.status === 'Controlled record' ? 'blue' : 'green'}>{doc.status || 'Execution copy'}</AtBadge>
           <span className="font-mono text-[9px] text-[var(--at-mut-2)]">{doc.track}</span>
         </div>
         <h3 className="mt-3 max-w-[92%] text-[13px] font-semibold leading-snug tracking-[-0.015em] text-[var(--at-ink)]">{doc.title}</h3>

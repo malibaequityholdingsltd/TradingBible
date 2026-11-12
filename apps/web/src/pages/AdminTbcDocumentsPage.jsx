@@ -151,7 +151,11 @@ export default function AdminTbcDocumentsPage() {
           </AtAlert>
         </div>
 
-        <TbcExecutionPanel onChanged={load} />
+        <TbcExecutionPanel
+          onChanged={load}
+          executionEnabled
+          executionDisabledReason="DocuSign credentials are not configured on the API server. Add the DOCUSIGN_* credentials to enable envelopes."
+        />
 
         <AtSectionHeading
           className="mt-6"

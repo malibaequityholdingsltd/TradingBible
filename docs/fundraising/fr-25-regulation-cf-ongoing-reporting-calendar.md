@@ -45,7 +45,7 @@ The company should treat the following as potential current-report triggers and 
 | Date | Event | Owner | Evidence | Status |
 |---|---|---|---|---|
 | [Fiscal year end] | Close the books | Finance | Trial balance | [ ] |
-| [Fiscal year end + 30 days] | Draft financial statements | Accounting | Draft statements | [ ] |
+| [Fiscal year end + 30 days] | Management financial statements (unaudited) | Accounting | Statements prepared | [ ] |
 | [Fiscal year end + 60 days] | Counsel and accountant review | Counsel | Comment log | [ ] |
 | [Fiscal year end + 90 days] | Board review and approval | CEO | Board minutes | [ ] |
 | [Fiscal year end + 120 days] | File annual report | Reporting owner | Filing confirmation | [ ] |

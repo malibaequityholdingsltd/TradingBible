@@ -83,11 +83,11 @@ const SAMPLE_VARIABLES = {
 	...COMMON,
 };
 
-const p = (html) => `<p style="margin:0 0 14px;color:#c9c4b4">${html}</p>`;
-const ul = (...items) => `<ul style="margin:0 0 16px 20px;padding:0;color:#c9c4b4">${items.map((item) => `<li style="margin:0 0 6px">${item}</li>`).join('')}</ul>`;
-const small = (html) => `<p style="margin:0 0 12px;color:#8a8577;font-size:12px;line-height:1.55">${html}</p>`;
+const p = (html) => `<p class="tb-p" style="margin:0 0 14px">${html}</p>`;
+const ul = (...items) => `<ul class="tb-ul" style="margin:0 0 16px 20px;padding:0">${items.map((item) => `<li style="margin:0 0 6px">${item}</li>`).join('')}</ul>`;
+const small = (html) => `<p class="tb-small" style="margin:0 0 12px;font-size:12px;line-height:1.55">${html}</p>`;
 const cta = (href, label) => `<div style="margin:22px 0">${buttonLink(href, label)}</div>`;
-const link = (href, label) => `<a href="${href}" style="color:#d4af37;text-decoration:underline">${label}</a>`;
+const link = (href, label) => `<a class="tb-link" href="${href}" style="text-decoration:underline">${label}</a>`;
 
 function template(config) {
 	const channels = [];
@@ -1523,7 +1523,7 @@ function templateWarnings(template, variables) {
 	return warnings;
 }
 
-export function renderCommunicationTemplate(id, { channel = 'email', variables = {}, baseUrl = '' } = {}) {
+export function renderCommunicationTemplate(id, { channel = 'email', variables = {}, baseUrl = '', colorScheme = 'auto' } = {}) {
 	const template = findCommunicationTemplate(id);
 	if (!template) {
 		const err = new Error('Template not found');
@@ -1568,6 +1568,8 @@ export function renderCommunicationTemplate(id, { channel = 'email', variables =
 		result.html = brandShell({
 			title,
 			body,
+			category: template.category,
+			colorScheme: ['light', 'dark'].includes(colorScheme) ? colorScheme : 'auto',
 			eyebrow: template.email.eyebrow,
 			headerTag: template.email.headerTag,
 			preheader,

@@ -25,15 +25,15 @@ The company must confirm the current rules, forms, dollar limits and financial-s
 |---|---|---|
 | U.S. organization and operation | Delaware corporation (to be confirmed); operating platform | Confirm jurisdiction, principal place of business and eligibility |
 | Registered intermediary | None selected | Evaluate and engage a portal or broker-dealer |
-| Form C | Not prepared | Draft from verified company records |
+| Form C | Not prepared | Prepare from verified company records |
 | Financial statements | No audited financial statements published | Engage accountant; confirm required level of review or audit |
-| Cap table | Draft schedules exist | Reconcile and document fully diluted basis |
+| Cap table | Preparation schedules exist | Reconcile and document fully diluted basis |
 | Ownership and management | Documented team | Confirm officer appointments and beneficial ownership |
-| Risk factors | Draft private-placement disclosure exists | Prepare Regulation CF-specific risk factors |
+| Risk factors | Private-placement disclosure exists | Prepare Regulation CF-specific risk factors |
 | Use of proceeds | Board approval pending | Adopt a budget and assumptions |
 | Investor limits | Not implemented | Use intermediary controls; document review |
 | Escrow | Not established | Confirm intermediary arrangement |
-| Communications policy | Draft exists | Adopt and train |
+| Communications policy | Policy exists | Adopt and train |
 | Ongoing reporting | Not implemented | Appoint owner and calendar |
 
 ## 4. Portal selection criteria
@@ -60,7 +60,7 @@ The company should engage an independent accountant early. The level of financia
 - use management accounts as if they were audited;
 - omit related-party transactions;
 - net revenue against expenses without disclosure;
-- describe a draft as “final” or “approved”; or
+- describe a working version as “final” or “approved”; or
 - use a projection as a historical result.
 
 ## 6. Disclosure preparation
@@ -98,7 +98,7 @@ After qualification, the company must use the qualified offering statement and t
 |---|---|---|
 | 1 | Portal evaluation and selection | 2–4 weeks |
 | 2 | Financial statement preparation | 4–10 weeks |
-| 3 | Form C drafting and counsel review | 4–8 weeks |
+| 3 | Form C preparation and counsel review | 4–8 weeks |
 | 4 | SEC review and qualification | 4–12 weeks, depending on comments |
 | 5 | Campaign preparation and launch | 1–2 weeks after qualification |
 | 6 | Campaign period | As disclosed in the offering statement |
@@ -124,7 +124,7 @@ The timeline is an estimate, not a promise. SEC review can take longer, and the 
 - [ ] Board authorizes preparation only (FR-02).
 - [ ] Portal selected and engagement letter signed.
 - [ ] Accountant engaged and financial statements prepared.
-- [ ] Form C drafted and reviewed by counsel.
+- [ ] Form C prepared and reviewed by counsel.
 - [ ] Communications policy adopted.
 - [ ] Investor-limit and escrow controls confirmed.
 - [ ] Board approves filing the offering statement.

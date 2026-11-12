@@ -6,7 +6,7 @@
 2. Attach the source document or company record for every answer.
 3. Mark unverified facts as **OPEN**.
 4. Do not fill a gap with an estimate unless the estimate is labelled and supported.
-5. Have counsel and the intermediary review the completed workbook before anyone drafts the Form C.
+5. Have counsel and the intermediary review the completed workbook before the Form C is prepared.
 
 ## 2. Issuer information
 
@@ -145,7 +145,7 @@ If there are no prior offerings, write “None.” Do not omit a convertible not
 | Portal / broker-dealer name | [__________] | OPEN |
 | CRD number | [__________] | OPEN |
 | Campaign URL | [__________] | OPEN |
-| Draft campaign copy reviewed by counsel | [Yes / No] | OPEN |
+| Campaign copy reviewed by counsel | [Yes / No] | OPEN |
 | Investor-limit process confirmed | [Yes / No] | OPEN |
 | Escrow process confirmed | [Yes / No] | OPEN |
 | Complaint handling process | [__________] | OPEN |
@@ -162,7 +162,7 @@ If there are no prior offerings, write “None.” Do not omit a convertible not
 - [ ] Litigation and regulatory schedule.
 - [ ] Tax returns and filings.
 - [ ] Related-party disclosures.
-- [ ] Form C draft and counsel comments.
+- [ ] Form C working copy and counsel comments.
 - [ ] Intermediary engagement letter.
 - [ ] Communications policy and register.
 

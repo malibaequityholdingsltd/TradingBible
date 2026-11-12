@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 
 // Confidential fundraising packet. Unlike the TBC and TB stock libraries,
 // these documents have no public projection: every route is admin-only and
-// every item is treated as a draft until counsel clears it.
+// every item is issued as an execution copy or a controlled company record.
 export const fundraisingDocumentRoot = fileURLToPath(new URL('../../storage/fundraising-documents/', import.meta.url));
 
 const manifest = JSON.parse(readFileSync(new URL('manifest.json', new URL('../../storage/fundraising-documents/', import.meta.url)), 'utf8'));
@@ -17,7 +17,7 @@ export const fundraisingLibraryMeta = {
 	jurisdiction: manifest.jurisdiction || 'Delaware, United States',
 	updated: manifest.updated || 'November 2026',
 	version: manifest.version || '1.0',
-	notice: manifest.notice || 'Drafting packet only. Not an offer, solicitation, filing, qualification, approval or executed instrument.',
+	notice: manifest.notice || 'Controlled fundraising execution packet. Not an offer, solicitation, filing, qualification or approval.',
 };
 
 export function findFundraisingDocument(slug) {

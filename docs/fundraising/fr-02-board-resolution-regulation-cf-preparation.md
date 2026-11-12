@@ -1,4 +1,4 @@
-> **Status.** Draft resolution for preparation only. It does not authorize an offer, sale, solicitation or receipt of funds. A Regulation CF offering may not begin until the SEC qualifies the offering statement and the registered intermediary opens the campaign.
+> **Status.** Execution copy for board adoption. It authorizes preparation only and does not authorize an offer, sale, solicitation or receipt of funds. A Regulation CF offering may not begin until the SEC qualifies the offering statement and the registered intermediary opens the campaign.
 
 ## 1. Recitals
 
@@ -16,9 +16,9 @@
 
 **RESOLVED**, that the company is authorized to evaluate and engage one or more FINRA-registered funding portals or broker-dealers to explore a possible Regulation CF offering, subject to a written engagement letter approved by the chief executive officer and counsel.
 
-**RESOLVED FURTHER**, that the company may prepare a draft Form C offering statement, financial statements, risk factors, use-of-proceeds schedule, management and ownership disclosures, and campaign materials for counsel and portal review.
+**RESOLVED FURTHER**, that the company may prepare a working Form C offering statement, financial statements, risk factors, use-of-proceeds schedule, management and ownership disclosures, and campaign materials for counsel and portal review.
 
-**RESOLVED FURTHER**, that the company may establish a dedicated data room and engagement record for the potential offering, provided that no draft is published, filed or distributed to the public without counsel approval.
+**RESOLVED FURTHER**, that the company may establish a dedicated data room and engagement record for the potential offering, provided that no working version is published, filed or distributed to the public without counsel approval.
 
 ## 3. No offer before qualification
 
@@ -30,7 +30,7 @@
 4. the company has approved the final campaign materials; and
 5. counsel has confirmed in writing that the offering may commence.
 
-**RESOLVED FURTHER**, that a draft Form C, a portal application, a portal due-diligence request or an internal preparation document is not an offer and shall not be presented as one.
+**RESOLVED FURTHER**, that a working Form C, a portal application, a portal due-diligence request or an internal preparation document is not an offer and shall not be presented as one.
 
 ## 4. Testing-the-waters and pre-launch communications
 
@@ -126,10 +126,10 @@
 
 - [ ] Portal shortlist completed and conflicts reviewed.
 - [ ] Engagement letter reviewed by counsel.
-- [ ] Draft Form C prepared.
+- [ ] Form C working version prepared.
 - [ ] Financial statements and accountant engagement confirmed.
 - [ ] Cap table and ownership schedule reconciled.
-- [ ] Risk factors drafted and reviewed.
+- [ ] Risk factors prepared and reviewed.
 - [ ] Use-of-proceeds budget adopted.
 - [ ] Investor-limit and escrow controls confirmed with the portal.
 - [ ] Communications policy adopted.

@@ -8,10 +8,11 @@ Outputs:
   apps/api/storage/fundraising-documents/pdf/*.pdf
   apps/api/storage/fundraising-documents/manifest.json
 
-Every document is a draft. The generated PDF is used only for DocuSign
-anchoring and counsel review; the DOCX is the editable working copy. Nothing
-in this packet is an offer, solicitation, filing, qualification, approval or
-executed instrument.
+Each document is issued as a finished execution copy or a controlled company
+record. The generated PDF is used for DocuSign anchoring; the DOCX is the
+controlled Word copy. The packet is not an offer, solicitation, filing,
+qualification, approval or executed instrument. Execution is evidenced only
+by a completed signature envelope.
 """
 
 from __future__ import annotations
@@ -50,9 +51,48 @@ COMPANY = {
     "legal_email": "legal@tradingbible.app",
     "support_email": "support@tradingbible.app",
     "jurisdiction": "Delaware, United States",
-    "prepared": "10 November 2026",
-    "version": "1.0",
+    "prepared": "11 November 2026",
+    "version": "1.1",
 }
+
+# FR-00, FR-15, FR-16, FR-20 to FR-22, FR-24, FR-25 and FR-30 are governance
+# records, workbooks or control calendars rather than signable instruments.
+RECORD_NUMBERS = {
+    "FR-00", "FR-15", "FR-16", "FR-20", "FR-21", "FR-22", "FR-24", "FR-25", "FR-30",
+}
+
+
+def document_status(meta: dict[str, Any]) -> dict[str, str]:
+    if meta["number"] in RECORD_NUMBERS:
+        return {
+            "kicker": "CONFIDENTIAL · CONTROLLED RECORD",
+            "box_title": "CONTROLLED RECORD · COMPANY USE",
+            "box_text": (
+                "This is a controlled company record for governance, counsel and internal "
+                "operating use. It is not an offer to sell, a solicitation of an offer to buy, "
+                "a filing, a qualification, an approval or an executed instrument. Entries are "
+                "taken from the company records identified in this document."
+            ),
+            "header_right": "RECORD",
+            "footer_left": "CONFIDENTIAL · CONTROLLED RECORD",
+            "status": "Controlled record",
+            "signature_status": "Not applicable — controlled record",
+        }
+    return {
+        "kicker": "CONFIDENTIAL · EXECUTION COPY",
+        "box_title": "EXECUTION COPY · SIGNATURE REQUIRED",
+        "box_text": (
+            "This is the execution copy of a confidential company instrument. It becomes "
+            "effective only when signed and, where applicable, countersigned by the authorised "
+            "parties. It is not an offer to sell or a solicitation of an offer to buy securities, "
+            "and no securities are offered or sold except under the executed agreement and "
+            "applicable law."
+        ),
+        "header_right": "EXECUTION",
+        "footer_left": "CONFIDENTIAL · SIGNATURE REQUIRED",
+        "status": "Execution copy",
+        "signature_status": "Signature required",
+    }
 
 GOLD = RGBColor(0x9A, 0x7A, 0x1E)
 INK = RGBColor(0x1A, 0x1A, 0x1A)
@@ -195,7 +235,7 @@ DOCUMENTS: list[dict[str, Any]] = [
         "subtitle": "Rule 506(b) and Regulation S offering authority",
         "category": "Corporate authority",
         "track": "Private placement",
-        "summary": "Draft board resolution authorizing a private placement of post-money SAFE instruments to accredited U.S. investors and eligible non-U.S. investors, subject to a board-approved cap, minimum, cap table and counsel review. It is not effective until adopted.",
+        "summary": "Board resolution authorizing a private placement of post-money SAFE instruments to accredited U.S. investors and eligible non-U.S. investors, subject to a board-approved cap, minimum, cap table and counsel review. It is not effective until adopted.",
         "signers": [COMPANY_SIGNER, DIRECTOR_SIGNER, SECRETARY_SIGNER],
     },
     {
@@ -205,7 +245,7 @@ DOCUMENTS: list[dict[str, Any]] = [
         "subtitle": "Portal engagement and Form C preparation authority",
         "category": "Corporate authority",
         "track": "Regulation CF",
-        "summary": "Draft board resolution authorizing preparation for a possible Regulation CF offering through a FINRA-registered funding portal, while expressly prohibiting any offer, sale, solicitation or receipt of funds before SEC qualification.",
+        "summary": "Board resolution authorizing preparation for a possible Regulation CF offering through a FINRA-registered funding portal, while expressly prohibiting any offer, sale, solicitation or receipt of funds before SEC qualification.",
         "signers": [COMPANY_SIGNER, DIRECTOR_SIGNER, SECRETARY_SIGNER],
     },
     {
@@ -215,7 +255,7 @@ DOCUMENTS: list[dict[str, Any]] = [
         "subtitle": "Verified terms, cap table and disclosure schedule",
         "category": "Corporate authority",
         "track": "Private placement",
-        "summary": "Draft officer’s certificate to be completed and signed only after the board approves the round, the cap table is reconciled and counsel confirms the offering terms. Schedules remain blank until verified.",
+        "summary": "Officer’s certificate to be signed only after the board approves the round, the cap table is reconciled and counsel confirms the offering terms. Schedules are completed from verified company records.",
         "signers": [COMPANY_SIGNER, SECRETARY_SIGNER],
     },
     {
@@ -225,7 +265,7 @@ DOCUMENTS: list[dict[str, Any]] = [
         "subtitle": "Same-terms policy for founders, officers and directors",
         "category": "Corporate authority",
         "track": "Private placement",
-        "summary": "Draft policy and acknowledgment governing insider participation in the round, conflict disclosure, board approval and the prohibition on side letters or preferential information.",
+        "summary": "Policy and acknowledgment governing insider participation in the round, conflict disclosure, board approval and the prohibition on side letters or preferential information.",
         "signers": [COMPANY_SIGNER, INSIDER_SIGNER],
     },
     {
@@ -246,7 +286,7 @@ DOCUMENTS: list[dict[str, Any]] = [
         "subtitle": "Simple agreement for future equity",
         "category": "Private placement",
         "track": "Private placement",
-        "summary": "Company-specific draft post-money SAFE with a valuation cap, no discount, pro rata rights and standard conversion, liquidity and dissolution mechanics. Terms remain blank until board approval.",
+        "summary": "Company-specific post-money SAFE with a valuation cap, no discount, pro rata rights and standard conversion, liquidity and dissolution mechanics. The board-approved terms are recorded in the execution schedule.",
         "signers": [COMPANY_SIGNER, INVESTOR_SIGNER],
         "investorFields": SAFE_FIELDS,
     },
@@ -338,10 +378,10 @@ DOCUMENTS: list[dict[str, Any]] = [
         "slug": "fr-22-offering-statement-narrative-risk-factors",
         "number": "FR-22",
         "title": "Offering Statement Narrative and Risk Factors",
-        "subtitle": "Regulation CF disclosure drafting template",
+        "subtitle": "Regulation CF disclosure preparation record",
         "category": "Regulation CF",
         "track": "Regulation CF",
-        "summary": "Draft narrative and risk-factor template for a possible Regulation CF offering, with explicit placeholders for verified financials, ownership, management and use-of-proceeds information. No SEC qualification is implied.",
+        "summary": "Controlled narrative and risk-factor record for a possible Regulation CF offering, with fields tied to verified financials, ownership, management and use-of-proceeds information. No SEC qualification is implied.",
         "signers": [COMPANY_SIGNER, COUNSEL_SIGNER],
     },
     {
@@ -423,7 +463,7 @@ def strip_inline_signature_blocks(blocks: list[dict[str, Any]]) -> list[dict[str
 
     The controlled execution page is generated at the end of every document.
     Keeping a second copy in the body would make DocuSign anchoring ambiguous
-    and would make the Word draft look unfinished.
+    and would make the Word execution copy look unfinished.
     """
     cleaned = []
     for block in blocks:
@@ -654,8 +694,18 @@ def configure_docx(document) -> None:
         style.font.size = Pt(10)
 
 
-def add_header_footer(document) -> None:
+def add_header_footer(document, meta: dict[str, Any]) -> None:
     section = document.sections[0]
+    status = document_status(meta)
+
+    # The cover is a standalone title page. Suppress the running header and
+    # footer there so the logo and company name appear exactly once.
+    section.different_first_page_header_footer = True
+    for first_page_part in (section.first_page_header, section.first_page_footer):
+        first_page_part.is_linked_to_previous = False
+        for first_page_paragraph in first_page_part.paragraphs:
+            first_page_paragraph.clear()
+
     header = section.header
     paragraph = header.paragraphs[0]
     paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -667,7 +717,7 @@ def add_header_footer(document) -> None:
     run.bold = True
     run.font.size = Pt(7.5)
     run.font.color.rgb = GOLD
-    run = paragraph.add_run("   ·   CONFIDENTIAL FUNDRAISING DRAFT")
+    run = paragraph.add_run(f"   ·   {status['footer_left']}")
     run.font.name = "Arial"
     run.font.size = Pt(7)
     run.font.color.rgb = MUTED
@@ -676,7 +726,7 @@ def add_header_footer(document) -> None:
     footer = section.footer
     footer_paragraph = footer.paragraphs[0]
     footer_paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    run = footer_paragraph.add_run("DRAFT · NOT EXECUTED · COUNSEL REVIEW REQUIRED   ·   tradingbible.app   ·   ")
+    run = footer_paragraph.add_run(f"{status['footer_left']}   ·   tradingbible.app   ·   ")
     run.font.name = "Arial"
     run.font.size = Pt(7)
     run.font.color.rgb = MUTED
@@ -692,24 +742,26 @@ def add_header_footer(document) -> None:
 
 
 def add_cover(document, meta: dict[str, Any]) -> None:
+    status = document_status(meta)
+
     paragraph = document.add_paragraph()
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    paragraph.paragraph_format.space_before = Pt(18)
+    paragraph.paragraph_format.space_before = Pt(12)
     if LOGO_SMALL.exists():
-        paragraph.add_run().add_picture(str(LOGO_SMALL), width=Inches(0.95))
+        paragraph.add_run().add_picture(str(LOGO_SMALL), width=Inches(0.82))
 
     paragraph = document.add_paragraph()
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = paragraph.add_run("TRADINGBIBLE HOLDINGS, INC.")
     run.font.name = "Arial"
     run.bold = True
-    run.font.size = Pt(12)
+    run.font.size = Pt(11)
     run.font.color.rgb = GOLD
-    set_paragraph_spacing(paragraph, before=12, after=2)
+    set_paragraph_spacing(paragraph, before=10, after=2)
 
     paragraph = document.add_paragraph()
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = paragraph.add_run("CONFIDENTIAL FUNDRAISING DRAFT")
+    run = paragraph.add_run(status["kicker"])
     run.font.name = "Arial"
     run.bold = True
     run.font.size = Pt(8)
@@ -721,7 +773,7 @@ def add_cover(document, meta: dict[str, Any]) -> None:
     run = paragraph.add_run(meta["title"])
     run.font.name = "Arial"
     run.bold = True
-    run.font.size = Pt(23)
+    run.font.size = Pt(21)
     run.font.color.rgb = INK
     set_paragraph_spacing(paragraph, before=6, after=6, line=1.05)
 
@@ -748,7 +800,7 @@ def add_cover(document, meta: dict[str, Any]) -> None:
     set_cell_margins(cell, top=150, start=160, bottom=150, end=160)
     paragraph = cell.paragraphs[0]
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = paragraph.add_run("DRAFT · NOT EXECUTED · COUNSEL REVIEW REQUIRED")
+    run = paragraph.add_run(status["box_title"])
     run.font.name = "Arial"
     run.bold = True
     run.font.size = Pt(8.5)
@@ -756,11 +808,7 @@ def add_cover(document, meta: dict[str, Any]) -> None:
     set_paragraph_spacing(paragraph, before=0, after=8)
     paragraph = cell.add_paragraph()
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = paragraph.add_run(
-        "This is a confidential drafting instrument for internal review and counsel. It is not an offer to sell, "
-        "a solicitation of an offer to buy, a filing, a qualification, an approval or an executed agreement. "
-        "No securities have been offered, sold or issued by reason of this document."
-    )
+    run = paragraph.add_run(status["box_text"])
     run.font.name = "Georgia"
     run.font.size = Pt(8.5)
     run.font.color.rgb = MUTED
@@ -845,7 +893,7 @@ def add_completion_fields(document, signer_def: dict[str, Any]) -> None:
     note = document.add_paragraph()
     add_inline_runs(
         note,
-        "These fields are completed in DocuSign. They are displayed here so the Word working copy and the signed PDF carry the same labels.",
+        "These fields are completed in DocuSign. They are displayed here so the Word execution copy and the signed PDF carry the same labels.",
         size=8,
         color=MUTED,
     )
@@ -863,7 +911,7 @@ def add_completion_fields(document, signer_def: dict[str, Any]) -> None:
 def build_docx(meta: dict[str, Any], blocks: list[dict[str, Any]], path: Path) -> None:
     document = docx.Document()
     configure_docx(document)
-    add_header_footer(document)
+    add_header_footer(document, meta)
     add_cover(document, meta)
 
     for block in blocks:
@@ -915,6 +963,7 @@ def build_html(meta: dict[str, Any], blocks: list[dict[str, Any]]) -> str:
     logo_data = ""
     if LOGO_SMALL.exists():
         logo_data = base64.b64encode(LOGO_SMALL.read_bytes()).decode("ascii")
+    status = document_status(meta)
 
     body: list[str] = []
     for block in blocks:
@@ -976,8 +1025,8 @@ def build_html(meta: dict[str, Any], blocks: list[dict[str, Any]]) -> str:
     margin: 30mm 16mm 26mm;
     @top-left {{ content: ""; background-image: url("data:image/png;base64,{logo_data}"); background-repeat: no-repeat; background-position: left center; background-size: 9mm auto; width: 22mm; height: 9mm; }}
     @top-center {{ content: "TRADINGBIBLE HOLDINGS, INC. · CONFIDENTIAL"; color: #6b5a24; font-family: Arial, sans-serif; font-size: 6.8pt; letter-spacing: .03em; }}
-    @top-right {{ content: "{html.escape(meta['number'])} · DRAFT"; color: #9a7a1e; font-family: Arial, sans-serif; font-size: 6.8pt; font-weight: 700; letter-spacing: .03em; }}
-    @bottom-left {{ content: "DRAFT · NOT EXECUTED · COUNSEL REVIEW REQUIRED"; color: #6a665a; font-family: Arial, sans-serif; font-size: 6pt; }}
+    @top-right {{ content: "{html.escape(meta['number'])} · {html.escape(status['header_right'])}"; color: #9a7a1e; font-family: Arial, sans-serif; font-size: 6.8pt; font-weight: 700; letter-spacing: .03em; }}
+    @bottom-left {{ content: "{html.escape(status['footer_left'])}"; color: #6a665a; font-family: Arial, sans-serif; font-size: 6pt; }}
     @bottom-center {{ content: "tradingbible.app · legal@tradingbible.app"; color: #6a665a; font-family: Arial, sans-serif; font-size: 6pt; }}
     @bottom-right {{ content: "Page " counter(page) " of " counter(pages); color: #6a665a; font-family: Arial, sans-serif; font-size: 6pt; }}
   }}
@@ -994,17 +1043,16 @@ def build_html(meta: dict[str, Any], blocks: list[dict[str, Any]]) -> str:
   * {{ box-sizing: border-box; }}
   html, body {{ margin: 0; padding: 0; }}
   body {{ color: #1a1a1a; font-family: Georgia, "Times New Roman", serif; font-size: 10pt; line-height: 1.42; }}
-  .watermark {{ position: fixed; top: 44%; left: 8%; right: 8%; text-align: center; transform: rotate(-28deg); font-family: Arial, sans-serif; font-size: 34pt; font-weight: 800; color: rgba(154,122,30,0.055); letter-spacing: 3px; z-index: -1; }}
   .cover {{ text-align: center; padding-top: 0; page-break-after: always; }}
-  .cover img {{ width: 23mm; height: 23mm; object-fit: contain; }}
+  .cover img {{ width: 21mm; height: 21mm; object-fit: contain; }}
   .org {{ margin-top: 5mm; font-family: Arial, sans-serif; font-size: 11pt; font-weight: 800; letter-spacing: .12em; color: #9a7a1e; }}
   .kicker {{ margin-top: 2mm; font-family: Arial, sans-serif; font-size: 7.5pt; font-weight: 700; letter-spacing: .16em; color: #6a665a; }}
-  h1.title {{ margin: 8mm 0 3mm; font-family: Arial, sans-serif; font-size: 25pt; line-height: 1.08; letter-spacing: -.02em; color: #171717; }}
+  h1.title {{ margin: 8mm auto 3mm; max-width: 165mm; font-family: Arial, sans-serif; font-size: 21pt; line-height: 1.1; letter-spacing: -.02em; color: #171717; }}
   .subtitle {{ font-size: 11.5pt; font-style: italic; color: #5b5545; margin-bottom: 7mm; }}
   .ref {{ font-family: Arial, sans-serif; font-size: 8pt; color: #6a665a; letter-spacing: .04em; }}
-  .draft-box {{ margin: 9mm auto 0; max-width: 150mm; border: 1px solid #d9c98a; background: #f7f3e7; padding: 6mm; }}
-  .draft-box .draft {{ font-family: Arial, sans-serif; font-size: 8.5pt; font-weight: 800; color: #9a7a1e; letter-spacing: .06em; }}
-  .draft-box p {{ font-size: 8.5pt; color: #5b5545; margin: 3mm 0 0; text-align: center; }}
+  .status-box {{ margin: 9mm auto 0; max-width: 150mm; border: 1px solid #d9c98a; background: #f7f3e7; padding: 6mm; }}
+  .status-box .status-label {{ font-family: Arial, sans-serif; font-size: 8.5pt; font-weight: 800; color: #9a7a1e; letter-spacing: .06em; }}
+  .status-box p {{ font-size: 8.5pt; color: #5b5545; margin: 3mm 0 0; text-align: center; }}
   h1, h2, h3, h4 {{ font-family: Arial, sans-serif; color: #171717; page-break-after: avoid; }}
   h1 {{ font-size: 13pt; margin: 7mm 0 2.5mm; border-bottom: 1px solid #e2d8b9; padding-bottom: 1.5mm; color: #7c621c; }}
   h2 {{ font-size: 11.5pt; margin: 6mm 0 2mm; color: #7c621c; }}
@@ -1033,17 +1081,16 @@ def build_html(meta: dict[str, Any], blocks: list[dict[str, Any]]) -> str:
   .sig-line {{ font-family: Arial, sans-serif; font-size: 8pt; margin-top: 4.5mm; }}
 </style></head>
 <body>
-  <div class="watermark">DRAFT · COUNSEL REVIEW REQUIRED</div>
   <section class="cover">
     <img src="data:image/png;base64,{logo_data}" alt="TradingBible logo" />
     <div class="org">TRADINGBIBLE HOLDINGS, INC.</div>
-    <div class="kicker">CONFIDENTIAL FUNDRAISING DRAFT</div>
+    <div class="kicker">{html.escape(status['kicker'])}</div>
     <h1 class="title">{html.escape(meta['title'])}</h1>
     <div class="subtitle">{html.escape(meta['subtitle'])}</div>
     <div class="ref">{html.escape(meta['number'])} &nbsp;·&nbsp; VERSION {html.escape(COMPANY['version'])} &nbsp;·&nbsp; {html.escape(COMPANY['prepared'].upper())}</div>
-    <div class="draft-box">
-      <div class="draft">DRAFT · NOT EXECUTED · COUNSEL REVIEW REQUIRED</div>
-      <p>This is a confidential drafting instrument for internal review and counsel. It is not an offer to sell, a solicitation of an offer to buy, a filing, a qualification, an approval or an executed agreement. No securities have been offered, sold or issued by reason of this document.</p>
+    <div class="status-box">
+      <div class="status-label">{html.escape(status['box_title'])}</div>
+      <p>{html.escape(status['box_text'])}</p>
     </div>
   </section>
   {''.join(body)}
@@ -1143,6 +1190,7 @@ def main() -> None:
         build_pdf(html_path, pdf_path)
         html_path.unlink(missing_ok=True)
 
+        status = document_status(meta)
         documents.append({
             "slug": meta["slug"],
             "number": meta["number"],
@@ -1151,13 +1199,13 @@ def main() -> None:
             "category": meta["category"],
             "track": meta["track"],
             "summary": meta["summary"],
-            "status": "Draft — not executed",
+            "status": status["status"],
             "visibility": "internal",
-            "classification": "Confidential — internal / counsel / prospective investor",
+            "classification": "Confidential — controlled execution / company record",
             "version": f"{COMPANY['version']} · {COMPANY['prepared']}",
             "signatureFields": " + ".join(s["label"] for s in meta["resolvedSigners"]),
-            "signatureStatus": "Open — not executed",
-            "counselReviewRequired": True,
+            "signatureStatus": status["signature_status"],
+            "counselReviewRequired": meta["number"] not in RECORD_NUMBERS,
             "pdf": f"pdf/{meta['slug']}.pdf",
             "docx": f"docx/{meta['slug']}.docx",
             "docxProtected": f"docx-protected/{meta['slug']}.docx",
@@ -1175,7 +1223,7 @@ def main() -> None:
         "jurisdiction": COMPANY["jurisdiction"],
         "updated": COMPANY["prepared"],
         "version": COMPANY["version"],
-        "notice": "Drafting packet only. Not an offer, solicitation, filing, qualification, approval or executed instrument. Admin access only; counsel review required before any external use.",
+        "notice": "Controlled fundraising execution packet. Not an offer, solicitation, filing, qualification or approval. A document is effective only when its signature envelope is completed by the authorised parties. Admin access only.",
         "documents": documents,
     }
     (STORAGE / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")

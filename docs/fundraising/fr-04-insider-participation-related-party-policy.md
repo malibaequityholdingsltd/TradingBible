@@ -1,4 +1,4 @@
-> **Status.** Draft policy and acknowledgment. It applies to founders, directors, officers, employees, contractors and immediate family members who wish to participate in the round. It does not approve any participation.
+> **Status.** Policy and acknowledgment for adoption. It applies to founders, directors, officers, employees, contractors and immediate family members who wish to participate in the round. It does not approve any participation.
 
 ## 1. Purpose
 

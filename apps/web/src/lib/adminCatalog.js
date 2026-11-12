@@ -26,10 +26,10 @@ export const PUBLIC_PLANS = PLANS.map((plan) => ({
 }));
 
 export const LEGACY_PLAN_ALIASES = {
-  pro: { publicId: 'premium', label: 'Pro (legacy)', monthly: PREMIUM_MONTHLY, tone: 'blue' },
-  elite: { publicId: 'premium', label: 'Elite (legacy)', monthly: PREMIUM_MONTHLY, tone: 'gold' },
-  professional: { publicId: 'enterprise', label: 'Professional (legacy)', monthly: null, enterprise: true, tone: 'violet' },
-  teams: { publicId: 'enterprise', label: 'Teams (legacy)', monthly: null, enterprise: true, tone: 'green' },
+  pro: { publicId: 'premium', label: 'Premium', monthly: PREMIUM_MONTHLY, tone: 'gold' },
+  elite: { publicId: 'premium', label: 'Premium', monthly: PREMIUM_MONTHLY, tone: 'gold' },
+  professional: { publicId: 'enterprise', label: 'Enterprise', monthly: null, enterprise: true, tone: 'violet' },
+  teams: { publicId: 'enterprise', label: 'Enterprise', monthly: null, enterprise: true, tone: 'violet' },
 };
 
 // Compatibility map for screens that still index by raw plan. Enterprise
@@ -41,16 +41,18 @@ export const PLAN_PRICES = {
   elite: PREMIUM_MONTHLY,
   professional: 0,
   teams: 0,
+  enterprise: 0,
 };
 
 export const PLAN_COLORS = {
   none: '#6a665a',
   free: '#6a665a',
   premium: GOLD,
-  pro: '#3b82f6',
+  pro: GOLD,
   elite: GOLD,
   professional: '#a855f7',
-  teams: '#22c55e',
+  teams: '#a855f7',
+  enterprise: '#a855f7',
 };
 
 export const PAID_PLANS = ['premium', 'pro', 'elite', 'professional', 'teams'];
@@ -58,12 +60,10 @@ export const ENTERPRISE_PLAN_IDS = ['professional', 'teams'];
 export const PUBLIC_PLAN_IDS = ['free', 'premium'];
 
 export const ASSIGNABLE_PLANS = [
-  { value: '', label: 'No plan' },
+  { value: '', label: 'Free / no paid plan' },
+  { value: 'free', label: 'Free account' },
   { value: 'premium', label: `Premium — $${PREMIUM_MONTHLY}/mo or $${PREMIUM_ANNUAL}/yr` },
-  { value: 'professional', label: 'Professional — enterprise, quoted separately' },
-  { value: 'teams', label: 'Teams — enterprise, quoted separately' },
-  { value: 'pro', label: 'Pro — legacy account' },
-  { value: 'elite', label: 'Elite — legacy account' },
+  { value: 'professional', label: 'Enterprise — quoted separately' },
 ];
 
 export const ACADEMY_TIERS = [
@@ -136,20 +136,32 @@ export function displayPlan(plan) {
   return planKey(plan) || 'none';
 }
 
+// Collapse historical account values into the current public commercial
+// structure: Free, Premium, or Enterprise (quoted separately). No admin
+// surface should present a retired plan name or a zero-count legacy row.
+export function publicPlanKey(plan) {
+  const key = planKey(plan);
+  if (!key) return 'none';
+  if (key === 'pro' || key === 'elite') return 'premium';
+  if (key === 'professional' || key === 'teams') return 'enterprise';
+  if (key === 'premium' || key === 'free' || key === 'enterprise') return key;
+  return key;
+}
+
 export function planDisplayLabel(plan) {
-  const key = displayPlan(plan);
-  if (key === 'none') return 'No plan';
+  const key = publicPlanKey(plan);
+  if (key === 'none') return 'Free / no paid plan';
   if (key === 'free') return 'Free';
   if (key === 'premium') return 'Premium';
-  if (LEGACY_PLAN_ALIASES[key]) return LEGACY_PLAN_ALIASES[key].label;
+  if (key === 'enterprise') return 'Enterprise';
   return key.charAt(0).toUpperCase() + key.slice(1);
 }
 
 export function planTone(plan) {
-  const key = displayPlan(plan);
+  const key = publicPlanKey(plan);
   if (key === 'none' || key === 'free') return 'muted';
   if (key === 'premium') return 'gold';
-  if (LEGACY_PLAN_ALIASES[key]) return LEGACY_PLAN_ALIASES[key].tone;
+  if (key === 'enterprise') return 'violet';
   return 'muted';
 }
 

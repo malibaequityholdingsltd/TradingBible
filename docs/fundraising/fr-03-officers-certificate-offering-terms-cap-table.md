@@ -1,4 +1,4 @@
-> **Status.** Draft officer’s certificate. It may be signed only after the board has adopted the offering resolution, the cap table has been reconciled, and counsel has confirmed the offering terms. The schedules must be completed from verified company records.
+> **Status.** Execution copy of the officer’s certificate. It is signed after the board adopts the offering resolution, the cap table is reconciled and counsel confirms the offering terms. The schedules are completed from verified company records.
 
 ## 1. Certificate
 
