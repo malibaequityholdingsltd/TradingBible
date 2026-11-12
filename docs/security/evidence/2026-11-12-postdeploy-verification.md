@@ -53,6 +53,14 @@ window. A post-deploy snapshot, `app-20261112T211620Z.tar.gz.gpg`, completed wit
 exit status 0. The earlier snapshot's decrypt/restore test is recorded in
 `2026-11-12-encrypted-app-backup-test.md`.
 
+## Workforce document availability
+
+The production `docs/hr` directory was missing during the earlier deployment.
+It was synced and checked against `POLICY_DOCUMENTS`: 12 of 12 files resolved,
+with no missing entries and 235,073 bytes of controlled policy content. The
+documents remain templates until a real approving body, date and reference are
+recorded.
+
 ## Not covered
 
 Authenticated admin acceptance, SMTP login, Supabase RLS testing, Cloudflare,
