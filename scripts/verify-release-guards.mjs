@@ -8,7 +8,7 @@
  * - The final exam stays gated at 80% after every lesson.
  * - Lesson translations are cached, not regenerated on every play.
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
@@ -75,6 +75,46 @@ check('Academy translation persists translations', academy.includes('translation
 const academyApi = read('apps/api/src/api/academy.js');
 check('Academy curricula are exported for parity checks', academyApi.includes('export const DEFAULT_CURRICULA'));
 check('Curated curricula are seeded without model latency', read('apps/api/src/routes/academy.js').includes('const curated = DEFAULT_CURRICULA[pathKey]'));
+
+// Investor letters: separate audience, server gate, no unsafe retry.
+const investor = read('apps/api/src/services/investor-letters.js');
+check('investor letters require a dedicated unsubscribe secret', investor.includes('unsubscribeSecretConfigured') && investor.includes('INVESTOR_LETTERS_SECRET'));
+check('investor letters block retry after delivery', investor.includes('delivered > 0') && investor.includes("!['prepared', 'failed']"));
+check('investor letters keep the Reg CF qualification gate', investor.includes("config.regCfStatus !== 'qualified'") && investor.includes('REG_CF_INTERMEDIARY'));
+check('investor letters route is mounted', read('apps/api/src/routes/index.js').includes("router.use('/investor-letters'"));
+check('investor letters admin page is routed', read('apps/web/src/App.jsx').includes('/admin/investor-letters'));
+check('investor letters navigation is registered', read('apps/web/src/lib/adminRoutes.js').includes("to: '/admin/investor-letters'"));
+
+// Workforce compliance: controlled register, documentation and route.
+const workforce = read('apps/api/src/services/workforce.js');
+const workforceData = read('apps/api/src/data/workforce-compliance.js');
+check('workforce register persists with 0600 mode', workforce.includes('mode: 0o600') && workforce.includes('chmod(STORE_PATH, 0o600)'));
+check('workforce register has 19 launch controls', (workforceData.match(/employerItemId:/g) || []).length === 19);
+check('workforce register distinguishes US and Nigeria employee items', workforceData.includes("jurisdiction: 'US'") && workforceData.includes("jurisdiction: 'NG'"));
+check('workforce benefits remain proposed', workforceData.includes("status: 'proposed'") && workforceData.includes('proposedBenefitsBoundary'));
+check('workforce route is mounted', read('apps/api/src/routes/index.js').includes("router.use('/workforce'"));
+check('workforce admin page is routed', read('apps/web/src/App.jsx').includes('/admin/workforce'));
+check('workforce navigation is registered', read('apps/web/src/lib/adminRoutes.js').includes("to: '/admin/workforce'"));
+check('workforce document builder is present', existsSync(resolve(root, 'scripts/build-workforce-documents.mjs')) && existsSync(resolve(root, 'scripts/build-workforce-documents.py')));
+const hrManifestPath = resolve(root, 'apps/api/storage/hr-documents/manifest.json');
+check('workforce document manifest exists', existsSync(hrManifestPath));
+if (existsSync(hrManifestPath)) {
+  const hrManifest = JSON.parse(readFileSync(hrManifestPath, 'utf8'));
+  check('workforce document pack has 12 documents', Array.isArray(hrManifest.documents) && hrManifest.documents.length === 12, String(hrManifest.documents?.length));
+  for (const doc of hrManifest.documents || []) {
+    check(`workforce document ${doc.id} has DOCX`, existsSync(resolve(root, 'apps/api/storage/hr-documents', doc.docx)));
+    check(`workforce document ${doc.id} has PDF`, existsSync(resolve(root, 'apps/api/storage/hr-documents', doc.pdf)));
+  }
+}
+const hrSources = ['01-EMPLOYEE-HANDBOOK.md', '02-EMPLOYMENT-CONTRACT-US.md', '03-EMPLOYMENT-CONTRACT-NIGERIA.md', '08-PAYROLL-AND-BENEFITS-FRAMEWORK.md'];
+for (const file of hrSources) {
+  const source = resolve(root, 'docs/hr', file);
+  check(`workforce source ${file} exists`, existsSync(source));
+  if (existsSync(source)) {
+    const text = readFileSync(source, 'utf8');
+    check(`workforce source ${file} has no draft label`, !/\bdraft\b/i.test(text));
+  }
+}
 
 if (failures.length) {
 	console.error(`Release guards FAILED (${failures.length}):`);

@@ -1,8 +1,9 @@
 # TB stock document library
 
 Nine signature-ready preparation instruments for a proposed future TB
-public listing. They are drafts, not approved, effective, or executed
-instruments.
+public listing. They are controlled execution copies prepared for signature;
+they are not approved, effective or executed until the required signatures
+and approvals are complete.
 
 - `docx/` is the reader/download copy served through the TB stock documents API.
 - `docx-protected/` is the controlled source used when appending a completed
@@ -10,7 +11,7 @@ instruments.
 - `pdf/` is internal and exists only so DocuSign can anchor recipient tabs.
 - `.execution/` is runtime execution state and is deliberately git-ignored.
 
-Rebuild the package from the source style drafts with:
+Rebuild the package from the controlled source documents with:
 
 ```sh
 python3 scripts/build-tb-stock-documents.py

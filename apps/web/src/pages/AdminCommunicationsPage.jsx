@@ -208,6 +208,7 @@ export default function AdminCommunicationsPage() {
           ]}
           actions={(
             <>
+              <AtButton to="/admin/investor-letters" variant="gold" icon={Send}>Investor letters</AtButton>
               <AtButton to="/admin/fundraising-documents" variant="quiet" icon={Lock}>Fundraising packet</AtButton>
               <AtButton onClick={load} variant="quiet" icon={loading ? Loader2 : RefreshCw} disabled={loading}>Refresh</AtButton>
               <AtButton onClick={downloadPack} disabled={busy === 'pack'} variant="gold" icon={busy === 'pack' ? Loader2 : Download}>
@@ -224,9 +225,10 @@ export default function AdminCommunicationsPage() {
             company logo, company name, website, support address and an absolute logo URL. Each design carries explicit light and dark colour schemes.
           </AtAlert>
           <AtAlert icon={TriangleAlert} tone="amber">
-            <b className="text-[var(--at-ink)]">Test-send only.</b> The only delivery path in this console sends to the signed-in administrator.
-            There is no bulk sender, no member list and no investor list here. Fundraising templates are restricted until counsel clears them.
-            SMS is design-only until a provider, consent records and opt-out handling are in place.
+            <b className="text-[var(--at-ink)]">This library is test-send only.</b> The only delivery path here sends to the signed-in administrator.
+            Investor letters use the separate <b className="text-[var(--at-ink)]">Investor letters</b> console, which has its own audience register,
+            counsel gate, postal-address gate and unsubscribe path. Fundraising templates remain restricted. SMS is design-only until a provider,
+            consent records and opt-out handling are in place.
           </AtAlert>
           {data && !data.postalAddressConfigured && (
             <AtAlert icon={TriangleAlert} tone="amber">
@@ -261,7 +263,7 @@ export default function AdminCommunicationsPage() {
           <div className="flex items-center gap-1.5 xl:ml-auto">
             <AtBadge tone="green">7 category designs</AtBadge>
             <AtBadge tone={data?.smsConfigured ? 'green' : 'amber'}>{data?.smsConfigured ? 'SMS configured' : 'SMS design-only'}</AtBadge>
-            <AtBadge tone="muted">No bulk send</AtBadge>
+            <AtBadge tone="muted">Library · no bulk send</AtBadge>
           </div>
         </div>
 
@@ -478,7 +480,7 @@ export default function AdminCommunicationsPage() {
 
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-4 py-3 text-[10px] text-[var(--at-mut)]">
                   <span className="flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5 text-[var(--at-green)]" /> Admin test-send only</span>
-                  <span className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-[var(--at-gold)]" /> No bulk list</span>
+                  <span className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-[var(--at-gold)]" /> Investor letters use the controlled sender</span>
                   <span className="flex items-center gap-2"><Mail className="h-3.5 w-3.5 text-[var(--at-blue)]" /> Logo served from {data?.logoUrl ? 'the public site' : 'the brand asset'}</span>
                   <span className="ml-auto font-mono uppercase tracking-[0.12em]">{selected.channels?.length || 0} channel(s)</span>
                 </div>
@@ -491,7 +493,7 @@ export default function AdminCommunicationsPage() {
 
         <div className="mt-5 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] px-4 py-3 text-[10px] text-[var(--at-mut)]">
           <span className="flex items-center gap-2"><TriangleAlert className="h-3.5 w-3.5 text-[var(--at-amber)]" /> Fundraising templates remain controlled, restricted and counsel-gated even when the DocuSign execution gate is open.</span>
-          <AtButton to="/admin/fundraising-documents" variant="quiet" size="sm" className="ml-auto">Open the fundraising packet</AtButton>
+          <AtButton to="/admin/investor-letters" variant="quiet" size="sm" className="ml-auto">Open investor letters</AtButton>
         </div>
       </div>
     </AdminLayout>

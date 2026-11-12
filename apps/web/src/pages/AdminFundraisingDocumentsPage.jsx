@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Archive, Download, Eye, FileSignature, FileText, Loader2, Lock, RefreshCw,
+  Archive, Download, Eye, FileSignature, FileText, Loader2, Lock, RefreshCw, Send,
   Scale, Search, ShieldCheck, TriangleAlert,
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
@@ -182,6 +182,7 @@ export default function AdminFundraisingDocumentsPage() {
           ]}
           actions={(
             <>
+              <AtButton to="/admin/investor-letters" variant="gold" icon={Send}>Investor letters</AtButton>
               <AtButton to="/admin/communications" variant="quiet" icon={FileText}>Communications</AtButton>
               <AtButton to="/admin/investor-relations" variant="quiet" icon={Lock}>Investor records</AtButton>
               <AtButton onClick={downloadPacket} disabled={busy === 'packet'} variant="gold" icon={busy === 'packet' ? Loader2 : Archive}>

@@ -1,0 +1,128 @@
+{
+  "version": "1.0",
+  "issued": "12 November 2026",
+  "builtAt": "2026-11-12T05:28:43.323089+00:00",
+  "boundary": "CONTROLLED TEMPLATE \u00b7 COUNSEL REVIEW AND LOCAL ADOPTION REQUIRED. This document is a company policy or contract framework, not an executed agreement, a legal opinion, a regulatory approval, a payroll filing, an insurance policy or a promise of a benefit. Record adoption and approval references in the Workforce Compliance Register before treating it as operative.",
+  "documents": [
+    {
+      "id": "employer-manual",
+      "title": "Employer Compliance Manual",
+      "file": "00-EMPLOYER-COMPLIANCE-MANUAL.md",
+      "md": "md/00-EMPLOYER-COMPLIANCE-MANUAL.md",
+      "docx": "docx/00-EMPLOYER-COMPLIANCE-MANUAL.docx",
+      "pdf": "pdf/00-EMPLOYER-COMPLIANCE-MANUAL.pdf",
+      "docxBytes": 75197,
+      "pdfBytes": 588245
+    },
+    {
+      "id": "handbook",
+      "title": "Employee Handbook",
+      "file": "01-EMPLOYEE-HANDBOOK.md",
+      "md": "md/01-EMPLOYEE-HANDBOOK.md",
+      "docx": "docx/01-EMPLOYEE-HANDBOOK.docx",
+      "pdf": "pdf/01-EMPLOYEE-HANDBOOK.pdf",
+      "docxBytes": 64493,
+      "pdfBytes": 324636
+    },
+    {
+      "id": "us-contract",
+      "title": "US Employment Contract Template",
+      "file": "02-EMPLOYMENT-CONTRACT-US.md",
+      "md": "md/02-EMPLOYMENT-CONTRACT-US.md",
+      "docx": "docx/02-EMPLOYMENT-CONTRACT-US.docx",
+      "pdf": "pdf/02-EMPLOYMENT-CONTRACT-US.pdf",
+      "docxBytes": 62138,
+      "pdfBytes": 303039
+    },
+    {
+      "id": "ng-contract",
+      "title": "Nigeria Employment Contract Template",
+      "file": "03-EMPLOYMENT-CONTRACT-NIGERIA.md",
+      "md": "md/03-EMPLOYMENT-CONTRACT-NIGERIA.md",
+      "docx": "docx/03-EMPLOYMENT-CONTRACT-NIGERIA.docx",
+      "pdf": "pdf/03-EMPLOYMENT-CONTRACT-NIGERIA.pdf",
+      "docxBytes": 62906,
+      "pdfBytes": 318900
+    },
+    {
+      "id": "nda-ip",
+      "title": "Confidentiality and IP Assignment Pack",
+      "file": "04-NDA-IP-ASSIGNMENT.md",
+      "md": "md/04-NDA-IP-ASSIGNMENT.md",
+      "docx": "docx/04-NDA-IP-ASSIGNMENT.docx",
+      "pdf": "pdf/04-NDA-IP-ASSIGNMENT.pdf",
+      "docxBytes": 62087,
+      "pdfBytes": 337522
+    },
+    {
+      "id": "security",
+      "title": "Acceptable Use and Information Security Policy",
+      "file": "05-ACCEPTABLE-USE-AND-SECURITY.md",
+      "md": "md/05-ACCEPTABLE-USE-AND-SECURITY.md",
+      "docx": "docx/05-ACCEPTABLE-USE-AND-SECURITY.docx",
+      "pdf": "pdf/05-ACCEPTABLE-USE-AND-SECURITY.pdf",
+      "docxBytes": 61621,
+      "pdfBytes": 310680
+    },
+    {
+      "id": "onboarding",
+      "title": "Onboarding Pack",
+      "file": "06-ONBOARDING-PACK.md",
+      "md": "md/06-ONBOARDING-PACK.md",
+      "docx": "docx/06-ONBOARDING-PACK.docx",
+      "pdf": "pdf/06-ONBOARDING-PACK.pdf",
+      "docxBytes": 61000,
+      "pdfBytes": 324627
+    },
+    {
+      "id": "offboarding",
+      "title": "Offboarding and Access-Revocation Pack",
+      "file": "07-OFFBOARDING-PACK.md",
+      "md": "md/07-OFFBOARDING-PACK.md",
+      "docx": "docx/07-OFFBOARDING-PACK.docx",
+      "pdf": "pdf/07-OFFBOARDING-PACK.pdf",
+      "docxBytes": 60540,
+      "pdfBytes": 300517
+    },
+    {
+      "id": "payroll-benefits",
+      "title": "Payroll and Benefits Framework",
+      "file": "08-PAYROLL-AND-BENEFITS-FRAMEWORK.md",
+      "md": "md/08-PAYROLL-AND-BENEFITS-FRAMEWORK.md",
+      "docx": "docx/08-PAYROLL-AND-BENEFITS-FRAMEWORK.docx",
+      "pdf": "pdf/08-PAYROLL-AND-BENEFITS-FRAMEWORK.pdf",
+      "docxBytes": 63529,
+      "pdfBytes": 395220
+    },
+    {
+      "id": "job-descriptions",
+      "title": "Job Description Pack",
+      "file": "09-JOB-DESCRIPTION-PACK.md",
+      "md": "md/09-JOB-DESCRIPTION-PACK.md",
+      "docx": "docx/09-JOB-DESCRIPTION-PACK.docx",
+      "pdf": "pdf/09-JOB-DESCRIPTION-PACK.pdf",
+      "docxBytes": 76023,
+      "pdfBytes": 1092565
+    },
+    {
+      "id": "jurisdictions",
+      "title": "US and Nigeria Jurisdiction Guide",
+      "file": "10-JURISDICTION-GUIDE-US-NIGERIA.md",
+      "md": "md/10-JURISDICTION-GUIDE-US-NIGERIA.md",
+      "docx": "docx/10-JURISDICTION-GUIDE-US-NIGERIA.docx",
+      "pdf": "pdf/10-JURISDICTION-GUIDE-US-NIGERIA.pdf",
+      "docxBytes": 61619,
+      "pdfBytes": 350547
+    },
+    {
+      "id": "employee-file",
+      "title": "Employee File Checklist",
+      "file": "11-EMPLOYEE-FILE-CHECKLIST.md",
+      "md": "md/11-EMPLOYEE-FILE-CHECKLIST.md",
+      "docx": "docx/11-EMPLOYEE-FILE-CHECKLIST.docx",
+      "pdf": "pdf/11-EMPLOYEE-FILE-CHECKLIST.pdf",
+      "docxBytes": 68333,
+      "pdfBytes": 496094
+    }
+  ]
+}

@@ -7,7 +7,7 @@ import {
   MonitorPlay, Plug, Key, Package, Briefcase, Settings, Gift, Wallet,
   UserRound, Building2, Coins, ShieldCheck, Landmark, FileCheck2,
   FileSignature, Mail, IdCard, Globe, Layers, GraduationCap, Trophy,
-  Signal, ShieldAlert, Handshake,
+  Signal, ShieldAlert, Handshake, Send, ClipboardCheck,
 } from 'lucide-react';
 
 export const ADMIN_NAV_GROUPS = [
@@ -34,6 +34,7 @@ export const ADMIN_NAV_GROUPS = [
     items: [
       { to: '/admin/users', label: 'User management', short: 'Users', icon: Users, keywords: 'members accounts customers plans roles verification' },
       { to: '/admin/employees', label: 'Employees', short: 'Employees', icon: UserRound, keywords: 'staff company employees payroll directory' },
+      { to: '/admin/workforce', label: 'Workforce compliance', short: 'Workforce', icon: ClipboardCheck, keywords: 'hr handbook contracts policies onboarding payroll benefits us nigeria compliance' },
       { to: '/admin/staff-id-cards', label: 'ID cards', short: 'ID cards', icon: IdCard, keywords: 'staff identity badge verification' },
       { to: '/admin/jobs', label: 'Jobs & hiring', short: 'Hiring', icon: Briefcase, keywords: 'careers applications roles recruitment onboarding' },
     ],
@@ -54,6 +55,7 @@ export const ADMIN_NAV_GROUPS = [
     items: [
       { to: '/admin/equity', label: 'Equity administration', short: 'Equity', icon: Landmark, keywords: 'cap table shares options warrants authorized issued' },
       { to: '/admin/investor-relations', label: 'Investor relations', short: 'IR', icon: FileText, keywords: 'investors updates communications fundraising' },
+      { to: '/admin/investor-letters', label: 'Investor letters', short: 'Letters', icon: Send, keywords: 'email reg cf 506b private placement investor campaign audience consent unsubscribe' },
       { to: '/admin/tb-stock-documents', label: 'TB stock documents', short: 'Stock docs', icon: FileCheck2, keywords: 'equity documents resolutions certificates' },
       { to: '/admin/fundraising-documents', label: 'Fundraising documents', short: 'Fundraising', icon: FileSignature, keywords: 'safe form d reg cf private placement packet docusign' },
     ],

@@ -1,9 +1,10 @@
 # Confidential fundraising document packet
 
-Twenty branded drafting instruments for a proposed private placement and a
-later Regulation CF track. Every file is a draft:
+Twenty branded execution instruments for a proposed private placement and a
+later Regulation CF track. Each file is a controlled record issued in final
+form; an unsigned file is prepared for signature, not an executed instrument.
 
-**DRAFT · NOT EXECUTED · COUNSEL REVIEW REQUIRED**
+**CONTROLLED EXECUTION COPY · SIGNATURE REQUIRED · COUNSEL REVIEW REQUIRED**
 
 There is no public projection of this folder, no offering page and no
 investment button. The API routes are admin-only.

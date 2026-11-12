@@ -68,7 +68,10 @@ const COMMON = {
 	envelopeUrl: '[DOCUSIGN ENVELOPE LINK]',
 	signingDeadline: '[SIGNING DEADLINE]',
 	closingDate: '[CLOSING DATE]',
-	callBookingUrl: 'https://tradingbible.app/investors/private-introduction',
+	callBookingUrl: 'mailto:legal@tradingbible.app?subject=TradingBible%20private%20introduction',
+	senderName: '[SENDER NAME]',
+	senderTitle: '[SENDER TITLE]',
+	intermediaryName: '[REGISTERED INTERMEDIARY NAME]',
 	fundingReference: '[FUNDING REFERENCE]',
 	companyPhone: '[COMPANY PHONE]',
 	offeringUrl: '[REGISTERED INTERMEDIARY OFFERING URL]',
@@ -950,7 +953,7 @@ export const COMMUNICATION_TEMPLATES = [
 		implementation: 'restricted',
 		sendPolicy: 'test-only',
 		requiresCounsel: true,
-		variables: ['firstName', 'callBookingUrl', 'legalEmail'],
+		variables: ['firstName', 'senderName', 'senderTitle', 'callBookingUrl', 'legalEmail'],
 		email: {
 			subject: 'Confidential: TradingBible private introduction',
 			preheader: 'A private, one-to-one conversation. No offer is being made by this email.',
@@ -960,11 +963,12 @@ export const COMMUNICATION_TEMPLATES = [
 			body: [
 				p('Hi {{firstName}}, I am reaching out privately because of our existing relationship with you. We are preparing a possible private financing for TradingBible Holdings, Inc. and I would like to know whether a short conversation is appropriate.'),
 				p('This email is not an offer to sell or a solicitation of an offer to buy securities. It is not a private placement memorandum, and it does not contain offering terms. Any discussion of terms will happen only after we confirm that you are eligible and after you receive the definitive documents.'),
-				p('If you would like to speak, choose a time below. If this is not relevant, reply “not now” and I will not follow up.'),
-				cta('{{callBookingUrl}}', 'Arrange a private call'),
+				p('If you would like to speak, use the private reply link below. If this is not relevant, reply “not now” and I will not follow up.'),
+				cta('{{callBookingUrl}}', 'Continue privately'),
+				p('{{senderName}}<br/>{{senderTitle}}<br/>TradingBible Holdings, Inc.'),
 				small('Please do not forward this email. TradingBible is not conducting general solicitation, and the information is confidential.'),
 			].join(''),
-			text: 'Hi {{firstName}},\n\nI am reaching out privately because of our existing relationship. We are preparing a possible private financing for TradingBible Holdings, Inc. and I would like to know whether a short conversation is appropriate.\n\nThis email is not an offer to sell or a solicitation of an offer to buy securities. It is not a private placement memorandum, and it does not contain offering terms. Any discussion of terms will happen only after eligibility is confirmed and the definitive documents are provided.\n\nArrange a private call: {{callBookingUrl}}\n\nPlease do not forward this email. TradingBible is not conducting general solicitation.\n\nQuestions: {{legalEmail}}',
+			text: 'Hi {{firstName}},\n\nI am reaching out privately because of our existing relationship. We are preparing a possible private financing for TradingBible Holdings, Inc. and I would like to know whether a short conversation is appropriate.\n\nThis email is not an offer to sell or a solicitation of an offer to buy securities. It is not a private placement memorandum, and it does not contain offering terms. Any discussion of terms will happen only after eligibility is confirmed and the definitive documents are provided.\n\nContinue privately: {{callBookingUrl}}\n\nPlease do not forward this email. TradingBible is not conducting general solicitation.\n\n{{senderName}}\n{{senderTitle}}\nTradingBible Holdings, Inc.\n\nQuestions: {{legalEmail}}',
 		},
 	}),
 	template({
@@ -977,7 +981,7 @@ export const COMMUNICATION_TEMPLATES = [
 		implementation: 'restricted',
 		sendPolicy: 'test-only',
 		requiresCounsel: true,
-		variables: ['firstName', 'callBookingUrl', 'legalEmail'],
+		variables: ['firstName', 'senderName', 'senderTitle', 'callBookingUrl', 'legalEmail'],
 		email: {
 			subject: 'Follow-up: TradingBible private conversation',
 			preheader: 'Thank you for the conversation. The next step is eligibility, not a commitment.',
@@ -988,10 +992,11 @@ export const COMMUNICATION_TEMPLATES = [
 				p('Hi {{firstName}}, thank you for taking the time to speak with me about TradingBible.'),
 				p('As we discussed, the next step is to confirm eligibility and provide the definitive documents. Nothing in this email is an offer, and no investment can be accepted until the eligibility, risk and subscription process is complete.'),
 				p('If you would like to continue, reply to this email or arrange a follow-up call. If you would prefer not to proceed, tell me and I will close the file.'),
-				cta('{{callBookingUrl}}', 'Arrange a follow-up'),
+				cta('{{callBookingUrl}}', 'Continue privately'),
+				p('{{senderName}}<br/>{{senderTitle}}<br/>TradingBible Holdings, Inc.'),
 				small('Do not send funds or bank details in response to this email. Funding instructions, if applicable, are delivered only through a separately verified channel.'),
 			].join(''),
-			text: 'Hi {{firstName}},\n\nThank you for taking the time to speak with me about TradingBible.\n\nAs we discussed, the next step is to confirm eligibility and provide the definitive documents. Nothing in this email is an offer, and no investment can be accepted until the eligibility, risk and subscription process is complete.\n\nArrange a follow-up: {{callBookingUrl}}\n\nIf you would prefer not to proceed, tell me and I will close the file.\n\nDo not send funds or bank details in response to this email.\n\nQuestions: {{legalEmail}}',
+			text: 'Hi {{firstName}},\n\nThank you for taking the time to speak with me about TradingBible.\n\nAs we discussed, the next step is to confirm eligibility and provide the definitive documents. Nothing in this email is an offer, and no investment can be accepted until the eligibility, risk and subscription process is complete.\n\nContinue privately: {{callBookingUrl}}\n\nIf you would prefer not to proceed, tell me and I will close the file.\n\nDo not send funds or bank details in response to this email.\n\n{{senderName}}\n{{senderTitle}}\nTradingBible Holdings, Inc.\n\nQuestions: {{legalEmail}}',
 		},
 	}),
 	template({
@@ -1196,7 +1201,7 @@ export const COMMUNICATION_TEMPLATES = [
 		implementation: 'counsel-gated',
 		sendPolicy: 'test-only',
 		requiresCounsel: true,
-		variables: ['firstName', 'offeringUrl', 'campaignDeadline', 'unsubscribeUrl', 'legalEmail'],
+		variables: ['firstName', 'offeringUrl', 'campaignDeadline', 'intermediaryName', 'unsubscribeUrl', 'legalEmail'],
 		email: {
 			subject: 'TradingBible Regulation CF offering is live',
 			preheader: 'The qualified offering statement and the registered intermediary’s page are open.',
@@ -1209,12 +1214,12 @@ export const COMMUNICATION_TEMPLATES = [
 				cta('{{offeringUrl}}', 'Read the qualified offering'),
 				ul(
 					'<strong>Campaign deadline:</strong> {{campaignDeadline}}',
-					'<strong>Intermediary:</strong> [REGISTERED INTERMEDIARY NAME]',
+					'<strong>Intermediary:</strong> {{intermediaryName}}',
 				),
 				p('Investment is optional. Do not invest more than you can afford to lose, and do not invest based on this email alone.'),
 				small('This email is not the offering statement. The qualified offering statement and the intermediary’s page control.'),
 			].join(''),
-			text: 'Hi {{firstName}},\n\nThe TradingBible Regulation CF campaign is open through the registered intermediary.\n\nRead the qualified offering statement before investing. It contains the offering terms, the risk factors, the use of proceeds and the investor-limit rules:\n{{offeringUrl}}\n\nCampaign deadline: {{campaignDeadline}}\nIntermediary: [REGISTERED INTERMEDIARY NAME]\n\nInvestment is optional. Do not invest more than you can afford to lose, and do not invest based on this email alone.\n\nThis email is not the offering statement. The qualified offering statement and the intermediary’s page control.\n\nUnsubscribe: {{unsubscribeUrl}}',
+			text: 'Hi {{firstName}},\n\nThe TradingBible Regulation CF campaign is open through the registered intermediary.\n\nRead the qualified offering statement before investing. It contains the offering terms, the risk factors, the use of proceeds and the investor-limit rules:\n{{offeringUrl}}\n\nCampaign deadline: {{campaignDeadline}}\nIntermediary: {{intermediaryName}}\n\nInvestment is optional. Do not invest more than you can afford to lose, and do not invest based on this email alone.\n\nThis email is not the offering statement. The qualified offering statement and the intermediary’s page control.\n\nUnsubscribe: {{unsubscribeUrl}}',
 		},
 		sms: {
 			body: 'TradingBible: The Regulation CF campaign is open. Read the qualified offering statement before investing: {{offeringUrl}} Reply STOP to opt out.',
@@ -1510,11 +1515,11 @@ function interpolate(value, variables, { html = false } = {}) {
 	});
 }
 
-function templateWarnings(template, variables) {
+function templateWarnings(template, variables, { commercial = false } = {}) {
 	const warnings = [];
 	const missing = (template.variables || []).filter((key) => !variables?.[key]);
 	if (missing.length) warnings.push(`Using sample or placeholder values for: ${missing.join(', ')}.`);
-	if (template.compliance === 'marketing' && !String(process.env.COMPANY_POSTAL_ADDRESS || '').trim()) {
+	if ((template.compliance === 'marketing' || commercial) && !String(process.env.COMPANY_POSTAL_ADDRESS || '').trim()) {
 		warnings.push('A physical postal address is required before a commercial email is sent. Set COMPANY_POSTAL_ADDRESS.');
 	}
 	if (template.requiresCounsel) {
@@ -1523,7 +1528,7 @@ function templateWarnings(template, variables) {
 	return warnings;
 }
 
-export function renderCommunicationTemplate(id, { channel = 'email', variables = {}, baseUrl = '', colorScheme = 'auto' } = {}) {
+export function renderCommunicationTemplate(id, { channel = 'email', variables = {}, baseUrl = '', colorScheme = 'auto', commercial = false } = {}) {
 	const template = findCommunicationTemplate(id);
 	if (!template) {
 		const err = new Error('Template not found');
@@ -1531,7 +1536,7 @@ export function renderCommunicationTemplate(id, { channel = 'email', variables =
 		throw err;
 	}
 	const vars = { ...SAMPLE_VARIABLES, ...(baseUrl ? { appUrl: baseUrl } : {}), ...(variables || {}) };
-	const warnings = templateWarnings(template, vars);
+	const warnings = templateWarnings(template, vars, { commercial });
 	const result = {
 		id: template.id,
 		category: template.category,
@@ -1551,7 +1556,7 @@ export function renderCommunicationTemplate(id, { channel = 'email', variables =
 			err.status = 422;
 			throw err;
 		}
-		const marketing = template.compliance === 'marketing';
+		const marketing = template.compliance === 'marketing' || Boolean(commercial);
 		const address = String(process.env.COMPANY_POSTAL_ADDRESS || '').trim();
 		if (marketing && !address) {
 			result.blockedReason = 'A physical postal address is required before a commercial email can be sent. Set COMPANY_POSTAL_ADDRESS.';
@@ -1580,6 +1585,7 @@ export function renderCommunicationTemplate(id, { channel = 'email', variables =
 				: '',
 		});
 		result.text = interpolate(template.email.text || '', vars);
+		result.commercial = marketing;
 		return result;
 	}
 

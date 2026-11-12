@@ -521,7 +521,7 @@ export function AdminDashboard() {
                       { label: 'Funded evaluations', value: `${FUNDED_FACTS.products} programs`, note: `$${FUNDED_FACTS.maxAccount.toLocaleString()} max · ${FUNDED_FACTS.maxSplit}% split · ${FUNDED_FACTS.payoutDays}-day payouts` },
                       { label: 'TBC token', value: 'Not issued', note: `${(COMPANY_FACTS.tbc.maxSupply / 1_000_000).toFixed(0)}M proposed max · sale disabled` },
                       { label: 'Fundraising', value: 'Gate closed', note: `${COMPANY_FACTS.fundraising.packetDocuments} execution instruments · no public offering` },
-                      { label: 'Communications', value: `${COMPANY_FACTS.communications.templates} templates`, note: 'Email · SMS · in-app · admin test-send only' },
+                      { label: 'Communications', value: `${COMPANY_FACTS.communications.templates} templates`, note: 'Library test-send · investor letters gated' },
                     ].map((fact) => (
                       <div key={fact.label} className="rounded-xl border border-[var(--at-line-soft)] bg-[var(--at-soft)] p-3">
                         <div className="at-kpi-label">{fact.label}</div>
@@ -4460,7 +4460,7 @@ export function AdminEmployees() {
       <div className="at-page at-scope at-enter pb-10">
         <AtPageBar
           meta={[`${roster.length} company employees`, 'Company roles', 'Credits are not salary', 'AI work is never payroll']}
-          actions={<><AtButton onClick={() => { setCreatedLogin(null); setAddOpen(true); }} variant="gold" icon={Plus}>Add employee</AtButton><AtButton to="/admin/jobs" variant="quiet" icon={Briefcase}>Jobs & hiring</AtButton><AtButton to="/admin/staff-id-cards" variant="outline" icon={Printer}>ID cards</AtButton><AtButton onClick={load} variant="quiet" icon={RefreshCw}>Refresh</AtButton></>}
+          actions={<><AtButton onClick={() => { setCreatedLogin(null); setAddOpen(true); }} variant="gold" icon={Plus}>Add employee</AtButton><AtButton to="/admin/jobs" variant="quiet" icon={Briefcase}>Jobs & hiring</AtButton><AtButton to="/admin/workforce" variant="gold" icon={ShieldCheck}>Workforce compliance</AtButton><AtButton to="/admin/staff-id-cards" variant="outline" icon={Printer}>ID cards</AtButton><AtButton onClick={load} variant="quiet" icon={RefreshCw}>Refresh</AtButton></>}
         >
           <p className="mt-2 max-w-3xl text-[11px] leading-relaxed text-[var(--at-mut)]">Company employee directory, contract credit allocations and AI work records. Add an employee directly here, or hire from an application in Jobs &amp; Hiring. The employee profile, company login, employee number, ID card, payroll metadata and onboarding checklist are generated together. Academy learners and instructors are product users, not employees.</p>
         </AtPageBar>

@@ -40,6 +40,8 @@ import terminalRouter from './terminal.js';
 import staffRouter from './staff.js';
 import investorRouter from './investor.js';
 import messagesRouter from './messages.js';
+import investorLettersRouter from './investor-letters.js';
+import workforceRouter from './workforce.js';
 
 const router = Router();
 
@@ -90,6 +92,8 @@ export default () => {
     router.use('/staff', staffRouter);
     router.use('/investor', investorRouter);
     router.use('/messages', messagesRouter);
+    router.use('/investor-letters', investorLettersRouter);
+    router.use('/workforce', workforceRouter);
 
     return router;
 };

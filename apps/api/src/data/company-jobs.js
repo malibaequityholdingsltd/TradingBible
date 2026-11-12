@@ -310,7 +310,7 @@ export const companyJobs = [
     title: 'Legal Counsel — Fintech & Digital Assets',
     department: 'Legal',
     description: 'Manage product terms, privacy, commercial contracts, marketing review and the TBC legal workstream with external counsel. Do not opine on regulated activity without qualified local advice.',
-    requirements: 'Licensed lawyer with fintech, payments or digital-asset experience. Strong drafting and cross-functional judgement.',
+    requirements: 'Licensed lawyer with fintech, payments or digital-asset experience. Strong legal writing and cross-functional judgement.',
   }),
   role({
     title: 'Compliance Manager — AML/KYC',

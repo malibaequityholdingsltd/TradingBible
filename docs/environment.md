@@ -51,6 +51,64 @@ SMS remains design-only until a provider, consent records, quiet hours and
 opt-out handling exist. Fundraising templates remain restricted and
 counsel-gated.
 
+## Controlled investor letters
+
+The admin **Investor letters** console is a separate, server-gated sender for
+two audiences only:
+
+- `private_506b` — one-to-one Rule 506(b) introductions to people with a
+  pre-existing substantive relationship. No general solicitation and no
+  offering terms in the email.
+- `reg_cf` — confirmed investor-update subscribers. Pre-launch copy is
+  educational and non-offering. Campaign-live, reminder and closing copy
+  require an SEC-qualified offering and the registered intermediary.
+
+| Variable | Required | Description |
+|---|---|---|
+| `INVESTOR_LETTERS_SECRET` | yes for real sends | Dedicated HMAC secret for unsubscribe links. At least 32 random characters. Do not reuse the SMTP password or Supabase service key. |
+| `REG_CF_OFFERING_STATUS` | for Reg CF | `prelaunch` (default), `qualified` or `closed`. Any other non-empty value is treated as unknown and blocks the live path. |
+| `REG_CF_INTERMEDIARY` | for Reg CF live | Legal name of the FINRA-registered intermediary conducting the offering. |
+| `REG_CF_OFFERING_URL` | for Reg CF live | URL of the intermediary’s qualified offering page. |
+| `COMPANY_POSTAL_ADDRESS` | yes for real sends | Physical postal address in the commercial footer. |
+| `LEGAL_EMAIL` | yes for real sends | Reply-to and legal contact in the letter. |
+| `SMTP_*` | yes for real sends | The same mailbox used for transactional email. |
+
+Real sends remain blocked unless SMTP, postal address, counsel approval
+(counsel name, reference and date), a dedicated unsubscribe secret and the
+track-specific confirmations are recorded. The server re-checks the gate; the
+UI is not the only control. A campaign that already delivered at least one
+letter cannot be retried. Prepare a fresh campaign for the remaining active
+recipients.
+
+Runtime state is stored in `apps/api/storage/investor-letters/letters.json`
+with mode `0600`. It contains contact emails, consent sources, approval
+references and the send log. Never commit it, serve it statically or delete it
+during deployment.
+
+## Workforce compliance
+
+The admin **Workforce compliance** console records employer controls,
+employee-file evidence, onboarding, offboarding and policy adoption. It uses
+the existing employee directory and payroll roster; it does not create a
+second employee record.
+
+Runtime state is stored in `apps/api/storage/workforce/compliance.json` with
+mode `0600`. It contains evidence references and audit history, not identity
+documents, medical records, bank details or tax identifiers. Preserve it during
+deployment.
+
+Build the controlled workforce document pack with:
+
+```sh
+node scripts/build-workforce-documents.mjs
+```
+
+Outputs are written to `apps/api/storage/hr-documents/`. The documents remain
+controlled templates until counsel review and adoption are recorded in the
+register. No environment flag makes a document adopted, an EIN issued, a
+payroll registration active, an insurance policy effective or a benefit
+entitlement real.
+
 ## Fundraising execution gate
 
 | Variable | Required | Description |
