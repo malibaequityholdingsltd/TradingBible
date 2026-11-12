@@ -130,9 +130,12 @@ app.use((req, res) => {
 });
 
 const port = process.env.PORT || 3001;
+// The public edge is Nginx. The API must not listen on a public interface;
+// keep it on loopback unless an explicit, reviewed API_HOST is supplied.
+const host = process.env.API_HOST || '127.0.0.1';
 
-app.listen(port, () => {
-	logger.info(`🚀 API Server running on http://localhost:${port}`);
+app.listen(port, host, () => {
+	logger.info(`🚀 API Server running on http://${host}:${port}`);
 	startSiWarmup();
 });
 

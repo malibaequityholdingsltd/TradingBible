@@ -8,6 +8,7 @@ Both apps load `.env` from their own directory (`node --env-file=.env` for the A
 |---|---|---|
 | `NODE_ENV` | yes | `production` |
 | `PORT` | | API port (3001) |
+| `API_HOST` | | Bind address. Defaults to `127.0.0.1` so the API is reachable only through Nginx. Set `0.0.0.0` only for an explicitly reviewed direct-access setup. |
 | `CORS_ORIGIN` | yes | Allowed web origin (`https://tradingbible.app`) |
 | `CORS_ORIGINS` | opt. | Comma-separated additional allowed origins. Do not use `*` with credentials. |
 | `TRUST_PROXY` | opt. | Number of trusted reverse-proxy hops. Production defaults to `1` (local Nginx). Set `false` only when the API is directly exposed. |
