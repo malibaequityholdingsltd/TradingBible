@@ -973,7 +973,7 @@ These are intentional product truths:
 ### Current production state
 
 - Public rebuild, the fundraising/communications consoles, the TBC/TB stock consoles and direct-employee provisioning are deployed at **https://tradingbible.app**.
-- Deployed web/API source commit: **`4fa89f0`** — `Finish execution copies, employee provisioning and branded communications`.
+- Deployed web/API source commit: **`fbbf00a`** — `Remove residual draft wording from execution surfaces` (includes `4fa89f0`, `Finish execution copies, employee provisioning and branded communications`).
 - Production deployment completed on 11 November 2026.
 - `/admin/fundraising-documents`, `/admin/communications`, `/admin/tbc-documents` and `/admin/tb-stock-documents` serve the admin SPA shell. Their API routes remain admin-authenticated and returned `401` without a session.
 - The 20-document final-form packet, 31 TBC documents and 9 TB stock documents are present under the API storage paths. The fundraising execution gate remains locked; no `FUNDRAISING_EXECUTION_ENABLED` change was made.
