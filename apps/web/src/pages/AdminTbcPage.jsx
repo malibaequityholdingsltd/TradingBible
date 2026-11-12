@@ -600,7 +600,7 @@ function Legal({ counts }) {
             </div>
           ))}
         </div>
-        <p className="mt-3 text-[11px] leading-relaxed text-[var(--at-mut)]">The 26 corporate instruments are stored outside the web bundle and streamed only after admin verification. Signature blocks are corrected but not executed.</p>
+        <p className="mt-3 text-[11px] leading-relaxed text-[var(--at-mut)]">The 26 corporate instruments are stored outside the web bundle and streamed only after admin verification. Signature blocks are final-form and signature-ready; no signature is recorded until DocuSign completes.</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <AtButton to="/admin/legal-vault" variant="gold" size="sm" icon={ShieldCheck}>Open legal vault</AtButton>
           <AtButton to="/tbc/documents" variant="quiet" size="sm">Public library</AtButton>

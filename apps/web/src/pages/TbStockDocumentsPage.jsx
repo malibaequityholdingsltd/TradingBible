@@ -30,14 +30,14 @@ export default function TbStockDocumentsPage() {
 
         <CapPublicHead
           title="TB stock documents"
-          sub="Approved and draft stock documents, with execution status shown exactly as recorded. DocuSign is the only accepted signature source."
+          sub="Final-form stock documents, with execution status shown exactly as recorded. DocuSign is the only accepted signature source."
           actions={(
             <AtButton to="/stock/TB" variant="outline" size="sm" icon={ArrowLeft}>TB stock record</AtButton>
           )}
           aside={(
             <CapRecordCard
               title="Library status"
-              badge="Draft · not executed"
+              badge="Signature required"
               rows={[
                 ['Instruments', loading ? 'Checking' : `${documents.length} published`],
                 ['Execution', 'DocuSign only'],
@@ -55,7 +55,7 @@ export default function TbStockDocumentsPage() {
           <CapSectionHead
             index="01"
             title="Signature-ready library"
-            sub="Preparation instruments for a proposed future public listing. Drafts remain unsigned until real DocuSign execution is recorded."
+            sub="Final-form preparation instruments for a proposed future public listing. Signature remains pending until real DocuSign execution is recorded."
             action={(
               <button type="button" onClick={reload} className="text-[9px] font-bold text-[var(--at-gold)] hover:underline">
                 Refresh

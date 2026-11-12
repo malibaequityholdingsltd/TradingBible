@@ -394,7 +394,7 @@ function Whitepaper({ whitepaper, docsLoading, onRead }) {
   return (
     <>
       <div className="pt-3 sm:pt-5">
-        <PageHero kickerIcon={BookOpen} kicker="Official summary · P-01" title="TBC Whitepaper" accent="& Utility Roadmap" subtitle="Issuer overview, functional design and delivery milestones. Read the current draft in the secure in-app Word reader. No download is offered." actions={<><GoldButton to="/tbc/documents">Document library <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/tbc/faqs">FAQs</GhostButton></>} />
+        <PageHero kickerIcon={BookOpen} kicker="Official summary · P-01" title="TBC Whitepaper" accent="& Utility Roadmap" subtitle="Issuer overview, functional design and delivery milestones. Read the current proposal in the secure in-app Word reader. No download is offered." actions={<><GoldButton to="/tbc/documents">Document library <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/tbc/faqs">FAQs</GhostButton></>} />
       </div>
       <div className="mt-4"><TbcProposalNotice /></div>
       <div className="mt-5 grid gap-4 lg:grid-cols-[1.35fr_.65fr]">

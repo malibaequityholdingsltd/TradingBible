@@ -29,9 +29,9 @@ This is the honest readiness list. It separates work that is complete from work 
 | Lithic sandbox connectivity | A sandbox-only Lithic client and authenticated `/wallet/cards/*` routes can create and close a virtual sandbox card. PAN/CVV are never stored or returned; production issuance is hard-disabled. | Sandbox key validated; route test returned `201` for create and `200` for close; the Lithic card ended in `CLOSED`. |
 | Release controls | PWA, DocuSign, TBC, exam-bank, translation and curated-path guards remain intact. | `npm run verify:release` passes. |
 | Lint/build/tests | Web/API lint, production build and unit tests pass after the changes. | `npm run lint`, `npm run build`, `npm test` (26 tests). |
-| Confidential fundraising packet | 20 branded DOCX/PDF drafts covering the readiness memo, board resolutions, officer certificate, SAFE, investor certificates, Form D worksheet, Reg CF readiness and reporting. Admin-only, no public page, no solicitation. | Builder generated all 20 files plus manifest; every one of the 232 DocuSign anchors appears exactly once in its PDF; packet ZIP route tested. |
+| Confidential fundraising packet | 20 branded final-form DOCX/PDF documents covering the readiness memo, board resolutions, officer certificate, SAFE, investor certificates, Form D worksheet, Reg CF readiness and reporting. Admin-only, no public page, no solicitation. | Builder generated all 20 files plus manifest; every one of the 232 DocuSign anchors appears exactly once in its PDF; packet ZIP route tested. |
 | Fundraising DocuSign controls | Custom text and checkbox tabs for investor questionnaires; unique per-document anchors; separate execution register; execution locked behind `FUNDRAISING_EXECUTION_ENABLED=true`. | Module import, route registration, anchor uniqueness and gate checks pass. |
-| Company communications registry | 45 branded email/SMS/in-app templates across seven categories, dark-and-gold shell, absolute logo URL, hidden preheader, marketing footer and compliance labels. | Registry renders 45 templates; welcome and fundraising previews render; Markdown pack exports. |
+| Company communications registry | 45 branded email/SMS/in-app templates across seven categories, each with a distinct layout, light/dark mode support, absolute logo URL, hidden preheader, marketing footer and compliance labels. | Registry renders 45 templates; all seven category layouts render in auto, light and dark modes; Markdown pack exports. |
 | Admin communications console | Admin-only list, preview and single-recipient test-send. No bulk sender or audience list. | Route and UI wired; test sends are limited to the signed-in administrator. |
 
 ## 2. Blocked — external
@@ -108,7 +108,7 @@ No API key can substitute for this authorisation.
 ### 2.8 Fundraising packet, Form D and Regulation CF
 
 **Status:** Blocked — external, legal and corporate records.
-**Current behaviour:** The 20-document confidential packet is generated, branded and readable only by admins. It is marked `DRAFT · NOT EXECUTED · COUNSEL REVIEW REQUIRED`. There is no public fundraising page, investment button, payment collection or securities issuance. The private-placement track is drafted as Rule 506(b) plus a Regulation S offshore tranche; Regulation CF is a separate later track and is not qualified.
+**Current behaviour:** The 20-document confidential packet is generated, branded and readable only by admins. Each instrument is marked `EXECUTION COPY · SIGNATURE REQUIRED` or `CONTROLLED RECORD · COMPANY USE`; none is an editable working copy. There is no public fundraising page, investment button, payment collection or securities issuance. The private-placement track is documented as Rule 506(b) plus a Regulation S offshore tranche; Regulation CF is a separate later track and is not qualified.
 **What is missing:**
 
 - Counsel review of the exact document version and the communications gate.

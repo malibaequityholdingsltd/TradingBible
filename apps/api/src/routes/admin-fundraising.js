@@ -92,7 +92,7 @@ function packetReadme() {
 		'',
 		'STATUS',
 		'------',
-		'All documents in this packet are drafts. They are not executed, filed, qualified, approved or effective. Nothing in this packet is an offer to sell or a solicitation of an offer to buy securities.',
+		'All documents in this packet are final-form execution copies or controlled records. They are not editable working copies. They are not executed, filed, qualified, approved or effective until signed and, where required, authorized by the board or counsel. Nothing in this packet is an offer to sell or a solicitation of an offer to buy securities.',
 		'',
 		'Counsel must review the exact document version before any external use. Private-placement communications must remain one-to-one and limited to persons with a pre-existing relationship. Regulation CF communications must remain inside the qualified offering process and the registered intermediary\'s rules.',
 		'',
@@ -251,7 +251,7 @@ router.post('/:slug/send', supabaseAuth, async (req, res, next) => {
 			});
 		}
 		const selected = assertSignerConfig(execution);
-		const sendNow = req.body?.draft === true ? false : config.sendOnCreate;
+		const sendNow = req.body?.prepareOnly === true ? false : config.sendOnCreate;
 		const envelope = await createEnvelope({
 			doc,
 			recipients: selected,
@@ -268,7 +268,7 @@ router.post('/:slug/send', supabaseAuth, async (req, res, next) => {
 		});
 		res.status(201).json({
 			execution: saved,
-			draft: envelope.status === 'created',
+			preparedOnly: envelope.status === 'created',
 			sentBy: actor.email || '',
 		});
 	} catch (err) {
@@ -284,13 +284,13 @@ router.post('/:slug/submit', supabaseAuth, async (req, res, next) => {
 		const execution = await getExecution(req.params.slug);
 		if (!execution?.envelopeId) return res.status(409).json({ message: 'Prepare the DocuSign envelope first.' });
 		if (execution.providerStatus !== 'created') {
-			return res.status(409).json({ message: 'This envelope is not a draft.' });
+			return res.status(409).json({ message: 'This envelope has already been sent.' });
 		}
 		await sendEnvelope(execution.envelopeId);
 		const saved = await updateProviderStatus(req.params.slug, {
 			providerStatus: 'sent',
 			eventType: 'docusign.envelope.sent',
-			detail: 'Draft envelope released for signature',
+			detail: 'Prepared envelope released for signature',
 		});
 		res.json({ execution: saved });
 	} catch (err) {

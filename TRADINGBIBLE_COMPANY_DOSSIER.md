@@ -457,7 +457,7 @@ TBC is **not** equity, a share class, a fund unit or a claim on fund assets. A T
 - Staking status: future, subject to chain review.
 - Proposed parameters: 21-day unbonding, 10% max commission, 100,000 TBC minimum self-bond, 21-validator active set, 8% APR illustrative subsidy cap.
 - No delegation, rewards, vote or validator onboarding is live.
-- Governance agenda items are drafts; no vote is open.
+- Governance agenda items are working items; no vote is open.
 - Migration from Base to TradingBible Chain is planned, with one canonical supply-accounting model to prevent double spending.
 
 ### Chain roadmap
@@ -512,19 +512,19 @@ An IPO is a long-term objective earned through performance, not a launch prerequ
 
 Public documents remain readable in-app only. There are no download controls, and public signatory data is not exposed. Private execution records and signatory identities stay inside the controlled vault.
 
-### Fundraising preparation — confidential, admin-only
+### Fundraising execution package — confidential, admin-only
 
 The company has a **20-document confidential fundraising packet** for counsel
-and board preparation. It is not an offering, a solicitation, a filing, a
+and board authorization. It is not an offering, a solicitation, a filing, a
 qualification, an approval or an executed agreement. There is no public
 fundraising page and no investment button.
 
 | Track | Documents | Status |
 |---|---|---|
-| Framework | FR-00 readiness memorandum | Draft |
-| Private placement | FR-01, FR-03, FR-04, FR-10 to FR-17 | Draft; Rule 506(b) plus a Regulation S offshore tranche |
-| Regulation CF | FR-02, FR-20 to FR-25 | Separate later track; not qualified |
-| Execution | FR-30 DocuSign execution records policy | Draft |
+| Framework | FR-00 readiness memorandum | Controlled record |
+| Private placement | FR-01, FR-03, FR-04, FR-10 to FR-17 | Execution copies; FR-15 and FR-16 are controlled worksheets; Rule 506(b) plus a Regulation S offshore tranche |
+| Regulation CF | FR-02, FR-20 to FR-25 | FR-02 and FR-23 are execution copies; remaining documents are controlled worksheets; separate later track, not qualified |
+| Execution | FR-30 DocuSign execution records policy | Controlled record |
 
 The private-placement documents include a board resolution, officer
 certificate, insider-participation policy, confidential summary, post-money
@@ -600,18 +600,18 @@ open.
 | Execution and TCA | Designed |
 | Fund administration | Not engaged |
 | Custody and prime brokerage | Not engaged |
-| Compliance and AML | Draft only |
+| Compliance and AML | Not adopted |
 
 ### Readiness gates
 
 - Fund entity and jurisdiction — pending.
 - Investment-adviser registration or exemption — pending.
-- Private placement memorandum — not drafted.
+- Private placement memorandum — not prepared.
 - Independent auditor — not engaged.
 - Fund administrator and NAV — not engaged.
 - Prime broker and custodian — not engaged.
 - AML/KYC and investor onboarding — designed, not live.
-- Compliance manual and code of ethics — draft only.
+- Compliance manual and code of ethics — not adopted.
 - Insurance and business continuity — pending.
 - Seed capital and track record — not available.
 - Regulatory and marketing review — pending.
@@ -899,17 +899,17 @@ This is the honest readiness list. None of these items is presented in the produ
 
 | Item | Status |
 |---|---|
-| Fund entity, PPM, LPA, subscription documents | Not formed/drafted |
+| Fund entity, PPM, LPA, subscription documents | Not formed/prepared |
 | Investment-adviser registration or exemption | Not confirmed |
 | Auditor, administrator, prime broker, custodian | Not engaged |
-| AML/KYC, compliance manual, insurance | Draft/pending |
+| AML/KYC, compliance manual, insurance | Pending — not adopted or engaged |
 | Seed capital and track record | Not available |
 
 ### Fundraising and communications
 
 | Item | Status |
 |---|---|
-| Private-placement packet and SAFE terms | Draft — counsel/board review required |
+| Private-placement packet and SAFE terms | Execution copies — board/counsel authorization required; SAFE terms not approved |
 | Corporate registration, cap table and financial statements | Pending — company records |
 | Form D filing | Not filed — worksheet only |
 | Regulation CF offering and Form C | Not qualified — no registered portal |
@@ -958,7 +958,7 @@ These are intentional product truths:
 | Production build | Passed |
 | Academy parity | 17 paths · 76 courses · 347 lessons |
 | Release guards | Passed |
-| Fundraising packet | 20 DOCX/PDF drafts generated; 232 DocuSign anchors checked, zero duplicates/misses |
+| Fundraising packet | 20 final-form DOCX/PDF documents generated; 232 DocuSign anchors checked, zero duplicates/misses |
 | Fundraising execution gate | Locked; `FUNDRAISING_EXECUTION_ENABLED` required before envelope creation |
 | Communications registry | 45 templates; email/SMS/in-app render checks passed |
 | Public routes | Verified |
@@ -972,11 +972,12 @@ These are intentional product truths:
 
 ### Current production state
 
-- Public rebuild and the fundraising/communications consoles are deployed at **https://tradingbible.app**.
-- Deployed web/API source commit: **`8a3ff5a`** — `feat(fundraising): add confidential packet and branded communications`.
-- Production deployment completed on 10 November 2026.
-- `/admin/fundraising-documents` and `/admin/communications` serve the admin SPA shell. Their API routes remain admin-authenticated and returned `401` without a session.
-- The 20-document packet is present under the API storage path. The execution gate remains locked; no `FUNDRAISING_EXECUTION_ENABLED` change was made.
+- Public rebuild, the fundraising/communications consoles, the TBC/TB stock consoles and direct-employee provisioning are deployed at **https://tradingbible.app**.
+- Deployed web/API source commit: **`4fa89f0`** — `Finish execution copies, employee provisioning and branded communications`.
+- Production deployment completed on 11 November 2026.
+- `/admin/fundraising-documents`, `/admin/communications`, `/admin/tbc-documents` and `/admin/tb-stock-documents` serve the admin SPA shell. Their API routes remain admin-authenticated and returned `401` without a session.
+- The 20-document final-form packet, 31 TBC documents and 9 TB stock documents are present under the API storage paths. The fundraising execution gate remains locked; no `FUNDRAISING_EXECUTION_ENABLED` change was made.
+- The TBC execution panel is unlocked. Envelope creation still depends on server-side DocuSign credentials and authorized recipients.
 - The platform is real and usable for the documented public and member surfaces.
 - Authenticated admin UI acceptance still needs a real admin session. No production `.env` value was read or changed.
 - Regulated surfaces remain gated as described above.
@@ -992,7 +993,7 @@ These are intentional product truths:
 | `apps/web/src/lib/fundProfile.js` | TradingBible Capital status, strategies, operating model, readiness and FAQ |
 | `apps/web/src/lib/tbcEcosystem.js` | TBC proposal, allocation, supply lifecycle, roadmap, modules, utility, purchase controls, jurisdictions and separation |
 | `apps/web/src/lib/mockData.js` | Current public plan definitions |
-| `docs/fundraising/` | Source Markdown for the 20 confidential fundraising drafts |
+| `docs/fundraising/` | Source Markdown for the 20 confidential fundraising documents |
 | `scripts/build-fundraising-documents.py` | Branded DOCX/PDF/manifest builder with DocuSign anchors |
 | `apps/api/src/routes/admin-fundraising.js` | Admin-only packet downloads and separately gated execution API |
 | `apps/api/src/routes/admin-communications.js` | Admin-only template preview and single-recipient test-send API |

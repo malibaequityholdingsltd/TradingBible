@@ -136,7 +136,7 @@ export function displayStateFor(execution = {}) {
 export function displayLabelFor(state) {
 	return {
 		not_prepared: 'Not prepared',
-		prepared: 'Prepared · draft',
+		prepared: 'Prepared · not sent',
 		awaiting_signatures: 'Awaiting signatures',
 		delivered: 'Viewed · awaiting signature',
 		executed: 'Executed · approval pending',

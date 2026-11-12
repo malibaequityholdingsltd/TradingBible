@@ -182,12 +182,12 @@ export default function TbcExecutionPanel({
       });
       const data = await api(`${apiBase}/${encodeURIComponent(selected.slug)}/send`, {
         method: 'POST',
-        body: JSON.stringify({ draft: !sendImmediately }),
+        body: JSON.stringify({ prepareOnly: !sendImmediately }),
       });
       await load(selected.slug);
       onChanged?.();
-      setNotice(data.draft
-        ? 'DocuSign draft envelope prepared. Review it in DocuSign, then release it from this panel.'
+      setNotice(data.preparedOnly
+        ? 'DocuSign envelope prepared but not sent. Review it in DocuSign, then release it from this panel.'
         : 'DocuSign envelope sent. Each signer can access only the tabs anchored to their own execution block.');
     } catch (err) {
       setError(err?.message || 'Could not create the DocuSign envelope');
@@ -204,9 +204,9 @@ export default function TbcExecutionPanel({
       await api(`${apiBase}/${encodeURIComponent(selected.slug)}/submit`, { method: 'POST' });
       await load(selected.slug);
       onChanged?.();
-      setNotice('Draft envelope released for signature.');
+      setNotice('Prepared envelope released for signature.');
     } catch (err) {
-      setError(err?.message || 'Could not send the draft envelope');
+      setError(err?.message || 'Could not send the prepared envelope');
     } finally {
       setBusy('');
     }
@@ -358,7 +358,7 @@ export default function TbcExecutionPanel({
                     )}
                     {isDraft && (
                       <AtButton onClick={submitDraft} disabled={Boolean(busy) || !unlocked} variant="gold" size="sm" icon={busy === 'submit' ? Loader2 : Send}>
-                        Release draft
+                        Release envelope
                       </AtButton>
                     )}
                   </div>
@@ -438,7 +438,7 @@ export default function TbcExecutionPanel({
                     </AtButton>
                     <label className="at-check text-[10px] text-[var(--at-mut)]">
                       <input type="checkbox" checked={sendImmediately} onChange={(event) => setSendImmediately(event.target.checked)} disabled={Boolean(selected.envelopeId) || !executionEnabled} />
-                      Send immediately (uncheck to prepare a DocuSign draft)
+                      Send immediately (uncheck to prepare the envelope without sending)
                     </label>
                   </div>
                   {!configured && <p className="mt-2 text-[10px] text-[var(--at-amber)]">Sending is disabled until the DocuSign credentials are added to the API environment.</p>}

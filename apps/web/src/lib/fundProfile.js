@@ -99,7 +99,7 @@ export const FUND_OPERATING_MODEL = [
   {
     title: 'Compliance & AML',
     body: 'Investment-adviser analysis, AML/KYC, sanctions screening, marketing rules, code of ethics and record retention.',
-    status: 'Draft only',
+    status: 'Not adopted',
     tone: 'amber',
   },
 ];
@@ -107,12 +107,12 @@ export const FUND_OPERATING_MODEL = [
 export const FUND_READINESS = [
   ['Fund entity and jurisdiction', 'Pending', 'A separate fund vehicle, jurisdiction and tax analysis must be approved before any subscription.'],
   ['Investment-adviser registration or exemption', 'Pending', 'Securities counsel must confirm the applicable registration, exemption and marketing route.'],
-  ['Private placement memorandum', 'Not drafted', 'No PPM, subscription agreement, limited partnership agreement or risk disclosure is published.'],
+  ['Private placement memorandum', 'Not prepared', 'No PPM, subscription agreement, limited partnership agreement or risk disclosure is published.'],
   ['Independent auditor', 'Not engaged', 'No audit engagement, audited financials or verified performance series exists.'],
   ['Fund administrator and NAV', 'Not engaged', 'No independent NAV, capital-account or investor-register process is live.'],
   ['Prime broker and custodian', 'Not engaged', 'No prime-brokerage, custody, segregation or reconciliation arrangement is in place.'],
   ['AML/KYC and investor onboarding', 'Designed', 'The platform has identity and support rails, but no fund-specific onboarding or eligibility process is live.'],
-  ['Compliance manual and code of ethics', 'Draft only', 'Policies must be adopted, tested and evidenced before launch.'],
+  ['Compliance manual and code of ethics', 'Not adopted', 'Policies must be adopted, tested and evidenced before launch.'],
   ['Insurance and business continuity', 'Pending', 'Fund-level insurance, disaster recovery and operational-resilience review are not complete.'],
   ['Seed capital and track record', 'Not available', 'No seed commitment, live track record or verified attribution is presented.'],
   ['Regulatory and marketing review', 'Pending', 'No jurisdiction has cleared the fund, the offering or the marketing materials.'],
@@ -182,10 +182,10 @@ export const FUND_FAQ = [
 ];
 
 export const FUND_DOCUMENTS = [
-  { title: 'Private placement memorandum', status: 'Not drafted' },
-  { title: 'Limited partnership agreement', status: 'Not drafted' },
-  { title: 'Subscription agreement', status: 'Not drafted' },
-  { title: 'Investment management agreement', status: 'Not drafted' },
-  { title: 'Risk disclosure and offering supplement', status: 'Not drafted' },
-  { title: 'Compliance manual and code of ethics', status: 'Draft only' },
+  { title: 'Private placement memorandum', status: 'Not prepared' },
+  { title: 'Limited partnership agreement', status: 'Not prepared' },
+  { title: 'Subscription agreement', status: 'Not prepared' },
+  { title: 'Investment management agreement', status: 'Not prepared' },
+  { title: 'Risk disclosure and offering supplement', status: 'Not prepared' },
+  { title: 'Compliance manual and code of ethics', status: 'Not adopted' },
 ];

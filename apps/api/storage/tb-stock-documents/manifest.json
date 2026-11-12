@@ -904,8 +904,8 @@
       "pdf": "pdf/tb-electronic-signature-approval-protocol.pdf",
       "docx": "docx/tb-electronic-signature-approval-protocol.docx",
       "docxProtected": "docx-protected/tb-electronic-signature-approval-protocol.docx",
-      "pdfBytes": 141245,
-      "docxBytes": 169407,
+      "pdfBytes": 141325,
+      "docxBytes": 169408,
       "emailSubjectPrefix": "TradingBible TB Stock",
       "signers": [
         {

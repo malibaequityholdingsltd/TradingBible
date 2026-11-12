@@ -180,6 +180,13 @@ ENTITY_REPLACEMENTS = {
     "Owner or Additional Authorized Signatory": "Stockholder or Additional Authorized Signatory",
 }
 
+# Remove language that could be mistaken for an editable draft status. A
+# registration statement is not effective until the SEC declares it effective;
+# the source's “registration draft” phrasing is both ambiguous and imprecise.
+FINAL_FORM_REPLACEMENTS = {
+    "registration draft": "registration statement",
+}
+
 
 def execution_anchor(number: str, optional: bool = False) -> str:
     seq = number.replace("TB-", "")
@@ -253,8 +260,9 @@ def prepare_docx(source: Path, target: Path, doc_meta: dict) -> None:
 
     # The source calls the provider "DocSign"; the controlled copy must name
     # the real provider. A zip-level replacement also catches split runs.
-    replace_in_docx(target, {"DocSign": "DocuSign", **ENTITY_REPLACEMENTS})
-    normalize_docx_runs(target, ENTITY_REPLACEMENTS)
+    replacements = {"DocSign": "DocuSign", **ENTITY_REPLACEMENTS, **FINAL_FORM_REPLACEMENTS}
+    replace_in_docx(target, replacements)
+    normalize_docx_runs(target, replacements)
 
 
 def replace_in_docx(path: Path, replacements: dict[str, str]) -> None:

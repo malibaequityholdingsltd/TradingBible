@@ -79,7 +79,7 @@ export default function FundraisingStatusPage() {
       <PublicSection
         eyebrow="Current state"
         title="Private preparation only"
-        sub="The company has drafted a confidential fundraising packet for internal review. Drafting a document is not an offering, filing or approval."
+        sub="The company has final-form confidential fundraising documents for internal review. Final form is not an offering, filing or approval."
       >
         <div className="grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
           <Panel title="Offer status" sub="As at the date shown above.">
@@ -100,7 +100,7 @@ export default function FundraisingStatusPage() {
             <Panel title="What exists today" sub="Confidential work product, not a public offer.">
               <div className="space-y-2.5">
                 {[
-                  { icon: FileText, title: '20 private draft documents', note: 'Company-drafted and awaiting counsel review' },
+                  { icon: FileText, title: '20 final-form private documents', note: 'Final-form and awaiting board/counsel authorization' },
                   { icon: ShieldCheck, title: 'Execution and send gates closed', note: 'DocuSign sending and submission are disabled' },
                   { icon: Users, title: 'No investor commitments', note: 'No subscription, allocation or acceptance has occurred' },
                   { icon: Lock, title: 'No public investment route', note: 'No button, form, wallet address or payment link' },

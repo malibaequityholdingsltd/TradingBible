@@ -134,12 +134,12 @@ export default function FundPage() {
       <PublicSection eyebrow="Readiness" title="What must be true before outside capital.">
         <div className="grid gap-3 lg:grid-cols-2">
           {FUND_READINESS.map(([title, status, body]) => {
-            const tone = status === 'Built' ? 'green' : status === 'Designed' ? 'blue' : status === 'Pending' || status === 'Draft only' ? 'amber' : 'red';
+            const tone = status === 'Built' ? 'green' : status === 'Designed' ? 'blue' : status === 'Pending' || status === 'Not adopted' ? 'amber' : 'red';
             return (
               <div key={title} className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-start gap-2.5">
-                    {status === 'Built' ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" /> : status === 'Designed' ? <Layers className="mt-0.5 h-4 w-4 shrink-0 text-sky-300" /> : status === 'Draft only' || status === 'Pending' ? <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-[#e8c95a]" /> : <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />}
+                    {status === 'Built' ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" /> : status === 'Designed' ? <Layers className="mt-0.5 h-4 w-4 shrink-0 text-sky-300" /> : status === 'Not adopted' || status === 'Pending' ? <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-[#e8c95a]" /> : <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-300" />}
                     <div className="min-w-0">
                       <div className="text-sm font-semibold text-[#f0ecdd]">{title}</div>
                       <p className="mt-1 text-xs leading-relaxed text-[#8a8577]">{body}</p>
@@ -173,7 +173,7 @@ export default function FundPage() {
               <h3 className="text-base font-semibold text-[#f0ecdd]">Document library</h3>
             </div>
             <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">
-              A fund document is published only after it is approved, versioned and linked to a source record. The platform does not show a draft as if it were an executed instrument.
+              A fund document is published only after it is approved, versioned and linked to a source record. The platform does not show an unapproved working copy as if it were an executed instrument.
             </p>
             <div className="mt-4 space-y-2">
               {FUND_DOCUMENTS.map((doc) => (

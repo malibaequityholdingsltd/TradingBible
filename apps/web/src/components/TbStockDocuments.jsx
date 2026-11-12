@@ -10,7 +10,7 @@ const signedLabel = (doc) => (doc?.execution?.signed ? 'Execution recorded' : 'S
 
 export function TbStockDocumentCard({ doc, onRead, compact = false }) {
   const signed = doc?.execution?.signed === true;
-  const executionLabel = signed ? 'Execution recorded' : doc?.execution?.label || doc?.signatureStatus || 'Open — not executed';
+  const executionLabel = signed ? 'Execution recorded' : doc?.execution?.label || doc?.signatureStatus || 'Signature required';
   return (
     <article className="at-card at-card--hover flex h-full flex-col">
       <div className="flex flex-1 flex-col p-4">
@@ -108,7 +108,7 @@ export function TbStockDocumentsSection({ documents, loading, error, onRead }) {
       )}
     >
       <p className="mb-3 text-[10px] leading-relaxed text-[var(--at-mut)]">
-        Nine preparation instruments. They stay drafts until DocuSign records completion;
+        Nine final-form preparation instruments. They stay unsigned until DocuSign records completion;
         no signature, approval, listing, or offering is implied. Signatory details are not published.
       </p>
       {loading ? (
@@ -134,7 +134,7 @@ export function TbStockDocumentsSection({ documents, loading, error, onRead }) {
             >
               <span className="font-mono text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--at-gold)]">{doc.number}</span>
               <span className="mt-1 block text-[10px] font-semibold leading-snug text-[var(--at-ink)]">{doc.title}</span>
-              <span className="mt-1 block text-[9px] text-[var(--at-mut)]">{doc.execution?.signed ? 'Execution recorded' : 'Signature-ready · not executed'}</span>
+              <span className="mt-1 block text-[9px] text-[var(--at-mut)]">{doc.execution?.signed ? 'Execution recorded' : 'Signature required'}</span>
             </button>
           ))}
         </div>

@@ -62,11 +62,11 @@ terms and counsel has cleared the exact document version. Setting the flag does
 not make the documents executable; it only removes the software lock.
 
 1. Sign in as an admin and open **Admin → Fundraising documents**.
-2. Confirm the packet banner still reads **DRAFT · NOT EXECUTED · COUNSEL
-   REVIEW REQUIRED** and that the execution badge says **Execution locked**
-   until authorization is recorded.
+2. Confirm each instrument carries its final-form status — **EXECUTION COPY ·
+   SIGNATURE REQUIRED** or **CONTROLLED RECORD · COMPANY USE** — and that the
+   execution badge says **Execution locked** until authorization is recorded.
 3. Select a document, complete the required signer names and emails, save the
-   signer list, and then create a DocuSign draft or send.
+   signer list, and then prepare the DocuSign envelope or send it.
 4. Investor questionnaires use custom text and checkbox tabs. Each tab is
    anchored to the investor's own completion line. Company and counsel sign
    only their own execution blocks.
