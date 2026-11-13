@@ -24,9 +24,48 @@ const BOOT_TS = Date.now();
 
 const router = Router();
 
+function adminEmailAllowlist() {
+	const configured = String(process.env.ADMIN_EMAILS || '')
+		.split(',')
+		.map((value) => value.trim().toLowerCase())
+		.filter(Boolean);
+	return new Set([
+		...configured,
+		'malibaequityholdingsltd@outlook.com',
+		'tradingbible@hotmail.com',
+	]);
+}
+
 function isAdminEmail(email) {
-	const value = String(email || '').toLowerCase();
-	return /@tradingbible\.(?:app|net)$/i.test(value) || value === 'malibaequityholdingsltd@outlook.com' || value === 'tradingbible@hotmail.com';
+	return adminEmailAllowlist().has(String(email || '').trim().toLowerCase());
+}
+
+function tokenPayload(token) {
+	try {
+		const part = String(token || '').split('.')[1];
+		if (!part) return null;
+		return JSON.parse(Buffer.from(part, 'base64url').toString('utf8'));
+	} catch {
+		return null;
+	}
+}
+
+function assertAdminMfa(req) {
+	if (String(process.env.ADMIN_MFA_REQUIRED || '').toLowerCase() !== 'true') return;
+	const token = req.headers.authorization?.split(' ')?.[1];
+	const payload = tokenPayload(token);
+	const aal = String(payload?.aal || '');
+	const amr = Array.isArray(payload?.amr) ? payload.amr : [];
+	const methods = amr
+		.map((entry) => (typeof entry === 'string' ? entry : entry?.method))
+		.filter(Boolean)
+		.map((method) => String(method).toLowerCase());
+	const elevated = methods.some((method) => ['totp', 'webauthn', 'sso', 'mfa'].includes(method));
+	if (aal !== 'aal2' || !elevated) {
+		const err = new Error('Admin MFA is required. Complete TOTP or passkey verification and try again.');
+		err.status = 403;
+		throw err;
+	}
 }
 
 export async function assertAdmin(req) {
@@ -39,6 +78,7 @@ export async function assertAdmin(req) {
 	}
 	const profile = await supabase.getUserById(user.id);
 	if (profile?.role === 'admin' || isAdminEmail(user.email)) {
+		assertAdminMfa(req);
 		return user;
 	}
 	const err = new Error('Admin access required.');

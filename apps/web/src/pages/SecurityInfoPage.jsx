@@ -10,19 +10,19 @@ const CONTROLS = [
   {
     icon: LockKeyhole,
     title: 'Authentication',
-    copy: 'Passwordless email codes, optional authenticator-app TOTP, passkeys/WebAuthn, and login notifications. Admin routes require a verified staff session in addition to the admin role.',
+    copy: 'Passwordless email codes, optional authenticator-app TOTP, passkeys/WebAuthn and login notifications. Email delivery and mandatory admin MFA enforcement are being completed before public signup opens. Admin access requires an authenticated account with an administrator role.',
     label: 'Account access',
   },
   {
     icon: Database,
     title: 'Data isolation',
-    copy: 'Row-level security keeps each subscriber’s journal, trades and analytics isolated. Service-role access is held server-side and is never exposed to the browser.',
+    copy: 'Row-level security is the designed tenant boundary for journals, trades and analytics. Database policies and grants are being independently verified before launch. Service-role access is held server-side and is never exposed to the browser.',
     label: 'Tenant separation',
   },
   {
     icon: ServerCog,
     title: 'Broker connections',
-    copy: 'Broker credentials are encrypted and read-only by default. TradingBible does not place trades, move funds or withdraw from a connected brokerage account.',
+    copy: 'Broker credentials are encrypted with AES-256-GCM and read-only by default. Live sync currently supports a limited set of verified adapters; additional providers are shown only when their adapter is live. TradingBible does not place trades, move funds or withdraw from a connected brokerage account.',
     label: 'Read-only sync',
   },
   {
@@ -34,7 +34,7 @@ const CONTROLS = [
   {
     icon: Fingerprint,
     title: 'Sessions',
-    copy: 'Short-lived access tokens, revocable sessions, verified-email enforcement and account closure controls. Security-sensitive actions are audited server-side.',
+    copy: 'Short-lived access tokens, revocable sessions and account closure controls. Security-sensitive actions are logged server-side. Email delivery and verification are being repaired before public signup opens.',
     label: 'Session control',
   },
   {
@@ -51,7 +51,7 @@ export default function SecurityInfoPage() {
       <PublicPageHead
         eyebrow="Trust & security"
         title={<>Security is a <span className="tb-gold-text">system.</span></>}
-        description="How account access, broker data, payments and the proposed TBC token are separated. This page describes controls in place today; it is not a certification or an audit opinion."
+        description="How account access, broker data, payments and the proposed TBC token are separated. This page describes the control design and controls in place today. It is not a certification or an audit opinion, and controls still under verification are stated as such."
         meta={['No SOC 2 claim', 'Read-only broker access', 'TBC not issued']}
         actions={<><AtButton href="mailto:security@tradingbible.app?subject=Security%20report" variant="gold" icon={Mail}>Report a vulnerability</AtButton><AtButton to="/terms" variant="outline" icon={KeyRound}>Terms of service</AtButton></>}
       />
@@ -100,7 +100,7 @@ export default function SecurityInfoPage() {
         </div>
 
         <p className="mt-6 text-center text-[10px] leading-relaxed text-[var(--at-mut-2)]">
-          Last reviewed October 2026. Security controls evolve; this page is updated when the underlying systems change.
+          Last reviewed November 2026. Security controls evolve; this page is updated when the underlying systems change.
         </p>
       </div>
     </PublicSiteShell>

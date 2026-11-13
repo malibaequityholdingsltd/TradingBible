@@ -137,7 +137,7 @@ const HERO_LINES = [
 const HERO_FEATURES = [
   { icon: LineChart, title: 'SI trade reviews', text: 'Every trade analyzed after the close.' },
   { icon: Bot, title: '24/7 SI coach', text: 'Ask anything, in your own words.' },
-  { icon: ShieldCheck, title: 'Bank-grade security', text: 'Encrypted, backed up, always yours.' },
+  { icon: ShieldCheck, title: 'Security by design', text: 'Encrypted transport and server-side access controls.' },
   { icon: Sparkles, title: 'Live Academy', text: 'SI-taught paths and weekly webinars.' },
 ];
 

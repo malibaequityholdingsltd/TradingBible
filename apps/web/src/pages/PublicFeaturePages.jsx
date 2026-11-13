@@ -51,7 +51,7 @@ const FEATURES = {
     summary: 'Bring a live brokerage, prop firm or self-custody wallet into the record. Permissions stay read-only, credentials stay encrypted and access can be revoked.',
     stats: [['6+', 'named broker integrations'], ['Read-only', 'by default'], ['Anytime', 'revoke access']],
     sections: [
-      ['Named platforms, not a black box', 'Binance, Deriv, easyMarkets, Interactive Brokers, Alpaca and Coinbase connect over API or the MT5 bridge. Self-custody wallets track BTC, ETH, USDC and Solana balances.'],
+      ['Named adapters, not a black box', 'Live read-only API sync is currently available for Binance, Bybit and OKX. Additional broker, OAuth and MT5 bridge integrations appear only when their adapter is live and tested. Self-custody wallets track BTC, ETH, USDC and Solana balances.'],
       ['A permission boundary', 'TradingBible does not place orders, move funds or withdraw from a connected account. A connection is a read path into your record, not a key to your capital.'],
     ],
     points: ['Read-oriented API keys and OAuth', 'Encrypted credentials at rest and in transit', 'Revoke a connection from the app', 'Live accounts only; demo P&L excluded'],

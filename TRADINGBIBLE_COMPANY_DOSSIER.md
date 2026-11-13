@@ -273,7 +273,7 @@ The public company pages use the bull/bear artwork. Member, admin, staff and stu
 
 No verified revenue, profit, valuation, MRR, ARR, customer count, churn, subscriber count or growth figure is published as an achieved result. Any model or projection is illustrative and must be labelled as such.
 
-> **Legacy note:** `docs/company-profile.md` contains an older three-tier Pro / Elite SI / Professional structure. That is legacy internal copy. The current public pricing surface is Free + Premium at $19.99/month or $199/year. Do not use the old tiers as current public prices.
+> **Pricing note:** earlier drafts of `docs/company-profile.md` contained a three-tier Pro / Elite SI / Professional structure. That is retired. The current public pricing surface is Free + Premium at $19.99/month or $199/year, with Academy tuition separate. Do not use the old tiers as current public prices.
 
 ---
 
@@ -1010,7 +1010,7 @@ These are intentional product truths:
 | `docs/holdings-master-blueprint.md` | Corporate structure, strategy, roadmap and compliance blueprint |
 | `docs/blocked-items.md` | Authoritative blocked/external gates |
 | `docs/global-workforce-policy.md` | Proposed employment entity and workforce policy |
-| `docs/company-profile.md` | Legacy company brief — contains older three-tier pricing; use only for historical context |
+| `docs/company-profile.md` | Company brief — pricing corrected to Free + Premium; verify every claim before external use |
 
 ---
 

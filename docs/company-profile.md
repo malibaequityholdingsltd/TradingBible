@@ -1,5 +1,5 @@
 # TradingBible — Company, Product & Brand Brief
-*Prepared for lenders, investors, partners, and users. All statements below are sourced from the company repository and live product; figures marked TBD are to be supplied by the founder.*
+*Prepared for lenders, investors, partners and users. All statements below are sourced from the company repository and live product; figures marked TBD are to be supplied by the founder. This is a company brief, not an offering document, legal opinion or launch approval. Counsel and production acceptance still govern the gates listed in `docs/blocked-items.md`.*
 
 ## 1. Company snapshot
 - **Legal name:** TradingBible Holdings, Inc. — *Delaware corporation; owner, operator and securities issuer.*
@@ -16,7 +16,7 @@
   - Maliba SI — Head of Quantitative Research (the platform's SI research function)
 - **Team profile:** Operators, engineers, and quants from global markets and technology.
 - **Domain & contacts:** tradingbible.app · support@tradingbible.app · legal@tradingbible.app · privacy@tradingbible.app · ads@tradingbible.app
-- **Response commitment:** team responds within one business day.
+- **Response target:** team aims to respond within one business day; this is a service target, not a guarantee.
 
 ## 2. What TradingBible is
 TradingBible is a global financial technology (FinTech) platform that delivers institutional-grade market intelligence, advanced trading tools, real-time market analysis, educational resources, and SI-powered insights — in one terminal.
@@ -25,25 +25,25 @@ TradingBible is a global financial technology (FinTech) platform that delivers i
 - **Vision:** become one of the world's leading financial technology platforms by making professional trading intelligence accessible to every trader and investor.
 
 ## 3. The web app — product tour (live at tradingbible.app)
-AI-powered trading journal and analytics platform with a Bloomberg-grade terminal experience. Key modules:
+AI-powered trading journal and analytics platform with a professional terminal experience. Key modules:
 - **Terminal Pro** (`/app/terminal-pro`) — flagship 3-zone trading workstation: charts, watchlists, command strip.
 - **Trade journal** (`/app/journal`) — entries, exits, notes; broker-synced; mistake detection.
 - **Analytics** (`/app/analytics`) — equity, drawdown, P&L, discipline scoring.
-- **SI reports** (`/app/reports`, Elite+) — daily/weekly SI-generated reports.
-- **SI Trading Coach** (`/app/coach`, Elite+) — conversational SI that reviews trades, grades discipline, prescribes fixes.
+- **SI reports** (`/app/reports`, Premium) — daily/weekly SI-generated reports.
+- **SI Trading Coach** (`/app/coach`, Premium) — conversational SI that reviews trades, grades discipline, prescribes fixes.
 - **Signals & indicators** (`/app/signals`, `/app/indicators`) — data-driven signals from 14 built-in indicators (RSI, MACD, Bollinger, EMA, etc.).
 - **Risk tools** (`/app/tools`) — position sizer, risk/reward, breakeven, expectancy, ruin evaluator.
 - **Backtest & paper trading** (`/app/backtest`, `/app/paper`) — strategy testing without capital at risk.
 - **Challenges / prop firms** (`/app/challenges`) — funded-evaluation tickets, rules, and payouts across instruments.
-- **Broker & prop-firm sync** (`/app/brokers`) — connected accounts with P&L tracking (Binance, Deriv, easyMarkets, IBKR, Alpaca, Coinbase — live accounts; MT5 bridge; self-custody BTC/ETH/USDC/Solana).
+- **Broker & prop-firm sync** (`/app/brokers`) — connected accounts with P&L tracking. Live read-only API adapters are currently implemented for Binance, Bybit and OKX; additional broker, OAuth and MT5 bridge providers remain marked unavailable until their adapter is live and tested. Self-custody BTC/ETH/USDC/Solana tracking is separate.
 - **Price alerts, heatmaps, order flow, economic calendar** — full professional toolset.
 - **Community** (`/app/community`) — forum with leaderboard ranked by real contributions (no fake P&L).
-- **Academy, mentors, webinars, guides, blog** — structured learning paths, courses, mentor booking.
+- **Academy, webinar rooms, guides, blog** — structured learning paths, courses and SI-hosted webinar rooms; the member schedule and replays live inside the product.
 - **TradingBible TV** (`/tv`) — broadcast/ad rotation player with view/click tracking.
 - **Wallet & billing** (`/app/wallet`, `/app/billing`) — Stripe fiat + non-custodial crypto funding; subscription management.
-- **Developer platform** (Professional) — REST API docs, personal API keys, webhooks, white-label presets.
-- **$TBC token page** (`/tbc`) — ecosystem token with lockups/vesting schedules; staking yields.
-- **Admin portal** (`/admin`) — dashboard, users, analytics, billing, airdrops, content, reports, TV, integrations, API keys, plugins, mentors, wallet & staking, jobs, settings.
+- **Developer platform** (enterprise quote) — REST API docs, personal API keys, webhooks and white-label presets, quoted separately from Premium.
+- **$TBC page** (`/tbc`) — proposed token record. TBC platform credits are off-chain accounting units; the proposed token is not issued, sold, transferable, stakeable or live.
+- **Admin portal** (`/admin`) — dashboard, users, analytics, billing, airdrops, content, reports, TV, integrations, API keys, plugins, mentors, wallet & credits, jobs and settings.
 - **Onboarding:** 24-mission Pro-Guide checklist; auth via Supabase (OTP, magic links, WebAuthn passkeys) with branded emails.
 
 ## 4. Markets & data coverage
@@ -51,21 +51,21 @@ AI-powered trading journal and analytics platform with a Bloomberg-grade termina
 - **Forex (~40):** majors, minors, exotics (EURUSD, GBPUSD, USDJPY … USDTRY, USDSEK, USDNOK).
 - **Commodities (20):** gold (XAU/USD), silver, WTI, Brent, natgas, copper, platinum, coffee, cocoa, and more — dedicated gold & Bitcoin coverage.
 - **Indices (6):** NQ, ES, DJI, SPX, RUT, VIX, plus 20 sector ETFs and ~100 US stocks (AAPL, MSFT, GOOGL, AMZN, TSLA, META, NVDA, JPM, V …).
-- **Feeds:** Binance klines (crypto), Finnhub (US stocks), Alpha Vantage (cached equities/forex), with synthetic fallback so charts never render empty. Economic-calendar endpoint included.
+- **Feeds:** Binance klines (crypto), Finnhub (US stocks, when keyed), public Yahoo quotes/candles and Alpha Vantage (cached, when keyed). Synthetic fallback is labelled `synthetic` and must never be represented as an executable price. Economic-calendar endpoint included.
 
 ## 5. Technology, security & compliance posture
-- **Stack:** React 18 + Vite + Tailwind (web) · Node.js + Express 5 (API) · Supabase Postgres with row-level security (auth/data) · Paddle/Stripe billing · VPS Ubuntu + PM2 + Nginx + Let's Encrypt TLS.
-- **API surface:** 30+ route groups (`/api/*`: quotes, candles, indicator, heatmap, wallet, challenges, backtest, brokers, academy, affiliate, admin, jobs, company, and more); rate limiting, Helmet hardening, verified webhook signatures.
-- **Security features for users:** passkeys, session management, KYC-gated profiles (frozen after verification), suspend/close lifecycle.
-- **Legal:** Terms, Privacy, Refund, FAQ published in-product; company is data controller; liability capped at 12 months' fees or $100; 14-day money-back on first subscription payment.
-- **Status:** product version 1.2.0, live in production.
+- **Stack:** React 18 + Vite + Tailwind (web) · Node.js + Express 5 (API) · Supabase Postgres with row-level security as the designed tenant boundary · Stripe billing · VPS Ubuntu + PM2 + Nginx + Let's Encrypt TLS.
+- **API surface:** 30+ route groups (`/api/*`: quotes, candles, indicator, heatmap, wallet, challenges, backtest, brokers, academy, affiliate, admin, jobs, company, and more); rate limiting, Helmet hardening and Stripe webhook signature verification. Live webhook delivery and RLS isolation are still pending production acceptance.
+- **Security features for users:** passkeys where enrolled, session management, KYC-gated profiles (frozen after verification) and suspend/close lifecycle. Admin MFA enforcement is implemented behind `ADMIN_MFA_REQUIRED` and must be enabled after named administrators enroll.
+- **Legal:** Terms, Privacy, Refund and FAQ are published in-product; the company is data controller; liability is capped at 12 months' fees or $100; 14-day money-back applies to the first subscription payment. Counsel review of Terms §8.1, corporate registration wording and the TB issuer record remains open.
+- **Status:** product version 1.2.0, live in production. Public launch remains gated by the blockers in `docs/blocked-items.md`; this document is not an approval or a launch certificate.
 
 ## 6. Business model & monetization
-- **Subscriptions (Stripe; no free trial, card required):**
-  - Pro — $19.99/mo: unlimited trades, full analytics, SI scoring, 5 brokers, calendar.
-  - Elite SI — $49.99/mo (most popular): everything in Pro + SI Coach chat, daily/weekly SI reports, mistake detection, 15 brokers, priority queue.
-  - Professional — $99/mo: everything in Elite + unlimited brokers, team seats, API & webhooks, white-label, white-glove onboarding, success manager.
-- **Additional revenue lines:** TradingBible TV advertising, affiliate/referral program, funded-challenge rails, academy enrollments, $TBC ecosystem activity, API/white-label licensing.
+- **Subscriptions (Stripe):**
+  - Free — $0: account, Academy catalogue, community, paper trading and profile.
+  - Premium — $19.99/month or $199/year: terminal, journal, analytics, SI coach, reports, signals, alerts, heatmaps, broker sync and risk tools.
+- **Academy tuition (separate from Premium):** Individual $150, Pro $199, Family $299 and Teams $499, each described as lifetime access. Paid seat redemption is not yet accepted in production.
+- **Additional revenue lines:** TradingBible TV advertising, affiliate/referral programme, funded-challenge rails, Academy enrollments and API/white-label licensing. TBC platform credits are not a token sale, deposit or investment product; TBC payment rails remain disabled pending written authorisation.
 - **Actual financials, user counts, and revenue:** founder-confirmed figures only — see §9 (traction) and §10 (illustrative projections and raise scenarios). Nothing below is stated as an actual result.
 
 ## 7. Brand identity
@@ -87,13 +87,13 @@ AI-powered trading journal and analytics platform with a Bloomberg-grade termina
 | Metric | Actual (founder to confirm) |
 |---|---|
 | Registered users | — |
-| Paying subscribers (Pro / Elite / Professional) | — / — / — |
+| Free accounts / Premium subscribers | — / — |
 | MRR / ARR run-rate | — |
 | Churn (%/mo) | — |
 | Academy waitlist / community members | — |
-| $TBC activity (stakers, TV views) | — |
+| TBC platform-credit activity / TV views | — |
 
-Track monthly: new trials, trial→paid conversion, churn by plan, ARPU, CAC, LTV. Product is live (v1.2.0) with full subscription billing via Stripe.
+Track monthly: new free accounts, Free→Premium conversion, churn, ARPU, CAC and LTV. Product is live (v1.2.0); Stripe live checkout and webhook acceptance are still pending, so no revenue figure is verified.
 
 ## 11. Holdings master blueprint alignment (2026 Edition)
 Full text: `docs/holdings-master-blueprint.md` (Official Company Profile & Strategic Master Blueprint — 2026 Edition). Structure: **TradingBible Holdings, Inc. (owner, operator and securities issuer) → product divisions.** Divisions under the operating company (Terminal, Intelligence, Prop, Developer, future Brokerage, proposed Coin). MT Bridge `MT_BRIDGE_URL=https://bridge.tradingbible.app` (proposed, not deployed). Roadmap with statuses: formation/EIN completed, D-U-N-S reported, verification audit required, revenue pending, terminal expansion, licensing planned, TBC planned, financing future, IPO long-term. First-90-day plan + official publication-ready About text in the blueprint. None of Goldman Sachs / Morgan Stanley / J.P. Morgan / Jefferies / Chapel Hill Denham / Renaissance Capital is engaged. Titles (Malik Nlem, Victor Okechukwu, Maliba SI) to be confirmed before publication as formal officers.
@@ -101,16 +101,7 @@ Full text: `docs/holdings-master-blueprint.md` (Official Company Profile & Strat
 ## 12. Financial projections & the raise — ILLUSTRATIVE SCENARIOS ONLY
 **These are models, not results and not promises. Every figure below is computed from stated assumptions so a lender/investor can see the mechanics. Founder confirms which scenario (if any) to present.**
 
-Shared assumptions: plan prices Pro $19.99 / Elite SI $49.99 / Professional $99; illustrative mix 60/30/10 → ARPU ≈ $36.89; linear net adds from zero base; Stripe fees ~3–5% and infra (VPS, Supabase, data feeds) scale with usage and are excluded — founder to supply cost schedule.
-
-| | Conservative (+40 net subs/mo) | Aggressive (+120 net subs/mo) |
-|---|---|---|
-| Month 3 subs / MRR | 120 / $4,427 | 360 / $13,281 |
-| Month 6 subs / MRR | 240 / $8,854 | 720 / $26,562 |
-| Month 9 subs / MRR | 360 / $13,281 | 1,080 / $39,842 |
-| Month 12 subs / MRR | 480 / $17,708 | 1,440 / $53,123 |
-| Yr-1 cash collected (approx) | ~$115,100 | ~$345,300 |
-| ARR run-rate at M12 | ~$212,500 | ~$637,500 |
+**Legacy three-tier model retired.** The previous Pro / Elite SI / Professional projections were built on prices that are no longer the public plan structure. They must not be presented to a lender or investor. The current public model is Free + Premium at $19.99/month or $199/year, with Academy tuition separate. A new projection must be built from verified conversion, churn, payment costs and infrastructure costs before any number is shared.
 
 Raise-size options with use-of-funds splits (pick one instrument: loan, SAFE, or equity — terms TBD by founder):
 | Raise | Product-led | Growth-led | Balanced |

@@ -85,6 +85,7 @@ Host hardening performed on **12 November 2026** is recorded in:
 - `2026-11-12-encrypted-app-backup-test.md` — daily AES256 snapshot, checksum verification, decryption, register/handbook restore and SPA HTTP 200.
 - `2026-11-12-postdeploy-verification.md` — final build gate, route status, headers, ownership normalization and backup timer state.
 - `2026-11-12-error-handler-review.md` — production 5xx detail suppression, request-ID correlation and unauthenticated 401 verification.
+- `2026-11-12-public-claims-and-access-control.md` — broker/webinar/funded/security-page claim corrections, exact admin allowlist, optional AAL2 MFA gate and live Chromium check.
 
 Remaining observed gaps include public DNS at Hostinger parking nameservers, no observed DNSSEC, no CAA record, DMARC at `p=none`, no observed Cloudflare edge, a directly reachable origin, public SSH on port 22 without private access or administrator MFA, no WAF/DDoS provider, no central SIEM or alert destination, and no database restore test. These are evidence inputs and open risks, not permission to change a live server.
 

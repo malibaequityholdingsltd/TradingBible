@@ -299,7 +299,7 @@ function Paywall({ onPurchased }) {
 		{ icon: Library, text: '347 lessons across every company purpose — no topic left outside the Academy' },
 		{ icon: Headphones, text: 'Male and female read-aloud voices in 8 languages — switch reader and speed inside every lesson' },
 		{ icon: Bot, text: 'One-on-one SI tutor inside every lesson' },
-		{ icon: Video, text: '8 live webinars / week with an SI host — FX London lab, crypto on-chain lab, news reactions' },
+		{ icon: Video, text: 'Weekly SI-hosted webinar rooms — FX London lab, crypto on-chain lab, news reactions; schedule and replays in the member area' },
 		{ icon: Award, text: 'One final certificate exam per programme · lifetime access' },
 	];
 
@@ -307,7 +307,7 @@ function Paywall({ onPurchased }) {
 		{
 			id: 'individual', name: 'Individual', price: 150, tagline: 'One learner. The full Academy.',
 			icon: GraduationCap, cta: t('aca.cta'), disabled: checked && !configured,
-			features: ['All 347 lessons · 17 programmes', 'Four schools, one standard', 'Read-aloud voices in 8 languages', '1:1 SI tutor in every lesson', '8 live webinars every week', 'One final certificate exam'],
+			features: ['All 347 lessons · 17 programmes', 'Four schools, one standard', 'Read-aloud voices in 8 languages', '1:1 SI tutor in every lesson', 'Weekly SI-hosted webinar rooms', 'One final certificate exam'],
 		},
 		{
 			id: 'pro', name: 'Pro', price: 199, tagline: 'For professional traders and creators.',

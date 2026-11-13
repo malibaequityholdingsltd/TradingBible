@@ -17,6 +17,10 @@ import PublicSiteShell, { PublicPageHead } from '@/components/PublicSiteShell';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { homeRouteForUser } from '@/lib/homeRoute';
 
+// Keep this list aligned with the backend adapters in apps/api/src/routes/brokers.js.
+// Providers without an adapter stay visible but cannot open a dead-end connect flow.
+const LIVE_BROKER_ADAPTERS = new Set(['binance', 'bybit', 'okx']);
+
 function timeAgo(iso, t) {
   if (!iso) return '—';
   const diff = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -159,6 +163,7 @@ const forex = filtered.filter((p) => p.kind?.toLowerCase().includes('forex') || 
         const acct = connected.find((c) => String(c.broker || '').toLowerCase() === String(p.name).toLowerCase());
         const on = acct?.status === 'synced';
         const pending = acct && acct?.status !== 'synced';
+        const canConnect = LIVE_BROKER_ADAPTERS.has(String(p.id).toLowerCase()) || Boolean(acct);
         return (
           <div key={p.id} className="tb-card tb-card-hover flex flex-col p-5">
             <div className="flex items-center gap-3">
@@ -182,7 +187,9 @@ const forex = filtered.filter((p) => p.kind?.toLowerCase().includes('forex') || 
                 </span>
               )}
             </div>
-            <p className="mt-3 line-clamp-2 min-h-[2rem] text-xs leading-relaxed text-[#8a8577]">{p.notes || p.blurb || 'Live sync available.'}</p>
+            <p className="mt-3 line-clamp-2 min-h-[2rem] text-xs leading-relaxed text-[#8a8577]">
+              {canConnect ? (p.notes || p.blurb || 'Live sync available.') : 'Read-only sync is not live for this provider yet.'}
+            </p>
             {acct ? (
               <div className="mt-3 space-y-2 border-t border-white/[0.06] pt-3">
                 <div className="flex items-baseline justify-between gap-2">
@@ -203,6 +210,10 @@ const forex = filtered.filter((p) => p.kind?.toLowerCase().includes('forex') || 
               <Link to="/app/challenges" className="mt-3 block rounded-lg border border-[#d4af37]/30 bg-[#d4af37]/[0.06] py-2.5 text-center text-sm font-semibold text-[#d4af37] transition hover:bg-[#d4af37]/[0.12]">
                 View program
               </Link>
+            ) : !canConnect ? (
+              <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5 text-center text-xs text-[#8a8577]">
+                Adapter not live yet
+              </div>
             ) : (
               <>
                 <GoldButton onClick={() => openConnect(p)} className="mt-3 w-full !rounded-lg !py-2.5 !text-sm !font-medium">

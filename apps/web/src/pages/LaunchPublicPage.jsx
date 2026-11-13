@@ -13,7 +13,7 @@ import {
 
 const OPEN_ITEMS = [
   [BarChart3, 'Platform accounts', 'Free and Premium accounts, the terminal, journal, analytics, SI review, alerts and broker sync.'],
-  [GraduationCap, 'Academy 2.0', 'Four schools, 17 paths and 347 lessons, with read-aloud lessons and live webinars.'],
+  [GraduationCap, 'Academy 2.0', 'Four schools, 17 paths and 347 lessons, with read-aloud lessons and SI-hosted webinar rooms.'],
   [Trophy, 'Funded evaluations', 'Two-step, one-step and dollar-ruled futures programs, with the live catalog as the source of truth.'],
   [Landmark, 'Company record', 'The public About, team, issuer record and investor-relations pages.'],
   [Wallet, 'TBC credit wallet', 'Existing off-chain platform credits, ledger-backed and separate from the proposed TBC token.'],

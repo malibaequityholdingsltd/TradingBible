@@ -1,6 +1,6 @@
 # Blocked and Non-Working Inventory
 
-**Status:** 10 November 2026
+**Status:** 12 November 2026
 **Operator:** TradingBible Holdings, Inc.  
 **Scope:** web app, API, billing, cards, fund, fundraising packet, company communications, legal/corporate records and production validation.
 
@@ -33,6 +33,19 @@ This is the honest readiness list. It separates work that is complete from work 
 | Fundraising DocuSign controls | Custom text and checkbox tabs for investor questionnaires; unique per-document anchors; separate execution register; execution locked behind `FUNDRAISING_EXECUTION_ENABLED=true`. | Module import, route registration, anchor uniqueness and gate checks pass. |
 | Company communications registry | 45 branded email/SMS/in-app templates across seven categories, each with a distinct layout, light/dark mode support, absolute logo URL, hidden preheader, marketing footer and compliance labels. | Registry renders 45 templates; all seven category layouts render in auto, light and dark modes; Markdown pack exports. |
 | Admin communications console | Admin-only list, preview and single-recipient test-send. No bulk sender or audience list. | Route and UI wired; test sends are limited to the signed-in administrator. |
+
+### 1.1 Fixed 12 November 2026 — public claims and access control
+
+| Item | What changed | Verification |
+|---|---|---|
+| Public broker claims | Public copy now limits live read-only API sync to Binance, Bybit and OKX. Other providers appear only when their adapter is live and tested. | Served bundle check and live route check; see `docs/security/evidence/2026-11-12-public-claims-and-access-control.md`. |
+| Broker UI dead ends | Unsupported providers remain visible but show “Adapter not live yet” and cannot open a connect flow. | `LIVE_BROKER_ADAPTERS` guard in `apps/web/src/pages/ExtraPages.jsx`; lint and served-bundle check passed. |
+| Funded-evaluation framing | Home and translated hero copy now say `$200K` maximum account and `$400K` scaling ceiling, matching the live catalogue. | Served bundle contains both corrected figures; no “maximum evaluation size” claim remains. |
+| Webinar claims | “8 live webinars” claims were replaced with “weekly SI-hosted webinar rooms” and member-area schedule/replay language. | Served bundle check; no “8 live webinars” claim remains. |
+| Public security page | RLS is described as the designed tenant boundary and explicitly “being independently verified”; admin MFA and email delivery are described as being completed; broker sync is limited to verified adapters. | Served bundle contains the corrected language; no “verified staff session” or RLS-isolation claim remains. |
+| Admin allowlist | API now uses exact addresses plus optional `ADMIN_EMAILS`; the catch-all `@tradingbible.app`/`.net` auto-admin rule was removed. Profile `role = admin` still grants access. | Code review and lint passed; unauthenticated `/api/admin/health` returns `401`. Real admin login acceptance remains pending. |
+| Optional admin MFA gate | `ADMIN_MFA_REQUIRED=true` requires Supabase AAL2 with TOTP, passkey/WebAuthn, SSO or MFA. It is documented and off by default. | Code and lint passed. Not enabled in production; enrollment and break-glass testing remain external. |
+| Stale company pricing brief | `docs/company-profile.md` now uses Free + Premium at `$19.99/month` or `$199/year`; the retired three-tier projections were removed instead of being recalculated with invented assumptions. | Text search and review; see the evidence record. |
 
 ## 2. Blocked — external
 

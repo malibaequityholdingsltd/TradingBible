@@ -13,6 +13,8 @@ Both apps load `.env` from their own directory (`node --env-file=.env` for the A
 | `CORS_ORIGINS` | opt. | Comma-separated additional allowed origins. Do not use `*` with credentials. |
 | `TRUST_PROXY` | opt. | Number of trusted reverse-proxy hops. Production defaults to `1` (local Nginx). Set `false` only when the API is directly exposed. |
 | `HELMET_HSTS` | opt. | Set `false` only when Nginx is the sole owner of the HSTS header. Keep one owner for each security header. |
+| `ADMIN_EMAILS` | opt. | Comma-separated exact administrator emails. A user profile with `role = admin` also grants access. Do not use a catch-all domain rule. |
+| `ADMIN_MFA_REQUIRED` | opt. | Set `true` to require Supabase AAL2 (TOTP, passkey/WebAuthn or SSO) on admin routes. Leave `false` until every named administrator has enrolled and a break-glass path is tested. |
 
 ## Supabase (primary data layer)
 
