@@ -51,11 +51,14 @@ The chart uses the existing `lightweight-charts` dependency. Its TradingView att
 | `https://tradingbible.app/api/health` | `200` |
 | `https://tradingbible.app/api/admin/health` unauthenticated | `401` |
 | `POST https://tradingbible.app/api/auth/send-email` without hook secret | `503` |
+| `https://tradingbible.app/signup` | `200`; renders the "Signups are paused" card |
 | `https://tradingbible.app/.well-known/security.txt` | `200` |
 | Production HTML bundle reference | `assets/index-EXZipTEF.js` |
 | PM2 `tradingbible-api` | `online` (no restart needed for static deploy) |
 
 The production HTML response retained HSTS, CSP, `X-Content-Type-Options`, `X-Frame-Options`, referrer policy and permissions policy. Ownership and modes under `dist/apps/web/` were normalized to `root:root`, directories `0755`, files `0644`.
+
+An unauthenticated public-route check of `/` and `/signup` found no page or console errors. `/signup` still renders the "Signups are paused" card, so public signup remains gated until the email/auth delivery blockers are closed.
 
 ## Preserved runtime stores
 
