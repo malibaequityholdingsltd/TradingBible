@@ -238,19 +238,181 @@ export function vroc(candles, period = 12) {
   return out;
 }
 
+// Volume-weighted average price. Cumulative from the start of the loaded
+// window; the terminal resets it when the symbol or timeframe changes.
+export function vwap(candles) {
+  const out = new Array(candles.length).fill(null);
+  let priceVolume = 0;
+  let volume = 0;
+  for (let i = 0; i < candles.length; i++) {
+    const c = candles[i];
+    const typical = (c.high + c.low + c.close) / 3;
+    const v = Number(c.volume) || 0;
+    priceVolume += typical * v;
+    volume += v;
+    out[i] = volume > 0 ? +(priceVolume / volume).toFixed(4) : null;
+  }
+  return out;
+}
+
+export function vwma(candles, period = 20) {
+  const out = new Array(candles.length).fill(null);
+  let priceVolume = 0;
+  let volume = 0;
+  for (let i = 0; i < candles.length; i++) {
+    const c = candles[i];
+    const v = Number(c.volume) || 0;
+    priceVolume += c.close * v;
+    volume += v;
+    if (i >= period) {
+      const old = candles[i - period];
+      const oldVolume = Number(old.volume) || 0;
+      priceVolume -= old.close * oldVolume;
+      volume -= oldVolume;
+    }
+    if (i >= period - 1 && volume > 0) out[i] = +(priceVolume / volume).toFixed(4);
+  }
+  return out;
+}
+
+export function donchian(candles, period = 20) {
+  const upper = new Array(candles.length).fill(null);
+  const mid = new Array(candles.length).fill(null);
+  const lower = new Array(candles.length).fill(null);
+  for (let i = period - 1; i < candles.length; i++) {
+    let hi = -Infinity;
+    let lo = Infinity;
+    for (let j = i - period + 1; j <= i; j++) {
+      hi = Math.max(hi, candles[j].high);
+      lo = Math.min(lo, candles[j].low);
+    }
+    upper[i] = +hi.toFixed(4);
+    lower[i] = +lo.toFixed(4);
+    mid[i] = +((hi + lo) / 2).toFixed(4);
+  }
+  return { upper, mid, lower };
+}
+
+export function keltner(candles, period = 20, mult = 2) {
+  const mid = ema(candles, period);
+  const atrValues = atr(candles, period);
+  const upper = new Array(candles.length).fill(null);
+  const lower = new Array(candles.length).fill(null);
+  for (let i = 0; i < candles.length; i++) {
+    if (mid[i] == null || atrValues[i] == null) continue;
+    upper[i] = +(mid[i] + mult * atrValues[i]).toFixed(4);
+    lower[i] = +(mid[i] - mult * atrValues[i]).toFixed(4);
+  }
+  return { mid, upper, lower };
+}
+
+export function cci(candles, period = 20) {
+  const out = new Array(candles.length).fill(null);
+  const typical = candles.map((c) => (c.high + c.low + c.close) / 3);
+  for (let i = period - 1; i < candles.length; i++) {
+    let sum = 0;
+    for (let j = i - period + 1; j <= i; j++) sum += typical[j];
+    const mean = sum / period;
+    let deviation = 0;
+    for (let j = i - period + 1; j <= i; j++) deviation += Math.abs(typical[j] - mean);
+    deviation /= period;
+    out[i] = deviation > 0 ? +((typical[i] - mean) / (0.015 * deviation)).toFixed(2) : 0;
+  }
+  return out;
+}
+
+export function mfi(candles, period = 14) {
+  const out = new Array(candles.length).fill(null);
+  const typical = candles.map((c) => (c.high + c.low + c.close) / 3);
+  const flow = candles.map((c, i) => (typical[i] * (Number(c.volume) || 0)));
+  for (let i = period; i < candles.length; i++) {
+    let positive = 0;
+    let negative = 0;
+    for (let j = i - period + 1; j <= i; j++) {
+      if (typical[j] > typical[j - 1]) positive += flow[j];
+      else if (typical[j] < typical[j - 1]) negative += flow[j];
+    }
+    const ratio = negative > 0 ? positive / negative : (positive > 0 ? Infinity : 1);
+    out[i] = +(100 - 100 / (1 + ratio)).toFixed(2);
+  }
+  return out;
+}
+
+export function williamsR(candles, period = 14) {
+  const out = new Array(candles.length).fill(null);
+  for (let i = period - 1; i < candles.length; i++) {
+    let hi = -Infinity;
+    let lo = Infinity;
+    for (let j = i - period + 1; j <= i; j++) {
+      hi = Math.max(hi, candles[j].high);
+      lo = Math.min(lo, candles[j].low);
+    }
+    out[i] = hi === lo ? -50 : +((-100 * (hi - candles[i].close)) / (hi - lo)).toFixed(2);
+  }
+  return out;
+}
+
+export function roc(candles, period = 12) {
+  const out = new Array(candles.length).fill(null);
+  for (let i = period; i < candles.length; i++) {
+    const prev = candles[i - period].close || 1e-9;
+    out[i] = +(((candles[i].close - prev) / prev) * 100).toFixed(2);
+  }
+  return out;
+}
+
+export function stochRsi(candles, period = 14, smooth = 3) {
+  const rsiValues = rsi(candles, period);
+  const kRaw = new Array(candles.length).fill(null);
+  for (let i = period * 2 - 1; i < candles.length; i++) {
+    let hi = -Infinity;
+    let lo = Infinity;
+    let valid = true;
+    for (let j = i - period + 1; j <= i; j++) {
+      if (rsiValues[j] == null) { valid = false; break; }
+      hi = Math.max(hi, rsiValues[j]);
+      lo = Math.min(lo, rsiValues[j]);
+    }
+    if (!valid) continue;
+    kRaw[i] = hi === lo ? 50 : +(((rsiValues[i] - lo) / (hi - lo)) * 100).toFixed(2);
+  }
+  const k = new Array(candles.length).fill(null);
+  for (let i = 0; i < kRaw.length; i++) {
+    if (kRaw[i] == null) continue;
+    const slice = kRaw.slice(Math.max(0, i - smooth + 1), i + 1).filter((v) => v != null);
+    if (slice.length) k[i] = +(slice.reduce((a, b) => a + b, 0) / slice.length).toFixed(2);
+  }
+  const d = new Array(candles.length).fill(null);
+  for (let i = 0; i < k.length; i++) {
+    if (k[i] == null) continue;
+    const slice = k.slice(Math.max(0, i - smooth + 1), i + 1).filter((v) => v != null);
+    if (slice.length) d[i] = +(slice.reduce((a, b) => a + b, 0) / slice.length).toFixed(2);
+  }
+  return { k, d };
+}
+
 // Registry describing every indicator: how it renders and its default params.
 export const INDICATOR_DEFS = {
   sma: { label: 'SMA', pane: 'price', kind: 'line', defaults: { period: 20 }, color: '#d4af37', compute: (c, p) => ({ SMA: sma(c, p.period) }) },
   ema: { label: 'EMA', pane: 'price', kind: 'line', defaults: { period: 20 }, color: '#60a5fa', compute: (c, p) => ({ EMA: ema(c, p.period) }) },
   wma: { label: 'WMA', pane: 'price', kind: 'line', defaults: { period: 20 }, color: '#a78bfa', compute: (c, p) => ({ WMA: wma(c, p.period) }) },
-  bollinger: { label: 'Bollinger Bands', pane: 'price', kind: 'bands', defaults: { period: 20, mult: 2 }, color: '#34d399', compute: (c, p) => { const b = bollinger(c, p.period, p.mult); return { BB_upper: b.upper, BB_mid: b.mid, BB_lower: b.lower }; } },
+  bollinger: { label: 'Bollinger Bands', pane: 'price', kind: 'bands', bandKeys: ['BB_upper', 'BB_mid', 'BB_lower'], defaults: { period: 20, mult: 2 }, color: '#34d399', compute: (c, p) => { const b = bollinger(c, p.period, p.mult); return { BB_upper: b.upper, BB_mid: b.mid, BB_lower: b.lower }; } },
   ichimoku: { label: 'Ichimoku Cloud', pane: 'price', kind: 'ichimoku', defaults: {}, color: '#f472b6', compute: (c) => { const k = ichimoku(c); return { ICH_tenkan: k.tenkan, ICH_kijun: k.kijun, ICH_spanA: k.spanA, ICH_spanB: k.spanB }; } },
+  vwap: { label: 'VWAP', pane: 'price', kind: 'line', lineKey: 'VWAP', defaults: {}, color: '#f59e0b', compute: (c) => ({ VWAP: vwap(c) }) },
+  vwma: { label: 'VWMA', pane: 'price', kind: 'line', lineKey: 'VWMA', defaults: { period: 20 }, color: '#a78bfa', compute: (c, p) => ({ VWMA: vwma(c, p.period) }) },
+  donchian: { label: 'Donchian Channels', pane: 'price', kind: 'bands', bandKeys: ['DC_upper', 'DC_mid', 'DC_lower'], defaults: { period: 20 }, color: '#34d399', compute: (c, p) => { const d = donchian(c, p.period); return { DC_upper: d.upper, DC_mid: d.mid, DC_lower: d.lower }; } },
+  keltner: { label: 'Keltner Channels', pane: 'price', kind: 'bands', bandKeys: ['KC_upper', 'KC_mid', 'KC_lower'], defaults: { period: 20, mult: 2 }, color: '#60a5fa', compute: (c, p) => { const k = keltner(c, p.period, p.mult); return { KC_upper: k.upper, KC_mid: k.mid, KC_lower: k.lower }; } },
   rsi: { label: 'RSI', pane: 'sub', kind: 'osc', range: [0, 100], levels: [30, 70], defaults: { period: 14 }, color: '#d4af37', compute: (c, p) => ({ RSI: rsi(c, p.period) }) },
   macd: { label: 'MACD', pane: 'sub', kind: 'macd', defaults: { fast: 12, slow: 26, signal: 9 }, color: '#60a5fa', compute: (c, p) => { const m = macd(c, p.fast, p.slow, p.signal); return { MACD: m.macdLine, MACD_signal: m.signalLine, MACD_hist: m.hist }; } },
   stochastic: { label: 'Stochastic', pane: 'sub', kind: 'osc', range: [0, 100], levels: [20, 80], defaults: { period: 14, smooth: 3 }, color: '#34d399', compute: (c, p) => { const s = stochastic(c, p.period, p.smooth); return { STOCH_k: s.k, STOCH_d: s.d }; } },
+  stochrsi: { label: 'Stoch RSI', pane: 'sub', kind: 'osc', range: [0, 100], levels: [20, 80], defaults: { period: 14, smooth: 3 }, color: '#a78bfa', compute: (c, p) => { const s = stochRsi(c, p.period, p.smooth); return { STOCHRSI_k: s.k, STOCHRSI_d: s.d }; } },
   atr: { label: 'ATR', pane: 'sub', kind: 'osc', defaults: { period: 14 }, color: '#f59e0b', compute: (c, p) => ({ ATR: atr(c, p.period) }) },
   stddev: { label: 'Std Deviation', pane: 'sub', kind: 'osc', defaults: { period: 20 }, color: '#a78bfa', compute: (c, p) => ({ STDDEV: stddev(c, p.period) }) },
   adx: { label: 'ADX', pane: 'sub', kind: 'osc', range: [0, 100], levels: [25], defaults: { period: 14 }, color: '#f472b6', compute: (c, p) => ({ ADX: adx(c, p.period) }) },
   obv: { label: 'OBV', pane: 'sub', kind: 'osc', defaults: {}, color: '#60a5fa', compute: (c) => ({ OBV: obv(c) }) },
   vroc: { label: 'Volume ROC', pane: 'sub', kind: 'osc', defaults: { period: 12 }, color: '#34d399', compute: (c, p) => ({ VROC: vroc(c, p.period) }) },
+  cci: { label: 'CCI', pane: 'sub', kind: 'osc', defaults: { period: 20 }, color: '#f472b6', compute: (c, p) => ({ CCI: cci(c, p.period) }) },
+  mfi: { label: 'MFI', pane: 'sub', kind: 'osc', range: [0, 100], levels: [20, 80], defaults: { period: 14 }, color: '#34d399', compute: (c, p) => ({ MFI: mfi(c, p.period) }) },
+  williams: { label: 'Williams %R', pane: 'sub', kind: 'osc', range: [-100, 0], levels: [-80, -20], defaults: { period: 14 }, color: '#f59e0b', compute: (c, p) => ({ WILLR: williamsR(c, p.period) }) },
+  roc: { label: 'ROC', pane: 'sub', kind: 'osc', defaults: { period: 12 }, color: '#60a5fa', compute: (c, p) => ({ ROC: roc(c, p.period) }) },
 };

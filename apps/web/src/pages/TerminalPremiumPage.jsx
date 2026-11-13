@@ -23,6 +23,7 @@ import SymbolSearchPicker from '@/components/SymbolSearchPicker';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { numOrNull } from '@/lib/safeRender';
 import { brandLogo } from '@/lib/brand';
+import { TIMEFRAMES } from '@/lib/chartTimeframes';
 import TradingBibleTerminal, { TBChart, TBOrderflow, TBFootprint, TBHeatmap, TBNews, TBIndicators, Attribution, hasFeature } from '@/terminal/TradingBibleTerminal';
 import { usePremiumWorkspace } from '@/terminal/premiumStore';
 import AccountPanel from '@/terminal/panels/AccountPanel';
@@ -177,7 +178,8 @@ export default function TerminalPremiumPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [symParam]);
 
-  const { quotes, status } = useQuotes(stripSyms, { refreshMs: 15000 });
+  const quoteSyms = [...new Set([...stripSyms, symbol, ...panes.map((pane) => pane.symbol)].filter(Boolean))];
+  const { quotes, status } = useQuotes(quoteSyms, { refreshMs: 15000 });
   const { trades } = useTrades();
   const live = quotes[symbol];
   const price = typeof live?.price === 'number' ? live.price : null;
@@ -491,10 +493,41 @@ export default function TerminalPremiumPage() {
                 )}
                 {/* Stage: viewport-fit for the single chart (bottom visible, no page scroll),
                     natural height for multi-panes and tool views */}
-                <div className={`relative mt-3 overflow-hidden rounded-xl border border-white/8 bg-black/30 ${centerTab === 'chart' && chartLayout === 'single' ? 'h-[max(320px,min(470px,calc(100dvh_-_460px)))] sm:h-[max(520px,min(860px,calc(100dvh_-_380px)))]' : 'min-h-[380px] sm:min-h-[420px]'}`}>
+                <div className={`relative mt-3 overflow-hidden rounded-xl border border-white/8 bg-black/30 ${centerTab === 'chart' && chartLayout === 'single' ? 'h-[max(360px,min(560px,calc(100dvh_-_380px)))] sm:h-[max(520px,min(860px,calc(100dvh_-_340px)))]' : 'min-h-[380px] sm:min-h-[420px]'}`}>
+                  {centerTab === 'chart' && chartLayout !== 'single' && (
+                    <div className="flex items-center justify-between gap-2 border-b border-white/5 px-2 py-1.5">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a8577]">Chart layout</span>
+                      <div className="flex items-center gap-0.5 rounded-xl border border-white/10 p-0.5" role="group" aria-label="Chart layout">
+                        {CHART_LAYOUTS.map((l) => (
+                          <button key={l.id} title={`${l.id} layout`} onClick={() => setChartLayout(l.id)}
+                            className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-semibold ${chartLayout === l.id ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
+                            <l.icon className="h-3.5 w-3.5" /> <span className="capitalize">{l.id}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {centerTab === 'chart' && hasFeature(features, 'charts') && (
                     chartLayout === 'single'
-                      ? <div className="h-full p-1.5 sm:p-2"><TBChart symbol={symbol} timeframe={timeframe} chartType={chartType} onSnapshot={snapJournal} onShare={shareView} onSymbolChange={(s) => { patch({ symbol: s }); log(`symbol → ${s}`); }} height="h-full" /></div>
+                      ? (
+                        <div className="h-full p-1.5 sm:p-2">
+                          <TBChart
+                            symbol={symbol}
+                            timeframe={timeframe}
+                            chartType={chartType}
+                            quote={live}
+                            onSnapshot={snapJournal}
+                            onShare={shareView}
+                            onSymbolChange={(s) => { patch({ symbol: s }); log(`symbol → ${s}`); }}
+                            onTimeframeChange={(tf) => { patch({ timeframe: tf }); log(`timeframe → ${tf}`); }}
+                            onChartTypeChange={(ct) => { patch({ chartType: ct }); log(`chart type → ${ct}`); }}
+                            onOpenReplay={() => patch({ centerTab: 'replay' })}
+                            layout={chartLayout}
+                            onLayoutChange={setChartLayout}
+                            height="h-full"
+                          />
+                        </div>
+                      )
                       : (
                         <div className={`grid grid-cols-1 gap-2 p-2 ${chartLayout === 'quad' ? 'xl:grid-cols-2' : 'xl:grid-cols-2'}`}>
                           {(chartLayout === 'quad' ? quadPanes : splitPanes).map((pn, i) => (
@@ -503,10 +536,21 @@ export default function TerminalPremiumPage() {
                                 <div className="min-w-0 flex-1"><SymbolSearchPicker value={pn.symbol} onChange={(s) => setPane(i, { symbol: s })} buttonClassName="w-full justify-between !py-1 !text-[11px]" /></div>
                                 <select value={pn.tf} onChange={(e) => setPane(i, { tf: e.target.value })} aria-label="Pane timeframe"
                                   className="rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-1.5 py-1 font-mono text-[11px] text-[#e9e7df] outline-none">
-                                  {TFS.map((tf) => <option key={tf} value={tf} className="bg-[#0f0f14]">{tf}</option>)}
+                                  {TIMEFRAMES.map((tf) => <option key={tf} value={tf} className="bg-[#0f0f14]">{tf}</option>)}
                                 </select>
                               </div>
-                              <TBChart symbol={pn.symbol} timeframe={pn.tf} chartType={chartType} onSnapshot={snapJournal} onShare={shareView} height="h-[320px] sm:h-[420px]" />
+                              <TBChart
+                                symbol={pn.symbol}
+                                timeframe={pn.tf}
+                                chartType={chartType}
+                                quote={quotes[pn.symbol]}
+                                onSymbolChange={(s) => setPane(i, { symbol: s })}
+                                onTimeframeChange={(tf) => setPane(i, { tf })}
+                                onChartTypeChange={(ct) => patch({ chartType: ct })}
+                                height="h-[320px] sm:h-[420px]"
+                                compact
+                                showToolbar={false}
+                              />
                             </div>
                           ))}
                         </div>
@@ -522,7 +566,9 @@ export default function TerminalPremiumPage() {
                   {centerTab === 'indicators' && hasFeature(features, 'indicators') && <div className="p-2"><TBIndicators symbol={symbol} timeframe={timeframe} /></div>}
                   {centerTab === 'news' && hasFeature(features, 'news') && <div className="p-2"><TBNews symbol={symbol} /></div>}
                   {/* Floating command cluster — pinned flush to the stage floor.
-                      The stage clips overflow, so it can never pass the layout. */}
+                      The stage clips overflow, so it can never pass the layout.
+                      The chart view uses its own in-chart toolbar instead. */}
+                  {centerTab !== 'chart' && (
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden justify-center px-3 sm:flex">
                     <div className="term-panel pointer-events-auto flex flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-[#d4af37]/25 bg-[#0c0c11]/90 px-2.5 py-2 shadow-2xl backdrop-blur-xl">
                       {needsSymbol && (
@@ -537,22 +583,6 @@ export default function TerminalPremiumPage() {
                             className={`rounded-lg px-2 py-1.5 font-mono text-[11px] font-semibold ${timeframe === tf ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>{tf}</button>
                         ))}
                       </div>
-                      )}
-                      {centerTab === 'chart' && (
-                        <>
-                          <select value={chartType} onChange={(e) => patch({ chartType: e.target.value })} aria-label="Chart type"
-                            className="rounded-xl border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-1.5 text-xs text-[#e9e7df] outline-none">
-                            {['candle', 'line', 'area', 'tradingview'].map((ct) => <option key={ct} value={ct} className="bg-[#0f0f14]">{ct === 'tradingview' ? 'TradingView' : ct}</option>)}
-                          </select>
-                          <div className="flex items-center gap-0.5 rounded-xl border border-white/10 p-0.5" role="group" aria-label="Chart layout">
-                            {CHART_LAYOUTS.map((l) => (
-                              <button key={l.id} title={`${l.id} layout`} onClick={() => setChartLayout(l.id)}
-                                className={`rounded-lg p-1.5 ${chartLayout === l.id ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
-                                <l.icon className="h-3.5 w-3.5" />
-                              </button>
-                            ))}
-                          </div>
-                        </>
                       )}
                       <button onClick={snapJournal} disabled={snapBusy} title="Snapshot to journal + download page PNG"
                         className="grid h-9 w-9 place-items-center rounded-xl border border-[#d4af37]/30 text-[#d4af37] hover:bg-[#d4af37]/10 disabled:opacity-50">
@@ -572,32 +602,31 @@ export default function TerminalPremiumPage() {
                       )}
                     </div>
                   </div>
+                  )}
                 </div>
-                {/* Phone command bar (phone only): one compact row under the tabs */}
-                <div className="mt-2 rounded-2xl border border-[#d4af37]/25 bg-[#0c0c11]/95 p-1.5 sm:hidden">
-                  <div className="flex flex-wrap items-center gap-1">
-                    {needsTF && TFS.map((tf) => (
-                      <button key={tf} onClick={() => patch({ timeframe: tf })}
-                        className={`min-h-[40px] shrink-0 whitespace-nowrap rounded-lg px-3 font-mono text-xs font-bold ${timeframe === tf ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577]'}`}>{tf}</button>
-                    ))}
-                    {centerTab === 'chart' && (
-                      <select value={chartType} onChange={(e) => patch({ chartType: e.target.value })} aria-label="Chart type"
-                        className="shrink-0 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-2 text-xs text-[#e9e7df] outline-none">
-                        {['candle', 'line', 'area', 'tradingview'].map((ct) => <option key={ct} value={ct} className="bg-[#0f0f14]">{ct === 'tradingview' ? 'TradingView' : ct}</option>)}
-                      </select>
-                    )}
-                    <button onClick={snapJournal} disabled={snapBusy} title="Snapshot to journal"
-                      className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[#d4af37]/30 text-[#d4af37] disabled:opacity-50">
-                      <Camera className={`h-4 w-4 ${snapBusy ? 'animate-pulse' : ''}`} />
-                    </button>
-                    {!bareCluster && centerTab !== 'chart' && (
-                      <Link to={FULL_VIEW[centerTab](symbol)} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 text-[#8a8577]" title="Full view">
-                        <ArrowUpRight className="h-4 w-4" />
-                      </Link>
-                    )}
-                    {snapFlash && <span className="shrink-0 px-1 text-xs font-bold text-emerald-400">Saved ✓</span>}
+                {/* Phone command bar (phone only): one compact row under the tabs.
+                    The chart view uses the in-chart toolbar, so this is only
+                    rendered for the non-chart tool views. */}
+                {centerTab !== 'chart' && (
+                  <div className="mt-2 rounded-2xl border border-[#d4af37]/25 bg-[#0c0c11]/95 p-1.5 sm:hidden">
+                    <div className="flex flex-wrap items-center gap-1">
+                      {needsTF && TFS.map((tf) => (
+                        <button key={tf} onClick={() => patch({ timeframe: tf })}
+                          className={`min-h-[40px] shrink-0 whitespace-nowrap rounded-lg px-3 font-mono text-xs font-bold ${timeframe === tf ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577]'}`}>{tf}</button>
+                      ))}
+                      <button onClick={snapJournal} disabled={snapBusy} title="Snapshot to journal"
+                        className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[#d4af37]/30 text-[#d4af37] disabled:opacity-50">
+                        <Camera className={`h-4 w-4 ${snapBusy ? 'animate-pulse' : ''}`} />
+                      </button>
+                      {!bareCluster && (
+                        <Link to={FULL_VIEW[centerTab](symbol)} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 text-[#8a8577]" title="Full view">
+                          <ArrowUpRight className="h-4 w-4" />
+                        </Link>
+                      )}
+                      {snapFlash && <span className="shrink-0 px-1 text-xs font-bold text-emerald-400">Saved ✓</span>}
+                    </div>
                   </div>
-                </div>
+                )}
                 <div className="mt-1.5 flex justify-end"><Attribution full /></div>
               </Card>
               <BottomDock symbol={symbol} accountId={workspace.risk.accountId} logLines={logs} />

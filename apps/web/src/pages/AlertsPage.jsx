@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Bell, Plus, Trash2, Pause, Play, Loader2, ArrowUp, ArrowDown, Percent, History, X, Volume2, Mail, Smartphone } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { PageBar, Card, Tabs, Stat, StatGrid, EmptyState, GoldButton, GhostButton, CardSkeleton } from '@/components/ui-kit';
@@ -17,9 +18,9 @@ const TYPE_META = {
 };
 const nameOf = (s) => ALL_SYMBOLS.find((x) => x.symbol === s)?.name || s;
 
-function CreateAlert({ onCreate, onClose }) {
+function CreateAlert({ onCreate, onClose, initialSymbol = 'BTCUSD' }) {
   const { t } = useI18n();
-  const [symbol, setSymbol] = useState('BTCUSD');
+  const [symbol, setSymbol] = useState(initialSymbol || 'BTCUSD');
   const [alertType, setAlertType] = useState('above');
   const [target, setTarget] = useState('');
   const [frequency, setFrequency] = useState('once');
@@ -70,8 +71,11 @@ function CreateAlert({ onCreate, onClose }) {
 export default function AlertsPage() {
   const { alerts, history, loading, createAlert, updateAlert, removeAlert } = useAlerts();
   const { t } = useI18n();
-  const [creating, setCreating] = useState(false);
+  const [params] = useSearchParams();
+  const alertSymbol = String(params.get('symbol') || '').toUpperCase();
+  const [creating, setCreating] = useState(Boolean(alertSymbol));
   const [tab, setTab] = useState('active');
+  useEffect(() => { if (alertSymbol) setCreating(true); }, [alertSymbol]);
 
   const symbols = useMemo(() => [...new Set(alerts.map((a) => a.symbol))], [alerts]);
   const { quotes } = useQuotes(symbols);
@@ -161,7 +165,7 @@ export default function AlertsPage() {
             </Card>
           )
         )}
-        {creating && <CreateAlert onCreate={createAlert} onClose={() => setCreating(false)} />}
+        {creating && <CreateAlert onCreate={createAlert} onClose={() => setCreating(false)} initialSymbol={alertSymbol || 'BTCUSD'} />}
       </div>
     </AppLayout>
   );

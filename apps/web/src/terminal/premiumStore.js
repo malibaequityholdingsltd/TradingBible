@@ -5,6 +5,7 @@
 // chart position, orderflow + heatmap config. Never stores fills or balances.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import pb from '@/lib/pocketbaseClient';
+import { isKnownTimeframe } from '@/lib/chartTimeframes';
 
 const LS_KEY = 'tb:terminal-premium:v1';
 const LS_VERSIONS = 'tb:terminal-premium:versions:v1';
@@ -68,11 +69,17 @@ function readLS() {
     const ws = JSON.parse(raw);
     if (!ws || typeof ws !== 'object') return null;
     ws.symbol = strSym(ws.symbol, 'XAUUSD');
+    // Older desks saved uppercase H/D/W suffixes or removed intervals. Map
+    // those onto the catalogue instead of sending an unsupported interval to
+    // the candles API (which would leave the chart stuck in an error state).
     if (typeof ws.timeframe !== 'string') ws.timeframe = '15m';
-    // Persisted chart engine is respected: candle/line/area keep drawings
-    // in-house (Supabase + local mirror) so refresh survives. TradingView
-    // stays one click away but never forced — its free embed cannot persist.
-    const VALID_TYPES = ['candle', 'line', 'area', 'tradingview'];
+    const normalizedTf = ws.timeframe.replace(/([0-9])H$/, '$1h').replace(/([0-9])D$/, '$1d').replace(/([0-9])W$/, '$1w');
+    ws.timeframe = isKnownTimeframe(normalizedTf) ? normalizedTf : '15m';
+    // Persisted chart engine is respected: the clean-room chart types keep
+    // drawings in-house (Supabase + local mirror) so refresh survives.
+    // TradingView stays one click away but never forced — its free embed
+    // cannot persist drawings or indicators.
+    const VALID_TYPES = ['candle', 'hollow', 'bar', 'line', 'area', 'baseline', 'tradingview'];
     if (!VALID_TYPES.includes(ws.chartType)) ws.chartType = 'candle';
     if (typeof ws.centerTab !== 'string') ws.centerTab = 'chart';
     if (Array.isArray(ws.watchlist)) {

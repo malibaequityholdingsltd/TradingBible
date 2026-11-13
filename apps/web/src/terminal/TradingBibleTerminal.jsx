@@ -9,7 +9,7 @@
 // Attribution: embedded charts show "TB · Chart by TradingBible";
 // the full workstation shows "Powered by TradingBible".
 import React from 'react';
-import LiveChart from '@/components/LiveChart';
+import TradingBibleChart from '@/components/TradingBibleChart';
 import OrderflowChart from '@/components/OrderflowChart';
 import FootprintChart from '@/components/FootprintChart';
 import AdvancedChart from '@/components/AdvancedChart';
@@ -37,19 +37,30 @@ export function Attribution({ full = false }) {
 
 // Headless building blocks for future @tradingbible/charts, @tradingbible/orderflow,
 // @tradingbible/heatmap, @tradingbible/dom, @tradingbible/replay packages.
-export function TBChart({ symbol, timeframe, chartType, onSnapshot, onShare, onSymbolChange, height = '' }) {
-  const type = chartType || 'candle';
+export function TBChart({
+  symbol, timeframe, chartType, quote, onSnapshot, onShare, onSymbolChange,
+  onTimeframeChange, onChartTypeChange, onOpenReplay, layout, onLayoutChange,
+  height = '', compact = false, showToolbar = true, hidePicker = false,
+}) {
   return (
-    <div className={height === 'h-full' ? 'flex h-full min-h-0 flex-col' : undefined}>
-      {/* Key includes the chart type: LiveChart snapshots its initial props
-          into internal state, so a new key is the only reliable way to make
-          symbol / timeframe / type switches actually take effect. */}
-      {/* The terminal owns symbol switching (header picker, strip,
-          watchlists, palette) — the chart's own picker button is hidden
-          here so there is exactly one way to switch per surface. */}
-      <LiveChart key={`${symbol}-${timeframe}-${type}`} initialSymbol={symbol} initialTimeframe={timeframe} initialType={type} compact hidePicker terminalChrome onSnapshot={onSnapshot} onShare={onShare} onSymbolChange={onSymbolChange} chartHeight={height} />
-      <div className="mt-1.5 flex justify-end"><Attribution /></div>
-    </div>
+    <TradingBibleChart
+      symbol={symbol}
+      timeframe={timeframe}
+      chartType={chartType || 'candle'}
+      quote={quote}
+      onSnapshot={onSnapshot}
+      onShare={onShare}
+      onSymbolChange={onSymbolChange}
+      onTimeframeChange={onTimeframeChange}
+      onChartTypeChange={onChartTypeChange}
+      onOpenReplay={onOpenReplay}
+      layout={layout}
+      onLayoutChange={onLayoutChange}
+      height={height}
+      compact={compact}
+      showToolbar={showToolbar}
+      hidePicker={hidePicker}
+    />
   );
 }
 

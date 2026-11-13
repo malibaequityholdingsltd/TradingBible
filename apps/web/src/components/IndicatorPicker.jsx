@@ -36,7 +36,7 @@ export default function IndicatorPicker({ open, onClose, indicators, setIndicato
       <div className="glass sheen-panel overlay-pop scroll-contain relative max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="sticky top-0 flex items-center justify-between border-b border-[#d4af37]/12 bg-[#0d0d12]/95 px-5 py-4 backdrop-blur">
           <h3 className="font-semibold text-[#f0ecdd]">{t('ind.title')}</h3>
-          <button onClick={onClose}><X className="h-5 w-5 text-[#8a8577]" /></button>
+          <button onClick={onClose} aria-label="Close indicator picker"><X className="h-5 w-5 text-[#8a8577]" /></button>
         </div>
 
         <div className="p-5">

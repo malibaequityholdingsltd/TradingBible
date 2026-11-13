@@ -332,10 +332,11 @@ export default function AdvancedChart({
           const def = INDICATOR_DEFS[ind.type];
           const color = ind.color || def.color;
           if (def.kind === 'bands') {
+            const [upperKey, midKey, lowerKey] = def.bandKeys || ['BB_upper', 'BB_mid', 'BB_lower'];
             return <g key={ind.id}>
-              <path d={pathFor('BB_upper', yOf)} fill="none" stroke={color} strokeWidth="1" strokeOpacity="0.7" />
-              <path d={pathFor('BB_mid', yOf)} fill="none" stroke={color} strokeWidth="1" strokeDasharray="3 3" strokeOpacity="0.5" />
-              <path d={pathFor('BB_lower', yOf)} fill="none" stroke={color} strokeWidth="1" strokeOpacity="0.7" />
+              <path d={pathFor(upperKey, yOf)} fill="none" stroke={color} strokeWidth="1" strokeOpacity="0.7" />
+              <path d={pathFor(midKey, yOf)} fill="none" stroke={color} strokeWidth="1" strokeDasharray="3 3" strokeOpacity="0.5" />
+              <path d={pathFor(lowerKey, yOf)} fill="none" stroke={color} strokeWidth="1" strokeOpacity="0.7" />
             </g>;
           }
           if (def.kind === 'ichimoku') {
@@ -346,7 +347,8 @@ export default function AdvancedChart({
               <path d={pathFor('ICH_kijun', yOf)} fill="none" stroke="#f472b6" strokeWidth="1.2" />
             </g>;
           }
-          const key = def.kind === 'line' ? def.label.split(' ')[0].toUpperCase() : Object.keys(def.compute(candles, { ...def.defaults, ...ind.params }))[0];
+          const computedKeys = Object.keys(def.compute(candles, { ...def.defaults, ...ind.params }));
+          const key = def.lineKey || computedKeys[0];
           return <path key={ind.id} d={pathFor(key, yOf)} fill="none" stroke={color} strokeWidth="1.6" />;
         })}
 

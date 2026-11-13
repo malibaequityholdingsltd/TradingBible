@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { ALL_SYMBOLS } from '@/lib/symbols';
+import { TIMEFRAMES } from '@/lib/chartTimeframes';
 import { DESK_PRESETS } from '@/terminal/premiumStore';
 
 const PAGES = [
@@ -20,7 +21,7 @@ export default function CommandPalette({ open, onClose, onSymbol, onTimeframe, o
     if (!s) return [];
     const syms = ALL_SYMBOLS.filter((x) => `${x.symbol} ${x.name}`.toLowerCase().includes(s)).slice(0, 6)
       .map((x) => ({ kind: 'symbol', label: `${x.symbol} — ${x.name}`, run: () => onSymbol(x.symbol) }));
-    const tfs = ['1m', '5m', '15m', '1h', '4h', '1d'].filter((t) => t.includes(s))
+    const tfs = TIMEFRAMES.filter((t) => t.includes(s))
       .map((t) => ({ kind: 'tf', label: `Timeframe ${t}`, run: () => onTimeframe(t) }));
     const desks = Object.entries(DESK_PRESETS).filter(([, d]) => d.name.toLowerCase().includes(s))
       .map(([id, d]) => ({ kind: 'desk', label: `Load ${d.name}`, run: () => onDesk(id) }));
