@@ -22,7 +22,7 @@ import {
 } from '@/components/AtelierUI';
 import pb from '@/lib/pocketbaseClient';
 import { displayName, displayInitial } from '@/lib/displayName';
-import { notifyPlatformSettingsChanged } from '@/lib/platformSettings';
+import { notifyPlatformSettingsChanged, signupsAllowed } from '@/lib/platformSettings';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { COMPANY_DEFAULTS, loadCompanyProfile, saveCompanyProfile, buildContextText } from '@/lib/companyProfile';
 import { LIVE_CHANNELS } from '@/lib/liveChannels';
@@ -4760,7 +4760,7 @@ export function AdminSettings() {
       <AtPageBar
         meta={[
           saveState === 'saving' ? 'Autosaving' : saveState === 'saved' ? 'Autosaved' : saveState === 'error' ? 'Save failed' : 'Autosave on',
-          settings.signupsOpen ? 'Sign-ups open' : 'Sign-ups closed',
+          signupsAllowed(settings) ? 'Sign-ups open' : 'Sign-ups closed',
           settings.maintenance ? 'Maintenance mode' : 'Platform live',
           'Public plans: Free + Premium',
         ]}
@@ -4809,6 +4809,9 @@ export function AdminSettings() {
                 </label>
               ))}
               </div>
+              <p className="mt-2 text-[11px] leading-relaxed text-[var(--at-mut)]">
+                Public signup is also hard-gated by the build flag <code>VITE_PUBLIC_SIGNUP_ENABLED</code>. Set it to <code>true</code> only after transactional email delivery is accepted.
+              </p>
               <AtButton type="submit" variant="gold" icon={Save} className="mt-3">Save settings</AtButton>
             </div>
             <DigestPanel />

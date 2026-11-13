@@ -240,5 +240,6 @@ The vault returns only metadata to clients. Broker passwords are never requested
 |---|---|---|
 | `VITE_SUPABASE_URL` | yes | Same as API `SUPABASE_URL` |
 | `VITE_SUPABASE_ANON_KEY` | yes | Same as API `SUPABASE_ANON_KEY` |
+| `VITE_PUBLIC_SIGNUP_ENABLED` | no | Defaults to `false`. Public signup stays closed unless this is explicitly `true`. Re-enable only after SMTP/email-code delivery and auth acceptance tests pass. Login and admin invitations are unaffected. |
 
 Other optional web keys (market widget feeds, integrations) are documented in `apps/web/.env.example`.

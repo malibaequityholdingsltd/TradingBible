@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import pb from '@/lib/pocketbaseClient';
 
+// Public signup stays closed until the transactional email path is accepted.
+// Existing accounts, login and admin invitations are not affected.
+export const PUBLIC_SIGNUP_ENABLED = String(import.meta.env.VITE_PUBLIC_SIGNUP_ENABLED || '').toLowerCase() === 'true';
+
+export function signupsAllowed(settings) {
+  return PUBLIC_SIGNUP_ENABLED && settings?.signupsOpen !== false;
+}
+
 export const PLATFORM_SETTINGS_DEFAULTS = {
   platformName: 'TradingBible',
   tagline: 'TradingBible',

@@ -1,7 +1,7 @@
 # Public claims and access-control correction
 
-**Date:** 12 November 2026 (UTC deploy: 13 November 2026 02:35)
-**Scope:** public product claims, broker UI truthfulness, API administrator allowlist, optional administrator MFA gate and stale internal pricing copy.
+**Date:** 12 November 2026 (UTC deploy: 13 November 2026 02:35 and 02:42)
+**Scope:** public product claims, broker UI truthfulness, public signup gate, API administrator allowlist, optional administrator MFA gate and stale internal pricing copy.
 **Production:** `https://tradingbible.app`
 
 This record documents a code and content correction. It is not a certification,
@@ -26,6 +26,8 @@ The shipped product did not support several public claims:
   administrator, while the web client used an exact two-address allowlist.
 - Providers without a backend adapter could open a connect flow that could not
   succeed.
+- Public signup was open even though SMTP authentication and the email hook
+  secret were broken, so new users could not receive a verification code.
 
 ## Changes made
 
@@ -38,6 +40,7 @@ The shipped product did not support several public claims:
 | Public security page | RLS is described as the designed tenant boundary and is explicitly “being independently verified”; administrator MFA enforcement and email delivery are described as being completed before public signup; broker sync is limited to verified adapters; AES-256-GCM is stated for stored credentials. |
 | Admin allowlist | `apps/api/src/routes/admin.js` now uses exact addresses plus an optional `ADMIN_EMAILS` comma-separated allowlist. The catch-all domain rule was removed. Profile `role = admin` still grants access. |
 | Optional admin MFA | `ADMIN_MFA_REQUIRED=true` now requires a Supabase AAL2 session with a TOTP, WebAuthn/passkey, SSO or MFA method. It is **not enabled** in production because enrollment and a break-glass path are not yet evidenced. |
+| Public signup gate | Public signup is hard-gated by `VITE_PUBLIC_SIGNUP_ENABLED=false` until SMTP/email-code delivery is accepted. Login and admin invitations are unaffected. `/signup` shows the paused state and the home CTA no longer opens signup. |
 | Company brief | `docs/company-profile.md` now uses Free + Premium at `$19.99/month` or `$199/year`; the retired three-tier projections were removed rather than recalculated with invented assumptions. |
 | Environment documentation | `apps/api/.env.example` and `docs/environment.md` document `ADMIN_EMAILS` and `ADMIN_MFA_REQUIRED`. |
 
@@ -53,8 +56,9 @@ Local gates:
 
 Production checks after rsync and PM2 restart:
 
-- `/`, `/security`, `/pricing`, `/faq`, `/academy`, `/launch`, `/legal/terms`,
-  `/api/health` and `/.well-known/security.txt` returned `200`.
+- `/`, `/signup`, `/auth`, `/security`, `/pricing`, `/faq`, `/academy`, `/launch`,
+  `/legal/terms`, `/privacy`, `/terms`, `/admin/security`, `/api/health` and
+  `/.well-known/security.txt` returned `200`.
 - `/api/admin/health` returned `401` without an authenticated admin session.
 - `/api/auth/send-email` returned `503` because `SEND_EMAIL_HOOK_SECRET` is
   still unset; the email hook remains fail-closed.
@@ -66,14 +70,19 @@ Production checks after rsync and PM2 restart:
 - Served bundles no longer contained `Binance, Deriv`, `Interactive Brokers,
   Alpaca`, `8 live webinars`, `maximum evaluation size`, `Bank-grade`,
   `Row-level security keeps` or `verified staff session`.
-- Playwright Chromium check of `/`, `/auth`, `/academy`, `/pricing`, `/security`,
-  `/privacy`, `/terms` and `/admin/security`: eight routes, zero console errors,
-  page errors, same-origin 4xx/5xx responses or CSP violations.
+- Playwright Chromium check of `/`, `/auth`, `/signup`, `/academy`, `/pricing`,
+  `/security`, `/privacy`, `/terms` and `/admin/security`: nine routes, zero
+  console errors, page errors, same-origin 4xx/5xx responses or CSP violations.
+  A local `ERR_NETWORK_CHANGED`/navigation timeout interrupted one pass; the
+  affected routes were retried and passed with zero findings.
+- `/` and `/signup` showed the paused-signup state after the build-time gate;
+  `/auth` still rendered the login surface.
 
 Remote rollback artifacts:
 
 - `/root/tradingbible-deploy-backups/api-src-20261113T023453Z.tar.gz`
 - `/root/tradingbible-deploy-backups/web-dist-20261113T023453Z.tar.gz`
+- `/root/tradingbible-deploy-backups/web-dist-20261113T024201Z.tar.gz`
 
 No production `.env` was read or modified. No live payment, investor-letter
 send, TBC payment, card issuance or securities activity was performed.
@@ -87,7 +96,8 @@ This pass does **not** close these gates:
   tested, and `ADMIN_MFA_REQUIRED=true` must be set in production.
 - RLS is still not independently audited. The public page now says so.
 - Email delivery is still broken by Hostinger SMTP authentication failure and
-  the missing `SEND_EMAIL_HOOK_SECRET`. Public signup should remain gated.
+  the missing `SEND_EMAIL_HOOK_SECRET`. Public signup is now gated; re-enable it
+  only after SMTP/email-code delivery and auth acceptance pass.
 - Only Binance, Bybit and OKX have live broker adapters. The other provider
   cards are intentionally disabled, not implemented.
 - Stripe live checkout, webhook delivery, receipts, refunds and entitlement are

@@ -15,7 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { useI18n } from '@/lib/i18n';
-import { usePlatformSettings } from '@/lib/platformSettings';
+import { signupsAllowed, usePlatformSettings } from '@/lib/platformSettings';
 import { Card, GhostButton, GoldButton, Kicker } from '@/components/ui-kit';
 import { IosIcon } from '@/components/IosIcon';
 import {
@@ -280,7 +280,7 @@ export default function LandingPage() {
   const { t } = useI18n();
   const isLight = theme === 'light';
   const { settings } = usePlatformSettings();
-  const signupsOpen = settings.signupsOpen !== false;
+  const signupsOpen = signupsAllowed(settings);
   const [openFaq, setOpenFaq] = React.useState(0);
 
   return (

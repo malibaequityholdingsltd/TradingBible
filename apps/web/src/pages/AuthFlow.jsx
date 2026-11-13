@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import PhoneField from '@/components/PhoneField';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { Kicker, Card, GoldButton, GhostButton, Note } from '@/components/ui-kit';
-import { usePlatformSettings } from '@/lib/platformSettings';
+import { signupsAllowed, usePlatformSettings } from '@/lib/platformSettings';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { readRefFromUrl, trackAffiliateSignup } from '@/lib/affiliate';
 import { verifyTotpLogin, passkeyLogin, notifyLogin, accountReactivate } from '@/lib/security';
@@ -850,7 +850,7 @@ export function SignupPage() {
     } finally { setBusy(false); }
   };
 
-  if (settings.signupsOpen === false) {
+  if (!signupsAllowed(settings)) {
     const brand = String(settings.platformName || 'TradingBible').trim();
     return (
       <Shell>
