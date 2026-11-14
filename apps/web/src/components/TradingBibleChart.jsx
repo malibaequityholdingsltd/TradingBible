@@ -8,6 +8,8 @@ import {
   BookMarked,
   Camera,
   CandlestickChart,
+  ChartNoAxesCombined,
+  Check,
   ChevronDown,
   Circle,
   Columns2,
@@ -15,6 +17,7 @@ import {
   Eraser,
   Eye,
   EyeOff,
+  GitBranch,
   GitCompareArrows,
   Grid2x2,
   History,
@@ -30,6 +33,7 @@ import {
   MousePointer2,
   MoveUpRight,
   MoveVertical,
+  Redo2,
   RotateCcw,
   Ruler,
   Save,
@@ -39,9 +43,11 @@ import {
   Square,
   Trash2,
   TrendingUp,
+  Triangle,
   Tv,
   Type,
   Unlock,
+  Waypoints,
   X,
 } from 'lucide-react';
 import {
@@ -67,6 +73,8 @@ import { ALL_SYMBOLS } from '@/lib/symbols';
 import SymbolSearchPicker from '@/components/SymbolSearchPicker';
 import IndicatorPicker from '@/components/IndicatorPicker';
 import TradingViewChart from '@/components/TradingViewChart';
+import { DrawingPrimitive } from '@/chart/drawing/DrawingPrimitive';
+import { useDrawingInteraction } from '@/chart/drawing/useDrawingInteraction';
 
 const CHART_TYPES = [
   { id: 'candle', label: 'Candles', icon: CandlestickChart },
@@ -86,12 +94,16 @@ const DRAW_TOOLS = [
   { id: 'ray', label: 'Ray', icon: Spline, clicks: 2 },
   { id: 'rect', label: 'Rectangle', icon: Square, clicks: 2 },
   { id: 'ellipse', label: 'Ellipse', icon: Circle, clicks: 2 },
+  { id: 'triangle', label: 'Triangle', icon: Triangle, clicks: 3 },
+  { id: 'channel', label: 'Parallel channel', icon: GitBranch, clicks: 3 },
+  { id: 'fib', label: 'Fibonacci retracement', icon: ChartNoAxesCombined, clicks: 2 },
+  { id: 'path', label: 'Path', icon: Waypoints, clicks: 0 },
   { id: 'arrow', label: 'Arrow', icon: MoveUpRight, clicks: 2 },
   { id: 'text', label: 'Text label', icon: Type, clicks: 1 },
   { id: 'measure', label: 'Measure', icon: Ruler, clicks: 2 },
 ];
 
-const COMPACT_TOOL_IDS = ['cursor', 'trend', 'hline', 'rect', 'text', 'measure'];
+const COMPACT_TOOL_IDS = ['cursor', 'trend', 'hline', 'rect', 'fib', 'path', 'text', 'measure'];
 
 const LAYOUTS = [
   { id: 'single', label: 'Single chart', icon: Square },
@@ -199,17 +211,39 @@ function symbolName(symbol) {
   return ALL_SYMBOLS.find((item) => item.symbol === String(symbol || '').toUpperCase())?.name || '';
 }
 
-function rayEnd(a, b, width, height) {
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  if (!dx && !dy) return b;
-  let t = Infinity;
-  if (dx > 0) t = Math.min(t, (width - a.x) / dx);
-  else if (dx < 0) t = Math.min(t, -a.x / dx);
-  if (dy > 0) t = Math.min(t, (height - a.y) / dy);
-  else if (dy < 0) t = Math.min(t, -a.y / dy);
-  if (!Number.isFinite(t) || t <= 1) return b;
-  return { x: a.x + dx * t, y: a.y + dy * t };
+function sameBar(left, right) {
+  if (!left || !right) return false;
+  const keys = Object.keys(left);
+  if (keys.length !== Object.keys(right).length) return false;
+  return keys.every((key) => left[key] === right[key]);
+}
+
+// Keep live feeds incremental. A full setData on every refresh destroys the
+// series cache and forces the chart to rebuild every bar; update() only
+// touches the changed tail.
+function applySeriesData(series, next, previous) {
+  if (!series) return next;
+  if (!previous.length || !next.length || next.length < previous.length || next[0]?.time !== previous[0]?.time) {
+    series.setData(next);
+    return next;
+  }
+  if (next.length === previous.length) {
+    if (!sameBar(next[next.length - 1], previous[previous.length - 1])) {
+      series.update(next[next.length - 1]);
+    }
+    return next;
+  }
+  if (next[previous.length - 1]?.time !== previous[previous.length - 1]?.time) {
+    series.setData(next);
+    return next;
+  }
+  if (!sameBar(next[previous.length - 1], previous[previous.length - 1])) {
+    series.update(next[previous.length - 1]);
+  }
+  for (let index = previous.length; index < next.length; index += 1) {
+    series.update(next[index]);
+  }
+  return next;
 }
 
 function sourceLabel(source) {
@@ -359,14 +393,13 @@ export default function TradingBibleChart({
   const [compareOpen, setCompareOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [tool, setTool] = useState('cursor');
-  const [pending, setPending] = useState(null);
+  const [pending, setPending] = useState([]);
   const [selected, setSelected] = useState(null);
   const [magnet, setMagnet] = useState(false);
   const [locked, setLocked] = useState(false);
   const [hideDrawings, setHideDrawings] = useState(false);
   const [textPrompt, setTextPrompt] = useState(null);
   const [hover, setHover] = useState(null);
-  const [tick, setTick] = useState(0);
   const [accentTick, setAccentTick] = useState(0);
   const [chartEpoch, setChartEpoch] = useState(0);
 
@@ -381,6 +414,18 @@ export default function TradingBibleChart({
   const lastPriceLine = useRef(null);
   const lastView = useRef('');
   const hoverTime = useRef(null);
+  const primitiveRef = useRef(null);
+  const drawingsRef = useRef(dz.drawings);
+  const selectedRef = useRef(null);
+  const previewRef = useRef(null);
+  const hoveredHandleRef = useRef(null);
+  const lockedRef = useRef(false);
+  const hideDrawingsRef = useRef(false);
+  const timeframeRef = useRef(activeTimeframe);
+  const candlesRef = useRef(candles);
+  const mainDataRef = useRef([]);
+  const volDataRef = useRef([]);
+  const dataKeyRef = useRef('');
 
   useEffect(() => {
     const bump = () => setAccentTick((value) => value + 1);
@@ -390,10 +435,37 @@ export default function TradingBibleChart({
 
   useEffect(() => {
     setSelected(null);
-    setPending(null);
+    setPending([]);
     setTool('cursor');
+    previewRef.current = null;
+    primitiveRef.current?.requestUpdate();
     lastView.current = '';
   }, [activeSymbol]);
+
+  useEffect(() => {
+    drawingsRef.current = dz.drawings;
+    primitiveRef.current?.requestUpdate();
+  }, [dz.drawings]);
+
+  useEffect(() => {
+    selectedRef.current = selected;
+    primitiveRef.current?.requestUpdate();
+  }, [selected]);
+
+  useEffect(() => {
+    lockedRef.current = locked;
+    hideDrawingsRef.current = hideDrawings;
+    primitiveRef.current?.requestUpdate();
+  }, [hideDrawings, locked]);
+
+  useEffect(() => {
+    timeframeRef.current = activeTimeframe;
+    primitiveRef.current?.requestUpdate();
+  }, [activeTimeframe]);
+
+  useEffect(() => {
+    candlesRef.current = candles;
+  }, [candles]);
 
   // Build the chart canvas. Rebuilt only when the engine, theme or fullscreen
   // host changes; data, indicators and settings update in place.
@@ -425,6 +497,9 @@ export default function TradingBibleChart({
       crosshair: { mode: CrosshairMode.Magnet },
     });
     chartApi.current = chart;
+    mainDataRef.current = [];
+    volDataRef.current = [];
+    dataKeyRef.current = '';
 
     const accent = themeAccent();
     let series;
@@ -470,6 +545,25 @@ export default function TradingBibleChart({
       });
     }
     mainSeries.current = series;
+
+    const primitive = new DrawingPrimitive(() => ({
+      drawings: drawingsRef.current,
+      selectedId: selectedRef.current,
+      preview: previewRef.current,
+      hoveredHandle: hoveredHandleRef.current,
+      locked: lockedRef.current,
+      hide: hideDrawingsRef.current,
+      accent: themeAccent(),
+      isLight,
+      timeframeMinutes: timeframeMinutes(timeframeRef.current) || 1,
+      formatPrice: fmtPrice,
+    }));
+    primitiveRef.current = primitive;
+    try {
+      series.attachPrimitive(primitive);
+    } catch {
+      primitiveRef.current = null;
+    }
 
     const vol = chart.addSeries(HistogramSeries, {
       priceScaleId: 'vol',
@@ -522,16 +616,13 @@ export default function TradingBibleChart({
     };
     chart.subscribeCrosshairMove(onCrosshair);
 
-    const onRange = () => setTick((value) => value + 1);
-    chart.timeScale().subscribeVisibleLogicalRangeChange(onRange);
-    const observer = new ResizeObserver(() => setTick((value) => value + 1));
-    observer.observe(el);
     // Signal the settings effect to re-apply user colours, grid and scale
     // options to the freshly-created series. The chart itself is not rebuilt.
     setChartEpoch((value) => value + 1);
 
     return () => {
-      observer.disconnect();
+      try { series.detachPrimitive(primitive); } catch { /* ignore */ }
+      primitiveRef.current = null;
       try { watermark.current?.detach(); } catch { /* ignore */ }
       chart.remove();
       chartApi.current = null;
@@ -544,7 +635,7 @@ export default function TradingBibleChart({
       lastPriceLine.current = null;
       lastView.current = '';
     };
-  }, [effectiveType, isLight, fullscreen, accentTick, compact, isTv]);
+  }, [effectiveType, isLight, accentTick, compact, isTv]);
 
   // Push price data, volume, compare overlay, indicators and the last-price
   // line whenever the feed changes. The main viewport is fitted once per
@@ -559,6 +650,9 @@ export default function TradingBibleChart({
       // instrument's prices under the new label.
       try { series.setData([]); } catch { /* ignore */ }
       try { volSeries.current?.setData([]); } catch { /* ignore */ }
+      mainDataRef.current = [];
+      volDataRef.current = [];
+      dataKeyRef.current = '';
       if (compareSeries.current) {
         try { chart.removeSeries(compareSeries.current); } catch { /* ignore */ }
         compareSeries.current = null;
@@ -590,11 +684,16 @@ export default function TradingBibleChart({
       close: Number(candle.close),
     }));
 
-    if (effectiveType === 'candle' || effectiveType === 'hollow' || effectiveType === 'bar') {
-      series.setData(data);
-    } else {
-      series.setData(data.map((item) => ({ time: item.time, value: item.close })));
+    const dataKey = `${activeSymbol}|${activeTimeframe}|${effectiveType}`;
+    if (dataKeyRef.current !== dataKey) {
+      dataKeyRef.current = dataKey;
+      mainDataRef.current = [];
+      volDataRef.current = [];
     }
+    const nextMain = effectiveType === 'candle' || effectiveType === 'hollow' || effectiveType === 'bar'
+      ? data
+      : data.map((item) => ({ time: item.time, value: item.close }));
+    mainDataRef.current = applySeriesData(series, nextMain, mainDataRef.current);
 
     const last = Number(clean[clean.length - 1].close);
     const precision = last >= 1000 ? 2 : last >= 1 ? 4 : 6;
@@ -606,11 +705,12 @@ export default function TradingBibleChart({
       series.applyOptions({ baseValue: { type: 'price', price: data[0].value ?? data[0].close } });
     }
 
-    volSeries.current?.setData(clean.map((candle) => ({
+    const nextVolume = clean.map((candle) => ({
       time: Math.floor(candle.time / 1000),
       value: Number(candle.volume) || 0,
       color: Number(candle.close) >= Number(candle.open) ? 'rgba(52,211,153,0.35)' : 'rgba(248,113,113,0.35)',
-    })));
+    }));
+    volDataRef.current = applySeriesData(volSeries.current, nextVolume, volDataRef.current);
 
     if (compareSeries.current) {
       try { chart.removeSeries(compareSeries.current); } catch { /* ignore */ }
@@ -710,7 +810,6 @@ export default function TradingBibleChart({
     try {
       chart.priceScale('right').applyOptions({ scaleMargins: { top: 0.12, bottom: settings.showVolume ? 0.18 : 0.08 } });
     } catch { /* ignore */ }
-    setTick((value) => value + 1);
   }, [candles, compareCandles, compareSymbol, indicators, effectiveType, activeSymbol, activeTimeframe, compact, settings.showVolume, chartEpoch]);
 
   // Apply display settings in place so toggling them never resets zoom.
@@ -783,78 +882,6 @@ export default function TradingBibleChart({
     return () => { document.body.style.overflow = previous; };
   }, [fullscreen]);
 
-  const toCoord = useCallback((drawing) => {
-    const chart = chartApi.current;
-    const series = mainSeries.current;
-    if (!chart || !series || !Array.isArray(drawing?.points)) return null;
-    const scale = chart.timeScale();
-    return drawing.points.map((point) => {
-      const x = scale.timeToCoordinate(point.time);
-      const y = series.priceToCoordinate(point.price);
-      return x == null || y == null ? null : { x, y };
-    });
-  }, []);
-
-  const fromEvent = useCallback((event) => {
-    try {
-      const chart = chartApi.current;
-      const series = mainSeries.current;
-      if (!chart || !series || !wrapRef.current || !event) return null;
-      const rect = wrapRef.current.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      const time = chart.timeScale().coordinateToTime(x);
-      let price = series.coordinateToPrice(y);
-      if (time == null || price == null) return null;
-      if (magnet) {
-        const target = Math.floor(Number(time));
-        const candle = candles.find((item) => Math.floor(item.time / 1000) === target);
-        if (candle) {
-          const candidates = [candle.open, candle.high, candle.low, candle.close]
-            .map(Number)
-            .filter(Number.isFinite);
-          if (candidates.length) {
-            price = candidates.reduce((best, value) => (
-              Math.abs(value - price) < Math.abs(best - price) ? value : best
-            ), candidates[0]);
-          }
-        }
-      }
-      return { time, price };
-    } catch {
-      return null;
-    }
-  }, [magnet, candles]);
-
-  const onOverlayClick = useCallback((event) => {
-    if (locked || hideDrawings || tool === 'cursor') return;
-    const point = fromEvent(event);
-    if (!point) return;
-    const def = DRAW_TOOLS.find((item) => item.id === tool);
-    if (!def) return;
-    if (def.clicks === 1) {
-      if (tool === 'text') {
-        setTextPrompt({ point, value: '' });
-      } else if (tool === 'hline' || tool === 'vline') {
-        dz.update((previous) => [...previous, { id: uid(), type: tool, color: '#60a5fa', points: [point] }]);
-        setTool('cursor');
-      }
-      return;
-    }
-    if (!pending) {
-      setPending(point);
-      return;
-    }
-    dz.update((previous) => [...previous, {
-      id: uid(),
-      type: tool,
-      color: tool === 'arrow' ? '#f472b6' : tool === 'measure' ? '#60a5fa' : themeAccent(),
-      points: [pending, point],
-    }]);
-    setPending(null);
-    setTool('cursor');
-  }, [locked, hideDrawings, tool, fromEvent, pending, dz]);
-
   const removeSelected = useCallback(() => {
     if (!selected) return;
     dz.update((previous) => previous.filter((drawing) => drawing.id !== selected));
@@ -862,7 +889,12 @@ export default function TradingBibleChart({
   }, [selected, dz]);
 
   const undo = useCallback(() => {
-    dz.update((previous) => previous.slice(0, -1));
+    dz.undo();
+    setSelected(null);
+  }, [dz]);
+
+  const redo = useCallback(() => {
+    dz.redo();
     setSelected(null);
   }, [dz]);
 
@@ -881,16 +913,42 @@ export default function TradingBibleChart({
       setTool('cursor');
       return;
     }
+    const id = uid();
     dz.update((previous) => [...previous, {
-      id: uid(),
+      id,
       type: 'text',
       color: themeAccent(),
       text,
       points: [textPrompt.point],
     }]);
+    setSelected(id);
     setTextPrompt(null);
     setTool('cursor');
   }, [textPrompt, dz]);
+
+  const { cancelInteraction, finishPath } = useDrawingInteraction({
+    wrapRef,
+    chartRef: chartApi,
+    seriesRef: mainSeries,
+    primitiveRef,
+    drawingsRef,
+    selected,
+    setSelected,
+    tool,
+    setTool,
+    pending,
+    setPending,
+    locked,
+    hideDrawings,
+    magnet,
+    candlesRef,
+    updateDrawings: dz.update,
+    setTextPrompt,
+    accent: themeAccent(),
+    timeframeMinutes: timeframeMinutes(activeTimeframe) || 1,
+    previewRef,
+    hoveredHandleRef,
+  });
 
   const saveTemplate = useCallback(async () => {
     const name = window.prompt('Template name:');
@@ -950,9 +1008,17 @@ export default function TradingBibleChart({
         if (objectsOpen) { setObjectsOpen(false); return; }
         if (templatesOpen) { setTemplatesOpen(false); return; }
         if (compareOpen) { setCompareOpen(false); return; }
-        if (pending) { setPending(null); return; }
-        if (tool !== 'cursor') { setTool('cursor'); return; }
+        if (pending.length || tool !== 'cursor') {
+          cancelInteraction();
+          setTool('cursor');
+          return;
+        }
         if (fullscreen) { setFullscreen(false); return; }
+      }
+      if (event.key === 'Enter' && tool === 'path') {
+        event.preventDefault();
+        finishPath();
+        return;
       }
       if ((event.key === 'Delete' || event.key === 'Backspace') && selected && !locked) {
         event.preventDefault();
@@ -960,12 +1026,17 @@ export default function TradingBibleChart({
       }
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z') {
         event.preventDefault();
-        undo();
+        if (event.shiftKey) redo();
+        else undo();
+      }
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'y') {
+        event.preventDefault();
+        redo();
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [textPrompt, pickerOpen, settingsOpen, objectsOpen, templatesOpen, compareOpen, pending, tool, fullscreen, selected, locked, removeSelected, undo]);
+  }, [textPrompt, pickerOpen, settingsOpen, objectsOpen, templatesOpen, compareOpen, pending, tool, fullscreen, selected, locked, removeSelected, undo, redo, cancelInteraction, finishPath]);
 
   const lastCandle = candles.length ? candles[candles.length - 1] : null;
   const quotePrice = Number(quote?.price);
@@ -984,115 +1055,6 @@ export default function TradingBibleChart({
   const hovered = hover || lastCandle;
   const showSim = isSynthetic || source === 'synthetic';
   const showClosed = source === 'close' || quote?.source === 'close';
-
-  const renderDrawings = () => dz.drawings.map((drawing) => {
-    const coords = toCoord(drawing);
-    if (!coords) return null;
-    const isSelected = selected === drawing.id;
-    const stroke = drawing.color || themeAccent();
-    const strokeWidth = isSelected ? 2.5 : 1.6;
-    const onClick = (event) => {
-      event.stopPropagation();
-      if (tool === 'cursor' && !locked) setSelected(isSelected ? null : drawing.id);
-    };
-    if (drawing.type === 'hline') {
-      const point = coords[0];
-      if (!point) return null;
-      return (
-        <g key={drawing.id} onClick={onClick} style={{ cursor: 'pointer' }}>
-          <line x1={0} x2="100%" y1={point.y} y2={point.y} stroke={stroke} strokeWidth={strokeWidth} strokeDasharray="6 4" />
-          <line x1={0} x2="100%" y1={point.y} y2={point.y} stroke="transparent" strokeWidth={12} />
-        </g>
-      );
-    }
-    if (drawing.type === 'vline') {
-      const point = coords[0];
-      if (!point) return null;
-      return (
-        <g key={drawing.id} onClick={onClick} style={{ cursor: 'pointer' }}>
-          <line x1={point.x} x2={point.x} y1={0} y2="100%" stroke={stroke} strokeWidth={strokeWidth} strokeDasharray="6 4" />
-          <line x1={point.x} x2={point.x} y1={0} y2="100%" stroke="transparent" strokeWidth={12} />
-        </g>
-      );
-    }
-    if (drawing.type === 'text') {
-      const point = coords[0];
-      if (!point) return null;
-      return (
-        <text key={drawing.id} x={point.x} y={point.y} fill={stroke} fontSize={13} fontWeight={600} onClick={onClick} style={{ cursor: 'pointer' }}>
-          {drawing.text || 'Label'}
-        </text>
-      );
-    }
-    const [a, b] = coords;
-    if (!a || !b) return null;
-    if (drawing.type === 'rect') {
-      return (
-        <rect
-          key={drawing.id}
-          x={Math.min(a.x, b.x)}
-          y={Math.min(a.y, b.y)}
-          width={Math.abs(b.x - a.x)}
-          height={Math.abs(b.y - a.y)}
-          fill={hexToRgba(stroke, 0.12)}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-          onClick={onClick}
-          style={{ cursor: 'pointer' }}
-        />
-      );
-    }
-    if (drawing.type === 'ellipse') {
-      return (
-        <ellipse
-          key={drawing.id}
-          cx={(a.x + b.x) / 2}
-          cy={(a.y + b.y) / 2}
-          rx={Math.abs(b.x - a.x) / 2}
-          ry={Math.abs(b.y - a.y) / 2}
-          fill={hexToRgba(stroke, 0.12)}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-          onClick={onClick}
-          style={{ cursor: 'pointer' }}
-        />
-      );
-    }
-    if (drawing.type === 'measure') {
-      const delta = Number(b.price) - Number(a.price);
-      const pct = Number(a.price) ? (delta / Number(a.price)) * 100 : 0;
-      const minutes = timeframeMinutes(activeTimeframe) || 1;
-      const bars = Math.round((Number(b.time) - Number(a.time)) / (minutes * 60));
-      const label = `${delta >= 0 ? '+' : ''}${fmtPrice(delta)} (${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%) · ${bars} bars`;
-      const midX = (a.x + b.x) / 2;
-      const midY = (a.y + b.y) / 2;
-      const width = Math.min(280, Math.max(130, label.length * 6.1 + 14));
-      return (
-        <g key={drawing.id} onClick={onClick} style={{ cursor: 'pointer' }}>
-          <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={stroke} strokeWidth={strokeWidth} strokeDasharray="4 3" />
-          <rect x={midX - width / 2} y={midY - 10} width={width} height={20} rx={5} fill={isLight ? '#ffffff' : '#0c0c11'} stroke={stroke} strokeOpacity={0.5} />
-          <text x={midX} y={midY + 3} textAnchor="middle" fill={stroke} fontSize={10} fontFamily="monospace">{label}</text>
-        </g>
-      );
-    }
-    const end = drawing.type === 'ray'
-      ? rayEnd(a, b, wrapRef.current?.clientWidth || 0, wrapRef.current?.clientHeight || 0)
-      : b;
-    return (
-      <g key={drawing.id} onClick={onClick} style={{ cursor: 'pointer' }}>
-        <line
-          x1={a.x}
-          y1={a.y}
-          x2={end.x}
-          y2={end.y}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
-          markerEnd={drawing.type === 'arrow' ? 'url(#tb-arrowhead)' : undefined}
-        />
-        <line x1={a.x} y1={a.y} x2={end.x} y2={end.y} stroke="transparent" strokeWidth={12} />
-      </g>
-    );
-  });
 
   const settingsModal = settingsOpen ? (
     <Modal title="Chart settings" onClose={() => setSettingsOpen(false)}>
@@ -1330,7 +1292,7 @@ export default function TradingBibleChart({
         <button
           key={item.id}
           type="button"
-          onClick={() => { setTool(item.id); setPending(null); }}
+          onClick={() => { cancelInteraction(); setTool(item.id); setPending([]); }}
           title={item.label}
           disabled={locked}
           className={`shrink-0 rounded-lg border p-1.5 transition ${tool === item.id ? 'border-[#d4af37]/50 bg-[#d4af37]/15 text-[#d4af37]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'} disabled:opacity-40`}
@@ -1348,8 +1310,11 @@ export default function TradingBibleChart({
       <button type="button" onClick={() => setHideDrawings((value) => !value)} title={hideDrawings ? 'Show drawings' : 'Hide drawings'} className={`shrink-0 rounded-lg border p-1.5 ${hideDrawings ? 'border-[#d4af37]/50 bg-[#d4af37]/15 text-[#d4af37]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'}`}>
         {hideDrawings ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
       </button>
-      <button type="button" onClick={undo} disabled={!dz.drawings.length || locked} title="Undo last drawing" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df] disabled:opacity-40">
+      <button type="button" onClick={undo} disabled={!dz.canUndo || locked} title="Undo" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df] disabled:opacity-40">
         <RotateCcw className="h-3.5 w-3.5" />
+      </button>
+      <button type="button" onClick={redo} disabled={!dz.canRedo || locked} title="Redo" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df] disabled:opacity-40">
+        <Redo2 className="h-3.5 w-3.5" />
       </button>
       <button type="button" onClick={removeSelected} disabled={!selected || locked} title="Delete selected drawing" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-red-400/70 hover:text-red-400 disabled:opacity-40">
         <Trash2 className="h-3.5 w-3.5" />
@@ -1363,12 +1328,23 @@ export default function TradingBibleChart({
       <button type="button" onClick={() => setTemplatesOpen(true)} title="Drawing templates" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]">
         <BookMarked className="h-3.5 w-3.5" />
       </button>
+      {tool === 'path' && pending.length >= 2 ? (
+        <button type="button" onClick={finishPath} title="Finish path" className="shrink-0 rounded-lg border border-[#d4af37]/50 bg-[#d4af37]/15 p-1.5 text-[#d4af37]">
+          <Check className="h-3.5 w-3.5" />
+        </button>
+      ) : null}
       {dz.saveError ? (
         <span className="ml-1 shrink-0 text-[10px] text-amber-400">{dz.saveError}</span>
       ) : dz.drawings.length > 0 ? (
         <span className="ml-1 shrink-0 text-[10px] text-emerald-400">✓ {dz.drawings.length}</span>
       ) : null}
-      {pending ? <span className="ml-1 shrink-0 text-[10px] text-[#d4af37]">Click second point</span> : null}
+      {pending.length ? (
+        <span className="ml-1 shrink-0 text-[10px] text-[#d4af37]">
+          {tool === 'path'
+            ? `Path · ${pending.length} points · double-click or Enter to finish`
+            : `Click point ${pending.length + 1} of ${DRAW_TOOLS.find((item) => item.id === tool)?.clicks || 2}`}
+        </span>
+      ) : null}
     </div>
   ) : null;
 
@@ -1401,22 +1377,13 @@ export default function TradingBibleChart({
         </div>
       ) : (
         <>
-          <div ref={wrapRef} data-tb-chart={activeSymbol} data-tb-chart-type={effectiveType} className={height === 'h-full' ? 'h-full w-full' : `${height || 'h-[460px]'} w-full`} />
-          {!hideDrawings && (
-            <svg
-              data-chart-tick={tick}
-              className="absolute inset-0 z-10 h-full w-full"
-              style={{ pointerEvents: tool === 'cursor' || locked ? 'none' : 'auto' }}
-              onClick={onOverlayClick}
-            >
-              <defs>
-                <marker id="tb-arrowhead" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
-                  <polygon points="0 0, 9 3.5, 0 7" fill="#f472b6" />
-                </marker>
-              </defs>
-              <g style={{ pointerEvents: locked ? 'none' : 'auto' }}>{renderDrawings()}</g>
-            </svg>
-          )}
+          <div
+            ref={wrapRef}
+            data-tb-chart={activeSymbol}
+            data-tb-chart-type={effectiveType}
+            style={{ touchAction: 'none' }}
+            className={height === 'h-full' ? 'h-full w-full' : `${height || 'h-[460px]'} w-full`}
+          />
           {legend}
           {status === 'error' && !candles.length && (
             <div className="absolute inset-0 z-20 grid place-items-center bg-[#0a0a0f]/60 text-center">

@@ -34,6 +34,13 @@ export function useDrawings(symbol) {
   const [loaded, setLoaded] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const saveTimer = useRef(null);
+  const drawingsRef = useRef(drawings);
+  const history = useRef({ past: [], future: [] });
+  const [, forceHistoryRender] = useState(0);
+
+  useEffect(() => {
+    drawingsRef.current = drawings;
+  }, [drawings]);
 
   // Reactive auth: late session resolution must reload, not stay logged-out.
   useEffect(() => {
@@ -46,6 +53,8 @@ export function useDrawings(symbol) {
 
   // Re-hydrate local mirror when symbol/uid changes (before cloud load).
   useEffect(() => {
+    history.current = { past: [], future: [] };
+    forceHistoryRender((value) => value + 1);
     setDrawings(readLocal(symbol, uid));
     setRecordId(null);
   }, [symbol, uid]);
@@ -119,14 +128,46 @@ export function useDrawings(symbol) {
     }, 600);
   }, [uid, recordId, symbol]);
 
+  const commit = useCallback((next, { record = true } = {}) => {
+    const safe = Array.isArray(next) ? next : [];
+    if (record) {
+      history.current.past.push(drawingsRef.current);
+      if (history.current.past.length > 50) history.current.past.shift();
+      history.current.future = [];
+    }
+    drawingsRef.current = safe;
+    setDrawings(safe);
+    writeLocal(symbol, pb.authStore.record?.id || uid, safe);
+    persist(safe);
+    forceHistoryRender((value) => value + 1);
+  }, [persist, symbol, uid]);
+
   const update = useCallback((updater) => {
-    setDrawings((prev) => {
-      const next = typeof updater === 'function' ? updater(prev) : updater;
-      const safe = Array.isArray(next) ? next : [];
-      writeLocal(symbol, pb.authStore.record?.id || uid, safe);
-      persist(safe);
-      return safe;
-    });
+    const next = typeof updater === 'function' ? updater(drawingsRef.current) : updater;
+    commit(next);
+  }, [commit]);
+
+  const undo = useCallback(() => {
+    const previous = history.current.past.pop();
+    if (!previous) return;
+    history.current.future.push(drawingsRef.current);
+    drawingsRef.current = previous;
+    setDrawings(previous);
+    writeLocal(symbol, pb.authStore.record?.id || uid, previous);
+    persist(previous);
+    forceHistoryRender((value) => value + 1);
+  }, [persist, symbol, uid]);
+
+  const redo = useCallback(() => {
+    const next = history.current.future.pop();
+    if (!next) return;
+    history.current.past.push(drawingsRef.current);
+    if (history.current.past.length > 50) history.current.past.shift();
+    drawingsRef.current = next;
+    setDrawings(next);
+    writeLocal(symbol, pb.authStore.record?.id || uid, next);
+    persist(next);
+    forceHistoryRender((value) => value + 1);
   }, [persist, symbol, uid]);
 
   const saveTemplate = useCallback(async (name, shared) => {
@@ -147,7 +188,20 @@ export function useDrawings(symbol) {
     loadTemplates();
   }, [loadTemplates]);
 
-  return { drawings, update, loaded, templates, saveTemplate, applyTemplate, deleteTemplate, saveError };
+  return {
+    drawings,
+    update,
+    undo,
+    redo,
+    canUndo: history.current.past.length > 0,
+    canRedo: history.current.future.length > 0,
+    loaded,
+    templates,
+    saveTemplate,
+    applyTemplate,
+    deleteTemplate,
+    saveError,
+  };
 }
 
 export default useDrawings;
