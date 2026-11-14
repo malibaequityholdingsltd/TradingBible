@@ -6,7 +6,7 @@
 .pm-page {
   --pm-accent: var(--tb-gold, #d4af37);
   --pm-accent-soft: color-mix(in srgb, var(--tb-gold, #d4af37) 18%, transparent);
-  --pm-line: color-mix(in srgb, var(--tb-gold, #d4af37) 16%, transparent);
+  --pm-line: color-mix(in srgb, var(--tb-gold, #d4af37) 12%, transparent);
   --pm-ink: #f0ecdd;
   --pm-muted: #8a8577;
   --pm-panel: rgba(13, 13, 18, 0.76);
@@ -376,6 +376,40 @@ html.light .pm-field__star { background: rgba(146, 112, 25, 0.55); box-shadow: n
   min-width: 0;
 }
 
+/* The hero copy sits directly over the bull/bear artwork. A soft glass
+   pocket keeps the words crisp without turning the whole hero into a card. */
+.pm-hero__copy {
+  position: relative;
+  isolation: isolate;
+}
+
+.pm-hero__copy::before {
+  content: "";
+  position: absolute;
+  inset: -1.15rem -1.05rem;
+  z-index: -1;
+  border-radius: 1.8rem;
+  background: linear-gradient(122deg, rgba(6, 6, 9, 0.62) 0%, rgba(6, 6, 9, 0.4) 58%, rgba(6, 6, 9, 0.16) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 28px 90px -64px rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(16px) saturate(1.08);
+  -webkit-backdrop-filter: blur(16px) saturate(1.08);
+  pointer-events: none;
+}
+
+html.light .pm-hero__copy::before {
+  background: linear-gradient(122deg, rgba(255, 252, 244, 0.72) 0%, rgba(255, 252, 244, 0.48) 58%, rgba(255, 252, 244, 0.2) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 24px 70px -58px rgba(15, 23, 42, 0.24);
+}
+
+@media (max-width: 640px) {
+  .pm-hero__copy::before {
+    inset: -0.8rem -0.7rem;
+    border-radius: 1.4rem;
+    backdrop-filter: blur(12px) saturate(1.04);
+    -webkit-backdrop-filter: blur(12px) saturate(1.04);
+  }
+}
+
 @media (min-width: 1024px) {
   .pm-hero { padding-top: calc(9.6rem + var(--safe-top)); padding-bottom: 4.5rem; }
   .pm-hero__inner { grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr); align-items: center; gap: 3.5rem; }
@@ -392,7 +426,7 @@ html.light .pm-field__star { background: rgba(146, 112, 25, 0.55); box-shadow: n
   min-height: 34px;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid color-mix(in srgb, var(--tb-gold, #d4af37) 34%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tb-gold, #d4af37) 24%, transparent);
   border-radius: 999px;
   background: color-mix(in srgb, var(--tb-gold, #d4af37) 8%, #09090d);
   padding: 0.4rem 0.75rem;
@@ -444,7 +478,7 @@ html.light .pm-field__star { background: rgba(146, 112, 25, 0.55); box-shadow: n
 .pm-countdown__unit {
   min-width: 4.4rem;
   flex: 1 1 4.4rem;
-  border: 1px solid color-mix(in srgb, var(--tb-gold, #d4af37) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tb-gold, #d4af37) 14%, transparent);
   border-radius: 0.9rem;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(10, 10, 15, 0.68));
   padding: 0.7rem 0.45rem 0.6rem;
@@ -529,6 +563,8 @@ html.light .pm-field__star { background: rgba(146, 112, 25, 0.55); box-shadow: n
   display: flex;
   width: max-content;
   animation: pm-marquee var(--pm-marquee-duration, 34s) linear infinite;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, transparent 2%, #000 9%, #000 91%, transparent 98%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, transparent 2%, #000 9%, #000 91%, transparent 98%, transparent 100%);
 }
 
 .pm-marquee:hover .pm-marquee__track { animation-play-state: paused; }
@@ -932,7 +968,7 @@ html.light .pm-field__star { background: rgba(146, 112, 25, 0.55); box-shadow: n
   min-height: 22rem;
   place-items: center;
   overflow: hidden;
-  border: 1px solid rgba(125, 156, 255, 0.24);
+  border: 1px solid rgba(125, 156, 255, 0.16);
   border-radius: 1.6rem;
   background:
     radial-gradient(58% 58% at 50% 48%, rgba(125, 156, 255, 0.22), transparent 67%),
@@ -944,7 +980,7 @@ html.light .pm-field__star { background: rgba(146, 112, 25, 0.55); box-shadow: n
 .pm-launch-orbit::after {
   content: "";
   position: absolute;
-  border: 1px solid rgba(125, 156, 255, 0.22);
+  border: 1px solid rgba(125, 156, 255, 0.14);
   border-radius: 999px;
 }
 
@@ -1036,7 +1072,7 @@ html.light .pm-field__star { background: rgba(146, 112, 25, 0.55); box-shadow: n
   width: min(100%, 17.5rem);
   aspect-ratio: 1;
   place-items: center;
-  border: 1px solid rgba(232, 201, 90, 0.3);
+  border: 1px solid rgba(232, 201, 90, 0.18);
   border-radius: 999px;
   background: radial-gradient(circle, rgba(232, 201, 90, 0.12), transparent 67%);
 }
@@ -1121,7 +1157,7 @@ html.light .pm-field__star { background: rgba(146, 112, 25, 0.55); box-shadow: n
   width: 5rem;
   height: 5rem;
   place-items: center;
-  border: 1px solid rgba(232, 201, 90, 0.32);
+  border: 1px solid rgba(232, 201, 90, 0.2);
   border-radius: 999px;
   background: #0d0c09;
   font-family: var(--font-mono, ui-monospace, monospace);
@@ -1301,6 +1337,10 @@ html.light .pm-person__photo { background: linear-gradient(180deg, rgba(212, 175
 html.light .pm-person__initials { background: #fffaf0; }
 
 @media (prefers-reduced-motion: reduce) {
+  .pm-marquee { overflow: visible; border-color: transparent; background: transparent; }
+  .pm-marquee__track { flex-wrap: wrap; width: 100%; }
+  .pm-marquee__set { flex: 1 1 100%; flex-wrap: wrap; }
+  .pm-marquee__set[aria-hidden="true"] { display: none; }
   .pm-marquee__track,
   .pm-field__grid,
   .pm-field__orb,

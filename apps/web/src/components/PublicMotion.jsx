@@ -124,8 +124,16 @@ export function CountUp({
 }
 
 export function Marquee({
-  items, className = '', speed = 34, reverse = false, separator = '✦',
+  items, className = '', speed = 34, reverse = false, separator = '✦', minWidth = 1800,
 }) {
+  // A short list can be narrower than the container, which leaves blank space
+  // at the end of each loop. Repeat the set until one loop is comfortably
+  // wider than the widest public column, then duplicate it once for the
+  // seamless -50% animation.
+  const reduce = useReducedMotion();
+  const repeat = reduce ? 1 : Math.max(1, Math.ceil(minWidth / Math.max(1, items.length * 150)));
+  const displayItems = reduce ? items : Array.from({ length: repeat }, () => items).flat();
+  const copies = reduce ? [0] : [0, 1];
   const duration = `${Math.max(16, speed)}s`;
   return (
     <div className={`pm-marquee ${className}`} aria-label={typeof items[0] === 'string' ? items.join(' · ') : undefined}>
@@ -133,9 +141,9 @@ export function Marquee({
         className="pm-marquee__track"
         style={{ '--pm-marquee-duration': duration, animationDirection: reverse ? 'reverse' : 'normal' }}
       >
-        {[0, 1].map((copy) => (
+        {copies.map((copy) => (
           <div key={copy} className="pm-marquee__set" aria-hidden={copy === 1 ? 'true' : undefined}>
-            {items.map((item, index) => (
+            {displayItems.map((item, index) => (
               <React.Fragment key={`${copy}-${index}-${typeof item === 'string' ? item : 'node'}`}>
                 <span className="pm-marquee__item">{item}</span>
                 <span className="pm-marquee__sep" aria-hidden>{separator}</span>

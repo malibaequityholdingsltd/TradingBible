@@ -10,6 +10,7 @@ import { useI18n } from '@/lib/i18n';
 import { usePlatformSettings } from '@/lib/platformSettings';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { Card, GhostButton, GoldButton, Kicker } from '@/components/ui-kit';
+import { Marquee } from '@/components/PublicMotion';
 import '@/styles/landing-page.css';
 
 const NAV = [
@@ -95,16 +96,16 @@ export default function PublicSiteShell({ children, className = '' }) {
 
 export function PublicPageHead({ eyebrow, title, description, meta = [], actions, children }) {
   return (
-    <section className="relative overflow-hidden border-b border-[#d4af37]/10">
+    <section className="public-page-head relative overflow-hidden border-b border-[#d4af37]/10">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.025] to-transparent" />
       <div className="relative mx-auto w-full max-w-[84rem] px-5 pb-8 pt-[calc(7.5rem+var(--safe-top))] sm:px-8 sm:pb-10 sm:pt-[calc(8.5rem+var(--safe-top))]">
-        <div className="max-w-4xl">
+        <div className="public-page-head__copy max-w-4xl">
           {eyebrow && <Kicker>{eyebrow}</Kicker>}
           <h1 className="mt-3 text-balance text-[2.15rem] font-extrabold leading-[0.99] tracking-[-0.045em] sm:text-[3.4rem]">{title}</h1>
           {description && <p className="mt-4 max-w-3xl text-pretty text-sm leading-relaxed text-[#b8b3a3] sm:text-base">{description}</p>}
           {meta.length > 0 && (
-            <div className="mt-5 flex flex-wrap gap-2">
-              {meta.map((item) => <span key={item} className="rounded-full border border-[#d4af37]/20 bg-[#d4af37]/[0.06] px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.1em] text-[#d4af37]">{item}</span>)}
+            <div className="public-page-head__rail mt-5">
+              <Marquee items={meta} speed={42} separator="·" minWidth={1100} />
             </div>
           )}
           {actions && <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:items-center">{actions}</div>}

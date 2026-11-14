@@ -49,7 +49,7 @@ export default function LaunchPublicPage() {
       <div className="relative z-[1]">
         <header className="pm-hero">
           <div className="pm-hero__inner">
-            <div>
+            <div className="pm-hero__copy">
               <Reveal>
                 <span className="inline-flex items-center gap-2 rounded-full border border-[#7d9cff]/30 bg-[#7d9cff]/10 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#a8b8ff]">
                   <span className="pm-live-dot" /> Official launch · {LAUNCH_LABEL}

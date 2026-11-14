@@ -105,7 +105,7 @@ export default function TeamPage() {
       <div className="relative z-[1]">
         <header className="pm-hero">
           <div className="pm-hero__inner">
-            <div>
+            <div className="pm-hero__copy">
               <Reveal>
                 <span className="inline-flex items-center gap-2 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/10 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#d4af37]">
                   <Users className="h-3 w-3" /> Company · The desk

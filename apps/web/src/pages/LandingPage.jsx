@@ -298,7 +298,7 @@ export default function LandingPage() {
         <div aria-hidden className="pointer-events-none absolute -right-40 bottom-0 h-[30rem] w-[30rem] rounded-full bg-[#d4af37]/[0.06] blur-[120px]" />
 
         <div className="relative mx-auto grid w-full max-w-[84rem] gap-9 px-5 sm:px-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:items-center lg:gap-12">
-          <div>
+          <div className="pm-hero__copy">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex flex-wrap items-center gap-2">
               <LaunchPill />
               <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#d4af37] ${isLight ? 'border-[#d4af37]/45 bg-[#d4af37]/10' : 'border-[#d4af37]/30 bg-[#0a0a0f]/70'}`}>

@@ -267,7 +267,7 @@ export default function ProgramsPublicPage() {
       <div className="relative z-[1]">
         <header className="pm-hero">
           <div className="pm-hero__inner">
-            <div>
+            <div className="pm-hero__copy">
               <Reveal>
                 <LaunchPill />
               </Reveal>

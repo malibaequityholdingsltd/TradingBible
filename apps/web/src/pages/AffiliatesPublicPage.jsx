@@ -99,7 +99,7 @@ export default function AffiliatesPublicPage() {
       <div className="relative z-[1]">
         <header className="pm-hero">
           <div className="pm-hero__inner">
-            <div>
+            <div className="pm-hero__copy">
               <Reveal><LaunchPill /></Reveal>
               <Reveal delay={0.05}>
                 <div className="pm-kicker mt-6">Affiliates · Refer the work</div>
