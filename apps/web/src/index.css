@@ -2596,26 +2596,30 @@ html.light .tb-hero-chip { background-color: rgba(60, 55, 40, 0.07) !important; 
 }
 .tb-term-tab:active { transform: scale(0.96); }
 .tb-term-tab:hover { color: #e9e7df; background: #24242c; }
-/* Tablets and phones: 4×2 grid so every terminal view stays visible with
-   its label. No hidden tabs behind a horizontal swipe. */
+/* Phones and tablets keep all views reachable in one horizontally
+   scrollable row. This preserves the label, avoids a second row of chrome,
+   and gives the chart the recovered height. */
 @media (max-width: 1023px) {
   .tb-term-tabs {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    overflow: visible;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
+  .tb-term-tabs::-webkit-scrollbar { display: none; }
   .tb-term-tab {
-    width: 100%;
-    min-width: 0;
+    flex: 0 0 auto;
     min-height: 38px;
-    padding: 7px 3px;
-    gap: 4px;
-    font-size: 10px;
+    padding: 7px 10px;
+    gap: 5px;
+    font-size: 10.5px;
   }
+  .tb-term-tab .ios-icon { display: none; }
   .tb-term-tab-label {
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow: visible;
+    text-overflow: clip;
     white-space: nowrap;
   }
 }

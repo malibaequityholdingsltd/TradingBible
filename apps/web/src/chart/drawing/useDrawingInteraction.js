@@ -234,10 +234,11 @@ export function useDrawingInteraction({
     const point = screenToPoint(chart, series, pane.x, pane.y, {
       magnet: magnetRef.current,
       candles: candlesRef.current,
+      timeframeMinutes: timeframeRef.current,
     });
     if (!point) return null;
     return { pane, point };
-  }, [candlesRef, chartRef, seriesRef, wrapRef]);
+  }, [candlesRef, chartRef, seriesRef, timeframeRef, wrapRef]);
 
   const setWrapCursor = useCallback((cursor) => {
     if (wrapRef.current) wrapRef.current.style.cursor = cursor;
@@ -274,14 +275,17 @@ export function useDrawingInteraction({
     const chart = chartRef.current;
     const series = seriesRef.current;
     if (!pane || !chart || !series) return;
-    const hit = hitTestDrawings(drawingsRef.current, chart, series, pane);
+    const hit = hitTestDrawings(drawingsRef.current, chart, series, pane, {
+      candles: candlesRef.current,
+      timeframeMinutes: timeframeRef.current,
+    });
     if (hit?.part === 'handle') {
       setHovered({ drawingId: hit.drawingId, handle: hit.handle });
     } else {
       setHovered(null);
     }
     setWrapCursor(hit?.cursor || 'default');
-  }, [chartRef, drawingsRef, seriesRef, setHovered, setWrapCursor]);
+  }, [candlesRef, chartRef, drawingsRef, seriesRef, timeframeRef, setHovered, setWrapCursor]);
 
   const onPointerDown = useCallback((event) => {
     if (event.button !== 0) return;
@@ -363,7 +367,10 @@ export function useDrawingInteraction({
 
     const chart = chartRef.current;
     const series = seriesRef.current;
-    const hit = hitTestDrawings(drawingsRef.current, chart, series, pane);
+    const hit = hitTestDrawings(drawingsRef.current, chart, series, pane, {
+      candles: candlesRef.current,
+      timeframeMinutes: timeframeRef.current,
+    });
     if (!hit) {
       selectedRef.current = null;
       setSelected(null);
@@ -393,9 +400,9 @@ export function useDrawingInteraction({
     setWrapCursor(hit.cursor || 'grabbing');
     try { wrapRef.current?.setPointerCapture?.(event.pointerId); } catch { /* ignore */ }
   }, [
-    buildPreview, chartRef, clearPreview, commitNew, drawingsRef, finishPath,
+    buildPreview, candlesRef, chartRef, clearPreview, commitNew, drawingsRef, finishPath,
     pointerInfo, seriesRef, setHovered, setPending, setPreview, setSelected,
-    setTextPrompt, setTool, setWrapCursor, wrapRef,
+    setTextPrompt, setTool, setWrapCursor, timeframeRef, wrapRef,
   ]);
 
   const onPointerMove = useCallback((event) => {

@@ -58,7 +58,7 @@ describe('drawing geometry', () => {
     expect(resized.points[1]).toEqual({ time: 4, price: 110 });
   });
 
-  it('exposes four resize handles for rectangles', () => {
+  it('exposes eight resize handles for rectangles', () => {
     const { chart, series } = mockProjection();
     const screen = {
       points: rect.points.map((point) => ({
@@ -69,10 +69,17 @@ describe('drawing geometry', () => {
       height: 300,
     };
     const handles = getHandles(rect, screen);
-    expect(handles).toHaveLength(4);
+    expect(handles).toHaveLength(8);
     expect(handles.map((handle) => handle.cursor)).toEqual([
       'nwse-resize', 'nesw-resize', 'nwse-resize', 'nesw-resize',
+      'ew-resize', 'ew-resize', 'ns-resize', 'ns-resize',
     ]);
+  });
+
+  it('resizes one edge without moving the opposite edge', () => {
+    const resized = resizeDrawing(rect, { xPoint: 0 }, { time: 0, price: 50 });
+    expect(resized.points[0]).toEqual({ time: 0, price: 100 });
+    expect(resized.points[1]).toEqual({ time: 3, price: 110 });
   });
 
   it('hits a trend line body and endpoint handle', () => {

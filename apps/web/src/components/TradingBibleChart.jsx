@@ -10,15 +10,14 @@ import {
   CandlestickChart,
   ChartNoAxesCombined,
   Check,
-  ChevronDown,
   Circle,
   Columns2,
   Download,
+  Ellipsis,
   Eraser,
   Eye,
   EyeOff,
   GitBranch,
-  GitCompareArrows,
   Grid2x2,
   History,
   Layers,
@@ -390,7 +389,7 @@ export default function TradingBibleChart({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [objectsOpen, setObjectsOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
-  const [compareOpen, setCompareOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [tool, setTool] = useState('cursor');
   const [pending, setPending] = useState([]);
@@ -555,6 +554,7 @@ export default function TradingBibleChart({
       hide: hideDrawingsRef.current,
       accent: themeAccent(),
       isLight,
+      candles: candlesRef.current,
       timeframeMinutes: timeframeMinutes(timeframeRef.current) || 1,
       formatPrice: fmtPrice,
     }));
@@ -1007,7 +1007,7 @@ export default function TradingBibleChart({
         if (settingsOpen) { setSettingsOpen(false); return; }
         if (objectsOpen) { setObjectsOpen(false); return; }
         if (templatesOpen) { setTemplatesOpen(false); return; }
-        if (compareOpen) { setCompareOpen(false); return; }
+        if (actionsOpen) { setActionsOpen(false); return; }
         if (pending.length || tool !== 'cursor') {
           cancelInteraction();
           setTool('cursor');
@@ -1036,7 +1036,7 @@ export default function TradingBibleChart({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [textPrompt, pickerOpen, settingsOpen, objectsOpen, templatesOpen, compareOpen, pending, tool, fullscreen, selected, locked, removeSelected, undo, redo, cancelInteraction, finishPath]);
+  }, [textPrompt, pickerOpen, settingsOpen, objectsOpen, templatesOpen, actionsOpen, pending, tool, fullscreen, selected, locked, removeSelected, undo, redo, cancelInteraction, finishPath]);
 
   const lastCandle = candles.length ? candles[candles.length - 1] : null;
   const quotePrice = Number(quote?.price);
@@ -1163,10 +1163,87 @@ export default function TradingBibleChart({
     </Modal>
   ) : null;
 
+  const actionButton = 'flex min-h-[42px] items-center justify-start gap-2 rounded-lg border border-[#d4af37]/15 px-3 text-left text-[11px] font-semibold text-[#c9c4b4] transition hover:border-[#d4af37]/40 hover:text-[#f0ecdd]';
+  const actionsModal = actionsOpen ? (
+    <Modal title="Chart actions" onClose={() => setActionsOpen(false)}>
+      <div className="space-y-4">
+        {!isTv && (
+          <div>
+            <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-[#8a8577]">Compare</p>
+            <SymbolSearchPicker
+              value={compareSymbol || 'Add compare…'}
+              onChange={(next) => setCompareSymbol(next)}
+              buttonClassName="w-full justify-between"
+              dropdownClassName={fullscreen ? '!z-[140]' : ''}
+            />
+            {compareSymbol && (
+              <button type="button" onClick={() => setCompareSymbol('')} className="mt-2 flex items-center gap-1 text-[10px] font-semibold text-red-400 hover:underline">
+                <X className="h-3 w-3" /> Clear compare
+              </button>
+            )}
+            <p className="mt-1.5 text-[10px] leading-relaxed text-[#5f5b50]">Compare is normalized to the first loaded close so both lines share one scale.</p>
+          </div>
+        )}
+        <div className="grid grid-cols-2 gap-1.5">
+          {!isTv && (
+            <button type="button" className={actionButton} onClick={() => { setActionsOpen(false); setSettingsOpen(true); }}>
+              <Settings2 className="h-3.5 w-3.5 text-[#d4af37]" /> Settings
+            </button>
+          )}
+          <button type="button" className={actionButton} onClick={() => { setActionsOpen(false); handleReplay(); }}>
+            <History className="h-3.5 w-3.5 text-[#d4af37]" /> Replay
+          </button>
+          <Link to={`/app/alerts?symbol=${encodeURIComponent(activeSymbol)}`} onClick={() => setActionsOpen(false)} className={actionButton}>
+            <Bell className="h-3.5 w-3.5 text-[#d4af37]" /> Price alert
+          </Link>
+          <button type="button" className={actionButton} onClick={() => { setActionsOpen(false); handleSnapshot(); }}>
+            <Camera className="h-3.5 w-3.5 text-[#d4af37]" /> Snapshot
+          </button>
+          {!isTv && (
+            <button type="button" className={actionButton} onClick={() => { setActionsOpen(false); exportPng(); }}>
+              <Download className="h-3.5 w-3.5 text-[#d4af37]" /> Export PNG
+            </button>
+          )}
+          <button type="button" className={actionButton} onClick={() => { setActionsOpen(false); handleShare(); }}>
+            <Share2 className="h-3.5 w-3.5 text-[#d4af37]" /> Share view
+          </button>
+        </div>
+        {onLayoutChange && (
+          <div>
+            <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-[#8a8577]">Chart layout</p>
+            <div className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 p-1" role="group" aria-label="Chart layout">
+              {LAYOUTS.map((item) => (
+                <button key={item.id} type="button" onClick={() => { onLayoutChange(item.id); setActionsOpen(false); }} className={`flex min-h-[36px] flex-1 items-center justify-center gap-1 rounded-md text-[10px] font-semibold ${layout === item.id ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
+                  <item.icon className="h-3.5 w-3.5" /> {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {!isTv && (
+          <div className="border-t border-white/5 pt-3">
+            <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-[#8a8577]">Drawings · {dz.drawings.length}</p>
+            <div className="grid grid-cols-2 gap-1.5">
+              <button type="button" className={actionButton} onClick={() => { setActionsOpen(false); setObjectsOpen(true); }}>
+                <List className="h-3.5 w-3.5 text-[#d4af37]" /> Objects
+              </button>
+              <button type="button" className={actionButton} onClick={() => { setActionsOpen(false); setTemplatesOpen(true); }}>
+                <BookMarked className="h-3.5 w-3.5 text-[#d4af37]" /> Templates
+              </button>
+              <button type="button" disabled={!dz.drawings.length || locked} onClick={() => { setActionsOpen(false); clearAll(); }} className={`${actionButton} text-red-400 disabled:opacity-40`}>
+                <Eraser className="h-3.5 w-3.5" /> Clear all
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </Modal>
+  ) : null;
+
   const toolbar = showToolbar ? (
-    <div className="flex flex-wrap items-center gap-1.5 border-b border-white/8 bg-[#0c0c11]/95 px-2 py-1.5">
+    <div className="no-scrollbar flex min-w-0 items-center gap-1.5 overflow-x-auto border-b border-white/8 bg-[#0c0c11]/95 px-2 py-1.5">
       {!compact && (
-        <>
+        <div className="hidden min-w-0 flex-1 items-center gap-1.5 overflow-x-auto no-scrollbar sm:flex">
           {!hidePicker ? (
             <div className="min-w-0 shrink-0">
               <SymbolSearchPicker
@@ -1179,21 +1256,21 @@ export default function TradingBibleChart({
           ) : (
             <span className="font-mono text-xs font-bold text-[#f0ecdd]">{activeSymbol}</span>
           )}
-          <span className="hidden max-w-[9rem] truncate text-[10px] text-[#8a8577] sm:inline">{symbolName(activeSymbol)}</span>
-          <span className="font-mono text-sm font-bold text-[#f0ecdd]">{fmtPrice(displayPrice)}</span>
-          <span className={`font-mono text-[11px] font-semibold ${up ? 'text-emerald-400' : 'text-red-400'}`}>
+          <span className="max-w-[8rem] shrink-0 truncate text-[10px] text-[#8a8577]">{symbolName(activeSymbol)}</span>
+          <span className="shrink-0 font-mono text-sm font-bold text-[#f0ecdd]">{fmtPrice(displayPrice)}</span>
+          <span className={`shrink-0 font-mono text-[11px] font-semibold ${up ? 'text-emerald-400' : 'text-red-400'}`}>
             {displayChange == null ? '—' : `${up ? '+' : ''}${Number(displayChange).toFixed(2)}%`}
           </span>
-          {showSim && <span className="rounded bg-amber-400/15 px-1 py-0.5 text-[9px] font-bold text-amber-400">SIM</span>}
-          {showClosed && <span className="rounded bg-[#d4af37]/15 px-1 py-0.5 text-[9px] font-bold text-[#d4af37]">CLOSED</span>}
-        </>
+          {showSim && <span className="shrink-0 rounded bg-amber-400/15 px-1 py-0.5 text-[9px] font-bold text-amber-400">SIM</span>}
+          {showClosed && <span className="shrink-0 rounded bg-[#d4af37]/15 px-1 py-0.5 text-[9px] font-bold text-[#d4af37]">CLOSED</span>}
+        </div>
       )}
-      <div className="ml-auto flex flex-wrap items-center justify-end gap-1">
+      <div className="ml-auto flex shrink-0 items-center justify-end gap-1">
         <select
           value={activeTimeframe}
           onChange={(event) => changeTimeframe(event.target.value)}
           aria-label="Chart timeframe"
-          className="h-7 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-1.5 font-mono text-[11px] text-[#e9e7df] outline-none"
+          className="h-7 w-16 shrink-0 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-1.5 font-mono text-[11px] text-[#e9e7df] outline-none sm:w-auto"
         >
           {TIMEFRAME_GROUPS.map((group) => (
             <optgroup key={group.label} label={group.label}>
@@ -1205,81 +1282,29 @@ export default function TradingBibleChart({
           value={effectiveType}
           onChange={(event) => changeChartType(event.target.value)}
           aria-label="Chart type"
-          className="h-7 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-1.5 text-[11px] text-[#e9e7df] outline-none"
+          className="h-7 w-[6.5rem] shrink-0 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-1.5 text-[11px] text-[#e9e7df] outline-none sm:w-auto"
         >
           {CHART_TYPES.map((type) => <option key={type.id} value={type.id}>{type.label}</option>)}
         </select>
         {!isTv && (
-          <button type="button" onClick={() => setPickerOpen(true)} className="flex h-7 items-center gap-1 rounded-lg border border-[#d4af37]/15 px-2 text-[11px] text-[#d4af37] hover:border-[#d4af37]/40" title="Configure indicators">
+          <button type="button" onClick={() => setPickerOpen(true)} className="flex h-7 w-7 shrink-0 items-center justify-center gap-1 rounded-lg border border-[#d4af37]/15 text-[11px] text-[#d4af37] hover:border-[#d4af37]/40 sm:w-auto sm:px-2" title="Configure indicators">
             <Layers className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Indicators</span>
-            <span>({indicators.length})</span>
+            <span className="hidden lg:inline">Indicators</span>
+            <span className="hidden sm:inline">({indicators.length})</span>
           </button>
         )}
         {!compact && (
           <>
-            {!isTv && (
-              <div className="relative">
-              <button type="button" onClick={() => setCompareOpen((open) => !open)} className={`flex h-7 items-center gap-1 rounded-lg border border-[#d4af37]/15 px-2 text-[11px] ${compareSymbol ? 'text-[#60a5fa]' : 'text-[#8a8577]'} hover:text-[#e9e7df]`} title="Compare another symbol">
-                <GitCompareArrows className="h-3.5 w-3.5" />
-                <span className="hidden lg:inline">{compareSymbol || 'Compare'}</span>
-                <ChevronDown className="h-3 w-3" />
-              </button>
-              {compareOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setCompareOpen(false)} />
-                  <div className="absolute right-0 z-50 mt-1 w-64 rounded-xl border border-[#d4af37]/20 bg-[#0d0d12]/95 p-2 shadow-xl backdrop-blur-xl">
-                    <SymbolSearchPicker
-                      value={compareSymbol || 'Add compare…'}
-                      onChange={(next) => { setCompareSymbol(next); setCompareOpen(false); }}
-                      buttonClassName="w-full justify-between"
-                      dropdownClassName={fullscreen ? '!z-[140]' : ''}
-                    />
-                    {compareSymbol && (
-                      <button type="button" onClick={() => { setCompareSymbol(''); setCompareOpen(false); }} className="mt-1 flex w-full items-center gap-1 rounded-md px-2 py-1.5 text-left text-[11px] text-red-400 hover:bg-white/5">
-                        <X className="h-3 w-3" /> Clear compare
-                      </button>
-                    )}
-                    <p className="mt-1 px-1 text-[10px] leading-relaxed text-[#5f5b50]">Compare is normalized to the first loaded close so both lines share one scale.</p>
-                  </div>
-                </>
-              )}
-              </div>
-            )}
-            <Link to={`/app/alerts?symbol=${encodeURIComponent(activeSymbol)}`} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#d4af37]" title="Create price alert">
-              <Bell className="h-3.5 w-3.5" />
-            </Link>
-            <button type="button" onClick={handleReplay} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]" title="Open replay">
-              <History className="h-3.5 w-3.5" />
-            </button>
-            {!isTv && (
-              <button type="button" onClick={() => setSettingsOpen(true)} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]" title="Chart settings">
-                <Settings2 className="h-3.5 w-3.5" />
-              </button>
-            )}
-            <button type="button" onClick={handleSnapshot} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/30 text-[#d4af37] hover:bg-[#d4af37]/10" title="Snapshot to journal and download PNG">
+            <button type="button" onClick={handleSnapshot} className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-[#d4af37]/30 text-[#d4af37] hover:bg-[#d4af37]/10" title="Snapshot to journal and download PNG">
               <Camera className="h-3.5 w-3.5" />
             </button>
-            {!isTv && (
-              <button type="button" onClick={exportPng} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]" title="Export chart PNG">
-                <Download className="h-3.5 w-3.5" />
-              </button>
-            )}
-            <button type="button" onClick={handleShare} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]" title="Share this view">
-              <Share2 className="h-3.5 w-3.5" />
+            <button type="button" onClick={() => setActionsOpen(true)} className={`relative grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-[#d4af37]/15 hover:text-[#e9e7df] ${compareSymbol ? 'text-[#60a5fa]' : 'text-[#8a8577]'}`} title="More chart actions" aria-label="More chart actions">
+              <Ellipsis className="h-3.5 w-3.5" />
+              {(compareSymbol || dz.drawings.length > 0) && <span aria-hidden className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-[#d4af37]" />}
             </button>
-            {onLayoutChange && (
-              <div className="flex items-center gap-0.5 rounded-lg border border-[#d4af37]/15 p-0.5" role="group" aria-label="Chart layout">
-                {LAYOUTS.map((item) => (
-                  <button key={item.id} type="button" onClick={() => onLayoutChange(item.id)} title={item.label} className={`rounded p-1 ${layout === item.id ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
-                    <item.icon className="h-3.5 w-3.5" />
-                  </button>
-                ))}
-              </div>
-            )}
           </>
         )}
-        <button type="button" onClick={() => { lastView.current = ''; setFullscreen((value) => !value); }} className="grid h-7 w-7 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]" title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}>
+        <button type="button" onClick={() => { lastView.current = ''; setFullscreen((value) => !value); }} className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]" title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}>
           {fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
         </button>
       </div>
@@ -1287,69 +1312,58 @@ export default function TradingBibleChart({
   ) : null;
 
   const drawingToolbar = !isTv && showDrawingToolbar ? (
-    <div className={`flex items-center gap-1 border-b border-white/5 bg-[#0c0c11]/80 px-2 py-1 ${compact ? 'no-scrollbar flex-nowrap overflow-x-auto' : 'flex-wrap'}`}>
+    <div role="toolbar" aria-label="Drawing tools" className="no-scrollbar flex items-center gap-1 overflow-x-auto border-b border-white/5 bg-[#0c0c11]/80 px-2 py-1">
       {(compact ? DRAW_TOOLS.filter((item) => COMPACT_TOOL_IDS.includes(item.id)) : DRAW_TOOLS).map((item) => (
         <button
           key={item.id}
           type="button"
           onClick={() => { cancelInteraction(); setTool(item.id); setPending([]); }}
           title={item.label}
+          aria-label={item.label}
+          aria-pressed={tool === item.id}
           disabled={locked}
           className={`shrink-0 rounded-lg border p-1.5 transition ${tool === item.id ? 'border-[#d4af37]/50 bg-[#d4af37]/15 text-[#d4af37]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'} disabled:opacity-40`}
         >
           <item.icon className="h-3.5 w-3.5" />
         </button>
       ))}
-      <div className="mx-1 h-4 w-px bg-[#d4af37]/15" />
-      <button type="button" onClick={() => setMagnet((value) => !value)} title="Magnet: snap to OHLC" className={`shrink-0 rounded-lg border p-1.5 ${magnet ? 'border-[#d4af37]/50 bg-[#d4af37]/15 text-[#d4af37]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'}`}>
+      <div className="mx-1 h-4 w-px shrink-0 bg-[#d4af37]/15" />
+      <button type="button" onClick={() => setMagnet((value) => !value)} title="Magnet: snap to OHLC" aria-label="Magnet: snap to OHLC" aria-pressed={magnet} className={`shrink-0 rounded-lg border p-1.5 ${magnet ? 'border-[#d4af37]/50 bg-[#d4af37]/15 text-[#d4af37]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'}`}>
         <Magnet className="h-3.5 w-3.5" />
       </button>
-      <button type="button" onClick={() => setLocked((value) => !value)} title={locked ? 'Unlock drawings' : 'Lock drawings'} className={`shrink-0 rounded-lg border p-1.5 ${locked ? 'border-[#d4af37]/50 bg-[#d4af37]/15 text-[#d4af37]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'}`}>
+      <button type="button" onClick={() => setLocked((value) => !value)} title={locked ? 'Unlock drawings' : 'Lock drawings'} aria-label={locked ? 'Unlock drawings' : 'Lock drawings'} aria-pressed={locked} className={`shrink-0 rounded-lg border p-1.5 ${locked ? 'border-[#d4af37]/50 bg-[#d4af37]/15 text-[#d4af37]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'}`}>
         {locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
       </button>
-      <button type="button" onClick={() => setHideDrawings((value) => !value)} title={hideDrawings ? 'Show drawings' : 'Hide drawings'} className={`shrink-0 rounded-lg border p-1.5 ${hideDrawings ? 'border-[#d4af37]/50 bg-[#d4af37]/15 text-[#d4af37]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'}`}>
+      <button type="button" onClick={() => setHideDrawings((value) => !value)} title={hideDrawings ? 'Show drawings' : 'Hide drawings'} aria-label={hideDrawings ? 'Show drawings' : 'Hide drawings'} aria-pressed={hideDrawings} className={`shrink-0 rounded-lg border p-1.5 ${hideDrawings ? 'border-[#d4af37]/50 bg-[#d4af37]/15 text-[#d4af37]' : 'border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]'}`}>
         {hideDrawings ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
       </button>
-      <button type="button" onClick={undo} disabled={!dz.canUndo || locked} title="Undo" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df] disabled:opacity-40">
+      <button type="button" onClick={undo} disabled={!dz.canUndo || locked} title="Undo" aria-label="Undo drawing" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df] disabled:opacity-40">
         <RotateCcw className="h-3.5 w-3.5" />
       </button>
-      <button type="button" onClick={redo} disabled={!dz.canRedo || locked} title="Redo" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df] disabled:opacity-40">
+      <button type="button" onClick={redo} disabled={!dz.canRedo || locked} title="Redo" aria-label="Redo drawing" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df] disabled:opacity-40">
         <Redo2 className="h-3.5 w-3.5" />
       </button>
-      <button type="button" onClick={removeSelected} disabled={!selected || locked} title="Delete selected drawing" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-red-400/70 hover:text-red-400 disabled:opacity-40">
+      <button type="button" onClick={removeSelected} disabled={!selected || locked} title="Delete selected drawing" aria-label="Delete selected drawing" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-red-400/70 hover:text-red-400 disabled:opacity-40">
         <Trash2 className="h-3.5 w-3.5" />
-      </button>
-      <button type="button" onClick={clearAll} disabled={!dz.drawings.length || locked} title="Clear all drawings" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-red-400 disabled:opacity-40">
-        <Eraser className="h-3.5 w-3.5" />
-      </button>
-      <button type="button" onClick={() => setObjectsOpen(true)} title="Chart objects" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]">
-        <List className="h-3.5 w-3.5" />
-      </button>
-      <button type="button" onClick={() => setTemplatesOpen(true)} title="Drawing templates" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]">
-        <BookMarked className="h-3.5 w-3.5" />
       </button>
       {tool === 'path' && pending.length >= 2 ? (
         <button type="button" onClick={finishPath} title="Finish path" className="shrink-0 rounded-lg border border-[#d4af37]/50 bg-[#d4af37]/15 p-1.5 text-[#d4af37]">
           <Check className="h-3.5 w-3.5" />
         </button>
       ) : null}
+      <button type="button" onClick={() => setActionsOpen(true)} title="More drawing actions" aria-label="More drawing actions" className="shrink-0 rounded-lg border border-[#d4af37]/15 p-1.5 text-[#8a8577] hover:text-[#e9e7df]">
+        <Ellipsis className="h-3.5 w-3.5" />
+      </button>
       {dz.saveError ? (
         <span className="ml-1 shrink-0 text-[10px] text-amber-400">{dz.saveError}</span>
       ) : dz.drawings.length > 0 ? (
         <span className="ml-1 shrink-0 text-[10px] text-emerald-400">✓ {dz.drawings.length}</span>
       ) : null}
-      {pending.length ? (
-        <span className="ml-1 shrink-0 text-[10px] text-[#d4af37]">
-          {tool === 'path'
-            ? `Path · ${pending.length} points · double-click or Enter to finish`
-            : `Click point ${pending.length + 1} of ${DRAW_TOOLS.find((item) => item.id === tool)?.clicks || 2}`}
-        </span>
-      ) : null}
     </div>
   ) : null;
 
   const legend = !isTv ? (
-    <div className="pointer-events-none absolute left-2 top-2 z-20 flex flex-wrap items-center gap-x-2 gap-y-0.5 rounded-lg border border-white/8 bg-[#0a0a0f]/75 px-2 py-1 font-mono text-[10px] text-[#c9c4b4] backdrop-blur-sm sm:text-[11px]">
+    <div className="pointer-events-none absolute left-2 top-2 z-20 hidden flex-wrap items-center gap-x-2 gap-y-0.5 rounded-lg border border-white/8 bg-[#0a0a0f]/75 px-2 py-1 font-mono text-[10px] text-[#c9c4b4] backdrop-blur-sm sm:flex sm:text-[11px]">
       <span className="font-bold text-[#f0ecdd]">{activeSymbol}</span>
       <span className="text-[#8a8577]">{activeTimeframe}</span>
       {hovered?.open != null ? (
@@ -1385,6 +1399,18 @@ export default function TradingBibleChart({
             className={height === 'h-full' ? 'h-full w-full' : `${height || 'h-[460px]'} w-full`}
           />
           {legend}
+          {tool !== 'cursor' && (
+            <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex justify-center px-2 sm:top-3">
+              <div role="status" aria-live="polite" className="max-w-full truncate rounded-full border border-[#d4af37]/35 bg-[#0a0a0f]/90 px-3 py-1 font-mono text-[10px] font-semibold text-[#e9e7df] shadow-lg backdrop-blur">
+                <span className="text-[#d4af37]">{DRAW_TOOLS.find((item) => item.id === tool)?.label || 'Drawing'}</span>
+                <span className="ml-2 text-[#b8b3a3]">
+                  {tool === 'path'
+                    ? `Click to add anchors · ${pending.length} placed · Enter/double-click to finish · Esc to cancel`
+                    : `Click point ${Math.min(pending.length + 1, DRAW_TOOLS.find((item) => item.id === tool)?.clicks || 1)} of ${DRAW_TOOLS.find((item) => item.id === tool)?.clicks || 1} · Esc to cancel`}
+                </span>
+              </div>
+            </div>
+          )}
           {status === 'error' && !candles.length && (
             <div className="absolute inset-0 z-20 grid place-items-center bg-[#0a0a0f]/60 text-center">
               <div>
@@ -1413,7 +1439,7 @@ export default function TradingBibleChart({
   );
 
   const footer = !compact && !isTv ? (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 border-t border-white/5 bg-[#0c0c11]/80 px-2 py-1 font-mono text-[10px] text-[#5f5b50]">
+    <div className="hidden flex-wrap items-center gap-x-3 gap-y-0.5 border-t border-white/5 bg-[#0c0c11]/80 px-2 py-1 font-mono text-[10px] text-[#5f5b50] sm:flex">
       <span>{candles.length} bars</span>
       <span>{sourceLabel(source)}</span>
       <span>{status}</span>
@@ -1445,6 +1471,7 @@ export default function TradingBibleChart({
       {objectsModal}
       {templatesModal}
       {textModal}
+      {actionsModal}
     </>
   );
 

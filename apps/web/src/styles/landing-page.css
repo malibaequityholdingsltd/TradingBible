@@ -134,8 +134,8 @@ html.light .landing-header .landing-login:hover {
 }
 
 .public-page-head__rail .pm-marquee__item {
-  padding: 0 0.85rem;
-  font-size: 9px;
+  padding: 0 0.9rem;
+  font-size: 10px;
   letter-spacing: 0.12em;
 }
 
@@ -156,4 +156,179 @@ html.light .public-page-head__rail .pm-marquee {
     backdrop-filter: blur(11px) saturate(1.03);
     -webkit-backdrop-filter: blur(11px) saturate(1.03);
   }
+}
+
+/* ── Public readability pass ───────────────────────────────────────────
+   The artwork stays visible, but every public sentence must clear a
+   readable contrast floor. These overrides are scoped to marketing, TBC
+   and investor-relations surfaces; the signed-in terminal keeps its own
+   functional density and data colours. */
+:where(.landing-page, .public-site-shell) .landing-nav-link,
+:where(.landing-page, .public-site-shell) .landing-menu-link {
+  color: #c4bdac;
+}
+:where(.landing-page, .public-site-shell) .landing-nav-link:hover,
+:where(.landing-page, .public-site-shell) .landing-menu-link:hover {
+  color: #fffaf0;
+}
+:where(.landing-page, .public-site-shell) .tb-sub {
+  color: #ded7c7;
+}
+html:not(.light) :where(.landing-page, .public-site-shell) [class*="text-[#8a8577]"] { color: #c4bdac !important; }
+html:not(.light) :where(.landing-page, .public-site-shell) [class*="text-[#b8b3a3]"] { color: #ded7c7 !important; }
+html:not(.light) :where(.landing-page, .public-site-shell) [class*="text-[#c9c4b4]"] { color: #ece6d6 !important; }
+html:not(.light) :where(.landing-page, .public-site-shell) [class*="text-[#5f5b50]"] { color: #aaa392 !important; }
+html:not(.light) :where(.landing-page, .public-site-shell) [class*="text-[#6a665a]"] { color: #b4ad9c !important; }
+html:not(.light) :where(.landing-page, .public-site-shell) [class*="text-[#e9e7df]"] { color: #f5f1e8 !important; }
+html:not(.light) :where(.landing-page, .public-site-shell) [class*="text-[#f0ecdd]"] { color: #fffaf0 !important; }
+
+html.light :where(.landing-page, .public-site-shell) .landing-nav-link,
+html.light :where(.landing-page, .public-site-shell) .landing-menu-link {
+  color: #46515f;
+}
+html.light :where(.landing-page, .public-site-shell) .landing-nav-link:hover,
+html.light :where(.landing-page, .public-site-shell) .landing-menu-link:hover {
+  color: #14202c;
+}
+html.light :where(.landing-page, .public-site-shell) .tb-sub {
+  color: #3f4b59;
+}
+html.light :where(.landing-page, .public-site-shell) [class*="text-[#8a8577]"] { color: #46515f !important; }
+html.light :where(.landing-page, .public-site-shell) [class*="text-[#b8b3a3]"] { color: #3f4b59 !important; }
+html.light :where(.landing-page, .public-site-shell) [class*="text-[#c9c4b4]"] { color: #35414f !important; }
+html.light :where(.landing-page, .public-site-shell) [class*="text-[#5f5b50]"] { color: #596572 !important; }
+html.light :where(.landing-page, .public-site-shell) [class*="text-[#6a665a]"] { color: #4c5865 !important; }
+html.light :where(.landing-page, .public-site-shell) [class*="text-[#e9e7df]"] { color: #1b222b !important; }
+html.light :where(.landing-page, .public-site-shell) [class*="text-[#f0ecdd]"] { color: #141b24 !important; }
+
+/* Footer text and legal copy: lift the muted end of the ramp, not the
+   brand accents. */
+html:not(.light) :where(.landing-page, .public-site-shell) .tb-footer {
+  --at-mut: #c6c0b0;
+  --at-mut-2: #a8a192;
+  --at-ink-2: #e7e1d2;
+}
+html.light :where(.landing-page, .public-site-shell) .tb-footer {
+  --at-mut: #4d5866;
+  --at-mut-2: #5f6b78;
+  --at-ink-2: #2d3743;
+}
+html:not(.light) .at-shell:not(.tb-admin-shell) .tb-footer {
+  --at-mut: #c6c0b0;
+  --at-mut-2: #a8a192;
+  --at-ink-2: #e7e1d2;
+}
+html.light .at-shell:not(.tb-admin-shell) .tb-footer {
+  --at-mut: #4d5866;
+  --at-mut-2: #5f6b78;
+  --at-ink-2: #2d3743;
+}
+
+/* TBC and investor-relations use the Atelier shell. Raise its public
+   neutral ramp as well; the admin console is explicitly excluded. */
+html:not(.light) .at-shell:not(.tb-admin-shell) {
+  --at-mut: #b9bcb8;
+  --at-mut-2: #9da19d;
+}
+html.light .at-shell:not(.tb-admin-shell) {
+  --at-mut: #4a4d47;
+  --at-mut-2: #62665f;
+}
+
+/* ── Shared fundraising status + topic rail ──────────────────────────── */
+.tb-public-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-bottom: 10px;
+  padding: 11px 13px;
+  border: 1px solid rgba(212, 175, 55, 0.26);
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.09), rgba(212, 175, 55, 0.025));
+}
+.tb-public-status__eyebrow {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--at-gold, #d4af37);
+}
+.tb-public-status strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--at-ink, #f2f0e7);
+}
+.tb-public-status__note {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--at-mut, #b9bcb8);
+}
+.tb-public-status__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--at-gold, #d4af37);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tb-public-status__link:hover { text-decoration: underline; }
+
+.tb-topic-rail {
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+}
+.tb-topic-rail__label {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  padding: 0 13px;
+  border-right: 1px solid rgba(212, 175, 55, 0.18);
+  background: rgba(212, 175, 55, 0.06);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--at-gold, #d4af37);
+}
+.tb-topic-rail__marquee {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+}
+.tb-topic-rail__link {
+  color: var(--at-ink-2, #d7d5cb);
+  text-decoration: none;
+}
+.tb-topic-rail__link:hover { color: var(--at-gold, #d4af37); }
+
+html.light .tb-public-status {
+  border-color: rgba(122, 91, 20, 0.24);
+  background: linear-gradient(90deg, rgba(166, 124, 30, 0.09), rgba(166, 124, 30, 0.02));
+}
+html.light .tb-topic-rail {
+  border-color: rgba(122, 91, 20, 0.18);
+  background: rgba(255, 252, 244, 0.58);
+}
+html.light .tb-topic-rail__label {
+  border-right-color: rgba(122, 91, 20, 0.16);
+  background: rgba(166, 124, 30, 0.07);
+}
+
+@media (max-width: 640px) {
+  .tb-public-status { align-items: flex-start; gap: 5px 10px; }
+  .tb-public-status__note { flex: 1 1 100%; }
+  .tb-public-status__link { margin-left: 0; }
+  .tb-topic-rail__label { padding: 0 9px; font-size: 8px; }
+  .tb-topic-rail .pm-marquee__item { padding: 0 0.8rem; font-size: 9.5px; }
 }

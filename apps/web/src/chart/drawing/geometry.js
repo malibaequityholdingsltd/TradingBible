@@ -207,6 +207,10 @@ export function getHandles(drawing, screen) {
       { x: right, y: top, xPoint: rightIndex, yPoint: topIndex, cursor: 'nesw-resize', kind: 'corner' },
       { x: right, y: bottom, xPoint: rightIndex, yPoint: bottomIndex, cursor: 'nwse-resize', kind: 'corner' },
       { x: left, y: bottom, xPoint: leftIndex, yPoint: bottomIndex, cursor: 'nesw-resize', kind: 'corner' },
+      { x: left, y: (top + bottom) / 2, xPoint: leftIndex, cursor: 'ew-resize', kind: 'edge-left' },
+      { x: right, y: (top + bottom) / 2, xPoint: rightIndex, cursor: 'ew-resize', kind: 'edge-right' },
+      { x: (left + right) / 2, y: top, yPoint: topIndex, cursor: 'ns-resize', kind: 'edge-top' },
+      { x: (left + right) / 2, y: bottom, yPoint: bottomIndex, cursor: 'ns-resize', kind: 'edge-bottom' },
     ];
   }
 
@@ -344,11 +348,11 @@ export function hitTestDrawing(drawing, screen, pointer) {
  * Hit test topmost drawing first. Drawings are rendered in array order, so the
  * last item wins when objects overlap.
  */
-export function hitTestDrawings(drawings, chart, series, pointer) {
+export function hitTestDrawings(drawings, chart, series, pointer, options = {}) {
   if (!Array.isArray(drawings) || !drawings.length) return null;
   for (let index = drawings.length - 1; index >= 0; index -= 1) {
     const drawing = drawings[index];
-    const screen = drawingToScreen(chart, series, drawing);
+    const screen = drawingToScreen(chart, series, drawing, options);
     const hit = hitTestDrawing(drawing, screen, pointer);
     if (hit) return hit;
   }

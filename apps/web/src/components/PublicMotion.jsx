@@ -124,7 +124,7 @@ export function CountUp({
 }
 
 export function Marquee({
-  items, className = '', speed = 34, reverse = false, separator = '✦', minWidth = 1800,
+  items, className = '', speed = 34, reverse = false, separator = '✦', minWidth = 1800, label = '',
 }) {
   // A short list can be narrower than the container, which leaves blank space
   // at the end of each loop. Repeat the set until one loop is comfortably
@@ -136,7 +136,11 @@ export function Marquee({
   const copies = reduce ? [0] : [0, 1];
   const duration = `${Math.max(16, speed)}s`;
   return (
-    <div className={`pm-marquee ${className}`} aria-label={typeof items[0] === 'string' ? items.join(' · ') : undefined}>
+    <div
+      className={`pm-marquee ${className}`}
+      aria-label={label || (typeof items[0] === 'string' ? items.join(' · ') : undefined)}
+      role={label ? 'region' : undefined}
+    >
       <div
         className="pm-marquee__track"
         style={{ '--pm-marquee-duration': duration, animationDirection: reverse ? 'reverse' : 'normal' }}
@@ -145,7 +149,11 @@ export function Marquee({
           <div key={copy} className="pm-marquee__set" aria-hidden={copy === 1 ? 'true' : undefined}>
             {displayItems.map((item, index) => (
               <React.Fragment key={`${copy}-${index}-${typeof item === 'string' ? item : 'node'}`}>
-                <span className="pm-marquee__item">{item}</span>
+                <span className="pm-marquee__item">
+                  {copy === 1 && React.isValidElement(item)
+                    ? React.cloneElement(item, { tabIndex: -1, 'aria-hidden': true })
+                    : item}
+                </span>
                 <span className="pm-marquee__sep" aria-hidden>{separator}</span>
               </React.Fragment>
             ))}

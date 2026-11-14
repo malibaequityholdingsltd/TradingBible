@@ -380,15 +380,19 @@ class DrawingRenderer {
       const preview = state.preview;
       const previewId = preview?.id;
 
+      const projection = {
+        candles: state.candles,
+        timeframeMinutes: state.timeframeMinutes,
+      };
       for (const drawing of state.drawings || []) {
         if (previewId && drawing.id === previewId) continue;
-        const screen = drawingToScreen(chart, series, drawing);
+        const screen = drawingToScreen(chart, series, drawing, projection);
         if (!visibleOnPane(drawing, screen, width, height)) continue;
         drawDrawing(context, drawing, screen, state, false);
       }
 
       if (preview) {
-        const screen = drawingToScreen(chart, series, preview);
+        const screen = drawingToScreen(chart, series, preview, projection);
         if (visibleOnPane(preview, screen, width, height)) {
           drawDrawing(context, preview, screen, state, true);
         }
@@ -454,7 +458,10 @@ export class DrawingPrimitive {
   hitTest(x, y) {
     const state = this.getState();
     if (!state || state.hide || state.locked || !this._chart || !this._series) return null;
-    const hit = hitTestDrawings(state.drawings || [], this._chart, this._series, { x, y });
+    const hit = hitTestDrawings(state.drawings || [], this._chart, this._series, { x, y }, {
+      candles: state.candles,
+      timeframeMinutes: state.timeframeMinutes,
+    });
     if (!hit) return null;
     return {
       externalId: hit.drawingId,

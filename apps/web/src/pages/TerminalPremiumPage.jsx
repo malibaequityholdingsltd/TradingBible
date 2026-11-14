@@ -8,6 +8,7 @@ import {
   CandlestickChart, Layers, Grid2x2, ListOrdered, History,
   Bell, CircleDot, Save, Tv, Camera, Plus, X, ArrowUpRight,
   Square, Columns2, ChevronDown, Newspaper, Gauge, Share2,
+  PanelLeft, PanelRight,
 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Card } from '@/components/ui-kit';
@@ -128,6 +129,8 @@ export default function TerminalPremiumPage() {
   const quadPanes = panes.slice(0, 4);
   const [verOpen, setVerOpen] = useState(false);
   const [saveVerOpen, setSaveVerOpen] = useState(false);
+  const [watchlistOpen, setWatchlistOpen] = useState(true);
+  const [ticketOpen, setTicketOpen] = useState(false);
   const [logs, setLogs] = useState([]);
   const log = (m) => setLogs((l) => [...l, `${new Date().toLocaleTimeString()} ${m}`].slice(-50));
 
@@ -336,6 +339,9 @@ export default function TerminalPremiumPage() {
   const needsSymbol = SYMBOL_TABS.includes(centerTab);
   const needsTF = TF_TABS.includes(centerTab);
   const bareCluster = !needsSymbol && !needsTF;
+  const deskColumns = ticketOpen
+    ? (watchlistOpen ? 'xl:grid-cols-[15rem_minmax(0,1fr)_17rem]' : 'xl:grid-cols-[minmax(0,1fr)_17rem]')
+    : (watchlistOpen ? 'xl:grid-cols-[15rem_minmax(0,1fr)]' : 'xl:grid-cols-[minmax(0,1fr)]');
 
   return (
     <AppLayout title="Terminal Pro">
@@ -360,6 +366,9 @@ export default function TerminalPremiumPage() {
               </span>
             )}
             <Link to="/app/alerts" aria-label="Alerts" className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] transition hover:scale-105"><IosIcon icon={Bell} size="sm" tone="theme" /></Link>
+            <button type="button" onClick={() => setTicketOpen((open) => !open)} aria-label={ticketOpen ? 'Hide order ticket' : 'Show order ticket'} aria-pressed={ticketOpen} className={`grid h-9 w-9 shrink-0 place-items-center rounded-[10px] transition ${ticketOpen ? 'bg-[#d4af37]/15 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
+              <PanelRight className="h-4 w-4" />
+            </button>
           </div>
           {/* ── Desk command strip (sm+ only) ── */}
           <div className="term-panel no-scrollbar hidden items-center gap-2 overflow-x-auto rounded-2xl border border-[#d4af37]/25 bg-[#0c0c11]/95 px-3 py-2 sm:flex">
@@ -384,6 +393,15 @@ export default function TerminalPremiumPage() {
               )}
             </div>
             <div className="ml-auto flex shrink-0 items-center gap-2">
+              <button type="button" onClick={() => setWatchlistOpen((open) => !open)} aria-label={watchlistOpen ? 'Hide watchlist rail' : 'Show watchlist rail'} aria-pressed={watchlistOpen} title="Toggle watchlist rail" className={`flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] border px-2 text-[11px] font-semibold transition ${watchlistOpen ? 'border-[#d4af37]/35 bg-[#d4af37]/10 text-[#d4af37]' : 'border-white/10 text-[#8a8577] hover:text-[#e9e7df]'}`}>
+                <PanelLeft className="h-3.5 w-3.5" />
+                <span className="hidden lg:inline">Watchlist</span>
+              </button>
+              <button type="button" onClick={() => setTicketOpen((open) => !open)} aria-label={ticketOpen ? 'Hide order ticket' : 'Show order ticket'} aria-pressed={ticketOpen} title="Toggle order ticket" className={`flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] border px-2 text-[11px] font-semibold transition ${ticketOpen ? 'border-[#d4af37]/35 bg-[#d4af37]/10 text-[#d4af37]' : 'border-white/10 text-[#8a8577] hover:text-[#e9e7df]'}`}>
+                <PanelRight className="h-3.5 w-3.5" />
+                <span className="hidden lg:inline">Ticket</span>
+              </button>
+              <span className="hidden h-5 w-px bg-white/10 sm:block" aria-hidden />
               {live?.source === 'close' ? (
                 <span className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#d4af37]/15 px-3 py-1.5 text-xs font-bold text-[#d4af37]" title="Market closed — frozen at the last close">
                   <CircleDot className="h-3.5 w-3.5" /> CLOSED
@@ -398,8 +416,9 @@ export default function TerminalPremiumPage() {
           </div>
 
           {/* ── Desk grid: rail + stage ── */}
-          <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[16rem_minmax(0,1fr)_18rem]">
-            {/* Left instrument rail — snap deck on phones, grid on sm+ */}
+          <div className={`grid grid-cols-1 items-start gap-4 ${deskColumns}`}>
+            {/* Left instrument rail — collapsible; chart gets the full stage by default on smaller desks. */}
+            {watchlistOpen && (
             <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1">
               <Card className="term-panel min-w-0 !p-3">
                 <SectionTitle right={<Link to="/app/watchlists" className="text-xs font-semibold text-[#d4af37] hover:underline">Manage</Link>}>
@@ -449,6 +468,7 @@ export default function TerminalPremiumPage() {
                 <RiskPanel price={price} balance={0} />
               </Card>
             </div>
+            )}
 
             {/* Center stage — first on phones so the chart fills the viewport */}
             <div className="order-first min-w-0 space-y-4 xl:order-none">
@@ -462,38 +482,9 @@ export default function TerminalPremiumPage() {
                     </button>
                   ))}
                 </div>
-                {/* Trade-this-chart: binds chart symbol + live quote to a challenge paper account */}
-                {centerTab === 'chart' && (
-                  <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-[#d4af37]/25 bg-[#d4af37]/[0.05] px-3 py-2">
-                    <span className="text-xs font-bold text-[#d4af37]">Trade this chart</span>
-                    <span className="font-mono text-xs text-[#e9e7df]">{symbol} @ {price != null ? fmtPx(price) : '…'} {live?.source ? <span className="text-[10px] text-[#8a8577]">({live.source})</span> : null}</span>
-                    {challengeAccounts.length > 0 ? (
-                      <select value={tradeAccountId} onChange={(e) => setTradeAccountId(e.target.value)} aria-label="Challenge account"
-                        className="min-w-[160px] flex-1 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-1.5 text-xs text-[#e9e7df] outline-none sm:max-w-[260px]">
-                        {paperAccounts.map((a) => (
-                          <option key={a.id} value={a.id} className="bg-[#0f0f14]">
-                            {String(a.name || '').startsWith('challenge:') ? `🏆 ${a.name} — $${Number(a.balance || 0).toLocaleString()}` : `${a.name} — $${Number(a.balance || 0).toLocaleString()}`}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <Link to="/app/challenges" className="text-xs font-semibold text-[#d4af37] hover:underline">Get a challenge account →</Link>
-                    )}
-                    <input value={tradeQty} onChange={(e) => setTradeQty(e.target.value)} type="number" min="0" step="0.01" aria-label="Qty"
-                      className="w-20 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-1.5 font-mono text-xs text-[#e9e7df] outline-none" />
-                    <div className="flex shrink-0 items-center gap-1.5">
-                      <button onClick={() => placeChartTrade('long')} disabled={!tradeAccountId || tradeBusy || price == null}
-                        className="rounded-lg bg-emerald-500/15 px-3 py-1.5 text-xs font-bold text-emerald-400 disabled:opacity-50">{tradeBusy === 'long' ? '…' : 'BUY'}</button>
-                      <button onClick={() => placeChartTrade('short')} disabled={!tradeAccountId || tradeBusy || price == null}
-                        className="rounded-lg bg-red-500/15 px-3 py-1.5 text-xs font-bold text-red-400 disabled:opacity-50">{tradeBusy === 'short' ? '…' : 'SELL'}</button>
-                    </div>
-                    {activeAttempt && <span className="text-[11px] text-[#8a8577]">active: {String(activeAttempt.product_name || activeAttempt.product_key || '').slice(0, 32)}</span>}
-                    {tradeMsg && <span className="w-full text-[11px] text-[#8a8577]">{tradeMsg}</span>}
-                  </div>
-                )}
                 {/* Stage: viewport-fit for the single chart (bottom visible, no page scroll),
                     natural height for multi-panes and tool views */}
-                <div className={`relative mt-3 overflow-hidden rounded-xl border border-white/8 bg-black/30 ${centerTab === 'chart' && chartLayout === 'single' ? 'h-[max(360px,min(560px,calc(100dvh_-_380px)))] sm:h-[max(520px,min(860px,calc(100dvh_-_340px)))]' : 'min-h-[380px] sm:min-h-[420px]'}`}>
+                <div className={`relative mt-3 overflow-hidden rounded-xl border border-white/8 bg-black/30 ${centerTab === 'chart' && chartLayout === 'single' ? 'h-[max(430px,min(640px,calc(100dvh_-_300px)))] sm:h-[max(560px,min(900px,calc(100dvh_-_250px)))]' : 'min-h-[380px] sm:min-h-[420px]'}`}>
                   {centerTab === 'chart' && chartLayout !== 'single' && (
                     <div className="flex items-center justify-between gap-2 border-b border-white/5 px-2 py-1.5">
                       <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a8577]">Chart layout</span>
@@ -525,6 +516,7 @@ export default function TerminalPremiumPage() {
                             layout={chartLayout}
                             onLayoutChange={setChartLayout}
                             height="h-full"
+                            hidePicker={false}
                           />
                         </div>
                       )
@@ -632,8 +624,9 @@ export default function TerminalPremiumPage() {
               <BottomDock symbol={symbol} accountId={workspace.risk.accountId} logLines={logs} />
             </div>
 
-            {/* Right order rail — desktop exchange ticket + live book context */}
-            <aside className="hidden min-w-0 space-y-3 xl:block">
+            {/* Right order rail — opt-in so the chart owns the first screen. */}
+            {ticketOpen && (
+            <aside className="grid min-w-0 gap-3 sm:grid-cols-2 xl:block xl:space-y-3">
               <Card className="term-panel min-w-0 !p-3">
                 <SectionTitle right={<span className={`font-mono text-[10px] ${status === 'live' ? 'text-emerald-400' : 'text-[#8a8577]'}`}>{status === 'live' ? 'LIVE' : String(status || '').toUpperCase()}</span>}>
                   Order ticket
@@ -734,9 +727,11 @@ export default function TerminalPremiumPage() {
                   <div className="flex items-center justify-between gap-2"><span className="text-[#8a8577]">Timeframe</span><span className="font-mono text-[#e9e7df]">{timeframe}</span></div>
                   <div className="flex items-center justify-between gap-2"><span className="text-[#8a8577]">Chart</span><span className="font-mono text-[#e9e7df]">{chartType}</span></div>
                   <div className="flex items-center justify-between gap-2"><span className="text-[#8a8577]">Workspace</span><span className="font-mono text-[#e9e7df]">{cloudStatus}</span></div>
+                  {activeAttempt && <div className="flex items-center justify-between gap-2"><span className="text-[#8a8577]">Challenge</span><span className="truncate font-mono text-[#e9e7df]">{String(activeAttempt.product_name || activeAttempt.product_key || '').slice(0, 32)}</span></div>}
                 </div>
               </Card>
             </aside>
+            )}
           </div>
 
           <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)}

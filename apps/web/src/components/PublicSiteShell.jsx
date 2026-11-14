@@ -25,6 +25,14 @@ const NAV = [
   ['TBC', '/tbc'],
 ];
 
+const PUBLIC_HEAD_META = [
+  'Private company',
+  'Pre-IPO',
+  'No public offering',
+  'Fundraising status · none open',
+  'Launch · 25 December 2026',
+];
+
 function PublicNav({ homeTo, isAuthed }) {
   const { t } = useI18n();
   const { settings } = usePlatformSettings();
@@ -95,6 +103,7 @@ export default function PublicSiteShell({ children, className = '' }) {
 }
 
 export function PublicPageHead({ eyebrow, title, description, meta = [], actions, children }) {
+  const railItems = Array.isArray(meta) && meta.length ? meta : PUBLIC_HEAD_META;
   return (
     <section className="public-page-head relative overflow-hidden border-b border-[#d4af37]/10">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.025] to-transparent" />
@@ -103,11 +112,9 @@ export function PublicPageHead({ eyebrow, title, description, meta = [], actions
           {eyebrow && <Kicker>{eyebrow}</Kicker>}
           <h1 className="mt-3 text-balance text-[2.15rem] font-extrabold leading-[0.99] tracking-[-0.045em] sm:text-[3.4rem]">{title}</h1>
           {description && <p className="mt-4 max-w-3xl text-pretty text-sm leading-relaxed text-[#b8b3a3] sm:text-base">{description}</p>}
-          {meta.length > 0 && (
-            <div className="public-page-head__rail mt-5">
-              <Marquee items={meta} speed={42} separator="·" minWidth={1100} />
-            </div>
-          )}
+          <div className="public-page-head__rail mt-5">
+            <Marquee items={railItems} speed={42} separator="·" minWidth={1100} label="Company and fundraising status" />
+          </div>
           {actions && <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:items-center">{actions}</div>}
           {children}
         </div>
