@@ -1,14 +1,14 @@
 # TradingView vs TradingBible terminal — working comparison
 
 **Status:** WORKING NOTE — NOT A PUBLIC CLAIM, NOT A PARITY ASSERTION  
-**Date:** 14 November 2026  
+**Date:** 15 November 2026
 **Scope:** repository inspection of the current uncommitted terminal, chart, drawing, data, order-flow, replay, alerts and workspace code. TradingView statements are a high-level summary of its published product set on this date and may change.
 
 ## Bottom line
 
 TradingBible is not a TradingView replacement and should not be marketed as one.
 
-TradingBible is a chart-first trading workspace built on the open-source `lightweight-charts` library, with a custom drawing layer, native order-flow tools, and integrated journal, risk, paper-challenge and Academy workflows. TradingView remains the much broader charting, data, scripting, publishing and community platform. The terminal already offers TradingView's free Advanced Chart as an optional third-party view, but drawings and indicators made inside that embed stay in TradingView.
+TradingBible is a chart-first trading workspace built on the open-source `lightweight-charts` library, with a custom drawing layer, native order-flow tools, and integrated journal, risk, paper-challenge and Academy workflows. TradingView remains the much broader charting, data, scripting, publishing and community platform. The terminal does not use TradingView's free Advanced Chart embed; it offers six native price styles only. Drawings and indicators stay in TradingBible's own chart layer.
 
 The defensible product position is **one workspace for analysis, practice and learning**, not "more TradingView than TradingView".
 
@@ -16,7 +16,7 @@ The defensible product position is **one workspace for analysis, practice and le
 
 | Area | TradingBible — current repository | TradingView — public product, high level | Practical reading |
 | --- | --- | --- | --- |
-| Native chart engine | `lightweight-charts` `5.2.1`; six native price styles (candles, hollow candles, bars, line, area, baseline) plus a TradingView embed | Broad proprietary charting engine with many time-based and non-time-based styles | TradingBible is intentionally smaller and owns its drawing layer; TradingView has the deeper chart-type catalogue |
+| Native chart engine | `lightweight-charts` `5.3.0`; six native price styles (candles, hollow candles, bars, line, area, baseline); no TradingView embed | Broad proprietary charting engine with many time-based and non-time-based styles | TradingBible is intentionally smaller and owns its drawing layer; TradingView has the deeper chart-type catalogue |
 | Instruments | 246 catalogue symbols: 60 crypto, 40 FX, 20 commodities, 6 indices, 20 sectors, 100 stocks | Very broad global exchange, broker and data-provider coverage | TradingBible coverage is curated and provider-dependent, not exhaustive |
 | Timeframes | Supported catalogue with client-side aggregation from base intervals | Wide interval catalogue and custom intervals | TradingBible data quality depends on the upstream candle provider; custom intervals are aggregated, not native |
 | Drawing tools | 14 tools: trend line, ray, arrow, horizontal line, vertical line, rectangle, ellipse, triangle, parallel channel, Fibonacci retracement, path, text, measure, cursor | Extensive drawing set with many specialist tools, style controls and drawing alerts | TradingBible covers the common desk tools; TradingView has the long tail |
@@ -59,7 +59,7 @@ The defensible product position is **one workspace for analysis, practice and le
 
 ## Product decisions
 
-1. Keep the `lightweight-charts`-based chart as the primary analysis surface; keep the TradingView embed optional and clearly attributed.
+1. Keep the `lightweight-charts`-based chart as the only terminal analysis surface; do not offer the free TradingView embed. The library’s required NOTICE and link live at `/terms#third-party-notices`.
 2. Do not use "TradingView alternative", "TradingView clone" or parity claims in public copy.
 3. Compete on the integrated desk, journal, risk, practice and Academy workflow, not on the size of the indicator or drawing catalogue.
 4. Close reliability gaps before adding chart breadth: real-session auth, cloud persistence, alert delivery, data coverage and mobile performance.
@@ -76,4 +76,4 @@ The defensible product position is **one workspace for analysis, practice and le
 
 ## Boundaries
 
-TradingView is a trademark of TradingView, Inc. TradingBible is not affiliated with or endorsed by TradingView. The `lightweight-charts` attribution link remains visible as required by its license. This note is an internal working document, not marketing copy, investment material or a representation of TradingView's current or future product.
+TradingView is a trademark of TradingView, Inc. TradingBible is not affiliated with or endorsed by TradingView. The terminal does not display TradingView branding; the `lightweight-charts` NOTICE attribution and required TradingView link are published at `/terms#third-party-notices`. This note is an internal working document, not marketing copy, investment material or a representation of TradingView's current or future product.

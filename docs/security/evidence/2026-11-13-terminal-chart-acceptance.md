@@ -1,5 +1,7 @@
 # Terminal chart acceptance and deployment — 13 November 2026
 
+> **Update — 15 November 2026 (22:05 UTC):** Terminal surfaces no longer offer the free TradingView embed and no longer render the Lightweight Charts attribution logo (`layout.attributionLogo: false`). The required NOTICE attribution and link now live at `https://tradingbible.app/terms#third-party-notices`, linked from the terminal footer as “Notices”. The 13 November runtime record below describes the earlier build.
+
 **Status:** CONTROLLED RECORD — deployed and runtime-accepted in a mocked harness.  
 **Commit:** `539c6ad` (`Build clean-room TradingBible terminal chart`)  
 **Deploy target:** `https://tradingbible.app` (`/var/www/tradingbible`)  

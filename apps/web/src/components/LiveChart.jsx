@@ -105,7 +105,7 @@ export default function LiveChart({
     const el = wrapRef.current;
     const chart = createChart(el, {
       autoSize: true,
-      layout: { background: { color: 'transparent' }, textColor: isLight ? '#565d68' : '#b3ae9e', fontFamily: 'Inter, sans-serif' },
+      layout: { background: { color: 'transparent' }, textColor: isLight ? '#565d68' : '#b3ae9e', fontFamily: 'Inter, sans-serif', attributionLogo: false },
       grid: { vertLines: { color: isLight ? 'rgba(60,55,40,0.08)' : 'rgba(212,175,55,0.06)' }, horzLines: { color: isLight ? 'rgba(60,55,40,0.08)' : 'rgba(212,175,55,0.06)' } },
       rightPriceScale: { borderColor: isLight ? 'rgba(166,124,30,0.25)' : 'rgba(212,175,55,0.15)' },
       timeScale: { borderColor: isLight ? 'rgba(166,124,30,0.25)' : 'rgba(212,175,55,0.15)', timeVisible: true, secondsVisible: false },

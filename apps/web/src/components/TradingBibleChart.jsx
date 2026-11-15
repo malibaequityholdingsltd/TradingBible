@@ -43,7 +43,6 @@ import {
   Trash2,
   TrendingUp,
   Triangle,
-  Tv,
   Type,
   Unlock,
   Waypoints,
@@ -83,7 +82,6 @@ const CHART_TYPES = [
   { id: 'line', label: 'Line', icon: LineIcon },
   { id: 'area', label: 'Area', icon: AreaIcon },
   { id: 'baseline', label: 'Baseline', icon: Baseline },
-  { id: 'tradingview', label: 'TV embed', icon: Tv },
 ];
 
 const DRAW_TOOLS = [
@@ -333,12 +331,13 @@ export default function TradingBibleChart({
   const requestedTimeframe = onTimeframeChange ? timeframe : localTimeframe;
   const activeTimeframe = isKnownTimeframe(requestedTimeframe) ? requestedTimeframe : '1h';
   const activeChartType = onChartTypeChange ? chartType : localChartType;
-  // The public terminal intentionally uses our own rendering engine only.
-  // The TradingView embed keeps TradingView's required attribution and cannot
-  // be rebranded, so guests never see that logo on the public surface.
-  const availableChartTypes = publicMode ? CHART_TYPES.filter((type) => type.id !== 'tradingview') : CHART_TYPES;
+  // The terminal uses the TradingBible rendering engine only. The TradingView
+  // embed is not offered here, so no TradingView logo or attribution link is
+  // shown on the terminal display. A licensed white-label build would be the
+  // only way to use TradingView's engine without its required branding.
+  const availableChartTypes = CHART_TYPES;
   const effectiveType = availableChartTypes.some((type) => type.id === activeChartType) ? activeChartType : 'candle';
-  const isTv = effectiveType === 'tradingview';
+  const isTv = false;
 
   const changeSymbol = useCallback((next) => {
     if (onSymbolChange) onSymbolChange(next);
@@ -485,6 +484,10 @@ export default function TradingBibleChart({
         background: { color: 'transparent' },
         textColor: isLight ? '#565d68' : '#b3ae9e',
         fontFamily: 'Inter, sans-serif',
+        // The library's TradingView attribution mark is not shown on the
+        // terminal. Its required NOTICE attribution and TradingView link are
+        // published on /terms#third-party-notices instead.
+        attributionLogo: false,
       },
       grid: {
         vertLines: { color: isLight ? 'rgba(60,55,40,0.08)' : 'rgba(212,175,55,0.06)' },

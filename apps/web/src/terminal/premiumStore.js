@@ -77,9 +77,9 @@ function readLS() {
     ws.timeframe = isKnownTimeframe(normalizedTf) ? normalizedTf : '15m';
     // Persisted chart engine is respected: the clean-room chart types keep
     // drawings in-house (Supabase + local mirror) so refresh survives.
-    // TradingView stays one click away but never forced — its free embed
-    // cannot persist drawings or indicators.
-    const VALID_TYPES = ['candle', 'hollow', 'bar', 'line', 'area', 'baseline', 'tradingview'];
+    // TradingView is not offered in the terminal. Its free embed carries
+    // required TradingView branding, which does not belong on our display.
+    const VALID_TYPES = ['candle', 'hollow', 'bar', 'line', 'area', 'baseline'];
     if (!VALID_TYPES.includes(ws.chartType)) ws.chartType = 'candle';
     if (typeof ws.centerTab !== 'string') ws.centerTab = 'chart';
     if (Array.isArray(ws.watchlist)) {

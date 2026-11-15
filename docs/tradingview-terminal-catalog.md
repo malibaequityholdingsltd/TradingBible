@@ -3,6 +3,7 @@
 **Compiled:** 15 November 2026  
 **Surface:** <https://www.tradingview.com/chart/>  
 **Status:** Public research, not an endorsement and not a claim of affiliation.
+**Implementation note (15 November 2026):** This catalog is research, not a parity target. TradingBible’s terminal does not use the TradingView free embed or display TradingView branding; it offers six native chart styles and publishes the Lightweight Charts NOTICE and link at `/terms#third-party-notices`.
 
 This is a catalog of the publicly visible TradingView chart terminal and its official documentation. It is deliberately not a dump of every symbol or every community script: those libraries are dynamic and effectively unbounded. The live menus, the official built-in indicator folder and the symbol search are the authoritative lists. Some items below are plan-gated, region-gated, data-gated or broker-gated.
 

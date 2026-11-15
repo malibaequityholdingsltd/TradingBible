@@ -15,6 +15,7 @@ const LEGAL_LINKS = [
   ['Refund Policy', '/refund'],
   ['FAQ', '/faq'],
   ['Security', '/security'],
+  ['Third-party notices', '/terms#third-party-notices'],
   ['Pricing', '/pricing'],
 ];
 
@@ -103,6 +104,15 @@ export function TermsPage() {
       </Section>
       <Section heading="14. Changes and contact">
         <p>We may update these Terms from time to time; material changes will be notified in-app or by email, and continued use constitutes acceptance. Questions about these Terms can be sent to legal@tradingbible.app or to {FILED_ENTITY} (intended form: {INTENDED_ENTITY}), the operator of TradingBible.</p>
+      </Section>
+      <Section id="third-party-notices" heading="15. Third-party notices">
+        <p>Our charting surface uses the following open-source software. The attribution notice required by its licence is reproduced here and linked from the public site:</p>
+        <p>
+          <strong>TradingView Lightweight Charts™</strong><br />
+          Copyright (с) 2025 TradingView, Inc. <a href="https://www.tradingview.com/" target="_blank" rel="noreferrer" className="text-[#d4af37] underline underline-offset-2">https://www.tradingview.com/</a><br />
+          Licensed under the Apache License, Version 2.0.
+        </p>
+        <p>TradingView is the product creator of Lightweight Charts™. TradingBible is not affiliated with, endorsed by, or sponsored by TradingView. The TradingView name and logo are trademarks of TradingView, Inc. The terminal chart surface does not display TradingView branding; this notice and link satisfy the library&apos;s attribution requirement.</p>
       </Section>
     </LegalShell>
   );

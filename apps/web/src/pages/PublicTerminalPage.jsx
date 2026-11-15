@@ -1,14 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
-  ArrowRight, ArrowUpRight, BarChart3, Bell, CandlestickChart, Check,
-  Flame, Gauge, Grid2x2, History, Layers, LockKeyhole, Newspaper,
-  ShieldCheck,
+  CandlestickChart, Flame, Gauge, Grid2x2, History, Home, Layers,
+  LockKeyhole, LogIn, Maximize2, Minimize2, Newspaper, PanelRight,
+  ShieldCheck, X,
 } from 'lucide-react';
-import PublicSiteShell, {
-  PublicNotice, PublicPageHead, PublicSection,
-} from '@/components/PublicSiteShell';
-import { Card, GhostButton, GoldButton } from '@/components/ui-kit';
 import TradingBibleChart from '@/components/TradingBibleChart';
 import SymbolSearchPicker from '@/components/SymbolSearchPicker';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
@@ -33,6 +29,7 @@ const TABS = [
   { id: 'indicators', label: 'Indicators', icon: Gauge },
   { id: 'news', label: 'News & Calendar', icon: Newspaper },
 ];
+const TAB_BY_ID = new Map(TABS.map((item) => [item.id, item]));
 
 function nameOf(symbol) {
   return NAME_BY_SYMBOL.get(String(symbol || '').toUpperCase()) || '';
@@ -59,18 +56,18 @@ function WatchRow({ symbol, quote, active, onSelect }) {
       type="button"
       onClick={() => onSelect(symbol)}
       aria-pressed={active}
-      className={`flex w-full items-center gap-2.5 border-b border-white/[0.06] px-3 py-2.5 text-left transition last:border-b-0 ${active ? 'bg-[#d4af37]/10' : 'hover:bg-white/[0.035]'}`}
+      className={`flex w-full items-center gap-2 border-b border-white/[0.06] px-2.5 py-2 text-left transition last:border-b-0 ${active ? 'bg-[#d4af37]/10' : 'hover:bg-white/[0.035]'}`}
     >
-      <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg font-mono text-[10px] font-bold ${active ? 'bg-[#d4af37]/20 text-[#e8c95a]' : 'bg-white/[0.06] text-[#b8b3a3]'}`}>
+      <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-md font-mono text-[9px] font-bold ${active ? 'bg-[#d4af37]/20 text-[#e8c95a]' : 'bg-white/[0.06] text-[#b8b3a3]'}`}>
         {String(symbol).slice(0, 3)}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-mono text-[11px] font-bold text-[#f0ecdd]">{symbol}</span>
-        <span className="mt-0.5 block truncate text-[10px] text-[#8a8577]">{nameOf(symbol) || 'Market'}</span>
+        <span className="block truncate font-mono text-[10px] font-bold text-[#f0ecdd]">{symbol}</span>
+        <span className="mt-0.5 block truncate text-[9px] text-[#8a8577]">{nameOf(symbol) || 'Market'}</span>
       </span>
       <span className="shrink-0 text-right">
-        <span className="block font-mono text-[11px] text-[#e9e7df]">{fmtPrice(quote?.price)}</span>
-        <span className={`mt-0.5 block font-mono text-[10px] font-semibold ${up ? 'text-emerald-400' : 'text-red-400'}`}>{fmtChange(quote?.changePercent)}</span>
+        <span className="block font-mono text-[10px] text-[#e9e7df]">{fmtPrice(quote?.price)}</span>
+        <span className={`mt-0.5 block font-mono text-[9px] font-semibold ${up ? 'text-emerald-400' : 'text-red-400'}`}>{fmtChange(quote?.changePercent)}</span>
       </span>
     </button>
   );
@@ -85,6 +82,8 @@ export default function PublicTerminalPage() {
   const [timeframe, setTimeframe] = useState('1h');
   const [chartType, setChartType] = useState('candle');
   const [tab, setTab] = useState(initialTab);
+  const [watchOpen, setWatchOpen] = useState(false);
+  const [browserFull, setBrowserFull] = useState(false);
   const [watchSymbols, setWatchSymbols] = useState(() => (
     PUBLIC_WATCHLIST.includes(initial) ? PUBLIC_WATCHLIST : [initial, ...PUBLIC_WATCHLIST]
   ));
@@ -93,6 +92,28 @@ export default function PublicTerminalPage() {
   const { quotes, status } = useQuotes(quoteSymbols);
   const quote = quotes[symbol];
   const up = (Number(quote?.changePercent) || 0) >= 0;
+  const activeTab = TAB_BY_ID.get(tab) || TABS[0];
+
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previous; };
+  }, []);
+
+  useEffect(() => {
+    const onChange = () => setBrowserFull(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  async function toggleBrowserFullscreen() {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch {
+      // iOS Safari and some embedded browsers do not expose the Fullscreen API.
+    }
+  }
 
   function syncParams(nextSymbol, nextTab) {
     setParams((current) => {
@@ -108,98 +129,170 @@ export default function PublicTerminalPage() {
     if (!normalized) return;
     setSymbol(normalized);
     setWatchSymbols((current) => (current.includes(normalized) ? current : [normalized, ...current].slice(0, 12)));
+    setWatchOpen(false);
     syncParams(normalized, tab);
   }
 
   function selectTab(next) {
     setTab(next);
+    setWatchOpen(false);
     syncParams(symbol, next);
   }
 
   const memberNext = (path) => (isAuthed ? path : `/login?next=${encodeURIComponent(path)}`);
 
+  const watchlistContent = (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/[0.08] px-3 py-2.5">
+        <div>
+          <div className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#d4af37]">Watchlist</div>
+          <div className="mt-0.5 text-[9px] text-[#8a8577]">Public quotes · {watchSymbols.length} symbols</div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.1em] ${status === 'live' ? 'bg-emerald-400/10 text-emerald-300' : 'bg-white/[0.06] text-[#8a8577]'}`}>
+            {status === 'live' ? 'Live' : status === 'loading' ? 'Loading' : 'Delayed'}
+          </span>
+          <button type="button" onClick={() => setWatchOpen(false)} aria-label="Close watchlist" className="grid h-6 w-6 place-items-center rounded border border-white/10 text-[#8a8577] hover:text-[#e9e7df] xl:hidden">
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {watchSymbols.map((item) => (
+          <WatchRow key={item} symbol={item} quote={quotes[item]} active={item === symbol} onSelect={selectSymbol} />
+        ))}
+      </div>
+      <div className="shrink-0 border-t border-white/[0.08] p-3">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="h-3.5 w-3.5 text-[#d4af37]" />
+          <span className="text-[10px] font-bold text-[#e9e7df]">Read-only public desk</span>
+        </div>
+        <p className="mt-1.5 text-[9px] leading-relaxed text-[#8a8577]">
+          No orders, funds movement or broker connection. Market data may be delayed or unavailable.
+        </p>
+        <Link
+          to={memberNext('/app/terminal-pro')}
+          className="mt-2.5 flex items-center justify-between gap-2 rounded-md border border-[#d4af37]/20 bg-[#d4af37]/[0.06] px-2.5 py-1.5 text-[10px] font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/45"
+        >
+          {isAuthed ? 'Open Terminal Pro' : 'Open member terminal'} <LockKeyhole className="h-3 w-3" />
+        </Link>
+      </div>
+    </div>
+  );
+
   return (
-    <PublicSiteShell>
-      <PublicPageHead
-        eyebrow="Public chart terminal"
-        title={<>The chart is open. <span className="tb-gold-text">No account required.</span></>}
-        description="A chart-first public desk with order flow, footprint, heatmap, replay, indicators and news. Search 240+ symbols, draw on the chart and arrange the tools in one workspace. The member terminal adds saved workspaces, alerts, broker sync and the full trading desk."
-        meta={['No sign-up required', 'Read-only public desk', 'Private company · pre-IPO']}
-        actions={(
-          <>
-            {isAuthed ? (
-              <GoldButton to="/app/terminal-pro">Open full Terminal Pro <ArrowRight className="h-4 w-4" /></GoldButton>
-            ) : (
-              <GoldButton to="/pricing">See member plans <ArrowRight className="h-4 w-4" /></GoldButton>
-            )}
-            {isAuthed
-              ? <GhostButton to="/app" className="border px-5 py-3 text-[#e9e7df]">Back to the app</GhostButton>
-              : <GhostButton to="/login" className="border px-5 py-3 text-[#e9e7df]">Member sign in</GhostButton>}
-          </>
-        )}
-      />
+    <div className="fixed inset-0 z-[60] flex h-[100dvh] flex-col overflow-hidden bg-[#07070a] text-[#e9e7df]">
+      <header className="relative z-30 flex h-12 shrink-0 items-center gap-1.5 border-b border-white/[0.08] bg-[#0a0a0f]/95 px-2">
+        <Link
+          to="/terminal"
+          aria-label="TradingBible public terminal"
+          title="TradingBible public terminal"
+          className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg border border-[#d4af37]/25 bg-[#d4af37]/10 transition hover:border-[#d4af37]/60"
+        >
+          <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-6 w-6 rounded object-contain" onError={(event) => { event.currentTarget.style.display = 'none'; }} />
+        </Link>
+        <div className="hidden min-w-0 sm:block">
+          <div className="flex items-center gap-1.5">
+            <span className="truncate text-[11px] font-bold text-[#f0ecdd]">TradingBible</span>
+            <span className="text-[11px] text-[#d4af37]">Terminal</span>
+            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-emerald-300">Public</span>
+          </div>
+          <div className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-[#6f6a5e]">Read-only market workspace</div>
+        </div>
+        <div className="mx-1 hidden h-5 w-px shrink-0 bg-white/10 sm:block" />
 
-      <PublicSection className="!pb-8 !pt-8 sm:!pt-10" eyebrow="Public desk" title="One workspace. Every public surface." sub="The chart is the default. Move between the public desks without losing the symbol, and use the member terminal for account, order and saved-workspace controls.">
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
-          <Card className="overflow-hidden rounded-2xl border-[#d4af37]/20 p-0">
-            <div className="flex flex-wrap items-center gap-2 border-b border-white/[0.08] bg-[#0c0c11]/95 px-3 py-2.5">
-              <Link
-                to="/terminal"
-                aria-label="TradingBible public terminal"
-                title="TradingBible public terminal"
-                className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg border border-[#d4af37]/25 bg-[#d4af37]/10 transition hover:border-[#d4af37]/60"
-              >
-                <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-6 w-6 rounded object-contain" onError={(event) => { event.currentTarget.style.display = 'none'; }} />
-              </Link>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="truncate text-xs font-bold text-[#f0ecdd]">TradingBible Public Terminal</span>
-                  <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-emerald-300">Public</span>
-                </div>
-                <div className="mt-0.5 flex items-center gap-2 text-[10px] text-[#8a8577]">
-                  <span className="font-mono text-[#d8d3c3]">{symbol}</span>
-                  <span>{nameOf(symbol)}</span>
-                  <span className={`font-mono font-semibold ${up ? 'text-emerald-400' : 'text-red-400'}`}>{fmtChange(quote?.changePercent)}</span>
-                </div>
+        <nav className="no-scrollbar flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto" role="tablist" aria-label="Public terminal sections">
+          {TABS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === item.id}
+              aria-label={item.label}
+              title={item.label}
+              onClick={() => selectTab(item.id)}
+              className={`flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-[10px] font-semibold transition ${tab === item.id ? 'bg-[#d4af37]/15 text-[#e8c95a]' : 'text-[#8a8577] hover:bg-white/[0.04] hover:text-[#e9e7df]'}`}
+            >
+              <item.icon className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="flex shrink-0 items-center gap-1">
+          <span className={`hidden items-center gap-1.5 rounded-full px-2 py-1 text-[8px] font-bold uppercase tracking-[0.1em] lg:inline-flex ${status === 'live' ? 'bg-emerald-400/10 text-emerald-300' : 'bg-white/[0.06] text-[#8a8577]'}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${status === 'live' ? 'bg-emerald-400' : 'bg-[#8a8577]'}`} />
+            {status === 'live' ? 'Feed live' : status === 'loading' ? 'Loading' : 'Delayed'}
+          </span>
+          <button
+            type="button"
+            onClick={() => setWatchOpen(true)}
+            aria-label="Open watchlist"
+            title="Watchlist"
+            className="grid h-8 w-8 place-items-center rounded-md border border-[#d4af37]/15 text-[#8a8577] transition hover:text-[#e9e7df] xl:hidden"
+          >
+            <PanelRight className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={toggleBrowserFullscreen}
+            aria-label={browserFull ? 'Exit browser fullscreen' : 'Browser fullscreen'}
+            title={browserFull ? 'Exit browser fullscreen' : 'Browser fullscreen'}
+            className="hidden h-8 w-8 place-items-center rounded-md border border-[#d4af37]/15 text-[#8a8577] transition hover:text-[#e9e7df] sm:grid"
+          >
+            {browserFull ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+          </button>
+          <Link
+            to="/"
+            aria-label="Back to the public site"
+            title="Back to the public site"
+            className="grid h-8 w-8 place-items-center rounded-md border border-[#d4af37]/15 text-[#8a8577] transition hover:text-[#e9e7df]"
+          >
+            <Home className="h-3.5 w-3.5" />
+          </Link>
+          <Link
+            to={isAuthed ? '/app/terminal-pro' : '/login'}
+            className="flex h-8 items-center gap-1.5 rounded-md border border-[#d4af37]/25 bg-[#d4af37]/10 px-2 text-[10px] font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/50"
+          >
+            <LogIn className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{isAuthed ? 'Terminal Pro' : 'Sign in'}</span>
+          </Link>
+        </div>
+      </header>
+
+      <div className="flex min-h-0 flex-1">
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {tab === 'chart' && (
+            <div className="flex h-9 shrink-0 items-center gap-2 border-b border-white/[0.08] bg-[#0c0c11] px-2 sm:hidden">
+              <div className="min-w-0">
+                <SymbolSearchPicker value={symbol} onChange={selectSymbol} buttonClassName="!py-1 !text-[10px]" />
               </div>
-              <span className={`shrink-0 rounded-full px-2 py-1 text-[9px] font-bold uppercase tracking-[0.1em] ${status === 'live' ? 'bg-emerald-400/10 text-emerald-300' : 'bg-white/[0.06] text-[#8a8577]'}`}>
-                {status === 'live' ? 'Feed live' : status === 'loading' ? 'Loading' : 'Feed delayed'}
-              </span>
+              <span className="min-w-0 truncate text-[9px] text-[#8a8577]">{nameOf(symbol)}</span>
+              <span className="ml-auto shrink-0 font-mono text-[10px] font-bold text-[#f0ecdd]">{fmtPrice(quote?.price)}</span>
+              <span className={`shrink-0 font-mono text-[9px] font-semibold ${up ? 'text-emerald-400' : 'text-red-400'}`}>{fmtChange(quote?.changePercent)}</span>
             </div>
-
-            <div className="flex flex-wrap items-center gap-2 border-b border-white/[0.08] bg-black/20 px-3 py-2">
-              <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto no-scrollbar" role="tablist" aria-label="Public terminal sections">
-                {TABS.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === item.id}
-                    onClick={() => selectTab(item.id)}
-                    className={`flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold transition ${tab === item.id ? 'bg-[#d4af37]/15 text-[#e8c95a]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}
-                  >
-                    <item.icon className="h-3.5 w-3.5" />
-                    {item.label}
-                  </button>
-                ))}
+          )}
+          {tab !== 'chart' && (
+            <div className="flex h-10 shrink-0 items-center gap-2 border-b border-white/[0.08] bg-[#0c0c11] px-2.5">
+              <span className="shrink-0 font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-[#d4af37]">{activeTab.label}</span>
+              <span className="hidden shrink-0 font-mono text-[10px] text-[#8a8577] sm:inline">{symbol} · {timeframe}</span>
+              <div className="ml-auto flex shrink-0 items-center gap-1.5">
+                <SymbolSearchPicker value={symbol} onChange={selectSymbol} buttonClassName="!py-1 !text-[10px]" />
+                <select
+                  value={timeframe}
+                  onChange={(event) => setTimeframe(event.target.value)}
+                  aria-label="Terminal timeframe"
+                  className="h-7 rounded-md border border-[#d4af37]/15 bg-[#0f0f14] px-1.5 font-mono text-[10px] text-[#e9e7df] outline-none"
+                >
+                  {TIMEFRAMES.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
               </div>
-              {tab !== 'chart' && (
-                <div className="flex shrink-0 items-center gap-1.5">
-                  <SymbolSearchPicker value={symbol} onChange={selectSymbol} buttonClassName="!py-1 !text-[11px]" />
-                  <select
-                    value={timeframe}
-                    onChange={(event) => setTimeframe(event.target.value)}
-                    aria-label="Terminal timeframe"
-                    className="h-7 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-1.5 font-mono text-[11px] text-[#e9e7df] outline-none"
-                  >
-                    {TIMEFRAMES.map((option) => <option key={option} value={option}>{option}</option>)}
-                  </select>
-                </div>
-              )}
             </div>
+          )}
 
-            <div className="min-h-[420px] p-2 sm:p-3">
-              {tab === 'chart' && (
+          <div className="min-h-0 flex-1">
+            {tab === 'chart' && (
+              <div className="h-full min-h-0">
                 <TradingBibleChart
                   symbol={symbol}
                   timeframe={timeframe}
@@ -208,106 +301,54 @@ export default function PublicTerminalPage() {
                   onSymbolChange={selectSymbol}
                   onTimeframeChange={setTimeframe}
                   onChartTypeChange={setChartType}
-                  height="h-[clamp(420px,62vh,760px)]"
+                  height="h-full"
                   hidePicker={false}
                   brandHref="/terminal"
                   publicMode
+                  className="!h-full !rounded-none !border-0"
                 />
-              )}
-              {tab === 'orderflow' && <TBOrderflow symbol={symbol} />}
-              {tab === 'footprint' && <TBFootprint symbol={symbol} onSymbolChange={selectSymbol} />}
-              {tab === 'heatmap' && <TBHeatmap onSelect={(next) => selectSymbol(next?.symbol || next)} />}
-              {tab === 'replay' && <ReplayPanel symbol={symbol} timeframe={timeframe} />}
-              {tab === 'indicators' && <TBIndicators symbol={symbol} timeframe={timeframe} />}
-              {tab === 'news' && <TBNews symbol={symbol} />}
-            </div>
-          </Card>
-
-          <div className="grid content-start gap-3">
-            <Card className="overflow-hidden rounded-2xl border-[#d4af37]/20 p-0">
-              <div className="flex items-center justify-between gap-2 border-b border-white/[0.08] px-3 py-2.5">
-                <span className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#d4af37]">Watchlist</span>
-                <span className="text-[9px] text-[#8a8577]">Public quotes</span>
               </div>
-              <div>
-                {watchSymbols.map((item) => (
-                  <WatchRow key={item} symbol={item} quote={quotes[item]} active={item === symbol} onSelect={selectSymbol} />
-                ))}
+            )}
+            {tab !== 'chart' && (
+              <div className="h-full overflow-y-auto p-2 sm:p-3">
+                {tab === 'orderflow' && <TBOrderflow symbol={symbol} />}
+                {tab === 'footprint' && <TBFootprint symbol={symbol} onSymbolChange={selectSymbol} />}
+                {tab === 'heatmap' && <TBHeatmap onSelect={(next) => selectSymbol(next?.symbol || next)} />}
+                {tab === 'replay' && <ReplayPanel symbol={symbol} timeframe={timeframe} />}
+                {tab === 'indicators' && <TBIndicators symbol={symbol} timeframe={timeframe} />}
+                {tab === 'news' && <TBNews symbol={symbol} />}
               </div>
-            </Card>
-
-            <Card className="rounded-2xl border-[#d4af37]/20 p-4">
-              <div className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-[#d4af37]" />
-                <h3 className="text-sm font-bold text-[#f0ecdd]">Public desk</h3>
-              </div>
-              <ul className="mt-3 space-y-2 text-[11px] leading-relaxed text-[#b8b3a3]">
-                {[
-                  'Chart, order flow, footprint, heatmap and replay',
-                  'Indicators, drawings, compare and public watchlist',
-                  'News, calendar events and live channels',
-                ].map((item) => (
-                  <li key={item} className="flex gap-2"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400" />{item}</li>
-                ))}
-              </ul>
-              <div className="my-3 h-px bg-white/[0.07]" />
-              <div className="flex items-center gap-2">
-                <LockKeyhole className="h-4 w-4 text-[#8a8577]" />
-                <h3 className="text-sm font-bold text-[#f0ecdd]">Member desk</h3>
-              </div>
-              <ul className="mt-3 space-y-2 text-[11px] leading-relaxed text-[#8a8577]">
-                {[
-                  'Saved layouts, alerts and broker sync',
-                  'Order ticket, positions, risk and DOM',
-                  'Options data, Pine scripts and full news desk',
-                ].map((item) => (
-                  <li key={item} className="flex gap-2"><span className="mt-[3px] h-1 w-1 shrink-0 rounded-full bg-[#8a8577]" />{item}</li>
-                ))}
-              </ul>
-              <Link to={isAuthed ? '/app/terminal-pro' : '/pricing'} className="mt-4 flex items-center justify-between gap-2 rounded-lg border border-[#d4af37]/20 bg-[#d4af37]/[0.06] px-3 py-2 text-[11px] font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/45">
-                {isAuthed ? 'Open full Terminal Pro' : 'See member plans'} <ArrowUpRight className="h-3.5 w-3.5" />
-              </Link>
-            </Card>
-
-            <Card className="rounded-2xl border-[#d4af37]/20 p-4">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-[#d4af37]" />
-                <h3 className="text-sm font-bold text-[#f0ecdd]">Read-only by design</h3>
-              </div>
-              <p className="mt-2 text-[11px] leading-relaxed text-[#8a8577]">
-                This page does not place orders, move funds or connect a brokerage account. It is market context, not a recommendation or a promise of performance.
-              </p>
-            </Card>
-
-            <Card className="rounded-2xl border-[#d4af37]/20 p-4">
-              <div className="flex items-center gap-2">
-                <Bell className="h-4 w-4 text-[#d4af37]" />
-                <h3 className="text-sm font-bold text-[#f0ecdd]">More tools</h3>
-              </div>
-              <div className="mt-3 grid gap-1.5 text-[11px]">
-                {[
-                  ['Price alerts', memberNext('/app/alerts')],
-                  ['Broker trading', memberNext('/app/terminal-pro')],
-                  ['Options data', '/features/market-data'],
-                  ['Community scripts', '/community'],
-                  ['Calendar', '/app/economic-calendar'],
-                  ['Help center', '/faq'],
-                ].map(([label, to]) => (
-                  <Link key={label} to={to} className="flex items-center justify-between gap-2 rounded-lg border border-white/[0.06] px-2.5 py-2 text-[#b8b3a3] transition hover:border-[#d4af37]/30 hover:text-[#e8c95a]">
-                    {label}<ArrowUpRight className="h-3 w-3" />
-                  </Link>
-                ))}
-              </div>
-            </Card>
+            )}
           </div>
-        </div>
+        </main>
 
-        <div className="mt-4">
-          <PublicNotice>
-            <strong className="text-[#e9e7df]">Public terminal, not a public offering.</strong> No account is required to read this chart. TradingBible is a private company; no public offering is open, no funds are requested and no SAFE, equity or token terms are approved. Market data may be delayed or unavailable; when a feed fails the chart shows an error rather than a fabricated price.
-          </PublicNotice>
-        </div>
-      </PublicSection>
-    </PublicSiteShell>
+        <aside className="hidden w-[17rem] shrink-0 border-l border-white/[0.08] bg-[#0a0a0f] xl:flex xl:flex-col">
+          {watchlistContent}
+        </aside>
+      </div>
+
+      <footer className="relative z-20 flex shrink-0 flex-wrap items-center gap-x-3 gap-y-0.5 border-t border-white/[0.08] bg-[#08080b] px-2.5 py-1.5 text-[9px] leading-4 text-[#777265] sm:text-[10px]">
+        <span className="min-w-0 flex-1">
+          <span className="font-semibold text-[#b8b3a3]">Public terminal, not a public offering.</span> TradingBible Holdings. Inc. is a private, pre-IPO company. No public offering, no funds requested, and no approved SAFE, equity or token terms. Read-only market context, not financial advice.
+        </span>
+        <Link to="/terms" className="shrink-0 text-[#b8b3a3] underline-offset-2 hover:text-[#e8c95a] hover:underline">Terms</Link>
+        <Link to="/terms#third-party-notices" className="shrink-0 text-[#b8b3a3] underline-offset-2 hover:text-[#e8c95a] hover:underline">Notices</Link>
+        <Link to="/pricing" className="shrink-0 text-[#b8b3a3] underline-offset-2 hover:text-[#e8c95a] hover:underline">Plans</Link>
+      </footer>
+
+      {watchOpen && (
+        <>
+          <button
+            type="button"
+            aria-label="Close watchlist"
+            onClick={() => setWatchOpen(false)}
+            className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm xl:hidden"
+          />
+          <aside className="fixed inset-y-0 right-0 z-[120] flex w-[min(20rem,88vw)] flex-col border-l border-[#d4af37]/20 bg-[#0a0a0f] shadow-2xl xl:hidden">
+            <div className="min-h-0 flex-1">{watchlistContent}</div>
+          </aside>
+        </>
+      )}
+    </div>
   );
 }
