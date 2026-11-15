@@ -66,7 +66,7 @@ const FEATURES = {
       ['Context is not a promise', 'No page fabricates a quote, a candle, a volume figure or a performance chart. Market data appears when a real connection or licensed feed supplies it.'],
     ],
     points: ['Forex, crypto, metals, indices and commodities', '3D bubble heatmaps and order-flow views', 'TradingBible TV and live market coverage', 'Price alerts on supported symbols'],
-    cta: ['Open the terminal', '/app/terminal-pro'],
+    cta: ['Open the public terminal', '/terminal'],
   },
   'performance-analytics': {
     label: 'Performance Analytics', eyebrow: 'Product · Analytics', title: 'Numbers that explain the result.',
@@ -121,7 +121,7 @@ const FEATURES = {
       ['A desk with a record', 'The terminal is not a standalone toy. The trades you take are reviewed against the journal, so market context and execution stay connected.'],
     ],
     points: ['Terminal Pro charts and order flow', 'Watchlists and symbol search', 'Heatmaps across five markets', 'TradingBible TV and alerts'],
-    cta: ['Open Terminal Pro', '/app/terminal-pro'],
+    cta: ['Open the public terminal', '/terminal'],
   },
   'broker-connections': {
     label: 'Broker Connections', eyebrow: 'Trading · Connections', title: 'A connection is a permission, not a handshake.',

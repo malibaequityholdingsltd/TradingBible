@@ -44,6 +44,7 @@
 - [Programs Public](/programs): TradingBible application page.
 - [Public Feature Detail](/features/:slug): TradingBible application page.
 - [Public Features](/features): TradingBible application page.
+- [Public Terminal](/terminal): TradingBible application page.
 - [Refund](/refund): TradingBible application page.
 - [Reports](/app/reports): TradingBible application page.
 - [Reset](/reset): TradingBible application page.
@@ -60,7 +61,7 @@
 - [Tbc Chain](/developers/tbc): TradingBible application page.
 - [Tbc Public](/tbc/faqs): TradingBible application page.
 - [Team](/team): TradingBible application page.
-- [Terminal Premium](/app/terminal-pro): TradingBible application page.
+- [Terminal Entry](/app/terminal-pro): TradingBible application page.
 - [Terms](/terms): TradingBible application page.
 - [Tv](/tv): TradingBible application page.
 - [User Api Keys](/app/api-keys): TradingBible application page.

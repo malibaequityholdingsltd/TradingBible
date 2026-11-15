@@ -15,6 +15,7 @@ import '@/styles/landing-page.css';
 
 const NAV = [
   ['Platform', '/features'],
+  ['Public Terminal', '/terminal'],
   ['Programs', '/programs'],
   ['Affiliates', '/affiliates'],
   ['Launch', '/launch'],

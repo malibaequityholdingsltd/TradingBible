@@ -41,6 +41,7 @@ export function TBChart({
   symbol, timeframe, chartType, quote, onSnapshot, onShare, onSymbolChange,
   onTimeframeChange, onChartTypeChange, onOpenReplay, layout, onLayoutChange,
   height = '', compact = false, showToolbar = true, hidePicker = false,
+  brandHref = '', publicMode = false,
 }) {
   return (
     <TradingBibleChart
@@ -60,6 +61,8 @@ export function TBChart({
       compact={compact}
       showToolbar={showToolbar}
       hidePicker={hidePicker}
+      brandHref={brandHref}
+      publicMode={publicMode}
     />
   );
 }

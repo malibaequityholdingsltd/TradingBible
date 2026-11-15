@@ -28,6 +28,7 @@ const LiveChatWidget = lazy(() => import('./components/LiveChatWidget'));
 const AdminCompanyWidget = lazy(() => import('./components/AdminCompanyWidget'));
 const TvWidget = lazy(() => import('./components/TvWidget'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
+const PublicTerminalPage = lazy(() => import('./pages/PublicTerminalPage'));
 import { LoginPage, SignupPage, ResetPage, OnboardingPage } from './pages/AuthFlow';
 
 // Lazy-load heavy authenticated + secondary pages so the initial bundle stays
@@ -245,6 +246,17 @@ function PaidProtected({ children }) {
     return children;
 }
 
+// The public chart terminal is intentionally open to guests. Keep the old
+// /app/terminal-pro links useful: signed-in members get the full desk, while
+// guests are sent to the read-only public terminal instead of a login wall.
+function TerminalEntry() {
+    const { isAuthed, isAuthReady } = useAuth();
+    const { search } = useLocation();
+    if (!isAuthReady) return <PageFallback />;
+    if (!isAuthed) return <Navigate to={`/terminal${search}`} replace />;
+    return <PaidProtected><TerminalPremiumPage /></PaidProtected>;
+}
+
 // Platform admins can switch features off from the Admin Portal. FeatureGate
 // blocks the page and shows a friendly notice when one is disabled.
 
@@ -390,6 +402,8 @@ function RoutesWithBoundary() {
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/pricing" element={<PricingPage />} />
+                    <Route path="/terminal" element={<PublicTerminalPage />} />
+                    <Route path="/chart" element={<Navigate to="/terminal" replace />} />
                     <Route path="/features" element={<PublicFeaturesPage />} />
                     <Route path="/features/:slug" element={<PublicFeatureDetailPage />} />
                     <Route path="/community" element={<CommunityPublicPage />} />
@@ -464,7 +478,7 @@ function RoutesWithBoundary() {
                     <Route path="/app/watchlists" element={<PaidProtected><WatchlistsPage /></PaidProtected>} />
                     <Route path="/app/orderflow" element={<PaidProtected><OrderFlowPage /></PaidProtected>} />
                     <Route path="/app/terminal" element={<SymbolRedirect to="/app/terminal-pro" />} />
-                    <Route path="/app/terminal-pro" element={<PaidProtected><TerminalPremiumPage /></PaidProtected>} />
+                    <Route path="/app/terminal-pro" element={<TerminalEntry />} />
                     <Route path="/app/alerts" element={<PaidProtected><FeatureGate feature="signals"><AlertsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/signals" element={<PaidProtected><FeatureGate feature="signals"><SignalsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/economic-calendar" element={<EverPaidProtected><FeatureGate feature="economicCalendar"><EconomicCalendarPage /></FeatureGate></EverPaidProtected>} />

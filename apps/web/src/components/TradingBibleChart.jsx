@@ -72,6 +72,7 @@ import { ALL_SYMBOLS } from '@/lib/symbols';
 import SymbolSearchPicker from '@/components/SymbolSearchPicker';
 import IndicatorPicker from '@/components/IndicatorPicker';
 import TradingViewChart from '@/components/TradingViewChart';
+import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { DrawingPrimitive } from '@/chart/drawing/DrawingPrimitive';
 import { useDrawingInteraction } from '@/chart/drawing/useDrawingInteraction';
 
@@ -314,6 +315,8 @@ export default function TradingBibleChart({
   layout = 'single',
   onLayoutChange,
   className = '',
+  brandHref = '',
+  publicMode = false,
 }) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -330,7 +333,11 @@ export default function TradingBibleChart({
   const requestedTimeframe = onTimeframeChange ? timeframe : localTimeframe;
   const activeTimeframe = isKnownTimeframe(requestedTimeframe) ? requestedTimeframe : '1h';
   const activeChartType = onChartTypeChange ? chartType : localChartType;
-  const effectiveType = CHART_TYPES.some((type) => type.id === activeChartType) ? activeChartType : 'candle';
+  // The public terminal intentionally uses our own rendering engine only.
+  // The TradingView embed keeps TradingView's required attribution and cannot
+  // be rebranded, so guests never see that logo on the public surface.
+  const availableChartTypes = publicMode ? CHART_TYPES.filter((type) => type.id !== 'tradingview') : CHART_TYPES;
+  const effectiveType = availableChartTypes.some((type) => type.id === activeChartType) ? activeChartType : 'candle';
   const isTv = effectiveType === 'tradingview';
 
   const changeSymbol = useCallback((next) => {
@@ -988,13 +995,14 @@ export default function TradingBibleChart({
       await onShare();
       return;
     }
-    const url = `${window.location.origin}/app/terminal-pro?symbol=${encodeURIComponent(activeSymbol)}`;
+    const base = publicMode ? '/terminal' : '/app/terminal-pro';
+    const url = `${window.location.origin}${base}?symbol=${encodeURIComponent(activeSymbol)}`;
     try {
       await navigator.clipboard.writeText(url);
     } catch {
       /* clipboard may be unavailable */
     }
-  }, [onShare, activeSymbol]);
+  }, [onShare, activeSymbol, publicMode]);
 
   const handleReplay = useCallback(() => {
     if (onOpenReplay) onOpenReplay();
@@ -1193,12 +1201,16 @@ export default function TradingBibleChart({
               <Settings2 className="h-3.5 w-3.5 text-[#d4af37]" /> Settings
             </button>
           )}
-          <button type="button" className={actionButton} onClick={() => { setActionsOpen(false); handleReplay(); }}>
-            <History className="h-3.5 w-3.5 text-[#d4af37]" /> Replay
-          </button>
-          <Link to={`/app/alerts?symbol=${encodeURIComponent(activeSymbol)}`} onClick={() => setActionsOpen(false)} className={actionButton}>
-            <Bell className="h-3.5 w-3.5 text-[#d4af37]" /> Price alert
-          </Link>
+          {!publicMode && (
+            <button type="button" className={actionButton} onClick={() => { setActionsOpen(false); handleReplay(); }}>
+              <History className="h-3.5 w-3.5 text-[#d4af37]" /> Replay
+            </button>
+          )}
+          {!publicMode && (
+            <Link to={`/app/alerts?symbol=${encodeURIComponent(activeSymbol)}`} onClick={() => setActionsOpen(false)} className={actionButton}>
+              <Bell className="h-3.5 w-3.5 text-[#d4af37]" /> Price alert
+            </Link>
+          )}
           <button type="button" className={actionButton} onClick={() => { setActionsOpen(false); handleSnapshot(); }}>
             <Camera className="h-3.5 w-3.5 text-[#d4af37]" /> Snapshot
           </button>
@@ -1245,6 +1257,21 @@ export default function TradingBibleChart({
 
   const toolbar = showToolbar ? (
     <div className="no-scrollbar flex min-w-0 items-center gap-1.5 overflow-x-auto border-b border-white/8 bg-[#0c0c11]/95 px-2 py-1.5">
+      {brandHref && (
+        <Link
+          to={brandHref}
+          aria-label="TradingBible public terminal"
+          title="TradingBible public terminal"
+          className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-lg border border-[#d4af37]/25 bg-[#d4af37]/10 transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/15"
+        >
+          <img
+            src={TRADINGBIBLE_LOGO}
+            alt="TradingBible"
+            className="h-5 w-5 rounded object-contain"
+            onError={(event) => { event.currentTarget.style.display = 'none'; }}
+          />
+        </Link>
+      )}
       {!compact && (
         <div className="hidden min-w-0 flex-1 items-center gap-1.5 overflow-x-auto no-scrollbar sm:flex">
           {!hidePicker ? (
@@ -1287,7 +1314,7 @@ export default function TradingBibleChart({
           aria-label="Chart type"
           className="h-7 w-[7.75rem] shrink-0 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] pl-1.5 pr-5 text-[10px] text-[#e9e7df] outline-none sm:w-auto sm:px-1.5 sm:text-[11px]"
         >
-          {CHART_TYPES.map((type) => <option key={type.id} value={type.id}>{type.label}</option>)}
+          {availableChartTypes.map((type) => <option key={type.id} value={type.id}>{type.label}</option>)}
         </select>
         {!isTv && (
           <button type="button" onClick={() => setPickerOpen(true)} className="flex h-7 w-7 shrink-0 items-center justify-center gap-1 rounded-lg border border-[#d4af37]/15 text-[11px] text-[#d4af37] hover:border-[#d4af37]/40 sm:w-auto sm:px-2" title="Configure indicators">

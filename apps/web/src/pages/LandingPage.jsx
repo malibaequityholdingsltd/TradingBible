@@ -51,7 +51,7 @@ const MODULES = [
   {
     icon: BarChart3, tag: 'TERMINAL', title: 'A workstation, not a watchlist',
     body: 'Pro-grade charts, order flow and five markets in one desk — with TradingBible TV and 240+ symbols for context.',
-    to: '/app/terminal-pro', link: 'Open the terminal',
+    to: '/terminal', link: 'Open the public terminal',
   },
   {
     icon: Plug, tag: 'CONNECT', title: 'A journal that syncs itself',

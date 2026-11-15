@@ -36,6 +36,7 @@ const COLUMNS = [
     headingKey: 'fot.h_tools',
     links: [
       { labelKey: 'fot.l_features_overview', to: '/features' },
+      { label: 'Public terminal', to: '/terminal' },
       { labelKey: 'fot.l_pricing', to: '/pricing' },
       { labelKey: 'fot.l_tbc', to: '/tbc', badge: 'Proposed' },
       { labelKey: 'fot.l_plans_comparison', to: '/pricing#plans' },

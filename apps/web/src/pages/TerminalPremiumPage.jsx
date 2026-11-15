@@ -372,9 +372,14 @@ export default function TerminalPremiumPage() {
           </div>
           {/* ── Desk command strip (sm+ only) ── */}
           <div className="term-panel no-scrollbar hidden items-center gap-2 overflow-x-auto rounded-2xl border border-[#d4af37]/25 bg-[#0c0c11]/95 px-3 py-2 sm:flex">
-            <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-xl bg-[#d4af37]/15">
+            <Link
+              to="/terminal"
+              aria-label="Open the TradingBible public terminal"
+              title="Open the TradingBible public terminal"
+              className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-xl bg-[#d4af37]/15 transition hover:bg-[#d4af37]/25"
+            >
               <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-9 w-9 rounded-xl object-contain" onError={(e) => { const el = e.currentTarget; if (!el.dataset.fb && brandLogo.urlRemote) { el.dataset.fb = '1'; el.src = brandLogo.urlRemote; } else { el.style.display = 'none'; } }} />
-            </span>
+            </Link>
             <div className="flex min-w-0 flex-1 items-center gap-2 px-1 py-2">
               {traderName
                 ? <span className="truncate text-sm font-bold text-[#f0ecdd]" title="Signed in trader">{traderName}</span>
@@ -517,6 +522,7 @@ export default function TerminalPremiumPage() {
                             onLayoutChange={setChartLayout}
                             height="h-full"
                             hidePicker={false}
+                            brandHref="/terminal"
                           />
                         </div>
                       )
