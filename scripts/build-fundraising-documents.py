@@ -45,14 +45,21 @@ LOGO = ROOT / "apps/web/public/logos/tradingbible-logo.png"
 LOGO_SMALL = STORAGE / "_assets" / "tradingbible-logo-256.png"
 
 COMPANY = {
-    "name": "TradingBible Holdings, Inc.",
+    "name": "TradingBible Holdings. Inc.",
+    "preferred_name": "TradingBible Holdings, Inc.",
+    "name_note": "Filed name: TradingBible Holdings. Inc. (period after Holdings). Intended commercial name: TradingBible Holdings, Inc. A certificate of correction is pending; the filed name controls until corrected.",
+    "formation": "Formed 28 October 2026; Delaware file no. 10821679; good standing as of 3 November 2026.",
+    "registered_office": "8 The Green, Suite B, Dover, Kent County, DE 19901 (registered office / service of process; no staffed office proven).",
+    "authorized_stock": "5,000 shares authorized, par value $0.0001; no issued shares or stock ledger in the supplied record.",
+    "ein_status": "Not yet issued — do not insert an EIN until the IRS notice is received.",
+    "officers": "Malik Nlem — President, Treasurer and Director; Felicity Nlem — Secretary; Victor Okechukwu — Director. No CEO, CFO, COO or VP is appointed in the initial resolutions.",
     "brand": "TradingBible",
     "website": "https://tradingbible.app",
     "legal_email": "legal@tradingbible.app",
     "support_email": "support@tradingbible.app",
     "jurisdiction": "Delaware, United States",
-    "prepared": "11 November 2026",
-    "version": "1.1",
+    "prepared": "14 November 2026",
+    "version": "1.2",
 }
 
 # FR-00, FR-15, FR-16, FR-20 to FR-22, FR-24, FR-25 and FR-30 are governance
@@ -157,12 +164,12 @@ def checkbox_field(label: str, *, required: bool = True) -> dict[str, Any]:
     }
 
 
-COMPANY_SIGNER = signer("company", "Malik Nlem", "Chief Executive Officer", prefix="Company")
+COMPANY_SIGNER = signer("company", "Malik Nlem", "President", prefix="Company")
 COUNSEL_SIGNER = signer("counsel", "Outside Counsel", "Counsel", required=False, prefix="Counsel")
 INVESTOR_SIGNER = signer("investor", "Investor", "Investor", prefix="Investor")
 DIRECTOR_SIGNER = signer("director", "Director", "Director", prefix="Director", required=False)
 SECRETARY_SIGNER = signer("secretary", "Secretary", "Secretary", prefix="Secretary", required=False)
-INSIDER_SIGNER = signer("insider", "Insider", "Founder / Officer / Director", prefix="Insider", required=False)
+INSIDER_SIGNER = signer("insider", "Insider", "Officer / Director / Holder", prefix="Insider", required=False)
 
 ACCREDITED_FIELDS = [
     text_field("Investor legal name", width="300"),
@@ -262,7 +269,7 @@ DOCUMENTS: list[dict[str, Any]] = [
         "slug": "fr-04-insider-participation-related-party-policy",
         "number": "FR-04",
         "title": "Insider Participation and Related-Party Acknowledgment",
-        "subtitle": "Same-terms policy for founders, officers and directors",
+        "subtitle": "Same-terms policy for officers, directors and holders",
         "category": "Corporate authority",
         "track": "Private placement",
         "summary": "Policy and acknowledgment governing insider participation in the round, conflict disclosure, board approval and the prohibition on side letters or preferential information.",
@@ -712,7 +719,7 @@ def add_header_footer(document, meta: dict[str, Any]) -> None:
     if LOGO_SMALL.exists():
         run = paragraph.add_run()
         run.add_picture(str(LOGO_SMALL), width=Inches(0.38))
-    run = paragraph.add_run("  TRADINGBIBLE HOLDINGS, INC.")
+    run = paragraph.add_run("  TRADINGBIBLE HOLDINGS. INC.")
     run.font.name = "Arial"
     run.bold = True
     run.font.size = Pt(7.5)
@@ -752,12 +759,20 @@ def add_cover(document, meta: dict[str, Any]) -> None:
 
     paragraph = document.add_paragraph()
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = paragraph.add_run("TRADINGBIBLE HOLDINGS, INC.")
+    run = paragraph.add_run("TRADINGBIBLE HOLDINGS. INC.")
     run.font.name = "Arial"
     run.bold = True
     run.font.size = Pt(11)
     run.font.color.rgb = GOLD
     set_paragraph_spacing(paragraph, before=10, after=2)
+
+    paragraph = document.add_paragraph()
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = paragraph.add_run(COMPANY["name_note"])
+    run.font.name = "Arial"
+    run.font.size = Pt(6.8)
+    run.font.color.rgb = MUTED
+    set_paragraph_spacing(paragraph, before=0, after=8)
 
     paragraph = document.add_paragraph()
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -1024,7 +1039,7 @@ def build_html(meta: dict[str, Any], blocks: list[dict[str, Any]]) -> str:
     size: Letter;
     margin: 30mm 16mm 26mm;
     @top-left {{ content: ""; background-image: url("data:image/png;base64,{logo_data}"); background-repeat: no-repeat; background-position: left center; background-size: 9mm auto; width: 22mm; height: 9mm; }}
-    @top-center {{ content: "TRADINGBIBLE HOLDINGS, INC. · CONFIDENTIAL"; color: #6b5a24; font-family: Arial, sans-serif; font-size: 6.8pt; letter-spacing: .03em; }}
+    @top-center {{ content: "TRADINGBIBLE HOLDINGS. INC. · CONFIDENTIAL"; color: #6b5a24; font-family: Arial, sans-serif; font-size: 6.8pt; letter-spacing: .03em; }}
     @top-right {{ content: "{html.escape(meta['number'])} · {html.escape(status['header_right'])}"; color: #9a7a1e; font-family: Arial, sans-serif; font-size: 6.8pt; font-weight: 700; letter-spacing: .03em; }}
     @bottom-left {{ content: "{html.escape(status['footer_left'])}"; color: #6a665a; font-family: Arial, sans-serif; font-size: 6pt; }}
     @bottom-center {{ content: "tradingbible.app · legal@tradingbible.app"; color: #6a665a; font-family: Arial, sans-serif; font-size: 6pt; }}
@@ -1083,7 +1098,8 @@ def build_html(meta: dict[str, Any], blocks: list[dict[str, Any]]) -> str:
 <body>
   <section class="cover">
     <img src="data:image/png;base64,{logo_data}" alt="TradingBible logo" />
-    <div class="org">TRADINGBIBLE HOLDINGS, INC.</div>
+    <div class="org">TRADINGBIBLE HOLDINGS. INC.</div>
+    <p class="small" style="text-align:center;margin:1.5mm 0 4mm;">Filed name; intended commercial name: TradingBible Holdings, Inc. A certificate of correction is pending. Filed 28 October 2026 · Delaware file no. 10821679 · good standing 3 November 2026.</p>
     <div class="kicker">{html.escape(status['kicker'])}</div>
     <h1 class="title">{html.escape(meta['title'])}</h1>
     <div class="subtitle">{html.escape(meta['subtitle'])}</div>
@@ -1219,6 +1235,15 @@ def main() -> None:
     manifest = {
         "title": "TradingBible confidential fundraising document packet",
         "issuer": COMPANY["name"],
+        "preferredName": COMPANY["preferred_name"],
+        "nameNote": COMPANY["name_note"],
+        "formation": COMPANY["formation"],
+        "fileNumber": "10821679",
+        "goodStanding": "3 November 2026",
+        "registeredOffice": COMPANY["registered_office"],
+        "authorizedStock": COMPANY["authorized_stock"],
+        "einStatus": COMPANY["ein_status"],
+        "officers": COMPANY["officers"],
         "operator": COMPANY["name"],
         "jurisdiction": COMPANY["jurisdiction"],
         "updated": COMPANY["prepared"],

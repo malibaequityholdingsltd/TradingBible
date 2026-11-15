@@ -154,6 +154,7 @@ html.light .landing-page .tb-gold-text {
    `hidden` turns #root into a scroll container, which silently breaks every
    position:sticky header in the app (trader header, admin bar, table heads). */
 html, body, #root { max-width: 100%; overflow-x: clip; }
+html { scrollbar-gutter: stable; }
 
 body {
   padding-top: env(safe-area-inset-top);
@@ -1465,14 +1466,14 @@ html.light .text-\[\#3a3a3a\] {
 /* Status colors — darken for contrast on light surfaces */
 html.light .text-emerald-400 { color: #059669 !important; }
 html.light .text-emerald-300 { color: #10b981 !important; }
-html.light .text-red-400 { color: #dc2626 !important; }
-html.light .text-red-300 { color: #ef4444 !important; }
+html.light .text-red-400 { color: #b91c1c !important; }
+html.light .text-red-300 { color: #b91c1c !important; }
 html.light .text-red-400\/80 { color: rgba(220,38,38,0.85) !important; }
 html.light .text-red-400\/70 { color: rgba(220,38,38,0.78) !important; }
 html.light .text-red-400\/60 { color: rgba(220,38,38,0.7) !important; }
 html.light .text-orange-400 { color: #ea580c !important; }
 html.light .text-amber-400,
-html.light .text-amber-300 { color: #b45309 !important; }
+html.light .text-amber-300 { color: #92400e !important; }
 html.light .text-yellow-400 { color: #ca8a04 !important; }
 
 html.light .bg-emerald-400 { background-color: #10b981 !important; }
@@ -2784,4 +2785,212 @@ html[data-accent]:not([data-accent="#d4af37"]) #app-bg {
 }
 html.light[data-accent]:not([data-accent="#d4af37"]) #app-bg {
   filter: grayscale(1) saturate(0) contrast(0.98) brightness(1.04) !important;
+}
+
+/* ── Public / auth readability contract ────────────────────────────────
+   The landing, public-site, TBC, investor and auth surfaces carry legal
+   and fundraising copy. Keep their neutral ramp above the WCAG AA floor
+   in both themes. The signed-in terminal and admin console are excluded. */
+html:not(.light) body .public-site-shell,
+html:not(.light) body .at-shell:not(.tb-admin-shell),
+html:not(.light) body .auth-shell {
+  --at-mut: #b9bcb8;
+  --at-mut-2: #a8a192;
+  --at-ink-2: #e7e1d2;
+  --at-accent: var(--tb-gold, #d4af37);
+  --at-gold: var(--tb-gold, #d4af37);
+  --at-green: #6ee7b7;
+  --at-amber: #fbbf24;
+  --at-blue: #7dd3fc;
+  --at-line: rgba(242, 223, 160, 0.11);
+  --at-line-soft: rgba(255, 255, 255, 0.075);
+  --at-line-strong: color-mix(in srgb, var(--at-accent) 32%, transparent);
+  --at-panel: #0e1117;
+  --at-panel-2: #12161e;
+  --at-soft: rgba(255, 255, 255, 0.025);
+  --at-soft-2: rgba(255, 255, 255, 0.055);
+}
+html:not(.light) body .public-site-shell .at-scope,
+html:not(.light) body .public-site-shell.at-scope,
+html:not(.light) body .at-shell:not(.tb-admin-shell) .at-scope,
+html:not(.light) body .at-shell:not(.tb-admin-shell).at-scope,
+html:not(.light) body .auth-shell .at-scope,
+html:not(.light) body .auth-shell.at-scope {
+  --at-mut: #b9bcb8;
+  --at-mut-2: #a8a192;
+  --at-ink-2: #e7e1d2;
+}
+html.light body .landing-page,
+html.light body .public-site-shell,
+html.light body .at-shell:not(.tb-admin-shell),
+html.light body .auth-shell {
+  --tb-gold: #80661a;
+  --tb-gold-deep: #80661a;
+  --ex-muted: #5f6b78;
+  --ex-accent: #80661a;
+  --ex-accent-2: #80661a;
+  --at-mut: #4a4d47;
+  --at-mut-2: #5f6b78;
+  --at-ink-2: #2d3743;
+  --at-accent: #80661a;
+  --at-gold: #80661a;
+  --at-line: rgba(15, 23, 42, 0.12);
+  --at-line-soft: rgba(15, 23, 42, 0.075);
+  --at-line-strong: color-mix(in srgb, var(--at-accent) 34%, transparent);
+  --at-panel: #ffffff;
+  --at-panel-2: #f8f9fb;
+  --at-soft: rgba(20, 24, 30, 0.028);
+  --at-soft-2: rgba(20, 24, 30, 0.055);
+  --at-amber: #92400e;
+  --at-green: #036b4e;
+  --at-blue: #075985;
+  --at-red: #b91c1c;
+}
+html.light body .landing-page .at-scope,
+html.light body .landing-page.at-scope,
+html.light body .public-site-shell .at-scope,
+html.light body .public-site-shell.at-scope,
+html.light body .at-shell:not(.tb-admin-shell) .at-scope,
+html.light body .at-shell:not(.tb-admin-shell).at-scope,
+html.light body .auth-shell .at-scope,
+html.light body .auth-shell.at-scope {
+  --tb-gold: #80661a;
+  --tb-gold-deep: #80661a;
+  --at-mut: #4a4d47;
+  --at-mut-2: #5f6b78;
+  --at-ink-2: #2d3743;
+  --at-accent: #80661a;
+  --at-gold: #80661a;
+  --at-amber: #92400e;
+}
+html.light :where(.landing-page, .public-site-shell, .at-shell:not(.tb-admin-shell), .auth-shell) .brand-wordmark__gold {
+  color: #80661a;
+}
+html.light :where(.landing-page, .public-site-shell, .at-shell:not(.tb-admin-shell), .auth-shell) [data-force-dark] .brand-wordmark__gold {
+  color: #d4af37;
+}
+html.light .auth-shell .gold-text,
+html.light .at-shell:not(.tb-admin-shell) .gold-text {
+  background: linear-gradient(120deg, #8a6d18 0%, #80661a 48%, #6f5a16 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+html.light :where(.landing-page, .public-site-shell, .at-shell:not(.tb-admin-shell), .auth-shell) [class*="text-emerald-400"],
+html.light :where(.landing-page, .public-site-shell, .at-shell:not(.tb-admin-shell), .auth-shell) [class*="text-emerald-300"] {
+  color: #036b4e !important;
+}
+html.light :where(.landing-page, .public-site-shell, .at-shell:not(.tb-admin-shell), .auth-shell) [class*="text-amber-400"] {
+  color: #8a5a00 !important;
+}
+html.light :where(.landing-page, .public-site-shell, .at-shell:not(.tb-admin-shell), .auth-shell) [class*="text-sky-400"] {
+  color: #075985 !important;
+}
+/* Brand-coloured OAuth buttons keep white labels even when the global
+   light-mode `.text-white` remap would otherwise turn them ink. */
+html.light .auth-shell :is([class*="bg-[#5865F2]"], [class*="bg-red-500"])[class*="text-white"] {
+  color: #ffffff !important;
+}
+
+/* ── TBC / public motion light-mode ink and surface contract ─────────────
+   TBC and the public programme pages carry a small number of deliberately
+   hard-coded dark-editorial colours from their original design. In light
+   mode those colours must not remain light-on-light. These rules are scoped
+   to the public surfaces only; the terminal and admin console keep their
+   own palettes. Opacity variants are deliberately excluded from the solid
+   gold selector so a wash such as bg-[#d4af37]/[0.045] never becomes an
+   opaque gold block under the white-label accent engine. */
+html:not(.light) .pm-page [class*="text-[#8a8577]"],
+html:not(.light) .pm-page [class*="text-[#6f6a5d]"],
+html:not(.light) .tbc-public [class*="text-[#8a8577]"],
+html:not(.light) .tbc-public [class*="text-[#6a665a]"] {
+  color: #b3ada0 !important;
+}
+
+/* The shared Note component paints its own lighter panel and inherits the
+   exchange muted ink; on that panel #b3ada0 still falls just below AA. */
+html:not(.light) .tbc-public .ex-notice {
+  color: #c9c4b4;
+}
+
+html.light .pm-page {
+  --pm-ink: #1b1913;
+  --pm-muted: #6f695d;
+}
+html.light .pm-page--affiliates { --pm-accent-2: #036b4e; }
+html.light .pm-page--programs { --pm-accent-2: #9a3412; }
+html.light .pm-page--launch { --pm-accent-2: #1e40af; }
+
+html.light .pm-page [class*="text-[#f0ecdd]"],
+html.light .pm-page [class*="text-[#e9e7df]"],
+html.light .tbc-public [class*="text-[#f0ecdd]"],
+html.light .tbc-public [class*="text-[#e9e7df]"] {
+  color: #1d2024 !important;
+}
+html.light .pm-page [class*="text-[#c9c4b4]"],
+html.light .tbc-public [class*="text-[#c9c4b4]"] {
+  color: #2d3743 !important;
+}
+html.light .pm-page [class*="text-[#8a8577]"],
+html.light .pm-page [class*="text-[#6f6a5d]"],
+html.light .tbc-public [class*="text-[#8a8577]"],
+html.light .tbc-public [class*="text-[#6a665a]"],
+html.light .tbc-public [class*="text-[#a9a494]"] {
+  color: #5f5a4e !important;
+}
+html.light .pm-page [class*="text-[#56e0a4]"],
+html.light .tbc-public [class*="text-[#56e0a4]"] {
+  color: #036b4e !important;
+}
+html.light .pm-page [class*="text-[#ff9b54]"],
+html.light .pm-page [class*="text-[#ffb27d]"] {
+  color: #9a3412 !important;
+}
+html.light .pm-page [class*="text-[#a8b8ff]"],
+html.light .pm-page [class*="text-[#7d9cff]"],
+html.light .tbc-public [class*="text-[#7dd3fc]"] {
+  color: #075985 !important;
+}
+html.light .tbc-public [class*="text-[#e9c4c4]"],
+html.light .tbc-public [class*="text-red-200"] {
+  color: #7f1d1d !important;
+}
+html.light .tbc-public [class*="text-sky-300"],
+html.light .pm-page [class*="text-sky-300"] {
+  color: #075985 !important;
+}
+
+/* TBC’s reading panels are dark in the editorial/dark theme and light in
+   the light theme. The tables and FAQ shells use literal colours rather
+   than tokens, so flip them here. */
+html.light .tbc-public [class*="bg-[#0b0b10]"] {
+  background-color: #fffdf7 !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+html.light .tbc-public [class*="bg-[#26262b]"] {
+  background-color: #f2efe6 !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+html.light .tbc-public [class*="bg-black/20"],
+html.light .tbc-public [class*="bg-black/25"] {
+  background-color: rgba(20, 24, 30, 0.035) !important;
+}
+html.light .tbc-public [class*="bg-white/[0.02]"],
+html.light .tbc-public [class*="bg-white/[0.07]"],
+html.light .tbc-public [class*="bg-white/[0.08]"] {
+  background-color: rgba(20, 24, 30, 0.035) !important;
+}
+html.light .tbc-public [class*="border-white/"] {
+  border-color: rgba(15, 23, 42, 0.11) !important;
+}
+html.light .tbc-public [class*="bg-[#d4af37]"]:not([class*="bg-[#d4af37]/"]) {
+  color: #fffdf7 !important;
+}
+
+/* The standalone password-reset panel still uses two dark-theme muted ink
+   values that were not remapped by the auth readability variables. */
+html.light .auth-shell [class*="text-[#d4cebd]"] {
+  color: #2d3743 !important;
+}
+html.light .auth-shell [class*="text-[#a9a494]"] {
+  color: #5f5a4e !important;
 }

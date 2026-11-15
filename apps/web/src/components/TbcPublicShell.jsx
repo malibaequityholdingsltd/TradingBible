@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { ArrowRight, Coins, FileText, ShieldCheck } from 'lucide-react';
 import Footer from '@/components/Footer';
@@ -46,7 +46,7 @@ export default function TbcPublicShell({ children, active = '', contained = true
   const headerRef = useRef(null);
   const [headerH, setHeaderH] = useState(0);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = headerRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
     const measure = () => setHeaderH(el.getBoundingClientRect().height);
@@ -60,7 +60,7 @@ export default function TbcPublicShell({ children, active = '', contained = true
   const ctaLabel = isAuthed ? 'Documents' : 'Create account';
 
   return (
-    <div className="at-shell min-h-screen bg-transparent text-[var(--at-ink)]" style={{ paddingTop: `calc(var(--header-h) + ${headerH ? headerH + 12 : 126}px)` }}>
+    <div className="tbc-public at-shell min-h-screen bg-transparent text-[var(--at-ink)]" style={{ paddingTop: `calc(var(--header-h) + ${headerH ? headerH + 12 : 126}px)` }}>
       <header ref={headerRef} className="fixed inset-x-0 top-[var(--header-h)] z-40 border-b border-[var(--at-line-soft)] bg-[var(--at-topbar-bg)] backdrop-blur-2xl">
         <div className="mx-auto flex max-w-none items-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-6">
           <Link to={homeTo} className="flex shrink-0 items-center gap-2.5" aria-label="TradingBible home">

@@ -1,25 +1,30 @@
 # TradingBible — Company, Product & Brand Brief
-*Prepared for lenders, investors, partners and users. All statements below are sourced from the company repository and live product; figures marked TBD are to be supplied by the founder. This is a company brief, not an offering document, legal opinion or launch approval. Counsel and production acceptance still govern the gates listed in `docs/blocked-items.md`.*
+*Prepared for lenders, investors, partners and users. All statements below are sourced from the company repository and live product; figures marked TBD must be confirmed from company records. This is a company brief, not an offering document, legal opinion or launch approval. Counsel and production acceptance still govern the gates listed in `docs/blocked-items.md`.*
 
 ## 1. Company snapshot
-- **Legal name:** TradingBible Holdings, Inc. — *Delaware corporation; owner, operator and securities issuer.*
-- **Form & domicile:** Delaware corporation (NAICS 511210); registered agent and entity records on file.
-- **Tax/identity:** IRS EIN and D-U-N-S **14-997-6777** on file — disclose only to authorized counterparties.
+- **Legal name (filed):** **TradingBible Holdings. Inc.** — period after “Holdings”, as printed on the Delaware certificate and certified copy. The intended form **TradingBible Holdings, Inc.** is used commercially; a certificate of correction is required before the comma form can be relied on as the filed name.
+- **Form & domicile:** Delaware stock corporation; file no. **10821679**; formed **28 October 2026**; in good standing as of **3 November 2026**. Registered agent: Northwest Registered Agent Service, Inc.; registered office: 8 The Green, Suite B, Dover, Kent County, DE 19901.
+- **Authorized stock:** 5,000 shares, par value $0.0001 per share. The stock ledger, cap table and any actual share issuance are not in the supplied record.
+- **Tax/identity:** IRS **EIN not yet issued** — no EIN notice is in company records. D-U-N-S **14-997-6777 is reported only**; verify it with D&B before external reliance.
 - **Structure:** TradingBible Holdings, Inc. (owner, operator and securities issuer) → product divisions (Terminal, Intelligence, Prop, Developer, future Brokerage, proposed Coin) — *divisions, not subsidiaries.*
 - **Parent holding company:** TradingBible Holdings, Inc. — *ticker TB requested, not reserved/confirmed.*
 - **Native coin:** TBC (max 100M, Cosmos SDK baseline, proposed; 90-day testnet planned) — *TBC is not TB equity.*
 - **Regulatory status:** Delaware incorporation is **not** a brokerage license. No live client deposits until a licensed entity + banking + safeguarding are operational.
 - **Owner/operator:** TradingBible Holdings, Inc. owns and operates TradingBible and is the securities issuer.
-- **Leadership:**
-  - Malik Nlem — Founder & Chief Executive
-  - Victor Okechukwu — Vice President
-  - Maliba SI — Head of Quantitative Research (the platform's SI research function)
-- **Team profile:** Operators, engineers, and quants from global markets and technology.
+- **Statutory officers and directors (from the incorporator’s initial resolutions):**
+  - Malik Nlem — President, Treasurer and Director
+  - Felicity Nlem — Secretary
+  - Victor Okechukwu — Director
+  - Maliba SI — AI research function, **not a human officer**
+  - No CEO, CFO, COO or VP is appointed in the initial resolutions. Those titles require a later board appointment before use in execution records.
+- **Corporate record status:** certificate of incorporation, certified copy and 3 November 2026 good-standing certificate are verified. EIN, adopted bylaws, stock ledger, executed virtual-office agreement, trademark assignment and D-U-N-S evidence remain open. See `docs/corporate-record.md`.
+- **Team profile:** A small documented team with statutory roles and open priority seats listed in the public company record.
 - **Domain & contacts:** tradingbible.app · support@tradingbible.app · legal@tradingbible.app · privacy@tradingbible.app · ads@tradingbible.app
+- **Postal address:** use the registered office for service of process. Do not publish `8 The Green #5405` as a leased office until the virtual-office agreement is countersigned and payment is confirmed; the supplied agreement has blank signature blocks.
 - **Response target:** team aims to respond within one business day; this is a service target, not a guarantee.
 
 ## 2. What TradingBible is
-TradingBible is a global financial technology (FinTech) platform that delivers institutional-grade market intelligence, advanced trading tools, real-time market analysis, educational resources, and SI-powered insights — in one terminal.
+TradingBible is a global financial technology (FinTech) platform that delivers market intelligence, practical trading tools, real-time market analysis, educational resources, and SI-powered insights — in one terminal.
 
 - **Mission:** empower individuals with transparent, data-driven market intelligence, innovative technology, and world-class educational resources that support smarter financial decision-making.
 - **Vision:** become one of the world's leading financial technology platforms by making professional trading intelligence accessible to every trader and investor.
@@ -57,7 +62,7 @@ AI-powered trading journal and analytics platform with a professional terminal e
 - **Stack:** React 18 + Vite + Tailwind (web) · Node.js + Express 5 (API) · Supabase Postgres with row-level security as the designed tenant boundary · Stripe billing · VPS Ubuntu + PM2 + Nginx + Let's Encrypt TLS.
 - **API surface:** 30+ route groups (`/api/*`: quotes, candles, indicator, heatmap, wallet, challenges, backtest, brokers, academy, affiliate, admin, jobs, company, and more); rate limiting, Helmet hardening and Stripe webhook signature verification. Live webhook delivery and RLS isolation are still pending production acceptance.
 - **Security features for users:** passkeys where enrolled, session management, KYC-gated profiles (frozen after verification) and suspend/close lifecycle. Admin MFA enforcement is implemented behind `ADMIN_MFA_REQUIRED` and must be enabled after named administrators enroll.
-- **Legal:** Terms, Privacy, Refund and FAQ are published in-product; the company is data controller; liability is capped at 12 months' fees or $100; 14-day money-back applies to the first subscription payment. Counsel review of Terms §8.1, corporate registration wording and the TB issuer record remains open.
+- **Legal:** Terms, Privacy, Refund and FAQ are published in-product; the company is data controller; liability is capped at 12 months' fees or $100; 14-day money-back applies to the first subscription payment. The public Terms use the intended comma form pending the name correction. Counsel review of Terms §8.1, corporate registration wording and the TB issuer record remains open. The “TradingBible” word mark was submitted to counsel through an intake form in the individual name of Malik Nlem; it is **not proven registered**, and the company assignment remains open.
 - **Status:** product version 1.2.0, live in production. Public launch remains gated by the blockers in `docs/blocked-items.md`; this document is not an approval or a launch certificate.
 
 ## 6. Business model & monetization
@@ -66,25 +71,25 @@ AI-powered trading journal and analytics platform with a professional terminal e
   - Premium — $19.99/month or $199/year: terminal, journal, analytics, SI coach, reports, signals, alerts, heatmaps, broker sync and risk tools.
 - **Academy tuition (separate from Premium):** Individual $150, Pro $199, Family $299 and Teams $499, each described as lifetime access. Paid seat redemption is not yet accepted in production.
 - **Additional revenue lines:** TradingBible TV advertising, affiliate/referral programme, funded-challenge rails, Academy enrollments and API/white-label licensing. TBC platform credits are not a token sale, deposit or investment product; TBC payment rails remain disabled pending written authorisation.
-- **Actual financials, user counts, and revenue:** founder-confirmed figures only — see §9 (traction) and §10 (illustrative projections and raise scenarios). Nothing below is stated as an actual result.
+- **Actual financials, user counts, and revenue:** company-record figures only — see §9 (traction) and §10 (illustrative projections and raise scenarios). Nothing below is stated as an actual result.
 
 ## 7. Brand identity
-- **Name:** TradingBible (short: TB). Positioning: the trader's bible — institutional-grade intelligence for everyone.
+- **Name:** TradingBible (short: TB). Positioning: the trader's bible — record-first trading intelligence.
 - **Look:** matte-black + gold luxury fintech. Gold `#d4af37` (light `#f4e6a8`, dark `#a67c1e`), dark `#0a0a0f`, card `#0f0f14`, text `#f0ecdd`.
 - **Logo:** rounded dark square, gold border/chevron + dot; bundled + CDN copies; favicon set.
-- **Voice:** professional, data-driven, educational — institutional quality without institutional gatekeeping.
+- **Voice:** professional, data-driven, educational — clear, practical tools without the gatekeeping.
 
 ## 8. For lenders & investors — what to ask for next
-1. Financial statements / projections and use of funds — see illustrative scenarios in §10; founder to confirm actuals.
-2. Traction: registered users, paying subscribers, churn, MRR — see tracking framework in §9; founder to confirm actuals.
-3. Corporate documents: Delaware certificate of incorporation, EIN letter, bylaws, stock ledger and registered-agent confirmation.
-4. D-U-N-S 14-997-6777 — D&B shows no financial statements on file; admin downloads draft Balance Sheet + Income Statement CSVs from Billing & Revenue for accountant review and D&B upload.
+1. Financial statements / projections and use of funds — see illustrative scenarios in §10; company records must confirm actuals.
+2. Traction: registered users, paying subscribers, churn, MRR — see tracking framework in §9; company records must confirm actuals.
+3. Corporate documents: Delaware certificate of incorporation (file no. 10821679, formed 28 October 2026), certified copy and 3 November 2026 good-standing certificate are available. Still required: adopted bylaws, stock ledger/cap table, EIN notice, executed registered-agent agreement and executed virtual-office agreement. The “TradingBible” trademark intake names Malik Nlem individually; a company assignment and USPTO status are still required.
+4. D-U-N-S 14-997-6777 — reported only; verify with D&B before external reliance. D&B shows no financial statements on file; admin downloads the working Balance Sheet and Income Statement CSVs from Billing & Revenue for accountant review and D&B upload.
 5. Product demo: live walkthrough of Terminal Pro, journal + SI Coach, and analytics on tradingbible.app.
 
 ## 9. Traction — status and tracking framework
-**Status: NO verified traction figures exist in company records available for this brief. The table below is a reporting template — the founder confirms actuals before sharing with any lender or investor.**
+**Status: NO verified traction figures exist in company records available for this brief. The table below is a reporting template — company records must confirm actuals before sharing with any lender or investor.**
 
-| Metric | Actual (founder to confirm) |
+| Metric | Actual (company records to confirm) |
 |---|---|
 | Registered users | — |
 | Free accounts / Premium subscribers | — / — |
@@ -96,14 +101,14 @@ AI-powered trading journal and analytics platform with a professional terminal e
 Track monthly: new free accounts, Free→Premium conversion, churn, ARPU, CAC and LTV. Product is live (v1.2.0); Stripe live checkout and webhook acceptance are still pending, so no revenue figure is verified.
 
 ## 11. Holdings master blueprint alignment (2026 Edition)
-Full text: `docs/holdings-master-blueprint.md` (Official Company Profile & Strategic Master Blueprint — 2026 Edition). Structure: **TradingBible Holdings, Inc. (owner, operator and securities issuer) → product divisions.** Divisions under the operating company (Terminal, Intelligence, Prop, Developer, future Brokerage, proposed Coin). MT Bridge `MT_BRIDGE_URL=https://bridge.tradingbible.app` (proposed, not deployed). Roadmap with statuses: formation/EIN completed, D-U-N-S reported, verification audit required, revenue pending, terminal expansion, licensing planned, TBC planned, financing future, IPO long-term. First-90-day plan + official publication-ready About text in the blueprint. None of Goldman Sachs / Morgan Stanley / J.P. Morgan / Jefferies / Chapel Hill Denham / Renaissance Capital is engaged. Titles (Malik Nlem, Victor Okechukwu, Maliba SI) to be confirmed before publication as formal officers.
+Full text: `docs/holdings-master-blueprint.md` (Official Company Profile & Strategic Master Blueprint — 2026 Edition). Structure: **TradingBible Holdings, Inc. (owner, operator and securities issuer) → product divisions.** Divisions under the operating company (Terminal, Intelligence, Prop, Developer, future Brokerage, proposed Coin). MT Bridge `MT_BRIDGE_URL=https://bridge.tradingbible.app` (proposed, not deployed). Roadmap with statuses: formation completed, EIN pending, D-U-N-S reported only, verification audit required, revenue pending, terminal expansion, licensing planned, TBC planned, financing future, IPO long-term. First-90-day plan + official publication-ready About text in the blueprint. None of Goldman Sachs / Morgan Stanley / J.P. Morgan / Jefferies / Chapel Hill Denham / Renaissance Capital is engaged. Statutory titles are limited to the incorporator’s initial resolutions; CEO/VP titles require later board appointments.
 
 ## 12. Financial projections & the raise — ILLUSTRATIVE SCENARIOS ONLY
-**These are models, not results and not promises. Every figure below is computed from stated assumptions so a lender/investor can see the mechanics. Founder confirms which scenario (if any) to present.**
+**These are models, not results and not promises. Every figure below is computed from stated assumptions so a lender/investor can see the mechanics. Management confirms which scenario (if any) to present.**
 
 **Legacy three-tier model retired.** The previous Pro / Elite SI / Professional projections were built on prices that are no longer the public plan structure. They must not be presented to a lender or investor. The current public model is Free + Premium at $19.99/month or $199/year, with Academy tuition separate. A new projection must be built from verified conversion, churn, payment costs and infrastructure costs before any number is shared.
 
-Raise-size options with use-of-funds splits (pick one instrument: loan, SAFE, or equity — terms TBD by founder):
+Raise-size options with use-of-funds splits (pick one instrument: loan, SAFE, or equity — terms subject to board approval):
 | Raise | Product-led | Growth-led | Balanced |
 |---|---|---|---|
 | Micro (<$50k, e.g. $25k) | Product 55%, Data 10%, Ops 15%, Reserve 20% | Marketing 60%, Product 20%, Ops 10%, Reserve 10% | Product 35%, Marketing 35%, Data 10%, Ops 10%, Reserve 10% |

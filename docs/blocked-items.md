@@ -1,7 +1,7 @@
 # Blocked and Non-Working Inventory
 
-**Status:** 12 November 2026
-**Operator:** TradingBible Holdings, Inc.  
+**Status:** 15 November 2026 (UTC) — production deployed
+**Operator:** TradingBible Holdings. Inc. (filed name) · intended commercial form: TradingBible Holdings, Inc.  
 **Scope:** web app, API, billing, cards, fund, fundraising packet, company communications, legal/corporate records and production validation.
 
 This is the honest readiness list. It separates work that is complete from work that is blocked by an external provider, a legal/professional review or a product decision. No blocked item is presented in the product as live, funded, issued, registered or approved.
@@ -19,7 +19,8 @@ This is the honest readiness list. It separates work that is complete from work 
 
 | Item | What changed | Verification |
 |---|---|---|
-| Company name | Standardised on **TradingBible Holdings, Inc.** as owner, operator and TB securities issuer across source, legal/public copy, investor records and generated documents. | `rg` found no stale `TradingBible, Inc.` outside replacement rules; TB stock DOCX/PDF library regenerated. |
+| Company name | Legal and financial copy uses the filed name **TradingBible Holdings. Inc.**; the comma form **TradingBible Holdings, Inc.** is identified as the intended commercial name, with a certificate of correction pending. The comma form is not presented as the filed name. | Certificate and certified copy reviewed; source and built-bundle scans completed. |
+| Corporate formation record | Verified Delaware file no. **10821679**, formed **28 October 2026**, good standing **3 November 2026**, registered agent Northwest Registered Agent Service, Inc., 5,000 authorized shares at $0.0001 par. | Certified copy, good-standing certificate and initial resolutions reviewed; hashes recorded. |
 | TV widget bounds | The launcher, mini panel and expanded panel now use the painted sidebar, topbar/mobile-bar and bottom navigation edges. Drag, keyboard movement, SI shift and phone layout clamp to those edges. | Playwright at 1440×900, 1024×768 and 390×844; desktop expanded panel sat at sidebar/topbar lines and above the bottom edge; phone panel sat above the dock. |
 | Academy coverage | Expanded to **17 paths · 76 courses · 347 lessons**, including derivatives, macro, quant, fund management, market mechanics and institutional FX. | `npm run verify:academy` passes; web/API catalogs both import at 17/76/347; `academySchools.test.js` passes. |
 | Fund surface | Public `/fund` surface for **TradingBible Capital** explicitly says *in formation*, with no vehicle, AUM, track record or offering. | Public page copy and route checks pass. |
@@ -28,7 +29,7 @@ This is the honest readiness list. It separates work that is complete from work 
 | Stripe sandbox payment matrix | Exact `/stripe/checkout-session` and `/wallet/deposit` routes created sessions for every current product with the expected mode and amount. Test-mode payments were then completed for Premium monthly ($19.99), Premium annual ($199), Platform Teams monthly ($199), Academy individual ($150), Academy Pro ($199), Academy Family ($299), Academy Teams ($499) and a $25 wallet deposit. | All sessions and payments were `livemode: false`; subscriptions were cancelled after payment; one wrong Teams $19.99 test price was refunded. Hosted Checkout UI and webhook delivery remain unverified. |
 | Lithic sandbox connectivity | A sandbox-only Lithic client and authenticated `/wallet/cards/*` routes can create and close a virtual sandbox card. PAN/CVV are never stored or returned; production issuance is hard-disabled. | Sandbox key validated; route test returned `201` for create and `200` for close; the Lithic card ended in `CLOSED`. |
 | Release controls | PWA, DocuSign, TBC, exam-bank, translation and curated-path guards remain intact. | `npm run verify:release` passes. |
-| Lint/build/tests | Web/API lint, production build and unit tests pass after the changes. | `npm run lint`, `npm run build`, `npm test` (26 tests). |
+| Lint/build/tests | Web/API lint, production build and unit tests pass after the changes. | `npm run lint`, `npm run build`, web tests (9 files / 49 tests). |
 | Confidential fundraising packet | 20 branded final-form DOCX/PDF documents covering the readiness memo, board resolutions, officer certificate, SAFE, investor certificates, Form D worksheet, Reg CF readiness and reporting. Admin-only, no public page, no solicitation. | Builder generated all 20 files plus manifest; every one of the 232 DocuSign anchors appears exactly once in its PDF; packet ZIP route tested. |
 | Fundraising DocuSign controls | Custom text and checkbox tabs for investor questionnaires; unique per-document anchors; separate execution register; execution locked behind `FUNDRAISING_EXECUTION_ENABLED=true`. | Module import, route registration, anchor uniqueness and gate checks pass. |
 | Company communications registry | 45 branded email/SMS/in-app templates across seven categories, each with a distinct layout, light/dark mode support, absolute logo URL, hidden preheader, marketing footer and compliance labels. | Registry renders 45 templates; all seven category layouts render in auto, light and dark modes; Markdown pack exports. |
@@ -47,6 +48,30 @@ This is the honest readiness list. It separates work that is complete from work 
 | Optional admin MFA gate | `ADMIN_MFA_REQUIRED=true` requires Supabase AAL2 with TOTP, passkey/WebAuthn, SSO or MFA. It is documented and off by default. | Code and lint passed. Not enabled in production; enrollment and break-glass testing remain external. |
 | Public signup gate | New public signups are hard-gated by `VITE_PUBLIC_SIGNUP_ENABLED=false` until SMTP/email-code delivery is accepted. Login and admin invitations are unaffected. | Build-time gate in `apps/web/src/lib/platformSettings.js`; `/signup` shows the paused state and the home CTA no longer opens signup. |
 | Stale company pricing brief | `docs/company-profile.md` now uses Free + Premium at `$19.99/month` or `$199/year`; the retired three-tier projections were removed instead of being recalculated with invented assumptions. | Text search and review; see the evidence record. |
+
+### 1.2 Fixed 15 November 2026 (UTC) — launch copy, privacy and layout
+
+| Item | What changed | Verification |
+|---|---|---|
+| Public claim sweep | Removed the remaining third-party quality claims and pre-launch social-proof language from the PWA manifest, document title, English and translated footer/about/landing strings, and API email footer. The landing headline now uses record-first language. | Source and built-bundle scans; web/API lint and production build passed. |
+| Public role labels | Removed the unproven `Founder ·` prefix from public leadership labels and updated the internal company profile to record that no employee appointments beyond the statutory officers exist. | Source scan; public pages show only statutory titles or clearly marked hiring priorities. |
+| Public assistant privacy | Removed the Secretary’s name from the public SI Coach and investor-assistant prompts; the controlled corporate record remains private and publication still requires consent. | Source and web-bundle scan; the public bundle contains no Secretary name. |
+| Careers layout stability | Replaced the async 0-to-71-card jobs section with a stable-height, internally scrollable board and added a stable scrollbar gutter. | Targeted Playwright probe with the 71-job response: CLS 0 at 250, 750, 1500 and 3000 ms. |
+| Production IR milestone | Corrected the live `corporate-conversion` milestone, which had described a Delaware LLC conversion. It now records the 28 October 2026 Delaware stock-corporation formation and the filed-name correction. | Production Supabase readback returned the corrected title and description. |
+
+### 1.3 Verified production deployment — 15 November 2026 (UTC)
+
+| Item | What changed | Verification |
+|---|---|---|
+| Final build gates | Web/API lint, web unit tests, production build and release/security guards passed after the last source edits. | `npm run lint`; web tests 9 files / 49 tests; `npm run build`; `npm run verify` (Academy 17/76/347, release guards, security audit). The only security-audit warning is the large contract build-info file that is skipped by design. |
+| Local public audit | Full public audit across 53 routes, six viewport/theme combinations and 318 page runs. | 0 missing private/pre-IPO/no-offering/no-approved-terms statements, 0 missing status strips, 0 missing topic rails, 0 body horizontal overflow, 0 contrast failures, 0 CLS runs above 0.1, 0 page errors. The 113 console runs were the expected development-server 429s. Eight descendant-overflow flags were intentional horizontal-scroll tables/filter rails; the one real decorative orb on `/login` was fixed and a focused `/login` + `/signup` check at mobile/tablet in dark/light returned no overflow. |
+| Production API and SPA | Synced `apps/api/src/`, the production SPA with `--delete`, and the five generated document storage directories (excluding `.execution/` and `*.tmp`); restarted PM2. | `tradingbible-api` online, restart count stable, error log has no new write after restart. `https://tradingbible.app/api/health` and `/hcgi/api/health` return `200 {"status":"ok"}`. The SPA `index.html` is the new build (`last-modified Sun, 15 Nov 2026 04:58:10 GMT`), references the new asset hashes, and the manifest description is updated. |
+| Production API content | The public investor overview now returns **TradingBible Holdings. Inc.**, the intended comma form, `updated: November 2026`, and the corrected Delaware stock-corporation milestone. TB stock and TBC document endpoints return `200` with the filed name. Public CMS overrides are empty, so no stale copy overrides remain. | Live API readback; `/hcgi/api/admin/content-copy` returned `{"overrides":{}}`; `/hcgi/api/jobs` returned 71 open roles. |
+| Document vault and public downloads | All 101 local `.docx` files and 72 `.pdf` files across fundraising, TBC, TB stock, HR and workforce storage were text-extracted. The 5 public TBC summaries and 9 public TB stock documents were also fetched from production and re-scanned. | No `DRAFT`/`draft`/`drafted` labels, banned company/title claims or standalone founder references were found. The public downloads contain no Secretary name. |
+| Controlled-document founder wording | 25 generated occurrences of standalone founder wording across the fundraising, TB stock and HR records were corrected. The public TB-03 share-capital instrument now uses “Control and voting structure”; the HR job pack refers to the President; the external company brief and private corporate record use statutory titles only. | Regenerated the three document packs; 101 `.docx` and 72 `.pdf` files re-scanned with zero founder, draft or banned-claim hits. The 14 public downloads were re-fetched from production and are clean; document storage was resynced and PM2 restarted. |
+| Legacy job-postings copy | Two old closed postings carried the non-filed name **TradingBible LLC** and unrecorded Founder/Chief Executive/Vice President wording; two open role descriptions also used a founder reference. All four were corrected to statutory or neutral language, and the public board still exposes only the 71 open roles. | Supabase PATCH applied directly; SQL record at `apps/api/sql/2026-11-15-job-postings-corporate-copy-correction.sql`; all 75 job rows re-scanned with zero banned-title/name hits; public `/hcgi/api/jobs` has 71 roles and zero founder/LLC hits. |
+| Production public audit | Sixteen key routes at desktop/mobile in dark/light, 64 page runs. | 0 missing required statements, 0 missing status strips, 0 missing topic rails, 0 body horizontal overflow, 0 decorative overflow, 0 banned claims, 0 CLS runs above 0.1, 0 real page errors, 0 signup-gate failures. Three console entries were expected production rate-limit 429s caused by the audit burst, not page errors. `/signup` shows “Signups are paused”; the public production bundle contains no banned claims and no Secretary name. |
+| Rollback | The pre-deploy archive remains available on the VPS at `/root/tradingbible-deploy-backups/pre-deploy-20261115T042953Z.tar.gz` (33 MB). | Archive exists and was verified before deployment. Source changes remain uncommitted and unpushed; deployment was by rsync because production is not a git checkout. |
 
 ## 2. Blocked — external
 
@@ -126,7 +151,9 @@ No API key can substitute for this authorisation.
 **What is missing:**
 
 - Counsel review of the exact document version and the communications gate.
-- Confirmed certificate of incorporation date, principal address, fiscal year end, officers/directors and registered agent.
+- IRS EIN issuance and notice (not yet issued; do not fill an EIN into any execution copy until the notice is in hand).
+- Adopted bylaws, stock ledger/cap table and board approval of any share issuance.
+- Confirmation of the exact filed name or a filed certificate of correction.
 - Board authorization for the security, offering amount, minimum target, price, valuation cap and use-of-proceeds budget.
 - A reconciled cap table, SAFE register, option pool and related-party disclosures.
 - Audited or reviewed financial statements and the accountant identity.
@@ -161,7 +188,14 @@ Fundraising templates remain restricted even if ordinary transactional email is 
 | Item | Status | What is needed |
 |---|---|---|
 | Terms of Service §8.1 (Academy Pro licence) | Blocked — counsel | Counsel review of the licence scope, resale/redistribution restriction and termination wording. |
-| Corporate registration details | Blocked — counsel | Confirm Delaware registration, registered agent, authorised shares, par value, officers/directors and the public wording before external reliance. |
+| Exact filed company name | Open — filing / counsel | The certificate prints `TradingBible Holdings. Inc.` and the date line says 2025 while the state filing is 2026. An execution copy of the Delaware certificate of correction is prepared at `docs/corporate/certificate-of-correction.md`; it is **not filed**. Until accepted, the exact filed name controls. |
+| EIN | Open — IRS | No EIN notice is in company records. Apply through the IRS (free); record the CP 575/147C in controlled storage. Do not state “EIN on file” until received. |
+| Bylaws, stock ledger and cap table | Open — corporate | Obtain the adopted bylaws and registered-agent minute book. Confirm whether any shares were issued. Reconcile the cap table before any SAFE, equity or option grant. |
+| Authorized shares | Open — corporate/counsel | Only **5,000** shares are authorized at $0.0001 par. A charter amendment is required before any issuance that would exceed that amount. |
+| Virtual-office agreement | Open — unsigned | The supplied agreement for `8 The Green #5405` has blank landlord and tenant signatures and no payment receipt. Do not present it as an executed lease or verified principal place of business. |
+| Trademark ownership and registration | Open — IP/counsel | The intake form names **Malik Nlem individually**, not the company. No USPTO filing receipt or registration certificate is present. Execute a company assignment and verify USPTO status before claiming registration or exclusive company ownership. |
+| D-U-N-S | Open — verification | 14-997-6777 is reported only; verify directly with D&B before external reliance. |
+| Corporate registration details and public wording | Partially verified — counsel | Formation, file number, good standing, registered agent and authorized stock are verified. EIN, bylaws, stock ledger, lease, trademark assignment and the name correction remain open. |
 | TB securities-issuer record | Blocked — counsel | Confirm that TradingBible Holdings, Inc. is the issuer of TB and that the private-record, no-offering and no-listing language is accurate. |
 | Employment entity and workforce policy | Blocked — counsel | Confirm TradingBible Holdings, Inc. as the U.S. employing entity and review the global workforce policy. |
 | Fund structure and offering | Blocked — counsel/regulatory | Entity, adviser registration/exemption, PPM, custody, AML/KYC and marketing restrictions. |

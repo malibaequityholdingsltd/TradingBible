@@ -3,11 +3,19 @@
 // an allocation, a regulatory approval or a promise that a listing will occur.
 
 export const TB_ISSUER = {
-  currentEntity: 'TradingBible Holdings, Inc.',
-  issuer: 'TradingBible Holdings, Inc.',
-  parentCompany: 'TradingBible Holdings, Inc.',
-  structure: 'Delaware corporation',
+  currentEntity: 'TradingBible Holdings. Inc. (filed name)',
+  issuer: 'TradingBible Holdings. Inc.',
+  filedName: 'TradingBible Holdings. Inc.',
+  preferredName: 'TradingBible Holdings, Inc.',
+  nameNote: 'The Delaware certificate prints the name with a period after Holdings. The comma form is intended; a certificate of correction is pending.',
+  parentCompany: 'TradingBible Holdings. Inc.',
+  structure: 'Delaware stock corporation',
   jurisdiction: 'Delaware, United States',
+  formation: 'Formed 28 October 2026',
+  fileNumber: '10821679',
+  goodStanding: 'Good standing as of 3 November 2026',
+  authorizedShares: '5,000 shares · $0.0001 par value',
+  einStatus: 'Not yet issued',
   ticker: 'TB',
   tickerStatus: 'Proposed — not reserved or approved',
   exchange: 'Nasdaq',
@@ -19,7 +27,7 @@ export const TB_ISSUER = {
   shareTrading: 'Not active',
   fiscalYear: 'Calendar year',
   irEmail: 'support@tradingbible.app',
-  updated: 'October 2026',
+  updated: 'November 2026',
   website: 'https://tradingbible.app',
 };
 
@@ -49,7 +57,7 @@ export const TB_PILLARS = [
   {
     number: '01',
     title: 'A single, verified investor record',
-    body: 'Public disclosures, financial reporting and the shareholder register are separated by design. Public readers see approved material only; verified shareholders see their own records and nothing else.',
+    body: 'Public disclosures and any future shareholder record are separated by design. Public readers see approved material only; a verified shareholder would see only their own record.',
   },
   {
     number: '02',
@@ -64,7 +72,7 @@ export const TB_PILLARS = [
   {
     number: '04',
     title: 'TB is not TBC',
-    body: 'TB represents proposed equity in TradingBible Holdings, Inc. TBC is a separate proposed blockchain asset with its own supply and risk profile. No TBC balance is equity, and no TB share is a TBC allocation.',
+    body: 'TB represents proposed equity in TradingBible Holdings. Inc. (filed name; intended commercial form: TradingBible Holdings, Inc.). TBC is a separate proposed blockchain asset with its own supply and risk profile. No TBC balance is equity, and no TB share is a TBC allocation.',
   },
 ];
 
@@ -75,36 +83,36 @@ export const TB_SEPARATION = [
   { label: 'Current execution', tb: 'No share sale or trading', tbc: 'No token sale or transfer' },
   { label: 'Valuation', tb: 'Not published', tbc: 'No public valuation' },
   { label: 'Public market', tb: 'None — pre-IPO', tbc: 'No active market' },
-  { label: 'Records', tb: 'Private equity register and audit trail', tbc: 'Separate TBC execution and ledger records' },
+  { label: 'Records', tb: 'Corporate record only; no stock ledger published', tbc: 'No TBC ledger or execution record exists' },
 ];
 
 export const TB_LEADERSHIP = [
   {
     name: 'Malik Nlem',
-    role: 'Founder & Chief Executive Officer',
+    role: 'President, Treasurer and Director',
     focus: 'Strategy, capital formation and corporate development.',
-    note: 'Serving in the current corporate structure.',
+    note: 'Statutory appointment recorded in the incorporator’s initial resolutions. No CEO title is recorded in that document.',
   },
   {
     name: 'TradingBible leadership',
     role: 'Operating and product functions',
     focus: 'Platform engineering, market education, research and member operations.',
-    note: 'Team profiles are published on the About page.',
+    note: 'Board and officer appointments are limited to the recorded corporate resolutions. Team profiles are published on the About page.',
   },
 ];
 
 export const TB_GOVERNANCE = [
   {
     title: 'Current structure',
-    body: 'TradingBible Holdings, Inc. owns and operates TradingBible and is the securities issuer. TB is not publicly traded.',
+    body: 'TradingBible Holdings, Inc. is the intended commercial name of the Delaware stock corporation formed 28 October 2026 (file no. 10821679; good standing 3 November 2026). The filed certificate prints TradingBible Holdings. Inc.; a correction is pending. TB is not publicly traded.',
     status: 'Current',
     tone: 'gold',
   },
   {
     title: 'Board and committees',
-    body: 'Board composition, independence determinations and committee charters will be published only after they are adopted and approved.',
-    status: 'To be adopted',
-    tone: 'amber',
+    body: 'The incorporator’s initial resolutions record Malik Nlem and Victor Okechukwu as directors, and Malik Nlem as President, Treasurer and Director. Committee charters and independence determinations are not adopted. No CEO, CFO, COO or VP is appointed in that record.',
+    status: 'Recorded',
+    tone: 'green',
   },
   {
     title: 'Disclosure controls',
@@ -114,9 +122,9 @@ export const TB_GOVERNANCE = [
   },
   {
     title: 'Shareholder records',
-    body: 'Access requires an authenticated request, identity verification and an explicit administrator approval. Shareholders see only their own verified positions and voting records.',
-    status: 'Controlled',
-    tone: 'green',
+    body: 'Access is designed to require an authenticated request, identity verification and explicit administrator approval. No issued-share register or voting record exists yet, and no position is represented.',
+    status: 'Not populated',
+    tone: 'amber',
   },
   {
     title: 'Related-party and insider policy',
@@ -153,15 +161,15 @@ export const TB_FAQ = [
   },
   {
     q: 'Is TB the same as TBC?',
-    a: 'No. TB is proposed equity. TBC is a separate proposed blockchain asset. TBC does not represent shares, equity, dividends or ownership in TradingBible Holdings, Inc. Supply, balances and risk are kept separate.',
+    a: 'No. TB is proposed equity. TBC is a separate proposed blockchain asset. TBC does not represent shares, equity, dividends or ownership in TradingBible Holdings. Inc. Supply, balances and risk are kept separate.',
   },
   {
     q: 'What stage is the IPO process at?',
     a: 'Preparation only. The readiness dashboard lists the workstreams that must be completed. It does not imply that an application has been filed, that an underwriter has been engaged or that Nasdaq has approved anything.',
   },
   {
-    q: 'How can existing shareholders access their records?',
-    a: 'Sign in, request access from the shareholder portal and complete identity verification. An administrator must approve the request before any position, certificate or voting record becomes visible. The portal is read-only and does not execute transfers.',
+    q: 'How would a shareholder access their records?',
+    a: 'If and when issued-share records exist, sign in, request access from the shareholder portal and complete identity verification. An administrator must approve the request before any position, certificate or voting record becomes visible. The portal is read-only and does not execute transfers. No issued-share register is represented today.',
   },
   {
     q: 'Where do financial numbers come from?',
@@ -169,7 +177,7 @@ export const TB_FAQ = [
   },
   {
     q: 'How do I receive investor updates?',
-    a: 'Use the subscription form. You will receive a confirmation email and can unsubscribe at any time. An update subscription does not create a shareholder relationship or provide access to private records.',
+    a: 'Use the subscription form. A subscription is confirmed by email when delivery is available and can be unsubscribed at any time. It does not create a shareholder relationship or provide access to private records.',
   },
   {
     q: 'Who do I contact?',

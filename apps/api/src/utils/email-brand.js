@@ -288,8 +288,8 @@ function footer(theme, { marketing, address, unsubscribeUrl, footerNote }) {
 	const align = theme.layout === 'formal' || theme.layout === 'confidential' ? 'center' : 'left';
 	return `
       <div class="tb-footer" style="background:${theme.footer};padding:18px 28px;border-top:1px solid ${theme.border};color:${theme.footerText};font-family:${theme.font};font-size:11px;line-height:1.65;text-align:${align}">
-        <span style="color:${theme.accent};font-weight:700">Trade like the 1%. Journal like a fund.</span><br/>
-        TradingBible Holdings, Inc. · tradingbible.app · support@tradingbible.app${addressHtml}${unsubscribeHtml}${noteHtml}
+        <span style="color:${theme.accent};font-weight:700">Trade with a record. Review with evidence.</span><br/>
+        TradingBible Holdings. Inc. (filed name; intended: TradingBible Holdings, Inc.) · tradingbible.app · support@tradingbible.app${addressHtml}${unsubscribeHtml}${noteHtml}
       </div>`;
 }
 

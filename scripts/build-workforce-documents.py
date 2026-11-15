@@ -47,8 +47,8 @@ MUTED = RGBColor(0x5B, 0x55, 0x45)
 PALE = "F3EFE3"
 INLINE_RE = re.compile(r"(\*\*.+?\*\*|\*.+?\*|`.+?`)")
 
-VERSION = "1.0"
-ISSUED = "12 November 2026"
+VERSION = "1.1"
+ISSUED = "14 November 2026"
 BOUNDARY = (
     "CONTROLLED TEMPLATE · COUNSEL REVIEW AND LOCAL ADOPTION REQUIRED. This document is a "
     "company policy or contract framework, not an executed agreement, a legal opinion, a "
@@ -258,7 +258,7 @@ def add_header_footer(document) -> None:
     if LOGO_SMALL.exists():
         run = paragraph.add_run()
         run.add_picture(str(LOGO_SMALL), width=Inches(0.38))
-    run = paragraph.add_run("  TRADINGBIBLE HOLDINGS, INC.   ·   CONTROLLED TEMPLATE")
+    run = paragraph.add_run("  TRADINGBIBLE HOLDINGS. INC.   ·   CONTROLLED TEMPLATE")
     run.font.name = "Arial"
     run.bold = True
     run.font.size = Pt(7.5)
@@ -290,7 +290,7 @@ def add_cover(document, title: str, doc_id: str) -> None:
         paragraph.add_run().add_picture(str(LOGO_SMALL), width=Inches(0.9))
     paragraph = document.add_paragraph()
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = paragraph.add_run("TRADINGBIBLE HOLDINGS, INC.")
+    run = paragraph.add_run("TRADINGBIBLE HOLDINGS. INC.")
     run.font.name = "Arial"
     run.bold = True
     run.font.size = Pt(11)
@@ -467,7 +467,7 @@ def build_html(title: str, doc_id: str, blocks: list[dict[str, Any]]) -> str:
     size: Letter;
     margin: 30mm 16mm 26mm;
     @top-left {{ content: ""; }}
-    @top-center {{ content: "TRADINGBIBLE HOLDINGS, INC. · CONTROLLED TEMPLATE"; color: #7c621c; font-family: Arial, sans-serif; font-size: 6.8pt; letter-spacing: .04em; }}
+    @top-center {{ content: "TRADINGBIBLE HOLDINGS. INC. · CONTROLLED TEMPLATE"; color: #7c621c; font-family: Arial, sans-serif; font-size: 6.8pt; letter-spacing: .04em; }}
     @top-right {{ content: "{html.escape(doc_id.upper())}"; color: #9a7a1e; font-family: Arial, sans-serif; font-size: 6.8pt; font-weight: 700; }}
     @bottom-left {{ content: "COUNSEL REVIEW REQUIRED"; color: #6a665a; font-family: Arial, sans-serif; font-size: 6pt; }}
     @bottom-center {{ content: "tradingbible.app · legal@tradingbible.app"; color: #6a665a; font-family: Arial, sans-serif; font-size: 6pt; }}
@@ -507,7 +507,7 @@ def build_html(title: str, doc_id: str, blocks: list[dict[str, Any]]) -> str:
 </style></head><body>
   <section class="cover">
     <img src="data:image/png;base64,{logo_data}" alt="TradingBible logo" />
-    <div class="org">TRADINGBIBLE HOLDINGS, INC.</div>
+    <div class="org">TRADINGBIBLE HOLDINGS. INC.</div>
     <div class="kicker">CONTROLLED TEMPLATE · COUNSEL REVIEW REQUIRED</div>
     <h1 class="title">{html.escape(title)}</h1>
     <div class="ref">{html.escape(doc_id.upper())} &nbsp;·&nbsp; VERSION {VERSION} &nbsp;·&nbsp; {ISSUED.upper()}</div>

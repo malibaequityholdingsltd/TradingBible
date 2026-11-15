@@ -1,4 +1,6 @@
-# TradingBible Holdings, Inc. — Security and Resilience Programme
+# TradingBible Holdings. Inc. — Security and Resilience Programme
+
+> Delaware filed name: **TradingBible Holdings. Inc.** Intended commercial form: TradingBible Holdings, Inc.; a certificate of correction is pending. The EIN is not yet issued.
 
 **Controlled programme library · management approval not recorded**
 

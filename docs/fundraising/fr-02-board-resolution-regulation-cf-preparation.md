@@ -2,7 +2,7 @@
 
 ## 1. Recitals
 
-**A.** TradingBible Holdings, Inc. is a corporation organized under the laws of the State of [Delaware] and the operator of the TradingBible platform. The jurisdiction and good-standing status must be confirmed from company records before this resolution is relied upon.
+**A.** TradingBible Holdings. Inc. is a corporation organized under the laws of the State of Delaware and the operator of the TradingBible platform. The company was formed in Delaware on 28 October 2026 under file no. 10821679 and was in good standing on 3 November 2026. The certified copy and good-standing certificate are the controlling records.
 
 **B.** The board is considering whether a future Regulation CF offering through a FINRA-registered funding portal or broker-dealer could broaden access to the company’s financing while preserving the company’s private-placement options.
 
@@ -14,7 +14,7 @@
 
 ## 2. Authorization to prepare
 
-**RESOLVED**, that the company is authorized to evaluate and engage one or more FINRA-registered funding portals or broker-dealers to explore a possible Regulation CF offering, subject to a written engagement letter approved by the chief executive officer and counsel.
+**RESOLVED**, that the company is authorized to evaluate and engage one or more FINRA-registered funding portals or broker-dealers to explore a possible Regulation CF offering, subject to a written engagement letter approved by the president and counsel.
 
 **RESOLVED FURTHER**, that the company may prepare a working Form C offering statement, financial statements, risk factors, use-of-proceeds schedule, management and ownership disclosures, and campaign materials for counsel and portal review.
 
@@ -46,7 +46,7 @@
 
 ## 5. Portal selection
 
-**RESOLVED**, that the chief executive officer and counsel shall evaluate each potential intermediary on at least the following criteria:
+**RESOLVED**, that the president and counsel shall evaluate each potential intermediary on at least the following criteria:
 
 | Criterion | Evidence required |
 |---|---|
@@ -64,7 +64,7 @@
 
 ## 6. Preparation budget
 
-**RESOLVED**, that the company may spend up to **US$[__________]** on legal, accounting, audit, portal, escrow and filing costs associated with preparing a possible Regulation CF offering, subject to the approval of the chief executive officer and the board’s finance oversight.
+**RESOLVED**, that the company may spend up to **US$[__________]** on legal, accounting, audit, portal, escrow and filing costs associated with preparing a possible Regulation CF offering, subject to the approval of the president and the board’s finance oversight.
 
 **RESOLVED FURTHER**, that no preparation expense may be charged to investor funds or treated as a commitment to complete the offering.
 

@@ -1,14 +1,14 @@
-# TRADINGBIBLE HOLDINGS, INC. — NIGERIA EMPLOYMENT AGREEMENT TEMPLATE
+# TRADINGBIBLE HOLDINGS. INC. — NIGERIA EMPLOYMENT AGREEMENT TEMPLATE
 
-**Controlled template · Version 1.0 · 12 November 2026**
+**Controlled template · Version 1.1 · 14 November 2026**
 
 > **Controlled template — Nigerian counsel review required.** This is not an executed agreement. A US company employing a person who works in Nigeria must use a lawful Nigerian employment arrangement and local payroll. Nigerian counsel must review this template and the completed terms before signature. Complete every bracketed field and attach the job description, policy acknowledgements and any local addendum.
 
-This Employment Agreement (the “Agreement”) is made on **[DATE]** between **TradingBible Holdings, Inc.**, a Delaware corporation (the “Company”), and **[EMPLOYEE LEGAL NAME]** (the “Employee”), for work performed in Nigeria.
+This Employment Agreement (the “Agreement”) is made on **[DATE]** between **TradingBible Holdings. Inc.**, a Delaware corporation (the “Company”), and **[EMPLOYEE LEGAL NAME]** (the “Employee”), for work performed in Nigeria.
 
 ## 1. The parties and the employment arrangement
 
-**Employer:** TradingBible Holdings, Inc., [REGISTERED ADDRESS OR NIGERIAN AFFILIATE/EOR DETAILS]
+**Employer:** TradingBible Holdings. Inc., [REGISTERED ADDRESS OR NIGERIAN AFFILIATE/EOR DETAILS]
 
 **Employee:** [LEGAL NAME], [RESIDENTIAL ADDRESS], [PHONE], [EMAIL]
 
@@ -130,7 +130,7 @@ Signature: ______________________________
 
 Date: _______________________________
 
-**TRADINGBIBLE HOLDINGS, INC.**
+**TRADINGBIBLE HOLDINGS. INC.**
 
 Printed name: ______________________________
 

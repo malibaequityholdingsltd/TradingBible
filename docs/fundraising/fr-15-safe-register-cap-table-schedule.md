@@ -51,9 +51,11 @@ Each SAFE must be recorded with the following fields:
 
 ### 4.1 Pre-closing capitalization
 
+**Charter limit:** 5,000 authorized shares of common stock, par value $0.0001 per share. The supplied record proves no issued shares and contains no stock ledger. Do not record any shares here until a board issuance approval, stock purchase agreement and ledger entry exist. Any SAFE conversion or option pool that would exceed 5,000 shares requires a stockholder-approved charter amendment before issuance.
+
 | Security | Shares | Percentage | Notes |
 |---|---:|---:|---|
-| Common stock — founders | [______] | [__]% | [______] |
+| Common stock — initial holders | [______] | [__]% | [______] |
 | Common stock — other holders | [______] | [__]% | [______] |
 | Preferred stock | [______] | [__]% | [______] |
 | Options outstanding | [______] | [__]% | [______] |
@@ -67,7 +69,7 @@ Each SAFE must be recorded with the following fields:
 
 | Security | Shares | Percentage | Notes |
 |---|---:|---:|---|
-| Common stock — founders | [______] | [__]% | [______] |
+| Common stock — initial holders | [______] | [__]% | [______] |
 | Common stock — other holders | [______] | [__]% | [______] |
 | Preferred stock | [______] | [__]% | [______] |
 | Options outstanding | [______] | [__]% | [______] |
@@ -83,8 +85,8 @@ Each SAFE must be recorded with the following fields:
 2. No SAFE may be recorded without an executed copy and a completed eligibility certificate.
 3. No cap-table entry may be made without board approval and a register entry.
 4. Any amendment, waiver, transfer or conversion must be recorded within two business days.
-5. The chief executive officer must review the register monthly and certify the reconciliation to the board quarterly.
-6. Access to the register must be limited to the chief executive officer, the designated finance owner and counsel.
+5. The president must review the register monthly and certify the reconciliation to the board quarterly.
+6. Access to the register must be limited to the president, the designated finance owner and counsel.
 
 ## 6. Conversion calculation worksheet
 

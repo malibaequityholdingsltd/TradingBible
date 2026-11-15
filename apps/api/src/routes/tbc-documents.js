@@ -27,8 +27,8 @@ router.get('/', async (_req, res, next) => {
 		)));
 		res.setHeader('Cache-Control', 'public, max-age=30, must-revalidate');
 		res.json({
-			issuer: tbcDocumentManifest.issuer || 'TradingBible Holdings, Inc.',
-			operator: tbcDocumentManifest.operator || 'TradingBible Holdings, Inc.',
+			issuer: tbcDocumentManifest.issuer || 'TradingBible Holdings. Inc.',
+			operator: tbcDocumentManifest.operator || 'TradingBible Holdings. Inc.',
 			jurisdiction: tbcDocumentManifest.jurisdiction || 'Delaware, United States',
 			updated: tbcDocumentManifest.updated || 'November 2026',
 			notice: 'TBC is at proposal stage. These documents are not an offer, solicitation, or evidence of a live token sale. Public reading copies are served in the in-app reader only; executed copies and signatory details remain in the private vault.',

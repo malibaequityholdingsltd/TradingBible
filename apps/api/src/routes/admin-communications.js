@@ -54,7 +54,7 @@ router.get('/templates', supabaseAuth, async (req, res, next) => {
 		await assertAdmin(req);
 		res.setHeader('Cache-Control', 'private, no-store');
 		res.json({
-			company: 'TradingBible Holdings, Inc.',
+			company: 'TradingBible Holdings. Inc.',
 			brand: 'TradingBible',
 			logoUrl: process.env.EMAIL_LOGO_URL || `${String(process.env.APP_URL || 'https://tradingbible.app').replace(/\/+$/, '')}/logos/tradingbible-logo.png`,
 			smsConfigured: false,

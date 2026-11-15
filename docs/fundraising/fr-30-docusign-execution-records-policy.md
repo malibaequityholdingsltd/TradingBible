@@ -6,7 +6,7 @@ Only the following persons may prepare or send a fundraising envelope:
 
 | Role | Permission | Limit |
 |---|---|---|
-| Chief executive officer | Prepare, send, void and resend | All fundraising envelopes |
+| President | Prepare, send, void and resend | All fundraising envelopes |
 | Designated finance owner | Prepare and send | Only after written delegation |
 | Counsel | Review and receive copies | No unilateral send unless authorized |
 | Other personnel | None | No access |

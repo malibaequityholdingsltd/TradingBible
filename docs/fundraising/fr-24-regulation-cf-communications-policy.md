@@ -91,7 +91,7 @@ The following statements are prohibited unless counsel has approved the exact la
 
 | Role | Responsibility |
 |---|---|
-| Chief executive officer | Final approval of campaign strategy and material communications |
+| President | Final approval of campaign strategy and material communications |
 | Communications owner | Maintains the register, approves routine posts and manages complaints |
 | Counsel | Reviews regulated statements, testing-the-waters materials and corrections |
 | Intermediary | Reviews campaign page, investor limits, escrow and required disclosures |

@@ -115,7 +115,7 @@ export function PublicPageHead({ eyebrow, title, description, meta = [], actions
           <div className="public-page-head__rail mt-5">
             <Marquee items={railItems} speed={42} separator="·" minWidth={1100} label="Company and fundraising status" />
           </div>
-          {actions && <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:items-center">{actions}</div>}
+          {actions && <div className="at-scope mt-6 flex flex-col gap-2.5 sm:flex-row sm:items-center">{actions}</div>}
           {children}
         </div>
       </div>

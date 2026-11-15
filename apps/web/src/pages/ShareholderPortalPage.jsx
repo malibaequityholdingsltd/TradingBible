@@ -21,7 +21,7 @@ function SignInGate() {
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[var(--at-line)] bg-[var(--at-gold-soft)]"><LockKeyhole className="h-4 w-4 text-[var(--at-gold)]" /></span>
         <div>
           <div className="ir-card-title">Authenticated access required</div>
-          <p className="ir-card-text">The shareholder register is not public. Sign in with the email address associated with your verified record, then request access.</p>
+          <p className="ir-card-text">No shareholder register is published. If you have a verified record, sign in with the email address associated with it, then request access.</p>
         </div>
       </div>
       <div className="ir-actions">
@@ -128,7 +128,7 @@ function PendingState({ portal, reload }) {
             <li>IR confirms the legal name and the identity of the requester.</li>
             <li>IR matches the request to an executed ownership record.</li>
             <li>IR approves access and records the verification decision.</li>
-            <li>Only then does the portal return your own positions and voting history.</li>
+            <li>Only then would any executed position or voting history be returned.</li>
             <li>No position is created, transferred or changed by this request.</li>
           </ol>
           <div className="ir-security-note mt-3"><LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--at-gold)]" /><span>Read-only access. No transfer, issuance, vote execution or ownership change.</span></div>
@@ -235,7 +235,7 @@ function ApprovedPortal({ portal, reload }) {
         <div className="ir-cols-12">
           <div className="ir-span-7">
             <AtPanel eyebrow="Account security" title="Protect access to your record" sub="Privileged records deserve stronger authentication.">
-              <div className="ir-security-note"><ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--at-amber)]" /><span>Enable multi-factor authentication on your TradingBible account. Never share your sign-in code. Shareholder access is read-only and every privileged change is audited.</span></div>
+              <div className="ir-security-note"><ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--at-amber)]" /><span>Enable multi-factor authentication on your TradingBible account. Never share your sign-in code. Shareholder access is read-only and every privileged change is recorded in the audit log.</span></div>
               <div className="ir-sep" />
               <div className="ir-cols-2">
                 <div className="ir-account-card"><div className="ir-kicker">Email</div><div className="text-[12px] font-semibold">{shareholder.email}</div></div>
@@ -281,13 +281,14 @@ function PortalBody({ isAuthed, user, isAuthReady, loading, error, data, reload,
               </AtPanel>
             </div>
             <div className="ir-span-5">
-              <AtPanel eyebrow="Before you request" title="What you will see" sub="A narrow, read-only record.">
+              <AtPanel eyebrow="Before you request" title="What you would see" sub="A narrow, read-only record, when one exists.">
                 <ul className="ir-bullet-list">
-                  <li>Your own active positions and certificate references.</li>
-                  <li>Share class, ownership percentage and recorded issue date.</li>
-                  <li>Vesting terms and a schedule estimate, with the contractual documents controlling.</li>
-                  <li>Your historical voting records and public meeting notices.</li>
+                  <li>Your own active positions and certificate references, if an executed record is linked.</li>
+                  <li>Share class, ownership percentage and recorded issue date, if issued.</li>
+                  <li>Vesting terms and a schedule estimate, if applicable.</li>
+                  <li>Historical voting records and public meeting notices, if any.</li>
                   <li>Public documents only; no other shareholder's data.</li>
+                  <li>No issued-share register or cap table is represented today.</li>
                 </ul>
                 <div className="ir-security-note mt-3"><LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--at-gold)]" /><span>The portal cannot create, transfer, cancel or vote shares. Contact IR if your legal record needs correction.</span></div>
               </AtPanel>
@@ -298,7 +299,7 @@ function PortalBody({ isAuthed, user, isAuthReady, loading, error, data, reload,
         <section className="ir-sec"><AtPanel flush><AtEmpty icon={ShieldCheck} title="Access unavailable" sub="The portal did not return an active access state. Contact investor relations for help." action={<AtButton to="/investors/contact" variant="outline" size="sm">Contact IR</AtButton>} /></AtPanel></section>
       )}
 
-      <section className="ir-sec"><div className="ir-disclosure">Shareholder records are private and read-only. The portal is not a transfer agent, securities intermediary, voting platform or source of a share price. TB is a proposed ticker and the company is not publicly traded. Email {TB_ISSUER.irEmail} for access questions.</div></section>
+      <section className="ir-sec"><div className="ir-disclosure">Shareholder access is private and read-only. No shareholder register is published. The portal is not a transfer agent, securities intermediary, voting platform or source of a share price. TB is a proposed ticker and the company is not publicly traded. Email {TB_ISSUER.irEmail} for access questions.</div></section>
     </>
   );
 }

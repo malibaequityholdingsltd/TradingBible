@@ -7,7 +7,7 @@
 | Legal name of investor | [________________________________] |
 | Entity type | [________________________________] |
 | Jurisdiction of organization or residence | [________________________________] |
-| Principal place of business | [________________________________] |
+| Principal place of business | Registered office only: 8 The Green, Suite B, Dover, Kent County, DE 19901 (service of process; no principal office proven) |
 | Tax residence | [________________________________] |
 | Passport or entity registration number | [________________________________] |
 | Email address | [________________________________] |

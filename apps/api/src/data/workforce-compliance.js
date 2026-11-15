@@ -1,4 +1,4 @@
-// Employer and employee compliance framework for TradingBible Holdings, Inc.
+// Employer and employee compliance framework for TradingBible Holdings. Inc.
 //
 // This file is the source of truth for the admin workforce register, the
 // employee-file checklist and the document pack. It deliberately distinguishes
@@ -8,8 +8,14 @@
 // approved anything.
 
 export const WORKFORCE_PROFILE = Object.freeze({
-  companyName: 'TradingBible Holdings, Inc.',
-  formation: 'Delaware corporation',
+  companyName: 'TradingBible Holdings. Inc.',
+  preferredName: 'TradingBible Holdings, Inc.',
+  nameNote: 'Delaware filed name prints a period after Holdings; the comma form is intended and a certificate of correction is pending.',
+  formation: 'Delaware stock corporation — formed 28 October 2026; file no. 10821679; good standing 3 November 2026',
+  registeredOffice: '8 The Green, Suite B, Dover, Kent County, DE 19901 (registered office/service of process; no staffed office proven)',
+  authorizedStock: '5,000 shares authorized at $0.0001 par; no issued shares or stock ledger in the supplied record',
+  einStatus: 'Not yet issued — no IRS EIN notice in company records',
+  officers: 'Malik Nlem — President, Treasurer and Director; Felicity Nlem — Secretary; Victor Okechukwu — Director. No CEO, CFO, COO or VP is appointed in the initial resolutions.',
   launchDate: '25 December 2026',
   legalEmail: 'legal@tradingbible.app',
   hrEmail: 'people@tradingbible.app',
@@ -42,7 +48,7 @@ export const EMPLOYER_SECTIONS = Object.freeze([
     blurb: 'The company needs a clean legal and records foundation before anyone starts work. Delaware incorporation is the starting point, not the whole answer.',
     items: [
       item('corp.formation', 'Certificate of incorporation and corporate bylaws', 'Keep the filed certificate, bylaws and any amendments in the corporate record. Confirm the registered agent and Delaware registered office at the same time.', 'Filed certificate, bylaws, registered-agent confirmation', 'General Counsel / Corporate Secretary', { launchCritical: true }),
-      item('corp.ein', 'EIN and IRS business tax records', 'Confirm the EIN has been issued and retain the IRS notice. Use the legal entity name and EIN consistently on payroll, tax and bank records.', 'IRS EIN notice, tax account record', 'CFO / Finance'),
+      item('corp.ein', 'EIN and IRS business tax records', 'EIN is not yet issued. Apply through the IRS, retain the CP 575/147C notice, and use the exact filed entity name and EIN consistently on payroll, tax and bank records. Do not state that an EIN is on file until the notice is received.', 'IRS EIN notice, tax account record', 'President / Finance'),
       item('corp.registered-agent', 'Registered agent and Delaware registered office', 'Confirm the registered agent is active, the registered office is correct and the annual franchise tax is calendared.', 'Registered-agent certificate, franchise-tax calendar', 'Corporate Secretary', { launchCritical: true }),
       item('corp.bank-payroll', 'Company bank account and payroll funding process', 'Separate company funds from personal funds. Document who can initiate payroll, who approves it and how a shortfall is handled before payday.', 'Bank mandate, payroll funding procedure, approval matrix', 'CFO / Finance'),
       item('corp.employee-register', 'Accurate employee and contractor register', 'Maintain one register with legal name, work country and region, arrangement, start date, manager, status and exit date. Do not use a hiring catalogue as an employee register.', 'Workforce register export, reconciliation date', 'People Operations'),
@@ -247,7 +253,7 @@ export const JURISDICTIONS = Object.freeze([
     flag: 'US',
     summary: 'Federal rules apply nationwide, then the state and local rules where the employee actually works. Delaware incorporation does not replace state payroll, withholding, insurance or leave registrations.',
     employer: [
-      'Use the company EIN for employment-tax administration and keep the IRS notices.',
+      'Use the company EIN, once issued, for employment-tax administration and keep the IRS notices.',
       'Complete employment-eligibility verification, including Form I-9, and retain the record.',
       'Collect Form W-4 and applicable state withholding elections.',
       'Withhold and remit federal income tax, Social Security and Medicare; pay the employer share.',

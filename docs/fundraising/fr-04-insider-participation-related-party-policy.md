@@ -1,15 +1,15 @@
-> **Status.** Policy and acknowledgment for adoption. It applies to founders, directors, officers, employees, contractors and immediate family members who wish to participate in the round. It does not approve any participation.
+> **Status.** Policy and acknowledgment for adoption. It applies to directors, officers, employees, contractors, holders of more than 5% and immediate family members who wish to participate in the round. It does not approve any participation.
 
 ## 1. Purpose
 
-The company may raise capital from investors who are also founders, directors, officers, employees or affiliates. Those purchases can be legitimate, but they create conflicts, disclosure obligations and the risk that insiders receive better terms or information than outside investors. This policy establishes a single standard: **insiders invest on the same terms as outside investors, with written conflict approval and no preferential information.**
+The company may raise capital from investors who are also directors, officers, employees, holders of more than 5% or affiliates. Those purchases can be legitimate, but they create conflicts, disclosure obligations and the risk that insiders receive better terms or information than outside investors. This policy establishes a single standard: **insiders invest on the same terms as outside investors, with written conflict approval and no preferential information.**
 
 ## 2. Covered persons
 
 This policy applies to:
 
 - each director and officer of the company;
-- each founder and holder of more than 5% of the company’s voting securities;
+- each holder of more than 5% of the company’s voting securities;
 - each employee or contractor who has access to offering terms, investor information or the cap table; and
 - each immediate family member or controlled entity of the above.
 

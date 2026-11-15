@@ -56,7 +56,7 @@ function EditorialPage({ eyebrow, title, description, meta, points, cards, cta, 
 
 const GUIDE_STEPS = [
   ['01', 'Create the account', 'Create a free account, verify your email and finish onboarding. Upgrade to Premium when you want the live terminal, journal, analytics and SI coach; the record never mixes demo results into live performance.', '/signup'],
-  ['02', 'Connect a live account', 'Link a broker or prop firm with read-oriented credentials. The connection names the platform, its scope and the last sync so you always know what is being read.', '/features/broker-integrations'],
+  ['02', 'Connect a live account', 'Link Binance, Bybit or OKX with a read-only API key. The connection names the platform, its scope and the last sync so you always know what is being read. Other providers appear only when their adapter is live and tested.', '/features/broker-integrations'],
   ['03', 'Learn the terminal', 'Use Terminal Pro to search symbols, read a chart, set an alert and move between order flow, heatmaps and TV without losing context.', '/features/trading-overview'],
   ['04', 'Write the first journal entry', 'Let the sync bring in the fills. Add the setup, the thesis and the risk you planned before the trade. The note is the part only you can provide.', '/features/trading-journal'],
   ['05', 'Review with SI', 'Ask SI where risk widened, which setup is working and what to change next. The answer is grounded in the record, not a generic market call.', '/features/si-coach'],
@@ -320,15 +320,16 @@ export const CareersPage = () => {
         actions={<><GoldButton to="#open-roles">See open roles <ArrowRight className="h-4 w-4" /></GoldButton><GhostButton to="/about" className="border px-5 py-3 text-[#e9e7df]">About TradingBible</GhostButton></>}
       />
       <PublicSection id="open-roles" eyebrow="Hiring board" title="Open roles." sub="Applications are reviewed by a person. Compensation is a USD base plus, where listed, a proposed TBC allocation that has not been issued.">
-        {jobs.length === 0 ? (
-          <Card className="rounded-xl p-6 text-center">
-            <Briefcase className="mx-auto h-5 w-5 text-[#d4af37]" />
-            <p className="mt-2 text-sm font-semibold text-[#f0ecdd]">No public roles are open right now.</p>
-            <p className="mt-1 text-xs text-[#8a8577]">Send a note to the team if you have relevant work to show. The board is updated when a role is approved for publication.</p>
-            <GhostButton to="/contact" className="mt-4 border px-4 py-2.5 text-[#e9e7df]">Contact the team</GhostButton>
-          </Card>
-        ) : (
-          <div className="grid gap-3 md:grid-cols-2">
+        <div className="h-[clamp(26rem,70vh,46rem)] overflow-y-auto overscroll-contain pr-1">
+          {jobs.length === 0 ? (
+            <Card className="rounded-xl p-6 text-center">
+              <Briefcase className="mx-auto h-5 w-5 text-[#d4af37]" />
+              <p className="mt-2 text-sm font-semibold text-[#f0ecdd]">No public roles are open right now.</p>
+              <p className="mt-1 text-xs text-[#8a8577]">Send a note to the team if you have relevant work to show. The board is updated when a role is approved for publication.</p>
+              <GhostButton to="/contact" className="mt-4 border px-4 py-2.5 text-[#e9e7df]">Contact the team</GhostButton>
+            </Card>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2">
             {jobs.map((j) => (
               <Card key={j.id} className="flex flex-col rounded-xl p-5">
                 <div className="font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-[#d4af37]">{j.department} · {j.employmentType} · {j.location}</div>
@@ -377,6 +378,7 @@ export const CareersPage = () => {
             ))}
           </div>
         )}
+        </div>
       </PublicSection>
       <PublicSection eyebrow="Hiring standard" title="What we look for.">
         <PublicCheckList items={['Evidence of the work, not just a title', 'Clear written thinking and direct communication', 'Security and member trust treated as product requirements', 'Remote-first discipline with overlap for the team']} />

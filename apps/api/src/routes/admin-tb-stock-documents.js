@@ -68,11 +68,16 @@ router.get('/', supabaseAuth, async (req, res, next) => {
 		const documents = publicTbStockDocuments.map(toAdminTbStockDocument);
 		res.setHeader('Cache-Control', 'private, no-store');
 		res.json({
-			issuer: 'TradingBible Holdings, Inc.',
-			parentCompany: 'TradingBible Holdings, Inc.',
+			issuer: 'TradingBible Holdings. Inc.',
+			preferredName: 'TradingBible Holdings, Inc.',
+			nameNote: 'Filed name prints a period after Holdings; comma form is intended and a certificate of correction is pending.',
+			parentCompany: 'TradingBible Holdings. Inc.',
 			ticker: 'TB',
 			jurisdiction: 'Delaware, United States',
-			updated: 'October 2026',
+			formation: 'Formed 28 October 2026 · File no. 10821679 · Good standing 3 November 2026',
+			authorizedShares: '5,000 shares authorized at $0.0001 par; issued shares not proven',
+			einStatus: 'Not yet issued',
+			updated: 'November 2026',
 			notice: 'Signature-ready TB stock preparation instruments. DocuSign execution does not authorize an IPO, listing, offering, share issuance, or transfer.',
 			documents,
 		});

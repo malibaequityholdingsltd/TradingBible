@@ -13,7 +13,7 @@ export const fundraisingDocuments = Array.isArray(manifest.documents) ? manifest
 
 export const fundraisingLibraryMeta = {
 	title: manifest.title || 'TradingBible confidential fundraising document packet',
-	issuer: manifest.issuer || 'TradingBible Holdings, Inc.',
+	issuer: manifest.issuer || 'TradingBible Holdings. Inc.',
 	jurisdiction: manifest.jurisdiction || 'Delaware, United States',
 	updated: manifest.updated || 'November 2026',
 	version: manifest.version || '1.0',

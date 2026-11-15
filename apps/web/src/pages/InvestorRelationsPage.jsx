@@ -37,7 +37,7 @@ function Hero({ copy, status = [], metrics = null }) {
   return (
     <CapPublicHead
       title={copy.title}
-      sub="The private-company record for TradingBible Holdings, Inc. and the proposed TB ticker. Disclosures are published only after approval; no public market exists."
+      sub={`The private-company record for TradingBible Holdings. Inc. (filed name; intended commercial form: TradingBible Holdings, Inc.) and the proposed TB ticker. A certificate of correction is pending. Disclosures are published only after approval; no public market exists.`}
       aside={(
         <CapRecordCard
           title="Issuer status"
@@ -63,9 +63,10 @@ function OverviewSection({ data, loading, error, reload }) {
       <Hero
         copy={PAGE_COPY.overview}
         status={[
-          ['Issuer entity', 'TradingBible Holdings, Inc.'],
-          ['Owner & operator', 'TradingBible Holdings, Inc.'],
-          ['Target exchange', 'Nasdaq · target only'],
+          ['Issuer entity', TB_ISSUER.issuer],
+          ['Filed name', TB_ISSUER.filedName],
+          ['Formation', `${TB_ISSUER.formation} · File ${TB_ISSUER.fileNumber}`],
+          ['Good standing', '3 November 2026'],
           ['Public market', 'None'],
           ['Last disclosure', formatDate(data?.generatedAt, 'Not available')],
         ]}
@@ -260,7 +261,7 @@ function OverviewSection({ data, loading, error, reload }) {
                 {[
                   ['Authentication', 'Required'],
                   ['Verification', 'Administrator review'],
-                  ['Visible records', 'Own positions only'],
+                  ['Visible records', 'Own records, when issued'],
                   ['Transfers', 'Not enabled'],
                   ['Voting execution', 'Not enabled'],
                 ].map(([label, value]) => (
@@ -357,11 +358,11 @@ function GovernanceSection({ data }) {
   return (
     <>
       <Hero copy={PAGE_COPY.governance} status={[
-        ['Issuer entity', 'TradingBible Holdings, Inc.'],
-        ['Owner & operator', 'TradingBible Holdings, Inc.'],
-        ['Board', 'Not yet constituted'],
+        ['Issuer entity', TB_ISSUER.issuer],
+        ['Filed name', TB_ISSUER.filedName],
+        ['Board', 'Two directors recorded'],
         ['Transfer agent', 'Not engaged'],
-        ['Shareholder portal', 'Verified access'],
+        ['Shareholder portal', 'Read-only · no register'],
       ]} />
       <div className="mt-2.5"><InvestorNotice compact /></div>
 
@@ -369,12 +370,20 @@ function GovernanceSection({ data }) {
         <CapSectionHead title="Corporate structure" action={<AtBadge tone="muted">One entity</AtBadge>} />
         <div className="cap-grid">
           <div className="cap-span-12">
-            <AtPanel className="cap-panel h-full" title="TradingBible Holdings, Inc." action={<AtBadge tone="gold">Issuer, owner & operator</AtBadge>}>
+            <AtPanel className="cap-panel h-full" title="TradingBible Holdings. Inc." action={<AtBadge tone="gold">Issuer, owner & operator</AtBadge>}>
               <div className="ir-list">
                 {[
                   ['Jurisdiction', 'Delaware, United States'],
+                  ['Formation', TB_ISSUER.formation],
+                  ['File number', TB_ISSUER.fileNumber],
+                  ['Good standing', TB_ISSUER.goodStanding],
+                  ['Filed name', TB_ISSUER.filedName],
+                  ['Intended commercial name', TB_ISSUER.preferredName],
+                  ['Name correction', 'Pending — comma form not yet accepted'],
                   ['Role', 'Owner and operator of TradingBible'],
-                  ['Issuer of TB', 'TradingBible Holdings, Inc.'],
+                  ['Authorized stock', TB_ISSUER.authorizedShares],
+                  ['EIN', TB_ISSUER.einStatus],
+                  ['Directors', 'Malik Nlem · Victor Okechukwu'],
                   ['Public market', 'None'],
                   ['Shares', 'Shares, not listed shares'],
                   ['Investor access', 'Private records only'],
@@ -387,7 +396,7 @@ function GovernanceSection({ data }) {
                   </div>
                 ))}
               </div>
-              <p className="ir-field-note mt-3">TradingBible Holdings, Inc. owns and operates TradingBible and is the issuer of TB. It is not a public company.</p>
+              <p className="ir-field-note mt-3">{TB_ISSUER.nameNote} TradingBible Holdings. Inc. owns and operates TradingBible and is the issuer of TB. It is not a public company. The 5,000 authorized shares are the current charter limit; no issued shares or cap table are represented here.</p>
             </AtPanel>
           </div>
         </div>
@@ -426,7 +435,7 @@ function GovernanceSection({ data }) {
                   </div>
                 ))}
               </div>
-              <p className="ir-field-note mt-3">Profiles reflect the current operating structure, not a future board. No board is represented as constituted.</p>
+              <p className="ir-field-note mt-3">Profiles reflect the current operating structure and the recorded corporate appointments, not a future board. No committee charter, independence determination or unrecorded officer title is represented as adopted.</p>
             </AtPanel>
           </div>
           <div className="cap-span-5">

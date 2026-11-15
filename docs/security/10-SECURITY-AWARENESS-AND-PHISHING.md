@@ -23,7 +23,7 @@ Employees are often targeted through phishing, impersonation and social engineer
 - Lock your screen when leaving your device.
 - Verify changes to bank details, payout instructions or supplier payment details through a separate known channel.
 
-Executives follow exactly the same standards. A founder or CEO must not have an unrestricted, unmonitored account that bypasses the programme.
+Executives follow exactly the same standards. An executive or administrator must not have an unrestricted, unmonitored account that bypasses the programme.
 
 ## 3. Onboarding training
 

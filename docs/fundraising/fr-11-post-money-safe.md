@@ -4,7 +4,7 @@
 
 For purposes of this Safe, the following terms have the meanings below.
 
-**“Company”** means TradingBible Holdings, Inc., a corporation organized under the laws of the State of [Delaware].
+**“Company”** means TradingBible Holdings. Inc., a corporation organized under the laws of the State of Delaware.
 
 **“Investor”** means the person identified in Schedule A.
 
@@ -66,7 +66,7 @@ If Schedule A states that the Investor has Pro Rata Rights, then in connection w
 
 The Company represents and warrants to the Investor that, as of the date of this Safe:
 
-1. The Company is a corporation organized under the laws of the State of [Delaware] and, subject to delivery of a current good-standing certificate, is validly existing and in good standing. Counsel must confirm the jurisdiction and good-standing status before this representation is relied upon.
+1. The Company is a corporation organized under the laws of the State of Delaware and, subject to delivery of a current good-standing certificate, is validly existing and in good standing. Counsel must confirm the jurisdiction and good-standing status before this representation is relied upon.
 2. The Company has all corporate power and authority to execute, deliver and perform this Safe and to issue the Conversion Shares.
 3. The execution, delivery and performance of this Safe have been duly authorized by all necessary corporate action, and this Safe constitutes a valid and binding obligation of the Company, enforceable in accordance with its terms, subject to applicable bankruptcy, insolvency and similar laws.
 4. The Company is not in violation of its charter or bylaws in any material respect, and the execution of this Safe does not conflict with any material agreement to which the Company is a party.
@@ -159,7 +159,7 @@ This Safe is governed by the laws of the State of Delaware, without regard to co
 | Valuation Cap (post-money) | US$[__________] |
 | Discount | None |
 | Pro Rata Rights | [Yes / No — threshold US$__________] |
-| Company notice address | TradingBible Holdings, Inc., [registered office on file], Delaware, United States |
+| Company notice address | TradingBible Holdings. Inc., 8 The Green, Suite B, Dover, Kent County, DE 19901, United States |
 | Company email | legal@tradingbible.app |
 | Investor notice address | [__________] |
 | Investor email | [__________] |

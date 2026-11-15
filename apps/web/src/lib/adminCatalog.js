@@ -85,8 +85,12 @@ export const FUNDED_FACTS = {
 
 export const COMPANY_FACTS = {
   brand: 'TradingBible',
-  legalName: 'TradingBible Holdings, Inc.',
-  formation: 'Delaware corporation',
+  legalName: 'TradingBible Holdings. Inc.',
+  preferredName: 'TradingBible Holdings, Inc.',
+  nameNote: 'Filed name prints a period after Holdings; comma form is intended and a certificate of correction is pending.',
+  formation: 'Delaware stock corporation · formed 28 October 2026 · file no. 10821679 · good standing 3 November 2026',
+  authorizedStock: '5,000 shares authorized at $0.0001 par; no issued shares or stock ledger proven',
+  einStatus: 'Not yet issued',
   website: 'https://tradingbible.app',
   launchDate: '25 December 2026',
   launchDateIso: '2026-12-25',

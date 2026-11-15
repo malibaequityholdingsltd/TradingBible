@@ -153,7 +153,7 @@ router.get('/admin/pack.zip', supabaseAuth, async (req, res) => {
     }
     const zip = new JSZip();
     zip.file('README.txt', [
-      'TradingBible Holdings, Inc. — Workforce document pack',
+      'TradingBible Holdings. Inc. — Workforce document pack',
       '',
       'These documents are controlled templates and reference materials. They are not evidence that counsel, a board, an insurer, a payroll provider or a regulator has approved them.',
       'Record adoption, approval references and local addenda in the Workforce compliance register before treating a document as operative.',

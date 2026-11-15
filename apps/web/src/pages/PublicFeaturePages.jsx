@@ -15,8 +15,8 @@ import { IosIcon } from '@/components/IosIcon';
 const FEATURES = {
   'trading-journal': {
     label: 'Trading Journal', eyebrow: 'Product · Journal', title: 'A journal that syncs itself.',
-    summary: 'Connect a live broker or prop firm once. Every fill, balance, note and decision lands in one record — with analytics, reports and a calendar built around it.',
-    stats: [['20+', 'broker and prop connections'], ['5', 'markets in one record'], ['0', 'trades typed by hand']],
+    summary: 'Connect a supported live account once. Every fill, balance, note and decision lands in one record — with analytics, reports and a calendar built around it.',
+    stats: [['3', 'read-only broker adapters'], ['5', 'markets in one record'], ['0', 'trades typed by hand']],
     sections: [
       ['The record writes itself', 'TradingBible imports live trades automatically through read-oriented API keys or OAuth. You do not rebuild your history in a spreadsheet, and demo accounts are never mixed into the record.'],
       ['Notes stay attached to the decision', 'Tag the setup, write the thesis, mark the mistake and keep the screenshot with the trade. The journal is the source SI reads when it reviews your execution.'],
@@ -48,8 +48,8 @@ const FEATURES = {
   },
   'broker-integrations': {
     label: 'Broker Integrations', eyebrow: 'Product · Connections', title: 'Connect once. Keep control.',
-    summary: 'Bring a live brokerage, prop firm or self-custody wallet into the record. Permissions stay read-only, credentials stay encrypted and access can be revoked.',
-    stats: [['6+', 'named broker integrations'], ['Read-only', 'by default'], ['Anytime', 'revoke access']],
+    summary: 'Bring a supported live brokerage or self-custody wallet into the record. Permissions stay read-only, credentials stay encrypted and access can be revoked.',
+    stats: [['3', 'live read-only adapters'], ['Read-only', 'by default'], ['Anytime', 'revoke access']],
     sections: [
       ['Named adapters, not a black box', 'Live read-only API sync is currently available for Binance, Bybit and OKX. Additional broker, OAuth and MT5 bridge integrations appear only when their adapter is live and tested. Self-custody wallets track BTC, ETH, USDC and Solana balances.'],
       ['A permission boundary', 'TradingBible does not place orders, move funds or withdraw from a connected account. A connection is a read path into your record, not a key to your capital.'],
@@ -59,8 +59,8 @@ const FEATURES = {
   },
   'market-data': {
     label: 'Market Data', eyebrow: 'Product · Markets', title: 'Context for the decision.',
-    summary: 'Charts, order flow, heatmaps and TradingBible TV across 250+ symbols and five markets. Live market context sits beside the journal — not in place of it.',
-    stats: [['250+', 'symbols'], ['5', 'market groups'], ['TV', 'live market coverage']],
+    summary: 'Charts, order flow, heatmaps and TradingBible TV across 240+ symbols and five markets. Live market context sits beside the journal — not in place of it.',
+    stats: [['240+', 'symbols'], ['5', 'market groups'], ['TV', 'live market coverage']],
     sections: [
       ['One market surface', 'Move from a watchlist to a chart, an order-flow view or a heatmap without losing the symbol. The terminal is built for the session, not for a marketing screenshot.'],
       ['Context is not a promise', 'No page fabricates a quote, a candle, a volume figure or a performance chart. Market data appears when a real connection or licensed feed supplies it.'],
@@ -82,7 +82,7 @@ const FEATURES = {
   tools: {
     label: 'Tools & Subscriptions', eyebrow: 'Product · Tools', title: 'The math before the click.',
     summary: 'Position sizing, risk/reward, breakeven, expectancy, alerts, backtesting and paper trading. The tools that make a plan testable before capital is exposed.',
-    stats: [['6', 'risk and planning tools'], ['1', 'paper environment'], ['250+', 'symbols for alerts']],
+    stats: [['6', 'risk and planning tools'], ['1', 'paper environment'], ['240+', 'symbols for alerts']],
     sections: [
       ['Plan the risk first', 'Set the stop, size the position, check the reward and see the breakeven before the order. Calculators live beside the journal so the plan is saved with the trade.'],
       ['Test before risking', 'Backtest a rule on historical data, then forward-test it with paper money. The point is not a perfect curve; it is a repeatable process you can review.'],

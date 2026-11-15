@@ -8,7 +8,7 @@ Access to TradingBible systems is granted to a named person or service for a def
 
 ## 2. Scope
 
-This policy applies to founders, directors, employees, contractors, advisers, suppliers and service accounts with access to:
+This policy applies to directors, officers, employees, contractors, advisers, suppliers and service accounts with access to:
 
 - email, identity and password-management systems;
 - source control, CI/CD and production deployment;
@@ -35,7 +35,7 @@ This policy applies to founders, directors, employees, contractors, advisers, su
 | --- | --- |
 | Customer account | Strong password or passwordless sign-in; MFA available; rate-limited login and recovery. |
 | Employee normal account | Company identity provider with MFA. |
-| Administrator / founder privileged account | Phishing-resistant FIDO2 key or device-bound passkey; two keys per person. |
+| Administrator / executive privileged account | Phishing-resistant FIDO2 key or device-bound passkey; two keys per person. |
 | Finance, payroll, banking and payment administration | Phishing-resistant MFA where supported; dual approval for high-impact actions. |
 | Source control and CI/CD | MFA; branch protection; restricted deployment rights. |
 | Service account | Secret stored server-side; scoped; rotated; no interactive login. |

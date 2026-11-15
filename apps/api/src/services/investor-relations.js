@@ -278,9 +278,17 @@ export async function getPublicOverview() {
       volume: 'Not available',
       shareTrading: 'Not active',
       dataLicensing: 'Not active',
-      currentEntity: 'TradingBible Holdings, Inc.',
-      issuer: 'TradingBible Holdings, Inc.',
-      parentCompany: 'TradingBible Holdings, Inc.',
+      currentEntity: 'TradingBible Holdings. Inc.',
+      issuer: 'TradingBible Holdings. Inc.',
+      preferredName: 'TradingBible Holdings, Inc.',
+      nameNote: 'The Delaware certificate prints a period after Holdings. The comma form is intended; a certificate of correction is pending.',
+      parentCompany: 'TradingBible Holdings. Inc.',
+      structure: 'Delaware stock corporation',
+      formation: 'Formed 28 October 2026',
+      fileNumber: '10821679',
+      goodStanding: 'Good standing as of 3 November 2026',
+      authorizedShares: '5,000 shares · $0.0001 par value',
+      einStatus: 'Not yet issued',
     },
     announcements: announcements.rows.map(publicAnnouncement),
     documents: documents.rows.map((row) => publicDocument(row)),
@@ -1576,7 +1584,11 @@ export async function createInvestorContact(body = {}) {
 export async function investorAssistantContext() {
   const overview = await getPublicOverview();
   const lines = [
-    'Issuer, owner and operator: TradingBible Holdings, Inc.',
+    'Filed legal name: TradingBible Holdings. Inc. (period after Holdings). Intended commercial name: TradingBible Holdings, Inc.; a certificate of correction is pending.',
+    'Issuer, owner and operator: TradingBible Holdings. Inc.',
+    'Corporate record: Delaware stock corporation formed 28 October 2026, file no. 10821679, in good standing as of 3 November 2026.',
+    'Authorized stock: 5,000 shares at $0.0001 par value. The supplied record proves no issued shares or stock ledger.',
+    'EIN: not yet issued. D-U-N-S 14-997-6777: reported only, not verified by supplied evidence.',
     'Proposed ticker: TB. Target exchange: Nasdaq. Status: pre-IPO, not publicly traded. No stock price, market capitalization, volume or order book is available.',
     'TB is equity (proposed). TBC is a separate proposed blockchain asset. TBC does not represent equity or ownership in TradingBible.',
     `IPO readiness: ${overview.ipo.complete} of ${overview.ipo.total} milestones complete; ${overview.ipo.inProgress} in progress; ${overview.ipo.blocked} blocked.`,
@@ -1612,10 +1624,10 @@ export function investorAssistantFallback(question, overview) {
     return 'TBC is a separate proposed blockchain asset. It does not represent equity, shares or ownership in TradingBible, and its supply, balances and risks are not combined with TB equity. No TBC sale or transfer is active.';
   }
   if (/\b(publicly traded|publicly listed|listed|listing|exchange|ticker|stock market)\b/.test(q)) {
-    return 'TB is a proposed future ticker. It is not publicly traded, and no shares can be bought or sold through TradingBible. TradingBible Holdings, Inc. owns and operates TradingBible and is the securities issuer. No share price, market capitalisation, volume, Nasdaq approval or regulatory approval is available because TB is not publicly traded.';
+    return 'TB is a proposed future ticker. It is not publicly traded, and no shares can be bought or sold through TradingBible. TradingBible Holdings. Inc. owns and operates TradingBible and is the securities issuer. No share price, market capitalisation, volume, Nasdaq approval or regulatory approval is available because TB is not publicly traded.';
   }
   if (/\b(inc\b|llc|entity|issuer|formed|incorporat)\b/.test(q)) {
-    return 'TradingBible Holdings, Inc. owns and operates TradingBible and is the securities issuer. TB is not publicly traded and has no Nasdaq listing or registration statement.';
+    return 'The Delaware filed name is TradingBible Holdings. Inc. (period after Holdings); the comma form TradingBible Holdings, Inc. is the intended commercial name and a certificate of correction is pending. The company was formed 28 October 2026 (file no. 10821679) and was in good standing on 3 November 2026. It has 5,000 authorized shares at $0.0001 par; no issued shares or stock ledger are proven. The EIN is not yet issued. TB is not publicly traded and has no Nasdaq listing or registration statement.';
   }
   if (/\b(ipo|nasdaq|milestone)\b/.test(q)) {
     return `IPO preparation is not complete. ${overview.ipo.complete} of ${overview.ipo.total} milestones are complete, ${overview.ipo.inProgress} are in progress and ${overview.ipo.blocked} are blocked. No Nasdaq listing or regulatory approval is implied.`;

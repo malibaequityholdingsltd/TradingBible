@@ -1,6 +1,6 @@
-# TRADINGBIBLE HOLDINGS, INC. — OFFBOARDING AND ACCESS-REVOCATION PACK
+# TRADINGBIBLE HOLDINGS. INC. — OFFBOARDING AND ACCESS-REVOCATION PACK
 
-**Controlled template · Version 1.0 · 12 November 2026**
+**Controlled template · Version 1.1 · 14 November 2026**
 
 > **Controlled template — local-law review required.** This pack is an operating procedure. It is not a termination notice or legal advice. Follow the notice, consultation, final-pay, works-council and documentation requirements of the employee’s work location. Do not use the same process for a resignation, a redundancy, a performance dismissal and a misconduct termination.
 

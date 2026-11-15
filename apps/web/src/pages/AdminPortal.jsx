@@ -3401,7 +3401,7 @@ export function AdminJobs() {
         )}
       >
         <p className="mt-2 max-w-2xl text-[11px] leading-relaxed text-[var(--at-mut)]">
-          Hiring for TradingBible Holdings, Inc. Academy learners and instructors are product users, not employees. Applications are processed through this desk only.
+          Hiring for TradingBible Holdings. Inc. (filed name; intended commercial form: TradingBible Holdings, Inc.). Academy learners and instructors are product users, not employees. Applications are processed through this desk only.
         </p>
       </AtPageBar>
       <div className="mb-4 mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -4908,7 +4908,7 @@ const COMPANY_SECTIONS_UI = [
   { id: 'holdings', label: 'Holdings · TB / TBC', icon: Building2, blurb: 'Parent holding company, official operator, requested ticker, and the binding TB ≠ TBC distinction.' },
   { id: 'brand', label: 'Brand System', icon: Palette, blurb: 'Colors, logo, typography, email shell, socials — the full look.' },
   { id: 'contacts', label: 'Contacts', icon: Mail, blurb: 'Website and every official inbox.' },
-  { id: 'leadership', label: 'Leadership', icon: Users, blurb: 'Founder, VP, quant, team profile, adviser stance.' },
+  { id: 'leadership', label: 'Leadership', icon: Users, blurb: 'Statutory officers, SI research function, team profile, adviser stance.' },
   { id: 'markets', label: 'Markets & MT5', icon: BarChart3, blurb: 'Coverage, data feeds, MT5 bridge endpoints, liquidity doctrine.' },
   { id: 'product', label: 'Product & Stack', icon: Cpu, blurb: 'Live version, tech stack, every surface, terminal IP, auth.' },
   { id: 'monetization', label: 'Money', icon: Wallet, blurb: 'Plans, revenue lines, traction truth, payout rails.' },

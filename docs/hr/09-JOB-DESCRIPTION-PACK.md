@@ -1,6 +1,6 @@
-# TRADINGBIBLE HOLDINGS, INC. — JOB DESCRIPTION PACK
+# TRADINGBIBLE HOLDINGS. INC. — JOB DESCRIPTION PACK
 
-**Controlled template · Version 1.0 · 12 November 2026**
+**Controlled template · Version 1.1 · 14 November 2026**
 
 > **Controlled template — counsel review and local adoption required.** This document is a company policy or reference framework. It is not an executed agreement, a legal opinion, a regulatory approval, a payroll filing, an insurance policy or a promise of a benefit. Record adoption and approval references in the Workforce Compliance Register before treating it as operative. Local addenda control where they are more protective.
 
@@ -93,7 +93,7 @@ Before hiring, confirm the work country and state/region, employment or contract
 
 **Role description**
 
-Own the platform architecture, engineering operating model, reliability targets and security roadmap across the terminal, journal, broker integrations, AI coach and data platform. Partner with the founder on build-versus-buy decisions and the staged TBC technical programme.
+Own the platform architecture, engineering operating model, reliability targets and security roadmap across the terminal, journal, broker integrations, AI coach and data platform. Partner with the President on build-versus-buy decisions and the staged TBC technical programme.
 
 Compensation: competitive USD base plus a discretionary proposed TBC allocation. TBC is not issued; any allocation is subject to legal, technical and security approval.
 
@@ -167,7 +167,7 @@ Any fiat salary, bonus, equity, option or benefit requires a written approval an
 
 **Role description**
 
-Drive the founder operating system: priorities, decision memos, board and investor materials, cross-team follow-through and sensitive special projects. Keep legal, product and engineering gates visible and sequenced.
+Drive the President’s operating system: priorities, decision memos, board and investor materials, cross-team follow-through and sensitive special projects. Keep legal, product and engineering gates visible and sequenced.
 
 Compensation: competitive USD base plus a discretionary proposed TBC allocation. TBC is not issued; any allocation is subject to legal, technical and security approval.
 

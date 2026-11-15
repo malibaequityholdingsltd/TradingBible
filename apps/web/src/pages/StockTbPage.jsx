@@ -74,9 +74,13 @@ function MarketPanel({ data, loading }) {
 function IssuerFacts({ data }) {
   const rows = [
     ['Issuer entity', TB_ISSUER.issuer],
-    ['Owner & operator', TB_ISSUER.parentCompany],
+    ['Filed name', TB_ISSUER.filedName],
+    ['Formation', `${TB_ISSUER.formation} · File ${TB_ISSUER.fileNumber}`],
+    ['Good standing', '3 November 2026'],
     ['Jurisdiction', TB_ISSUER.jurisdiction],
     ['Structure', TB_ISSUER.structure],
+    ['Authorized stock', TB_ISSUER.authorizedShares],
+    ['EIN', TB_ISSUER.einStatus],
     ['Ticker', 'TB · proposed'],
     ['Target exchange', 'Nasdaq · target only'],
     ['Fiscal year', TB_ISSUER.fiscalYear],
@@ -97,6 +101,7 @@ function IssuerFacts({ data }) {
         <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--at-amber)]" />
         <span>{TB_ISSUER.tickerStatus}. {TB_ISSUER.exchangeStatus}.</span>
       </div>
+      <p className="ir-field-note mt-2">{TB_ISSUER.nameNote} The EIN is not yet issued; the authorized shares are a charter limit, not proof of issued shares.</p>
     </AtPanel>
   );
 }

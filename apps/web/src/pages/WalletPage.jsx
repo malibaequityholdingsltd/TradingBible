@@ -1663,7 +1663,7 @@ export default function WalletPage() {
           <div className="wv-card-foot" style={{ borderTop: '1px solid var(--at-line-soft)', paddingLeft: 0, paddingRight: 0 }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
               <ShieldCheck className="h-3.5 w-3.5" style={{ color: 'var(--at-green)' }} />
-              Operated by TradingBible Holdings, Inc. TBC is the official in-app currency · deposits via Stripe · payouts via Stripe Connect · crypto is non-custodial.
+              Operated by TradingBible Holdings. Inc. (filed name; intended commercial form: TradingBible Holdings, Inc.). TBC is the proposed in-app currency · deposits via Stripe · payouts via Stripe Connect · crypto is non-custodial.
             </span>
           </div>
         </div>

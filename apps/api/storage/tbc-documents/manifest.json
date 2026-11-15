@@ -1,8 +1,22 @@
 {
   "title": "TradingBible TBC controlled document library",
-  "issuer": "TradingBible Holdings, Inc.",
-  "operator": "TradingBible Holdings, Inc.",
+  "issuer": "TradingBible Holdings. Inc.",
+  "operator": "TradingBible Holdings. Inc.",
+  "legalNameNote": "TradingBible Holdings. Inc. is the exact name printed on the Delaware certificate of incorporation. The comma form \u201cTradingBible Holdings, Inc.\u201d is a commercial name and is not the filed name until a Delaware certificate of correction is accepted.",
+  "delawareFileNumber": "10821679",
   "jurisdiction": "Delaware, United States",
+  "registeredOffice": "8 The Green, Suite B, Dover, Kent County, Delaware 19901",
+  "registeredAgent": "Northwest Registered Agent Service, Inc.",
+  "authorizedShares": "5,000 shares, par value US$0.0001 per share",
+  "officers": [
+    "Malik Nlem \u2014 President, Treasurer and Director",
+    "Secretary \u2014 name withheld in the public record",
+    "Victor Okechukwu \u2014 Director"
+  ],
+  "ein": "Not issued / not in the controlled record",
+  "duns": "14-997-6777 (reported only; verify with D&B before reliance)",
+  "officerNote": "The supplied initial resolutions do not appoint a Chief Executive Officer, Chief Financial Officer, Chief Operating Officer or Vice President. No such title is used in these instruments.",
+  "notice": "These are controlled proposal, review and execution-form instruments. No public offering is open, no funds are requested, and no SAFE, equity or token terms are approved. No TBC token is issued, sold or offered. Ownership is not represented without a stock ledger and issued-share records. Signature fields remain unsigned unless a completed signature record exists in the controlled record.",
   "updated": "November 2026",
   "source": "TBC corrected-layout and signature-field packages",
   "documents": [
@@ -18,11 +32,11 @@
       "classification": "Public summary",
       "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer representative + professional reviewer",
-      "signatureStatus": "Signature required",
+      "signatureStatus": "Not executable \u2014 proposal/review copy",
       "pdf": "pdf/tbc-whitepaper.pdf",
       "docx": "docx/tbc-whitepaper.docx",
-      "pdfBytes": 136708,
-      "docxBytes": 171162
+      "pdfBytes": 138191,
+      "docxBytes": 171208
     },
     {
       "slug": "tbc-supply-allocation-vesting",
@@ -36,11 +50,11 @@
       "classification": "Public summary",
       "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer representative + professional reviewer",
-      "signatureStatus": "Signature required",
+      "signatureStatus": "Not executable \u2014 proposal/review copy",
       "pdf": "pdf/tbc-supply-allocation-vesting.pdf",
       "docx": "docx/tbc-supply-allocation-vesting.docx",
-      "pdfBytes": 134762,
-      "docxBytes": 170682
+      "pdfBytes": 135120,
+      "docxBytes": 170728
     },
     {
       "slug": "tbc-purchases-payments-custody-refunds",
@@ -54,11 +68,11 @@
       "classification": "Public summary",
       "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer representative + professional reviewer",
-      "signatureStatus": "Signature required",
+      "signatureStatus": "Not executable \u2014 proposal/review copy",
       "pdf": "pdf/tbc-purchases-payments-custody-refunds.pdf",
       "docx": "docx/tbc-purchases-payments-custody-refunds.docx",
-      "pdfBytes": 126103,
-      "docxBytes": 170777
+      "pdfBytes": 127018,
+      "docxBytes": 170818
     },
     {
       "slug": "tbc-jurisdictions-purchaser-eligibility",
@@ -72,11 +86,11 @@
       "classification": "Public summary",
       "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer representative + professional reviewer",
-      "signatureStatus": "Signature required",
+      "signatureStatus": "Not executable \u2014 proposal/review copy",
       "pdf": "pdf/tbc-jurisdictions-purchaser-eligibility.pdf",
       "docx": "docx/tbc-jurisdictions-purchaser-eligibility.docx",
-      "pdfBytes": 130402,
-      "docxBytes": 170616
+      "pdfBytes": 132074,
+      "docxBytes": 170652
     },
     {
       "slug": "tbc-brokerage-platform-separation",
@@ -90,29 +104,29 @@
       "classification": "Public summary",
       "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer representative + professional reviewer",
-      "signatureStatus": "Signature required",
+      "signatureStatus": "Not executable \u2014 proposal/review copy",
       "pdf": "pdf/tbc-brokerage-platform-separation.pdf",
       "docx": "docx/tbc-brokerage-platform-separation.docx",
-      "pdfBytes": 135124,
-      "docxBytes": 170848
+      "pdfBytes": 136679,
+      "docxBytes": 170893
     },
     {
-      "slug": "sole-stockholder-consent-director-authorization",
+      "slug": "stockholder-written-consent-director-authorization",
       "number": "01",
-      "title": "Sole Stockholder Written Consent and Director Authorization",
+      "title": "Stockholder Written Consent and Director Authorization \u2014 Controlled Template",
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Corporate authority",
-      "summary": "Authorizes investigation and professional engagement; does not authorize a public sale.",
-      "status": "Execution copy \u2014 signature block open",
+      "summary": "Authorizes investigation and professional engagement; does not authorize a public sale or token issuance. Stockholder capacity must be verified against the stock ledger.",
+      "status": "EXECUTION COPY \u2014 NOT EXECUTED; stockholder capacity unverified",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Signature required",
-      "pdf": "pdf/sole-stockholder-consent-director-authorization.pdf",
-      "docx": "docx/sole-stockholder-consent-director-authorization.docx",
-      "pdfBytes": 112942,
-      "docxBytes": 169668
+      "signatureStatus": "Not executable until the stock ledger and issued-share records are verified",
+      "pdf": "pdf/stockholder-written-consent-director-authorization.pdf",
+      "docx": "docx/stockholder-written-consent-director-authorization.docx",
+      "pdfBytes": 119474,
+      "docxBytes": 169904
     },
     {
       "slug": "corporate-issuer-beneficial-ownership-profile",
@@ -120,17 +134,17 @@
       "title": "Corporate Issuer and Beneficial Ownership Profile",
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Corporate authority",
-      "summary": "Issuer identity, ownership, registered office and corporate-record certification inputs.",
-      "status": "Execution copy \u2014 signature block open",
+      "summary": "Issuer identity, registered office and corporate-record certification inputs. Ownership is not represented; no stock ledger or issued shares were supplied.",
+      "status": "CONTROLLED RECORD \u2014 ownership not represented; certification incomplete",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
       "signatureFields": "Issuer / director + reviewer / custodian (instrument-specific)",
-      "signatureStatus": "Signature required",
+      "signatureStatus": "Not certifiable until ownership is verified against the stock ledger",
       "pdf": "pdf/corporate-issuer-beneficial-ownership-profile.pdf",
       "docx": "docx/corporate-issuer-beneficial-ownership-profile.docx",
-      "pdfBytes": 114852,
-      "docxBytes": 169662
+      "pdfBytes": 116578,
+      "docxBytes": 169895
     },
     {
       "slug": "instruction-engagement-regulatory-counsel",
@@ -139,7 +153,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Corporate authority",
       "summary": "Scope of counsel engagement and information instructions for the TBC review.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -147,8 +161,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/instruction-engagement-regulatory-counsel.pdf",
       "docx": "docx/instruction-engagement-regulatory-counsel.docx",
-      "pdfBytes": 114897,
-      "docxBytes": 169625
+      "pdfBytes": 116312,
+      "docxBytes": 169623
     },
     {
       "slug": "tbc-whitepaper-instrument",
@@ -157,7 +171,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Token & economics",
       "summary": "The controlled whitepaper instrument covering utility, network architecture and release gates.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -165,7 +179,7 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/tbc-whitepaper-instrument.pdf",
       "docx": "docx/tbc-whitepaper-instrument.docx",
-      "pdfBytes": 122184,
+      "pdfBytes": 123396,
       "docxBytes": 170227
     },
     {
@@ -175,7 +189,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Token & economics",
       "summary": "Supply policy, illustrative allocation and proposed vesting controls.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -183,8 +197,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/tokenomics-vesting-instrument.pdf",
       "docx": "docx/tokenomics-vesting-instrument.docx",
-      "pdfBytes": 117816,
-      "docxBytes": 169752
+      "pdfBytes": 118518,
+      "docxBytes": 169749
     },
     {
       "slug": "offering-purchaser-agreement",
@@ -193,7 +207,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Token & economics",
       "summary": "Purchaser agreement and offering terms, subject to legal and regulatory clearance.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -201,8 +215,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/offering-purchaser-agreement.pdf",
       "docx": "docx/offering-purchaser-agreement.docx",
-      "pdfBytes": 117294,
-      "docxBytes": 169764
+      "pdfBytes": 118307,
+      "docxBytes": 169761
     },
     {
       "slug": "digital-asset-risk-factor-disclosure",
@@ -211,7 +225,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Token & economics",
       "summary": "Risk factors for token utility, liquidity, custody, technology and regulatory treatment.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -219,8 +233,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/digital-asset-risk-factor-disclosure.pdf",
       "docx": "docx/digital-asset-risk-factor-disclosure.docx",
-      "pdfBytes": 114362,
-      "docxBytes": 169644
+      "pdfBytes": 115480,
+      "docxBytes": 169641
     },
     {
       "slug": "treasury-use-proceeds-financial-controls",
@@ -229,7 +243,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Operations & controls",
       "summary": "Segregation of funds, treasury authorization, reporting and proceeds controls.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -237,7 +251,7 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/treasury-use-proceeds-financial-controls.pdf",
       "docx": "docx/treasury-use-proceeds-financial-controls.docx",
-      "pdfBytes": 111878,
+      "pdfBytes": 112212,
       "docxBytes": 169557
     },
     {
@@ -247,7 +261,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Compliance",
       "summary": "Customer due diligence, beneficial ownership, sanctions and escalation controls.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -255,8 +269,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/aml-cdd-sanctions-framework.pdf",
       "docx": "docx/aml-cdd-sanctions-framework.docx",
-      "pdfBytes": 114860,
-      "docxBytes": 169642
+      "pdfBytes": 115489,
+      "docxBytes": 169637
     },
     {
       "slug": "privacy-personal-data-protection-notice",
@@ -265,7 +279,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Compliance",
       "summary": "Notice covering personal data collected in the proposed distribution process.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -273,8 +287,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/privacy-personal-data-protection-notice.pdf",
       "docx": "docx/privacy-personal-data-protection-notice.docx",
-      "pdfBytes": 111503,
-      "docxBytes": 169520
+      "pdfBytes": 112723,
+      "docxBytes": 169518
     },
     {
       "slug": "jurisdiction-access-sales-restrictions-register",
@@ -283,7 +297,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Compliance",
       "summary": "Controlled register of market access decisions and sales restrictions.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -291,8 +305,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/jurisdiction-access-sales-restrictions-register.pdf",
       "docx": "docx/jurisdiction-access-sales-restrictions-register.docx",
-      "pdfBytes": 114939,
-      "docxBytes": 169626
+      "pdfBytes": 115815,
+      "docxBytes": 169627
     },
     {
       "slug": "regulatory-classification-filing-decision",
@@ -301,7 +315,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Compliance",
       "summary": "Decision record for classification, filings and jurisdictional approaches.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -309,8 +323,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/regulatory-classification-filing-decision.pdf",
       "docx": "docx/regulatory-classification-filing-decision.docx",
-      "pdfBytes": 111811,
-      "docxBytes": 169533
+      "pdfBytes": 112743,
+      "docxBytes": 169538
     },
     {
       "slug": "token-bridge-blockchain-technical-spec",
@@ -319,7 +333,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Token & economics",
       "summary": "Technical design for token issuance, bridge accounting and chain migration.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -327,8 +341,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/token-bridge-blockchain-technical-spec.pdf",
       "docx": "docx/token-bridge-blockchain-technical-spec.docx",
-      "pdfBytes": 114654,
-      "docxBytes": 169752
+      "pdfBytes": 115394,
+      "docxBytes": 169751
     },
     {
       "slug": "security-incident-management-recovery",
@@ -337,7 +351,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Operations & controls",
       "summary": "Incident response, escalation, recovery and evidence-preservation controls.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -345,8 +359,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/security-incident-management-recovery.pdf",
       "docx": "docx/security-incident-management-recovery.docx",
-      "pdfBytes": 114171,
-      "docxBytes": 169559
+      "pdfBytes": 115091,
+      "docxBytes": 169557
     },
     {
       "slug": "conflicts-insider-conduct-market-integrity",
@@ -355,7 +369,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Compliance",
       "summary": "Conflicts review, insider conduct, market integrity and disclosure controls.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -363,8 +377,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/conflicts-insider-conduct-market-integrity.pdf",
       "docx": "docx/conflicts-insider-conduct-market-integrity.docx",
-      "pdfBytes": 112380,
-      "docxBytes": 169525
+      "pdfBytes": 113333,
+      "docxBytes": 169522
     },
     {
       "slug": "regulatory-correspondence-submission-letter",
@@ -373,7 +387,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Compliance",
       "summary": "Controlled correspondence and submission letter for regulatory engagement.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -381,8 +395,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/regulatory-correspondence-submission-letter.pdf",
       "docx": "docx/regulatory-correspondence-submission-letter.docx",
-      "pdfBytes": 111994,
-      "docxBytes": 169453
+      "pdfBytes": 113616,
+      "docxBytes": 169479
     },
     {
       "slug": "token-sale-launch-authorization-control",
@@ -391,7 +405,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Corporate authority",
       "summary": "Launch authorization gate requiring legal, technical, treasury and operational sign-off.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -399,8 +413,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/token-sale-launch-authorization-control.pdf",
       "docx": "docx/token-sale-launch-authorization-control.docx",
-      "pdfBytes": 116915,
-      "docxBytes": 169578
+      "pdfBytes": 118417,
+      "docxBytes": 169580
     },
     {
       "slug": "regulatory-exhibits-evidence-index",
@@ -409,7 +423,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Corporate authority",
       "summary": "Index of exhibits, evidence and supporting records for the TBC file.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -417,8 +431,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/regulatory-exhibits-evidence-index.pdf",
       "docx": "docx/regulatory-exhibits-evidence-index.docx",
-      "pdfBytes": 116131,
-      "docxBytes": 169484
+      "pdfBytes": 117214,
+      "docxBytes": 169504
     },
     {
       "slug": "direct-website-token-distribution-procedure",
@@ -427,7 +441,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Operations & controls",
       "summary": "Operating procedure for any permitted direct website distribution.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -435,8 +449,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/direct-website-token-distribution-procedure.pdf",
       "docx": "docx/direct-website-token-distribution-procedure.docx",
-      "pdfBytes": 113688,
-      "docxBytes": 169590
+      "pdfBytes": 114326,
+      "docxBytes": 169587
     },
     {
       "slug": "website-tbc-sale-terms-conditions",
@@ -445,7 +459,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Operations & controls",
       "summary": "Sale terms, purchaser acknowledgments and website conditions.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -453,7 +467,7 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/website-tbc-sale-terms-conditions.pdf",
       "docx": "docx/website-tbc-sale-terms-conditions.docx",
-      "pdfBytes": 114188,
+      "pdfBytes": 115312,
       "docxBytes": 169666
     },
     {
@@ -463,7 +477,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Compliance",
       "summary": "Disclosure, marketing and communications standards for the website.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -471,8 +485,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/digital-asset-website-disclosure-marketing.pdf",
       "docx": "docx/digital-asset-website-disclosure-marketing.docx",
-      "pdfBytes": 112948,
-      "docxBytes": 169514
+      "pdfBytes": 113923,
+      "docxBytes": 169515
     },
     {
       "slug": "customer-complaints-refunds-dispute-resolution",
@@ -481,7 +495,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Operations & controls",
       "summary": "Complaint handling, refund assessment and dispute-resolution procedure.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -489,8 +503,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/customer-complaints-refunds-dispute-resolution.pdf",
       "docx": "docx/customer-complaints-refunds-dispute-resolution.docx",
-      "pdfBytes": 111761,
-      "docxBytes": 169527
+      "pdfBytes": 112917,
+      "docxBytes": 169526
     },
     {
       "slug": "payments-custody-wallets-escrow-governance",
@@ -499,7 +513,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Operations & controls",
       "summary": "Payment providers, custody, wallet controls, escrow and reconciliation.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -507,8 +521,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/payments-custody-wallets-escrow-governance.pdf",
       "docx": "docx/payments-custody-wallets-escrow-governance.docx",
-      "pdfBytes": 114551,
-      "docxBytes": 169575
+      "pdfBytes": 115687,
+      "docxBytes": 169573
     },
     {
       "slug": "regulatory-filing-register-application-control",
@@ -517,7 +531,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Compliance",
       "summary": "Register of filings, applications, owners and evidence status.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -525,8 +539,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/regulatory-filing-register-application-control.pdf",
       "docx": "docx/regulatory-filing-register-application-control.docx",
-      "pdfBytes": 113999,
-      "docxBytes": 169471
+      "pdfBytes": 115148,
+      "docxBytes": 169470
     },
     {
       "slug": "tbc-utility-ecosystem-integration-schedule",
@@ -535,7 +549,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Token & economics",
       "summary": "Utility integration schedule and dependencies for future ecosystem services.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -543,8 +557,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/tbc-utility-ecosystem-integration-schedule.pdf",
       "docx": "docx/tbc-utility-ecosystem-integration-schedule.docx",
-      "pdfBytes": 123407,
-      "docxBytes": 170020
+      "pdfBytes": 124109,
+      "docxBytes": 170017
     },
     {
       "slug": "execution-approval-supporting-evidence-register",
@@ -553,7 +567,7 @@
       "subtitle": "Corporate & digital asset governance \u00b7 controlled instrument",
       "category": "Corporate authority",
       "summary": "Approval, signature, version and evidence register for all instruments.",
-      "status": "Execution copy \u2014 signature block open",
+      "status": "EXECUTION COPY \u2014 signature block open",
       "visibility": "internal",
       "classification": "Confidential \u2014 internal / counsel",
       "version": "Corrected layout \u00b7 November 2026",
@@ -561,8 +575,8 @@
       "signatureStatus": "Signature required",
       "pdf": "pdf/execution-approval-supporting-evidence-register.pdf",
       "docx": "docx/execution-approval-supporting-evidence-register.docx",
-      "pdfBytes": 114428,
-      "docxBytes": 169490
+      "pdfBytes": 115752,
+      "docxBytes": 169529
     }
   ]
 }

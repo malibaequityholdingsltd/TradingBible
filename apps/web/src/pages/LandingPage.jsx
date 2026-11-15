@@ -10,7 +10,7 @@ import { PLANS, translatePlan } from '@/lib/mockData';
 import Footer from '@/components/Footer';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { BrandName, TESTIMONIALS, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
+import { BrandName, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { homeRouteForUser } from '@/lib/homeRoute';
@@ -27,14 +27,14 @@ import '@/styles/landing-page.css';
 const LOGO = TRADINGBIBLE_LOGO;
 
 const STATS = [
-  { value: '20+', count: 20, suffix: '+', label: 'Broker & prop connections', note: 'Live accounts, synced' },
+  { value: '3', count: 3, label: 'Read-only broker adapters', note: 'Binance · Bybit · OKX' },
   { value: '347', count: 347, label: 'Academy lessons', note: 'Four schools · 17 programmes' },
   { value: '24/7', label: 'SI coaching', note: 'Grounded in your history' },
   { value: '0 TBC', label: 'Tokens issued', note: '100M max proposed' },
 ];
 
 const LOOP = [
-  { icon: Plug, title: 'Connect', body: 'Brokers, prop firms and wallets. Live accounts only — never demos.' },
+  { icon: Plug, title: 'Connect', body: 'Broker accounts and self-custody wallets. Live accounts only — never demos.' },
   { icon: BookOpen, title: 'Record', body: 'Every fill, balance, note and decision lands in one journal.' },
   { icon: Bot, title: 'Review', body: 'SI grades the decision, not just the result, against your own record.' },
   { icon: Target, title: 'Repeat', body: 'Leave with one focus for the next session — not another signal.' },
@@ -50,7 +50,7 @@ const REASONS = [
 const MODULES = [
   {
     icon: BarChart3, tag: 'TERMINAL', title: 'A workstation, not a watchlist',
-    body: 'Pro-grade charts, order flow and five markets in one desk — with TradingBible TV and 250+ symbols for context.',
+    body: 'Pro-grade charts, order flow and five markets in one desk — with TradingBible TV and 240+ symbols for context.',
     to: '/app/terminal-pro', link: 'Open the terminal',
   },
   {
@@ -303,11 +303,11 @@ export default function LandingPage() {
               <LaunchPill />
               <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#d4af37] ${isLight ? 'border-[#d4af37]/45 bg-[#d4af37]/10' : 'border-[#d4af37]/30 bg-[#0a0a0f]/70'}`}>
                 <span className="h-1.5 w-1.5 rounded-full bg-[#d4af37]" />
-                Terminal · Journal · Funded · Academy · TBC
+                Terminal · Journal · Academy · TBC
               </span>
             </motion.div>
             <motion.h1 initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65, delay: 0.06 }} className="mt-6 max-w-3xl text-balance text-[2.55rem] font-extrabold leading-[0.96] tracking-[-0.045em] sm:text-[3.8rem] lg:text-[4.45rem]">
-              Trade like the 1%.<br /><span className="tb-gold-text">Review like a fund.</span>
+              Trade with a record.<br /><span className="tb-gold-text">Review with evidence.</span>
             </motion.h1>
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.14 }} className="mt-6 max-w-xl text-pretty text-base leading-relaxed text-[#b8b3a3] sm:text-lg">
               TradingBible turns live trades into a record you can defend. Connect your accounts, journal every decision, and let SI show you the pattern behind the result.
@@ -484,7 +484,7 @@ export default function LandingPage() {
                 ))}
               </div>
               <p className="mt-4 text-[10px] leading-relaxed text-[#8a8577]">
-                TradingBible is owned and operated by TradingBible Holdings, Inc., a Delaware corporation. TB is a proposed ticker, not a reserved or approved listing.
+                TradingBible is owned and operated by TradingBible Holdings. Inc., the Delaware filed name (intended commercial form: TradingBible Holdings, Inc.; a certificate of correction is pending). The company was formed 28 October 2026 (file no. 10821679) and was in good standing on 3 November 2026. The EIN is not yet issued. TB is a proposed ticker, not a reserved or approved listing.
               </p>
             </div>
             <div className="grid gap-2.5 sm:grid-cols-2">
@@ -540,16 +540,17 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto w-full max-w-[84rem] px-5 py-14 sm:px-8 sm:py-20">
-        <Head center eyebrow="From the desk" title="Traders who wanted a record, not a highlight reel." sub="Individual experiences from active TradingBible users. Not investment advice, and never a promise of performance." />
+        <Head center eyebrow="Product principles" title="Built for the record, not the highlight reel." sub="Three working principles. No user result, rating or performance is implied." />
         <div className="mt-8 grid gap-3 md:grid-cols-3">
-          {TESTIMONIALS.map((tm) => (
-            <Card key={tm.name} hover className="rounded-xl p-5">
-              <div className="font-serif text-3xl leading-none text-[#d4af37]/50">“</div>
-              <p className="-mt-1 text-sm leading-relaxed text-[#c9c4b4]">{t(tm.qk, null, tm.quote)}</p>
-              <div className="mt-4 flex items-center gap-2.5 border-t border-white/[0.06] pt-3">
-                <span className="grid h-8 w-8 place-items-center rounded-full border border-[#d4af37]/25 bg-[#d4af37]/10 text-[11px] font-bold text-[#e8c95a]">{tm.name.trim().charAt(0)}</span>
-                <div><div className="text-xs font-semibold text-[#f0ecdd]">{tm.name}</div><div className="text-[10px] text-[#8a8577]">{t(tm.rk, null, tm.role)}</div></div>
-              </div>
+          {[
+            { n: '01', title: 'One record', body: 'Chart, journal and review stay connected, so the decision and its outcome live together.' },
+            { n: '02', title: 'Honest states', body: 'Simulated and closed-market data are labelled. Empty and error states say what happened instead of hiding it.' },
+            { n: '03', title: 'Practice first', body: 'Paper and challenge work stays separate from live records. Funding and profit are never promised.' },
+          ].map((item) => (
+            <Card key={item.n} hover className="rounded-xl p-5">
+              <span className="font-mono text-[10px] font-bold tracking-[0.18em] text-[#d4af37]">{item.n}</span>
+              <h3 className="mt-2 text-base font-bold text-[#f0ecdd]">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-[#c9c4b4]">{item.body}</p>
             </Card>
           ))}
         </div>

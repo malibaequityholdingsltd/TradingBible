@@ -137,7 +137,11 @@ html.light .pm-backdrop__fade {
 .pm-field--team { --pm-field-a: 232, 201, 90; --pm-field-b: 150, 190, 255; }
 
 .pm-field__grid {
-  position: absolute;
+  /* A viewport-fixed field prevents the full-page grid from being resized
+     every time the product catalog or a webfont changes document height.
+     The old absolute layer grew to the full page height and produced a
+     large layout-shift entry even though it was only decorative. */
+  position: fixed;
   inset: -18%;
   opacity: 0.42;
   background-image:
@@ -1338,9 +1342,14 @@ html.light .pm-person__photo { background: linear-gradient(180deg, rgba(212, 175
 html.light .pm-person__initials { background: #fffaf0; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pm-marquee { overflow: visible; border-color: transparent; background: transparent; }
-  .pm-marquee__track { flex-wrap: wrap; width: 100%; }
-  .pm-marquee__set { flex: 1 1 100%; flex-wrap: wrap; }
+  /* Keep the reduced-motion rail on one line. Wrapping it changed the height
+     of the public-page head after hydration and pushed the actions below it
+     down by a full line. A static, horizontally scrollable rail keeps every
+     topic reachable without movement or layout shift. */
+  .pm-marquee { overflow-x: auto; overflow-y: hidden; border-color: transparent; background: transparent; scrollbar-width: none; }
+  .pm-marquee::-webkit-scrollbar { display: none; }
+  .pm-marquee__track { flex-wrap: nowrap; width: max-content; }
+  .pm-marquee__set { flex: 0 0 auto; flex-wrap: nowrap; }
   .pm-marquee__set[aria-hidden="true"] { display: none; }
   .pm-marquee__track,
   .pm-field__grid,

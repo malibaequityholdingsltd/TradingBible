@@ -79,12 +79,21 @@ function applyAccentOverride() {
     document.head.appendChild(el);
   }
   const pct = [5, 8, 10, 12, 14, 15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80];
-  const bracket = [['[0.03]', 3], ['[0.04]', 4], ['[0.05]', 5], ['[0.06]', 6], ['[0.07]', 7], ['[0.08]', 8], ['[0.09]', 9], ['[0.1]', 10], ['[0.12]', 12]];
+  const bracket = [
+    ['[0.015]', 1.5], ['[0.02]', 2], ['[0.025]', 2.5], ['[0.03]', 3], ['[0.035]', 3.5],
+    ['[0.04]', 4], ['[0.045]', 4.5], ['[0.05]', 5], ['[0.055]', 5.5], ['[0.06]', 6],
+    ['[0.065]', 6.5], ['[0.07]', 7], ['[0.075]', 7.5], ['[0.08]', 8], ['[0.085]', 8.5],
+    ['[0.09]', 9], ['[0.095]', 9.5], ['[0.1]', 10], ['[0.11]', 11], ['[0.12]', 12],
+    ['[0.15]', 15], ['[0.18]', 18], ['[0.2]', 20], ['[0.25]', 25], ['[0.3]', 30],
+  ];
   let css = ':root:not(.light){--tb-ink:var(--wl-ink,#f0ecdd);--tb-body:var(--wl-body,#c9c4b4);--tb-muted:var(--wl-muted,#8a8577);}\n';
   // Solid gold text → accent (dark) / deep (light for contrast)
   for (const hex of ['#d4af37', '#c99a25', '#a67c1e']) {
-    css += `[class*="text-[${hex}]"]{color:var(--tb-gold) !important;}\n`;
-    css += `html.light [class*="text-[${hex}]"]{color:var(--tb-gold-deep) !important;}\n`;
+    // Solid text only. A class such as text-[#d4af37]/[0.045] must stay a
+    // translucent wash; matching it as solid accent made light-mode cards
+    // paint an opaque gold block behind gold text.
+    css += `[class*="text-[${hex}]"]:not([class*="text-[${hex}]/"]){color:var(--tb-gold) !important;}\n`;
+    css += `html.light [class*="text-[${hex}]"]:not([class*="text-[${hex}]/"]){color:var(--tb-gold-deep) !important;}\n`;
   }
   for (const hex of ['#f4e6a8', '#f0d675']) {
     css += `[class*="text-[${hex}]"]{color:var(--tb-gold-hi) !important;}\n`;
@@ -105,12 +114,12 @@ function applyAccentOverride() {
   // Solid gold backgrounds + borders (+ deep-gold variants)
   for (const hex of ['#d4af37', '#f4e6a8', '#c99a25']) {
     const v = hex === '#f4e6a8' ? 'var(--tb-gold-hi)' : hex === '#c99a25' ? 'var(--tb-gold-deep)' : 'var(--tb-gold)';
-    css += `[class*="bg-[${hex}]"]{background-color:${v} !important;}\n`;
+    css += `[class*="bg-[${hex}]"]:not([class*="bg-[${hex}]/"]){background-color:${v} !important;}\n`;
   }
-  css += `[class*="bg-[#a67c1e]"]{background-color:var(--tb-gold-deep) !important;}\n`;
+  css += `[class*="bg-[#a67c1e]"]:not([class*="bg-[#a67c1e]/"]){background-color:var(--tb-gold-deep) !important;}\n`;
   css += `[class*="bg-[#a67c1e]/30"]{background-color:color-mix(in srgb, var(--tb-gold-deep) 30%, transparent) !important;}\n`;
-  css += `[class*="border-[#d4af37]"]{border-color:var(--tb-gold) !important;}\n`;
-  css += `[class*="border-[#a67c1e]"]{border-color:var(--tb-gold-deep) !important;}\n`;
+  css += `[class*="border-[#d4af37]"]:not([class*="border-[#d4af37]/"]){border-color:var(--tb-gold) !important;}\n`;
+  css += `[class*="border-[#a67c1e]"]:not([class*="border-[#a67c1e]/"]){border-color:var(--tb-gold-deep) !important;}\n`;
   css += `[class*="border-[#a67c1e]/40"]{border-color:color-mix(in srgb, var(--tb-gold-deep) 40%, transparent) !important;}\n`;
   // Translucent gold washes — every strength the codebase uses
   for (const o of pct) {

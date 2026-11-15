@@ -1,7 +1,7 @@
 {
   "name": "TradingBible — AI Trading Journal & Terminal",
   "short_name": "TradingBible",
-  "description": "The AI-powered trading journal built on a Bloomberg-grade terminal.",
+  "description": "A trading journal, charting terminal and market-data workspace for review-first traders.",
   "start_url": "/app",
   "scope": "/",
   "display": "standalone",

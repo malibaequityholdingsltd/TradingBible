@@ -684,7 +684,7 @@ export default function AdminInvestorLettersPage() {
             {!isRegCf && (
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 <label><span className={LABEL}>Sender full name</span><input className={INPUT} value={variables.senderName} onChange={updateVar('senderName')} placeholder="Name in the sign-off" /></label>
-                <label><span className={LABEL}>Sender title</span><input className={INPUT} value={variables.senderTitle} onChange={updateVar('senderTitle')} placeholder="e.g. Chief Executive Officer" /></label>
+                <label><span className={LABEL}>Sender title</span><input className={INPUT} value={variables.senderTitle} onChange={updateVar('senderTitle')} placeholder="e.g. President" /></label>
                 <label className="sm:col-span-2"><span className={LABEL}>Private reply / scheduling link</span><input className={INPUT} value={variables.callBookingUrl} onChange={updateVar('callBookingUrl')} placeholder={`mailto:${config.legalEmail || 'legal@tradingbible.app'}`} /></label>
               </div>
             )}

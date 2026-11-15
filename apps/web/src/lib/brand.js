@@ -8,9 +8,11 @@ export const BRAND = {
   tagline: 'TradingBible',
 
   // Legal entity
-  legalName: 'TradingBible Holdings, Inc.',
-  legalEntity: 'TradingBible Holdings, Inc.',
-  parentCompany: 'TradingBible Holdings, Inc.',
+  legalName: 'TradingBible Holdings. Inc.',
+  preferredName: 'TradingBible Holdings, Inc.',
+  legalNote: 'The Delaware certificate prints a period after Holdings. The comma form is the intended commercial name; a certificate of correction is pending.',
+  legalEntity: 'TradingBible Holdings. Inc.',
+  parentCompany: 'TradingBible Holdings. Inc.',
 
   // Logo assets (SVG preferred for crisp scaling)
   logo: {

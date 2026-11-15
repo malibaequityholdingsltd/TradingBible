@@ -13,21 +13,21 @@ import {
 const PUBLIC_TEAM = [
   {
     name: 'Malik Nlem',
-    role: 'Founder & CEO',
+    role: 'President, Treasurer and Director',
     img: '/images/malik-nlem-full.png',
-    bio: 'Sets product, capital and company direction. The public record names the role; private execution details and signatory records stay inside the controlled vault.',
+    bio: 'Sets product, capital and company direction. The incorporator’s initial resolutions record the statutory offices of President, Treasurer and Director; private execution details and signatory records stay inside the controlled vault.',
     tag: 'Leadership',
   },
   {
     name: 'Victor Okechukwu',
-    role: 'Vice President',
+    role: 'Director',
     img: '/images/victor-okechukwu-full.png',
-    bio: 'Works across operations, commercial delivery and the operating rhythm of the platform. Role shown as documented; no invented scope.',
-    tag: 'Leadership',
+    bio: 'Board oversight across operations, commercial delivery and the operating rhythm of the platform. Director appointment recorded in the initial resolutions; no invented scope.',
+    tag: 'Board',
   },
   {
     name: 'Maliba SI',
-    role: 'Head of Quantitative Research',
+    role: 'SI research function · AI',
     initials: 'SI',
     bio: 'The platform’s SI research function: journal review, quantitative education and the SI Coach. This is an AI research function, not a human officer.',
     tag: 'SI research · AI',
@@ -158,7 +158,7 @@ export default function TeamPage() {
               {[
                 [<CountUp key="team" value={PUBLIC_TEAM.length} />, 'Documented team', 'Named public roles'],
                 [<CountUp key="seats" value={PRIORITY_SEATS.length} />, 'Priority seats', 'Hiring priorities, not appointments'],
-                ['DE', 'Delaware company', 'TradingBible Holdings, Inc.'],
+                ['DE', 'Delaware company', 'TradingBible Holdings. Inc. (filed name)'],
                 ['0', 'Invented profiles', 'No fabricated people or titles'],
               ].map(([value, label, note]) => (
                 <div key={label}>
@@ -264,18 +264,18 @@ export default function TeamPage() {
               <Reveal>
                 <SectionRail index="04" label="Governance" />
                 <h2 className="mt-3 max-w-2xl text-balance text-[1.8rem] font-extrabold leading-[1.04] tracking-[-0.04em] sm:text-[2.5rem]">
-                  The board is not presented as complete.
+                  The board is recorded. The rest is still open.
                 </h2>
                 <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#8a8577]">
-                  TradingBible Holdings, Inc. is a Delaware corporation. Board composition, committee appointments and officer records will be published only when adopted and verified. Until then, the public page marks the gaps.
+                  TradingBible Holdings, Inc. is the intended commercial name of the Delaware stock corporation formed 28 October 2026 (file no. 10821679; good standing 3 November 2026). The certificate prints TradingBible Holdings. Inc.; a correction is pending. The incorporator’s initial resolutions record Malik Nlem as President, Treasurer and Director, a Secretary whose name is held in the controlled corporate record and is published only with consent, and Victor Okechukwu as Director. Committee charters, independence determinations and CEO/CFO/COO/VP appointments are not recorded.
                 </p>
               </Reveal>
               <Stagger className="grid gap-2 sm:grid-cols-2">
                 {[
-                  [Building2, 'Delaware entity', 'TradingBible Holdings, Inc. is the operator and securities issuer.'],
-                  [Landmark, 'Pre-IPO', 'TB is a proposed ticker; no listing, price or market exists.'],
+                  [Building2, 'Delaware entity', 'File no. 10821679 · formed 28 October 2026 · good standing 3 November 2026.'],
+                  [Landmark, 'Two directors recorded', 'Malik Nlem and Victor Okechukwu. No committee or independence determination is represented as adopted.'],
                   [Lock, 'Private execution', 'Signatory identities and execution records stay in the controlled vault.'],
-                  [BadgeCheck, 'Published only when verified', 'Titles and appointments follow the company record, not a marketing deck.'],
+                  [BadgeCheck, 'Published only when recorded', 'Titles follow the corporate resolutions, not a marketing deck.'],
                 ].map(([Icon, title, body]) => (
                   <StaggerItem key={title}>
                     <Card className="h-full rounded-xl p-4">

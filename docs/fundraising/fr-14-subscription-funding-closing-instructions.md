@@ -37,7 +37,7 @@ The company will deliver funding instructions through a separate secure channel.
 1. call the company at a known number, not a number in the email;
 2. confirm the account name, bank, account number and reference;
 3. confirm the amount and the currency;
-4. confirm that the account is controlled by TradingBible Holdings, Inc.; and
+4. confirm that the account is controlled by TradingBible Holdings. Inc.; and
 5. record the name of the person who confirmed the instructions.
 
 If you cannot verify the instructions, do not send funds.

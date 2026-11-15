@@ -1,7 +1,7 @@
 {
-  "version": "1.0",
-  "issued": "12 November 2026",
-  "builtAt": "2026-11-12T05:28:43.323089+00:00",
+  "version": "1.1",
+  "issued": "14 November 2026",
+  "builtAt": "2026-11-15T05:32:44.210611+00:00",
   "boundary": "CONTROLLED TEMPLATE \u00b7 COUNSEL REVIEW AND LOCAL ADOPTION REQUIRED. This document is a company policy or contract framework, not an executed agreement, a legal opinion, a regulatory approval, a payroll filing, an insurance policy or a promise of a benefit. Record adoption and approval references in the Workforce Compliance Register before treating it as operative.",
   "documents": [
     {
@@ -11,8 +11,8 @@
       "md": "md/00-EMPLOYER-COMPLIANCE-MANUAL.md",
       "docx": "docx/00-EMPLOYER-COMPLIANCE-MANUAL.docx",
       "pdf": "pdf/00-EMPLOYER-COMPLIANCE-MANUAL.pdf",
-      "docxBytes": 75197,
-      "pdfBytes": 588245
+      "docxBytes": 75312,
+      "pdfBytes": 587448
     },
     {
       "id": "handbook",
@@ -21,8 +21,8 @@
       "md": "md/01-EMPLOYEE-HANDBOOK.md",
       "docx": "docx/01-EMPLOYEE-HANDBOOK.docx",
       "pdf": "pdf/01-EMPLOYEE-HANDBOOK.pdf",
-      "docxBytes": 64493,
-      "pdfBytes": 324636
+      "docxBytes": 64499,
+      "pdfBytes": 324769
     },
     {
       "id": "us-contract",
@@ -31,8 +31,8 @@
       "md": "md/02-EMPLOYMENT-CONTRACT-US.md",
       "docx": "docx/02-EMPLOYMENT-CONTRACT-US.docx",
       "pdf": "pdf/02-EMPLOYMENT-CONTRACT-US.pdf",
-      "docxBytes": 62138,
-      "pdfBytes": 303039
+      "docxBytes": 62137,
+      "pdfBytes": 303153
     },
     {
       "id": "ng-contract",
@@ -41,8 +41,8 @@
       "md": "md/03-EMPLOYMENT-CONTRACT-NIGERIA.md",
       "docx": "docx/03-EMPLOYMENT-CONTRACT-NIGERIA.docx",
       "pdf": "pdf/03-EMPLOYMENT-CONTRACT-NIGERIA.pdf",
-      "docxBytes": 62906,
-      "pdfBytes": 318900
+      "docxBytes": 62905,
+      "pdfBytes": 318976
     },
     {
       "id": "nda-ip",
@@ -51,8 +51,8 @@
       "md": "md/04-NDA-IP-ASSIGNMENT.md",
       "docx": "docx/04-NDA-IP-ASSIGNMENT.docx",
       "pdf": "pdf/04-NDA-IP-ASSIGNMENT.pdf",
-      "docxBytes": 62087,
-      "pdfBytes": 337522
+      "docxBytes": 62085,
+      "pdfBytes": 337487
     },
     {
       "id": "security",
@@ -61,8 +61,8 @@
       "md": "md/05-ACCEPTABLE-USE-AND-SECURITY.md",
       "docx": "docx/05-ACCEPTABLE-USE-AND-SECURITY.docx",
       "pdf": "pdf/05-ACCEPTABLE-USE-AND-SECURITY.pdf",
-      "docxBytes": 61621,
-      "pdfBytes": 310680
+      "docxBytes": 61620,
+      "pdfBytes": 310669
     },
     {
       "id": "onboarding",
@@ -71,8 +71,8 @@
       "md": "md/06-ONBOARDING-PACK.md",
       "docx": "docx/06-ONBOARDING-PACK.docx",
       "pdf": "pdf/06-ONBOARDING-PACK.pdf",
-      "docxBytes": 61000,
-      "pdfBytes": 324627
+      "docxBytes": 61003,
+      "pdfBytes": 324753
     },
     {
       "id": "offboarding",
@@ -82,7 +82,7 @@
       "docx": "docx/07-OFFBOARDING-PACK.docx",
       "pdf": "pdf/07-OFFBOARDING-PACK.pdf",
       "docxBytes": 60540,
-      "pdfBytes": 300517
+      "pdfBytes": 300617
     },
     {
       "id": "payroll-benefits",
@@ -91,8 +91,8 @@
       "md": "md/08-PAYROLL-AND-BENEFITS-FRAMEWORK.md",
       "docx": "docx/08-PAYROLL-AND-BENEFITS-FRAMEWORK.docx",
       "pdf": "pdf/08-PAYROLL-AND-BENEFITS-FRAMEWORK.pdf",
-      "docxBytes": 63529,
-      "pdfBytes": 395220
+      "docxBytes": 63541,
+      "pdfBytes": 394772
     },
     {
       "id": "job-descriptions",
@@ -101,8 +101,8 @@
       "md": "md/09-JOB-DESCRIPTION-PACK.md",
       "docx": "docx/09-JOB-DESCRIPTION-PACK.docx",
       "pdf": "pdf/09-JOB-DESCRIPTION-PACK.pdf",
-      "docxBytes": 76023,
-      "pdfBytes": 1092565
+      "docxBytes": 76032,
+      "pdfBytes": 1092702
     },
     {
       "id": "jurisdictions",
@@ -111,8 +111,8 @@
       "md": "md/10-JURISDICTION-GUIDE-US-NIGERIA.md",
       "docx": "docx/10-JURISDICTION-GUIDE-US-NIGERIA.docx",
       "pdf": "pdf/10-JURISDICTION-GUIDE-US-NIGERIA.pdf",
-      "docxBytes": 61619,
-      "pdfBytes": 350547
+      "docxBytes": 61630,
+      "pdfBytes": 350677
     },
     {
       "id": "employee-file",
@@ -121,8 +121,8 @@
       "md": "md/11-EMPLOYEE-FILE-CHECKLIST.md",
       "docx": "docx/11-EMPLOYEE-FILE-CHECKLIST.docx",
       "pdf": "pdf/11-EMPLOYEE-FILE-CHECKLIST.pdf",
-      "docxBytes": 68333,
-      "pdfBytes": 496094
+      "docxBytes": 68331,
+      "pdfBytes": 496222
     }
   ]
 }

@@ -2,7 +2,7 @@
 
 ## 1. Purpose
 
-This memorandum records the work required before TradingBible Holdings, Inc. can decide whether to conduct a Regulation CF offering. It is intended for the board, counsel and the finance owner. It does not authorize a campaign.
+This memorandum records the work required before TradingBible Holdings. Inc. can decide whether to conduct a Regulation CF offering. It is intended for the board, counsel and the finance owner. It does not authorize a campaign.
 
 ## 2. What Regulation CF requires
 
@@ -23,7 +23,7 @@ The company must confirm the current rules, forms, dollar limits and financial-s
 
 | Requirement | Current status | Gap |
 |---|---|---|
-| U.S. organization and operation | Delaware corporation (to be confirmed); operating platform | Confirm jurisdiction, principal place of business and eligibility |
+| U.S. organization and operation | Delaware stock corporation (formed 28 October 2026; file no. 10821679; good standing 3 November 2026); operating platform | Confirm principal place of business, EIN and eligibility |
 | Registered intermediary | None selected | Evaluate and engage a portal or broker-dealer |
 | Form C | Not prepared | Prepare from verified company records |
 | Financial statements | No audited financial statements published | Engage accountant; confirm required level of review or audit |

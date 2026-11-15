@@ -374,7 +374,7 @@ function contactVars(contact, variables = {}) {
 		firstName: firstName(contact),
 		fullName: displayName(contact),
 		email: contact.email,
-		companyName: 'TradingBible Holdings, Inc.',
+		companyName: 'TradingBible Holdings. Inc.',
 		brandName: 'TradingBible',
 		legalEmail,
 		appUrl,
@@ -981,7 +981,7 @@ function sendHeaders(contact) {
 }
 
 function textWithFooter(text, contact) {
-	return `${String(text || '').trim()}\n\n---\nTradingBible Holdings, Inc.\n${postalAddress}\nUnsubscribe from investor updates: ${unsubscribeUrl(contact)}\n`;
+	return `${String(text || '').trim()}\n\n---\nTradingBible Holdings. Inc.\n${postalAddress}\nUnsubscribe from investor updates: ${unsubscribeUrl(contact)}\n`;
 }
 
 async function sendOne({ campaign, contact, actor, test = false, testEmail = '' }) {
@@ -1268,7 +1268,7 @@ export function unsubscribePage(message, ok = true) {
 h1{font-family:Georgia,serif;font-size:26px;margin:14px 0 10px}p{line-height:1.65;color:#3f4652;font-size:15px}
 a{color:#8a6a15}small{display:block;margin-top:24px;color:#6b7280;font-size:12px;line-height:1.6}
 @media(prefers-color-scheme:dark){body{background:#080808;color:#f5edd8}.card{background:#12110d;border-color:#3b3424}h1{color:#f5edd8}p{color:#d6d0c2}small{color:#a8a08d}}
-</style></head><body><div class="card"><div class="brand">TradingBible</div><h1>${ok ? 'You are unsubscribed' : 'Unsubscribe link'}</h1><p>${message}</p><p><a href="https://tradingbible.app/investor-relations">Investor relations</a></p><small>TradingBible Holdings, Inc. · This page does not change any shareholder record, subscription, investment or account.</small></div></body></html>`;
+</style></head><body><div class="card"><div class="brand">TradingBible</div><h1>${ok ? 'You are unsubscribed' : 'Unsubscribe link'}</h1><p>${message}</p><p><a href="https://tradingbible.app/investor-relations">Investor relations</a></p><small>TradingBible Holdings. Inc. · This page does not change any shareholder record, subscription, investment or account.</small></div></body></html>`;
 }
 
 export { STORE_PATH, MAX_RECIPIENTS };

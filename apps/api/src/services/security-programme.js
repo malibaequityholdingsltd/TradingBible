@@ -750,7 +750,7 @@ function csvCell(value) {
 export async function getSecurityRegisterCsv() {
   const data = await getSecurityOverview();
   const lines = [];
-  lines.push('TradingBible Holdings, Inc. — Security and resilience register');
+  lines.push('TradingBible Holdings. Inc. — Security and resilience register');
   lines.push(`Generated,${csvCell(data.generatedAt)}`);
   lines.push(`Framework,${csvCell(data.profile.framework)}`);
   lines.push(`Boundary,${csvCell(data.profile.certificationBoundary)}`);

@@ -1,4 +1,4 @@
-// Company-wide hiring plan for TradingBible Holdings, Inc.
+// Company-wide hiring plan for TradingBible Holdings. Inc.
 //
 // These are real operating roles across the product the company actually
 // runs: the trading journal/terminal, broker integrations, market data,
@@ -33,7 +33,7 @@ export const companyJobs = [
   role({
     title: 'Chief Technology Officer',
     department: 'Leadership',
-    description: 'Own the platform architecture, engineering operating model, reliability targets and security roadmap across the terminal, journal, broker integrations, AI coach and data platform. Partner with the founder on build-versus-buy decisions and the staged TBC technical programme.',
+    description: 'Own the platform architecture, engineering operating model, reliability targets and security roadmap across the terminal, journal, broker integrations, AI coach and data platform. Partner with the President on build-versus-buy decisions and the staged TBC technical programme.',
     requirements: 'Senior engineering leadership in fintech, trading or high-availability SaaS. Evidence of scaling a multi-team product org, running architecture reviews, incident response and secure SDLC. Strong written decision records.',
   }),
   role({
@@ -51,7 +51,7 @@ export const companyJobs = [
   role({
     title: 'Chief of Staff',
     department: 'Leadership',
-    description: 'Drive the founder operating system: priorities, decision memos, board and investor materials, cross-team follow-through and sensitive special projects. Keep legal, product and engineering gates visible and sequenced.',
+    description: 'Drive the President’s operating system: priorities, decision memos, board and investor materials, cross-team follow-through and sensitive special projects. Keep legal, product and engineering gates visible and sequenced.',
     requirements: 'Excellent writing and analytical skills. Experience in strategy, consulting, venture or a fast-scaling product company. High discretion with confidential company information.',
   }),
 

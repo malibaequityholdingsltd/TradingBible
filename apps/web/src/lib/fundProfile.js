@@ -5,7 +5,7 @@
 
 export const FUND_ENTITY = {
   name: 'TradingBible Capital',
-  owner: 'TradingBible Holdings, Inc.',
+  owner: 'TradingBible Holdings. Inc.',
   status: 'In formation',
   fundVehicle: 'No fund vehicle formed',
   investorAccess: 'Closed — no solicitation',
@@ -19,7 +19,7 @@ export const FUND_STATUS = [
   {
     label: 'Legal entity',
     value: 'Parent only',
-    note: 'TradingBible Holdings, Inc. owns the platform. A separate fund entity has not been formed.',
+    note: 'TradingBible Holdings. Inc. owns the platform. A separate fund entity has not been formed.',
     tone: 'amber',
   },
   {
@@ -122,7 +122,7 @@ export const FUND_READINESS = [
 export const FUND_GOVERNANCE = [
   {
     title: 'Separate legal stack',
-    body: 'TradingBible Holdings, Inc. owns and operates the platform. Any future fund must be a separate entity with its own governing documents, accounts and investor records.',
+    body: 'TradingBible Holdings. Inc. owns and operates the platform. Any future fund must be a separate entity with its own governing documents, accounts and investor records.',
   },
   {
     title: 'No commingling',

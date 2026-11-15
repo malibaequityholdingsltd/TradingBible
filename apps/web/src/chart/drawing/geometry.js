@@ -8,9 +8,9 @@
 
 import { drawingToScreen } from './coordinates';
 
-export const HIT_TOLERANCE = 7;
-export const HANDLE_HIT_RADIUS = 8;
-export const HANDLE_RADIUS = 4;
+export const HIT_TOLERANCE = 9;
+export const HANDLE_HIT_RADIUS = 12;
+export const HANDLE_RADIUS = 5;
 
 const TWO_POINT_TYPES = new Set([
   'trend',

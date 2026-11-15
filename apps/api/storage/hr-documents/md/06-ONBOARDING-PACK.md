@@ -1,13 +1,13 @@
-# TRADINGBIBLE HOLDINGS, INC. — ONBOARDING PACK
+# TRADINGBIBLE HOLDINGS. INC. — ONBOARDING PACK
 
-**Controlled template · Version 1.0 · 12 November 2026**
+**Controlled template · Version 1.1 · 14 November 2026**
 
 > **Controlled template — local-law review required.** This pack is an operating procedure and checklist. It is not an employment contract. Complete the local contract, payroll registration, right-to-work check, insurance and data-protection steps before the start date. Do not collect identity, medical, immigration or bank records in this document; use the controlled HR file and the approved payroll channel.
 
 ## 1. Before the offer
 
 - [ ] Role approved with a written job description and salary band.
-- [ ] Headcount and fully loaded budget approved by the CFO or authorised officer.
+- [ ] Headcount and fully loaded budget approved by the Treasurer or authorised officer.
 - [ ] Work country, state/region and remote-work location confirmed.
 - [ ] Employee or contractor classification confirmed under local law.
 - [ ] Lawful employing entity or employer-of-record arrangement confirmed.

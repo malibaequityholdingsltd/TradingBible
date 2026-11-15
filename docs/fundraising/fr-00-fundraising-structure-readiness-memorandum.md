@@ -2,7 +2,7 @@
 
 ## 1. Purpose
 
-TradingBible Holdings, Inc. is considering a financing to support product delivery, operating costs and the public launch programme. This memorandum compares the two structures that can realistically be prepared from the company’s current record:
+TradingBible Holdings. Inc. is considering a financing to support product delivery, operating costs and the public launch programme. This memorandum compares the two structures that can realistically be prepared from the company’s current record:
 
 1. a private placement to accredited U.S. investors under Rule 506(b) of Regulation D, together with an offshore tranche under Regulation S; and
 2. a future Regulation CF offering through a FINRA-registered funding portal, if the company, its disclosures and its financial records are ready.
@@ -13,13 +13,18 @@ The company should not run both tracks at the same time without a written alloca
 
 | Item | Current record |
 |---|---|
-| Legal name | TradingBible Holdings, Inc. |
-| Legal form | Delaware corporation — to be confirmed by counsel |
-| Domicile | Delaware, United States — to be confirmed by counsel |
+| Legal name | TradingBible Holdings. Inc. (filed name; intended form: TradingBible Holdings, Inc. — correction pending) |
+| Legal form | Delaware stock corporation — formed 28 October 2026; file no. 10821679; good standing 3 November 2026 |
+| Domicile | Delaware, United States |
+| Registered office / agent | 8 The Green, Suite B, Dover, Kent County, DE 19901 · Northwest Registered Agent Service, Inc. (service of process; no staffed office proven) |
+| Authorized stock | 5,000 shares of common stock, par value $0.0001; no issued shares or stock ledger in the supplied record |
+| Officers / directors | Malik Nlem — President, Treasurer and Director; Felicity Nlem — Secretary; Victor Okechukwu — Director. No CEO, CFO, COO or VP is appointed in the initial resolutions. |
+| EIN | Not yet issued — no IRS EIN notice is in company records |
+| D-U-N-S | 14-997-6777 reported only — verify with D&B before external reliance |
 | Business | Financial-technology platform, trading intelligence, education and analytics |
 | Public launch date | 25 December 2026 |
 | Public plans | Free account and TradingBible Premium at US$19.99 per month or US$199 per year |
-| Securities issuer | TradingBible Holdings, Inc. |
+| Securities issuer | TradingBible Holdings. Inc. |
 | Public ticker | TB is proposed only — not reserved, approved or listed |
 | Native digital asset | TBC is proposed — no token has been issued and no sale is open |
 | Broker-dealer / adviser status | Not licensed as a broker-dealer, investment adviser, exchange or custodian |

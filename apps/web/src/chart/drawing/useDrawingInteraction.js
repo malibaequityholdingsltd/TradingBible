@@ -75,6 +75,7 @@ export function useDrawingInteraction({
   timeframeMinutes,
   previewRef,
   hoveredHandleRef,
+  hoveredDrawingRef,
 }) {
   const toolRef = useRef(tool);
   const lockedRef = useRef(locked);
@@ -85,6 +86,7 @@ export function useDrawingInteraction({
   const timeframeRef = useRef(timeframeMinutes);
   const pendingRef = useRef([]);
   const dragRef = useRef(null);
+  const gestureRef = useRef(null);
   const hoverPointRef = useRef(null);
   const dragRafRef = useRef(null);
   const hoverRafRef = useRef(null);
@@ -117,6 +119,12 @@ export function useDrawingInteraction({
     requestDraw();
   }, [hoveredHandleRef, requestDraw]);
 
+  const setHoveredDrawing = useCallback((id) => {
+    if (hoveredDrawingRef.current === id) return;
+    hoveredDrawingRef.current = id;
+    requestDraw();
+  }, [hoveredDrawingRef, requestDraw]);
+
   const buildPreview = useCallback((type, points) => ({
     id: '__tb_preview__',
     type,
@@ -138,6 +146,7 @@ export function useDrawingInteraction({
     pendingRef.current = [];
     setPending([]);
     dragRef.current = null;
+    gestureRef.current = null;
     clearPreview();
     setTool('cursor');
   }, [clearPreview, setPending, setSelected, setTool, updateDrawings]);
@@ -173,15 +182,18 @@ export function useDrawingInteraction({
       previewRafRef.current = null;
     }
     previewPointRef.current = null;
-    if (dragRef.current?.pointerId != null && wrapRef.current?.hasPointerCapture?.(dragRef.current.pointerId)) {
-      try { wrapRef.current.releasePointerCapture(dragRef.current.pointerId); } catch { /* ignore */ }
+    const pointerId = dragRef.current?.pointerId ?? gestureRef.current?.pointerId;
+    if (pointerId != null && wrapRef.current?.hasPointerCapture?.(pointerId)) {
+      try { wrapRef.current.releasePointerCapture(pointerId); } catch { /* ignore */ }
     }
     dragRef.current = null;
+    gestureRef.current = null;
     pendingRef.current = [];
     setPending([]);
     setHovered(null);
+    setHoveredDrawing(null);
     clearPreview();
-  }, [clearPreview, setHovered, setPending, wrapRef]);
+  }, [clearPreview, setHovered, setHoveredDrawing, setPending, wrapRef]);
 
   // Tool changes start a clean gesture. This prevents a pending trendline
   // anchor from leaking into a rectangle or path after the user changes tools.
@@ -189,22 +201,26 @@ export function useDrawingInteraction({
     if (previousToolRef.current === tool) return;
     previousToolRef.current = tool;
     pendingRef.current = [];
+    gestureRef.current = null;
     previewPointRef.current = null;
     if (previewRafRef.current) {
       cancelAnimationFrame(previewRafRef.current);
       previewRafRef.current = null;
     }
     setPending([]);
+    setHoveredDrawing(null);
     clearPreview();
-  }, [clearPreview, setPending, tool]);
+  }, [clearPreview, setHoveredDrawing, setPending, tool]);
 
   useEffect(() => {
     if (!locked && !hideDrawings) return;
     pendingRef.current = [];
+    gestureRef.current = null;
     setPending([]);
     setHovered(null);
+    setHoveredDrawing(null);
     clearPreview();
-  }, [clearPreview, hideDrawings, locked, setHovered, setPending]);
+  }, [clearPreview, hideDrawings, locked, setHovered, setHoveredDrawing, setPending]);
 
   useEffect(() => {
     if (pending.length === 0 && pendingRef.current.length) {
@@ -284,8 +300,9 @@ export function useDrawingInteraction({
     } else {
       setHovered(null);
     }
+    setHoveredDrawing(hit?.drawingId || null);
     setWrapCursor(hit?.cursor || 'default');
-  }, [candlesRef, chartRef, drawingsRef, seriesRef, timeframeRef, setHovered, setWrapCursor]);
+  }, [candlesRef, chartRef, drawingsRef, seriesRef, timeframeRef, setHovered, setHoveredDrawing, setWrapCursor]);
 
   const onPointerDown = useCallback((event) => {
     if (event.button !== 0) return;
@@ -330,6 +347,18 @@ export function useDrawingInteraction({
 
       const clicks = TOOL_CLICKS[activeTool] || 0;
       if (!clicks) return;
+      if (clicks === 2 && activeTool !== 'text') {
+        // Support both click-click and press-drag-release. A small movement
+        // threshold keeps an ordinary click pending for its second anchor.
+        gestureRef.current = {
+          pointerId: event.pointerId,
+          tool: activeTool,
+          startPane: pane,
+          latest: { pane, point },
+          moved: false,
+        };
+        try { wrapRef.current?.setPointerCapture?.(event.pointerId); } catch { /* ignore */ }
+      }
       if (clicks === 1) {
         if (activeTool === 'text') {
           setTextPrompt({ point, value: '' });
@@ -375,6 +404,7 @@ export function useDrawingInteraction({
       selectedRef.current = null;
       setSelected(null);
       setHovered(null);
+      setHoveredDrawing(null);
       clearPreview();
       setWrapCursor('default');
       return;
@@ -401,7 +431,7 @@ export function useDrawingInteraction({
     try { wrapRef.current?.setPointerCapture?.(event.pointerId); } catch { /* ignore */ }
   }, [
     buildPreview, candlesRef, chartRef, clearPreview, commitNew, drawingsRef, finishPath,
-    pointerInfo, seriesRef, setHovered, setPending, setPreview, setSelected,
+    pointerInfo, seriesRef, setHovered, setHoveredDrawing, setPending, setPreview, setSelected,
     setTextPrompt, setTool, setWrapCursor, timeframeRef, wrapRef,
   ]);
 
@@ -427,6 +457,13 @@ export function useDrawingInteraction({
       event.stopPropagation();
       const info = pointerInfo(event);
       if (!info) return;
+      if (gestureRef.current && gestureRef.current.tool === toolRef.current) {
+        const gesture = gestureRef.current;
+        gesture.latest = info;
+        if (Math.hypot(info.pane.x - gesture.startPane.x, info.pane.y - gesture.startPane.y) > 4) {
+          gesture.moved = true;
+        }
+      }
       if (pendingRef.current.length) {
         previewPointRef.current = info.point;
         if (!previewRafRef.current) previewRafRef.current = requestAnimationFrame(processPreview);
@@ -443,12 +480,23 @@ export function useDrawingInteraction({
 
   const onPointerUp = useCallback((event) => {
     const drag = dragRef.current;
+    // A fast touch gesture can release at a point that never produced a
+    // pointermove (or the last move was coalesced into the release). Always
+    // anchor the final geometry to the release position so a drag-to-draw
+    // rectangle/line and a body drag end exactly where the finger lifted.
+    const release = pointerInfo(event);
     if (drag?.original) {
       event.preventDefault();
       event.stopPropagation();
       if (dragRafRef.current) {
         cancelAnimationFrame(dragRafRef.current);
         dragRafRef.current = null;
+      }
+      if (release) {
+        drag.latest = release;
+        if (Math.hypot(release.pane.x - drag.startPane.x, release.pane.y - drag.startPane.y) > 1) {
+          drag.moved = true;
+        }
       }
       if (drag.latest?.point) {
         const deltaTime = drag.latest.point.time - drag.startPoint.time;
@@ -474,15 +522,42 @@ export function useDrawingInteraction({
     if (toolRef.current !== 'cursor') {
       event.preventDefault();
       event.stopPropagation();
+      const tool = toolRef.current;
+      const gesture = gestureRef.current;
+      gestureRef.current = null;
+      if (gesture?.pointerId != null && wrapRef.current?.hasPointerCapture?.(gesture.pointerId)) {
+        try { wrapRef.current.releasePointerCapture(gesture.pointerId); } catch { /* ignore */ }
+      }
+      if (gesture && release) {
+        gesture.latest = release;
+        if (Math.hypot(release.pane.x - gesture.startPane.x, release.pane.y - gesture.startPane.y) > 4) {
+          gesture.moved = true;
+        }
+      }
+      if (gesture?.moved
+        && TOOL_CLICKS[tool] === 2
+        && pendingRef.current.length === 1
+        && gesture.latest?.point) {
+        commitNew({
+          id: uid(),
+          type: tool,
+          color: accentRef.current,
+          lineWidth: 1.5,
+          points: [...pendingRef.current, gesture.latest.point],
+        });
+      }
       return;
     }
-  }, [clearPreview, setSelected, setWrapCursor, updateDrawings, wrapRef]);
+  }, [clearPreview, commitNew, pointerInfo, setSelected, setWrapCursor, updateDrawings, wrapRef]);
 
   const onPointerCancel = useCallback((event) => {
     const drag = dragRef.current;
-    if (drag?.original) {
-      if (drag.pointerId != null && wrapRef.current?.hasPointerCapture?.(drag.pointerId)) {
-        try { wrapRef.current.releasePointerCapture(drag.pointerId); } catch { /* ignore */ }
+    const gesture = gestureRef.current;
+    gestureRef.current = null;
+    if (drag?.original || gesture) {
+      const pointerId = drag?.pointerId ?? gesture?.pointerId;
+      if (pointerId != null && wrapRef.current?.hasPointerCapture?.(pointerId)) {
+        try { wrapRef.current.releasePointerCapture(pointerId); } catch { /* ignore */ }
       }
       dragRef.current = null;
       clearPreview();
@@ -495,9 +570,49 @@ export function useDrawingInteraction({
     if (dragRef.current?.original) return;
     hoverPointRef.current = null;
     setHovered(null);
+    setHoveredDrawing(null);
     setWrapCursor(toolRef.current === 'cursor' ? 'default' : 'crosshair');
     if (toolRef.current !== 'cursor' && pendingRef.current.length) clearPreview();
-  }, [clearPreview, setHovered, setWrapCursor]);
+  }, [clearPreview, setHovered, setHoveredDrawing, setWrapCursor]);
+
+  // Lightweight Charts listens to touchstart/touchmove with `passive: false`
+  // on its own canvas. A pointer event cannot cancel those listeners, so a
+  // touch drawing or drag would also pan/zoom the chart underneath the
+  // drawing. Intercept the touch stream at the wrapper while the drawing
+  // subsystem owns the gesture; cursor mode on empty space still reaches the
+  // chart so normal panning and pinch-zoom keep working.
+  const onTouchStart = useCallback((event) => {
+    if (lockedRef.current || hideRef.current) return;
+    const activeTool = toolRef.current;
+    const ownsGesture = activeTool !== 'cursor' || Boolean(dragRef.current?.original || gestureRef.current);
+    if (ownsGesture) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    if (event.touches?.length > 1) return;
+    const touch = event.changedTouches?.[0] || event.touches?.[0];
+    const wrap = wrapRef.current;
+    if (!touch || !wrap) return;
+    const rect = wrap.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const pane = { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+    const hit = hitTestDrawings(drawingsRef.current, chartRef.current, seriesRef.current, pane, {
+      candles: candlesRef.current,
+      timeframeMinutes: timeframeRef.current,
+    });
+    if (hit) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, [candlesRef, chartRef, drawingsRef, seriesRef, timeframeRef, wrapRef]);
+
+  const onTouchMove = useCallback((event) => {
+    if (toolRef.current !== 'cursor' || dragRef.current?.original || gestureRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, []);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -507,12 +622,16 @@ export function useDrawingInteraction({
     wrap.addEventListener('pointerup', onPointerUp, true);
     wrap.addEventListener('pointercancel', onPointerCancel, true);
     wrap.addEventListener('pointerleave', onPointerLeave, true);
+    wrap.addEventListener('touchstart', onTouchStart, { capture: true, passive: false });
+    wrap.addEventListener('touchmove', onTouchMove, { capture: true, passive: false });
     return () => {
       wrap.removeEventListener('pointerdown', onPointerDown, true);
       wrap.removeEventListener('pointermove', onPointerMove, true);
       wrap.removeEventListener('pointerup', onPointerUp, true);
       wrap.removeEventListener('pointercancel', onPointerCancel, true);
       wrap.removeEventListener('pointerleave', onPointerLeave, true);
+      wrap.removeEventListener('touchstart', onTouchStart, { capture: true });
+      wrap.removeEventListener('touchmove', onTouchMove, { capture: true });
       if (dragRafRef.current) cancelAnimationFrame(dragRafRef.current);
       if (hoverRafRef.current) cancelAnimationFrame(hoverRafRef.current);
       if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current);
@@ -520,7 +639,7 @@ export function useDrawingInteraction({
       hoverRafRef.current = null;
       previewRafRef.current = null;
     };
-  }, [onPointerCancel, onPointerDown, onPointerLeave, onPointerMove, onPointerUp, wrapRef]);
+  }, [onPointerCancel, onPointerDown, onPointerLeave, onPointerMove, onPointerUp, onTouchMove, onTouchStart, wrapRef]);
 
   useEffect(() => {
     setWrapCursor(tool === 'cursor' ? 'default' : 'crosshair');

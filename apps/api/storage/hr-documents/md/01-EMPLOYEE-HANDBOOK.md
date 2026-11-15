@@ -1,12 +1,12 @@
-# TRADINGBIBLE HOLDINGS, INC. — EMPLOYEE HANDBOOK
+# TRADINGBIBLE HOLDINGS. INC. — EMPLOYEE HANDBOOK
 
-**Controlled template · Version 1.0 · 12 November 2026**
+**Controlled template · Version 1.1 · 14 November 2026**
 
 > **Controlled template — counsel review and local adoption required.** This handbook is a company policy framework. It is not an executed contract and it is not legal advice. Employment counsel in each hiring jurisdiction must review it, and the company must record adoption in the Workforce Compliance Register before it is issued as an operative handbook. Local addenda override inconsistent global text. Nothing in this handbook promises equity, options, a bonus, health insurance, a pension, relocation or any other benefit unless a separate written plan or contract says so.
 
 ## 1. About this handbook
 
-TradingBible Holdings, Inc. is a Delaware corporation that operates TradingBible. The company is pre-launch. It is not a licensed broker, investment adviser, custodian, exchange or fund manager, and no employee may present it as one unless the relevant activity is authorised and operational.
+TradingBible Holdings. Inc. is a Delaware corporation that operates TradingBible. The company is pre-launch. It is not a licensed broker, investment adviser, custodian, exchange or fund manager, and no employee may present it as one unless the relevant activity is authorised and operational.
 
 This handbook explains the standards expected of everyone who works for the company, including full-time employees, part-time employees, remote employees and individual contractors where the context applies. It does not replace an employment contract, a local addendum, a benefit plan or the law of the country or state where the person actually works.
 
@@ -138,7 +138,7 @@ This section applies to employees whose work location is in the United States. F
 
 The company will:
 
-- use its EIN for employment-tax administration;
+- once the EIN is issued, use it for employment-tax administration;
 - complete Form I-9 employment-eligibility verification within the lawful timeframe;
 - collect Form W-4 and applicable state withholding elections;
 - withhold and remit federal income tax, Social Security and Medicare, and pay the employer share;

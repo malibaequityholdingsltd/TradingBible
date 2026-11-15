@@ -100,11 +100,11 @@ function drawHandles(context, drawing, screen, state, color) {
       && Math.abs(hovered.handle.y - handle.y) < 0.5;
     context.save();
     context.beginPath();
-    context.arc(handle.x, handle.y, isHovered ? 6 : 4.5, 0, Math.PI * 2);
+    context.arc(handle.x, handle.y, isHovered ? 8 : 5.5, 0, Math.PI * 2);
     context.fillStyle = isHovered ? color : (state.isLight ? '#ffffff' : '#101015');
     context.fill();
     context.strokeStyle = color;
-    context.lineWidth = 1.5;
+    context.lineWidth = 2;
     context.stroke();
     context.restore();
   }
@@ -191,7 +191,7 @@ function drawChannel(context, drawing, screen, state, color) {
   context.restore();
 }
 
-function drawDrawing(context, drawing, screen, state, preview) {
+function drawDrawing(context, drawing, screen, state, preview, showHandles = false) {
   const points = screen.points || [];
   if (!points.some(Boolean)) return;
   const color = drawing.color || state.accent || '#d4af37';
@@ -338,15 +338,31 @@ function drawDrawing(context, drawing, screen, state, preview) {
     }
   }
 
-  if (preview && points.length === 1 && points[0]) {
-    context.beginPath();
-    context.arc(points[0].x, points[0].y, 3, 0, Math.PI * 2);
-    context.fill();
+  if (preview && points.length) {
+    // A click-click drawing must show where the first anchor landed. A single
+    // 3px dot is too easy to miss, so every pending anchor gets a ring and the
+    // live endpoint gets a smaller marker while the pointer is moving.
+    context.save();
+    for (let index = 0; index < points.length; index += 1) {
+      const point = points[index];
+      if (!point) continue;
+      const isEndpoint = index === points.length - 1 && points.length > 1;
+      context.beginPath();
+      context.arc(point.x, point.y, isEndpoint ? 4 : 5.5, 0, Math.PI * 2);
+      context.fillStyle = isEndpoint ? color : hexToRgba(color, 0.2);
+      context.fill();
+      context.strokeStyle = color;
+      context.lineWidth = isEndpoint ? 1.5 : 2;
+      context.stroke();
+    }
+    context.restore();
   }
 
   context.restore();
 
-  if (!preview && selected && !state.locked) drawHandles(context, drawing, screen, state, color);
+  if (!preview && (selected || showHandles) && !state.locked) {
+    drawHandles(context, drawing, screen, state, color);
+  }
 }
 
 function visibleOnPane(drawing, screen, width, height) {
@@ -388,7 +404,7 @@ class DrawingRenderer {
         if (previewId && drawing.id === previewId) continue;
         const screen = drawingToScreen(chart, series, drawing, projection);
         if (!visibleOnPane(drawing, screen, width, height)) continue;
-        drawDrawing(context, drawing, screen, state, false);
+        drawDrawing(context, drawing, screen, state, false, drawing.id === state.hoveredDrawing);
       }
 
       if (preview) {

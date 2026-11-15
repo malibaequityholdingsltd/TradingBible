@@ -73,10 +73,11 @@ function Hero({ status, data, user }) {
     <section className="ia-hero">
       <div className="ia-hero-copy">
         <div className="ia-eyebrow"><span className="ia-eyebrow-dot" /> Investor access</div>
-        <h1>Your ownership,<br /><span>clearly recorded.</span></h1>
+        <h1>Your access,<br /><span>clearly recorded.</span></h1>
         <p className="ia-hero-lead">
-          A private, read-only view of the shares investor relations has verified in your name.
-          This is not a public register, a transfer agent, or a market quote.
+          A private, read-only view of any shares investor relations has verified in your name.
+          No issued-share register or cap table is represented today. This is not a public register,
+          a transfer agent, or a market quote.
         </p>
         <div className="ia-hero-tags">
           <span><Fingerprint /> Authenticated</span>
@@ -297,13 +298,13 @@ function PendingView({ data, reload, justSubmitted }) {
             <li><CheckCircle2 /> IR confirms your legal name and identity.</li>
             <li><CheckCircle2 /> IR matches the request to an executed ownership record.</li>
             <li><CheckCircle2 /> IR records the verification decision.</li>
-            <li><CheckCircle2 /> Only then are your positions and voting history returned.</li>
+            <li><CheckCircle2 /> Only then would any executed position or voting history be returned.</li>
           </ul>
           <div className="ia-note"><ShieldCheck className="h-4 w-4" /><span>No position is created, transferred or changed by this request.</span></div>
         </section>
         <section className="ia-panel ia-panel--muted">
           <div className="ia-panel-head"><span className="ia-step">Privacy</span><h3>Private by design</h3></div>
-          <p className="ia-body-copy">The register is not public. The portal never exposes another shareholder's identity, position or contact details.</p>
+          <p className="ia-body-copy">No shareholder register is published. The portal never exposes another shareholder's identity, position or contact details.</p>
           <div className="ia-chip-row"><AtBadge tone="green">Authenticated</AtBadge><AtBadge tone="muted">Read-only</AtBadge><AtBadge tone="amber">IR reviewed</AtBadge></div>
         </section>
       </aside>
@@ -419,7 +420,7 @@ function ApprovedView({ data, reload }) {
           </div>
           <div className="ia-panel">
             <div className="ia-panel-head"><span className="ia-step">Account security</span><h3>Protect access to your record</h3><p>Privileged records deserve stronger authentication.</p></div>
-            <div className="ia-note"><ShieldCheck className="h-4 w-4" /><span>Enable multi-factor authentication on your TradingBible account. Never share your sign-in code. Shareholder access is read-only and every privileged change is audited.</span></div>
+            <div className="ia-note"><ShieldCheck className="h-4 w-4" /><span>Enable multi-factor authentication on your TradingBible account. Never share your sign-in code. Shareholder access is read-only and every privileged change is recorded in the audit log.</span></div>
             <div className="ia-security-grid">
               <div><span>Email</span><strong>{shareholder.email || '—'}</strong></div>
               <div><span>Access</span><strong className="is-green">Verified · read-only</strong></div>
@@ -458,7 +459,7 @@ function BlockedView({ status, data }) {
         <section className="ia-panel ia-panel--muted">
           <div className="ia-panel-head"><span className="ia-step">Read-only</span><h3>No ownership change</h3></div>
           <p className="ia-body-copy">This portal never transfers, cancels or issues shares, and it never casts a vote. A change to your legal record must go through investor relations and the company's executed records.</p>
-          <div className="ia-chip-row"><AtBadge tone="muted">No transfers</AtBadge><AtBadge tone="muted">No voting execution</AtBadge><AtBadge tone="muted">Audited</AtBadge></div>
+          <div className="ia-chip-row"><AtBadge tone="muted">No transfers</AtBadge><AtBadge tone="muted">No voting execution</AtBadge><AtBadge tone="muted">Audit trail</AtBadge></div>
         </section>
       </aside>
     </div>
@@ -527,7 +528,7 @@ export default function InvestorAccessPage() {
 
         <footer className="ia-disclosure">
           <ShieldCheck className="h-3.5 w-3.5" />
-          <span>Shareholder records are private and read-only. The portal is not a transfer agent, securities intermediary, voting platform or source of a share price. TB is a proposed ticker and the company is not publicly traded. Email {TB_ISSUER.irEmail} for access questions.</span>
+          <span>Shareholder access is private and read-only. No shareholder register is published. The portal is not a transfer agent, securities intermediary, voting platform or source of a share price. TB is a proposed ticker and the company is not publicly traded. Email {TB_ISSUER.irEmail} for access questions.</span>
         </footer>
       </div>
     </AppLayout>

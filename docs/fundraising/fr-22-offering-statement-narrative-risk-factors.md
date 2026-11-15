@@ -2,7 +2,7 @@
 
 ## 1. Summary of the company
 
-**TradingBible Holdings, Inc.** is a corporation organized under the laws of the State of [Delaware] (jurisdiction to be confirmed by counsel) that operates the TradingBible platform, a financial-technology product for traders, investors and students. The platform combines a trading terminal, a broker-synced journal, risk and performance analytics, AI-generated reviews, market data, structured education, funded evaluations and a member community.
+**TradingBible Holdings. Inc.** is a corporation organized under the laws of the State of Delaware (formed 28 October 2026; file no. 10821679; good standing 3 November 2026) that operates the TradingBible platform, a financial-technology product for traders, investors and students. The platform combines a trading terminal, a broker-synced journal, risk and performance analytics, AI-generated reviews, market data, structured education, funded evaluations and a member community.
 
 The company’s public launch date is **25 December 2026**. The public plans are a **Free** account and **TradingBible Premium** at **US$19.99 per month or US$199 per year**. Academy 2.0 is offered through the Academy surface and has its own enrollment and pricing. The company is not a broker-dealer, investment adviser, exchange, custodian or fund.
 
@@ -62,8 +62,9 @@ If the company raises less than the maximum, it may adjust the allocation, reduc
 
 | Name | Role | Background |
 |---|---|---|
-| Malik Nlem | Chief Executive Officer / Director | [Verified biography to be inserted] |
-| Victor Okechukwu | Vice President | [Verified biography to be inserted] |
+| Malik Nlem | President, Treasurer and Director | [Verified biography to be inserted] |
+| Felicity Nlem | Secretary | [Verified biography to be inserted] |
+| Victor Okechukwu | Director | [Verified biography to be inserted] |
 | [Name] | [Role] | [Verified biography to be inserted] |
 
 The company’s AI research function supports product development. An AI system is not a human officer, director, employee or fiduciary and does not replace management judgment.
@@ -72,7 +73,7 @@ The company’s AI research function supports product development. An AI system 
 
 | Holder | Security | Shares / instruments | Fully diluted % |
 |---|---|---:|---:|
-| [Founder / holder] | Common stock | [______] | [__]% |
+| [Holder] | Common stock | [______] | [__]% |
 | [Investor] | Preferred stock | [______] | [__]% |
 | [SAFE holder] | SAFE | [______] | [__]% |
 | [Option pool] | Options reserved | [______] | [__]% |

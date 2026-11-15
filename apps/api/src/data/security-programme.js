@@ -1,4 +1,4 @@
-// TradingBible Holdings, Inc. — information security and resilience programme.
+// TradingBible Holdings. Inc. — information security and resilience programme.
 //
 // This file is the source of truth for the admin security register. A control
 // definition is not evidence that the control operates. Evidence, management
@@ -7,7 +7,7 @@
 // compliance or a completed penetration test.
 
 export const SECURITY_PROGRAMME_PROFILE = Object.freeze({
-  companyName: 'TradingBible Holdings, Inc.',
+  companyName: 'TradingBible Holdings. Inc.',
   owner: 'Security owner not appointed',
   securityEmail: 'security@tradingbible.app',
   framework: 'NIST Cybersecurity Framework 2.0',

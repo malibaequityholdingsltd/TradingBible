@@ -1,6 +1,6 @@
-# TRADINGBIBLE HOLDINGS, INC. — ACCEPTABLE USE AND INFORMATION SECURITY POLICY
+# TRADINGBIBLE HOLDINGS. INC. — ACCEPTABLE USE AND INFORMATION SECURITY POLICY
 
-**Controlled template · Version 1.0 · 12 November 2026**
+**Controlled template · Version 1.1 · 14 November 2026**
 
 > **Controlled template — counsel and security review required.** This policy is a company control framework. It is not legal advice and it does not replace the security standards required by a customer contract, regulator or insurer. Local law may require consultation, a works-council review, a privacy notice or a specific monitoring disclosure before it is adopted.
 
@@ -102,7 +102,7 @@ Signature: ______________________________
 
 Date: _______________________________
 
-**TRADINGBIBLE HOLDINGS, INC.**
+**TRADINGBIBLE HOLDINGS. INC.**
 
 Printed name: ______________________________
 

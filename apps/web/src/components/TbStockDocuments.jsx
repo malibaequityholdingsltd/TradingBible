@@ -60,9 +60,14 @@ export function TbStockDocumentCard({ doc, onRead, compact = false }) {
 export function TbStockDocumentLibrary({ documents, loading, error, onRead, limit, emptySub }) {
   const shown = limit ? (documents || []).slice(0, limit) : (documents || []);
   if (loading) {
+    // Nine instruments are published. Reserve the full grid while the
+    // library request is in flight so the section below does not jump when
+    // the cards replace the placeholder.
     return (
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {[1, 2, 3].map((n) => <div key={n} className="at-card h-56 animate-pulse bg-[var(--at-soft)]" />)}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-busy="true" aria-label="Loading TB stock documents">
+        {Array.from({ length: 9 }, (_, index) => (
+          <div key={index} className="at-card h-[14.5rem] animate-pulse bg-[var(--at-soft)]" />
+        ))}
       </div>
     );
   }

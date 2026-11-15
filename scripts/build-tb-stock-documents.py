@@ -116,7 +116,9 @@ DOCUMENTS = [
 ]
 
 PARTY = "Malik Nlem"
-CAPACITY = "Chief Executive Officer"
+# The initial resolutions appoint Malik Nlem as President, Treasurer and
+# Director. No CEO, CFO, COO or VP appointment exists in the supplied record.
+CAPACITY = "President, Treasurer and Director"
 OPTIONAL_PARTY = "Additional Authorized Signatory"
 OPTIONAL_CAPACITY = "Authorized Signatory"
 
@@ -124,12 +126,16 @@ OPTIONAL_CAPACITY = "Authorized Signatory"
 # full signed/unsigned instruments remain in docx-protected/ for DocuSign and
 # the authenticated administrator vault. Replace the longest phrases first.
 PUBLIC_SIGNATORY_REDACTIONS = {
-    "Malik Nlem is identified as Chief Executive Officer in the Company records.":
+    "Malik Nlem is identified as President, Treasurer and Director in the Company’s initial resolutions.":
         "The Company’s authorized officer is identified in the confidential company records.",
-    "AUTHORIZED SIGNATORY Malik Nlem Capacity: Chief Executive Officer":
+    "Malik Nlem is identified as President in the Company records.":
+        "The Company’s authorized officer is identified in the confidential company records.",
+    "Name withheld is identified as President in the Company records.":
+        "The Company’s authorized officer is identified in the confidential company records.",
+    "AUTHORIZED SIGNATORY Malik Nlem Capacity: President, Treasurer and Director":
         "AUTHORIZED SIGNATORY Name withheld Capacity: Authorized Signatory",
     "Malik Nlem": "Name withheld",
-    "Capacity: Chief Executive Officer": "Capacity: Authorized Signatory",
+    "Capacity: President, Treasurer and Director": "Capacity: Authorized Signatory",
 }
 
 # Each tab is anchored to its own line. The labels are unique per signer, so
@@ -147,25 +153,55 @@ OPTIONAL_FIELDS = {
     "date": "Additional date: __________________",
 }
 
-# The 2026 corporate conversion replaced the retired LLC with the official
-# operating company. Normalize every published instrument at build time so
-# Word and PDF copies cannot drift from the live legal pages.
+# The supplied certificate and initial resolutions control the corporate
+# record. Normalize every published instrument at build time so Word and PDF
+# copies cannot drift from the exact filed name or the statutory appointments.
+#
+# Facts proven by the supplied record:
+#   Filed name: TradingBible Holdings. Inc. (period after Holdings)
+#   Delaware file no. 10821679; registered office: 8 The Green, Suite B
+#   Registered agent: Northwest Registered Agent Service, Inc.
+#   Officers: Malik Nlem — President, Treasurer and Director; Felicity Nlem —
+#   Secretary; Victor Okechukwu — Director. No CEO/CFO/COO/VP is appointed.
 ENTITY_REPLACEMENTS = {
-    "TradingBible LLC": "TradingBible Holdings, Inc.",
-    "TradingBible Holdings, Inc..": "TradingBible Holdings, Inc.",
-    "TradingBible, Inc..": "TradingBible Holdings, Inc.",
-    "TradingBible, Inc.": "TradingBible Holdings, Inc.",
-    "TradingBible, Inc": "TradingBible Holdings, Inc.",
-    "TRADINGBIBLE, INC.": "TRADINGBIBLE HOLDINGS, INC.",
-    "TRADINGBIBLE LLC": "TRADINGBIBLE HOLDINGS, INC.",
+    # Longest, most specific phrases first. Source Word runs are also fixed by
+    # normalize_docx_runs() when the phrase is split across runs.
+    "TradingBible Holdings, Inc. is a Delaware corporation organized under the laws of the State of Delaware, under Delaware, United States. Its registered agent is A Registered Agent, Inc., 8 The Green, Suite A, Dover, Delaware 19901. The Company operates the TradingBible technology platform at tradingbible.app.":
+        "TradingBible Holdings. Inc. is a Delaware corporation organized under the laws of the State of Delaware. Its registered office is 8 The Green, Suite B, Dover, Kent County, Delaware 19901, and its registered agent is Northwest Registered Agent Service, Inc. The Company operates the TradingBible technology platform at tradingbible.app.",
+    "Malik Nlem is identified as Chief Executive Officer in the Company records.":
+        "Malik Nlem is identified as President, Treasurer and Director in the Company’s initial resolutions.",
+    "Malik Nlem is identified as President in the Company records.":
+        "Malik Nlem is identified as President, Treasurer and Director in the Company’s initial resolutions.",
+    "AUTHORIZED SIGNATORY Malik Nlem Capacity: Chief Executive Officer":
+        "AUTHORIZED SIGNATORY Malik Nlem Capacity: President, Treasurer and Director",
+    "A Registered Agent, Inc.": "Northwest Registered Agent Service, Inc.",
+    "8 The Green, Suite A, Dover, Delaware 19901":
+        "8 The Green, Suite B, Dover, Kent County, Delaware 19901",
+    "8 The Green, Suite A": "8 The Green, Suite B",
+    ", under Delaware, United States.": ".",
+    "The Chief Executive Officer shall": "The President shall",
+    "Chief Executive Manager": "President",
+    "Capacity: Chief Executive Officer": "Capacity: President, Treasurer and Director",
+    "Chief Executive Officer": "President",
+    "effective Bylaws": "certificate of incorporation and any duly adopted bylaws",
+    "executed Bylaws": "adopted bylaws, if any",
+    "approvals reserved to members": "approvals reserved to the board and stockholders",
+    "member interests": "stockholder interests",
+    "TradingBible Holdings, Inc..": "TradingBible Holdings. Inc.",
+    "TradingBible, Inc..": "TradingBible Holdings. Inc.",
+    "TradingBible, Inc.": "TradingBible Holdings. Inc.",
+    "TradingBible, Inc": "TradingBible Holdings. Inc.",
+    "TradingBible LLC": "TradingBible Holdings. Inc.",
+    "TradingBible, LLC": "TradingBible Holdings. Inc.",
+    "TradingBible Holdings, Inc.": "TradingBible Holdings. Inc.",
+    "TRADINGBIBLE, INC.": "TRADINGBIBLE HOLDINGS. INC.",
+    "TRADINGBIBLE LLC": "TRADINGBIBLE HOLDINGS. INC.",
     "LLC Conversion": "Corporate Conversion",
     "Delaware file number: 10728395.": "Delaware, United States.",
     "Delaware file number: 10728395": "Delaware, United States",
-    "TradingBible, LLC": "TradingBible Holdings, Inc.",
     "a Delaware limited liability company": "a Delaware corporation",
     "Delaware limited liability company": "Delaware corporation",
     "Delaware manager-managed limited liability company": "Delaware corporation",
-    "Chief Executive Manager": "Chief Executive Officer",
     "Sole Member": "Sole Stockholder",
     "sole member": "sole stockholder",
     "membership interests": "shares of common stock",
@@ -178,6 +214,8 @@ ENTITY_REPLACEMENTS = {
     "formed August 10, 2026": "organized under the laws of the State of Delaware",
     "Formation: August 10, 2026.": "Entity records on file.",
     "Owner or Additional Authorized Signatory": "Stockholder or Additional Authorized Signatory",
+    "Founder control": "Control and voting structure",
+    "Founder Control": "Control and voting structure",
 }
 
 # Remove language that could be mistaken for an editable draft status. A
@@ -185,6 +223,9 @@ ENTITY_REPLACEMENTS = {
 # the source's “registration draft” phrasing is both ambiguous and imprecise.
 FINAL_FORM_REPLACEMENTS = {
     "registration draft": "registration statement",
+    "DRAFT": "CONTROLLED RECORD",
+    "draft": "controlled record",
+    "drafted": "prepared",
 }
 
 
@@ -484,23 +525,26 @@ def main() -> None:
 
         prepare_docx(source, docx_path, meta)
         shutil.copy2(docx_path, protected_path)
-        html_text = render_document(protected_path)
+        # The public PDF must use the same redacted reading copy as the public
+        # DOCX. Building it from the protected copy leaked signatory identities
+        # into an artifact that sat in the public storage directory.
+        redact_public_docx(docx_path)
+        assert_no_net_docx(docx_path)
+        html_text = render_document(docx_path)
         assert_no_net_text(html_text, f"{slug}.html")
         html_path = pdf_dir / f"{slug}.html"
         html_path.write_text(html_text, encoding="utf-8")
         build_pdf(html_path, pdf_path)
         html_path.unlink(missing_ok=True)
-        redact_public_docx(docx_path)
-        assert_no_net_docx(docx_path)
 
         documents.append({
             **{key: meta[key] for key in ("slug", "number", "title", "category", "summary")},
-            "subtitle": "TB stock preparation · signature-ready instrument",
-            "status": "Execution copy — signature block open",
+            "subtitle": "TB stock preparation · controlled execution copy",
+            "status": "EXECUTION COPY — signature block open",
             "visibility": "public",
             "classification": "Public execution copy — signature-ready instrument",
-            "version": "October 2026",
-            "signatureFields": "Authorized signatory + conditional additional authorized signatory",
+            "version": "November 2026",
+            "signatureFields": "President, Treasurer and Director + conditional additional authorized signatory",
             "signatureStatus": "Signature required",
             "pdf": f"pdf/{slug}.pdf",
             "docx": f"docx/{slug}.docx",
@@ -545,13 +589,24 @@ def main() -> None:
 
     manifest = {
         "title": "TradingBible TB stock document library",
-        "issuer": "TradingBible Holdings, Inc.",
-        "parentCompany": "TradingBible Holdings, Inc.",
+        "issuer": "TradingBible Holdings. Inc.",
+        "parentCompany": "TradingBible Holdings. Inc.",
+        "legalNameNote": "TradingBible Holdings. Inc. is the exact name printed on the Delaware certificate of incorporation. The comma form “TradingBible Holdings, Inc.” is a commercial name and is not the filed name until a Delaware certificate of correction is accepted.",
+        "delawareFileNumber": "10821679",
+        "jurisdiction": "Delaware, United States",
+        "registeredOffice": "8 The Green, Suite B, Dover, Kent County, Delaware 19901",
+        "registeredAgent": "Northwest Registered Agent Service, Inc.",
+        "authorizedShares": "5,000 shares, par value US$0.0001 per share",
+        "officers": [
+            "Malik Nlem — President, Treasurer and Director",
+            "Secretary — name withheld in the public record",
+            "Victor Okechukwu — Director",
+        ],
+        "officerNote": "The supplied initial resolutions do not appoint a Chief Executive Officer, Chief Financial Officer, Chief Operating Officer or Vice President. No such title is used in these instruments.",
         "ticker": "TB",
         "tickerStatus": "Proposed — not reserved or approved",
-        "jurisdiction": "Delaware, United States",
-        "updated": "October 2026",
-        "notice": "TB is a proposed future ticker. These signature-ready preparation instruments are not an offer, solicitation, listing application, regulatory approval, or evidence that TB is publicly traded. DocuSign execution is recorded separately; no signature is fabricated.",
+        "updated": "November 2026",
+        "notice": "TB is a proposed future ticker. These controlled execution copies are not an offer, solicitation, listing application, regulatory approval, or evidence that TB is publicly traded. They remain unsigned unless a completed DocuSign envelope exists in the controlled record; no signature is fabricated.",
         "documents": documents,
     }
     (STORAGE / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")

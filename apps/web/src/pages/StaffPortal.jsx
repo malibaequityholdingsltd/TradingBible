@@ -21,7 +21,9 @@ const LAUNCH_DATE = new Date('2026-12-25T00:00:00Z');
 const CHECKLIST_KEY = 'tb:staff:checklist';
 
 const COMPANY = {
-  operator: 'TradingBible Holdings, Inc.',
+  operator: 'TradingBible Holdings. Inc.',
+  preferredName: 'TradingBible Holdings, Inc.',
+  nameNote: 'Filed name prints a period after Holdings; comma form is intended and a certificate of correction is pending.',
   launch: '25 December 2026',
   site: 'tradingbible.app',
 };

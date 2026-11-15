@@ -69,7 +69,7 @@ export default function TbStockDocumentsPage() {
                 <p className="text-[10px] font-semibold text-[var(--at-ink)]">
                   Public reading copies. Signatory names, capacities and execution details are withheld; only the recorded execution status is shown.
                 </p>
-                <p className="mt-1 text-[10px] leading-relaxed text-[var(--at-mut)]">
+                <p className="mt-1 min-h-[2.1rem] text-[10px] leading-relaxed text-[var(--at-mut)]">
                   {meta?.notice || 'TB is a proposed future ticker. These instruments are not an offer, listing approval, or evidence of a public market.'}{' '}
                   The library remains separate from TBC token documents and from shareholder ownership records.
                 </p>
@@ -93,7 +93,7 @@ export default function TbStockDocumentsPage() {
                 <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--at-green)]" />
                 <div>
                   <p className="text-[10px] font-bold text-[var(--at-ink)]">DocuSign is the execution provider</p>
-                  <p className="mt-1 text-[10px] leading-relaxed text-[var(--at-mut)]">
+                  <p className="mt-1 min-h-[2.1rem] text-[10px] leading-relaxed text-[var(--at-mut)]">
                     Execution is managed privately. Signatory identities and tab assignments are never published in the public library.
                   </p>
                 </div>
@@ -104,7 +104,7 @@ export default function TbStockDocumentsPage() {
                 <FileSignature className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--at-amber)]" />
                 <div>
                   <p className="text-[10px] font-bold text-[var(--at-ink)]">No public market is implied</p>
-                  <p className="mt-1 text-[10px] leading-relaxed text-[var(--at-mut)]">
+                  <p className="mt-1 min-h-[2.1rem] text-[10px] leading-relaxed text-[var(--at-mut)]">
                     {TB_ISSUER.tickerStatus}. {TB_ISSUER.exchangeStatus}. No share price, market capitalisation, volume, or listing approval exists.
                   </p>
                 </div>

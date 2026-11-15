@@ -44,7 +44,7 @@ export default function FundPage() {
       <PublicPageHead
         eyebrow="TradingBible Capital"
         title={<>A proposed hedge fund, <span className="tb-gold-text">built on the same record.</span></>}
-        description="TradingBible Capital is the proposed asset-management and hedge-fund division of TradingBible Holdings, Inc. The operating platform is live; the fund is not. No vehicle, outside capital, AUM, track record or investor offering exists today."
+        description="TradingBible Capital is the proposed asset-management and hedge-fund division of TradingBible Holdings. Inc. (filed name; intended commercial form: TradingBible Holdings, Inc.). The operating platform is in launch preparation; the fund is not. No vehicle, outside capital, AUM, track record or investor offering exists today."
         meta={['In formation', 'No fund offered', 'No AUM or track record']}
         actions={(
           <>
@@ -241,7 +241,7 @@ export default function FundPage() {
 
       <PublicCTA
         eyebrow="Start with the platform"
-        title={<>The fund is a proposal. <span className="tb-gold-text">The platform is live.</span></>}
+        title={<>The fund is a proposal. <span className="tb-gold-text">The platform is preparing for launch.</span></>}
         body="Explore the terminal, journal, analytics, Academy and prop desk. Fund inquiries are routed to the team; no investment is offered."
         primary="Explore the platform"
         primaryTo="/features"

@@ -2,7 +2,7 @@
 
 ## 1. Certificate
 
-The undersigned, **Malik Nlem**, in his capacity as Chief Executive Officer of **TradingBible Holdings, Inc.**, a corporation organized under the laws of the State of [Delaware] (the “Company”), certifies to the Company, its board of directors and counsel, in connection with the proposed private placement of post-money SAFE instruments (the “Offering”), as follows. The jurisdiction and good-standing status remain subject to confirmation from company records and a current good-standing certificate.
+The undersigned, **Malik Nlem**, in his capacity as President of **TradingBible Holdings. Inc.**, a corporation organized under the laws of the State of Delaware (the “Company”), certifies to the Company, its board of directors and counsel, in connection with the proposed private placement of post-money SAFE instruments (the “Offering”), as follows. The company was formed in Delaware on 28 October 2026 under file no. 10821679 and was in good standing on 3 November 2026, as recorded in the certified copy and good-standing certificate.
 
 1. I have reviewed the Company’s charter, bylaws, board resolutions, stock ledger, SAFE register, option records, debt records and the Offering documents.
 2. The information in the schedules to this certificate is true, complete and accurate as of the date signed, subject only to the stated assumptions and qualifications.
@@ -21,7 +21,7 @@ The undersigned, **Malik Nlem**, in his capacity as Chief Executive Officer of *
 
 | Security | Authorized | Issued and outstanding | Reserved for options | Reserved for SAFEs | Fully diluted | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Common stock | [______] | [______] | [______] | [______] | [______] | [______] |
+| Common stock | 5,000 | [Not proven — confirm stock ledger] | 0 | 0 | [______] | Authorized 5,000 shares at $0.0001 par; no issued shares or ledger in the supplied record. Any issuance above 5,000 requires a charter amendment. |
 | Preferred stock | [______] | [______] | [______] | [______] | [______] | [______] |
 | Options / warrants | — | [______] | [______] | — | [______] | [______] |
 | SAFEs | — | [______] | — | [______] | [______] | [______] |
@@ -73,8 +73,9 @@ The fully diluted number must state the treatment of each SAFE, option pool, war
 
 | Covered person | Role | Questionnaire received | Disqualifying event? | Disclosure required? |
 |---|---|---|---|---|
-| Malik Nlem | Chief Executive Officer / Director | [Yes / No] | [Yes / No] | [Yes / No] |
-| Victor Okechukwu | Vice President | [Yes / No] | [Yes / No] | [Yes / No] |
+| Malik Nlem | President, Treasurer and Director | [Yes / No] | [Yes / No] | [Yes / No] |
+| Felicity Nlem | Secretary | [Yes / No] | [Yes / No] | [Yes / No] |
+| Victor Okechukwu | Director | [Yes / No] | [Yes / No] | [Yes / No] |
 | [Name] | [Role] | [Yes / No] | [Yes / No] | [Yes / No] |
 
 The Company must complete this schedule for every covered person before the first sale. A “yes” answer requires counsel review and, where applicable, the disclosure and reasonable-care analysis required by Rule 506(d).

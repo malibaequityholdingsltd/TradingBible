@@ -34,8 +34,8 @@ import { companyJobs } from '../apps/api/src/data/company-jobs.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'docs', 'hr');
-const VERSION = '1.0';
-const ISSUED = '12 November 2026';
+const VERSION = '1.1';
+const ISSUED = '14 November 2026';
 const HEADER = `**Controlled template · Version ${VERSION} · ${ISSUED}**
 
 > **Controlled template — counsel review and local adoption required.** This document is a company policy or reference framework. It is not an executed agreement, a legal opinion, a regulatory approval, a payroll filing, an insurance policy or a promise of a benefit. Record adoption and approval references in the Workforce Compliance Register before treating it as operative. Local addenda control where they are more protective.`;

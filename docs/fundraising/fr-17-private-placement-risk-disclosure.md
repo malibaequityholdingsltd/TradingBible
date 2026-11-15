@@ -1,4 +1,4 @@
-> **Investor risk disclosure.** Read this document in full before signing a SAFE. An investment in TradingBible Holdings, Inc. involves a high degree of risk. You may lose the entire amount invested. This document does not describe every risk, and the company may discover new risks after the date of this document.
+> **Investor risk disclosure.** Read this document in full before signing a SAFE. An investment in TradingBible Holdings. Inc. involves a high degree of risk. You may lose the entire amount invested. This document does not describe every risk, and the company may discover new risks after the date of this document.
 
 ## 1. Early-stage company risk
 
@@ -18,11 +18,11 @@ The Valuation Cap is a negotiated ceiling, not a guarantee of value. It does not
 
 ## 5. Management and key-person risk
 
-The company depends on a small team, including its founder and chief executive officer. The loss of a key person, a dispute among founders or an inability to hire qualified staff could harm the business. The company’s documented team includes an AI research function; an AI system is not a human officer, employee or fiduciary and may produce incomplete or incorrect output.
+The company depends on a small team, including its President and key personnel. The loss of a key person, a dispute among key personnel or an inability to hire qualified staff could harm the business. The company’s documented team includes an AI research function; an AI system is not a human officer, employee or fiduciary and may produce incomplete or incorrect output.
 
 ## 6. Regulatory and licensing risk
 
-The company is not a licensed broker-dealer, investment adviser, exchange, custodian or fund. Its proposed brokerage, fund, card, token and digital-asset initiatives require licences, approvals, banking relationships, custody arrangements and compliance infrastructure that the company does not currently have. Those initiatives may never launch. A launch date, corporate registration, D-U-N-S number or EIN is not a regulatory licence or an approval of any product.
+The company is not a licensed broker-dealer, investment adviser, exchange, custodian or fund. Its proposed brokerage, fund, card, token and digital-asset initiatives require licences, approvals, banking relationships, custody arrangements and compliance infrastructure that the company does not currently have. Those initiatives may never launch. A launch date, corporate registration, D-U-N-S number or future EIN is not a regulatory licence or an approval of any product.
 
 ## 7. Token and digital-asset risk
 
@@ -58,7 +58,7 @@ If you are outside the United States, your investment may be subject to exchange
 
 ## 15. Related-party and conflict risk
 
-The company’s founders, directors and officers may participate in the round on the same terms as outside investors. They may have interests that differ from yours, including control, compensation, future financing and liquidity preferences. The company has adopted an insider-participation policy, but conflicts may still arise.
+The company’s directors, officers and principal holders may participate in the round on the same terms as outside investors. They may have interests that differ from yours, including control, compensation, future financing and liquidity preferences. The company has prepared an insider-participation policy, but it is not adopted until the board adopts it and conflicts may still arise.
 
 ## 16. Limited information and forward-looking statements
 

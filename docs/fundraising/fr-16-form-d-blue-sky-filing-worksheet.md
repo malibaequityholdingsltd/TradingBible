@@ -18,14 +18,14 @@ The 15-day deadline runs from the first sale, not from the first offer, the firs
 
 | Field | Response |
 |---|---|
-| Legal name | TradingBible Holdings, Inc. |
-| Jurisdiction of incorporation | [Delaware] — confirm from certificate of incorporation |
-| Principal place of business | [________________________________] |
-| Registered office | [On file with the registered agent — insert current address] |
+| Legal name | TradingBible Holdings. Inc. |
+| Jurisdiction of incorporation | Delaware — formed 28 October 2026; file no. 10821679; good standing 3 November 2026 |
+| Principal place of business | Registered office only: 8 The Green, Suite B, Dover, Kent County, DE 19901 (service of process; no principal office proven) |
+| Registered office | 8 The Green, Suite B, Dover, Kent County, DE 19901 |
 | Telephone | [________________________________] |
 | Email | legal@tradingbible.app |
 | Website | https://tradingbible.app |
-| EIN | [On file — do not include in public copies] |
+| EIN | [Not yet issued — do not fill until IRS notice received] |
 | D-U-N-S | 14-997-6777 — verify before external reliance |
 | Fiscal year end | [________________________________] |
 | Industry group | Financial technology / software |
@@ -37,8 +37,9 @@ List each executive officer, director, promoter and 10% beneficial owner. Includ
 
 | Name | Relationship | Address | Disqualifying event? |
 |---|---|---|---|
-| Malik Nlem | Chief Executive Officer / Director | [__________] | [Yes / No] |
-| Victor Okechukwu | Vice President | [__________] | [Yes / No] |
+| Malik Nlem | President, Treasurer and Director | [__________] | [Yes / No] |
+| Felicity Nlem | Secretary | [__________] | [Yes / No] |
+| Victor Okechukwu | Director | [__________] | [Yes / No] |
 | [__________] | [__________] | [__________] | [Yes / No] |
 
 ## 4. Offering data

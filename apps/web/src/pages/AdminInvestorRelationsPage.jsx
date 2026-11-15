@@ -423,7 +423,7 @@ function AccessTab({ data, reload }) {
   }
   return (
     <div className="ir-stack-lg">
-      <AtAlert icon={ShieldCheck} tone="amber"><span className="font-bold">Verify before approving.</span> Approval requires an identity match and an executed ownership record. The portal never executes a transfer, issuance or vote. All decisions are audited.</AtAlert>
+      <AtAlert icon={ShieldCheck} tone="amber"><span className="font-bold">Verify before approving.</span> Approval requires an identity match and an executed ownership record. The portal never executes a transfer, issuance or vote. All decisions are recorded in the audit log.</AtAlert>
       <AtPanel title="Shareholder access and verification" sub="Only a verified shareholder can see their own positions. No public endpoint returns this table.">
         <details className="ir-admin-form">
           <summary>+ Add a shareholder record</summary>

@@ -2,7 +2,7 @@
 
 ## 1. Important notice
 
-This document is confidential and is furnished solely for the recipient’s evaluation of a possible private investment in **TradingBible Holdings, Inc.** It may not be reproduced, distributed, posted, forwarded or made available to any other person, in whole or in part, without the company’s prior written consent.
+This document is confidential and is furnished solely for the recipient’s evaluation of a possible private investment in **TradingBible Holdings. Inc.** It may not be reproduced, distributed, posted, forwarded or made available to any other person, in whole or in part, without the company’s prior written consent.
 
 This summary does not constitute an offer to sell or a solicitation of an offer to buy any security. Any offer will be made only through the definitive SAFE and the related investor documents, and only to:
 
@@ -15,11 +15,15 @@ The company has not registered the securities under the Securities Act of 1933, 
 
 TradingBible is a financial-technology company that builds a trading-intelligence platform around a single record: the trade, the decision and the review. The platform combines a professional trading terminal, a broker-synced journal, performance and risk analytics, AI-generated reviews, signals, market data, structured education and a company record.
 
-**Legal name:** TradingBible Holdings, Inc.  
-**Jurisdiction:** Delaware, United States — to be confirmed by counsel  
+**Legal name:** TradingBible Holdings. Inc. (filed name; intended form: TradingBible Holdings, Inc. — correction pending)  
+**Jurisdiction:** Delaware, United States — formed 28 October 2026; file no. 10821679; good standing 3 November 2026  
+**Registered office:** 8 The Green, Suite B, Dover, Kent County, DE 19901 (service of process; no staffed office proven)  
+**Authorized stock:** 5,000 shares of common stock, par value $0.0001; no issued shares or stock ledger in the supplied record  
+**Officers / directors:** Malik Nlem — President, Treasurer and Director; Felicity Nlem — Secretary; Victor Okechukwu — Director. No CEO, CFO, COO or VP is appointed in the initial resolutions.  
+**EIN:** Not yet issued — no IRS EIN notice is in company records  
 **Website:** https://tradingbible.app  
 **Public launch date:** 25 December 2026  
-**Securities issuer:** TradingBible Holdings, Inc.
+**Securities issuer:** TradingBible Holdings. Inc.
 
 The company is not a broker-dealer, investment adviser, exchange, custodian or fund. It does not provide investment advice, execute trades for clients or hold client funds. Brokerage, fund, card and token activities remain gated and are not part of this offering.
 
@@ -140,7 +144,7 @@ The full package includes:
 
 ## 11. Contact
 
-**TradingBible Holdings, Inc.**  
+**TradingBible Holdings. Inc.**  
 https://tradingbible.app  
 legal@tradingbible.app
 

@@ -1,10 +1,10 @@
-# TRADINGBIBLE HOLDINGS, INC. — US EMPLOYMENT AGREEMENT TEMPLATE
+# TRADINGBIBLE HOLDINGS. INC. — US EMPLOYMENT AGREEMENT TEMPLATE
 
-**Controlled template · Version 1.0 · 12 November 2026**
+**Controlled template · Version 1.1 · 14 November 2026**
 
 > **Controlled template — counsel review and state addendum required.** This is not an executed agreement. It is a template for a US employee. Employment counsel must review the template and the completed terms for the employee’s work state before signature. Do not use this template for a contractor or for an employee outside the United States. Delete inapplicable optional clauses and complete every bracketed field.
 
-This Employment Agreement (the “Agreement”) is made on **[DATE]** between **TradingBible Holdings, Inc.**, a Delaware corporation (the “Company”), and **[EMPLOYEE LEGAL NAME]** (the “Employee”).
+This Employment Agreement (the “Agreement”) is made on **[DATE]** between **TradingBible Holdings. Inc.**, a Delaware corporation (the “Company”), and **[EMPLOYEE LEGAL NAME]** (the “Employee”).
 
 ## 1. Position and duties
 
@@ -86,7 +86,7 @@ Signature: ______________________________
 
 Date: _______________________________
 
-**TRADINGBIBLE HOLDINGS, INC.**
+**TRADINGBIBLE HOLDINGS. INC.**
 
 Printed name: ______________________________
 

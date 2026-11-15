@@ -91,15 +91,19 @@ PUBLIC_META = [
 ]
 
 PUBLIC_SIGNATORY_REDACTIONS = {
+    "Director and authorized officer: Malik Nlem":
+        "Director and authorized officer: Name withheld from the public reading copy",
     "Sole stockholder and director: Malik Nlem":
-        "Sole stockholder and director: Name withheld from the public reading copy",
+        "Director and authorized officer: Name withheld from the public reading copy",
+    "Malik Nlem — President, Treasurer and Director":
+        "Name withheld — President, Treasurer and Director",
     "Printed name:  Malik Nlem": "Printed name:  Name withheld",
     "Malik Nlem": "Name withheld",
 }
 
 INTERNAL_META = [
-    ("01_Sole_Member_Written_Consent_and_Manager_Authorization.docx", "sole-stockholder-consent-director-authorization", "01", "Sole Stockholder Written Consent and Director Authorization", "Corporate authority", "Authorizes investigation and professional engagement; does not authorize a public sale."),
-    ("02_Corporate_Issuer_and_Beneficial_Ownership_Profile.docx", "corporate-issuer-beneficial-ownership-profile", "02", "Corporate Issuer and Beneficial Ownership Profile", "Corporate authority", "Issuer identity, ownership, registered office and corporate-record certification inputs."),
+    ("01_Sole_Member_Written_Consent_and_Manager_Authorization.docx", "stockholder-written-consent-director-authorization", "01", "Stockholder Written Consent and Director Authorization — Controlled Template", "Corporate authority", "Authorizes investigation and professional engagement; does not authorize a public sale or token issuance. Stockholder capacity must be verified against the stock ledger."),
+    ("02_Corporate_Issuer_and_Beneficial_Ownership_Profile.docx", "corporate-issuer-beneficial-ownership-profile", "02", "Corporate Issuer and Beneficial Ownership Profile", "Corporate authority", "Issuer identity, registered office and corporate-record certification inputs. Ownership is not represented; no stock ledger or issued shares were supplied."),
     ("03_Instruction_and_Engagement_Letter_to_Regulatory_Counsel.docx", "instruction-engagement-regulatory-counsel", "03", "Instruction and Engagement Letter to Regulatory Counsel", "Corporate authority", "Scope of counsel engagement and information instructions for the TBC review."),
     ("04_TBC_Whitepaper.docx", "tbc-whitepaper-instrument", "04", "TBC Whitepaper — Project, Utility and Network Framework", "Token & economics", "The controlled whitepaper instrument covering utility, network architecture and release gates."),
     ("05_Tokenomics_and_Vesting.docx", "tokenomics-vesting-instrument", "05", "Token Supply, Allocation and Vesting Instrument", "Token & economics", "Supply policy, illustrative allocation and proposed vesting controls."),
@@ -164,50 +168,113 @@ def render_table(table: Table) -> str:
     return f'<table class="{cls}"><tbody>{"".join(rows)}</tbody></table>'
 
 
+# Exact paragraph repairs run before the generic entity pass. This matters when
+# Word has split a sentence across several runs: the paragraph text still
+# matches even if no single XML text node does. The supplied corporate record
+# proves the exact filed name, the registered office and agent, the 5,000-share
+# authorization, and only the statutory appointments in the initial resolutions.
+# It does not prove issued shares, beneficial ownership, an EIN, an adopted set
+# of bylaws, or a signed lease. Those gaps are stated rather than filled.
+PARAGRAPH_REPLACEMENTS = {
+    "Issuer: TradingBible LLC, a Delaware limited liability company. Sole member and manager: Malik Nlem (ownership represented by management; confirm against signed company records). Proposed asset: TradingBible Coin (TBC). Planned maximum supply: 100,000,000 TBC.":
+        "Issuer: TradingBible Holdings. Inc., a Delaware corporation (Delaware file no. 10821679). Director and authorized officer: Malik Nlem. Ownership is not represented; the supplied record does not include a stock ledger or issued shares. Proposed asset: TradingBible Coin (TBC). Planned maximum supply: 100,000,000 TBC. No TBC token is issued, sold, or offered.",
+    "Sole Member Written Consent and Manager Authorization":
+        "Stockholder Written Consent and Director Authorization — Controlled Template",
+    "The undersigned, Malik Nlem, acting as the sole member holding 100% of the membership interests of TradingBible LLC (the Company), adopts the following resolutions in writing, subject to the Company’s operating agreement and applicable Delaware law.":
+        "The undersigned, [STOCKHOLDER NAME], acting as the sole stockholder holding [NUMBER] shares of common stock of TradingBible Holdings. Inc. (the Company), adopts the following resolutions in writing. Complete this consent only after the Company’s stock ledger and issued-share records confirm the stockholder’s name and number of shares; the supplied corporate record does not prove any issued shares. This controlled form is subject to the Company’s certificate of incorporation and any duly adopted bylaws and applicable Delaware law.",
+    "The Company is a Delaware limited liability company formed August 10, 2026. The Company is evaluating a digital asset designated TradingBible Coin (TBC), with a proposed maximum economic supply of 100,000,000 units and a phased software and blockchain development program.":
+        "The Company is a Delaware corporation formed 28 October 2026. The Company is evaluating a digital asset designated TradingBible Coin (TBC), with a proposed maximum economic supply of 100,000,000 units and a phased software and blockchain development program. No TBC token is issued, sold, or offered by this consent.",
+    "RESOLVED, that the manager is authorized to engage U.S., Nigerian and other relevant legal advisers, technical auditors, tax advisers, compliance providers and financial service providers to evaluate the proposed TBC project; such authorization does not itself authorize a public sale.":
+        "RESOLVED, that the President is authorized to engage U.S., Nigerian and other relevant legal advisers, technical auditors, tax advisers, compliance providers and financial service providers to evaluate the proposed TBC project; such authorization does not itself authorize a public sale or any token issuance.",
+    "RESOLVED, that the Company shall maintain a minute book containing this consent, its operating agreement, membership ledger, contracts, token issuance approvals, audit results, jurisdiction determinations and subsequent amendments.":
+        "RESOLVED, that the Company shall maintain a minute book containing this consent, its certificate of incorporation, any duly adopted bylaws, the stock ledger, contracts, token issuance approvals, audit results, jurisdiction determinations and subsequent amendments. Unissued shares and unsigned documents must be identified as such.",
+    "The manager may sign documents necessary to implement these investigative resolutions within the approved scope. Material economic commitments and issuance terms require written approval entered in the Company records.":
+        "The President may sign documents necessary to implement these investigative resolutions within the approved scope. Material economic commitments and issuance terms require written approval entered in the Company records. This consent does not authorize a public sale, token issuance, SAFE, equity issuance or any payment.",
+    "Malik Nlem — Sole Member / Certifying Manager":
+        "Malik Nlem — President, Treasurer and Director",
+    "Malik Nlem — Sole Member":
+        "[STOCKHOLDER NAME] — Stockholder (capacity to be confirmed)",
+    "Malik Nlem — Manager (separate capacity, if required)":
+        "Malik Nlem — Director (separate capacity, if required)",
+    "Legal name: TradingBible LLC. Jurisdiction: Delaware, United States. Delaware file number: 10728395. Formation: August 10, 2026. EIN: 30-1505740 (confidential; disclose only to appropriate counterparties). D-U-N-S: 149976777.":
+        "Legal name: TradingBible Holdings. Inc. Jurisdiction: Delaware, United States. Delaware file no. 10821679. Formed 28 October 2026; good standing as of 3 November 2026. EIN: not issued / not in the controlled record. D-U-N-S: 14-997-6777 (reported only; verify with D&B before reliance).",
+    "Sole member and 100% beneficial owner: Malik Nlem, as confirmed by the owner. Manager: Malik Nlem. Ownership should be evidenced by the executed operating agreement, membership ledger and any contribution records.":
+        "Ownership: not represented. The supplied record does not include a stock ledger, issued shares, stock purchase agreements or a capitalization table. Record owner and beneficial ownership must be verified against those records before this profile is certified. Director: Malik Nlem (initial resolutions). No 100% beneficial ownership is represented.",
+    "Delaware registered office: 8 The Green, Suite A, Dover, DE 19901; registered agent: A Registered Agent, Inc. Mailing address: 8 The Green #21052, Dover, DE 19901. Management operations are conducted from Nigeria; neither Delaware address is represented as a physical headquarters.":
+        "Delaware registered office: 8 The Green, Suite B, Dover, Kent County, DE 19901; registered agent: Northwest Registered Agent Service, Inc. No verified general mailing address is represented; the registered office is for service of process only. Management operations are conducted from Nigeria; the Delaware address is not represented as a physical headquarters.",
+    "The authorized manager may certify this profile after reconciling the information against the Company’s formation certificate, operating agreement, IRS notice, registered-agent records and current beneficial ownership records.":
+        "The President or another authorized officer may certify this profile only after reconciling the information against the Company’s certificate of incorporation, any duly adopted bylaws, the stock ledger and issued-share records, any IRS EIN notice if issued, registered-agent records and current beneficial ownership records. Until completed, this profile is a controlled template, not a certified beneficial ownership report.",
+    "Provide role-based training and periodic independent effectiveness testing; document findings, corrective actions and board or manager oversight.":
+        "Provide role-based training and periodic independent effectiveness testing; document findings, corrective actions and board or officer oversight.",
+    "The policy covers members, managers, employees, contractors, advisers and persons with material nonpublic information concerning TBC issuance or TradingBible operations.":
+        "The policy covers directors, officers, employees, contractors, advisers and persons with material nonpublic information concerning TBC issuance or TradingBible operations.",
+    "The manager shall not execute this certificate until every required gate is marked complete and supported by a dated exhibit. Any exception must be approved by the competent authority and recorded.":
+        "The President shall not execute this certificate until every required gate is marked complete and supported by a dated exhibit. Any exception must be approved by the competent authority and recorded.",
+    "Collect certificate of formation, current operating agreement, member register, signed resolutions, EIN evidence, registered-agent confirmation and any required good-standing certificate.":
+        "Collect the certificate of incorporation, any duly adopted bylaws, the stock ledger, signed resolutions, any IRS EIN notice if issued, registered-agent confirmation and any required good-standing certificate.",
+    "Before execution, reconcile sole-member ownership, manager appointment and signatory authority against the signed operating agreement, membership ledger and corporate records.":
+        "Before execution, reconcile any stockholder ownership, officer appointment and signatory authority against the certificate of incorporation, any duly adopted bylaws, the stock ledger and corporate records. Do not represent ownership that the stock ledger does not prove.",
+}
+
 ENTITY_REPLACEMENTS = {
-    # The platform operator and the securities issuer are different entities.
-    # These specific operator/controller references must name Holdings before
-    # the generic issuer mapping turns every remaining LLC reference into Inc.
-    "TradingBible LLC is the proposed controller": "TradingBible Holdings, Inc. is the proposed controller",
-    "TradingBible LLC is a Delaware limited liability company, file 10728395, formed August 10, 2026, managed from Nigeria and operating under the tradingbible.app website designation for these materials.": "TradingBible Holdings, Inc. is the proposed TBC issuer and operator of the tradingbible.app website. Corporate registration details remain subject to counsel confirmation.",
+    # Use the exact filed name. The comma form is a commercial name pending a
+    # Delaware certificate of correction, not the name printed on the charter.
+    "TradingBible LLC is the proposed controller": "TradingBible Holdings. Inc. is the proposed controller",
+    "TradingBible LLC is a Delaware limited liability company, file 10728395, formed August 10, 2026, managed from Nigeria and operating under the tradingbible.app website designation for these materials.": "TradingBible Holdings. Inc. is the proposed TBC issuer and operator of the tradingbible.app website. Delaware file no. 10821679; formed 28 October 2026. Corporate registration details remain subject to counsel confirmation.",
     "does not by itself confer an equity interest in TradingBible Holdings, Inc.": "does not by itself confer an equity interest in any TradingBible entity.",
-    "TradingBible Holdings, Inc..": "TradingBible Holdings, Inc.",
-    "TradingBible Holdings, Inc.": "TradingBible Holdings, Inc.",
-    "TradingBible LLC": "TradingBible Holdings, Inc.",
+    "TradingBible Holdings, Inc..": "TradingBible Holdings. Inc.",
+    "TradingBible Holdings, Inc.": "TradingBible Holdings. Inc.",
+    "TradingBible LLC": "TradingBible Holdings. Inc.",
+    "TRADINGBIBLE HOLDINGS, INC.": "TRADINGBIBLE HOLDINGS. INC.",
+    "TRADINGBIBLE LLC": "TRADINGBIBLE HOLDINGS. INC.",
+    "TRADINGBIBLE, INC.": "TRADINGBIBLE HOLDINGS. INC.",
+    "TradingBible, LLC": "TradingBible Holdings. Inc.",
     "LLC Conversion": "Corporate Conversion",
-    "Delaware file number: 10728395.": "Delaware, United States.",
-    "Delaware file number: 10728395": "Delaware, United States",
-    "TRADINGBIBLE LLC": "TRADINGBIBLE HOLDINGS, INC.",
-    "TRADINGBIBLE, INC.": "TRADINGBIBLE HOLDINGS, INC.",
-    "TradingBible, LLC": "TradingBible Holdings, Inc.",
+    "Delaware file number: 10728395.": "Delaware file no. 10821679.",
+    "Delaware file number: 10728395": "Delaware file no. 10821679",
+    "Delaware file number 10728395": "Delaware file no. 10821679",
+    "Delaware file 10728395": "Delaware file 10821679",
+    "file 10728395": "file 10821679",
     "a Delaware limited liability company": "a Delaware corporation",
     "Delaware limited liability company": "Delaware corporation",
     "Delaware manager-managed limited liability company": "Delaware corporation",
-    "Sole member and 100% beneficial owner": "Sole stockholder and 100% beneficial owner",
-    "Sole member and manager": "Sole stockholder and director",
-    "Sole member / finance": "Sole stockholder / finance",
-    "Sole member / counsel": "Sole stockholder / counsel",
+    "Sole member and 100% beneficial owner": "Ownership not represented",
+    "Sole stockholder and 100% beneficial owner": "Ownership not represented",
+    "Sole member and manager": "Director and authorized officer",
+    "Sole stockholder and director": "Director and authorized officer",
+    "Sole member / finance": "Director and authorized officer / finance",
+    "Sole member / counsel": "Director and authorized officer / counsel",
+    "Sole stockholder / finance": "Director and authorized officer / finance",
+    "Sole stockholder / counsel": "Director and authorized officer / counsel",
     "membership ledger": "stock ledger",
-    "Sole Member": "Sole Stockholder",
-    "sole member": "sole stockholder",
+    "Sole Member": "Stockholder",
+    "Sole Stockholder": "Stockholder",
+    "sole member": "stockholder",
+    "sole stockholder": "stockholder",
     "Manager Authorization": "Director Authorization",
     "manager-managed": "board-managed",
     "membership interests": "shares of common stock",
+    "executed operating agreement": "certificate of incorporation and any duly adopted bylaws",
+    "current operating agreement": "any duly adopted bylaws",
+    "signed operating agreement": "adopted bylaws, if any",
     "Operating Agreement": "Bylaws",
-    "operating agreement": "bylaws",
+    "operating agreement": "bylaws, if any",
     "Certificate of Formation": "Certificate of Incorporation",
     "certificate of formation": "certificate of incorporation",
-    "Chief Executive Manager": "Chief Executive Officer",
+    "Chief Executive Manager": "President",
     "Certifying Manager": "Certifying Director",
     "Manager (separate capacity, if required)": "Director (separate capacity, if required)",
     "Manager: Malik Nlem": "Director: Malik Nlem",
-    "Sole Member / Certifying Manager": "Sole Stockholder / Certifying Director",
-    "Delaware file number 10728395": "Delaware, United States",
-    "Delaware file 10728395": "Delaware, United States",
-    "file 10728395": "Delaware, United States",
-    "formed August 10, 2026": "organized under the laws of the State of Delaware",
-    "Formation: August 10, 2026.": "Entity records on file.",
-    "EIN: 30-1505740 (confidential; disclose only to appropriate counterparties).": "EIN: on file (confidential; disclose only to appropriate counterparties).",
+    "formed August 10, 2026": "formed 28 October 2026",
+    "Formation: August 10, 2026.": "Formed: 28 October 2026.",
+    "EIN: 30-1505740 (confidential; disclose only to appropriate counterparties).": "EIN: not issued / not in the controlled record.",
+    "EIN: on file (confidential; disclose only to appropriate counterparties).": "EIN: not issued / not in the controlled record.",
+    "EIN evidence": "any IRS EIN notice if issued",
+    "IRS notice": "any IRS EIN notice if issued",
+    "8 The Green, Suite A, Dover, DE 19901": "8 The Green, Suite B, Dover, Kent County, DE 19901",
+    "A Registered Agent, Inc.": "Northwest Registered Agent Service, Inc.",
+    "Mailing address: 8 The Green #21052, Dover, DE 19901.": "No verified general mailing address is represented; the registered office is for service of process only.",
+    "8 The Green #5405": "8 The Green, Suite B",
     "Cannot be assumed from LLC registration": "Cannot be assumed from corporate registration",
     "does not create Delaware LLC membership": "does not create Delaware stockholder rights",
 }
@@ -384,11 +451,22 @@ def main() -> None:
                 raise SystemExit(f"No internal metadata for {source.name}")
             _, slug, number, title, category, summary = match
             subtitle = "Corporate & digital asset governance · controlled instrument"
-            status = "Execution copy — signature block open"
+            status = "EXECUTION COPY — signature block open"
+        if visibility == "public":
+            signature_status = "Not executable — proposal/review copy"
+        else:
+            signature_status = "Signature required"
+        if slug == "stockholder-written-consent-director-authorization":
+            status = "EXECUTION COPY — NOT EXECUTED; stockholder capacity unverified"
+            signature_status = "Not executable until the stock ledger and issued-share records are verified"
+        elif slug == "corporate-issuer-beneficial-ownership-profile":
+            status = "CONTROLLED RECORD — ownership not represented; certification incomplete"
+            signature_status = "Not certifiable until ownership is verified against the stock ledger"
         html_path = pdf_dir / f"{slug}.html"
         pdf_path = pdf_dir / f"{slug}.pdf"
         docx_path = docx_dir / f"{slug}.docx"
         shutil.copy2(source, docx_path)
+        normalize_docx_runs(docx_path, PARAGRAPH_REPLACEMENTS)
         replace_in_docx(docx_path, ENTITY_REPLACEMENTS)
         normalize_docx_runs(docx_path, ENTITY_REPLACEMENTS)
         if visibility == "public":
@@ -410,7 +488,7 @@ def main() -> None:
             "classification": "Public summary" if visibility == "public" else "Confidential — internal / counsel",
             "version": "Corrected layout · November 2026",
             "signatureFields": "Issuer representative + professional reviewer" if visibility == "public" else "Issuer / director + reviewer / custodian (instrument-specific)",
-            "signatureStatus": "Signature required",
+            "signatureStatus": signature_status,
             "pdf": f"pdf/{slug}.pdf",
             "docx": f"docx/{slug}.docx",
             "pdfBytes": pdf_path.stat().st_size,
@@ -420,9 +498,23 @@ def main() -> None:
 
     manifest = {
         "title": "TradingBible TBC controlled document library",
-        "issuer": "TradingBible Holdings, Inc.",
-        "operator": "TradingBible Holdings, Inc.",
+        "issuer": "TradingBible Holdings. Inc.",
+        "operator": "TradingBible Holdings. Inc.",
+        "legalNameNote": "TradingBible Holdings. Inc. is the exact name printed on the Delaware certificate of incorporation. The comma form “TradingBible Holdings, Inc.” is a commercial name and is not the filed name until a Delaware certificate of correction is accepted.",
+        "delawareFileNumber": "10821679",
         "jurisdiction": "Delaware, United States",
+        "registeredOffice": "8 The Green, Suite B, Dover, Kent County, Delaware 19901",
+        "registeredAgent": "Northwest Registered Agent Service, Inc.",
+        "authorizedShares": "5,000 shares, par value US$0.0001 per share",
+        "officers": [
+            "Malik Nlem — President, Treasurer and Director",
+            "Secretary — name withheld in the public record",
+            "Victor Okechukwu — Director",
+        ],
+        "ein": "Not issued / not in the controlled record",
+        "duns": "14-997-6777 (reported only; verify with D&B before reliance)",
+        "officerNote": "The supplied initial resolutions do not appoint a Chief Executive Officer, Chief Financial Officer, Chief Operating Officer or Vice President. No such title is used in these instruments.",
+        "notice": "These are controlled proposal, review and execution-form instruments. No public offering is open, no funds are requested, and no SAFE, equity or token terms are approved. No TBC token is issued, sold or offered. Ownership is not represented without a stock ledger and issued-share records. Signature fields remain unsigned unless a completed signature record exists in the controlled record.",
         "updated": "November 2026",
         "source": "TBC corrected-layout and signature-field packages",
         "documents": documents,

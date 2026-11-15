@@ -2,8 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   Activity, ArrowRight, BarChart3, Bitcoin, Bot, Coins, DollarSign, Eye,
-  Globe, GraduationCap, LineChart, Mail, Quote, ShieldCheck, Star, Target,
-  TrendingUp,
+  Globe, GraduationCap, LineChart, Mail, ShieldCheck, Target, TrendingUp,
 } from 'lucide-react';
 import { Card, GoldButton } from '@/components/ui-kit';
 import PublicSiteShell, {
@@ -16,7 +15,7 @@ import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 const PROVIDES = [
   { icon: BarChart3, title: 'Trading journal', body: 'A live record of every fill, note and decision, synced from the broker instead of rebuilt by hand.', to: '/features/trading-journal' },
   { icon: Bot, title: 'SI Coach', body: 'A review grounded in your own history: the repeated mistake, the risk leak and one adjustment for the next session.', to: '/features/si-coach' },
-  { icon: LineChart, title: 'Terminal & market data', body: 'Charts, order flow, heatmaps and TradingBible TV across five markets and 250+ symbols.', to: '/features/market-data' },
+  { icon: LineChart, title: 'Terminal & market data', body: 'Charts, order flow, heatmaps and TradingBible TV across five markets and 240+ symbols.', to: '/features/market-data' },
   { icon: ShieldCheck, title: 'Risk tools', body: 'Position sizing, R-multiples, exposure context and alerts built into the workflow before the order.', to: '/features/risk-management' },
   { icon: GraduationCap, title: 'Academy', body: 'Structured lessons on charts, risk, journaling and process — education, never signals or profit claims.', to: '/academy' },
   { icon: Activity, title: 'Analytics & reports', body: 'Equity, drawdown, profit factor, expectancy and Trader Score, with exportable reports for a prop firm or your own review.', to: '/features/performance-analytics' },
@@ -32,15 +31,15 @@ const MARKETS = [
 ];
 
 const TEAM = [
-  { name: 'Malik Nlem', role: 'Founder & CEO', img: '/images/malik-nlem-full.png' },
-  { name: 'Victor Okechukwu', role: 'Vice President', img: '/images/victor-okechukwu-full.png' },
-  { name: 'Maliba SI', role: 'Head of Quantitative Research · AI' },
+  { name: 'Malik Nlem', role: 'President, Treasurer and Director', img: '/images/malik-nlem-full.png' },
+  { name: 'Victor Okechukwu', role: 'Director', img: '/images/victor-okechukwu-full.png' },
+  { name: 'Maliba SI', role: 'SI research function · AI' },
 ];
 
-const TESTIMONIALS = [
-  { quote: 'TradingBible turned my scattered notes into a real process. The SI review flags mistakes I never noticed myself making.', name: 'Sofia R.', role: 'Full-time forex trader' },
-  { quote: 'The broker sync and analytics feel genuinely institutional. It is the first journal that keeps up with my volume.', name: 'Daniel K.', role: 'Crypto swing trader' },
-  { quote: 'Discipline scoring changed how I review. Fewer revenge trades, tighter risk, calmer sessions.', name: 'Aisha B.', role: 'Prop firm trader' },
+const PRINCIPLES = [
+  { n: '01', title: 'Record first', body: 'The trade, the decision and the review belong in one reviewable record, not a folder of screenshots.' },
+  { n: '02', title: 'No invented performance', body: 'We do not publish results we cannot evidence. Simulated data is labelled and empty states stay empty.' },
+  { n: '03', title: 'Private by default', body: 'The company is private and pre-IPO. Public signup stays invite-only while delivery and controls are completed.' },
 ];
 
 export default function AboutPage() {
@@ -81,19 +80,19 @@ export default function AboutPage() {
               <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-14 w-14 shrink-0 rounded-xl object-contain ring-1 ring-[#d4af37]/25" />
               <div>
                 <h2 className="text-lg font-bold tracking-tight text-[#f0ecdd]">{t('abt.ownership', null, 'Owned and operated by TradingBible Holdings, Inc.')}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">TradingBible Holdings, Inc. is a Delaware corporation and the holding company that owns and operates TradingBible. The company is private and not publicly traded. TB is a proposed future ticker; it is not reserved, listed or approved. TBC is a separate proposed token, not equity, and token operations remain disabled.</p>
+                <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">TradingBible Holdings, Inc. is the intended commercial name of the Delaware stock corporation formed 28 October 2026 (file no. 10821679; good standing as of 3 November 2026). The certificate prints the name as TradingBible Holdings. Inc.; a correction is pending. The company is private and not publicly traded. The EIN is not yet issued. TB is a proposed future ticker; it is not reserved, listed or approved. TBC is a separate proposed token, not equity, and token operations remain disabled.</p>
                 <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">TradingBible Capital is the proposed hedge-fund and asset-management division. No fund vehicle, outside capital, AUM, track record or investor offering exists today. <Link to="/fund" className="font-semibold text-[#d4af37] hover:underline">Read the fund status</Link>.</p>
               </div>
             </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              {['Delaware corporation', 'Private · pre-IPO', 'TB proposed ticker', 'TBC separate from equity', 'No public share price', 'No listing approval'].map((item) => (
+              {['Delaware · formed 28 Oct 2026', 'File no. 10821679', 'Good standing · 3 Nov 2026', 'Private · pre-IPO', 'TB proposed ticker', 'No public share price'].map((item) => (
                 <div key={item} className="rounded-lg border border-[#d4af37]/15 bg-[#d4af37]/[0.04] px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.1em] text-[#d4af37]">{item}</div>
               ))}
             </div>
           </Card>
           <div className="space-y-3">
             <PublicNotice><span className="font-semibold text-[#e9e7df]">TB equity and TBC are separate.</span> They have separate supply, ownership, valuation and history. Holding one does not imply the other.</PublicNotice>
-            <PublicCheckList items={['Not a broker-dealer or investment adviser', 'Broker connections are read-only by default', 'Public financial content is published only after approval', 'Shareholder records stay identity-verified and read-only']} columns={1} />
+            <PublicCheckList items={['Not a broker-dealer or investment adviser', 'Broker connections are read-only by default', 'Public financial content is published only after approval', 'Shareholder access is identity-verified and read-only']} columns={1} />
           </div>
         </div>
       </PublicSection>
@@ -161,17 +160,13 @@ export default function AboutPage() {
         </div>
       </PublicSection>
 
-      <PublicSection eyebrow="In their words" title="What the record changed.">
+      <PublicSection eyebrow="Product principles" title="What the record is for.">
         <div className="grid gap-3 lg:grid-cols-3">
-          {TESTIMONIALS.map((tm) => (
-            <Card key={tm.name} className="rounded-xl p-5">
-              <Quote className="h-5 w-5 text-[#d4af37]/70" />
-              <p className="mt-2 text-sm leading-relaxed text-[#c9c4b4]">{tm.quote}</p>
-              <div className="mt-3 flex items-center gap-1 text-[#e8c95a]">{[0, 1, 2, 3, 4].map((i) => <Star key={i} className="h-3 w-3 fill-current" />)}</div>
-              <div className="mt-3 border-t border-white/[0.06] pt-3">
-                <div className="text-sm font-semibold text-[#f0ecdd]">{tm.name}</div>
-                <div className="mt-0.5 text-[11px] text-[#8a8577]">{tm.role}</div>
-              </div>
+          {PRINCIPLES.map((item) => (
+            <Card key={item.n} className="rounded-xl p-5">
+              <span className="font-mono text-[10px] font-bold tracking-[0.18em] text-[#d4af37]">{item.n}</span>
+              <h3 className="mt-2 text-base font-bold text-[#f0ecdd]">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-[#8a8577]">{item.body}</p>
             </Card>
           ))}
         </div>

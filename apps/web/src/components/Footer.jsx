@@ -1,73 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Twitter, Facebook, Linkedin, Instagram, Youtube, LineChart, Lock, ShieldCheck } from 'lucide-react';
+import { Twitter, Facebook, Linkedin, Instagram, Youtube, LineChart, Lock, ShieldCheck } from 'lucide-react';
 import { IosIcon } from '@/components/IosIcon';
 import { BrandName, TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
-import { Marquee } from '@/components/PublicMotion';
+import { PublicStatusStrip, PublicTopicRail } from '@/components/PublicDisclosure';
 import { useAuth } from '@/hooks/useAuth';
 import { homeRouteForUser } from '@/lib/homeRoute';
 import { useI18n } from '@/lib/i18n';
 import { usePlatformSettings } from '@/lib/platformSettings';
 
 const LOGO = TRADINGBIBLE_LOGO;
-
-const PUBLIC_TOPICS = [
-  ['Product & Features', '/features'],
-  ['Trading Journal', '/features/trading-journal'],
-  ['SI Coach', '/features/si-coach'],
-  ['Dashboard', '/features/dashboard'],
-  ['Broker Integrations', '/features/broker-integrations'],
-  ['Market Data', '/features/market-data'],
-  ['Performance Analytics', '/features/performance-analytics'],
-  ['Tools & Subscriptions', '/pricing'],
-  ['Pricing', '/pricing'],
-  ['TBC Token · Proposed', '/tbc'],
-  ['API Access', '/features/api'],
-  ['Premium Features', '/features/premium'],
-  ['Trading Overview', '/features/trading-overview'],
-  ['Community', '/community'],
-  ['Education', '/academy'],
-  ['Academy Courses', '/academy#courses'],
-  ['Company', '/about'],
-  ['Funded Programs', '/programs'],
-  ['Affiliates', '/affiliates'],
-  ['Launch · 25 Dec 2026', '/launch'],
-  ['Investor Relations', '/investors'],
-  ['Fundraising Status', '/fundraising'],
-  ['Help Center', '/faq'],
-  ['Contact', '/contact'],
-];
-
-function PublicStatusStrip() {
-  return (
-    <div className="tb-public-status">
-      <span className="tb-public-status__eyebrow">Fundraising status</span>
-      <strong>No public offering open</strong>
-      <span className="tb-public-status__note">Private company · pre-IPO · no funds requested</span>
-      <Link to="/fundraising" className="tb-public-status__link">
-        Read the record <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-      </Link>
-    </div>
-  );
-}
-
-function PublicTopicRail() {
-  return (
-    <div className="tb-topic-rail">
-      <span className="tb-topic-rail__label">Explore</span>
-      <Marquee
-        items={PUBLIC_TOPICS.map(([label, to]) => (
-          <Link key={to} to={to} className="tb-topic-rail__link">{label}</Link>
-        ))}
-        className="tb-topic-rail__marquee"
-        speed={58}
-        separator="·"
-        minWidth={2400}
-        label="Explore TradingBible topics"
-      />
-    </div>
-  );
-}
 
 // TikTok isn't in lucide-react; a small inline glyph keeps the icon set consistent.
 function TikTokIcon(props) {
@@ -196,6 +138,12 @@ export default function Footer({ compact = false }) {
       <footer className="at-scope tb-footer relative overflow-hidden border-t border-[var(--at-line)] bg-[var(--at-bg1)] text-[var(--at-ink)]">
         <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--at-line-strong)] to-transparent" />
         <div className="mx-auto w-full max-w-none px-3 py-5 sm:px-5">
+          <div className="mb-3.5">
+            <PublicStatusStrip />
+          </div>
+          <div className="mb-4">
+            <PublicTopicRail />
+          </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 flex-wrap items-center gap-3">
               <Link to={homeTo} className="inline-flex items-center gap-2">
@@ -205,7 +153,7 @@ export default function Footer({ compact = false }) {
                 </span>
               </Link>
               <span className="hidden h-4 w-px bg-[var(--at-line-soft)] sm:block" />
-              <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)]">TradingBible Holdings, Inc. · Owner & operator</span>
+              <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-[var(--at-mut)]">TradingBible Holdings. Inc. · filed name</span>
               <Link to="/fundraising" className="rounded-md border border-[var(--at-line)] bg-[var(--at-soft)] px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.1em] text-[var(--at-gold)] hover:border-[var(--at-gold)]/50">
                 Fundraising · none open
               </Link>
@@ -222,7 +170,7 @@ export default function Footer({ compact = false }) {
             </p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] text-[var(--at-mut)]">
               {settings.supportEmail && <a href={`mailto:${settings.supportEmail}`} className="transition hover:text-[var(--at-gold)]">{settings.supportEmail}</a>}
-              <span>© {new Date().getFullYear()} TradingBible Holdings, Inc. · {t('fot.rights')}</span>
+              <span>© {new Date().getFullYear()} TradingBible Holdings. Inc. (filed name; intended: TradingBible Holdings, Inc.) · {t('fot.rights')}</span>
             </div>
           </div>
         </div>
@@ -255,8 +203,8 @@ export default function Footer({ compact = false }) {
             <div className="mt-4 flex items-start gap-3">
               <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-10 w-10 shrink-0 rounded-[10px] border border-[var(--at-line)] bg-[var(--at-panel)] object-contain p-0.5" />
               <p className="text-xs leading-relaxed text-[var(--at-mut-2)]">
-                TradingBible is owned and operated by <span className="font-semibold text-[var(--at-ink-2)]">TradingBible Holdings, Inc.</span>
-                <br />Registered in Delaware, USA.
+                TradingBible is owned and operated by <span className="font-semibold text-[var(--at-ink-2)]">TradingBible Holdings, Inc.</span> (intended commercial name).
+                <br />Delaware filed name: <span className="font-semibold text-[var(--at-ink-2)]">TradingBible Holdings. Inc.</span> · formed 28 October 2026 · file no. 10821679 · good standing 3 November 2026. A name correction is pending.
                 <br />{t('fot.mission')}
               </p>
             </div>
@@ -372,7 +320,7 @@ export default function Footer({ compact = false }) {
               <a href={`mailto:${settings.supportEmail}`} className="transition hover:text-[var(--at-ink)]">{settings.supportEmail}</a>
             )}
           </div>
-          <div>© {new Date().getFullYear()} TradingBible Holdings, Inc. · {t('fot.rights')}</div>
+          <div>© {new Date().getFullYear()} TradingBible Holdings. Inc. (filed name; intended: TradingBible Holdings, Inc.) · {t('fot.rights')}</div>
         </div>
       </div>
     </footer>

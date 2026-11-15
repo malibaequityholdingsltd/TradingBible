@@ -2,7 +2,7 @@
 
 ## 1. Recitals
 
-**A.** TradingBible Holdings, Inc. is a corporation organized under the laws of the State of Delaware. The certificate of incorporation and a current good-standing certificate are the controlling records for this recital.
+**A.** TradingBible Holdings. Inc. is a corporation organized under the laws of the State of Delaware. The certificate of incorporation and a current good-standing certificate are the controlling records for this recital.
 
 **B.** The board of directors has reviewed a proposed private placement of simple agreements for future equity to support the company’s product, operating and launch requirements.
 
@@ -16,7 +16,7 @@
 
 **RESOLVED**, that the company is authorized to offer and sell post-money SAFE instruments in one or more closings, on the terms set out in the form of SAFE attached to this resolution as Exhibit A, for an aggregate purchase price not to exceed **US$[__________]** (the “Maximum Offering Amount”), subject to the limitations in this resolution.
 
-**RESOLVED FURTHER**, that the minimum investment for any single investor is **US$[__________]**, unless the chief executive officer and counsel approve a lower amount in writing for a particular investor.
+**RESOLVED FURTHER**, that the minimum investment for any single investor is **US$[__________]**, unless the president and counsel approve a lower amount in writing for a particular investor.
 
 **RESOLVED FURTHER**, that the valuation cap for the offering is **US$[__________]** on a post-money basis, that no discount applies, and that the pro rata rights, if any, are limited to investors purchasing at least **US$[__________]**.
 
@@ -24,7 +24,7 @@
 
 ## 3. Approval of offering documents
 
-**RESOLVED**, that the board approves the form of the following documents, each in substantially the form presented to the board, with such changes as counsel advises and the chief executive officer approves:
+**RESOLVED**, that the board approves the form of the following documents, each in substantially the form presented to the board, with such changes as counsel advises and the president approves:
 
 1. the Post-Money SAFE attached as Exhibit A;
 2. the Confidential Private Placement Summary and Notice attached as Exhibit B;
@@ -38,7 +38,7 @@
 
 ## 4. Authority of officers
 
-**RESOLVED**, that the chief executive officer, and each other officer expressly designated by the board in writing, is authorized, on behalf of the company, to:
+**RESOLVED**, that the president, and each other officer expressly designated by the board in writing, is authorized, on behalf of the company, to:
 
 1. determine which prospective investors have a pre-existing substantive relationship with the company and are eligible to receive the offering documents;
 2. conduct one-to-one discussions with prospective investors, subject to the communications policy in this resolution;
@@ -56,7 +56,7 @@
 
 **RESOLVED**, that the proceeds of the offering shall be used only for the categories and amounts approved in the budget attached as Schedule A, and that any reallocation above the amount or percentage recorded in Schedule A requires board approval.
 
-**RESOLVED FURTHER**, that the company shall maintain the proceeds in a segregated account or a separately identified ledger until they are applied to the approved budget, and that the chief executive officer shall report the use of proceeds to the board at least quarterly.
+**RESOLVED FURTHER**, that the company shall maintain the proceeds in a segregated account or a separately identified ledger until they are applied to the approved budget, and that the president shall report the use of proceeds to the board at least quarterly.
 
 ## 6. No general solicitation
 
@@ -90,7 +90,7 @@
 
 ## 9. Related-party participation
 
-**RESOLVED**, that any director, officer, founder, employee or affiliate of the company who wishes to purchase SAFEs in the offering may do so only on the same terms as unrelated investors, with full written disclosure of the relationship, and only after the disinterested directors approve the participation.
+**RESOLVED**, that any director, officer, employee, affiliate or holder of more than 5% of the company’s voting securities who wishes to purchase SAFEs in the offering may do so only on the same terms as unrelated investors, with full written disclosure of the relationship, and only after the disinterested directors approve the participation.
 
 **RESOLVED FURTHER**, that no insider may receive material non-public information about other investors, allocation, pricing or closing that is not available to all investors in the offering.
 
@@ -105,7 +105,7 @@
 5. the SAFE register and cap table have been updated; and
 6. counsel has confirmed that the closing does not exceed the Maximum Offering Amount or violate the approved term sheet.
 
-**RESOLVED FURTHER**, that the chief executive officer may waive a condition only if the waiver is in writing, is approved by counsel and does not violate securities law or the board-approved term sheet.
+**RESOLVED FURTHER**, that the president may waive a condition only if the waiver is in writing, is approved by counsel and does not violate securities law or the board-approved term sheet.
 
 ## 11. Records and reports
 
@@ -119,7 +119,7 @@
 6. each Form D and state filing; and
 7. each communication that could constitute an offering communication.
 
-**RESOLVED FURTHER**, that the chief executive officer shall report to the board at least monthly on the status of the offering, the funds received, the securities issued and any compliance exception.
+**RESOLVED FURTHER**, that the president shall report to the board at least monthly on the status of the offering, the funds received, the securities issued and any compliance exception.
 
 ## 12. No other authorization
 

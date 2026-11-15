@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n';
 import { useToast } from '@/hooks/use-toast';
 import PhoneField from '@/components/PhoneField';
+import PublicDisclosure from '@/components/PublicDisclosure';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { Kicker, Card, GoldButton, GhostButton, Note } from '@/components/ui-kit';
 import { signupsAllowed, usePlatformSettings } from '@/lib/platformSettings';
@@ -150,8 +151,8 @@ function Shell({ children }) {
   return (
     <div className="auth-shell relative min-h-screen overflow-hidden px-3 pb-8 pt-[calc(4.75rem+var(--safe-top))] sm:px-6 sm:pb-12 sm:pt-[calc(6.5rem+var(--safe-top))]">
       <div className="absolute inset-0 grain opacity-30" />
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-[#d4af37]/10 blur-[140px]" />
-      <div className="pointer-events-none absolute -bottom-40 -right-24 h-[34rem] w-[34rem] rounded-full bg-[#d4af37]/[0.06] blur-[150px]" />
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-[18rem] w-[18rem] -translate-x-1/2 rounded-full bg-[#d4af37]/10 blur-[140px] sm:h-[36rem] sm:w-[36rem]" />
+      <div className="pointer-events-none absolute -bottom-40 right-0 h-[22rem] w-[22rem] rounded-full bg-[#d4af37]/[0.06] blur-[150px] sm:h-[34rem] sm:w-[34rem]" />
       <div className="relative mx-auto w-full max-w-6xl">
         <div className="flex items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-2.5">
@@ -163,6 +164,9 @@ function Shell({ children }) {
         <div className="mt-8 grid items-center gap-10 lg:mt-12 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
           <div className="hidden lg:block"><HeroPanel /></div>
           <div className="relative z-10 mx-auto w-full max-w-xl lg:max-w-none">{children}</div>
+        </div>
+        <div className="mt-10 sm:mt-12">
+          <PublicDisclosure />
         </div>
       </div>
     </div>
@@ -302,7 +306,7 @@ function AuthFormFrame({ mode, title, subtitle, step, totalSteps, children, foot
   return (
     <Card className="relative overflow-hidden p-4 sm:p-6 lg:p-8">
       <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#d4af37]/70 to-transparent" />
-      <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#d4af37]/10 blur-3xl" />
+      <div className="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-full bg-[#d4af37]/10 blur-3xl sm:h-56 sm:w-56" />
       <div className="relative space-y-5 sm:space-y-6">
         <AuthTabs mode={mode} t={tt} />
         <div className="space-y-1.5">

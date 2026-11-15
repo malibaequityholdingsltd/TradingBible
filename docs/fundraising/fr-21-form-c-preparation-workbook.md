@@ -12,14 +12,14 @@
 
 | Form C field | Response | Source | Status |
 |---|---|---|---|
-| Legal name | TradingBible Holdings, Inc. | Company records | Confirm |
-| Jurisdiction of incorporation | [Delaware] | Certificate of incorporation | OPEN |
+| Legal name | TradingBible Holdings. Inc. | Company records | Confirm |
+| Jurisdiction of incorporation | Delaware — formed 28 October 2026; file no. 10821679; good standing 3 November 2026 | Certificate of incorporation | Verified |
 | Date of incorporation | [__________] | Certificate of incorporation | OPEN |
 | Principal place of business | [__________] | Company records | OPEN |
 | Website | https://tradingbible.app | Public site | Verified |
 | Telephone | [__________] | Company records | OPEN |
 | Email | legal@tradingbible.app | Public site | Verified |
-| EIN | [On file — confidential] | Tax records | Confirm |
+| EIN | [Not yet issued — pending IRS notice] | Tax records | OPEN |
 | D-U-N-S | 14-997-6777 | Company records | Verify |
 | Industry group | Financial technology / software | Company records | Confirm |
 | NAICS | 511210 | Company records | Confirm |
@@ -104,15 +104,16 @@
 
 | Person | Role | Compensation | Ownership % | Related-party transactions | Bio |
 |---|---|---:|---:|---|---|
-| Malik Nlem | Chief Executive Officer / Director | US$[______] | [__]% | [__________] | [__________] |
-| Victor Okechukwu | Vice President | US$[______] | [__]% | [__________] | [__________] |
+| Malik Nlem | President, Treasurer and Director | US$[______] | [__]% | [__________] | [__________] |
+| Felicity Nlem | Secretary | US$[______] | [__]% | [__________] | [__________] |
+| Victor Okechukwu | Director | US$[______] | [__]% | [__________] | [__________] |
 | [Name] | [Role] | US$[______] | [__]% | [__________] | [__________] |
 
 ## 9. Capitalization
 
 | Security | Authorized | Outstanding | Options / warrants | Convertible | Fully diluted % |
 |---|---:|---:|---:|---:|---:|
-| Common stock | [______] | [______] | [______] | [______] | [__]% |
+| Common stock | 5,000 | [Not proven — confirm ledger] | 0 | 0 | [__]% |
 | Preferred stock | [______] | [______] | [______] | [______] | [__]% |
 | SAFEs | — | [______] | — | [______] | [__]% |
 | Convertible notes | — | [______] | — | [______] | [__]% |

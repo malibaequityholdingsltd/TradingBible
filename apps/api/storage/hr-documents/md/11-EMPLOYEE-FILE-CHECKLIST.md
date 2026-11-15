@@ -1,6 +1,6 @@
-# TRADINGBIBLE HOLDINGS, INC. — EMPLOYEE FILE CHECKLIST
+# TRADINGBIBLE HOLDINGS. INC. — EMPLOYEE FILE CHECKLIST
 
-**Controlled template · Version 1.0 · 12 November 2026**
+**Controlled template · Version 1.1 · 14 November 2026**
 
 > **Controlled template — counsel review and local adoption required.** This document is a company policy or reference framework. It is not an executed agreement, a legal opinion, a regulatory approval, a payroll filing, an insurance policy or a promise of a benefit. Record adoption and approval references in the Workforce Compliance Register before treating it as operative. Local addenda control where they are more protective.
 
@@ -24,13 +24,13 @@ Collect only what is necessary for the role and the work location. Identity, med
 | 4 | CV or employment application | Keep the application, CV and interview record used for the hiring decision. Retain according to the records schedule. | Application record | People Operations |
 | 5 | Verified qualifications and professional certifications | Verify only where the role requires a qualification or licence. Do not ask for irrelevant educational records. | Verification note and certificate reference | People Operations |
 | 6 | Evidence of legal right to work in the country of employment | Complete the local right-to-work check before day one. Do not assume a US work authorisation covers a role performed in another country. | Completed right-to-work check | People Operations |
-| 7 | Signed employment contract | Use the local contract and any addendum. Record the version signed and the effective date. | Signed contract in the personnel file | People Operations / General Counsel |
-| 8 | Signed confidentiality agreement | The NDA must be signed before access to confidential information, customer data or source code. | Signed NDA | General Counsel |
-| 9 | Signed intellectual-property and invention-assignment agreement | Cover present and future work, inventions, code, content and designs. Follow local employee-invention rules. | Signed IP assignment | General Counsel |
+| 7 | Signed employment contract | Use the local contract and any addendum. Record the version signed and the effective date. | Signed contract in the personnel file | People Operations / external counsel |
+| 8 | Signed confidentiality agreement | The NDA must be signed before access to confidential information, customer data or source code. | Signed NDA | external counsel |
+| 9 | Signed intellectual-property and invention-assignment agreement | Cover present and future work, inventions, code, content and designs. Follow local employee-invention rules. | Signed IP assignment | external counsel |
 | 10 | Signed acceptable-use and information-security acknowledgement | The acknowledgement must reference the current policy version and the consequences of non-compliance. | Signed acknowledgement | IT / Security |
 | 11 | Bank or approved payment details | Collect through the payroll provider’s secure channel. Do not store full bank details in a spreadsheet or chat. | Payroll-provider confirmation | Payroll |
 | 12 | Tax and payroll forms required in the employee’s jurisdiction | Collect the local forms before the first payroll run. Keep tax identifiers restricted. | Payroll-provider confirmation | Payroll |
-| 13 | Role-specific licence or background check | Only where legally required and proportionate to the role. Follow local background-check and adverse-action rules. | Licence copy or check reference | People Operations / General Counsel |
+| 13 | Role-specific licence or background check | Only where legally required and proportionate to the role. Follow local background-check and adverse-action rules. | Licence copy or check reference | People Operations / external counsel |
 
 ### Equipment and work tools
 
@@ -60,12 +60,12 @@ Every employee must understand the job, protect company and customer information
 | 3 | Meet deadlines and communicate delays early | Escalate material delays before they become missed commitments. Record changes to agreed dates. | Project record or one-to-one note | Manager |
 | 4 | Attend required meetings and training | Record mandatory training and meeting participation where it affects the role or compliance obligations. | Training and attendance record | Manager / People Operations |
 | 5 | Keep accurate work and time records where required | Use the approved timekeeping method. Do not record hours that were not worked or pressure others to do so. | Timekeeping record | Manager / Payroll |
-| 6 | Protect company and customer information | Follow the NDA, access controls and data-classification rules. Report a suspected disclosure immediately. | Acknowledgement and incident record | Security / General Counsel |
+| 6 | Protect company and customer information | Follow the NDA, access controls and data-classification rules. Report a suspected disclosure immediately. | Acknowledgement and incident record | Security / external counsel |
 | 7 | Follow security and data-protection procedures | Use MFA, approved storage and clean-desk practices. Report lost devices, phishing and suspected account compromise. | Security training completion | Security |
 | 8 | Declare conflicts of interest | Disclose outside business interests, family relationships, gifts and personal trading that could conflict with the role. | Annual conflict declaration | People Operations / Compliance |
 | 9 | Disclose gifts, commissions or outside business interests where required | Follow the gifts-and-entertainment policy and record anything above the approval threshold. | Gift register or declaration | Compliance |
 | 10 | Use company funds and equipment responsibly | Submit accurate expenses with receipts and business purpose. Do not use company funds for personal benefit. | Expense approvals and audit record | Finance |
-| 11 | Report suspected fraud, misconduct, security incidents and compliance concerns | Use the confidential reporting channel. Retaliation is prohibited. | Policy acknowledgement and reporting-channel record | General Counsel / Compliance |
+| 11 | Report suspected fraud, misconduct, security incidents and compliance concerns | Use the confidential reporting channel. Retaliation is prohibited. | Policy acknowledgement and reporting-channel record | external counsel / Compliance |
 | 12 | Treat colleagues, customers and partners professionally | Follow the anti-harassment and equal-opportunity policies. Promote a workplace free of discrimination and retaliation. | Policy acknowledgement | People Operations |
 | 13 | Return company property and access credentials when employment ends | Complete the offboarding checklist, return devices and keys, and confirm access revocation. | Offboarding record | IT / People Operations |
 
@@ -76,13 +76,13 @@ Each person needs a clear title, manager, authority, objectives, development pla
 | # | Item | What must exist | Evidence | Owner |
 | --- | --- | --- | --- | --- |
 | 1 | Clear job title and reporting manager | Record the title, manager and department in the workforce register. A vacant manager position needs a named interim manager. | Workforce register | People Operations |
-| 2 | Written responsibilities and decision-making authority | State what the employee can approve, spend, publish or commit without escalation. Update on promotion or role change. | Job description and delegation record | Manager / CFO |
+| 2 | Written responsibilities and decision-making authority | State what the employee can approve, spend, publish or commit without escalation. Update on promotion or role change. | Job description and delegation record | Manager / Treasurer |
 | 3 | Probation or initial assessment period, if applicable | Use only where lawful. Set the review date, criteria and support. Do not use probation to avoid notice or statutory rights. | Probation terms and review record | People Operations / Manager |
 | 4 | Measurable performance targets | Agree role-specific outcomes and a review cadence. Targets must be achievable with the available tools and authority. | Scorecard and objective record | Manager |
 | 5 | Training and development plan | Identify mandatory compliance, security and role training plus a development budget or plan. | Training plan and completion record | Manager / People Operations |
 | 6 | Regular feedback and performance reviews | Hold regular one-to-ones and a documented review cycle. Give the employee a chance to respond. | One-to-one and review records | Manager |
 | 7 | Clear process for requesting leave, expenses and support | Publish the request routes, approvers and response times. Provide an accommodation and wellbeing route where required. | Policy and workflow record | People Operations |
-| 8 | Route for raising concerns or reporting misconduct | Give the employee a confidential route to People Operations, Legal or the whistleblowing channel, including an escalation route if the concern involves their manager. | Policy acknowledgement and channel list | People Operations / General Counsel |
+| 8 | Route for raising concerns or reporting misconduct | Give the employee a confidential route to People Operations, Legal or the whistleblowing channel, including an escalation route if the concern involves their manager. | Policy acknowledgement and channel list | People Operations / external counsel |
 
 ## 3. United States requirements
 
@@ -93,7 +93,7 @@ These items apply when the employee works in the United States. The state and lo
 | 1 | US Form I-9 employment-eligibility verification | Complete Form I-9 within the lawful timeframe. Review original documents or use an authorised alternative; do not accept expired or unrelated documents. | Completed I-9 and reverification calendar | People Operations |
 | 2 | US Form W-4 and state withholding elections | Collect the federal and applicable state withholding forms before the first payroll run. Let the employee update elections under the provider’s process. | Payroll-provider record | Payroll |
 | 3 | State payroll, unemployment and disability registrations | Register in each state where the employee works. Do not assume the Delaware registration covers a remote employee in another state. | State registration confirmations | Payroll / Tax |
-| 4 | State workers’ compensation or equivalent coverage | Confirm coverage in the employee’s work state. Some states require a specific policy or posting. | Certificate of coverage | CFO / People Operations |
+| 4 | State workers’ compensation or equivalent coverage | Confirm coverage in the employee’s work state. Some states require a specific policy or posting. | Certificate of coverage | Treasurer / People Operations |
 | 5 | Required federal, state and local workplace notices | Provide the notices required at the work location. Remote employees may need electronic delivery plus a physical posting at an office. | Notice-delivery record | People Operations |
 
 ## 4. Nigeria requirements
@@ -115,7 +115,7 @@ These items apply when the employee works in Nigeria. Confirm the current law an
 
 | # | Item | Owner | When |
 | --- | --- | --- | --- |
-| 1 | Role, budget and hiring authority approved | Manager / CFO | Before offer |
+| 1 | Role, budget and hiring authority approved | Manager / Treasurer | Before offer |
 | 2 | Employee or contractor classification confirmed for the work country | People Operations / Counsel | Before offer |
 | 3 | Local employment contract and addenda prepared | People Operations / Counsel | Before offer |
 | 4 | Identity, right-to-work and payroll documents verified | People Operations | Before first day |

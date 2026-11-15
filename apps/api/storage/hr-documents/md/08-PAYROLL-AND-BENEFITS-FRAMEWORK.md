@@ -1,8 +1,8 @@
-# TRADINGBIBLE HOLDINGS, INC. — PAYROLL AND BENEFITS FRAMEWORK
+# TRADINGBIBLE HOLDINGS. INC. — PAYROLL AND BENEFITS FRAMEWORK
 
-**Controlled template · Version 1.0 · 12 November 2026**
+**Controlled template · Version 1.1 · 14 November 2026**
 
-> **Controlled template — CFO, payroll, tax and local counsel review required.** This framework describes how the company should administer pay and benefits. It is not a payroll filing, a benefit plan, an insurance policy or a promise of any benefit. Do not pay a salary, run a payroll, enrol an employee in a pension or promise equity until the lawful route and approvals are in place.
+> **Controlled template — Treasurer, payroll, tax and local counsel review required.** This framework describes how the company should administer pay and benefits. It is not a payroll filing, a benefit plan, an insurance policy or a promise of any benefit. Do not pay a salary, run a payroll, enrol an employee in a pension or promise equity until the lawful route and approvals are in place.
 
 ## 1. Principles
 
@@ -47,7 +47,7 @@ The company may make only lawful deductions. Deductions for taxes, social securi
 
 The company must:
 
-- obtain and use the EIN for employment-tax administration;
+- obtain the EIN when issued and use it for employment-tax administration;
 - complete Form I-9 and retain the record;
 - collect Form W-4 and applicable state withholding elections;
 - withhold and remit federal income tax, Social Security and Medicare, and pay the employer share;
@@ -179,10 +179,10 @@ The budget is not a promise of a role or a benefit. Each hire requires an approv
 | Role | Responsibility |
 | --- | --- |
 | Board / authorised officer | Approves the workforce budget, executive pay and any equity or benefit plan |
-| CFO / Finance | Owns the payroll budget, funding, controls and tax calendar |
+| Treasurer / Finance | Owns the payroll budget, funding, controls and tax calendar |
 | People Operations | Owns contracts, employee records, onboarding, leave and offboarding |
 | Payroll provider | Calculates, withholds, files and pays under the company’s instructions |
-| General Counsel | Reviews contracts, classification, equity, termination and local-law issues |
+| external counsel | Reviews contracts, classification, equity, termination and local-law issues |
 | Manager | Confirms work, objectives, leave, expenses and performance; does not promise benefits |
 | Employee | Provides accurate information, records time, follows policy and reports concerns |
 
@@ -199,11 +199,11 @@ The company should maintain a payroll calendar with:
 - bank-holiday adjustments;
 - a named owner and backup.
 
-A missed or late payroll must be escalated to the CFO and People Operations immediately. Do not make a partial-silent payment or hide a shortfall.
+A missed or late payroll must be escalated to the Treasurer and People Operations immediately. Do not make a partial-silent payment or hide a shortfall.
 
 ## 14. Review and adoption
 
-This framework must be reviewed by the CFO, People Operations and local counsel. Adoption must be recorded in the Workforce Compliance Register with the approving body, date and reference. A file existing in the document pack is not evidence of adoption.
+This framework must be reviewed by the Treasurer, People Operations and local counsel. Adoption must be recorded in the Workforce Compliance Register with the approving body, date and reference. A file existing in the document pack is not evidence of adoption.
 
 **Approved by:** ______________________________
 

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useLayoutEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FileText, ShieldCheck, UserRound } from 'lucide-react';
 import Footer from '@/components/Footer';
@@ -58,7 +58,7 @@ function InvestorShellContent({ children, contained = true, active = '' }) {
   const portalTo = isAuthed ? '/app/investors' : '/investors/shareholders';
   const portalLabel = isAuthed ? 'Shareholder portal' : 'Investor sign in';
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = headerRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
     const measure = () => setHeaderH(el.getBoundingClientRect().height);

@@ -9,7 +9,9 @@ import PublicSiteShell, {
 } from '@/components/PublicSiteShell';
 
 const STATUS_ROWS = [
-  { label: 'Issuer', value: 'TradingBible Holdings, Inc.', note: 'Delaware corporation', tone: 'neutral' },
+  { label: 'Issuer', value: 'TradingBible Holdings. Inc.', note: 'Filed name · Delaware stock corporation · file no. 10821679 · good standing 3 Nov 2026', tone: 'neutral' },
+  { label: 'Filed legal name', value: 'TradingBible Holdings. Inc.', note: 'Period after Holdings; comma form is intended and a correction is pending', tone: 'amber' },
+  { label: 'EIN', value: 'Not yet issued', note: 'No IRS EIN notice is in company records', tone: 'amber' },
   { label: 'Securities offering', value: 'None open', note: 'No offer or sale is being made', tone: 'amber' },
   { label: 'Instruments', value: 'Not authorised', note: 'No SAFE, note, equity or token sale terms are approved', tone: 'amber' },
   { label: 'Form D', value: 'Not filed', note: 'No private-placement filing has been made', tone: 'amber' },
@@ -64,8 +66,8 @@ export default function FundraisingStatusPage() {
       <PublicPageHead
         eyebrow="Capital formation · status record"
         title={<>No offering is open. <span className="tb-gold-text">No funds are being requested.</span></>}
-        description="TradingBible Holdings, Inc. is preparing internal fundraising materials for review, but it is not currently offering or selling securities to the public. This page is a status record, not a solicitation."
-        meta={['No offering open', 'Private company', 'No investment function', 'Updated 10 Nov 2026']}
+        description="TradingBible Holdings. Inc. is preparing internal fundraising materials for review, but it is not currently offering or selling securities to the public. This page is a status record, not a solicitation."
+        meta={['No offering open', 'Private company', 'No investment function', 'Updated 14 Nov 2026']}
       >
         <div className="mt-6 max-w-3xl">
           <PublicNotice tone="amber">
@@ -198,10 +200,9 @@ export default function FundraisingStatusPage() {
               </span>
               <div>
                 <div className="font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-[#e8c95a]">Issuer record</div>
-                <div className="mt-1 text-sm font-semibold text-[#f0ecdd]">TradingBible Holdings, Inc.</div>
+                <div className="mt-1 text-sm font-semibold text-[#f0ecdd]">TradingBible Holdings. Inc.</div>
                 <p className="mt-1 max-w-2xl text-[10px] leading-relaxed text-[#8a8577]">
-                  Delaware corporation. Private company. Not publicly traded. TB is a proposed ticker, not a listed security. TBC is a proposed token, not issued or for sale.
-                  Product launch is planned for 25 December 2026; a product launch is not a securities offering.
+                  Filed name of the Delaware stock corporation formed 28 October 2026 (file no. 10821679; good standing 3 November 2026). The intended commercial form is TradingBible Holdings, Inc.; a certificate of correction is pending. EIN not yet issued. Private company; not publicly traded. TB is a proposed ticker, not a listed security. TBC is a proposed token, not issued or for sale. Product launch is planned for 25 December 2026; a product launch is not a securities offering.
                 </p>
               </div>
             </div>

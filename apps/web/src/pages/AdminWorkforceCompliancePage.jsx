@@ -404,7 +404,7 @@ export default function AdminWorkforceCompliancePage() {
           )}
         >
           <p className="mt-2 max-w-5xl text-[11px] leading-relaxed text-[var(--at-mut)]">
-            The employer and employee control register for TradingBible Holdings, Inc. It covers the company, directors and managers, full-time and
+            The employer and employee control register for TradingBible Holdings. Inc. (filed name; intended commercial form: TradingBible Holdings, Inc.). The EIN is not yet issued. It covers the company, directors and managers, full-time and
             part-time employees, remote employees and individual contractors. A Delaware registration does not satisfy employment, payroll, tax,
             insurance or workplace obligations in the country or state where a person actually works. The register records evidence and adoption; it
             does not create a legal approval.

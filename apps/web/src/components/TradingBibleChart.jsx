@@ -418,6 +418,7 @@ export default function TradingBibleChart({
   const selectedRef = useRef(null);
   const previewRef = useRef(null);
   const hoveredHandleRef = useRef(null);
+  const hoveredDrawingRef = useRef(null);
   const lockedRef = useRef(false);
   const hideDrawingsRef = useRef(false);
   const timeframeRef = useRef(activeTimeframe);
@@ -550,6 +551,7 @@ export default function TradingBibleChart({
       selectedId: selectedRef.current,
       preview: previewRef.current,
       hoveredHandle: hoveredHandleRef.current,
+      hoveredDrawing: hoveredDrawingRef.current,
       locked: lockedRef.current,
       hide: hideDrawingsRef.current,
       accent: themeAccent(),
@@ -948,6 +950,7 @@ export default function TradingBibleChart({
     timeframeMinutes: timeframeMinutes(activeTimeframe) || 1,
     previewRef,
     hoveredHandleRef,
+    hoveredDrawingRef,
   });
 
   const saveTemplate = useCallback(async () => {
@@ -1282,7 +1285,7 @@ export default function TradingBibleChart({
           value={effectiveType}
           onChange={(event) => changeChartType(event.target.value)}
           aria-label="Chart type"
-          className="h-7 w-[6.5rem] shrink-0 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-1.5 text-[11px] text-[#e9e7df] outline-none sm:w-auto"
+          className="h-7 w-[7.75rem] shrink-0 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] pl-1.5 pr-5 text-[10px] text-[#e9e7df] outline-none sm:w-auto sm:px-1.5 sm:text-[11px]"
         >
           {CHART_TYPES.map((type) => <option key={type.id} value={type.id}>{type.label}</option>)}
         </select>
@@ -1383,6 +1386,11 @@ export default function TradingBibleChart({
     </div>
   ) : null;
 
+  const selectedDrawing = selected ? dz.drawings.find((drawing) => drawing.id === selected) : null;
+  const selectedLabel = selectedDrawing
+    ? DRAW_TOOLS.find((item) => item.id === selectedDrawing.type)?.label || 'Drawing'
+    : null;
+
   const chartBody = (
     <div className={`relative min-h-0 ${height === 'h-full' ? 'flex-1' : ''} ${isLight ? 'bg-[#fbf9f3]' : 'bg-[#0a0a0f]'}`}>
       {isTv ? (
@@ -1407,6 +1415,17 @@ export default function TradingBibleChart({
                   {tool === 'path'
                     ? `Click to add anchors · ${pending.length} placed · Enter/double-click to finish · Esc to cancel`
                     : `Click point ${Math.min(pending.length + 1, DRAW_TOOLS.find((item) => item.id === tool)?.clicks || 1)} of ${DRAW_TOOLS.find((item) => item.id === tool)?.clicks || 1} · Esc to cancel`}
+                </span>
+              </div>
+            </div>
+          )}
+          {tool === 'cursor' && selectedDrawing && !locked && !hideDrawings && (
+            <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex justify-center px-2 sm:top-3">
+              <div role="status" aria-live="polite" className="max-w-full truncate rounded-full border border-[#d4af37]/30 bg-[#0a0a0f]/88 px-3 py-1 font-mono text-[10px] font-semibold text-[#e9e7df] shadow-lg backdrop-blur">
+                <span className="text-[#d4af37]">Selected {selectedLabel}</span>
+                <span className="ml-2 text-[#b8b3a3]">
+                  <span className="hidden sm:inline">Drag body to move · Drag handles to edit · Del to remove</span>
+                  <span className="sm:hidden">Drag to move · Handles to edit</span>
                 </span>
               </div>
             </div>

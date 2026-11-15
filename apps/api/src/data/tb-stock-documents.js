@@ -12,12 +12,17 @@ export const tbStockDocuments = Array.isArray(manifest.documents) ? manifest.doc
 export const publicTbStockDocuments = tbStockDocuments.filter((doc) => doc.visibility === 'public');
 export const tbStockLibraryMeta = {
 	title: manifest.title || 'TradingBible TB stock document library',
-	issuer: manifest.issuer || 'TradingBible Holdings, Inc.',
-	parentCompany: manifest.parentCompany || 'TradingBible Holdings, Inc.',
+	issuer: manifest.issuer || 'TradingBible Holdings. Inc.',
+	preferredName: manifest.preferredName || 'TradingBible Holdings, Inc.',
+	nameNote: manifest.nameNote || 'Filed name prints a period after Holdings; comma form is intended and a certificate of correction is pending.',
+	parentCompany: manifest.parentCompany || 'TradingBible Holdings. Inc.',
+	formation: manifest.formation || 'Delaware stock corporation formed 28 October 2026 · File no. 10821679 · Good standing 3 November 2026',
+	authorizedShares: manifest.authorizedShares || '5,000 shares authorized at $0.0001 par; issued shares not proven',
+	einStatus: manifest.einStatus || 'Not yet issued',
 	ticker: manifest.ticker || 'TB',
 	tickerStatus: manifest.tickerStatus || 'Proposed — not reserved or approved',
 	jurisdiction: manifest.jurisdiction || 'Delaware, United States',
-	updated: manifest.updated || 'October 2026',
+	updated: manifest.updated || 'November 2026',
 	notice: manifest.notice || 'TB is a proposed future ticker. These instruments are not an offer, listing approval, or evidence of a public market.',
 };
 

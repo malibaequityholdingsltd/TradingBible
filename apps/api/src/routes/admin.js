@@ -105,9 +105,11 @@ router.get('/tbc-documents', supabaseAuth, async (req, res, next) => {
 		const documents = [...internalTbcDocuments, ...publicTbcDocuments].map(toAdminDocument);
 		res.setHeader('Cache-Control', 'private, no-store');
 		res.json({
-			issuer: 'TradingBible Holdings, Inc.',
+			issuer: 'TradingBible Holdings. Inc.',
+			preferredName: 'TradingBible Holdings, Inc.',
+			nameNote: 'Filed name prints a period after Holdings; comma form is intended and a certificate of correction is pending.',
 			jurisdiction: 'Delaware, United States',
-			updated: 'October 2026',
+			updated: 'November 2026',
 			documents,
 		});
 	} catch (err) {
@@ -645,35 +647,38 @@ export const COMPANY_DEFAULTS = {
 		tagline: 'TradingBible',
 		publicLaunch: '25 December 2026 — planned public launch. Confirm the date internally before any public announcement.',
 		stage: 'Pre-launch · private company · no public offering and no live regulated brokerage.',
-		formation: 'TradingBible Holdings, Inc. is a Delaware corporation that owns and operates TradingBible.',
+		formation: 'TradingBible Holdings, Inc. is the intended commercial name of the Delaware stock corporation formed 28 October 2026 (file no. 10821679; good standing 3 November 2026). The filed certificate prints TradingBible Holdings. Inc.; a name correction is pending.',
 		mission: 'Empower traders and investors through transparent, data-driven market intelligence, advanced financial technology, trading analytics, risk management, and accessible education.',
 		vision: 'Establish TradingBible as a globally recognized financial technology ecosystem connecting professional trading tools, brokerage infrastructure, market intelligence, digital assets, and investment technology.',
 		purpose: 'Develop, own, operate, license, and commercialize lawful fintech platforms, software, analytical tools, educational products, data services, and related businesses — subject to applicable licenses.',
 		voice: 'Professional, precise, research-driven, globally accessible, transparent about financial risks.',
 		responseSLA: 'Team responds within one business day.',
-		officialDescription: 'TradingBible Holdings, Inc. is a Delaware corporation that owns and operates TradingBible, an integrated ecosystem of professional trading intelligence, market analytics, financial education, and trading software. Website: https://tradingbible.app. Software and education do NOT constitute authorization to provide regulated brokerage, advisory, exchange, or custodial services.',
+		officialDescription: 'TradingBible Holdings, Inc. is the intended commercial name of a Delaware stock corporation formed 28 October 2026 (file no. 10821679; good standing 3 November 2026). The filed certificate prints TradingBible Holdings. Inc.; a correction is pending. It owns and operates TradingBible, an integrated ecosystem of professional trading intelligence, market analytics, financial education, and trading software. Website: https://tradingbible.app. Software and education do NOT constitute authorization to provide regulated brokerage, advisory, exchange, or custodial services.',
 	},
 	legal: {
-		legalName: 'TradingBible Holdings, Inc.',
-		form: 'Delaware corporation',
-		formed: 'Delaware corporation — entity records on file.',
-		ein: 'On file — confidential; disclose only to authorized counterparties.',
-		duns: 'D-U-N-S 14-997-6777 — reported; verify before external reliance.',
+		legalName: 'TradingBible Holdings. Inc.',
+		preferredName: 'TradingBible Holdings, Inc.',
+		nameNote: 'The Delaware certificate and certified copy print “TradingBible Holdings. Inc.” with a period after Holdings. The comma form is intended and a certificate of correction is pending. Use the exact filed name for government, bank and KYC records until corrected.',
+		form: 'Delaware stock corporation',
+		formed: 'Formed 28 October 2026, filed 1:51 PM; Delaware file no. 10821679; in good standing as of 3 November 2026.',
+		ein: 'Not yet issued — no IRS EIN notice is in company records. Do not state that an EIN is on file. Apply through the IRS and store the CP 575/147C in controlled storage.',
+		duns: 'D-U-N-S 14-997-6777 — reported only; verify with D&B before external reliance.',
 		naics: '511210',
-		agent: 'Registered agent on file.',
-		holdingCompany: 'TradingBible Holdings, Inc. — owner and operator of TradingBible.',
-		licenseNote: 'Certificate of incorporation, EIN, and D-U-N-S are business credentials — NONE is a brokerage license. No live client deposits until a licensed entity + banking + safeguarding exist.',
+		agent: 'Northwest Registered Agent Service, Inc. — registered office: 8 The Green, Suite B, Dover, Kent County, DE 19901. This is a registered office/service-of-process address, not proof of a staffed office.',
+		authorizedStock: '5,000 shares authorized, par value $0.0001. The supplied record proves no issued shares or stock ledger; any issuance above 5,000 shares requires a charter amendment.',
+		holdingCompany: 'TradingBible Holdings, Inc. — intended commercial name of the owner and operator of TradingBible.',
+		licenseNote: 'The Delaware certificate and good-standing record are corporate credentials — NONE is a brokerage license. The EIN is not yet issued; D-U-N-S is reported only. No live client deposits until a licensed entity + banking + safeguarding exist.',
 		jurisdiction: 'England & Wales (Terms); U.S. retail forex $20M minimum adjusted net capital; Nigeria substance if managed from Nigeria; brokerage structure decided with U.S. + Nigerian counsel BEFORE onboarding.',
 		liabilityCap: 'Greater of 12 months fees or USD 100.',
-		dataController: 'TradingBible Holdings, Inc.',
+		dataController: 'TradingBible Holdings. Inc. (filed name; intended: TradingBible Holdings, Inc.)',
 		franchiseTax: 'Delaware corporate franchise tax applies; confirm current amount and due date with counsel.',
-		records: 'Certificate of incorporation, bylaws, EIN notice, stock ledger, ownership records, registered-agent agreement, material contracts, accounting records, tax filings.',
+		records: 'Verified: Delaware certificate of incorporation, certified copy and 3 November 2026 good-standing certificate. Open: EIN notice, adopted bylaws, stock ledger/cap table, executed registered-agent agreement, executed virtual-office agreement, trademark assignment, material contracts, accounting records and tax filings.',
 		taxNote: 'Cross-border Nigeria/US adviser required. Corporate tax, transfer-pricing and foreign-owner reporting must be confirmed with counsel.',
 		fundraising: 'Distinguish issuing shares vs borrowing. NEVER advertise public shares or an IPO as already available.',
 	},
 	holdings: {
-		status: 'ACTIVE — TradingBible Holdings, Inc. owns and operates TradingBible.',
-		parent: 'TradingBible Holdings, Inc. — owner and operator of TradingBible.',
+		status: 'ACTIVE — TradingBible Holdings. Inc. (filed name; intended commercial form: TradingBible Holdings, Inc.) owns and operates TradingBible.',
+		parent: 'TradingBible Holdings. Inc. (filed name; intended commercial form: TradingBible Holdings, Inc.) — owner and operator of TradingBible.',
 		ticker: 'TB',
 		tickerStatus: 'Proposed future ticker — NOT reserved, NOT approved. IPO is a long-term objective, not a guaranteed outcome.',
 		divisions: 'Product divisions & strategic initiatives under TradingBible Holdings, Inc. (NOT separate subsidiaries unless approved): TradingBible Terminal · Intelligence (research/SI/signals/education) · Prop (challenges/analytics) · Developer (APIs/SDKs/white-label) · Brokerage (FUTURE, regulated) · Coin (proposed TBC). Separate entities only later for regulators/investors/tax/risk.',
@@ -686,7 +691,7 @@ export const COMPANY_DEFAULTS = {
 		logo: 'Official TB logo + separate TBC token symbol (supplied by founder). Rounded dark square, gold border/chevron + dot. Bundled /logos/tradingbible-logo.png + CDN fallback. Favicon set.',
 		typography: 'system-ui stack; ui-monospace for numbers.',
 		voice: 'Professional, precise, research-driven, globally accessible, transparent about financial risks.',
-		emailShell: 'Dark #07070a/#0b0b10, gold border, TradingBible header, footer TradingBible Holdings, Inc. · tradingbible.app, tagline: Trade like the 1%. Journal like a fund.',
+		emailShell: 'Dark #07070a/#0b0b10, gold border, TradingBible header, footer TradingBible Holdings, Inc. (intended commercial name; filed name: TradingBible Holdings. Inc.) · tradingbible.app, tagline: Trade with a record. Review with evidence.',
 		socials: 'twitter.com/tradingbible · discord.gg/tradingbible · github.com/tradingbible (+ facebook/linkedin/instagram/youtube/tiktok @tradingbible in footer).',
 		attribution: '“Charts by TradingBible” / “Powered by TradingBible” only if the charting IP is genuinely ours and third-party market-data attribution is satisfied.',
 	},
@@ -698,11 +703,12 @@ export const COMPANY_DEFAULTS = {
 		ads: 'ads@tradingbible.app',
 	},
 	leadership: {
-		ceo: 'Malik Nlem — Founder & Chief Executive',
-		vp: 'Victor Okechukwu — Vice President',
-		quant: 'Maliba SI — Head of Quantitative Research (platform SI research function)',
-		team: 'Operators, engineers, and quants from global markets and technology.',
-		confirmNote: 'Titles from the company profile — CONFIRM before publishing as formal officer appointments.',
+		ceo: 'Malik Nlem — President, Treasurer and Director (statutory)',
+		vp: 'Victor Okechukwu — Director (statutory)',
+		secretary: 'Felicity Nlem — Secretary (statutory; publish only with consent)',
+		quant: 'Maliba SI — AI research function (not a human officer)',
+		team: 'No employee appointments beyond the statutory officers are recorded. Planned operator, engineering and research roles are listed as hiring priorities, not current team members.',
+		confirmNote: 'Statutory appointments come from the incorporator’s initial resolutions: Malik Nlem — President, Treasurer and Director; Felicity Nlem — Secretary; Victor Okechukwu — Director. No CEO, CFO, COO or VP is appointed in that record; later board action is required before using those titles in execution copies or government filings.',
 		advisers: 'None engaged: Goldman Sachs / Morgan Stanley / J.P. Morgan / Jefferies / Chapel Hill Denham / Renaissance Capital (proposed only). Hire Delaware + U.S. securities + Nigerian counsel + tax + regulatory first.',
 	},
 	markets: {
@@ -732,12 +738,12 @@ export const COMPANY_DEFAULTS = {
 	compliance: {
 		kyc: 'Passkeys · session management · KYC-gated profiles (frozen after verification) · suspend/close lifecycle · AML/KYC, sanctions screening, SoF, transaction monitoring, withdrawal approvals, reconciliation, complaint handling.',
 		segregation: 'Separate operating money / regulatory capital / client funds / crypto assets. Client assets are never company funding.',
-		credentials: 'Certificate + EIN + D-U-N-S are credentials, NOT licenses. Brokerage legal structure decided with counsel BEFORE onboarding or deposits.',
+		credentials: 'The Delaware certificate and good-standing record are corporate credentials, NOT licenses. The EIN is not yet issued; D-U-N-S is reported only. Brokerage legal structure decided with counsel BEFORE onboarding or deposits.',
 		filings: 'U.S.: restructuring + audited financials + Form S-1 + prospectus + SEC review + exchange application + underwriting/pricing. Nigeria: issuer eligibility + SEC registration + NGX admission. The TradingBible group is Delaware-domiciled; a direct NGX Growth listing still requires issuer eligibility and regulatory approval.',
 		readiness: 'Cap table · 3-yr projections · audited accounts · licenses · risk disclosures · IP records · material contracts · cybersecurity · litigation · governance · use of proceeds. Cost ranges are not verified; obtain current counsel and provider quotes before budgeting.',
 	},
 	roadmap: {
-		phases: '0 Public launch planned 25 December 2026 → 1 Corporate formation Completed → 2 IRS EIN Completed → 3 D-U-N-S Reported obtained → 4 Platform verification Requires current audit → 5 Revenue validation Figures pending → 6 Proprietary terminal Expansion roadmap → 7 Brokerage licensing Planned → 8 TBC testnet/mainnet Planned → 9 Institutional financing Future → 10 Restructuring/IPO Long-term.',
+		phases: '0 Public launch planned 25 December 2026 → 1 Corporate formation Completed (Delaware file no. 10821679; formed 28 October 2026; good standing 3 November 2026) → 2 IRS EIN Pending (not issued) → 3 D-U-N-S Reported only; verify → 4 Platform verification Requires current audit → 5 Revenue validation Figures pending → 6 Proprietary terminal Expansion roadmap → 7 Brokerage licensing Planned → 8 TBC testnet/mainnet Planned → 9 Institutional financing Future → 10 Restructuring/IPO Long-term.',
 		first90: 'Days 1–30: verify records/ownership/tax, appoint counsel, commission licensing + IPO feasibility. Days 31–60: plan/model/capital/architecture + MT5/liquidity RFQs. Days 61–90: jurisdiction shortlist + vendor quotes + prototype scope + funding/governance plan.',
 		nextPriorities: 'Verify operational + financial records · meet tax/compliance (Delaware corporate franchise tax; cross-border review) · strengthen proprietary tech · decide which regulated line to pursue first.',
 		strategy: 'Regulated brokerage + proprietary tech (licensing/market-data/enterprise), not commissions alone. IPO is a milestone earned via performance, not a launch prerequisite. Blueprint is a working master plan — verify all claims before banks/regulators/investors.',
@@ -970,11 +976,12 @@ router.post('/billing/refund', supabaseAuth, async (req, res, next) => {
 });
 
 // ── D&B financial statements (CSV downloads) ─────────────────────
-// Draft Balance Sheet + Income Statement from platform records, for D&B
-// upload (D-U-N-S 14-997-6777). D&B accepts csv ≤ 10 MB. These are
-// UNaudited summaries — have your accountant finalize before submitting.
+// Working Balance Sheet + Income Statement from platform records, for internal
+// accountant review before any D&B upload (D-U-N-S 14-997-6777 is reported
+// only until verified with D&B). D&B accepts csv ≤ 10 MB. These are
+// UNaudited working summaries — have the accountant review before submitting.
 const DUNS_NUMBER = '14-997-6777';
-const COMPANY_LEGAL = 'TradingBible Holdings, Inc.';
+const COMPANY_LEGAL = 'TradingBible Holdings. Inc.';
 
 function parseStatementPeriod(query) {
 	const to = query?.to ? new Date(`${String(query.to).slice(0, 10)}T23:59:59Z`) : new Date();
@@ -1060,8 +1067,9 @@ router.get('/financials/income-statement', supabaseAuth, async (req, res, next) 
 		const feesEst = r.stripe.configured ? gross * 0.029 + r.stripe.count * 0.3 : 0;
 		const net = gross - refunds - feesEst - r.outflowsUsd + r.inflowsUsd;
 		sendStatementCsv(res, `tradingbible-income-statement-${f(from)}-${f(to)}.csv`, [
-			['TradingBible Holdings, Inc. — Income Statement (DRAFT, platform records, unaudited)'],
-			['D-U-N-S', DUNS_NUMBER],
+			['TradingBible Holdings. Inc. — Income Statement (WORKING — UNAUDITED, platform records)'],
+			['Legal name note', 'Filed name has a period after Holdings; comma form is intended and a correction is pending'],
+			['D-U-N-S', `${DUNS_NUMBER} (reported only; verify with D&B)`],
 			['Period', `${f(from)} to ${f(to)}`],
 			['Generated (UTC)', new Date().toISOString()],
 			[],
@@ -1073,9 +1081,9 @@ router.get('/financials/income-statement', supabaseAuth, async (req, res, next) 
 			['Deductions', 'Processing fees (ESTIMATE 2.9% + $0.30/txn)', feesEst.toFixed(2), 'Estimate only — confirm in Stripe dashboard'],
 			['Expenses', 'Platform outflows paid (withdrawals, payouts, purchases)', r.outflowsUsd.toFixed(2), 'bank ledger, completed + pending'],
 			['Expenses', `TBC-denominated outflows (memo, in TBC)`, r.outflowsTbc.toFixed(2), 'Not converted — settle TBC/USD rate with accountant'],
-			['Total', 'NET INCOME, platform records (DRAFT)', net.toFixed(2), 'Have accountant finalize before D&B upload'],
+			['Total', 'NET INCOME, platform records (WORKING — UNAUDITED)', net.toFixed(2), 'Have accountant review before D&B upload'],
 			[],
-			['Disclaimer', 'Draft from platform records only. Excludes payroll, contractors, infrastructure, marketing, taxes, and non-USD activity. Not audited.'],
+			['Disclaimer', 'Working summary from platform records only. Excludes payroll, contractors, infrastructure, marketing, taxes, and non-USD activity. Not audited or reviewed. Not a complete financial statement.'],
 		]);
 	} catch (err) { next(err); }
 });
@@ -1099,8 +1107,9 @@ router.get('/financials/balance-sheet', supabaseAuth, async (req, res, next) => 
 		const assets = cash + mrr;
 		const equity = assets - pending;
 		sendStatementCsv(res, `tradingbible-balance-sheet-${f(asof)}.csv`, [
-			['TradingBible Holdings, Inc. — Balance Sheet (DRAFT, platform records, unaudited)'],
-			['D-U-N-S', DUNS_NUMBER],
+			['TradingBible Holdings. Inc. — Balance Sheet (WORKING — UNAUDITED, platform records)'],
+			['Legal name note', 'Filed name has a period after Holdings; comma form is intended and a correction is pending'],
+			['D-U-N-S', `${DUNS_NUMBER} (reported only; verify with D&B)`],
 			['As of', f(asof)],
 			['Generated (UTC)', new Date().toISOString()],
 			[],
@@ -1112,7 +1121,7 @@ router.get('/financials/balance-sheet', supabaseAuth, async (req, res, next) => 
 			['Liabilities', 'TOTAL LIABILITIES', pending.toFixed(2), 'Excludes taxes, payables, debt — accountant to add'],
 			['Equity', "Owner's equity / retained (plug — accountant to finalize)", equity.toFixed(2), 'Assets minus liabilities'],
 			[],
-			['Disclaimer', 'Draft from platform records only. Not audited. Excludes bank balances, Stripe unsettled funds, TBC treasury, fixed assets, taxes, and debt.'],
+			['Disclaimer', 'Working summary from platform records only. Not audited or reviewed. Excludes bank balances, Stripe unsettled funds, TBC treasury, fixed assets, taxes, and debt. Not a complete financial statement.'],
 		]);
 	} catch (err) { next(err); }
 });

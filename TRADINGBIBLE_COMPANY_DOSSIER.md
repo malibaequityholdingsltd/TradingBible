@@ -1,13 +1,13 @@
-# TradingBible Holdings, Inc. — Company Dossier
+# TradingBible Holdings. Inc. — Company Dossier
 
 **Prepared:** 9 November 2026  
-**Company:** TradingBible Holdings, Inc.  
+**Company:** TradingBible Holdings. Inc. (exact Delaware filed name). The intended commercial form is **TradingBible Holdings, Inc.**; a certificate of correction is pending — see the corporate record below.  
 **Brand:** TradingBible (TB)  
 **Website:** https://tradingbible.app  
 **Status:** Private, pre-IPO, operating platform with gated regulated products  
 **Public launch date:** 25 December 2026
 
-> **Evidence standard.** This dossier is built from the repository's canonical company records, public-page source, legal pages and blocked-items register. It deliberately does not invent revenue, customer counts, AUM, approvals, prices, balances, card numbers or performance. When a fact is pending, the pending status is written down. Legacy documents with older plan structures are identified where they conflict with the current public catalog.
+> **Evidence standard.** This dossier is built from the repository's canonical company records, public-page source, legal pages and blocked-items register. It deliberately does not invent revenue, customer counts, AUM, approvals, prices, balances, card numbers or performance. When a fact is pending, the pending status is written down. Corporate facts in this edition are taken from the documents reviewed on 14 November 2026 and recorded in `docs/corporate-record.md`; the EIN, adopted bylaws, stock ledger, signed virtual-office agreement and trademark assignment remain open.
 
 ---
 
@@ -15,22 +15,28 @@
 
 | Field | Current record |
 |---|---|
-| Legal name | TradingBible Holdings, Inc. |
+| Legal name (filed) | **TradingBible Holdings. Inc.** — period after “Holdings”, as printed on the Delaware certificate |
+| Intended/commercial form | TradingBible Holdings, Inc. — certificate of correction pending |
 | Brand / short name | TradingBible / TB |
-| Legal form | Delaware corporation |
+| Legal form | Delaware stock corporation |
 | Domicile | Delaware, United States |
+| Formation | **28 October 2026**, filed 1:51 PM; file no. **10821679** |
+| Good standing | **3 November 2026** — verified |
 | NAICS | 511210 |
-| D-U-N-S | 14-997-6777 — on file / reported; verify before external reliance |
-| EIN | On file — confidential; disclose only to authorised counterparties |
-| Registered agent | On file |
-| Securities issuer | TradingBible Holdings, Inc. |
+| Registered agent | Northwest Registered Agent Service, Inc. |
+| Registered office | 8 The Green, Suite B, Dover, Kent County, DE 19901 |
+| Authorized stock | **5,000 shares**, par value **$0.0001** |
+| EIN | **Not issued / not in company records** |
+| D-U-N-S | 14-997-6777 — **reported only**; verify before external reliance |
+| Securities issuer | TradingBible Holdings. Inc. (filed name; intended commercial form: TradingBible Holdings, Inc.) |
 | Public ticker | **TB is a proposed future ticker** — not reserved, not approved, not listed |
 | Native digital asset | **TBC — TradingBible Coin** — proposed; no token issued, no sale open |
 | Company status | Private, pre-IPO, platform operating |
 | Public launch | 25 December 2026 |
 | Public plans | Free account and TradingBible Premium — $19.99/month or $199/year |
 | Product version | 1.2.0 — documented live scope, not an independent audit |
-| Documented team | Malik Nlem, Victor Okechukwu, Maliba SI |
+| Statutory officers | Malik Nlem — President, Treasurer and Director; Felicity Nlem — Secretary; Victor Okechukwu — Director |
+| Public team | Malik Nlem, Victor Okechukwu, Maliba SI (AI research function, not a human officer) |
 | Priority open seats | 12 |
 | Website | https://tradingbible.app |
 | Support | support@tradingbible.app |
@@ -80,10 +86,10 @@ Professional, precise, research-driven, globally accessible and transparent abou
 
 ## 3. Corporate identity and ownership
 
-- **Owner and operator:** TradingBible Holdings, Inc.
-- **Securities issuer:** TradingBible Holdings, Inc.
+- **Owner and operator:** TradingBible Holdings. Inc. (filed name; intended commercial form: TradingBible Holdings, Inc.)
+- **Securities issuer:** TradingBible Holdings. Inc. (filed name; intended commercial form: TradingBible Holdings, Inc.)
 - **Structure:** One operating holding company with product divisions and strategic initiatives — not separate subsidiaries unless a future legal structure is approved.
-- **Corporate records:** Certificate of incorporation, bylaws, EIN notice, stock ledger, ownership records, registered-agent agreement, material contracts, accounting records and tax filings are the expected record set. Counsel confirmation of the public wording remains a launch gate.
+- **Corporate records:** Verified: Delaware certificate of incorporation (file no. 10821679, formed 28 October 2026), certified copy and 3 November 2026 good-standing certificate. Open: IRS EIN notice, adopted bylaws, stock ledger/cap table, executed registered-agent agreement, executed virtual-office agreement and trademark assignment. Counsel confirmation of the public wording remains a launch gate. See `docs/corporate-record.md`.
 - **Public shares:** No public shares exist. There is no public share price, market capitalisation, trading volume or exchange approval.
 - **Fundraising:** Any future fundraising must distinguish issuing shares from borrowing. Public shares or an IPO must never be advertised as already available.
 
@@ -107,7 +113,7 @@ These are product lines under the operating company, not separately formed subsi
 
 ### It is
 
-- a Delaware corporation with entity records on file;
+- a Delaware corporation formed 28 October 2026, file no. 10821679, in good standing as of 3 November 2026;
 - the owner and operator of the TradingBible platform;
 - the issuer of TB securities in the company's private record;
 - a software, analytics, education and market-intelligence business;
@@ -124,7 +130,7 @@ These are product lines under the operating company, not separately formed subsi
 - a token issuer or token-sale operator;
 - a guarantee of funding, profit, returns or approval.
 
-> **Delaware incorporation is not a brokerage licence.** Certificate of incorporation, EIN and D-U-N-S are business credentials, not regulatory permissions. No live client deposits should be accepted until a licensed entity, banking and client-money safeguarding exist.
+> **Delaware incorporation is not a brokerage licence.** The certificate and good-standing record are corporate credentials, not regulatory permissions. The EIN is not yet issued; D-U-N-S is reported only. No live client deposits should be accepted until a licensed entity, banking and client-money safeguarding exist.
 
 ---
 
@@ -361,7 +367,7 @@ TradingBible Funded is an evaluation and trader-development product. It is **not
 |---|---|
 | Name | TradingBible Coin |
 | Ticker | TBC |
-| Entity | TradingBible Holdings, Inc. |
+| Entity | TradingBible Holdings. Inc. (filed name; intended commercial form: TradingBible Holdings, Inc.) |
 | Jurisdiction | Delaware, United States |
 | Proposed maximum supply | 100,000,000 TBC |
 | Decimals | 18 |
@@ -576,7 +582,7 @@ open.
 ## 13. TradingBible Capital — proposed fund
 
 **Status:** In formation.  
-**Owner:** TradingBible Holdings, Inc.  
+**Owner:** TradingBible Holdings. Inc. (filed name; intended commercial form: TradingBible Holdings, Inc.)  
 **Fund vehicle:** None formed.  
 **Outside capital:** Not accepted.  
 **AUM:** Not disclosed.  
@@ -625,13 +631,14 @@ No PPM, LPA, subscription agreement, investment management agreement or risk dis
 
 ### Documented team
 
-| Person | Public role | Notes |
+| Person | Statutory role | Notes |
 |---|---|---|
-| **Malik Nlem** | Founder & CEO | Sets product, capital and company direction |
-| **Victor Okechukwu** | Vice President | Operations, commercial delivery and operating rhythm |
-| **Maliba SI** | Head of Quantitative Research | The platform's SI research function; **AI, not a human officer** |
+| **Malik Nlem** | President, Treasurer and Director | Also described publicly as Founder; sets product, capital and company direction |
+| **Felicity Nlem** | Secretary | Appointed in the incorporator’s initial resolutions; publish only with consent |
+| **Victor Okechukwu** | Director | Board oversight and commercial operating rhythm |
+| **Maliba SI** | Not a human officer | The platform's SI research function; **AI** |
 
-Titles are documented in the company profile but should be confirmed before publication as formal officer appointments. Signatory identities, personal contact details and execution records stay private.
+These are the appointments recorded in the incorporator’s initial resolutions. No CEO, CFO, COO or VP is appointed in that record; those titles require a later board appointment before use in execution copies, bank forms or government filings. Signatory identities, personal contact details and execution records stay private.
 
 ### 12 priority open seats
 
@@ -826,7 +833,7 @@ Do not send original signed documents, passwords, private keys or full bank deta
 ### Core legal documents
 
 - **Terms of Service** — governing law: Delaware; exclusive jurisdiction: Delaware state and federal courts; liability cap: greater of 12 months' fees or USD 100; 18+ eligibility; not financial advice; broker connections read-oriented; subscriptions billed through Stripe; Academy Pro licence in §8.1.
-- **Privacy Policy** — data controller: TradingBible Holdings, Inc.; GDPR/CCPA/CPRA language; broker credentials encrypted and read-only; no sale of personal data; retention and data-subject rights.
+- **Privacy Policy** — data controller: TradingBible Holdings. Inc. (filed name; intended: TradingBible Holdings, Inc.); GDPR/CCPA/CPRA language; broker credentials encrypted and read-only; no sale of personal data; retention and data-subject rights.
 - **Refund Policy** — Free account; Premium $19.99/month or $199/year; 14-day money-back guarantee on first payment; renewals generally non-refundable; cancel before renewal.
 - **FAQ, Security and Pricing** — public record pages.
 
@@ -844,15 +851,16 @@ Do not send original signed documents, passwords, private keys or full bank deta
 
 - Delaware corporate franchise tax applies; amount and due date require counsel/accountant confirmation.
 - Cross-border Nigeria/US tax review is required: corporate tax, transfer pricing and foreign-owner reporting.
-- Employment entity: TradingBible Holdings, Inc. is the proposed U.S. employing entity; global workforce policy is proposed and requires U.S. and Nigerian employment/tax review.
-- Expected corporate record: certificate of incorporation, bylaws, EIN notice, stock ledger, ownership records, registered-agent agreement, material contracts, accounting records and tax filings.
+- Employment entity: TradingBible Holdings. Inc. is the filed Delaware entity and proposed U.S. employer (intended commercial name: TradingBible Holdings, Inc.). The EIN is not yet issued; global workforce policy is proposed and requires U.S. and Nigerian employment/tax review before hiring.
+- Verified corporate record: certificate of incorporation, certified copy and 3 November 2026 good-standing certificate. Open: EIN notice, adopted bylaws, stock ledger/ownership records, executed registered-agent agreement, executed virtual-office agreement, trademark assignment, material contracts, accounting records and tax filings.
+- Authorized stock is **5,000 shares at $0.0001 par value**. The supplied record proves no issued shares. Any equity financing or option pool that would exceed 5,000 shares requires a charter amendment before issuance.
 
 ### Counsel gates
 
 | Gate | Status |
 |---|---|
 | Terms §8.1 Academy Pro licence | Blocked — counsel |
-| Corporate registration details and public wording | Blocked — counsel |
+| Exact filed name / certificate correction and public wording | Blocked — counsel/filing | The certificate prints `TradingBible Holdings. Inc.`; the comma form is intended. File a Delaware certificate of correction or use the exact filed name until corrected. |
 | TB securities-issuer record | Blocked — counsel |
 | Employment entity and workforce policy | Blocked — counsel |
 | Fund structure and offering | Blocked — counsel/regulatory |

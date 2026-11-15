@@ -1,12 +1,12 @@
-# TRADINGBIBLE HOLDINGS, INC. — CONFIDENTIALITY AND INTELLECTUAL PROPERTY ASSIGNMENT PACK
+# TRADINGBIBLE HOLDINGS. INC. — CONFIDENTIALITY AND INTELLECTUAL PROPERTY ASSIGNMENT PACK
 
-**Controlled template · Version 1.0 · 12 November 2026**
+**Controlled template · Version 1.1 · 14 November 2026**
 
 > **Controlled template — counsel review required.** This pack contains a confidentiality agreement, a present and future intellectual-property assignment, a prior-inventions schedule, a third-party and open-source schedule and a contractor addendum. It is not an executed agreement. Counsel must review it for the employee’s work country and state, especially employee-invention, moral-rights, non-compete and data-protection rules.
 
 ## Part A — Confidentiality and intellectual property agreement
 
-This Agreement is made on **[DATE]** between **TradingBible Holdings, Inc.**, a Delaware corporation (the “Company”), and **[INDIVIDUAL LEGAL NAME]** (the “Individual”).
+This Agreement is made on **[DATE]** between **TradingBible Holdings. Inc.**, a Delaware corporation (the “Company”), and **[INDIVIDUAL LEGAL NAME]** (the “Individual”).
 
 The Individual is engaged as **[EMPLOYEE / CONTRACTOR]** in the role of **[ROLE]**, commencing **[START DATE]**.
 
@@ -88,7 +88,7 @@ Signature: ______________________________
 
 Date: _______________________________
 
-**TRADINGBIBLE HOLDINGS, INC.**
+**TRADINGBIBLE HOLDINGS. INC.**
 
 Printed name: ______________________________
 
@@ -137,7 +137,7 @@ Signature: ______________________________
 
 Date: _______________________________
 
-**TRADINGBIBLE HOLDINGS, INC.**
+**TRADINGBIBLE HOLDINGS. INC.**
 
 Printed name: ______________________________
 

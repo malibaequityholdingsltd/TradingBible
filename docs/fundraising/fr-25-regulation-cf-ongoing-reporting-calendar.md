@@ -67,13 +67,13 @@ The company must retain:
 7. counsel and accountant sign-offs; and
 8. the complaint and correction log.
 
-Records should be stored in a controlled data room with access limited to the reporting owner, counsel, finance and the chief executive officer.
+Records should be stored in a controlled data room with access limited to the reporting owner, counsel, finance and the president.
 
 ## 6. Roles
 
 | Role | Responsibility |
 |---|---|
-| Chief executive officer | Approves reports and certifies accuracy |
+| President | Approves reports and certifies accuracy |
 | Finance owner | Prepares financial statements and use-of-proceeds reconciliation |
 | Counsel | Reviews disclosure, filings and current-report triggers |
 | Accountant | Reviews or audits financial statements as required |
@@ -82,7 +82,7 @@ Records should be stored in a controlled data room with access limited to the re
 
 ## 7. Escalation
 
-Any missed deadline, late filing, material misstatement or regulatory inquiry must be escalated to the chief executive officer and counsel within one business day. The company must not wait for the next scheduled board meeting.
+Any missed deadline, late filing, material misstatement or regulatory inquiry must be escalated to the president and counsel within one business day. The company must not wait for the next scheduled board meeting.
 
 ## 8. Certification
 

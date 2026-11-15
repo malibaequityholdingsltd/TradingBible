@@ -1,6 +1,6 @@
-# TRADINGBIBLE HOLDINGS, INC. — EMPLOYER COMPLIANCE MANUAL
+# TRADINGBIBLE HOLDINGS. INC. — EMPLOYER COMPLIANCE MANUAL
 
-**Controlled template · Version 1.0 · 12 November 2026**
+**Controlled template · Version 1.1 · 14 November 2026**
 
 > **Controlled template — counsel review and local adoption required.** This document is a company policy or reference framework. It is not an executed agreement, a legal opinion, a regulatory approval, a payroll filing, an insurance policy or a promise of a benefit. Record adoption and approval references in the Workforce Compliance Register before treating it as operative. Local addenda control where they are more protective.
 
@@ -8,7 +8,7 @@
 
 This manual is the operating control framework for the company as an employer. It covers the company, directors and managers, full-time and part-time employees, remote employees and individual contractors. It separates a requirement from the evidence that the requirement is complete. A requirement is not complete because a policy file exists; the underlying filing, signed agreement, provider record, insurance certificate or approval must exist.
 
-**Company:** TradingBible Holdings, Inc. (Delaware corporation)
+**Company:** TradingBible Holdings. Inc. (Delaware corporation)
 
 **Planned public launch:** 25 December 2026
 
@@ -20,7 +20,7 @@ This manual is the operating control framework for the company as an employer. I
 
 Do not hire all 58 catalogue roles at once. Start with a controlled core team and expand only when revenue, funding and operational need justify the role. Distinguish appointed people from open positions; never present an open role as an existing executive.
 
-**Priority open leadership roles (not appointments):** Chief Operating Officer · Chief Financial Officer · Chief Technology Officer · Chief Revenue Officer · General Counsel.
+**Priority open leadership roles (not appointments):** Chief Operating Officer · Chief Financial Officer · Chief Technology Officer · Chief Revenue Officer. External counsel engagement is a separate open item, not a company appointment.
 
 The company must maintain one employee and contractor register with legal name, work country and region, arrangement, start date, manager, status and exit date. A hiring catalogue is not an employee register. An open role is not an appointed person.
 
@@ -34,22 +34,22 @@ The company needs a clean legal and records foundation before anyone starts work
 
 | Control | What must exist | Evidence | Owner | Launch-critical |
 | --- | --- | --- | --- | --- |
-| Certificate of incorporation and corporate bylaws | Keep the filed certificate, bylaws and any amendments in the corporate record. Confirm the registered agent and Delaware registered office at the same time. | Filed certificate, bylaws, registered-agent confirmation | General Counsel / Corporate Secretary | Yes |
-| EIN and IRS business tax records | Confirm the EIN has been issued and retain the IRS notice. Use the legal entity name and EIN consistently on payroll, tax and bank records. | IRS EIN notice, tax account record | CFO / Finance | No |
+| Certificate of incorporation and corporate bylaws | Keep the filed certificate, any adopted bylaws and any amendments in the corporate record. Confirm whether bylaws have been adopted; do not assume they are in force. Confirm the registered agent and Delaware registered office at the same time. | Filed certificate, bylaws, registered-agent confirmation | external counsel / Corporate Secretary | Yes |
+| EIN and IRS business tax records | Confirm the EIN has been issued and retain the IRS notice. Once the EIN is issued, use the legal entity name and EIN consistently on payroll, tax and bank records. | IRS EIN notice, tax account record | Treasurer / Finance | No |
 | Registered agent and Delaware registered office | Confirm the registered agent is active, the registered office is correct and the annual franchise tax is calendared. | Registered-agent certificate, franchise-tax calendar | Corporate Secretary | Yes |
-| Company bank account and payroll funding process | Separate company funds from personal funds. Document who can initiate payroll, who approves it and how a shortfall is handled before payday. | Bank mandate, payroll funding procedure, approval matrix | CFO / Finance | No |
+| Company bank account and payroll funding process | Separate company funds from personal funds. Document who can initiate payroll, who approves it and how a shortfall is handled before payday. | Bank mandate, payroll funding procedure, approval matrix | Treasurer / Finance | No |
 | Accurate employee and contractor register | Maintain one register with legal name, work country and region, arrangement, start date, manager, status and exit date. Do not use a hiring catalogue as an employee register. | Workforce register export, reconciliation date | People Operations | No |
-| Written organisation chart and reporting structure | Show departments, reporting lines and vacant positions. Mark open executive roles as vacant; do not present them as appointed. | Current org chart with effective date | CEO / People Operations | No |
-| Approved job descriptions and salary bands | Every role needs a written description, decision authority, location, classification and approved salary band. Bands are internal controls, not public promises. | Job-description pack, salary-band approval | People Operations / CFO | Yes |
-| Employment contracts appropriate to each jurisdiction | Use a local contract for each hiring country and state. Do not use one Delaware template for every location. Counsel must review the template before use. | Counsel-reviewed contract templates by jurisdiction | General Counsel / People Operations | Yes |
-| Employee handbook and workplace policies | Issue a handbook that covers conduct, security, leave, expenses, complaints, discipline and termination. Local addenda must override inconsistent global text. | Adopted handbook and local addenda | People Operations / General Counsel | Yes |
-| Confidentiality and non-disclosure agreements | Every employee and contractor with access to company information signs an NDA. Do not rely on a policy acknowledgement as a substitute for a signed agreement. | Signed NDA in the personnel file | General Counsel | No |
-| Intellectual property and invention assignment agreements | Confirm present and past contributors assigned trademarks, source code, domain names, designs, content and inventions to the company. Resolve gaps before launch. | Signed IP assignments, chain-of-title review | General Counsel | Yes |
+| Written organisation chart and reporting structure | Show departments, reporting lines and vacant positions. Mark open executive roles as vacant; do not present them as appointed. | Current org chart with effective date | President / People Operations | No |
+| Approved job descriptions and salary bands | Every role needs a written description, decision authority, location, classification and approved salary band. Bands are internal controls, not public promises. | Job-description pack, salary-band approval | People Operations / Treasurer | Yes |
+| Employment contracts appropriate to each jurisdiction | Use a local contract for each hiring country and state. Do not use one Delaware template for every location. Counsel must review the template before use. | Counsel-reviewed contract templates by jurisdiction | external counsel / People Operations | Yes |
+| Employee handbook and workplace policies | Issue a handbook that covers conduct, security, leave, expenses, complaints, discipline and termination. Local addenda must override inconsistent global text. | Adopted handbook and local addenda | People Operations / external counsel | Yes |
+| Confidentiality and non-disclosure agreements | Every employee and contractor with access to company information signs an NDA. Do not rely on a policy acknowledgement as a substitute for a signed agreement. | Signed NDA in the personnel file | external counsel | No |
+| Intellectual property and invention assignment agreements | Confirm present and past contributors assigned trademarks, source code, domain names, designs, content and inventions to the company. Resolve gaps before launch. | Signed IP assignments, chain-of-title review | external counsel | Yes |
 | Data protection and employee privacy notices | Tell employees what personal data is collected, why, where it is stored, who can access it and how long it is kept. Collect identity, medical and financial data only for legitimate purposes. | Employee privacy notice, retention schedule, access matrix | Privacy / People Operations | No |
-| Disciplinary, grievance and termination procedures | Publish a fair process, preserve records, and follow local notice and final-pay rules. Do not use a US at-will clause in a jurisdiction where it is ineffective. | Procedure, warning templates, local termination checklist | People Operations / General Counsel | No |
+| Disciplinary, grievance and termination procedures | Publish a fair process, preserve records, and follow local notice and final-pay rules. Do not use a US at-will clause in a jurisdiction where it is ineffective. | Procedure, warning templates, local termination checklist | People Operations / external counsel | No |
 | Record-retention and secure personnel-file procedures | Restrict HR files to authorised people. Set retention periods by record type and jurisdiction. Do not keep identity documents in chat, email or unsecured drives. | Retention schedule, access list, storage location | People Operations / Security | Yes |
 | Work authorisation and right-to-work process | Verify the right to work in the actual work location before the start date. Store only the required evidence and do not over-collect immigration data. | Verification procedure, completed check record | People Operations | No |
-| Employment and securities counsel review | Have employment counsel review the handbook, contracts, policies and local addenda. Have securities counsel review any equity or option plan before it is promised. | Counsel engagement letter, review memo, approval reference | General Counsel | Yes |
+| Employment and securities counsel review | Have employment counsel review the handbook, contracts, policies and local addenda. Have securities counsel review any equity or option plan before it is promised. | Counsel engagement letter, review memo, approval reference | external counsel | Yes |
 | Personnel-file and onboarding procedure | Define what is collected before day one, what is signed on day one and who confirms completion. Link the procedure to the employee-file checklist. | Onboarding procedure, file checklist, owner | People Operations | Yes |
 
 ### Payroll, tax and compensation
@@ -58,9 +58,9 @@ Pay people correctly in their own country and currency. Platform credits are not
 
 | Control | What must exist | Evidence | Owner | Launch-critical |
 | --- | --- | --- | --- | --- |
-| Payroll system for each employee country and currency | Select a payroll provider or employer-of-record arrangement that can withhold, file and pay in the employee’s location. Confirm the provider before the start date. | Provider agreement, country coverage, go-live date | CFO / People Operations | Yes |
-| Employee or independent-contractor classification | Apply the local classification test. Do not label a full-time controlled worker a contractor to avoid payroll. Document the analysis for every engagement. | Classification memo, contract type, local review | General Counsel / People Operations | No |
-| Salary, wages, commission and bonus policies | Set approval authority, timing, clawback rules and written commission terms. Do not promise discretionary bonuses or equity as if they were guaranteed. | Compensation policy, approved bands, plan documents | CFO / People Operations | No |
+| Payroll system for each employee country and currency | Select a payroll provider or employer-of-record arrangement that can withhold, file and pay in the employee’s location. Confirm the provider before the start date. | Provider agreement, country coverage, go-live date | Treasurer / People Operations | Yes |
+| Employee or independent-contractor classification | Apply the local classification test. Do not label a full-time controlled worker a contractor to avoid payroll. Document the analysis for every engagement. | Classification memo, contract type, local review | external counsel / People Operations | No |
+| Salary, wages, commission and bonus policies | Set approval authority, timing, clawback rules and written commission terms. Do not promise discretionary bonuses or equity as if they were guaranteed. | Compensation policy, approved bands, plan documents | Treasurer / People Operations | No |
 | Pay frequency and payslip process | Confirm the lawful pay frequency, payday, currency and payslip content for each location. Provide payslips where required. | Payroll calendar, payslip template, provider configuration | Payroll | No |
 | Tax withholding and employer payroll contributions | Withhold and remit income tax, social security, Medicare or local equivalents. Pay the employer share and file on time. | Registration numbers, filing calendar, remittance evidence | Payroll / Tax | No |
 | Social security, pension or retirement contributions | Check mandatory pension, social insurance and retirement regimes. In Nigeria, confirm Pension Reform Act coverage and NSITF obligations with local counsel. | Pension registration, contribution schedule, local advice | Payroll / People Operations | Yes |
@@ -69,7 +69,7 @@ Pay people correctly in their own country and currency. Platform credits are not
 | Expense reimbursement rules | Require receipts, approval and a reasonable timeframe. Do not reimburse personal expenses without a business purpose. | Expense policy, approval workflow, reimbursement log | Finance | No |
 | Final-pay and termination-payment procedures | Calculate unused leave, notice, commissions, deductions and statutory payments. Follow local timing rules and preserve the calculation. | Final-pay checklist, calculator, local counsel note | Payroll / People Operations | No |
 | Payroll records and tax filings | Keep payroll registers, payslips, filings and remittance evidence for the required period. Restrict access and back up the records. | Payroll register, filing archive, retention schedule | Payroll / Finance | No |
-| Salary, benefits, payroll-tax and recruitment budget | Budget the fully loaded cost of each approved role, not just gross salary. Include employer taxes, pension, insurance, equipment and recruitment. | Approved workforce budget, scenario model | CFO | No |
+| Salary, benefits, payroll-tax and recruitment budget | Budget the fully loaded cost of each approved role, not just gross salary. Include employer taxes, pension, insurance, equipment and recruitment. | Approved workforce budget, scenario model | Treasurer | No |
 
 ### Workplace, health and employee protection
 
@@ -77,16 +77,16 @@ A remote-first company still has workplace obligations. The applicable rules dep
 
 | Control | What must exist | Evidence | Owner | Launch-critical |
 | --- | --- | --- | --- | --- |
-| Workplace health and safety policy | Cover remote work, office work, ergonomics, emergency contact, incident reporting and the company’s duty to provide a safe working environment. | Adopted H&S policy, local addenda | People Operations / COO | No |
-| Risk assessments for office and remote work | Assess display-screen, ergonomic, electrical, fire, travel and lone-working risks. Review after an incident or a material change. | Risk-assessment register, review date | COO / People Operations | No |
+| Workplace health and safety policy | Cover remote work, office work, ergonomics, emergency contact, incident reporting and the company’s duty to provide a safe working environment. | Adopted H&S policy, local addenda | People Operations / President | No |
+| Risk assessments for office and remote work | Assess display-screen, ergonomic, electrical, fire, travel and lone-working risks. Review after an incident or a material change. | Risk-assessment register, review date | President / People Operations | No |
 | Accident and incident reporting procedure | Give employees a clear route to report an injury, illness, security event or near miss. Record the report and the response. | Incident form, log, escalation path | People Operations / Security | No |
 | Emergency contacts and response procedures | Keep current emergency contacts for each employee and a response procedure for medical, fire, security and travel emergencies. Respect privacy. | Emergency contact register, response plan | People Operations | No |
-| Anti-harassment and anti-discrimination policy | Prohibit harassment, discrimination and retaliation. Provide multiple reporting routes and a fair investigation process. Local law may add protected characteristics and deadlines. | Adopted policy, reporting channels, investigator list | People Operations / General Counsel | No |
+| Anti-harassment and anti-discrimination policy | Prohibit harassment, discrimination and retaliation. Provide multiple reporting routes and a fair investigation process. Local law may add protected characteristics and deadlines. | Adopted policy, reporting channels, investigator list | People Operations / external counsel | No |
 | Equal opportunity and fair recruitment policy | Use consistent, job-related criteria. Keep interview notes and reject candidates for documented, lawful reasons. Do not ask irrelevant sensitive questions. | Recruitment policy, interview scorecards, training record | People Operations | No |
-| Reasonable accommodation process | Where required, consider workplace adjustments for disability, pregnancy, religion or other protected needs. Assess each request individually and keep medical data confidential. | Accommodation request form, decision log | People Operations / General Counsel | No |
-| Employee complaint and whistleblowing channels | Provide a confidential route for fraud, misconduct, safety, security and compliance concerns. Prohibit retaliation and track resolution. | Whistleblowing policy, channel, case log | General Counsel / Compliance | No |
-| Workers’ compensation or equivalent insurance | Confirm whether workers’ compensation, employer’s liability or another scheme applies in each work location. Do not assume Delaware coverage follows a remote employee. | Policy certificate, country/state coverage matrix | CFO / People Operations | No |
-| Employer’s liability and relevant business insurance | Review employer’s liability, general liability, cyber, crime, professional indemnity and directors-and-officers cover. Confirm the entity and territory insured. | Insurance schedule, certificates, broker confirmation | CFO / General Counsel | Yes |
+| Reasonable accommodation process | Where required, consider workplace adjustments for disability, pregnancy, religion or other protected needs. Assess each request individually and keep medical data confidential. | Accommodation request form, decision log | People Operations / external counsel | No |
+| Employee complaint and whistleblowing channels | Provide a confidential route for fraud, misconduct, safety, security and compliance concerns. Prohibit retaliation and track resolution. | Whistleblowing policy, channel, case log | external counsel / Compliance | No |
+| Workers’ compensation or equivalent insurance | Confirm whether workers’ compensation, employer’s liability or another scheme applies in each work location. Do not assume Delaware coverage follows a remote employee. | Policy certificate, country/state coverage matrix | Treasurer / People Operations | No |
+| Employer’s liability and relevant business insurance | Review employer’s liability, general liability, cyber, crime, professional indemnity and directors-and-officers cover. Confirm the entity and territory insured. | Insurance schedule, certificates, broker confirmation | Treasurer / external counsel | Yes |
 | Mental wellbeing and workload-management procedures | Set expectations for hours, availability, escalation and time off. Train managers to spot overload and respond without diagnosing or collecting unnecessary medical data. | Wellbeing policy, manager guidance, support route | People Operations | No |
 
 ### Technology, information security and company property
@@ -104,7 +104,7 @@ TradingBible handles customer records, financial data, software and research. Ac
 | Password manager and secure credential procedures | Use a company password manager and unique credentials. Never share passwords in chat or email. Rotate secrets after a suspected compromise. | Password-manager policy, vault ownership | IT / Security | No |
 | VPN or approved secure remote-access arrangement | Use approved secure access for administrative and production systems. Do not expose databases or internal tools directly to the public internet. | Remote-access standard, network diagram | IT / Security | No |
 | Backup and disaster-recovery procedures | Back up critical data, test restoration and record recovery objectives. Protect backups with separate credentials and access controls. | Backup schedule, restore-test evidence | IT / Security | No |
-| Incident response and breach-reporting process | Define severity, roles, containment, notification and post-incident review. Include legal, privacy and customer-communication steps. | Incident-response plan, contact tree, test record | Security / General Counsel | No |
+| Incident response and breach-reporting process | Define severity, roles, containment, notification and post-incident review. Include legal, privacy and customer-communication steps. | Incident-response plan, contact tree, test record | Security / external counsel | No |
 | Acceptable-use and internet-use policy | Set rules for company systems, personal use, prohibited content, monitoring, AI tools and return of property. Do not promise privacy that the company cannot provide. | Adopted acceptable-use policy, acknowledgement | IT / Security / People Operations | Yes |
 | Rules for AI tools, source code, customer data and confidential information | Prohibit entering customer data, credentials, source code or material non-public information into unapproved AI tools. Require human review of AI-generated output. | AI-use policy, approved-tool list, training record | Security / Engineering / Compliance | No |
 | Asset register for laptops, phones, security keys and equipment | Record serial numbers, assigned user, location and return status. Reconcile the register periodically. | Asset register, reconciliation date | IT / Finance | No |
@@ -116,16 +116,16 @@ Every employee needs a manager, written responsibilities, measurable objectives,
 
 | Control | What must exist | Evidence | Owner | Launch-critical |
 | --- | --- | --- | --- | --- |
-| Clear departments and reporting lines | Publish departments, remits and reporting lines. Name an accountable manager for every function, including vacant roles covered on an interim basis. | Org chart, department remits | CEO / People Operations | No |
+| Clear departments and reporting lines | Publish departments, remits and reporting lines. Name an accountable manager for every function, including vacant roles covered on an interim basis. | Org chart, department remits | President / People Operations | No |
 | A manager assigned to every employee | No employee should report to nobody. Record the manager, backup manager and escalation route in the personnel file. | Manager assignment in the workforce register | People Operations | No |
 | Probation and onboarding procedures | Set a structured first week, 30/60/90-day plan, probation review (where lawful) and confirmation of policy acknowledgements and training. | Onboarding checklist, probation template | People Operations / Manager | Yes |
 | Measurable job objectives and key performance indicators | Translate the job description into measurable outcomes. Review targets when priorities change; do not use impossible targets to force an exit. | Role scorecard, objective-setting record | Manager / People Operations | Yes |
 | Regular one-to-one meetings | Hold documented one-to-ones at least monthly. Cover priorities, blockers, wellbeing, development and feedback. Keep notes proportionate and professional. | One-to-one template, meeting cadence | Manager | No |
 | Performance reviews and promotion criteria | Use a consistent review cycle and written criteria for promotion, bonus and performance improvement. Separate performance from protected characteristics. | Review cycle, rating guide, promotion criteria | People Operations | No |
-| Training and professional-development budget | Provide role, security, compliance and management training. Record completion and allocate a budget rather than promising unlimited development. | Training plan, budget, completion record | People Operations / CFO | Yes |
+| Training and professional-development budget | Provide role, security, compliance and management training. Record completion and allocate a budget rather than promising unlimited development. | Training plan, budget, completion record | People Operations / Treasurer | Yes |
 | Attendance, working-hours and time-off procedures | Record hours where required, set availability expectations and provide a clear leave-request route. Respect local rest-period and holiday rules. | Time-off policy, request workflow, attendance record | People Operations | No |
-| Formal approval process for spending and commitments | Set thresholds, approvers and conflict-of-interest rules. Require written approval before an employee commits the company to a supplier, lease or contract. | Delegation of authority, approval matrix | CFO / COO | No |
-| Succession and business-continuity planning | Identify key-person dependencies and interim coverage for executive, security, finance and product roles. Test the plan. | Succession map, continuity plan, test date | CEO / COO | No |
+| Formal approval process for spending and commitments | Set thresholds, approvers and conflict-of-interest rules. Require written approval before an employee commits the company to a supplier, lease or contract. | Delegation of authority, approval matrix | Treasurer / President | No |
+| Succession and business-continuity planning | Identify key-person dependencies and interim coverage for executive, security, finance and product roles. Test the plan. | Succession map, continuity plan, test date | President / President | No |
 
 ## 4. Launch-critical checklist
 
@@ -171,7 +171,7 @@ These are the 19 controls that must be complete or explicitly blocked with a nam
 
 ### Employer and corporate records
 
-- Corporate registration and EIN records
+- Corporate registration and EIN records, if issued
 - Payroll registrations and tax filings
 - Insurance policies
 - Employment policies and handbook
@@ -258,17 +258,17 @@ A policy document is not adopted because it appears in the pack. Record the appr
 
 | Document | File | Applies to | Owner | Status |
 | --- | --- | --- | --- | --- |
-| Employee Handbook | 01-EMPLOYEE-HANDBOOK.md | All employees and contractors | People Operations / General Counsel | Controlled template |
-| US Employment Contract Template | 02-EMPLOYMENT-CONTRACT-US.md | US employees; state addendum required | General Counsel | Controlled template |
-| Nigeria Employment Contract Template | 03-EMPLOYMENT-CONTRACT-NIGERIA.md | Nigeria employees; local counsel review required | General Counsel | Controlled template |
-| Confidentiality and IP Assignment Pack | 04-NDA-IP-ASSIGNMENT.md | All employees and contractors | General Counsel | Controlled template |
-| Acceptable Use and Information Security Policy | 05-ACCEPTABLE-USE-AND-SECURITY.md | All employees and contractors | Security / General Counsel | Controlled template |
+| Employee Handbook | 01-EMPLOYEE-HANDBOOK.md | All employees and contractors | People Operations / external counsel | Controlled template |
+| US Employment Contract Template | 02-EMPLOYMENT-CONTRACT-US.md | US employees; state addendum required | external counsel | Controlled template |
+| Nigeria Employment Contract Template | 03-EMPLOYMENT-CONTRACT-NIGERIA.md | Nigeria employees; local counsel review required | external counsel | Controlled template |
+| Confidentiality and IP Assignment Pack | 04-NDA-IP-ASSIGNMENT.md | All employees and contractors | external counsel | Controlled template |
+| Acceptable Use and Information Security Policy | 05-ACCEPTABLE-USE-AND-SECURITY.md | All employees and contractors | Security / external counsel | Controlled template |
 | Onboarding Pack | 06-ONBOARDING-PACK.md | All new employees | People Operations | Controlled template |
 | Offboarding and Access-Revocation Pack | 07-OFFBOARDING-PACK.md | All employees and contractors | People Operations / Security | Controlled template |
-| Payroll and Benefits Framework | 08-PAYROLL-AND-BENEFITS-FRAMEWORK.md | All employees; local addenda required | CFO / People Operations | Controlled template |
+| Payroll and Benefits Framework | 08-PAYROLL-AND-BENEFITS-FRAMEWORK.md | All employees; local addenda required | Treasurer / People Operations | Controlled template |
 | Job Description Pack | 09-JOB-DESCRIPTION-PACK.md | Approved roles only | People Operations | Controlled template |
-| US and Nigeria Jurisdiction Guide | 10-JURISDICTION-GUIDE-US-NIGERIA.md | US and Nigeria hires | General Counsel / People Operations | Controlled template |
-| Employer Compliance Manual | 00-EMPLOYER-COMPLIANCE-MANUAL.md | Company-wide | COO / General Counsel | Controlled template |
+| US and Nigeria Jurisdiction Guide | 10-JURISDICTION-GUIDE-US-NIGERIA.md | US and Nigeria hires | external counsel / People Operations | Controlled template |
+| Employer Compliance Manual | 00-EMPLOYER-COMPLIANCE-MANUAL.md | Company-wide | President / external counsel | Controlled template |
 | Employee File Checklist | 11-EMPLOYEE-FILE-CHECKLIST.md | All employees | People Operations | Controlled template |
 
 ## 11. Policy notes
