@@ -1,8 +1,8 @@
 // TradingBible Service Worker - Offline First, Push Notifications, Background Sync
-const CACHE_NAME = 'tradingbible-v1.5.2';
-const STATIC_CACHE = 'tradingbible-static-v1.5.2';
-const DYNAMIC_CACHE = 'tradingbible-dynamic-v1.5.2';
-const API_CACHE = 'tradingbible-api-v1.5.2';
+const CACHE_NAME = 'tradingbible-v1.6.0';
+const STATIC_CACHE = 'tradingbible-static-v1.6.0';
+const DYNAMIC_CACHE = 'tradingbible-dynamic-v1.6.0';
+const API_CACHE = 'tradingbible-api-v1.6.0';
 
 const STATIC_ASSETS = [
   '/',
@@ -28,7 +28,8 @@ const API_PATTERNS = [
   /^https?:\/\/.*\/ads\/channels/,
 ];
 
-// Install - cache static assets
+// Install - cache static assets. Activation stays behind the user prompt so
+// an open tab is not switched to a new bundle unexpectedly.
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
@@ -218,8 +219,8 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
   if (event.data === 'getVersion') {
-    event.ports[0].postMessage({ version: '1.3.7' });
+    event.ports[0].postMessage({ version: '1.6.0' });
   }
 });
 
-console.log('[SW] TradingBible Service Worker v1.5.2 loaded');
+console.log('[SW] TradingBible Service Worker v1.6.0 loaded');
