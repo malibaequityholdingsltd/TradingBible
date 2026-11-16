@@ -13,6 +13,7 @@ const STATIC_ASSETS = [
   '/app/brokers',
   '/app/analytics',
   '/app/journal',
+  '/reset.html',
   '/icons/favicon.svg',
   '/icons/favicon-16x16.svg',
   '/icons/favicon-32x32.svg',
