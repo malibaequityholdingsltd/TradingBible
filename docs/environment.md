@@ -23,7 +23,7 @@ Both apps load `.env` from their own directory (`node --env-file=.env` for the A
 | `SUPABASE_URL` | yes | `https://<project-ref>.supabase.co` |
 | `SUPABASE_ANON_KEY` | yes | Publishable key (web + server) |
 | `SUPABASE_SERVICE_ROLE_KEY` | yes | Server-only key (RLS bypass) |
-| `SEND_EMAIL_HOOK_SECRET` | yes in production | `whsec_…` secret for the Supabase Send Email hook. **Must match** the secret configured in the Supabase dashboard (stored as `v1,whsec_…`); the API strips the `v1,` prefix on verify. When empty, development may accept unsigned hook calls; production returns `503`. |
+| `SEND_EMAIL_HOOK_SECRET` | yes in production | `v1,whsec_…` secret for the Supabase Send Email hook. **Must match** the secret configured in Supabase; the API strips the `v1,whsec_` prefix on verify. When empty, development may accept unsigned hook calls; production returns `503`. |
 
 ## SMTP (branded auth emails)
 
@@ -41,7 +41,15 @@ cd apps/api
 npm run smtp:test -- you@example.com
 ```
 
-The domain has an active SPF record and `p=none` DMARC. For inbox placement, enable DKIM for `tradingbible.app` in the Hostinger email panel (the `hostingermail._domainkey` record is currently absent) and keep the From address on the same domain. Never send production mail from a mismatched domain.
+The domain has an active SPF record, `p=none` DMARC and Hostinger DKIM CNAMEs at `hostingermail-a._domainkey`, `hostingermail-b._domainkey` and `hostingermail-c._domainkey`. Verify them with:
+
+```bash
+dig +short CNAME hostingermail-a._domainkey.tradingbible.app
+dig +short CNAME hostingermail-b._domainkey.tradingbible.app
+dig +short CNAME hostingermail-c._domainkey.tradingbible.app
+```
+
+Keep the From address on the same domain and never send production mail from a mismatched domain. See `docs/security/evidence/2026-11-18-auth-email-smtp.md` for the verified 18 November 2026 state.
 
 ## Company communications
 
@@ -240,6 +248,6 @@ The vault returns only metadata to clients. Broker passwords are never requested
 |---|---|---|
 | `VITE_SUPABASE_URL` | yes | Same as API `SUPABASE_URL` |
 | `VITE_SUPABASE_ANON_KEY` | yes | Same as API `SUPABASE_ANON_KEY` |
-| `VITE_PUBLIC_SIGNUP_ENABLED` | no | Defaults to `false`. Public signup stays closed unless this is explicitly `true`. Re-enable only after SMTP/email-code delivery and auth acceptance tests pass. Login and admin invitations are unaffected. |
+| `VITE_PUBLIC_SIGNUP_ENABLED` | no | Defaults to `false`. Public signup stays closed unless this is explicitly `true`. Transactional auth email and token-hash login were verified on 18 November 2026; re-enabling public signup is now a product decision, not an email blocker. Login and admin invitations are unaffected. |
 
 Other optional web keys (market widget feeds, integrations) are documented in `apps/web/.env.example`.

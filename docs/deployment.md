@@ -72,6 +72,6 @@ curl -I https://tradingbible.app/            # web SPA, TLS
 
 ## Important operational notes
 
-- The Supabase **Send Email hook** must point at `https://tradingbible.app/api/auth/send-email` with the same hook secret as `apps/api/.env` — otherwise branded auth emails fail. The endpoint rejects invalid signatures (401), so a mismatch surfaces fast in `pm2 logs`.
+- The Supabase **Send Email hook** must point at `https://tradingbible.app/api/auth/send-email` with the same hook secret as `apps/api/.env` — otherwise branded auth emails fail. The endpoint rejects invalid signatures (401), so a mismatch surfaces fast in `pm2 logs`. The verified 18 November 2026 state, including `disable_signup: true`, the redirect allow-list and SMTP delivery checks, is recorded in `docs/security/evidence/2026-11-18-auth-email-smtp.md`.
 - Market-data free keys are rate-limited: Alpha Vantage = 25 req/day (cached); the API falls back to Binance/synthetic, so charts never break.
 - Backups: see `docs/database.md`. Local repo backups via `git bundle` are in `~/Backups/` on the dev machine.

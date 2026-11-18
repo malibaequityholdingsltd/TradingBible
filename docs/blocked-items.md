@@ -171,7 +171,7 @@ No API key can substitute for this authorisation.
 **What is missing:**
 
 - A verified `COMPANY_POSTAL_ADDRESS` before any commercial email is sent.
-- A production SMTP sender with SPF, DKIM and DMARC verification.
+- A production SMTP sender with SPF, DKIM and DMARC verification for **commercial** email. Transactional auth email is configured and verified as of 18 November 2026; see `docs/security/evidence/2026-11-18-auth-email-smtp.md`.
 - An SMS provider, documented consent records, quiet hours and opt-out handling.
 - Counsel approval for fundraising templates and a controlled recipient/audience process.
 - A real unsubscribe/preference centre and suppression-list handling for marketing email.
@@ -255,9 +255,8 @@ These are not bugs and must not be “fixed” by inventing data:
 
 - Real non-admin test account or permission to create one.
 - DocuSign developer credentials listed in §2.7.
-- Production SMTP sender with SPF/DKIM/DMARC and a verified `COMPANY_POSTAL_ADDRESS` before commercial email.
+- A verified `COMPANY_POSTAL_ADDRESS` and counsel approval before commercial email. Transactional auth email is configured and verified as of 18 November 2026.
 - An SMS provider, consent records and opt-out handling before SMS delivery.
-- SMTP delivery/DKIM access if email verification is in scope.
 - Optional market/AI keys: `ALPHA_VANTAGE_API_KEY`, `FINNHUB_API_KEY`, `DEEPSEEK_API_KEY` or `INTEGRATED_AI_API_URL`/`INTEGRATED_AI_API_KEY`.
 - Optional D&B: `DNB_CLIENT_ID`, `DNB_CLIENT_SECRET`.
 - Optional Circle x402: `CIRCLE_X402_SELLER_ADDRESS` and related settings.

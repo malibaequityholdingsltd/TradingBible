@@ -108,3 +108,8 @@ This pass does **not** close these gates:
   issuer record and the employment-entity decision remain external blockers.
 - No ISO/IEC 27001, SOC 2, PCI DSS, audit or completed penetration test is
   claimed by this record.
+
+> **Update (18 November 2026):** Transactional auth email and the Send Email
+> hook are now configured and verified. See
+> `docs/security/evidence/2026-11-18-auth-email-smtp.md`. This 12 November
+> record remains the historical snapshot; it is not retroactively updated.
