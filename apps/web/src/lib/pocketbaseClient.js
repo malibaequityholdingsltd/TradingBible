@@ -4,6 +4,21 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const USE_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 const ADMIN_EMAILS = ['malibaequityholdingsltd@outlook.com', 'tradingbible@hotmail.com'];
+const CONFIGURED_SITE_URL = String(import.meta.env.VITE_PUBLIC_SITE_URL || '').replace(/\/+$/, '');
+
+function publicSiteUrl() {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host.endsWith('.local')) {
+      return window.location.origin;
+    }
+  }
+  return CONFIGURED_SITE_URL || 'https://tradingbible.app';
+}
+
+function authRedirectTo(path = '/login') {
+  return `${publicSiteUrl()}${path}`;
+}
 
 function normalizeEmail(value) {
   return String(value || '').trim().toLowerCase();
@@ -586,7 +601,7 @@ function createSupabaseCompatClient() {
         const provider = typeof providerOrOptions === 'string'
           ? providerOrOptions
           : providerOrOptions?.provider;
-        const redirectTo = providerOrOptions?.redirectUrl || `${window.location.origin}/login`;
+        const redirectTo = providerOrOptions?.redirectUrl || authRedirectTo('/login');
         const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo } });
         if (error) throw error;
         return { token: authStore.token, record: authStore.record };
@@ -628,7 +643,7 @@ function createSupabaseCompatClient() {
           options: {
             shouldCreateUser: createUserOnLogin,
             data: metadata,
-            emailRedirectTo: `${window.location.origin}/login`,
+            emailRedirectTo: authRedirectTo('/login'),
           },
         }), 30000, 'Sending the sign-in code');
         if (error) throw error;
@@ -639,6 +654,22 @@ function createSupabaseCompatClient() {
         const email = String(otpId || '').trim();
         let token = String(code || '').trim();
         if (!email || !token) throw new Error('Email and code are required.');
+        // Accept a pasted branded link too: pull the one-time token hash and
+        // action type out of the URL so the user never has to visit a provider
+        // or project hostname to finish signing in.
+        const hashMatch = token.match(/[?&]token_hash=([^&#\s]+)/);
+        if (hashMatch) {
+          const typeMatch = token.match(/[?&]type=([^&#\s]+)/);
+          const rawType = typeMatch ? decodeURIComponent(typeMatch[1]) : 'magiclink';
+          const linkType = ['signup', 'invite', 'recovery', 'magiclink', 'email'].includes(rawType) ? rawType : 'magiclink';
+          const { data, error } = await withTimeout(supabase.auth.verifyOtp({
+            token_hash: decodeURIComponent(hashMatch[1]),
+            type: linkType,
+          }), 30000, 'Verifying the email link');
+          if (error) throw error;
+          await syncAuthFromSession(data?.session);
+          return { token: authStore.token, record: authStore.record };
+        }
         // Accept a pasted magic link too: pull the token out of the URL.
         const m = token.match(/[?&]token=([^&#\s]+)/);
         if (m) { try { token = decodeURIComponent(m[1]); } catch { token = m[1]; } }
@@ -650,6 +681,19 @@ function createSupabaseCompatClient() {
           token,
           type,
         }), 30000, 'Verifying the code');
+        if (error) throw error;
+        await syncAuthFromSession(data?.session);
+        return { token: authStore.token, record: authStore.record };
+      },
+
+      async authWithTokenHash(tokenHash, rawType = 'magiclink') {
+        const hash = String(tokenHash || '').trim();
+        if (!hash) throw new Error('The sign-in link is missing its token.');
+        const type = ['signup', 'invite', 'recovery', 'magiclink', 'email'].includes(rawType) ? rawType : 'magiclink';
+        const { data, error } = await withTimeout(supabase.auth.verifyOtp({
+          token_hash: hash,
+          type,
+        }), 30000, 'Verifying the email link');
         if (error) throw error;
         await syncAuthFromSession(data?.session);
         return { token: authStore.token, record: authStore.record };
@@ -696,6 +740,7 @@ function createSupabaseRequiredClient() {
         requestEmailChange: async () => { throw missingError(); },
         requestOTP: async () => { throw missingError(); },
         authWithOTP: async () => { throw missingError(); },
+        authWithTokenHash: async () => { throw missingError(); },
       };
     },
     files: {

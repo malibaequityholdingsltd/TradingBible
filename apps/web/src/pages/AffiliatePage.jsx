@@ -125,6 +125,10 @@ export default function AffiliatePage() {
             </div>
           </Card>
 
+          <p className="-mt-1 text-xs text-[#8a8577]">
+            You earn {Math.round((data?.rate ?? 0.10) * 100)}% of every eligible purchase made by users you refer. Taxes, refunds, chargebacks and excluded products do not earn commission.
+          </p>
+
           <StatGrid cols={4}>
             <Stat label={t('afl.clicks')} value={data?.clicks ?? 0} />
             <Stat label={t('afl.signups')} value={data?.signups ?? 0} />

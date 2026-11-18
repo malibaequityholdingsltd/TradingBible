@@ -126,9 +126,16 @@ export const supabase = {
 		request('/rest/v1/affiliate_signups', { service: true, method: 'POST', body: row, prefer: 'return=representation' })
 			.then((rows) => rows?.[0] || null),
 	claimAffiliateSignups: (codeId) =>
-		request(`/rest/v1/affiliate_signups?codeId=eq.${encodeURIComponent(codeId)}&status=in.(signed_up,active)`, {
+		request(`/rest/v1/affiliate_signups?codeId=eq.${encodeURIComponent(codeId)}&status=eq.active&commission=gt.0`, {
 			service: true, method: 'PATCH', body: { status: 'pending_payout' }, prefer: 'return=representation',
 		}),
+	markAffiliateSignupsPaid: (ids) => {
+		const list = (ids || []).map((id) => encodeURIComponent(id)).filter(Boolean).join(',');
+		if (!list) return Promise.resolve([]);
+		return request(`/rest/v1/affiliate_signups?id=in.(${list})`, {
+			service: true, method: 'PATCH', body: { status: 'paid' }, prefer: 'return=representation',
+		});
+	},
 
 	// ── auth / sessions ──────────────────────────────────────
 	// Admin-generated magic link. GoTrue does NOT send an email for this; it

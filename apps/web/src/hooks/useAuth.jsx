@@ -36,6 +36,10 @@ export function AuthProvider({ children }) {
   const loginWithCode = useCallback((otpId, code) =>
     pb.collection('users').authWithOTP(otpId, code), []);
 
+  // Branded email links carry token_hash instead of the old provider URL.
+  const loginWithTokenHash = useCallback((tokenHash, type) =>
+    pb.collection('users').authWithTokenHash(tokenHash, type), []);
+
   const requestReset = useCallback((email) =>
     pb.collection('users').requestPasswordReset(email), []);
 
@@ -53,7 +57,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      user, isAuthed, isAuthReady, loginWithProvider, loginWithPassword, requestOTP, loginWithOTP, loginWithCode, requestReset, completePasswordReset, updateProfile, logout,
+      user, isAuthed, isAuthReady, loginWithProvider, loginWithPassword, requestOTP, loginWithOTP, loginWithCode, loginWithTokenHash, requestReset, completePasswordReset, updateProfile, logout,
     }}>
       {children}
     </AuthContext.Provider>

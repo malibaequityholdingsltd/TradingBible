@@ -10,6 +10,34 @@ const smtpFromEmail = process.env.SMTP_FROM_EMAIL || smtpUser;
 const smtpFromName = process.env.SMTP_FROM_NAME || 'TradingBible';
 const hookSecret = process.env.SEND_EMAIL_HOOK_SECRET || '';
 
+function publicAppUrl() {
+  const raw = String(process.env.PUBLIC_APP_URL || process.env.APP_URL || 'https://tradingbible.app').trim();
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return 'https://tradingbible.app';
+  }
+}
+
+// Supabase's confirmation_url is the project hostname
+// (https://<ref>.supabase.co/auth/v1/verify?...). Send the token hash to our
+// own /login route instead, where the app calls verifyOtp directly. This keeps
+// every visible link and redirect on the TradingBible domain.
+function buildActionUrl(emailData, action) {
+  const fallback = String(emailData.confirmation_url || emailData.confirmationURL || '');
+  const tokenHash = String(emailData.token_hash || '').trim();
+  if (!tokenHash) return fallback;
+  const type = ['signup', 'invite', 'recovery'].includes(action) ? action : 'magiclink';
+  try {
+    const url = new URL('/login', publicAppUrl());
+    url.searchParams.set('token_hash', tokenHash);
+    url.searchParams.set('type', type);
+    return url.toString();
+  } catch {
+    return fallback;
+  }
+}
+
 const transporter = smtpHost && smtpPort && smtpUser && smtpPass
   ? createTransport({
       host: smtpHost,
@@ -31,13 +59,13 @@ if (!transporter) {
 
 // Diagnosis helper (no secrets): lets admin confirm the hook can send.
 export function authSendEmailStatus(req, res) {
-  return res.json({ configured: Boolean(transporter), host: smtpHost || null, port: smtpPort || null });
+  return res.json({ configured: Boolean(transporter), host: smtpHost || null, port: smtpPort || null, hookConfigured: Boolean(webhook), brandedLinks: true });
 }
 
 function getMailCopy(emailData = {}) {
   const action = String(emailData.email_action_type || '').toLowerCase();
   const token = String(emailData.token || '');
-  const confirmationUrl = String(emailData.confirmation_url || emailData.confirmationURL || '');
+  const confirmationUrl = buildActionUrl(emailData, action);
 
   if (action === 'signup') {
     return {
@@ -67,11 +95,11 @@ function getMailCopy(emailData = {}) {
 
   if (action === 'recovery') {
     return {
-      subject: 'Reset your TradingBible password',
-      title: 'Reset your password',
+      subject: 'Sign in to TradingBible',
+      title: 'Sign in to TradingBible',
       body: `
-        <p>We received a request to reset your password. This link is valid for a short time.</p>
-        ${confirmationUrl ? `<p style="margin:22px 0 10px">${buttonLink(confirmationUrl, 'Reset password')}</p>` : ''}
+        <p>Use this secure link to sign in to your TradingBible account. TradingBible uses one-time email codes, so there is no password stored to reset.</p>
+        ${confirmationUrl ? `<p style="margin:22px 0 10px">${buttonLink(confirmationUrl, 'Sign in securely')}</p>` : ''}
         <p style="color:#8a8577;font-size:13px">If you did not request this, ignore this email.</p>`,
     };
   }
@@ -134,7 +162,7 @@ export async function authSendEmailHandler(req, res, next) {
       return res.status(400).json({ error: 'Recipient email is missing' });
     }
 
-    const textBody = `TradingBible ${mail.subject}\n\n${String(emailData?.token || '')}\n${String(emailData?.confirmation_url || emailData?.confirmationURL || '')}`.trim();
+    const textBody = `TradingBible ${mail.subject}\n\n${String(emailData?.token || '')}\n${buildActionUrl(emailData, String(emailData?.email_action_type || '').toLowerCase())}`.trim();
     const htmlBody = brandShell({ title: mail.title, body: mail.body });
     // Hostinger requires envelope-from == SMTP user exactly, otherwise 553.
     // First try display-name From, then fall back to bare address.

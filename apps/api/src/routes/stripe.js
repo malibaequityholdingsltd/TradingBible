@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import logger from '../utils/logger.js';
 import { supabase, supabaseRest } from '../utils/supabaseClient.js';
 import { familyPassTransactionId, generateFamilyCode, generateTeamCode, normalizeFamilyCode } from '../utils/academy-family.js';
+import { awardAffiliateCommission } from './affiliate.js';
 
 const router = Router();
 
@@ -25,6 +26,32 @@ function getPublishableKey() {
 
 function getWebhookSecret() {
   return process.env.STRIPE_WEBHOOK_SECRET || process.env.STRIPE_SANDBOX_WEBHOOK_SECRET || '';
+}
+
+function netPurchaseAmount(data) {
+  const gross = Number(data.amount_total ?? data.amount_paid ?? 0) / 100;
+  const tax = Number(data.total_details?.amount_tax ?? data.total_tax ?? 0) / 100;
+  return Math.max(0, Math.round((gross - tax) * 100) / 100);
+}
+
+async function creditAffiliatePurchase(user, { amount, currency, transactionId, plan, occurredAt } = {}) {
+  if (!user?.id || !user?.email || !transactionId || !(Number(amount) > 0)) return null;
+  try {
+    const result = await awardAffiliateCommission({
+      userId: user.id,
+      email: user.email,
+      amount,
+      currency,
+      transactionId,
+      plan,
+      occurredAt,
+    });
+    if (result?.commission) logger.info(`affiliate commission credited ${result.commission} ${currency || 'usd'} on ${transactionId}`);
+    return result;
+  } catch (err) {
+    logger.error('affiliate commission credit failed', String(err));
+    return null;
+  }
 }
 
 const ACADEMY_FAMILY_PRICE_ID = process.env.STRIPE_PRICE_ACADEMY_FAMILY || 'price_1UVq0gETv6zJp2esYqK9qDUs';
@@ -487,6 +514,15 @@ router.post('/webhook', async (req, res) => {
           } else {
             await recordEvent(user.id, { eventType: type, planName: 'academy', status: data.payment_status || 'paid', occurredAt: purchasedAt });
           }
+          if (data.payment_status === 'paid') {
+            await creditAffiliatePurchase(user, {
+              amount: netPurchaseAmount(data),
+              currency: data.currency || 'usd',
+              transactionId: data.id,
+              plan: intent,
+              occurredAt: purchasedAt,
+            });
+          }
         }
       } else if (intent === 'wallet_deposit') {
         const user = await findUser(data.metadata, customerId);
@@ -512,6 +548,15 @@ router.post('/webhook', async (req, res) => {
         if (user && subscriptionId) {
           await updateUser(user.id, { subscriptionId, stripeCustomerId: customerId });
         }
+        if (user && data.mode === 'payment' && data.payment_status === 'paid' && data.metadata?.intent !== 'wallet_deposit') {
+          await creditAffiliatePurchase(user, {
+            amount: netPurchaseAmount(data),
+            currency: data.currency || 'usd',
+            transactionId: data.id,
+            plan: data.metadata?.plan || 'purchase',
+            occurredAt: new Date(event.created * 1000).toISOString(),
+          });
+        }
       }
     } else if (type.startsWith('invoice.')) {
       const customerId = typeof data.customer === 'string' ? data.customer : data.customer?.id;
@@ -528,6 +573,15 @@ router.post('/webhook', async (req, res) => {
           occurredAt: new Date(event.created * 1000).toISOString(),
         });
         if (type === 'invoice.payment_failed') await updateUser(user.id, { subscriptionStatus: 'past_due' });
+        if (type === 'invoice.paid') {
+          await creditAffiliatePurchase(user, {
+            amount: netPurchaseAmount(data),
+            currency: data.currency || 'usd',
+            transactionId: data.id,
+            plan: data.lines?.data?.[0]?.price?.nickname || data.lines?.data?.[0]?.description || 'subscription',
+            occurredAt: new Date(event.created * 1000).toISOString(),
+          });
+        }
       }
     } else if (type.startsWith('identity.verification_session.')) {
       // Wallet KYC: mirror verification outcome into wallet_money_rails.

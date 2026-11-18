@@ -18,6 +18,15 @@ const LOGO = TRADINGBIBLE_LOGO;
 const OTP_COOLDOWN_SECONDS = 60;
 const OTP_GLOBAL_COOLDOWN_KEY = 'tb:otp:global-cooldown';
 const OTP_RATE_LIMIT_FALLBACK_SECONDS = 15 * 60;
+const tokenHashExchanges = new Map();
+
+function exchangeTokenHash(loginWithTokenHash, tokenHash, type) {
+  const key = `${type}:${tokenHash}`;
+  if (!tokenHashExchanges.has(key)) {
+    tokenHashExchanges.set(key, loginWithTokenHash(tokenHash, type));
+  }
+  return tokenHashExchanges.get(key);
+}
 
 function normalizeEmail(value) {
   return String(value || '').trim().toLowerCase();
@@ -379,7 +388,7 @@ export function LoginPage() {
   const location = useLocation();
   const requestedNext = new URLSearchParams(location.search).get('next') || '';
   const nextPath = requestedNext.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '';
-  const { requestOTP, loginWithCode, loginWithProvider, user, isAuthed, isAuthReady, logout } = useAuth();
+  const { requestOTP, loginWithCode, loginWithProvider, loginWithTokenHash, user, isAuthed, isAuthReady, logout } = useAuth();
   const { settings } = usePlatformSettings();
   const { t } = useI18n();
   const { toast } = useToast();
@@ -394,9 +403,10 @@ export function LoginPage() {
   const [pendingAuth, setPendingAuth] = useState(null);
   const [cooldownUntil, setCooldownUntil] = useState(0);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
-  // Email-link return: Supabase redirects back here with ?code= (PKCE) or
-  // ?error=. The client exchanges the code automatically; show status meanwhile.
-  const [linkState] = useState(() => {
+  // Email-link return: a branded link may carry ?token_hash= (our Send Email
+  // hook) or ?code= (PKCE). Exchange it here so every auth step stays on the
+  // TradingBible domain instead of showing a provider project hostname.
+  const [linkState, setLinkState] = useState(() => {
     try {
       const sp = new URLSearchParams(window.location.search);
       const hash = new URLSearchParams(String(window.location.hash || '').replace(/^#/, ''));
@@ -405,10 +415,12 @@ export function LoginPage() {
         const raw = hash.get('error_description') || sp.get('error_description') || err;
         return { status: 'error', message: String(raw).replace(/\+/g, ' ') };
       }
-      if (sp.get('code') || hash.get('access_token')) return { status: 'pending' };
+      if (sp.get('token_hash') || sp.get('code') || hash.get('access_token')) return { status: 'pending' };
       return null;
     } catch { return null; }
   });
+  const tokenHash = new URLSearchParams(location.search).get('token_hash') || '';
+  const tokenHashType = new URLSearchParams(location.search).get('type') || 'magiclink';
 
   const finishLogin = (auth) => {
     notifyLogin();
@@ -497,6 +509,41 @@ export function LoginPage() {
     }
     finishLogin(auth);
   };
+
+  const completeEmailLoginRef = useRef(completeEmailLogin);
+  useEffect(() => {
+    completeEmailLoginRef.current = completeEmailLogin;
+  }, [completeEmailLogin]);
+
+  useEffect(() => {
+    if (!tokenHash) return undefined;
+    let cancelled = false;
+    const key = `${tokenHashType}:${tokenHash}`;
+    (async () => {
+      setBusy(true);
+      setLinkState({ status: 'pending' });
+      try {
+        const auth = await exchangeTokenHash(loginWithTokenHash, tokenHash, tokenHashType);
+        if (cancelled) return;
+        const url = new URL(window.location.href);
+        url.searchParams.delete('token_hash');
+        url.searchParams.delete('type');
+        window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+        setLinkState(null);
+        await completeEmailLoginRef.current(auth);
+      } catch (err) {
+        tokenHashExchanges.delete(key);
+        if (!cancelled) {
+          const message = describeAuthError(err, t);
+          setLinkState({ status: 'error', message });
+          toast({ variant: 'destructive', title: t('auth.linkFailed', null, 'That sign-in link didn’t work.'), description: message });
+        }
+      } finally {
+        if (!cancelled) setBusy(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [tokenHash, tokenHashType, loginWithTokenHash, t, toast]);
 
   const verifyCode = async (e) => {
     e?.preventDefault?.();

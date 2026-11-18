@@ -13,18 +13,18 @@ import {
 
 const PREMIUM_MONTHLY = 19.99;
 const PREMIUM_ANNUAL = 199;
-const COMMISSION_RATE = 0.15;
+const COMMISSION_RATE = 0.10;
 
 const STEPS = [
   ['01', 'Create a TradingBible account', 'The affiliate dashboard lives inside the platform. Your code is tied to your account, not a separate marketing profile.'],
   ['02', 'Share work you would stand behind', 'Use your code on content, a newsletter, a community or a direct recommendation. No spam, no fake screenshots, no income claims.'],
-  ['03', 'Track eligible referrals', 'The dashboard shows clicks, signups, eligible subscriptions and pending commissions. Refunds and chargebacks are removed before payout.'],
-  ['04', 'Claim in TBC', 'Approved USD commissions convert to TBC at the published rate and land in your credit wallet. Nothing is paid until the referred subscription clears.'],
+  ['03', 'Track eligible purchases', 'The dashboard shows clicks, signups, eligible purchases and pending commissions. Refunds and chargebacks are reviewed before payout.'],
+  ['04', 'Claim in TBC', 'Approved USD commissions convert to TBC at the published rate and land in your credit wallet. Nothing is paid until the referred purchase has cleared and passed review.'],
 ];
 
 const RULES = [
-  ['15% recurring', 'On eligible referred Premium subscriptions, for as long as the referred subscription remains active and paid.'],
-  ['Premium only', 'Free accounts do not earn a commission. Academy, enterprise and one-time purchases are excluded unless a written term says otherwise.'],
+  ['10% of eligible purchases', '10% of every eligible purchase made by a user you refer — including subscriptions and one-time paid products. Taxes, refunds, chargebacks, fraud and excluded products do not earn commission.'],
+  ['Paid products only', 'Free accounts and free activity do not earn a commission. The programme covers eligible paid purchases on TradingBible; excluded or prohibited products are listed in the affiliate terms.'],
   ['Clear attribution', 'A referral is attributed through your affiliate code. Self-referrals, duplicate accounts and manipulated signups are excluded.'],
   ['TBC settlement', 'Approved commissions settle in the platform credit wallet at the published TBC rate. TBC is not equity and has no promised market value.'],
   ['No income promise', 'This is a marketing programme, not a job, investment, passive income or a guarantee of earnings. Results depend on eligible sales.'],
@@ -42,7 +42,7 @@ function Calculator() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="pm-kicker">Illustrative calculator</div>
-          <h3 className="mt-2 text-lg font-bold text-[#f0ecdd]">Model the eligible subscription value.</h3>
+          <h3 className="mt-2 text-lg font-bold text-[#f0ecdd]">Model the eligible purchase value.</h3>
         </div>
         <div className="inline-flex rounded-full border border-[#56e0a4]/25 bg-black/20 p-0.5" role="group" aria-label="Billing period">
           {['monthly', 'annual'].map((option) => (
@@ -59,7 +59,7 @@ function Calculator() {
       </div>
 
       <label className="pm-calc__label mt-5" htmlFor="affiliate-referrals">
-        <span>Active referred Premium subscriptions</span>
+        <span>Active referred customers</span>
         <output>{referrals}</output>
       </label>
       <input
@@ -77,7 +77,7 @@ function Calculator() {
         <div className="rounded-xl border border-[#56e0a4]/18 bg-[#56e0a4]/[0.055] p-4">
           <div className="font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-[#8a8577]">Illustrative monthly commission</div>
           <div className="pm-calc__value">${monthly.toLocaleString('en-US', { maximumFractionDigits: 2 })}</div>
-          <div className="pm-calc__sub">15% × {referrals} active {plan} referral{referrals === 1 ? '' : 's'} at the current list price. Before refunds, chargebacks and exclusions.</div>
+          <div className="pm-calc__sub">10% × {referrals} active referral{referrals === 1 ? '' : 's'} at a ${monthlyPerReferral.toFixed(2)} monthly purchase baseline. Before taxes, refunds, chargebacks and exclusions.</div>
         </div>
         <div className="rounded-xl border border-[#d4af37]/18 bg-[#d4af37]/[0.045] p-4">
           <div className="font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-[#8a8577]">Illustrative annual value</div>
@@ -86,7 +86,7 @@ function Calculator() {
         </div>
       </div>
       <p className="mt-3 text-[9px] leading-relaxed text-[#6f6a5d]">
-        Illustrative only. Actual commissions depend on eligible referred subscriptions, the current price, refunds, chargebacks, fraud review and the affiliate terms. TBC settlement is converted at the published rate.
+        Illustrative only. The calculator uses the current Premium list price as a baseline, not a cap or a forecast. Actual commissions depend on every eligible referred purchase, taxes, refunds, chargebacks, fraud review and the affiliate terms. TBC settlement is converted at the published rate.
       </p>
     </div>
   );
@@ -108,7 +108,7 @@ export default function AffiliatesPublicPage() {
                   <span className="tb-gold-text">Earn the share.</span>
                 </h1>
                 <p className="pm-hero__sub mt-5">
-                  A 15% recurring commission on eligible referred Premium subscriptions.
+                  A 10% commission on every eligible purchase made by users you refer.
                   No downline, no income promise and no fake performance. Just a clear code,
                   a dashboard and TBC settlement at the published rate.
                 </p>
@@ -123,7 +123,7 @@ export default function AffiliatesPublicPage() {
                   </GhostButton>
                 </div>
                 <div className="pm-hero__meta">
-                  {['15% recurring', 'TBC settlement', 'Refund-aware', 'No earnings guarantee'].map((item) => (
+                  {['10% of eligible purchases', 'TBC settlement', 'Refund-aware', 'No earnings guarantee'].map((item) => (
                     <span key={item}><Check className="h-3.5 w-3.5 text-[#56e0a4]" />{item}</span>
                   ))}
                 </div>
@@ -136,7 +136,7 @@ export default function AffiliatesPublicPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="pm-kicker !text-[#56e0a4]">Referral revenue map</div>
-                      <h2 className="mt-1 text-lg font-semibold text-[#f0ecdd]">Recurring, not a one-time bounty.</h2>
+                      <h2 className="mt-1 text-lg font-semibold text-[#f0ecdd]">A share of every eligible purchase.</h2>
                     </div>
                     <span className="grid h-9 w-9 place-items-center rounded-lg border border-[#56e0a4]/25 bg-[#56e0a4]/10 text-[#56e0a4]"><TrendingUp className="h-4 w-4" /></span>
                   </div>
@@ -147,7 +147,7 @@ export default function AffiliatesPublicPage() {
                   </div>
                   <div className="mt-3 grid grid-cols-3 gap-2">
                     {[
-                      ['15%', 'recurring'],
+                      ['10%', 'of purchases'],
                       ['TBC', 'settlement'],
                       ['0', 'downline levels'],
                     ].map(([value, label]) => (
@@ -168,7 +168,7 @@ export default function AffiliatesPublicPage() {
 
           <div className="relative mx-auto mt-9 w-full max-w-[110rem] px-0 sm:mt-12">
             <Marquee
-              items={['15% recurring', 'Eligible Premium subscriptions', 'TBC settlement', 'Refund-aware', 'No downline', 'No income promise']}
+              items={['10% of eligible purchases', 'Subscriptions and one-time products', 'TBC settlement', 'Refund-aware', 'No downline', 'No income promise']}
               speed={30}
               reverse
             />
@@ -177,8 +177,8 @@ export default function AffiliatesPublicPage() {
           <div className="relative mx-auto mt-7 w-full max-w-[110rem]">
             <div className="pm-stats">
               {[
-                [<CountUp key="rate" value={15} suffix="%" />, 'Recurring commission', 'On eligible Premium subscriptions'],
-                ['$19.99', 'Premium monthly', 'Or $199 per year'],
+                [<CountUp key="rate" value={10} suffix="%" />, 'Purchase commission', 'On every eligible referred purchase'],
+                ['$19.99', 'Premium monthly', 'Illustrative purchase baseline'],
                 ['TBC', 'Settlement asset', 'At the published rate'],
                 ['0', 'Earnings promised', 'Results depend on sales'],
               ].map(([value, label, note]) => (
@@ -200,9 +200,9 @@ export default function AffiliatesPublicPage() {
                 A real revenue share, <span className="tb-gold-text">not a promise.</span>
               </h2>
               <p className="mt-3 max-w-lg text-sm leading-relaxed text-[#8a8577]">
-                Affiliates earn on eligible paid subscriptions, not clicks or free signups.
-                The calculator is deliberately simple: active referrals × eligible price × 15%.
-                It is not a forecast.
+                Affiliates earn 10% of eligible paid purchases, not clicks or free signups.
+                The calculator uses the current Premium list price as a simple monthly baseline:
+                active referrals × $19.99 × 10%. It is not a forecast or a cap.
               </p>
               <div className="mt-5">
                 <PublicNotice tone="gold">
@@ -290,12 +290,12 @@ export default function AffiliatesPublicPage() {
                   A dashboard that shows <span className="tb-gold-text">the whole route.</span>
                 </h2>
                 <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#8a8577]">
-                  Your code, referred signups, subscription status, pending commissions and payout history in one place. If a payment is refunded, the commission is reversed before it is paid.
+                  Your code, referred signups, eligible purchase activity, pending commissions and payout history in one place. Refunds and chargebacks are reviewed before a commission is paid.
                 </p>
               </Reveal>
               <Stagger className="grid gap-2 sm:grid-cols-2">
                 {[
-                  [BarChart3, 'Referral dashboard', 'Clicks, signups and eligible subscriptions.'],
+                  [BarChart3, 'Referral dashboard', 'Clicks, signups and eligible purchase commissions.'],
                   [Users, 'Attribution', 'One code tied to your own account.'],
                   [Wallet, 'TBC payouts', 'Approved commissions settle in the credit wallet.'],
                   [ShieldCheck, 'Review before payout', 'Refunds, chargebacks and fraud are excluded.'],
@@ -315,7 +315,7 @@ export default function AffiliatesPublicPage() {
 
         <PublicCTA
           eyebrow="Join the programme"
-          title={<>Refer the work. <span className="tb-gold-text">Keep the share recurring.</span></>}
+          title={<>Refer the work. <span className="tb-gold-text">Earn 10% of eligible purchases.</span></>}
           body="Open the affiliate dashboard, get your code and read the eligibility rules before you share it. No income is promised."
           primary="Open affiliate dashboard"
           primaryTo="/app/affiliate"

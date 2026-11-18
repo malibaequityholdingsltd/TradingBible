@@ -262,10 +262,10 @@ router.get('/affiliates', supabaseAuth, async (req, res, next) => {
 		await assertAdmin(req);
 		const [codes, signups] = await Promise.all([
 			supabaseRest('/rest/v1/affiliate_codes', {
-				query: { select: '*', order: 'created_at.desc', limit: 500 },
+				query: { select: '*', order: 'created.desc', limit: 500 },
 			}).catch(() => []),
 			supabaseRest('/rest/v1/affiliate_signups', {
-				query: { select: '*', order: 'created_at.desc', limit: 1000 },
+				query: { select: '*', order: 'created.desc', limit: 1000 },
 			}).catch(() => []),
 		]);
 		const ownerIds = [...new Set((codes || []).map((c) => c.owner).filter(Boolean))];
@@ -284,7 +284,7 @@ router.get('/affiliates', supabaseAuth, async (req, res, next) => {
 			byCode[key].count += 1;
 			const amount = Number(s.commission) || 0;
 			if (s.status === 'paid') byCode[key].paid += amount;
-			else if (['signed_up', 'active'].includes(s.status)) byCode[key].pending += amount;
+			else if (['signed_up', 'active', 'pending_payout'].includes(s.status)) byCode[key].pending += amount;
 		}
 		const rows = (codes || []).map((c) => {
 			const agg = byCode[c.code] || byCode[c.id] || { count: 0, pending: 0, paid: 0 };
@@ -295,7 +295,7 @@ router.get('/affiliates', supabaseAuth, async (req, res, next) => {
 				ownerEmail: emailById[c.owner] || null,
 				clicks: Number(c.clicks) || 0,
 				signups: Number(c.signups) || agg.count,
-				rate: Number(c.commissionRate) || 0.15,
+				rate: Number(c.commissionRate) || 0.10,
 				pending: agg.pending,
 				paid: agg.paid,
 				created: c.created_at || c.created || null,
@@ -303,7 +303,7 @@ router.get('/affiliates', supabaseAuth, async (req, res, next) => {
 		});
 		res.setHeader('Cache-Control', 'private, no-store');
 		res.json({
-			rate: 0.15,
+			rate: 0.10,
 			totals: {
 				codes: rows.length,
 				clicks: rows.reduce((n, r) => n + r.clicks, 0),

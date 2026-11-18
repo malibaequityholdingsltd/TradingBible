@@ -570,7 +570,7 @@ export function AdminDashboard() {
                 { to: '/admin/challenges', icon: Trophy, title: 'Challenges & funded', note: '16 programs · $200K max · 14-day payouts' },
                 { to: '/admin/signals', icon: Activity, title: 'Signals & alerts', note: 'Published signals and delivery gates' },
                 { to: '/admin/community', icon: Users, title: 'Community & moderation', note: 'Threads, replies and flags' },
-                { to: '/admin/affiliates', icon: Users, title: 'Affiliates', note: '15% recurring · TBC settlement' },
+                { to: '/admin/affiliates', icon: Users, title: 'Affiliates', note: '10% of eligible purchases · TBC settlement' },
                 { to: '/admin/public-site', icon: Globe, title: 'Public site & launch', note: 'Route inventory and launch checks' },
                 { to: '/admin/compliance', icon: ShieldCheck, title: 'Compliance & gates', note: 'Closed, blocked and open items' },
                 { to: '/admin/security', icon: ShieldAlert, title: 'Security & resilience', note: 'Evidence-backed controls, risks and incident readiness' },

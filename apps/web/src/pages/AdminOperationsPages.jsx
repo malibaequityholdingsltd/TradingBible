@@ -508,8 +508,8 @@ export function AdminAffiliatesPage() {
   return (
     <PageShell
       title="Affiliates"
-      meta={[`${totals.codes || 0} codes`, `${totals.clicks || 0} clicks`, `${totals.signups || 0} signups`, '15% recurring · TBC settlement']}
-      description="Read-only affiliate register. The programme pays 15% recurring commission on eligible referred Premium subscriptions, settled in TBC credits at the published rate. Refunds and chargebacks are removed before payout. No earnings are guaranteed."
+      meta={[`${totals.codes || 0} codes`, `${totals.clicks || 0} clicks`, `${totals.signups || 0} signups`, '10% of eligible purchases · TBC settlement']}
+      description="Read-only affiliate register. The programme pays 10% of every eligible purchase made by a referred user, settled in TBC credits at the published rate. Taxes, refunds and chargebacks are reviewed before payout. No earnings are guaranteed."
       actions={<><AtButton to="/affiliates" variant="quiet" icon={Globe}>Public programme</AtButton><AtButton to="/admin/wallet" variant="outline" icon={Wallet}>Wallet oversight</AtButton><AtButton onClick={load} variant="gold" icon={RefreshCw}>Refresh</AtButton></>}
     >
       <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
@@ -531,7 +531,7 @@ export function AdminAffiliatesPage() {
                   <td><div className="text-[11px] text-[var(--at-ink-2)]">{row.ownerEmail || 'Account'}</div><div className="font-mono text-[9px] text-[var(--at-mut-2)]">{String(row.owner || '').slice(0, 8)}</div></td>
                   <td className="font-mono text-[11px] text-[var(--at-ink)]">{formatNumber(row.clicks)}</td>
                   <td className="font-mono text-[11px] text-[var(--at-ink)]">{formatNumber(row.signups)}</td>
-                  <td className="font-mono text-[11px] text-[var(--at-ink-2)]">{Math.round((row.rate || 0.15) * 100)}%</td>
+                  <td className="font-mono text-[11px] text-[var(--at-ink-2)]">{Math.round((row.rate || 0.10) * 100)}%</td>
                   <td className="font-mono text-[11px] text-[var(--at-amber)]">{formatUsd(row.pending, { decimals: 2 })}</td>
                   <td className="font-mono text-[11px] text-[var(--at-green)]">{formatUsd(row.paid, { decimals: 2 })}</td>
                 </tr>
