@@ -56,7 +56,7 @@ export default function SecurityInfoPage() {
         actions={<><AtButton href="mailto:security@tradingbible.app?subject=Security%20report" variant="gold" icon={Mail}>Report a vulnerability</AtButton><AtButton to="/terms" variant="outline" icon={KeyRound}>Terms of service</AtButton></>}
       />
 
-      <div className="at-scope mx-auto w-full max-w-[84rem] px-5 pb-16 pt-8 sm:px-8 sm:pt-10">
+      <div className="at-scope mx-auto w-full max-w-[110rem] px-5 pb-16 pt-8 sm:px-8 sm:pt-10">
         <div className="mb-4">
           <AtAlert icon={Bug} tone="amber">
             <b className="text-[var(--at-ink)]">Responsible disclosure.</b> Email security@tradingbible.app with reproduction steps and impact. Do not access another person’s data, disrupt the service, or publish details before we have had a reasonable opportunity to remediate. We aim to acknowledge reports within three business days.

@@ -167,7 +167,7 @@ function Nav({ homeTo, isAuthed, platformName }) {
 
   return (
     <header className={`landing-header fixed inset-x-0 top-[var(--header-h)] z-40 ${scrolled ? 'shadow-xl' : ''}`}>
-      <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6">
+      <div className="mx-auto flex w-full max-w-[110rem] items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6">
         <Link to={homeTo} onClick={close} className="flex min-w-0 shrink-0 items-center gap-2.5">
           <img src={LOGO} alt={`${brand} logo`} className="h-10 w-10 shrink-0 rounded-xl object-contain gold-glow sm:h-11 sm:w-11" />
           <BrandName name={brand} className="landing-word hidden truncate text-xl font-extrabold tracking-tight sm:inline sm:text-2xl" />
@@ -297,7 +297,7 @@ export default function LandingPage() {
         <div aria-hidden className="pointer-events-none absolute -left-40 top-10 h-[32rem] w-[32rem] rounded-full bg-[#d4af37]/10 blur-[130px]" />
         <div aria-hidden className="pointer-events-none absolute -right-40 bottom-0 h-[30rem] w-[30rem] rounded-full bg-[#d4af37]/[0.06] blur-[120px]" />
 
-        <div className="relative mx-auto grid w-full max-w-[84rem] gap-9 px-5 sm:px-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:items-center lg:gap-12">
+        <div className="relative mx-auto grid w-full max-w-[110rem] gap-9 px-5 sm:px-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:items-center lg:gap-12">
           <div className="pm-hero__copy">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex flex-wrap items-center gap-2">
               <LaunchPill />
@@ -331,7 +331,7 @@ export default function LandingPage() {
           </motion.div>
         </div>
 
-        <div className="relative mx-auto mt-10 grid w-full max-w-[84rem] grid-cols-2 gap-2.5 px-5 sm:mt-12 sm:grid-cols-4 sm:px-8">
+        <div className="relative mx-auto mt-10 grid w-full max-w-[110rem] grid-cols-2 gap-2.5 px-5 sm:mt-12 sm:grid-cols-4 sm:px-8">
           {STATS.map((stat, index) => (
             <Reveal key={stat.label} delay={index * 0.05}>
               <div className="pm-stat h-full rounded-xl border border-white/[0.07] bg-white/[0.025] p-3.5 backdrop-blur-sm sm:p-4">
@@ -345,7 +345,7 @@ export default function LandingPage() {
           ))}
         </div>
 
-        <div className="relative mx-auto mt-10 w-full max-w-[84rem] px-0 sm:mt-12">
+        <div className="relative mx-auto mt-10 w-full max-w-[110rem] px-0 sm:mt-12">
           <Marquee
             items={['Live accounts only', 'No demo P&L', 'Journal', 'SI Coach', 'Analytics', 'Funded evaluations', 'Academy 2.0', 'TBC credits', 'Public launch · 25 Dec 2026']}
             speed={36}
@@ -354,7 +354,7 @@ export default function LandingPage() {
       </section>
 
       <section className="border-y border-[#d4af37]/10">
-        <div className="mx-auto grid w-full max-w-[84rem] gap-8 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14">
+        <div className="mx-auto grid w-full max-w-[110rem] gap-8 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14">
           <Reveal>
             <Head eyebrow="Why TradingBible" title={<>Most platforms show you the market. <span className="tb-gold-text">Few help you review the trader.</span></>} sub="Signals are easy to sell. A record is harder to build — and far more useful. TradingBible is designed around the work that happens after the entry." />
             <Link to="/about" className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#d4af37] hover:underline">Read our story <ArrowRight className="h-3.5 w-3.5" /></Link>
@@ -375,7 +375,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-[84rem] px-5 py-14 sm:px-8 sm:py-20">
+      <section className="mx-auto w-full max-w-[110rem] px-5 py-14 sm:px-8 sm:py-20">
         <Reveal><Head id="platform" eyebrow="The workstation" title={<>Everything you need to run the trade — <span className="tb-gold-text">and the review.</span></>} sub="Eight connected modules. One account. No stitching together a terminal, a spreadsheet, a course and a coach." /></Reveal>
         <Stagger className="mt-8 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
           {MODULES.map((module) => {
@@ -400,7 +400,7 @@ export default function LandingPage() {
       </section>
 
       <section id="si" className={`scroll-mt-28 border-y border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/55' : 'bg-[#0a0a0f]/55'} backdrop-blur-sm`}>
-        <div className="mx-auto grid w-full max-w-[84rem] gap-8 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-14">
+        <div className="mx-auto grid w-full max-w-[110rem] gap-8 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-14">
           <div>
             <Reveal><Head eyebrow="SI Coach" title={<>A coach that remembers <span className="tb-gold-text">the trade you want to forget.</span></>} sub="SI reads your actual journal. It can see the stop you moved, the size you doubled and the session where discipline slipped. Then it gives you one thing to fix." /></Reveal>
             <div className="mt-6 grid gap-2">
@@ -438,7 +438,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="academy" className="mx-auto w-full max-w-[84rem] scroll-mt-28 px-5 py-14 sm:px-8 sm:py-20">
+      <section id="academy" className="mx-auto w-full max-w-[110rem] scroll-mt-28 px-5 py-14 sm:px-8 sm:py-20">
         <Head eyebrow="Learn and get funded" title={<>A school and a capital program, <span className="tb-gold-text">both built around execution.</span></>} sub="Education should change what you do on the desk. Funded evaluations should test the same discipline — with the rules visible before you pay." />
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
           <Card className="rounded-2xl p-5 sm:p-7">
@@ -472,7 +472,7 @@ export default function LandingPage() {
       </section>
 
       <section id="company" className={`scroll-mt-28 border-y border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/55' : 'bg-[#0a0a0f]/55'} backdrop-blur-sm`}>
-        <div className="mx-auto w-full max-w-[84rem] px-5 py-14 sm:px-8 sm:py-20">
+        <div className="mx-auto w-full max-w-[110rem] px-5 py-14 sm:px-8 sm:py-20">
           <Head eyebrow="The company" title={<>Private by design. <span className="tb-gold-text">Clear about what comes next.</span></>} sub="TradingBible is a private company, not a listed stock. The product, the issuer record and the proposed network asset are separate things — and this page treats them that way." />
           <div className="mt-8 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
             <div>
@@ -506,7 +506,7 @@ export default function LandingPage() {
       </section>
 
       <section className="border-y border-[#d4af37]/10 bg-[#07070c]/45">
-        <div className="mx-auto grid w-full max-w-[84rem] gap-7 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[1fr_.9fr] lg:items-center">
+        <div className="mx-auto grid w-full max-w-[110rem] gap-7 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[1fr_.9fr] lg:items-center">
           <Reveal>
             <SectionRail index="05" label="Official launch" />
             <h2 className="mt-3 max-w-2xl text-balance text-[2rem] font-extrabold leading-[1.02] tracking-[-0.04em] sm:text-[3rem]">
@@ -539,7 +539,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-[84rem] px-5 py-14 sm:px-8 sm:py-20">
+      <section className="mx-auto w-full max-w-[110rem] px-5 py-14 sm:px-8 sm:py-20">
         <Head center eyebrow="Product principles" title="Built for the record, not the highlight reel." sub="Three working principles. No user result, rating or performance is implied." />
         <div className="mt-8 grid gap-3 md:grid-cols-3">
           {[
@@ -557,7 +557,7 @@ export default function LandingPage() {
       </section>
 
       <section id="pricing" className={`scroll-mt-28 border-t border-[#d4af37]/10 ${isLight ? 'bg-[#efe9da]/55' : 'bg-[#0a0a0f]/55'} backdrop-blur-sm`}>
-        <div className="mx-auto w-full max-w-[84rem] px-5 py-14 sm:px-8 sm:py-20">
+        <div className="mx-auto w-full max-w-[110rem] px-5 py-14 sm:px-8 sm:py-20">
           <Head center eyebrow="Pricing" title="Start free. Upgrade when the desk is ready." sub="A free account opens the Academy catalogue, community, paper trading and profile. One Premium plan at $19.99/month or $199/year unlocks every core trading feature." />
           <div className="mx-auto mt-8 grid max-w-4xl items-stretch gap-4 md:grid-cols-2">
             {PLANS.map((raw) => {
@@ -603,7 +603,7 @@ export default function LandingPage() {
         <p className="mt-5 text-center text-xs text-[#8a8577]"><Link to="/faq" className="font-semibold text-[#d4af37] hover:underline">See all FAQs</Link> · <Link to="/contact" className="font-semibold text-[#d4af37] hover:underline">Talk to support</Link></p>
       </section>
 
-      <section className="mx-auto w-full max-w-[84rem] px-5 pb-16 sm:px-8 sm:pb-24">
+      <section className="mx-auto w-full max-w-[110rem] px-5 pb-16 sm:px-8 sm:pb-24">
         <Card className="relative overflow-hidden rounded-2xl border-[#d4af37]/25 p-6 sm:p-10">
           <div aria-hidden className="pointer-events-none absolute inset-0 tb-art-halo" style={{ background: 'radial-gradient(ellipse at top right, color-mix(in srgb, var(--tb-gold, #d4af37) 16%, transparent), transparent 55%)' }} />
           <div className="relative grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">

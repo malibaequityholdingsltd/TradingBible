@@ -200,24 +200,11 @@ export default function PublicTerminalPage() {
           <div className="mt-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-[#6f6a5e]">Read-only market workspace</div>
         </div>
         <div className="mx-1 hidden h-5 w-px shrink-0 bg-white/10 sm:block" />
-
-        <nav className="no-scrollbar flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto" role="tablist" aria-label="Public terminal sections">
-          {TABS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-selected={tab === item.id}
-              aria-label={item.label}
-              title={item.label}
-              onClick={() => selectTab(item.id)}
-              className={`flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-[10px] font-semibold transition ${tab === item.id ? 'bg-[#d4af37]/15 text-[#e8c95a]' : 'text-[#8a8577] hover:bg-white/[0.04] hover:text-[#e9e7df]'}`}
-            >
-              <item.icon className="h-3.5 w-3.5" />
-              <span className="hidden md:inline">{item.label}</span>
-            </button>
-          ))}
-        </nav>
+        <div className="min-w-0 flex-1">
+          <span className="hidden font-mono text-[9px] uppercase tracking-[0.14em] text-[#6f6a5e] sm:inline">
+            {activeTab.label} desk
+          </span>
+        </div>
 
         <div className="flex shrink-0 items-center gap-1">
           <span className={`hidden items-center gap-1.5 rounded-full px-2 py-1 text-[8px] font-bold uppercase tracking-[0.1em] lg:inline-flex ${status === 'live' ? 'bg-emerald-400/10 text-emerald-300' : 'bg-white/[0.06] text-[#8a8577]'}`}>
@@ -261,6 +248,25 @@ export default function PublicTerminalPage() {
       </header>
 
       <div className="flex min-h-0 flex-1">
+        <aside className="no-scrollbar flex w-12 shrink-0 flex-col items-center gap-1 overflow-y-auto border-r border-white/[0.08] bg-[#09090d] px-1 py-1.5 sm:w-[4.25rem]" aria-label="Terminal desks">
+          {TABS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === item.id}
+              aria-label={item.label}
+              title={item.label}
+              onClick={() => selectTab(item.id)}
+              className={`flex w-full shrink-0 flex-col items-center justify-center gap-0.5 rounded-lg border px-0.5 py-1.5 transition ${tab === item.id
+                ? 'border-[#d4af37]/40 bg-[#d4af37]/10 text-[#e8c95a]'
+                : 'border-transparent text-[#8a8577] hover:border-white/10 hover:bg-white/[0.04] hover:text-[#e9e7df]'}`}
+            >
+              <item.icon className="h-4 w-4" />
+              <span className="hidden max-w-full truncate text-[8px] font-semibold leading-none sm:block">{item.label.split(' ')[0]}</span>
+            </button>
+          ))}
+        </aside>
         <main className="flex min-h-0 min-w-0 flex-1 flex-col">
           {tab === 'chart' && (
             <div className="flex h-9 shrink-0 items-center gap-2 border-b border-white/[0.08] bg-[#0c0c11] px-2 sm:hidden">

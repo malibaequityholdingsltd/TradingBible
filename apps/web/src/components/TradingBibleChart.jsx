@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   AreaChart as AreaIcon,
+  ArrowUpRight,
   BarChart3,
   Baseline,
   Bell,
@@ -12,6 +13,8 @@ import {
   Check,
   Circle,
   Columns2,
+  Copy,
+  Crosshair,
   Download,
   Ellipsis,
   Eraser,
@@ -32,6 +35,7 @@ import {
   MousePointer2,
   MoveUpRight,
   MoveVertical,
+  Palette,
   Redo2,
   RotateCcw,
   Ruler,
@@ -121,7 +125,16 @@ const DEFAULT_SETTINGS = {
   lineColor: '#d4af37',
 };
 
+const DEFAULT_TOOL_STYLE = {
+  color: '#d4af37',
+  lineWidth: 1.5,
+  lineStyle: 'solid',
+  fillOpacity: 0.08,
+  fontSize: 12,
+};
+
 const SETTINGS_KEY = 'tb:chart-settings:v1';
+const TOOL_STYLE_KEY = 'tb:chart-tool-styles:v1';
 const COMPARE_KEY = 'tb:chart-compare:v1';
 const COMPARE_MAP_KEY = 'tb:chart-compare-map:v1';
 
@@ -137,6 +150,15 @@ function readJson(key, fallback) {
 function readSettings() {
   const saved = readJson(SETTINGS_KEY, {});
   return { ...DEFAULT_SETTINGS, ...(saved && typeof saved === 'object' ? saved : {}) };
+}
+
+function readToolStyles() {
+  const saved = readJson(TOOL_STYLE_KEY, {});
+  return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+}
+
+function styleForTool(styles, tool) {
+  return { ...DEFAULT_TOOL_STYLE, ...(styles?.[tool] && typeof styles[tool] === 'object' ? styles[tool] : {}) };
 }
 
 function readIndicators(symbol) {
@@ -407,6 +429,17 @@ export default function TradingBibleChart({
   const [hover, setHover] = useState(null);
   const [accentTick, setAccentTick] = useState(0);
   const [chartEpoch, setChartEpoch] = useState(0);
+  const [toolStyles, setToolStyles] = useState(readToolStyles);
+  const [railPanel, setRailPanel] = useState(null);
+  const selectedDrawing = selected ? dz.drawings.find((drawing) => drawing.id === selected) : null;
+  const activeToolStyle = styleForTool(toolStyles, tool);
+  const selectedToolStyle = selectedDrawing
+    ? { ...activeToolStyle, ...selectedDrawing }
+    : null;
+
+  useEffect(() => {
+    try { localStorage.setItem(TOOL_STYLE_KEY, JSON.stringify(toolStyles)); } catch { /* ignore */ }
+  }, [toolStyles]);
 
   const wrapRef = useRef(null);
   const chartApi = useRef(null);
@@ -900,6 +933,73 @@ export default function TradingBibleChart({
     setSelected(null);
   }, [selected, dz]);
 
+  const updateDrawingStyle = useCallback((patch) => {
+    if (selectedDrawing && !locked) {
+      dz.update((previous) => previous.map((drawing) => (
+        drawing.id === selectedDrawing.id ? { ...drawing, ...patch } : drawing
+      )));
+      return;
+    }
+    if (tool === 'cursor') return;
+    setToolStyles((previous) => ({
+      ...previous,
+      [tool]: { ...styleForTool(previous, tool), ...patch },
+    }));
+  }, [dz, locked, selectedDrawing, tool]);
+
+  const resetDrawingStyle = useCallback(() => {
+    if (selectedDrawing && !locked) {
+      dz.update((previous) => previous.map((drawing) => (
+        drawing.id === selectedDrawing.id ? { ...drawing, ...DEFAULT_TOOL_STYLE } : drawing
+      )));
+      return;
+    }
+    if (tool === 'cursor') return;
+    setToolStyles((previous) => ({ ...previous, [tool]: { ...DEFAULT_TOOL_STYLE } }));
+  }, [dz, locked, selectedDrawing, tool]);
+
+  const useSelectedAsDefault = useCallback(() => {
+    if (!selectedDrawing) return;
+    setToolStyles((previous) => ({
+      ...previous,
+      [selectedDrawing.type]: {
+        color: selectedDrawing.color || DEFAULT_TOOL_STYLE.color,
+        lineWidth: selectedDrawing.lineWidth || DEFAULT_TOOL_STYLE.lineWidth,
+        lineStyle: selectedDrawing.lineStyle || DEFAULT_TOOL_STYLE.lineStyle,
+        fillOpacity: selectedDrawing.fillOpacity ?? DEFAULT_TOOL_STYLE.fillOpacity,
+        fontSize: selectedDrawing.fontSize || DEFAULT_TOOL_STYLE.fontSize,
+      },
+    }));
+  }, [selectedDrawing]);
+
+  const duplicateSelected = useCallback(() => {
+    if (!selectedDrawing || locked) return;
+    const next = {
+      ...selectedDrawing,
+      id: uid(),
+      points: (selectedDrawing.points || []).map((point) => ({ ...point })),
+    };
+    dz.update((previous) => [...previous, next]);
+    setSelected(next.id);
+  }, [dz, locked, selectedDrawing]);
+
+  const moveSelectedLayer = useCallback((direction) => {
+    if (!selectedDrawing || locked) return;
+    dz.update((previous) => {
+      const index = previous.findIndex((drawing) => drawing.id === selectedDrawing.id);
+      if (index < 0) return previous;
+      const next = [...previous];
+      const [item] = next.splice(index, 1);
+      const target = direction === 'front' ? next.length : 0;
+      next.splice(target, 0, item);
+      return next;
+    });
+  }, [dz, locked, selectedDrawing]);
+
+  const resetView = useCallback(() => {
+    try { chartApi.current?.timeScale().fitContent(); } catch { /* ignore */ }
+  }, []);
+
   const undo = useCallback(() => {
     dz.undo();
     setSelected(null);
@@ -927,16 +1027,16 @@ export default function TradingBibleChart({
     }
     const id = uid();
     dz.update((previous) => [...previous, {
+      ...styleForTool(toolStyles, 'text'),
       id,
       type: 'text',
-      color: themeAccent(),
       text,
       points: [textPrompt.point],
     }]);
     setSelected(id);
     setTextPrompt(null);
     setTool('cursor');
-  }, [textPrompt, dz]);
+  }, [textPrompt, dz, toolStyles]);
 
   const { cancelInteraction, finishPath } = useDrawingInteraction({
     wrapRef,
@@ -957,6 +1057,7 @@ export default function TradingBibleChart({
     updateDrawings: dz.update,
     setTextPrompt,
     accent: themeAccent(),
+    defaultStyle: activeToolStyle,
     timeframeMinutes: timeframeMinutes(activeTimeframe) || 1,
     previewRef,
     hoveredHandleRef,
@@ -1016,6 +1117,7 @@ export default function TradingBibleChart({
     const onKey = (event) => {
       if (isTypingTarget(event.target)) return;
       if (event.key === 'Escape') {
+        if (railPanel) { setRailPanel(null); return; }
         if (textPrompt) { setTextPrompt(null); setTool('cursor'); return; }
         if (pickerOpen) { setPickerOpen(false); return; }
         if (settingsOpen) { setSettingsOpen(false); return; }
@@ -1034,6 +1136,11 @@ export default function TradingBibleChart({
         finishPath();
         return;
       }
+      if (event.key === 'Enter' && selectedDrawing && !locked) {
+        event.preventDefault();
+        setRailPanel('style');
+        return;
+      }
       if ((event.key === 'Delete' || event.key === 'Backspace') && selected && !locked) {
         event.preventDefault();
         removeSelected();
@@ -1050,7 +1157,7 @@ export default function TradingBibleChart({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [textPrompt, pickerOpen, settingsOpen, objectsOpen, templatesOpen, actionsOpen, pending, tool, fullscreen, selected, locked, removeSelected, undo, redo, cancelInteraction, finishPath]);
+  }, [railPanel, textPrompt, pickerOpen, settingsOpen, objectsOpen, templatesOpen, actionsOpen, pending, tool, fullscreen, selected, selectedDrawing, locked, removeSelected, undo, redo, cancelInteraction, finishPath]);
 
   const lastCandle = candles.length ? candles[candles.length - 1] : null;
   const quotePrice = Number(quote?.price);
@@ -1258,7 +1365,247 @@ export default function TradingBibleChart({
     </Modal>
   ) : null;
 
-  const toolbar = showToolbar ? (
+  // ── Left workbench rail ────────────────────────────────────────────────
+  // The terminal is chart-first: controls live in a narrow left rail and
+  // open flyouts, not in a stack of horizontal bars above the canvas.
+  const useLeftRail = !isTv && !compact && (showToolbar || showDrawingToolbar);
+  const currentTool = DRAW_TOOLS.find((item) => item.id === tool) || DRAW_TOOLS[0];
+  const styleTarget = selectedDrawing
+    ? { ...DEFAULT_TOOL_STYLE, ...selectedDrawing }
+    : activeToolStyle;
+  const styleTargetLabel = selectedDrawing
+    ? `Selected ${DRAW_TOOLS.find((item) => item.id === selectedDrawing.type)?.label || 'drawing'}`
+    : `New ${currentTool.label}`;
+  const railPanelTitles = {
+    market: 'Market & chart',
+    style: 'Drawing style',
+    objects: 'Chart objects',
+  };
+
+  const railIconClass = (active) => `grid h-8 w-8 shrink-0 place-items-center rounded-md border transition ${active
+    ? 'border-[#d4af37]/55 bg-[#d4af37]/15 text-[#d4af37]'
+    : 'border-transparent text-[#8a8577] hover:border-[#d4af37]/20 hover:bg-white/[0.04] hover:text-[#e9e7df]'}`;
+
+  const railPanelNode = railPanel && useLeftRail ? (
+    <div className="absolute left-0 top-0 z-40 flex max-h-full w-[min(18.5rem,calc(100vw-6rem))] flex-col overflow-hidden border-b border-r border-[#d4af37]/20 bg-[#0b0b10]/[0.98] shadow-[18px_24px_60px_-30px_rgba(0,0,0,0.95)] backdrop-blur-xl">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/8 px-3 py-2.5">
+        <div>
+          <div className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#d4af37]">{railPanelTitles[railPanel]}</div>
+          <div className="mt-0.5 text-[10px] text-[#8a8577]">{activeSymbol} · {activeTimeframe}</div>
+        </div>
+        <button type="button" onClick={() => setRailPanel(null)} aria-label="Close chart panel" className="grid h-7 w-7 place-items-center rounded-md border border-white/10 text-[#8a8577] hover:text-[#e9e7df]">
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto p-3">
+        {railPanel === 'market' && (
+          <div className="space-y-3">
+            <label className="block text-[10px] font-bold uppercase tracking-[0.12em] text-[#8a8577]">
+              Symbol
+              <div className="mt-1"><SymbolSearchPicker value={activeSymbol} onChange={changeSymbol} buttonClassName="w-full justify-between !py-2" dropdownClassName={fullscreen ? '!z-[160]' : ''} /></div>
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="block text-[10px] font-bold uppercase tracking-[0.12em] text-[#8a8577]">
+                Timeframe
+                <select value={activeTimeframe} onChange={(event) => changeTimeframe(event.target.value)} className="mt-1 h-9 w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 font-mono text-[11px] text-[#e9e7df] outline-none">
+                  {TIMEFRAME_GROUPS.map((group) => (
+                    <optgroup key={group.label} label={group.label}>
+                      {group.options.map((option) => <option key={option} value={option}>{option}</option>)}
+                    </optgroup>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-[10px] font-bold uppercase tracking-[0.12em] text-[#8a8577]">
+                Chart
+                <select value={effectiveType} onChange={(event) => changeChartType(event.target.value)} className="mt-1 h-9 w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 text-[11px] text-[#e9e7df] outline-none">
+                  {availableChartTypes.map((type) => <option key={type.id} value={type.id}>{type.label}</option>)}
+                </select>
+              </label>
+            </div>
+            <button type="button" onClick={() => setPickerOpen(true)} className="flex min-h-[38px] w-full items-center justify-between gap-2 rounded-lg border border-[#d4af37]/15 px-3 text-xs font-semibold text-[#c9c4b4] hover:border-[#d4af37]/40 hover:text-[#f0ecdd]">
+              <span className="flex items-center gap-2"><Layers className="h-3.5 w-3.5 text-[#d4af37]" /> Indicators</span>
+              <span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px]">{indicators.length}</span>
+            </button>
+            <button type="button" onClick={() => setSettingsOpen(true)} className="flex min-h-[38px] w-full items-center gap-2 rounded-lg border border-[#d4af37]/15 px-3 text-xs font-semibold text-[#c9c4b4] hover:border-[#d4af37]/40 hover:text-[#f0ecdd]">
+              <Settings2 className="h-3.5 w-3.5 text-[#d4af37]" /> Chart settings
+            </button>
+            <button type="button" onClick={() => setActionsOpen(true)} className="flex min-h-[38px] w-full items-center gap-2 rounded-lg border border-[#d4af37]/15 px-3 text-xs font-semibold text-[#c9c4b4] hover:border-[#d4af37]/40 hover:text-[#f0ecdd]">
+              <Ellipsis className="h-3.5 w-3.5 text-[#d4af37]" /> Compare & actions
+            </button>
+            {onLayoutChange && (
+              <div>
+                <div className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#8a8577]">Layout</div>
+                <div className="flex gap-1 rounded-lg border border-[#d4af37]/15 p-1">
+                  {LAYOUTS.map((item) => (
+                    <button key={item.id} type="button" onClick={() => onLayoutChange(item.id)} title={item.label} className={`flex min-h-[32px] flex-1 items-center justify-center rounded-md ${layout === item.id ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>
+                      <item.icon className="h-3.5 w-3.5" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {railPanel === 'style' && (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-[#d4af37]/20 bg-[#d4af37]/[0.05] px-2.5 py-2">
+              <div className="text-[11px] font-bold text-[#f0ecdd]">{styleTargetLabel}</div>
+              <div className="mt-0.5 text-[10px] leading-relaxed text-[#8a8577]">
+                {selectedDrawing ? 'Changes apply to the selected object on the chart.' : 'Changes apply to the next object you draw.'}
+              </div>
+            </div>
+            <label className="block text-[10px] font-bold uppercase tracking-[0.12em] text-[#8a8577]">
+              Colour
+              <div className="mt-1 flex items-center gap-2 rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 py-1.5">
+                <input type="color" value={styleTarget.color || '#d4af37'} onChange={(event) => updateDrawingStyle({ color: event.target.value })} className="h-7 w-10 cursor-pointer rounded border border-white/10 bg-transparent" />
+                <input value={styleTarget.color || '#d4af37'} onChange={(event) => updateDrawingStyle({ color: event.target.value })} aria-label="Drawing colour hex value" className="min-w-0 flex-1 bg-transparent font-mono text-[11px] text-[#e9e7df] outline-none" />
+              </div>
+            </label>
+            <div>
+              <div className="mb-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#8a8577]">Line width</div>
+              <div className="flex items-center gap-1 rounded-lg border border-[#d4af37]/15 p-1">
+                {[1, 1.5, 2, 3].map((width) => (
+                  <button key={width} type="button" onClick={() => updateDrawingStyle({ lineWidth: width })} className={`min-h-[30px] flex-1 rounded-md font-mono text-[10px] ${Number(styleTarget.lineWidth) === width ? 'bg-[#d4af37]/20 text-[#d4af37]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>{width}</button>
+                ))}
+              </div>
+            </div>
+            <label className="block text-[10px] font-bold uppercase tracking-[0.12em] text-[#8a8577]">
+              Line style
+              <select value={styleTarget.lineStyle || 'solid'} onChange={(event) => updateDrawingStyle({ lineStyle: event.target.value })} className="mt-1 h-9 w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 text-[11px] text-[#e9e7df] outline-none">
+                <option value="solid">Solid</option>
+                <option value="dashed">Dashed</option>
+                <option value="dotted">Dotted</option>
+              </select>
+            </label>
+            <label className="block text-[10px] font-bold uppercase tracking-[0.12em] text-[#8a8577]">
+              Fill opacity <span className="ml-1 font-mono text-[10px] text-[#d4af37]">{Math.round((Number(styleTarget.fillOpacity) || 0) * 100)}%</span>
+              <input type="range" min="0" max="0.4" step="0.01" value={Number(styleTarget.fillOpacity) || 0} onChange={(event) => updateDrawingStyle({ fillOpacity: Number(event.target.value) })} className="mt-1 w-full accent-[#d4af37]" />
+            </label>
+            {(selectedDrawing?.type === 'text' || (!selectedDrawing && tool === 'text')) && (
+              <>
+                <label className="block text-[10px] font-bold uppercase tracking-[0.12em] text-[#8a8577]">
+                  Font size <span className="ml-1 font-mono text-[10px] text-[#d4af37]">{Number(styleTarget.fontSize) || 12}px</span>
+                  <input type="range" min="9" max="28" step="1" value={Number(styleTarget.fontSize) || 12} onChange={(event) => updateDrawingStyle({ fontSize: Number(event.target.value) })} className="mt-1 w-full accent-[#d4af37]" />
+                </label>
+                {selectedDrawing?.type === 'text' && (
+                  <label className="block text-[10px] font-bold uppercase tracking-[0.12em] text-[#8a8577]">
+                    Text
+                    <input value={selectedDrawing.text || ''} onChange={(event) => updateDrawingStyle({ text: event.target.value })} className="mt-1 h-9 w-full rounded-lg border border-[#d4af37]/15 bg-[#0f0f14] px-2 text-[11px] text-[#e9e7df] outline-none" />
+                  </label>
+                )}
+              </>
+            )}
+            {selectedDrawing && (
+              <div className="grid grid-cols-2 gap-1.5">
+                <button type="button" onClick={duplicateSelected} className="flex min-h-[34px] items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/15 text-[10px] font-semibold text-[#c9c4b4] hover:border-[#d4af37]/40"><Copy className="h-3.5 w-3.5" /> Duplicate</button>
+                <button type="button" onClick={() => moveSelectedLayer('front')} className="flex min-h-[34px] items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/15 text-[10px] font-semibold text-[#c9c4b4] hover:border-[#d4af37]/40"><ArrowUpRight className="h-3.5 w-3.5" /> Front</button>
+                <button type="button" onClick={useSelectedAsDefault} className="col-span-2 flex min-h-[34px] items-center justify-center gap-1.5 rounded-lg border border-[#d4af37]/25 bg-[#d4af37]/[0.06] text-[10px] font-semibold text-[#d4af37] hover:border-[#d4af37]/50"><Check className="h-3.5 w-3.5" /> Use style for new {selectedDrawing.type}</button>
+              </div>
+            )}
+            <button type="button" onClick={resetDrawingStyle} className="flex min-h-[34px] w-full items-center justify-center gap-2 rounded-lg border border-white/10 text-[10px] font-semibold text-[#8a8577] hover:text-[#e9e7df]">
+              <RotateCcw className="h-3.5 w-3.5" /> Reset {selectedDrawing ? 'object' : 'tool'} style
+            </button>
+            <p className="text-[10px] leading-relaxed text-[#5f5b50]">Tip: select an object with the cursor, then use this panel to change colour, line weight, dash, fill, text and font size.</p>
+          </div>
+        )}
+
+        {railPanel === 'objects' && (
+          <div className="space-y-2">
+            {dz.drawings.length === 0 ? (
+              <p className="py-5 text-center text-xs text-[#8a8577]">No drawings on {activeSymbol} yet.</p>
+            ) : dz.drawings.slice().reverse().map((drawing) => (
+              <div key={drawing.id} className={`flex items-center gap-1.5 rounded-lg border px-1.5 py-1 ${selected === drawing.id ? 'border-[#d4af37]/40 bg-[#d4af37]/[0.06]' : 'border-white/5 bg-white/[0.02]'}`}>
+                <button type="button" onClick={() => { setSelected(drawing.id); setTool('cursor'); }} className="min-w-0 flex-1 text-left">
+                  <span className="block truncate font-mono text-[10px] text-[#e9e7df]">{drawing.type}</span>
+                  <span className="block truncate text-[9px] text-[#8a8577]">{drawing.text || (drawing.points?.[0]?.price != null ? fmtPrice(drawing.points[0].price) : '')}</span>
+                </button>
+                <button type="button" onClick={() => dz.update((previous) => previous.filter((item) => item.id !== drawing.id))} aria-label={`Delete ${drawing.type}`} className="grid h-7 w-7 place-items-center rounded text-red-400/70 hover:bg-red-400/10 hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>
+              </div>
+            ))}
+            <div className="grid grid-cols-2 gap-1.5 border-t border-white/5 pt-2">
+              <button type="button" onClick={() => setObjectsOpen(true)} className="min-h-[34px] rounded-lg border border-[#d4af37]/15 text-[10px] font-semibold text-[#c9c4b4]">All objects</button>
+              <button type="button" onClick={clearAll} disabled={!dz.drawings.length} className="min-h-[34px] rounded-lg border border-red-400/20 text-[10px] font-semibold text-red-400 disabled:opacity-40">Clear all</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  ) : null;
+
+  const chartRail = useLeftRail ? (
+    <aside className="tb-chart-rail flex w-11 shrink-0 flex-col border-r border-white/8 bg-[#0a0a0f] sm:w-12" aria-label="Chart tools">
+      {brandHref && (
+        <Link to={brandHref} aria-label="TradingBible public terminal" title="TradingBible public terminal" className="mx-auto mt-1.5 grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg border border-[#d4af37]/25 bg-[#d4af37]/10 transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/15">
+          <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-5 w-5 rounded object-contain" onError={(event) => { event.currentTarget.style.display = 'none'; }} />
+        </Link>
+      )}
+      <div className="no-scrollbar flex min-h-0 flex-1 flex-col items-center gap-1 overflow-y-auto px-1 py-1.5">
+        {showToolbar && (
+          <>
+            <button type="button" onClick={() => setRailPanel((value) => (value === 'market' ? null : 'market'))} title={`${activeSymbol} market controls`} aria-label="Market and chart controls" className={railIconClass(railPanel === 'market')}>
+              <CandlestickChart className="h-4 w-4" />
+            </button>
+            <button type="button" onClick={() => setRailPanel((value) => (value === 'market' ? null : 'market'))} title={`Timeframe ${activeTimeframe}`} aria-label={`Timeframe ${activeTimeframe}`} className="grid h-7 w-10 shrink-0 place-items-center rounded-md border border-[#d4af37]/15 font-mono text-[9px] font-bold text-[#d4af37] hover:border-[#d4af37]/40">
+              {activeTimeframe}
+            </button>
+          </>
+        )}
+        {showDrawingToolbar && (
+          <>
+            <div className="my-1 h-px w-7 shrink-0 bg-white/8" />
+            {DRAW_TOOLS.map((item) => (
+              <button key={item.id} type="button" onClick={() => { cancelInteraction(); setTool(item.id); setPending([]); }} title={item.label} aria-label={item.label} aria-pressed={tool === item.id} disabled={locked && item.id !== 'cursor'} className={railIconClass(tool === item.id)}>
+                <item.icon className="h-4 w-4" />
+              </button>
+            ))}
+            <div className="my-1 h-px w-7 shrink-0 bg-white/8" />
+            <button type="button" onClick={() => setMagnet((value) => !value)} title="Magnet: snap to OHLC" aria-label="Magnet: snap to OHLC" aria-pressed={magnet} className={railIconClass(magnet)}><Magnet className="h-4 w-4" /></button>
+            <button type="button" onClick={() => setLocked((value) => !value)} title={locked ? 'Unlock drawings' : 'Lock drawings'} aria-label={locked ? 'Unlock drawings' : 'Lock drawings'} aria-pressed={locked} className={railIconClass(locked)}>{locked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}</button>
+            <button type="button" onClick={() => setHideDrawings((value) => !value)} title={hideDrawings ? 'Show drawings' : 'Hide drawings'} aria-label={hideDrawings ? 'Show drawings' : 'Hide drawings'} aria-pressed={hideDrawings} className={railIconClass(hideDrawings)}>{hideDrawings ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
+            <button type="button" onClick={undo} disabled={!dz.canUndo || locked} title="Undo" aria-label="Undo drawing" className={`${railIconClass(false)} disabled:opacity-35`}><RotateCcw className="h-4 w-4" /></button>
+            <button type="button" onClick={redo} disabled={!dz.canRedo || locked} title="Redo" aria-label="Redo drawing" className={`${railIconClass(false)} disabled:opacity-35`}><Redo2 className="h-4 w-4" /></button>
+            <button type="button" onClick={removeSelected} disabled={!selected || locked} title="Delete selected drawing" aria-label="Delete selected drawing" className={`${railIconClass(false)} text-red-400/80 hover:text-red-400 disabled:opacity-35`}><Trash2 className="h-4 w-4" /></button>
+            {tool === 'path' && pending.length >= 2 && (
+              <button type="button" onClick={finishPath} title="Finish path" aria-label="Finish path" className={railIconClass(true)}><Check className="h-4 w-4" /></button>
+            )}
+            <div className="my-1 h-px w-7 shrink-0 bg-white/8" />
+            <button type="button" onClick={() => setRailPanel((value) => (value === 'style' ? null : 'style'))} title="Drawing style settings" aria-label="Drawing style settings" aria-pressed={railPanel === 'style'} className={`${railIconClass(railPanel === 'style')} relative`}>
+              <Palette className="h-4 w-4" />
+              {selectedDrawing && <span aria-hidden className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-[#d4af37]" />}
+            </button>
+            <button type="button" onClick={() => setRailPanel((value) => (value === 'objects' ? null : 'objects'))} title="Chart objects" aria-label="Chart objects" aria-pressed={railPanel === 'objects'} className={railIconClass(railPanel === 'objects')}><List className="h-4 w-4" /></button>
+            <button type="button" onClick={() => setTemplatesOpen(true)} title="Drawing templates" aria-label="Drawing templates" className={railIconClass(false)}><BookMarked className="h-4 w-4" /></button>
+          </>
+        )}
+        {showToolbar && (
+          <>
+            <div className="my-1 h-px w-7 shrink-0 bg-white/8" />
+            <button type="button" onClick={() => setPickerOpen(true)} title={`Indicators (${indicators.length})`} aria-label="Configure indicators" className={railIconClass(false)}>
+              <Layers className="h-4 w-4" />
+            </button>
+            <button type="button" onClick={() => setSettingsOpen(true)} title="Chart settings" aria-label="Chart settings" className={railIconClass(false)}><Settings2 className="h-4 w-4" /></button>
+            <button type="button" onClick={() => setActionsOpen(true)} title="More chart actions" aria-label="More chart actions" className={`${railIconClass(false)} relative`}>
+              <Ellipsis className="h-4 w-4" />
+              {(compareSymbol || dz.drawings.length > 0) && <span aria-hidden className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-[#d4af37]" />}
+            </button>
+          </>
+        )}
+        <div className="my-1 h-px w-7 shrink-0 bg-white/8" />
+        <button type="button" onClick={handleSnapshot} title="Snapshot / download PNG" aria-label="Snapshot or download PNG" className={railIconClass(false)}><Camera className="h-4 w-4" /></button>
+        <button type="button" onClick={handleShare} title="Share this chart view" aria-label="Share this chart view" className={railIconClass(false)}><Share2 className="h-4 w-4" /></button>
+        <button type="button" onClick={resetView} title="Fit chart to screen" aria-label="Fit chart to screen" className={railIconClass(false)}><Crosshair className="h-4 w-4" /></button>
+        {!publicMode && (
+          <Link to={`/app/alerts?symbol=${encodeURIComponent(activeSymbol)}`} title="Price alert" aria-label="Price alert" className={railIconClass(false)}><Bell className="h-4 w-4" /></Link>
+        )}
+        <button type="button" onClick={() => { lastView.current = ''; setFullscreen((value) => !value); }} title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'} aria-label={fullscreen ? 'Exit fullscreen' : 'Fullscreen'} className={railIconClass(fullscreen)}>
+          {fullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        </button>
+      </div>
+    </aside>
+  ) : null;
+
+  const toolbar = showToolbar && !useLeftRail ? (
     <div className="no-scrollbar flex min-w-0 items-center gap-1.5 overflow-x-auto border-b border-white/8 bg-[#0c0c11]/95 px-2 py-1.5">
       {brandHref && (
         <Link
@@ -1344,7 +1691,7 @@ export default function TradingBibleChart({
     </div>
   ) : null;
 
-  const drawingToolbar = !isTv && showDrawingToolbar ? (
+  const drawingToolbar = !isTv && showDrawingToolbar && !useLeftRail ? (
     <div role="toolbar" aria-label="Drawing tools" className="no-scrollbar flex items-center gap-1 overflow-x-auto border-b border-white/5 bg-[#0c0c11]/80 px-2 py-1">
       {(compact ? DRAW_TOOLS.filter((item) => COMPACT_TOOL_IDS.includes(item.id)) : DRAW_TOOLS).map((item) => (
         <button
@@ -1416,7 +1763,6 @@ export default function TradingBibleChart({
     </div>
   ) : null;
 
-  const selectedDrawing = selected ? dz.drawings.find((drawing) => drawing.id === selected) : null;
   const selectedLabel = selectedDrawing
     ? DRAW_TOOLS.find((item) => item.id === selectedDrawing.type)?.label || 'Drawing'
     : null;
@@ -1437,6 +1783,22 @@ export default function TradingBibleChart({
             className={height === 'h-full' ? 'h-full w-full' : `${height || 'h-[460px]'} w-full`}
           />
           {legend}
+          {selectedDrawing && !locked && !hideDrawings && (
+            <div className="absolute right-2 top-2 z-20 flex items-center gap-1 rounded-lg border border-[#d4af37]/30 bg-[#0a0a0f]/90 p-1 shadow-lg backdrop-blur">
+              <span className="hidden max-w-[8rem] truncate px-1.5 text-[10px] font-semibold text-[#d4af37] sm:inline">
+                {DRAW_TOOLS.find((item) => item.id === selectedDrawing.type)?.label || 'Drawing'}
+              </span>
+              <button type="button" onClick={() => setRailPanel('style')} title="Edit drawing style" aria-label="Edit drawing style" className="grid h-7 w-7 place-items-center rounded-md border border-[#d4af37]/20 text-[#d4af37] hover:bg-[#d4af37]/10">
+                <Palette className="h-3.5 w-3.5" />
+              </button>
+              <button type="button" onClick={duplicateSelected} title="Duplicate drawing" aria-label="Duplicate drawing" className="grid h-7 w-7 place-items-center rounded-md border border-white/10 text-[#8a8577] hover:text-[#e9e7df]">
+                <Copy className="h-3.5 w-3.5" />
+              </button>
+              <button type="button" onClick={removeSelected} title="Delete drawing" aria-label="Delete drawing" className="grid h-7 w-7 place-items-center rounded-md border border-white/10 text-red-400/80 hover:bg-red-400/10 hover:text-red-400">
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
           {tool !== 'cursor' && (
             <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex justify-center px-2 sm:top-3">
               <div role="status" aria-live="polite" className="max-w-full truncate rounded-full border border-[#d4af37]/35 bg-[#0a0a0f]/90 px-3 py-1 font-mono text-[10px] font-semibold text-[#e9e7df] shadow-lg backdrop-blur">
@@ -1504,12 +1866,16 @@ export default function TradingBibleChart({
   ) : null;
 
   const content = (
-    <div data-tb-chart-root={activeSymbol} className={`flex min-h-0 flex-col overflow-hidden border border-white/8 ${height === 'h-full' ? 'h-full' : ''} ${fullscreen ? 'fixed inset-0 z-[100] rounded-none border-0 bg-[#0a0a0f] p-2 pt-[max(0.5rem,env(safe-area-inset-top))]' : `rounded-xl ${isLight ? 'bg-[#fbf9f3]' : 'bg-[#0a0a0f]'} ${className}`}`}>
-      {toolbar}
-      {drawingToolbar}
-      {chartBody}
-      {footer}
-      {tvNote}
+    <div data-tb-chart-root={activeSymbol} className={`flex min-h-0 ${useLeftRail ? 'flex-row' : 'flex-col'} overflow-hidden border border-white/8 ${height === 'h-full' ? 'h-full' : ''} ${fullscreen ? 'fixed inset-0 z-[100] rounded-none border-0 bg-[#0a0a0f] p-2 pt-[max(0.5rem,env(safe-area-inset-top))]' : `rounded-xl ${isLight ? 'bg-[#fbf9f3]' : 'bg-[#0a0a0f]'} ${className}`}`}>
+      {chartRail}
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+        {railPanelNode}
+        {toolbar}
+        {drawingToolbar}
+        {chartBody}
+        {footer}
+        {tvNote}
+      </div>
     </div>
   );
 

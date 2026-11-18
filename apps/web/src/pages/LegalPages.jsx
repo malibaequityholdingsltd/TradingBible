@@ -28,7 +28,7 @@ function LegalShell({ title, subtitle, children }) {
         description={subtitle}
         meta={[FILED_ENTITY, 'Delaware, USA', 'Public record']}
       />
-      <div className="mx-auto grid w-full max-w-[84rem] gap-5 px-5 py-10 sm:px-8 sm:py-14 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start">
+      <div className="mx-auto grid w-full max-w-[110rem] gap-5 px-5 py-10 sm:px-8 sm:py-14 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start">
         <div className="space-y-3">{children}</div>
         <aside className="lg:sticky lg:top-28">
           <Card className="rounded-xl p-4">

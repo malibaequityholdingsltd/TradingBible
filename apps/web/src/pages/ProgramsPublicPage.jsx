@@ -330,14 +330,14 @@ export default function ProgramsPublicPage() {
             </Reveal>
           </div>
 
-          <div className="relative mx-auto mt-9 w-full max-w-[84rem] px-0 sm:mt-12">
+          <div className="relative mx-auto mt-9 w-full max-w-[110rem] px-0 sm:mt-12">
             <Marquee
               items={['Two-step', 'One-step', 'Dollar-ruled futures', 'One live seat per balance', 'Rules before payment', 'TBC payouts']}
               speed={28}
             />
           </div>
 
-          <div className="relative mx-auto mt-7 w-full max-w-[84rem]">
+          <div className="relative mx-auto mt-7 w-full max-w-[110rem]">
             <div className="pm-stats">
               {[
                 [products.length ? <CountUp key="size" value={maxSize / 1000} prefix="$" suffix="K" /> : 'Live', 'Maximum evaluation', products.length ? 'Live catalog maximum' : 'Shown in the app'],
@@ -372,7 +372,7 @@ export default function ProgramsPublicPage() {
         </PublicSection>
 
         <section id="rails" className="scroll-mt-28 border-y border-[#d4af37]/10">
-          <div className="mx-auto w-full max-w-[84rem] px-5 py-14 sm:px-8 sm:py-20">
+          <div className="mx-auto w-full max-w-[110rem] px-5 py-14 sm:px-8 sm:py-20">
             <div className="pm-sticky">
               <div className="pm-sticky__aside">
                 <Reveal>
@@ -445,7 +445,7 @@ export default function ProgramsPublicPage() {
         </PublicSection>
 
         <section className="border-y border-[#d4af37]/10 bg-[#070708]/35">
-          <div className="mx-auto w-full max-w-[84rem] px-5 py-12 sm:px-8 sm:py-16">
+          <div className="mx-auto w-full max-w-[110rem] px-5 py-12 sm:px-8 sm:py-16">
             <div className="grid gap-6 lg:grid-cols-[1fr_.9fr] lg:items-center">
               <Reveal>
                 <SectionRail index="04" label="The desk standard" />

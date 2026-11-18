@@ -72,6 +72,7 @@ export function useDrawingInteraction({
   updateDrawings,
   setTextPrompt,
   accent,
+  defaultStyle,
   timeframeMinutes,
   previewRef,
   hoveredHandleRef,
@@ -83,6 +84,7 @@ export function useDrawingInteraction({
   const magnetRef = useRef(magnet);
   const selectedRef = useRef(selected);
   const accentRef = useRef(accent);
+  const styleRef = useRef(defaultStyle || {});
   const timeframeRef = useRef(timeframeMinutes);
   const pendingRef = useRef([]);
   const dragRef = useRef(null);
@@ -100,6 +102,7 @@ export function useDrawingInteraction({
   magnetRef.current = magnet;
   selectedRef.current = selected;
   accentRef.current = accent;
+  styleRef.current = defaultStyle || {};
   timeframeRef.current = timeframeMinutes;
 
   const requestDraw = useCallback(() => {
@@ -126,10 +129,10 @@ export function useDrawingInteraction({
   }, [hoveredDrawingRef, requestDraw]);
 
   const buildPreview = useCallback((type, points) => ({
+    ...styleRef.current,
     id: '__tb_preview__',
     type,
-    color: accentRef.current,
-    lineWidth: 1.5,
+    color: styleRef.current.color || accentRef.current,
     points: points.map((point) => ({ ...point })),
   }), []);
 
@@ -139,7 +142,7 @@ export function useDrawingInteraction({
   }, [previewRef, requestDraw]);
 
   const commitNew = useCallback((drawing) => {
-    const next = { ...drawing, id: drawing.id || uid() };
+    const next = { ...styleRef.current, ...drawing, id: drawing.id || uid() };
     updateDrawings((previous) => [...previous, next]);
     selectedRef.current = next.id;
     setSelected(next.id);
@@ -157,8 +160,6 @@ export function useDrawingInteraction({
       commitNew({
         id: uid(),
         type: 'path',
-        color: accentRef.current,
-        lineWidth: 1.5,
         points: points.map((point) => ({ ...point })),
       });
     } else {
@@ -370,7 +371,6 @@ export function useDrawingInteraction({
           commitNew({
             id: uid(),
             type: activeTool,
-            color: accentRef.current,
             points: [point],
           });
         }
@@ -382,8 +382,6 @@ export function useDrawingInteraction({
         commitNew({
           id: uid(),
           type: activeTool,
-          color: accentRef.current,
-          lineWidth: 1.5,
           points: next,
         });
       } else {
@@ -541,8 +539,6 @@ export function useDrawingInteraction({
         commitNew({
           id: uid(),
           type: tool,
-          color: accentRef.current,
-          lineWidth: 1.5,
           points: [...pendingRef.current, gesture.latest.point],
         });
       }

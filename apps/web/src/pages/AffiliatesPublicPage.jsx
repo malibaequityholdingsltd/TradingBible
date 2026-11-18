@@ -166,7 +166,7 @@ export default function AffiliatesPublicPage() {
             </Reveal>
           </div>
 
-          <div className="relative mx-auto mt-9 w-full max-w-[84rem] px-0 sm:mt-12">
+          <div className="relative mx-auto mt-9 w-full max-w-[110rem] px-0 sm:mt-12">
             <Marquee
               items={['15% recurring', 'Eligible Premium subscriptions', 'TBC settlement', 'Refund-aware', 'No downline', 'No income promise']}
               speed={30}
@@ -174,7 +174,7 @@ export default function AffiliatesPublicPage() {
             />
           </div>
 
-          <div className="relative mx-auto mt-7 w-full max-w-[84rem]">
+          <div className="relative mx-auto mt-7 w-full max-w-[110rem]">
             <div className="pm-stats">
               {[
                 [<CountUp key="rate" value={15} suffix="%" />, 'Recurring commission', 'On eligible Premium subscriptions'],
@@ -216,7 +216,7 @@ export default function AffiliatesPublicPage() {
         </PublicSection>
 
         <section className="border-y border-[#d4af37]/10">
-          <div className="mx-auto w-full max-w-[84rem] px-5 py-14 sm:px-8 sm:py-20">
+          <div className="mx-auto w-full max-w-[110rem] px-5 py-14 sm:px-8 sm:py-20">
             <div className="pm-sticky">
               <div className="pm-sticky__aside">
                 <Reveal>
@@ -282,7 +282,7 @@ export default function AffiliatesPublicPage() {
         </PublicSection>
 
         <section className="border-y border-[#d4af37]/10 bg-[#070908]/35">
-          <div className="mx-auto w-full max-w-[84rem] px-5 py-12 sm:px-8 sm:py-16">
+          <div className="mx-auto w-full max-w-[110rem] px-5 py-12 sm:px-8 sm:py-16">
             <div className="grid gap-6 lg:grid-cols-[1fr_.9fr] lg:items-center">
               <Reveal>
                 <SectionRail index="04" label="What you get" />

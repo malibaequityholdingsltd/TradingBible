@@ -68,7 +68,7 @@ export default function FundPage() {
         </div>
       </PublicPageHead>
 
-      <div className="mx-auto w-full max-w-[84rem] px-5 pt-4 sm:px-8">
+      <div className="mx-auto w-full max-w-[110rem] px-5 pt-4 sm:px-8">
         <PublicNotice>
           <span className="font-semibold text-[#e9e7df]">This is not an offering.</span>{' '}
           No fund interest, security, token, unit or investment product is being sold. No AUM, return, Sharpe, drawdown or track record is presented. Any future fund would require a separate legal entity, approved documents, independent administration and the applicable registrations or exemptions.

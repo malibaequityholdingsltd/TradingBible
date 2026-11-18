@@ -110,19 +110,19 @@ function drawHandles(context, drawing, screen, state, color) {
   }
 }
 
-function drawMeasure(context, drawing, screen, state, color) {
+function drawMeasure(context, drawing, screen, state, color, fillAlpha = 0.08) {
   const [a, b] = screen.points;
   if (!a || !b) return;
   context.save();
   context.strokeStyle = color;
   context.lineWidth = 1.25;
-  context.setLineDash([5, 4]);
+  context.setLineDash(drawing.lineStyle === 'dotted' ? [1.5, 3] : [5, 4]);
   context.beginPath();
   context.moveTo(a.x, a.y);
   context.lineTo(b.x, b.y);
   context.stroke();
   context.setLineDash([]);
-  context.fillStyle = hexToRgba(color, 0.08);
+  context.fillStyle = hexToRgba(color, fillAlpha);
   context.fillRect(a.x, a.y, b.x - a.x, b.y - a.y);
   context.restore();
 
@@ -138,7 +138,7 @@ function drawMeasure(context, drawing, screen, state, color) {
   label(context, text, (a.x + b.x) / 2, (a.y + b.y) / 2, state, { align: 'center' });
 }
 
-function drawFib(context, drawing, screen, state, color) {
+function drawFib(context, drawing, screen, state, color, fillAlpha = 0.035) {
   const [a, b] = screen.points;
   if (!a || !b) return;
   const width = Number(screen.width) || 0;
@@ -148,7 +148,7 @@ function drawFib(context, drawing, screen, state, color) {
   const second = drawing.points[1];
   if (!first || !second) return;
   context.save();
-  context.fillStyle = hexToRgba(color, 0.035);
+  context.fillStyle = hexToRgba(color, fillAlpha);
   context.fillRect(left, Math.min(a.y, b.y), right - left, Math.abs(b.y - a.y));
   context.font = '10px ui-sans-serif, system-ui, sans-serif';
   for (const level of FIB_LEVELS) {
@@ -166,13 +166,13 @@ function drawFib(context, drawing, screen, state, color) {
   context.restore();
 }
 
-function drawChannel(context, drawing, screen, state, color) {
+function drawChannel(context, drawing, screen, state, color, fillAlpha = 0.06) {
   const [a, b, c] = screen.points;
   if (!a || !b || !c) return;
   const offset = { x: c.x - a.x, y: c.y - a.y };
   const far = { x: b.x + offset.x, y: b.y + offset.y };
   context.save();
-  context.fillStyle = hexToRgba(color, 0.06);
+  context.fillStyle = hexToRgba(color, fillAlpha);
   context.beginPath();
   context.moveTo(a.x, a.y);
   context.lineTo(b.x, b.y);
@@ -198,12 +198,18 @@ function drawDrawing(context, drawing, screen, state, preview, showHandles = fal
   const width = Number(screen.width) || 0;
   const height = Number(screen.height) || 0;
   const selected = state.selectedId === drawing.id;
+  const lineWidth = Math.max(0.5, Number(drawing.lineWidth) || 1.5);
+  const fillAlpha = Number.isFinite(Number(drawing.fillOpacity))
+    ? Math.max(0, Math.min(0.5, Number(drawing.fillOpacity)))
+    : 0.07;
   context.save();
   context.strokeStyle = color;
   context.fillStyle = color;
-  context.lineWidth = selected ? 2 : (drawing.lineWidth || 1.5);
+  context.lineWidth = selected ? Math.max(2, lineWidth) : lineWidth;
   context.lineCap = 'round';
   context.lineJoin = 'round';
+  if (drawing.lineStyle === 'dashed') context.setLineDash([7, 4]);
+  else if (drawing.lineStyle === 'dotted') context.setLineDash([1.5, 3]);
   if (preview) {
     context.globalAlpha = 0.72;
     context.setLineDash([5, 4]);
@@ -236,17 +242,20 @@ function drawDrawing(context, drawing, screen, state, preview, showHandles = fal
       const point = points[0];
       if (!point) break;
       const text = drawing.text || 'Text';
-      context.font = '12px ui-sans-serif, system-ui, sans-serif';
+      const fontSize = Math.max(9, Math.min(28, Number(drawing.fontSize) || 12));
+      context.font = `${fontSize}px ui-sans-serif, system-ui, sans-serif`;
       const textWidth = context.measureText(text).width;
-      context.fillStyle = hexToRgba(color, 0.14);
-      roundedRect(context, point.x - 4, point.y - 14, textWidth + 8, 22, 4);
+      const boxHeight = fontSize + 10;
+      context.fillStyle = hexToRgba(color, Math.max(fillAlpha, 0.12));
+      roundedRect(context, point.x - 4, point.y - boxHeight + 6, textWidth + 8, boxHeight, 4);
       context.fill();
       context.strokeStyle = color;
       context.lineWidth = 1;
+      context.setLineDash([]);
       context.stroke();
       context.fillStyle = state.isLight ? '#1b1b1b' : '#f2f0e8';
       context.textBaseline = 'middle';
-      context.fillText(text, point.x, point.y - 2);
+      context.fillText(text, point.x, point.y - fontSize / 2);
       break;
     }
     case 'rect': {
@@ -256,7 +265,7 @@ function drawDrawing(context, drawing, screen, state, preview, showHandles = fal
       const y = Math.min(a.y, b.y);
       const w = Math.abs(b.x - a.x);
       const h = Math.abs(b.y - a.y);
-      context.fillStyle = hexToRgba(color, 0.07);
+      context.fillStyle = hexToRgba(color, fillAlpha);
       context.fillRect(x, y, w, h);
       context.strokeRect(x, y, w, h);
       break;
@@ -269,16 +278,16 @@ function drawDrawing(context, drawing, screen, state, preview, showHandles = fal
       if (rx < 0.5 || ry < 0.5) break;
       context.beginPath();
       context.ellipse((a.x + b.x) / 2, (a.y + b.y) / 2, rx, ry, 0, 0, Math.PI * 2);
-      context.fillStyle = hexToRgba(color, 0.06);
+      context.fillStyle = hexToRgba(color, fillAlpha);
       context.fill();
       context.stroke();
       break;
     }
     case 'measure':
-      drawMeasure(context, drawing, screen, state, color);
+      drawMeasure(context, drawing, screen, state, color, fillAlpha);
       break;
     case 'fib':
-      drawFib(context, drawing, screen, state, color);
+      drawFib(context, drawing, screen, state, color, fillAlpha);
       break;
     case 'triangle': {
       const polygon = points.slice(0, 3);
@@ -287,13 +296,13 @@ function drawDrawing(context, drawing, screen, state, preview, showHandles = fal
       context.moveTo(polygon[0].x, polygon[0].y);
       for (let index = 1; index < polygon.length; index += 1) context.lineTo(polygon[index].x, polygon[index].y);
       context.closePath();
-      context.fillStyle = hexToRgba(color, 0.06);
+      context.fillStyle = hexToRgba(color, fillAlpha);
       context.fill();
       context.stroke();
       break;
     }
     case 'channel':
-      drawChannel(context, drawing, screen, state, color);
+      drawChannel(context, drawing, screen, state, color, fillAlpha);
       break;
     case 'path': {
       if (points.length < 2) break;

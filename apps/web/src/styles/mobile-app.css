@@ -89,6 +89,12 @@
   .tb-app-shell main {
     padding: 78px 8px calc(108px + env(safe-area-inset-bottom)) !important;
   }
+  /* The exchange shell already carries its own responsive gutter on
+     .ex-main__inner. Do not add the legacy 8px mobile gutter on top of it. */
+  .tb-app-shell .ex-main {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
   .tb-admin-shell main {
     padding: 80px 8px calc(108px + env(safe-area-inset-bottom)) !important;
   }

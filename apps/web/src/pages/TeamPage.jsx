@@ -145,7 +145,7 @@ export default function TeamPage() {
             </Reveal>
           </div>
 
-          <div className="relative mx-auto mt-9 w-full max-w-[84rem] px-0 sm:mt-12">
+          <div className="relative mx-auto mt-9 w-full max-w-[110rem] px-0 sm:mt-12">
             <Marquee
               items={['Documented team', 'Priority seats open', 'No placeholder profiles', 'Execution stays private', 'Delaware company', 'SI research is AI']}
               speed={30}
@@ -153,7 +153,7 @@ export default function TeamPage() {
             />
           </div>
 
-          <div className="relative mx-auto mt-7 w-full max-w-[84rem]">
+          <div className="relative mx-auto mt-7 w-full max-w-[110rem]">
             <div className="pm-stats">
               {[
                 [<CountUp key="team" value={PUBLIC_TEAM.length} />, 'Documented team', 'Named public roles'],
@@ -196,7 +196,7 @@ export default function TeamPage() {
         </PublicSection>
 
         <section id="priority-seats" className="scroll-mt-28 border-y border-[#d4af37]/10">
-          <div className="mx-auto w-full max-w-[84rem] px-5 py-14 sm:px-8 sm:py-20">
+          <div className="mx-auto w-full max-w-[110rem] px-5 py-14 sm:px-8 sm:py-20">
             <Reveal>
               <SectionRail index="02" label="The open map" />
               <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -259,7 +259,7 @@ export default function TeamPage() {
         </PublicSection>
 
         <section className="border-y border-[#d4af37]/10 bg-[#080705]/40">
-          <div className="mx-auto w-full max-w-[84rem] px-5 py-12 sm:px-8 sm:py-16">
+          <div className="mx-auto w-full max-w-[110rem] px-5 py-12 sm:px-8 sm:py-16">
             <div className="grid gap-6 lg:grid-cols-[1fr_.9fr] lg:items-center">
               <Reveal>
                 <SectionRail index="04" label="Governance" />

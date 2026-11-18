@@ -385,7 +385,7 @@ export function PricingPage() {
           <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#d4af37]/20 bg-[#d4af37]/[0.05] px-4 py-1.5 text-sm text-[#8a8577]">{t('bill.walletBalance')} <span className="font-mono font-bold text-[#f0ecdd]">${walletBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></p>
         )}
       </PublicPageHead>
-      <div className="relative mx-auto w-full max-w-[84rem] px-5 py-10 sm:px-8 sm:py-14">
+      <div className="relative mx-auto w-full max-w-[110rem] px-5 py-10 sm:px-8 sm:py-14">
         <div className="mb-6 flex justify-center">
           <div className="inline-flex rounded-xl border border-[#d4af37]/20 bg-[#0a0a0f]/50 p-1" role="group" aria-label="Premium billing period">
             <button type="button" aria-pressed={!annual} onClick={() => setAnnual(false)} className={`min-h-[40px] rounded-lg px-4 text-xs font-bold transition ${!annual ? 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f]' : 'text-[#8a8577] hover:text-[#e9e7df]'}`}>Monthly · $19.99</button>

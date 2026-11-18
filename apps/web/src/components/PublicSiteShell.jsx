@@ -45,7 +45,7 @@ function PublicNav({ homeTo, isAuthed }) {
 
   return (
     <header className="landing-header fixed inset-x-0 top-[var(--header-h)] z-40">
-      <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6">
+      <div className="mx-auto flex w-full max-w-[110rem] items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6">
         <Link to={homeTo} onClick={close} className="flex min-w-0 shrink-0 items-center gap-2.5" aria-label={`${brand} home`}>
           <img src={TRADINGBIBLE_LOGO} alt="" className="h-10 w-10 shrink-0 rounded-xl object-contain gold-glow sm:h-11 sm:w-11" />
           <BrandName name={brand} className="landing-word hidden truncate text-xl font-extrabold tracking-tight sm:inline sm:text-2xl" />
@@ -108,7 +108,7 @@ export function PublicPageHead({ eyebrow, title, description, meta = [], actions
   return (
     <section className="public-page-head relative overflow-hidden border-b border-[#d4af37]/10">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.025] to-transparent" />
-      <div className="relative mx-auto w-full max-w-[84rem] px-5 pb-8 pt-[calc(7.5rem+var(--safe-top))] sm:px-8 sm:pb-10 sm:pt-[calc(8.5rem+var(--safe-top))]">
+      <div className="relative mx-auto w-full max-w-[110rem] px-5 pb-8 pt-[calc(7.5rem+var(--safe-top))] sm:px-8 sm:pb-10 sm:pt-[calc(8.5rem+var(--safe-top))]">
         <div className="public-page-head__copy max-w-4xl">
           {eyebrow && <Kicker>{eyebrow}</Kicker>}
           <h1 className="mt-3 text-balance text-[2.15rem] font-extrabold leading-[0.99] tracking-[-0.045em] sm:text-[3.4rem]">{title}</h1>
@@ -126,7 +126,7 @@ export function PublicPageHead({ eyebrow, title, description, meta = [], actions
 
 export function PublicSection({ id, eyebrow, title, sub, children, className = '' }) {
   return (
-    <section id={id} className={`mx-auto w-full max-w-[84rem] scroll-mt-28 px-5 py-12 sm:px-8 sm:py-16 ${className}`}>
+    <section id={id} className={`mx-auto w-full max-w-[110rem] scroll-mt-28 px-5 py-12 sm:px-8 sm:py-16 ${className}`}>
       {(eyebrow || title || sub) && (
         <div className="mb-7 max-w-3xl">
           {eyebrow && <Kicker>{eyebrow}</Kicker>}
@@ -166,7 +166,7 @@ export function PublicCheckList({ items, columns = 2 }) {
 
 export function PublicCTA({ eyebrow = 'Start here', title, body, primaryTo = '/pricing', primaryHref, primary = 'Choose your plan', secondaryTo = '/contact', secondary = 'Talk to support' }) {
   return (
-    <section className="mx-auto w-full max-w-[84rem] px-5 pb-16 sm:px-8 sm:pb-24">
+    <section className="mx-auto w-full max-w-[110rem] px-5 pb-16 sm:px-8 sm:pb-24">
       <Card className="relative overflow-hidden rounded-2xl border-[#d4af37]/25 p-6 sm:p-10">
         <div aria-hidden className="pointer-events-none absolute inset-0 tb-art-halo" style={{ background: 'radial-gradient(ellipse at top right, color-mix(in srgb, var(--tb-gold, #d4af37) 16%, transparent), transparent 55%)' }} />
         <div className="relative grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">

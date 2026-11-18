@@ -97,14 +97,14 @@ export default function LaunchPublicPage() {
             </Reveal>
           </div>
 
-          <div className="relative mx-auto mt-9 w-full max-w-[84rem] px-0 sm:mt-12">
+          <div className="relative mx-auto mt-9 w-full max-w-[110rem] px-0 sm:mt-12">
             <Marquee
               items={['25 December 2026', 'Christmas Day', 'Public launch', 'Platform', 'Academy', 'Funded', 'Company record', 'No regulatory approval implied']}
               speed={32}
             />
           </div>
 
-          <div className="relative mx-auto mt-7 w-full max-w-[84rem]">
+          <div className="relative mx-auto mt-7 w-full max-w-[110rem]">
             <div className="pm-stats">
               {[
                 ['25', 'December 2026', 'Official public launch date'],
@@ -150,7 +150,7 @@ export default function LaunchPublicPage() {
         </PublicSection>
 
         <section className="border-y border-[#d4af37]/10">
-          <div className="mx-auto w-full max-w-[84rem] px-5 py-14 sm:px-8 sm:py-20">
+          <div className="mx-auto w-full max-w-[110rem] px-5 py-14 sm:px-8 sm:py-20">
             <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
               <Reveal>
                 <SectionRail index="02" label="Separate gates" />
@@ -205,7 +205,7 @@ export default function LaunchPublicPage() {
         </PublicSection>
 
         <section className="border-y border-[#d4af37]/10 bg-[#07070d]/45">
-          <div className="mx-auto w-full max-w-[84rem] px-5 py-12 sm:px-8 sm:py-16">
+          <div className="mx-auto w-full max-w-[110rem] px-5 py-12 sm:px-8 sm:py-16">
             <Reveal>
               <SectionRail index="04" label="Launch principles" />
               <h2 className="mt-3 max-w-2xl text-balance text-[1.8rem] font-extrabold leading-[1.04] tracking-[-0.04em] sm:text-[2.5rem]">
@@ -226,7 +226,7 @@ export default function LaunchPublicPage() {
           </div>
         </section>
 
-        <section className="mx-auto w-full max-w-[84rem] px-5 py-14 sm:px-8 sm:py-20">
+        <section className="mx-auto w-full max-w-[110rem] px-5 py-14 sm:px-8 sm:py-20">
           <Card className="relative overflow-hidden rounded-2xl border-[#7d9cff]/25 p-6 sm:p-10">
             <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(ellipse at top right, rgba(125,156,255,0.18), transparent 55%)' }} />
             <div className="relative grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
