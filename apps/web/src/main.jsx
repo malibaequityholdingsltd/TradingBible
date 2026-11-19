@@ -10,6 +10,7 @@ import '@/styles/wallet-v3.css';
 import '@/styles/capital-ir.css';
 import '@/styles/exchange.css';
 import '@/styles/mobile-v2.css';
+import '@/styles/apple-ui.css';
 import { bootWhiteLabel } from '@/lib/whitelabel';
 
 // Apply saved white-label theme (accent + text colors) before first paint.
