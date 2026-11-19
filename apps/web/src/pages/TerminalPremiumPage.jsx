@@ -16,6 +16,7 @@ import { IosIcon } from '@/components/IosIcon';
 import { useQuotes } from '@/hooks/useQuotes';
 import { useTrades } from '@/hooks/useTrades';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsPhone } from '@/hooks/use-mobile';
 import pb from '@/lib/pocketbaseClient';
 import { API_SERVER_URL } from '@/lib/apiServerClient';
 import { useWatchlists } from '@/hooks/useWatchlists';
@@ -118,6 +119,7 @@ function SectionTitle({ children, right }) {
 
 export default function TerminalPremiumPage() {
   const { user } = useAuth();
+  const isPhone = useIsPhone();
   const { workspace, patch, versions, saveVersion, restoreVersion, loadPreset, cloudStatus } = usePremiumWorkspace({ autosave: true, restoreWorkspace: true });
   const { symbol, timeframe, chartType, centerTab, watchlist, features } = workspace;
   const [params] = useSearchParams();
@@ -523,6 +525,7 @@ export default function TerminalPremiumPage() {
                             height="h-full"
                             hidePicker={false}
                             brandHref="/terminal"
+                            compact={isPhone}
                           />
                         </div>
                       )

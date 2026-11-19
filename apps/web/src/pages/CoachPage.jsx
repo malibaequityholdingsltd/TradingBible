@@ -30,7 +30,7 @@ export default function CoachPage() {
 
   return (
     <AppLayout title={t('nav.coach', null, 'SI Coach')}>
-      <div className="ex-page">
+      <div className="ex-page ex-page--coach">
         <header className="ex-page-head">
           <div className="ex-page-head__copy">
             <span className="ex-kicker">Structured intuition</span>

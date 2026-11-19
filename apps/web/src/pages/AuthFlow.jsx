@@ -281,7 +281,7 @@ function OtpInput({ value, onChange, disabled, onComplete }) {
 }
 
 function AuthTabs({ mode, t }) {
-  const base = 'grid h-10 min-h-[40px] place-items-center rounded-full text-sm font-semibold transition';
+  const base = 'auth-tabs__link grid h-10 min-h-[40px] place-items-center rounded-full text-sm font-semibold transition';
   const active = 'bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] text-[#0a0a0f] shadow-[0_8px_24px_-8px_rgba(212,175,55,0.6)]';
   const idle = 'text-[#8a8577] hover:text-[#e9e7df]';
   return (

@@ -1031,8 +1031,8 @@ export function AdminUsers() {
 
       {loading ? <Spinner /> : (
         <>
-          <div className="at-table-wrap">
-            <table className="at-table min-w-[760px]">
+          <div className="at-table-wrap tb-admin-user-table-wrap">
+            <table className="at-table tb-admin-user-table min-w-[760px]">
               <thead>
                 <tr>
                   <th className="w-9"><input type="checkbox" checked={allPageSelected} onChange={toggleAll} className="h-4 w-4 accent-[var(--at-gold)]" /></th>
@@ -1047,8 +1047,8 @@ export function AdminUsers() {
               <tbody>
                 {paged.map(u => (
                   <tr key={u.id} className={selected.has(u.id) ? 'bg-[var(--at-gold-soft)]' : ''}>
-                    <td><input type="checkbox" checked={selected.has(u.id)} onChange={() => toggleOne(u.id)} className="h-4 w-4 accent-[var(--at-gold)]" /></td>
-                    <td>
+                    <td data-label=""><label className="tb-admin-user-check"><input type="checkbox" checked={selected.has(u.id)} onChange={() => toggleOne(u.id)} className="h-4 w-4 accent-[var(--at-gold)]" /></label></td>
+                    <td data-label="User">
                       <div className="flex items-center gap-2.5">
                         <div className={`relative grid h-9 w-9 shrink-0 place-items-center rounded-full text-xs font-bold ${u.role === 'admin' ? 'bg-[#d4af37]/20 text-[var(--at-gold)] ring-1 ring-[#d4af37]/50' : 'bg-[var(--at-gold-soft)] text-[var(--at-gold)]'}`}>
                           {displayInitial(u)}
@@ -1065,20 +1065,20 @@ export function AdminUsers() {
                         </div>
                       </div>
                     </td>
-                    <td>{planBadge(u.plan)}</td>
-                    <td>
+                    <td data-label="Plan">{planBadge(u.plan)}</td>
+                    <td data-label="Role">
                       {u.user_settings?.suspended && <Badge color="red"><Ban className="h-3 w-3" /> Suspended</Badge>}
                       {!u.user_settings?.suspended && (u.role === 'admin'
                         ? <Badge color="gold"><Shield className="h-3 w-3" /> Admin</Badge>
                         : <Badge color="muted">{(u.role || 'user').charAt(0).toUpperCase() + (u.role || 'user').slice(1)}</Badge>)}
                     </td>
-                    <td>
+                    <td data-label="Status">
                       {u.verified
                         ? <Badge color="green"><CheckCircle className="h-3 w-3" /> Verified</Badge>
                         : <Badge color="muted">Unverified</Badge>}
                     </td>
-                    <td className="font-mono text-[10px] !text-[var(--at-mut)]">{(u.created || '').slice(0, 10)}</td>
-                    <td>
+                    <td data-label="Joined" className="font-mono text-[10px] !text-[var(--at-mut)]">{(u.created || '').slice(0, 10)}</td>
+                    <td data-label="Actions">
                       <div className="flex items-center justify-end gap-1">
                         <button onClick={() => setViewing(u)} title="View" className="rounded-lg p-1.5 text-[var(--at-mut)] hover:bg-[var(--at-soft)] hover:text-[var(--at-ink)]"><Eye className="h-4 w-4" /></button>
                         <button onClick={() => setEditing(u)} title="Edit" className="rounded-lg p-1.5 text-[var(--at-mut)] hover:bg-[var(--at-gold-soft)] hover:text-[var(--at-gold)]"><Edit2 className="h-4 w-4" /></button>

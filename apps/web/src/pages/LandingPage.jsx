@@ -170,7 +170,7 @@ function Nav({ homeTo, isAuthed, platformName }) {
       <div className="mx-auto flex w-full max-w-[110rem] items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6">
         <Link to={homeTo} onClick={close} className="flex min-w-0 shrink-0 items-center gap-2.5">
           <img src={LOGO} alt={`${brand} logo`} className="h-10 w-10 shrink-0 rounded-xl object-contain gold-glow sm:h-11 sm:w-11" />
-          <BrandName name={brand} className="landing-word hidden truncate text-xl font-extrabold tracking-tight sm:inline sm:text-2xl" />
+          <BrandName name={brand} className="landing-word truncate text-lg font-extrabold tracking-tight sm:text-2xl" />
         </Link>
 
         <nav className="landing-nav-pill hidden items-center gap-0.5 rounded-full p-1 xl:flex" aria-label="Main navigation">
@@ -222,7 +222,17 @@ function Nav({ homeTo, isAuthed, platformName }) {
             <Link to="/investors" onClick={close} className={`${mobileLink} landing-menu-link--gold`}>Investor relations <span className="ml-1 font-mono text-[9px] uppercase tracking-wider opacity-60">Pre-IPO</span></Link>
             <Link to="/tbc" onClick={close} className={`${mobileLink} landing-menu-link--gold`}>TBC record</Link>
           </nav>
-          <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/5 pt-3">
+          <div className="landing-menu__prefs mt-3 grid grid-cols-2 gap-2 border-t border-white/5 pt-3">
+            <div className="flex items-center justify-between gap-2 rounded-xl border border-white/8 bg-white/[0.03] px-3 py-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8a8577]">Theme</span>
+              <ThemeSwitcher inline />
+            </div>
+            <div className="flex items-center justify-between gap-2 rounded-xl border border-white/8 bg-white/[0.03] px-3 py-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8a8577]">Language</span>
+              <LanguageSwitcher />
+            </div>
+          </div>
+          <div className="mt-2 grid grid-cols-2 gap-2 border-t border-white/5 pt-3">
             {isAuthed ? (
               <Link to={homeTo} onClick={close} className="col-span-2 rounded-xl bg-gradient-to-r from-[#f4e6a8] to-[#c99a25] px-4 py-3 text-center text-sm font-bold text-[#0a0a0f]">{t('land.openDash')}</Link>
             ) : (

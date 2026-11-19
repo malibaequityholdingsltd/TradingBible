@@ -10,6 +10,7 @@ import SymbolSearchPicker from '@/components/SymbolSearchPicker';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuotes } from '@/hooks/useQuotes';
+import { useIsPhone } from '@/hooks/use-mobile';
 import { ALL_SYMBOLS } from '@/lib/symbols';
 import { TIMEFRAMES } from '@/lib/chartTimeframes';
 import {
@@ -75,6 +76,7 @@ function WatchRow({ symbol, quote, active, onSelect }) {
 
 export default function PublicTerminalPage() {
   const { isAuthed } = useAuth();
+  const isPhone = useIsPhone();
   const [params, setParams] = useSearchParams();
   const initial = String(params.get('symbol') || 'BTCUSD').toUpperCase();
   const initialTab = TABS.some((item) => item.id === params.get('view')) ? params.get('view') : 'chart';
@@ -181,8 +183,8 @@ export default function PublicTerminalPage() {
   );
 
   return (
-    <div className="fixed inset-0 z-[60] flex h-[100dvh] flex-col overflow-hidden bg-[#07070a] text-[#e9e7df]">
-      <header className="relative z-30 flex h-12 shrink-0 items-center gap-1.5 border-b border-white/[0.08] bg-[#0a0a0f]/95 px-2">
+    <div className="tb-pub-term fixed inset-0 z-[60] flex h-[100dvh] flex-col overflow-hidden bg-[#07070a] text-[#e9e7df]">
+      <header className="tb-pub-term__header relative z-30 flex h-12 shrink-0 items-center gap-1.5 border-b border-white/[0.08] bg-[#0a0a0f]/95 px-2">
         <Link
           to="/terminal"
           aria-label="TradingBible public terminal"
@@ -248,7 +250,7 @@ export default function PublicTerminalPage() {
       </header>
 
       <div className="flex min-h-0 flex-1">
-        <aside className="no-scrollbar flex w-12 shrink-0 flex-col items-center gap-1 overflow-y-auto border-r border-white/[0.08] bg-[#09090d] px-1 py-1.5 sm:w-[4.25rem]" aria-label="Terminal desks">
+        <aside className="tb-pub-term__desks no-scrollbar flex w-12 shrink-0 flex-col items-center gap-1 overflow-y-auto border-r border-white/[0.08] bg-[#09090d] px-1 py-1.5 sm:w-[4.25rem]" aria-label="Terminal desks">
           {TABS.map((item) => (
             <button
               key={item.id}
@@ -269,7 +271,7 @@ export default function PublicTerminalPage() {
         </aside>
         <main className="flex min-h-0 min-w-0 flex-1 flex-col">
           {tab === 'chart' && (
-            <div className="flex h-9 shrink-0 items-center gap-2 border-b border-white/[0.08] bg-[#0c0c11] px-2 sm:hidden">
+            <div className="tb-pub-term__quote flex h-9 shrink-0 items-center gap-2 border-b border-white/[0.08] bg-[#0c0c11] px-2 sm:hidden">
               <div className="min-w-0">
                 <SymbolSearchPicker value={symbol} onChange={selectSymbol} buttonClassName="!py-1 !text-[10px]" />
               </div>
@@ -279,7 +281,7 @@ export default function PublicTerminalPage() {
             </div>
           )}
           {tab !== 'chart' && (
-            <div className="flex h-10 shrink-0 items-center gap-2 border-b border-white/[0.08] bg-[#0c0c11] px-2.5">
+            <div className="tb-pub-term__tabbar flex h-10 shrink-0 items-center gap-2 border-b border-white/[0.08] bg-[#0c0c11] px-2.5">
               <span className="shrink-0 font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-[#d4af37]">{activeTab.label}</span>
               <span className="hidden shrink-0 font-mono text-[10px] text-[#8a8577] sm:inline">{symbol} · {timeframe}</span>
               <div className="ml-auto flex shrink-0 items-center gap-1.5">
@@ -310,6 +312,7 @@ export default function PublicTerminalPage() {
                   height="h-full"
                   hidePicker={false}
                   brandHref="/terminal"
+                  compact={isPhone}
                   publicMode
                   className="!h-full !rounded-none !border-0"
                 />
@@ -333,7 +336,7 @@ export default function PublicTerminalPage() {
         </aside>
       </div>
 
-      <footer className="relative z-20 flex shrink-0 flex-wrap items-center gap-x-3 gap-y-0.5 border-t border-white/[0.08] bg-[#08080b] px-2.5 py-1.5 text-[9px] leading-4 text-[#777265] sm:text-[10px]">
+      <footer className="tb-pub-term__footer relative z-20 flex shrink-0 flex-wrap items-center gap-x-3 gap-y-0.5 border-t border-white/[0.08] bg-[#08080b] px-2.5 py-1.5 text-[9px] leading-4 text-[#777265] sm:text-[10px]">
         <span className="min-w-0 flex-1">
           <span className="font-semibold text-[#b8b3a3]">Public terminal, not a public offering.</span> TradingBible Holdings. Inc. is a private, pre-IPO company. No public offering, no funds requested, and no approved SAFE, equity or token terms. Read-only market context, not financial advice.
         </span>

@@ -1,0 +1,1659 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * TradingBible mobile surface v2 (iPhone / ≤639px)
+ *
+ * A single, opt-in phone layer loaded after every other stylesheet. Desktop
+ * and tablet rules are untouched. The phone is treated as an installed app:
+ * safe-area aware chrome, 44px minimum touch targets, legible type, one
+ * scrollable control strip per page, and card-first data instead of clipped
+ * desktop tables.
+ * ──────────────────────────────────────────────────────────────────────── */
+@media (max-width: 639px) {
+  /* ── Tokens and page base ───────────────────────────────────────────── */
+  :root {
+    --header-h: calc(36px + env(safe-area-inset-top, 0px));
+    --m-bar-h: 56px;
+    --m-dock-h: 62px;
+    --m-gutter: 16px;
+    --m-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --m-radius: 16px;
+    --m-line: rgba(255, 255, 255, 0.08);
+    --m-surface: #0f1117;
+    --m-surface-2: #151820;
+  }
+
+  html {
+    font-size: 15px;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    overscroll-behavior-y: none;
+  }
+
+  /* The fixed ticker/header/dock own the safe areas on phones. Keeping body
+     padding as well double-counts the notch and pushes page content down. */
+  body {
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  html.light {
+    --m-line: rgba(15, 23, 42, 0.1);
+    --m-surface: #ffffff;
+    --m-surface-2: #f6f7f9;
+  }
+
+  /* Touch targets that are icon-only should never be smaller than a thumb. */
+  .ex-icon-btn,
+  .at-pagebar-actions .at-btn--icon,
+  .landing-header button[aria-expanded] {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* ── Public chrome ──────────────────────────────────────────────────── */
+  #tb-ticker {
+    position: fixed;
+    overflow: hidden;
+    background: #0a0a0f;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.13);
+  }
+
+  /* Soft fades stop the tape from looking cut mid-symbol at either edge. */
+  #tb-ticker::before,
+  #tb-ticker::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 2;
+    width: 22px;
+    pointer-events: none;
+  }
+  #tb-ticker::before {
+    left: 0;
+    background: linear-gradient(90deg, #0a0a0f 10%, transparent);
+  }
+  #tb-ticker::after {
+    right: 0;
+    background: linear-gradient(270deg, #0a0a0f 10%, transparent);
+  }
+
+  #tb-ticker .tb-ticker__set {
+    gap: 10px;
+    padding-inline: 12px;
+    font-size: 10.5px;
+  }
+
+  .landing-header {
+    background: rgba(7, 7, 10, 0.97);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .landing-header > div:first-child {
+    height: 56px;
+    min-height: 56px;
+    gap: 10px;
+    padding: 7px 14px;
+  }
+
+  .landing-header .flex.min-w-0.shrink-0.items-center.gap-2\.5 > img {
+    height: 38px;
+    width: 38px;
+  }
+
+  .landing-word {
+    display: inline !important;
+    max-width: 46vw;
+    font-size: 18px !important;
+    letter-spacing: -0.035em;
+  }
+
+  /* Theme, language and the large pricing CTA move into the menu. The phone
+     bar keeps only the mark, wordmark and one 44px menu button. */
+  .landing-header .landing-control,
+  .landing-header .landing-login,
+  .landing-header .ex-btn {
+    display: none !important;
+  }
+
+  .landing-header button[aria-expanded] {
+    border-radius: 12px;
+  }
+
+  .landing-menu {
+    max-height: calc(100dvh - var(--header-h) - 56px) !important;
+    padding: 10px 14px calc(18px + var(--m-safe-bottom)) !important;
+    background: rgba(7, 7, 10, 0.995);
+    border-top: 1px solid rgba(212, 175, 55, 0.16);
+    box-shadow: 0 28px 60px -20px rgba(0, 0, 0, 0.9);
+  }
+
+  .landing-menu-link {
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-size: 14px;
+    line-height: 1.25;
+  }
+
+  .landing-menu__prefs + div > a,
+  .landing-menu__prefs + div > a:last-child {
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+
+  html.light .landing-header {
+    background: rgba(248, 249, 251, 0.98);
+  }
+  html.light .landing-menu {
+    background: rgba(250, 248, 242, 0.998);
+  }
+
+  /* ── Public landing rhythm ──────────────────────────────────────────── */
+  .landing-page {
+    padding-top: 0;
+  }
+
+  /* Keep the hero on two lines at 375/390/430 without a 38px word breaking. */
+  .landing-page h1 {
+    font-size: clamp(1.9rem, 8vw, 2.3rem) !important;
+    line-height: 0.99 !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  .landing-page h2.tb-h2 {
+    font-size: 1.72rem !important;
+    line-height: 1.06 !important;
+  }
+
+  .landing-page .landing-hero {
+    padding-top: 26px !important;
+  }
+
+  .landing-page a.at-btn,
+  .landing-page button.at-btn,
+  .public-site-shell a.at-btn,
+  .public-site-shell button.at-btn {
+    min-height: 50px;
+    border-radius: 13px;
+    font-size: 14.5px;
+  }
+
+  .landing-page .pm-marquee,
+  .public-site-shell .pm-marquee,
+  .public-page-head__rail .pm-marquee {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+  }
+
+  .landing-page section,
+  .public-site-shell section {
+    scroll-margin-top: calc(var(--header-h) + 72px);
+  }
+
+  .landing-page .grid.gap-3,
+  .landing-page .grid.gap-4 {
+    gap: 12px;
+  }
+
+  /* ── Public inner page head and content ─────────────────────────────── */
+  .public-page-head > .relative {
+    padding: calc(var(--header-h) + 74px) 18px 30px !important;
+  }
+
+  .public-page-head__copy::before {
+    inset: -0.8rem -0.55rem;
+    border-radius: 20px;
+  }
+
+  .public-page-head h1 {
+    font-size: clamp(1.9rem, 8vw, 2.3rem) !important;
+    line-height: 1.01 !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  .public-page-head p {
+    font-size: 14.5px !important;
+    line-height: 1.55 !important;
+  }
+
+  .public-page-head__rail {
+    max-width: none;
+    margin-top: 14px;
+  }
+
+  .public-page-head__rail .pm-marquee__item {
+    padding: 0 0.8rem;
+    font-size: 9px;
+  }
+
+  .public-page-head .at-scope.mt-6 {
+    margin-top: 18px !important;
+  }
+
+  .public-page-head .at-scope > a,
+  .public-page-head .at-scope > button {
+    width: 100%;
+    min-height: 50px;
+    justify-content: center;
+  }
+
+  .public-site-shell .tb-sub {
+    font-size: 14.5px;
+    line-height: 1.55;
+  }
+
+  .public-site-shell .at-card {
+    border-radius: 17px;
+  }
+
+  .public-site-shell .at-card-body {
+    padding: 16px;
+  }
+
+  .public-site-shell table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .public-site-shell .tb-footer {
+    padding-bottom: calc(12px + var(--m-safe-bottom));
+  }
+
+  /* ── Auth flow ──────────────────────────────────────────────────────── */
+  .auth-shell {
+    min-height: 100dvh;
+    padding: calc(3.75rem + var(--safe-top)) 16px calc(24px + var(--m-safe-bottom)) !important;
+  }
+
+  .auth-shell .max-w-6xl > .flex.items-center.justify-between {
+    gap: 10px;
+  }
+
+  .auth-shell .max-w-6xl > .flex.items-center.justify-between img {
+    height: 38px;
+    width: 38px;
+  }
+
+  .auth-shell .tb-card,
+  .auth-shell [class*="rounded-2xl"][class*="border"] {
+    border-radius: 18px;
+  }
+
+  .auth-shell .p-4.sm\:p-6,
+  .auth-shell .p-5.sm\:p-8,
+  .auth-shell .p-6.sm\:p-8 {
+    padding: 18px !important;
+  }
+
+  .auth-tabs__link {
+    min-height: 46px !important;
+    height: 46px !important;
+    font-size: 14px;
+  }
+
+  .auth-shell h1 {
+    font-size: 27px !important;
+    line-height: 1.08 !important;
+  }
+
+  .auth-shell p {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .auth-shell input:not([type="checkbox"]):not([type="radio"]),
+  .auth-shell select {
+    min-height: 52px !important;
+    height: 52px;
+    border-radius: 13px !important;
+    font-size: 16px !important;
+  }
+
+  .auth-shell button[type="submit"],
+  .auth-shell .auth-submit,
+  .auth-shell a.at-btn,
+  .auth-shell button.at-btn {
+    min-height: 52px !important;
+    border-radius: 13px !important;
+    font-size: 15px !important;
+  }
+
+  .auth-shell .auth-otp-box {
+    width: 44px;
+    height: 52px;
+    border-radius: 11px;
+    font-size: 21px;
+  }
+
+  .auth-shell a,
+  .auth-shell button {
+    touch-action: manipulation;
+  }
+
+  .auth-shell .pm-marquee {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 10px, #000 calc(100% - 10px), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 10px, #000 calc(100% - 10px), transparent);
+  }
+
+  /* ── App shell: header, content, dock ───────────────────────────────── */
+  .tb-app-shell,
+  .tb-admin-shell {
+    --mobile-line: var(--m-line);
+    background:
+      radial-gradient(120% 68% at 50% -14%, rgba(212, 175, 55, 0.08), transparent 58%),
+      #08090d !important;
+  }
+
+  html.light .tb-app-shell,
+  html.light .tb-admin-shell {
+    background: #f6f7f9 !important;
+  }
+
+  .ex-mobile-bar {
+    height: var(--m-bar-h);
+    padding: 0 14px;
+    gap: 8px;
+    border-bottom: 1px solid var(--ex-line);
+    background: #0c0e13;
+    box-shadow: 0 8px 22px -18px rgba(0, 0, 0, 0.9);
+  }
+
+  html.light .ex-mobile-bar {
+    background: #ffffff;
+  }
+
+  .ex-mobile-bar__brand {
+    gap: 10px;
+  }
+
+  .ex-mobile-bar .ex-sidebar__mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    flex: 0 0 auto;
+  }
+
+  .ex-mobile-bar__title {
+    font-size: 17px;
+    font-weight: 720;
+    letter-spacing: -0.035em;
+  }
+
+  .ex-mobile-bar__actions {
+    gap: 1px;
+  }
+
+  .ex-mobile-bar .ex-icon-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  .ex-mobile-bar .ex-icon-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .ex-mobile-bar .ex-avatar {
+    width: 40px;
+    height: 40px;
+    margin-left: 2px;
+    font-size: 12px;
+    border: 1px solid color-mix(in srgb, var(--ex-accent) 34%, transparent);
+  }
+
+  .ex-main {
+    padding-top: calc(var(--ex-ticker-h) + var(--m-bar-h)) !important;
+  }
+
+  .ex-main__inner {
+    padding: 16px var(--m-gutter) calc(96px + var(--m-safe-bottom)) !important;
+  }
+
+  .ex-embed-shell .ex-main__inner {
+    padding-bottom: calc(28px + var(--m-safe-bottom)) !important;
+  }
+
+  /* A standard five-tab bar: no raised orb, no floating island, no label
+     sitting under a 58px circle. One-hand reach and a real active state. */
+  .ex-mobile-dockfade {
+    display: block;
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 44;
+    height: 104px;
+    pointer-events: none;
+    background: linear-gradient(to top, var(--ex-bg) 30%, color-mix(in srgb, var(--ex-bg) 86%, transparent) 66%, transparent);
+  }
+
+  .ex-mobile-dock {
+    display: grid;
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 46;
+    width: auto;
+    transform: none;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: stretch;
+    overflow: visible;
+    border: 0;
+    border-top: 1px solid var(--m-line);
+    border-radius: 18px 18px 0 0;
+    background: #0d0f15;
+    padding: 6px 8px calc(6px + var(--m-safe-bottom));
+    box-shadow: 0 -18px 46px -30px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.045);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  html.light .ex-mobile-dock {
+    background: #ffffff;
+    box-shadow: 0 -18px 44px -30px rgba(15, 23, 42, 0.16), inset 0 1px 0 rgba(15, 23, 42, 0.04);
+  }
+
+  .ex-mobile-dock__item,
+  .ex-mobile-dock__item--hero {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    min-height: 50px;
+    margin: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    border-radius: 11px;
+    color: var(--ex-muted);
+    font-size: 10px;
+    font-weight: 650;
+    letter-spacing: 0.005em;
+    line-height: 1;
+  }
+
+  .ex-mobile-dock__item:active {
+    background: color-mix(in srgb, var(--ex-accent) 8%, transparent);
+  }
+
+  .ex-mobile-dock__item > svg,
+  .ex-mobile-dock__orb {
+    box-sizing: content-box;
+    display: grid;
+    width: 21px;
+    height: 21px;
+    padding: 4px 9px;
+    place-items: center;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: inherit;
+    box-shadow: none;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .ex-mobile-dock__item svg {
+    width: 21px;
+    height: 21px;
+    stroke-width: 1.85;
+  }
+
+  .ex-mobile-dock__item--hero svg {
+    width: 21px;
+    height: 21px;
+    stroke-width: 1.9;
+  }
+
+  .ex-mobile-dock__item.is-active,
+  .ex-mobile-dock__item--hero.is-active {
+    color: var(--ex-accent);
+  }
+
+  .ex-mobile-dock__item.is-active > svg,
+  .ex-mobile-dock__item.is-active .ex-mobile-dock__orb,
+  .ex-mobile-dock__item--hero.is-active .ex-mobile-dock__orb {
+    background: color-mix(in srgb, var(--ex-accent) 14%, transparent);
+    color: var(--ex-accent);
+  }
+
+  .ex-mobile-dock__item.is-active::before,
+  .ex-mobile-dock__item--hero.is-active::before {
+    display: none;
+  }
+
+  .ex-mobile-dock__label {
+    max-width: 100%;
+    overflow: hidden;
+    color: inherit;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.15;
+  }
+
+  .ex-mobile-dock__item--hero .ex-mobile-dock__label {
+    color: inherit;
+  }
+
+  .ex-mobile-dock__item.is-locked {
+    opacity: 0.48;
+  }
+
+  html.light .ex-mobile-dock__item,
+  html.light .ex-mobile-dock__item--hero {
+    color: #66707d;
+  }
+  html.light .ex-mobile-dock__item.is-active,
+  html.light .ex-mobile-dock__item--hero.is-active {
+    color: var(--ex-accent);
+  }
+
+  /* Sheets: bottom sheets should feel native, not like a clipped panel. */
+  .ex-sheet {
+    max-height: 90dvh;
+    border-radius: 20px 20px 0 0;
+    padding-bottom: calc(12px + var(--m-safe-bottom));
+  }
+
+  .ex-sheet__grab {
+    width: 38px;
+    height: 4px;
+    margin: 9px auto 2px;
+    border-radius: 999px;
+    background: var(--ex-line-2);
+  }
+
+  .ex-sheet__head {
+    padding: 12px 16px;
+  }
+
+  .ex-sheet__head strong {
+    font-size: 16px;
+  }
+
+  .ex-sheet__group {
+    padding: 12px 16px 0;
+  }
+
+  .ex-sheet__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .ex-sheet__tile {
+    min-height: 66px;
+    padding: 10px 4px;
+    font-size: 10.5px;
+  }
+
+  .ex-sheet__tile svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  /* The admin preview strip is information, not a one-line ticker. */
+  .ex-notice--accent {
+    align-items: flex-start;
+    padding: 10px 12px;
+    font-size: 11.5px;
+    line-height: 1.45;
+  }
+
+  .ex-notice--accent > span {
+    overflow: visible;
+    white-space: normal;
+    min-width: 0;
+  }
+
+  .ex-notice--accent .ex-btn {
+    min-height: 40px;
+  }
+
+  /* ── App page primitives ────────────────────────────────────────────── */
+  .ex-page-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .ex-page-head__copy {
+    width: 100%;
+  }
+
+  .ex-kicker {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+  }
+
+  .ex-page-title {
+    margin-top: 5px;
+    font-size: 26px;
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+  }
+
+  .ex-page-sub {
+    margin-top: 6px;
+    max-width: 46ch;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .ex-page-actions {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .ex-page-actions > * {
+    width: 100%;
+  }
+
+  .ex-page-actions > :only-child {
+    grid-column: 1 / -1;
+  }
+
+  .ex-btn {
+    min-height: 44px;
+    padding-inline: 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 650;
+    gap: 7px;
+  }
+
+  .ex-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .ex-btn--sm {
+    min-height: 42px;
+    padding-inline: 12px;
+    font-size: 12.5px;
+  }
+
+  .ex-btn--lg {
+    min-height: 50px;
+    font-size: 14.5px;
+  }
+
+  .ex-page-actions .ex-btn {
+    min-height: 46px;
+  }
+
+  .ex-input,
+  .ex-select,
+  .ex-textarea,
+  .ex-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  .ex-page select,
+  .ex-page textarea {
+    min-height: 46px;
+    border-radius: 11px;
+    font-size: 16px;
+  }
+
+  .ex-page input[type="checkbox"],
+  .ex-page input[type="radio"] {
+    width: 18px;
+    height: 18px;
+  }
+
+  .ex-card,
+  .ex-panel {
+    border-radius: var(--m-radius);
+  }
+
+  .ex-card-head {
+    padding: 13px 14px;
+    gap: 8px;
+  }
+
+  .ex-card-body {
+    padding: 14px;
+  }
+
+  .ex-card-title {
+    font-size: 14px;
+  }
+
+  .ex-card-sub {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .ex-tabs,
+  .ex-segmented {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+
+  .ex-tabs::-webkit-scrollbar,
+  .ex-segmented::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ex-tab,
+  .ex-segmented > * {
+    flex: 0 0 auto;
+    min-height: 38px;
+    scroll-snap-align: start;
+    white-space: nowrap;
+  }
+
+  .ex-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+
+  .ex-table {
+    font-size: 11.5px;
+  }
+
+  .ex-table th,
+  .ex-table td {
+    padding: 10px 12px;
+  }
+
+  .ex-table:not(.ex-table--cards) {
+    min-width: 560px;
+  }
+
+  .ex-table--cards tr {
+    border-radius: 14px;
+  }
+
+  /* ── Dashboard ──────────────────────────────────────────────────────── */
+  .ex-dashboard__balance {
+    padding: 16px;
+    border-radius: var(--m-radius);
+  }
+
+  .ex-dashboard__balance-value {
+    margin-top: 5px;
+    font-size: 35px;
+    line-height: 1;
+  }
+
+  .ex-dashboard__balance-sub {
+    margin-top: 8px;
+    gap: 5px 12px;
+    font-size: 11.5px;
+    line-height: 1.5;
+  }
+
+  .ex-dashboard__balance-actions {
+    display: grid;
+    margin-top: 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .ex-dashboard__balance-actions .ex-btn {
+    width: 100%;
+    min-height: 46px;
+  }
+
+  .ex-dashboard__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ex-dashboard__metric {
+    padding: 13px 14px;
+  }
+
+  .ex-dashboard__metric strong {
+    font-size: 17px;
+  }
+
+  .ex-dashboard__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .ex-quick-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .ex-quick-action {
+    min-height: 50px;
+    padding: 10px;
+    font-size: 11.5px;
+  }
+
+  .ex-market-row {
+    min-height: 50px;
+    padding: 8px 10px;
+  }
+
+  .ex-guide-banner__actions {
+    margin-top: 4px;
+  }
+
+  .ex-guide-banner__actions .ex-btn {
+    min-height: 42px;
+  }
+
+  /* ── Coach: keep the composer above the dock ────────────────────────── */
+  .ex-page--coach .ex-page-head {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .ex-page--coach .ex-page-head__copy {
+    display: none;
+  }
+
+  .ex-page--coach .ex-page-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ex-page--coach .ex-page-actions .ex-btn {
+    min-height: 44px;
+  }
+
+  .ex-page--coach .ex-coach {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .ex-page--coach .ex-chat {
+    height: calc(100dvh - var(--ex-ticker-h) - var(--m-bar-h) - var(--m-dock-h) - 122px - var(--m-safe-bottom));
+    min-height: 360px;
+    max-height: none;
+    border-radius: 16px;
+  }
+
+  .ex-chat__head {
+    padding: 11px 12px;
+  }
+
+  .ex-chat__head-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .ex-chat__head strong {
+    font-size: 14px;
+  }
+
+  .ex-chat__head span {
+    font-size: 10px;
+  }
+
+  .ex-chat__body {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .ex-msg {
+    max-width: 92%;
+  }
+
+  .ex-msg__bubble {
+    padding: 10px 12px;
+    border-radius: 13px;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  .ex-chat__composer {
+    padding: 9px 10px;
+    gap: 7px;
+    background: var(--ex-panel);
+  }
+
+  .ex-chat__composer .ex-input {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .ex-chat__composer .ex-btn {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .ex-prompt-btn {
+    min-height: 44px;
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  /* ── Member terminal ────────────────────────────────────────────────── */
+  .tb-app-shell .tb-term .tb-term-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-right: 16px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 16px), transparent 100%);
+    mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 16px), transparent 100%);
+  }
+
+  .tb-app-shell .tb-term .tb-term-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* exchange.css pins these at 30px with !important. Phone controls need a
+     real target and enough room for the label. */
+  .tb-app-shell .ex-page .tb-term .tb-term-tab {
+    min-height: 40px !important;
+    padding: 0 10px !important;
+    font-size: 11.5px !important;
+  }
+
+  .tb-app-shell .tb-term > div[class*="sm:hidden"] button,
+  .tb-app-shell .tb-term > div[class*="sm:hidden"] a {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  /* ── Wallet tabs, portfolio and cards ───────────────────────────────── */
+  .wv-toolbar {
+    gap: 8px;
+    padding: 2px 0;
+    min-height: 44px;
+  }
+
+  .wv-toolbar-state {
+    min-width: 0;
+    max-width: calc(100% - 96px);
+    flex-wrap: nowrap;
+    gap: 5px;
+    overflow: hidden;
+    font-size: 11px;
+    line-height: 1.35;
+    white-space: nowrap;
+  }
+
+  /* The account email is repeated in Profile and is the first thing to break
+     this row at 375px. Keep the live status; drop the dot and address. */
+  .wv-toolbar-state > span:nth-last-child(-n + 2) {
+    display: none;
+  }
+
+  .wv-toolbar-actions {
+    gap: 6px;
+  }
+
+  .wv-icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .wv-page .wv-reveal {
+    width: 40px;
+    height: 40px;
+  }
+
+  .wv-page .wv-link {
+    min-height: 40px;
+    padding-inline: 2px;
+    font-size: 11px;
+  }
+
+  /* Row-level actions in holdings/activity set 27–31px in wallet-v3. Lift
+     them to a thumb target on phones. */
+  .wv-page .wv-btn,
+  .wv-page .wv-row-action .wv-btn,
+  .wv-page .wv-stmt-grid .wv-btn {
+    height: auto !important;
+    min-height: 44px !important;
+  }
+
+  .wv-page .wv-btn--sm {
+    min-height: 40px !important;
+  }
+
+  .wv-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 2px;
+    overflow-x: auto;
+    padding-right: 14px;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 14px), transparent 100%);
+    mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 14px), transparent 100%);
+  }
+
+  .wv-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .wv-tab {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 0 12px;
+    scroll-snap-align: start;
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
+
+  .wv-tab svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .wv-portfolio {
+    padding: 17px 16px;
+    border-radius: 18px;
+  }
+
+  .wv-balance-value {
+    font-size: 36px;
+    line-height: 1;
+  }
+
+  .wv-balance-breakdown {
+    gap: 5px 12px;
+    font-size: 11.5px;
+  }
+
+  .wv-quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .wv-action {
+    min-height: 56px;
+    font-size: 12px;
+    justify-content: flex-start;
+    padding: 9px 10px;
+  }
+
+  .wv-card {
+    border-radius: 18px;
+  }
+
+  .wv-section-title {
+    font-size: 18px;
+  }
+
+  .wv-section-sub {
+    font-size: 11.5px;
+  }
+
+  .wv-btn {
+    min-height: 44px;
+    padding-inline: 14px;
+    font-size: 12.5px;
+  }
+
+  .wv-btn--sm {
+    min-height: 38px;
+  }
+
+  .wv-field {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  /* ── Signal / market filter strips ──────────────────────────────────── */
+  .ex-page .flex.flex-wrap.items-center.gap-2,
+  .ex-page .flex.flex-wrap.items-center.gap-1\.5 {
+    row-gap: 8px;
+  }
+
+  .ex-page .flex.flex-wrap > .ex-select,
+  .ex-page .flex.flex-wrap > select {
+    flex: 1 1 140px;
+    min-width: 0;
+  }
+
+  .ex-page .flex.flex-wrap > .ex-input {
+    flex: 1 1 100%;
+  }
+
+  /* ── Admin console ──────────────────────────────────────────────────── */
+  .tb-admin-shell .at-topbar {
+    height: var(--m-bar-h) !important;
+    padding-inline: 12px;
+    background: #0c0e13 !important;
+    border-bottom: 1px solid var(--ex-line);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html.light .tb-admin-shell .at-topbar {
+    background: #ffffff !important;
+  }
+
+  .tb-admin-shell .at-topbar > div {
+    gap: 8px;
+    padding-inline: 0;
+  }
+
+  .tb-admin-shell .at-topbar .ex-sidebar__mark,
+  .tb-admin-shell .at-topbar img {
+    max-height: 34px;
+  }
+
+  .tb-admin-shell .at-topbar h1 {
+    font-size: 17px !important;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+  }
+
+  .tb-admin-shell .at-topbar [class*="text-[9px]"],
+  .tb-admin-shell .at-topbar .at-badge {
+    display: none !important;
+  }
+
+  .tb-admin-shell .at-topbar button {
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+
+  .tb-admin-shell .at-topbar .at-topbar-actions {
+    gap: 2px;
+  }
+
+  .tb-admin-shell main {
+    /* The shell already offsets the ticker; only the 56px operator bar and a
+       12px gap remain. */
+    padding: calc(var(--m-bar-h) + 12px) 14px calc(96px + var(--m-safe-bottom)) !important;
+  }
+
+  /* The shell root already reserves the ticker; the extra top offset above
+     replaces the old 64px bar + 1rem rhythm with a 56px bar + 12px gap. */
+  .tb-admin-shell .at-pagebar {
+    gap: 10px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+  }
+
+  .tb-admin-shell .at-pagebar-title {
+    font-size: 24px;
+    line-height: 1.06;
+  }
+
+  .tb-admin-shell .at-pagebar-sub {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .tb-admin-shell .at-pagebar-meta {
+    gap: 4px 8px;
+    font-size: 9px;
+  }
+
+  .tb-admin-shell .at-pagebar-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+    gap: 8px;
+  }
+
+  .tb-admin-shell .at-pagebar-actions > * {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .tb-admin-shell .at-pagebar-actions .at-btn {
+    gap: 5px;
+    padding-inline: 9px;
+    font-size: 11.5px;
+  }
+
+  .tb-admin-shell .at-btn {
+    min-height: 44px;
+    padding-inline: 13px;
+    border-radius: 10px;
+    font-size: 12.5px;
+  }
+
+  .tb-admin-shell .at-btn--sm {
+    min-height: 40px;
+    font-size: 11.5px;
+  }
+
+  .tb-admin-shell .at-btn--icon {
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+  }
+
+  .tb-admin-shell .at-card {
+    border-radius: 17px;
+  }
+
+  .tb-admin-shell .at-card-head {
+    padding: 14px 15px 0;
+  }
+
+  .tb-admin-shell .at-card-body {
+    padding: 15px;
+  }
+
+  .tb-admin-shell .at-card-body--tight {
+    padding: 12px 15px 15px;
+  }
+
+  .tb-admin-shell .at-input,
+  .tb-admin-shell .at-select,
+  .tb-admin-shell input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  .tb-admin-shell select {
+    min-height: 46px;
+    border-radius: 11px;
+    font-size: 16px;
+  }
+
+  /* Search fields are an input inside an already-bordered capsule. Leaving
+     the global input border on draws a box inside a box. */
+  .tb-admin-shell .at-page input[class*="bg-transparent"] {
+    height: auto !important;
+    min-height: 40px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .tb-admin-shell .at-page select {
+    height: 48px;
+    padding-block: 0;
+  }
+
+  /* Give the search field its own row so the placeholder and filters never
+     fight for the same 430px line. */
+  .tb-admin-shell .at-page div:has(> input[placeholder^="Search"]) {
+    flex-basis: 100%;
+  }
+
+  .tb-admin-shell .at-page .rounded-xl.border:has(> input[class*="bg-transparent"]) {
+    min-height: 48px;
+    padding-block: 0;
+  }
+
+  .tb-admin-shell .at-page .rounded-xl.border:has(> input[class*="bg-transparent"]) > button {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 9px;
+  }
+
+  .tb-admin-shell .at-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+
+  .tb-admin-shell .at-table {
+    font-size: 11.5px;
+  }
+
+  .tb-admin-shell .at-table th,
+  .tb-admin-shell .at-table td {
+    padding: 11px 13px;
+  }
+
+  /* Users table becomes a card list. Data labels are rendered by CSS so the
+     same table keeps its desktop columns and semantics. */
+  .tb-admin-shell .tb-admin-user-table-wrap {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .tb-admin-shell .tb-admin-user-table {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+    border-collapse: separate;
+  }
+
+  .tb-admin-shell .tb-admin-user-table thead {
+    display: none;
+  }
+
+  .tb-admin-shell .tb-admin-user-table tbody {
+    display: grid;
+    gap: 10px;
+  }
+
+  .tb-admin-shell .tb-admin-user-table tr {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 10px;
+    padding: 13px;
+    border: 1px solid var(--at-line);
+    border-radius: 16px;
+    background: var(--at-card-bg);
+    box-shadow: none;
+  }
+
+  .tb-admin-shell .tb-admin-user-table tr:hover {
+    background: var(--at-card-bg);
+  }
+
+  .tb-admin-shell .tb-admin-user-table td {
+    display: block;
+    min-width: 0;
+    padding: 7px 0;
+    border: 0;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .tb-admin-shell .tb-admin-user-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 4px;
+    color: var(--at-mut);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .tb-admin-shell .tb-admin-user-table td[data-label="User"] {
+    grid-column: 1 / -1;
+    padding: 0 38px 10px 0;
+    border-bottom: 1px solid var(--at-line-soft);
+  }
+
+  .tb-admin-shell .tb-admin-user-table td[data-label="User"]::before {
+    display: none;
+  }
+
+  .tb-admin-shell .tb-admin-user-table td[data-label="User"] .max-w-\[240px\],
+  .tb-admin-shell .tb-admin-user-table td[data-label="User"] .max-w-\[200px\] {
+    max-width: 100%;
+  }
+
+  .tb-admin-shell .tb-admin-user-table td[data-label="Plan"] {
+    display: none;
+  }
+
+  .tb-admin-shell .tb-admin-user-table td[data-label="Role"],
+  .tb-admin-shell .tb-admin-user-table td[data-label="Status"],
+  .tb-admin-shell .tb-admin-user-table td[data-label="Joined"] {
+    padding-top: 10px;
+  }
+
+  .tb-admin-shell .tb-admin-user-table td[data-label="Actions"] {
+    grid-column: 1 / -1;
+    padding: 10px 0 0;
+    border-top: 1px solid var(--at-line-soft);
+  }
+
+  .tb-admin-shell .tb-admin-user-table td[data-label="Actions"]::before {
+    display: none;
+  }
+
+  .tb-admin-shell .tb-admin-user-table td[data-label="Actions"] > div {
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  .tb-admin-shell .tb-admin-user-table td[data-label="Actions"] button {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border-radius: 10px;
+    background: var(--at-soft);
+  }
+
+  .tb-admin-shell .tb-admin-user-table td[data-label=""] {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+  }
+
+  .tb-admin-shell .tb-admin-user-table td[data-label=""]::before {
+    display: none;
+  }
+
+  .tb-admin-shell .tb-admin-user-check {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    cursor: pointer;
+  }
+
+  .tb-admin-shell .tb-admin-user-check input {
+    width: 21px;
+    height: 21px;
+    margin: 0;
+  }
+
+  /* TBC/Hiring/other operators get scrollable tables with a visible edge. */
+  .tb-admin-shell .at-table-wrap:not(.tb-admin-user-table-wrap) {
+    border-radius: 15px;
+    background:
+      linear-gradient(90deg, var(--at-card-bg) 70%, transparent) left / 18px 100% no-repeat,
+      linear-gradient(270deg, var(--at-card-bg) 70%, transparent) right / 18px 100% no-repeat,
+      var(--at-card-bg);
+  }
+
+  /* Admin dock */
+  .tb-admin-dock {
+    z-index: 46;
+    padding: 6px 8px calc(8px + var(--m-safe-bottom));
+    border-radius: 18px 18px 0 0;
+    background: #0d0f15 !important;
+    box-shadow: 0 -18px 46px -30px rgba(0, 0, 0, 0.95);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html.light .tb-admin-dock {
+    background: #ffffff !important;
+  }
+
+  .tb-admin-dock__tab {
+    min-height: 50px;
+    gap: 2px;
+    font-size: 9.5px;
+  }
+
+  .tb-admin-dock__icon {
+    height: 32px;
+    min-width: 44px;
+  }
+
+  /* The raised medallion is the active marker; a bottom underline collides
+     with the label on phones. */
+  .tb-admin-dock__tab.is-active::before {
+    display: none !important;
+    content: none !important;
+  }
+
+  /* ── Public terminal ────────────────────────────────────────────────── */
+  .tb-pub-term__header {
+    height: 52px;
+    padding-inline: 8px;
+  }
+
+  .tb-pub-term__header > a:first-child {
+    width: 36px;
+    height: 36px;
+  }
+
+  .tb-pub-term__header button,
+  .tb-pub-term__header a {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .tb-pub-term__header a[href="/login"],
+  .tb-pub-term__header a[href="/app/terminal-pro"] {
+    padding-inline: 9px;
+  }
+
+  .tb-pub-term__desks {
+    width: 56px;
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .tb-pub-term__desks button {
+    width: 44px;
+    min-height: 44px;
+    gap: 0;
+    padding: 0;
+    border-radius: 11px;
+  }
+
+  .tb-pub-term__desks button svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .tb-pub-term__quote {
+    height: 44px;
+    padding-inline: 10px;
+    gap: 6px;
+  }
+
+  .tb-pub-term__quote [class*="text-[9px]"] {
+    font-size: 9.5px;
+  }
+
+  .tb-pub-term__tabbar {
+    height: 46px;
+    padding-inline: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tb-pub-term__tabbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tb-pub-term__footer {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 10px calc(6px + var(--m-safe-bottom));
+    font-size: 8.5px;
+    line-height: 1.45;
+  }
+
+  .tb-pub-term__footer > span {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .tb-pub-term__footer > a {
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Compact chart: two scrollable control rails, no 44px vertical icon wall. */
+  .tb-pub-term [data-tb-chart-root] {
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .tb-pub-term [data-tb-chart-root] > .relative > div:first-child {
+    scrollbar-width: none;
+  }
+
+  .tb-pub-term [data-tb-chart-root] > .relative > div:first-child::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tb-pub-term [data-tb-chart-root] .no-scrollbar,
+  .ex-page [data-tb-chart-root] .no-scrollbar {
+    -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 18px), transparent 100%);
+    mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 18px), transparent 100%);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tb-pub-term [data-tb-chart-root] .no-scrollbar button,
+  .ex-page [data-tb-chart-root] .no-scrollbar button {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .tb-pub-term [data-tb-chart-root] .no-scrollbar select,
+  .ex-page [data-tb-chart-root] .no-scrollbar select {
+    min-height: 40px;
+    font-size: 12px !important;
+  }
+
+  .tb-pub-term [data-tb-chart-root] .no-scrollbar svg,
+  .ex-page [data-tb-chart-root] .no-scrollbar svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  /* ── Slide-out watchlist ────────────────────────────────────────────── */
+  .tb-pub-term aside.fixed {
+    width: min(22rem, 92vw) !important;
+    padding-bottom: var(--m-safe-bottom);
+  }
+
+  /* ── Small utility fixes ────────────────────────────────────────────── */
+  .ex-page .overflow-x-auto,
+  .tb-admin-shell .overflow-x-auto {
+    overscroll-behavior-x: contain;
+  }
+
+  .ex-page [class*="min-w-\["] {
+    max-width: 100%;
+  }
+
+  .ex-page img,
+  .tb-admin-shell img,
+  .public-site-shell img {
+    max-width: 100%;
+  }
+
+  /* Avoid iOS zoom while keeping text controls visually comfortable. */
+  .ex-page input,
+  .ex-page select,
+  .ex-page textarea,
+  .tb-admin-shell input,
+  .tb-admin-shell select,
+  .tb-admin-shell textarea,
+  .auth-shell input,
+  .auth-shell select,
+  .auth-shell textarea {
+    font-size: 16px !important;
+  }
+}
