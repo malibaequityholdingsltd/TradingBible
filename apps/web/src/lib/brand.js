@@ -27,9 +27,10 @@ export const BRAND = {
       </svg>
     `,
     // Local first (bundled in /public/logos) — remote CDN kept as fallback.
-    url: '/logos/tradingbible-logo.png',
+    // The -256 suffix also cache-busts the old 1.3 MB asset.
+    url: '/logos/tradingbible-logo-256.png',
     // Dark mode variant (if needed)
-    urlDark: '/logos/tradingbible-logo.png',
+    urlDark: '/logos/tradingbible-logo-256.png',
     // Remote fallback if the bundled file ever goes missing.
     urlRemote: 'https://horizons-cdn.hostinger.com/31a01204-0f8d-4aa3-a78b-78fb8b946e53/f18f53c1fa5ec4181c7033589080fd00.png',
   },

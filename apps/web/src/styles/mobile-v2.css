@@ -19,10 +19,87 @@
     --m-line: rgba(255, 255, 255, 0.08);
     --m-surface: #0f1117;
     --m-surface-2: #151820;
+    /* Apple Design Resources / iOS 27 HIG type ramp. SF Pro resolves from
+       the device system stack, so no Apple font files are redistributed. */
+    --m-font-text: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Helvetica Neue", Arial, sans-serif;
+    --m-font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, "Helvetica Neue", Arial, sans-serif;
+    --m-type-large-title: 34px;
+    --m-type-title1: 28px;
+    --m-type-title2: 22px;
+    --m-type-headline: 17px;
+    --m-type-body: 17px;
+    --m-type-callout: 16px;
+    --m-type-subheadline: 15px;
+    --m-type-footnote: 13px;
+    --m-type-caption: 12px;
+    --m-type-caption2: 11px;
   }
 
   html {
     font-size: 15px;
+  }
+
+  /* Native system typography on iPhone. The dense finance surfaces use the
+     HIG Subheadline/Footnote/Caption sizes; brand wordmark and instrument
+     numerals keep their original faces. */
+  body,
+  button,
+  input,
+  select,
+  textarea {
+    font-family: var(--m-font-text);
+    font-optical-sizing: auto;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  .ex-page-title,
+  .at-pagebar-title,
+  .ex-mobile-sheet__title {
+    font-family: var(--m-font-display);
+    letter-spacing: -0.022em;
+  }
+
+  .brand-wordmark,
+  .brand-wordmark *,
+  .landing-word {
+    font-family: "Inter", sans-serif !important;
+  }
+
+  /* SF Mono resolves from iOS; instrument numerals stay tabular without
+     pulling a display face into dense market data. */
+  .font-mono,
+  .term-data,
+  .wv-mono,
+  .tb-admin-user-table td[data-label]::before {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace !important;
+  }
+
+  .ex-mobile-bar__title {
+    font-family: var(--m-font-text);
+    font-size: var(--m-type-headline);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  /* HIG interaction defaults: a single tap should not zoom or feel delayed,
+     and keyboard focus must stay visible for switch-control users. */
+  a,
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea,
+  summary {
+    touch-action: manipulation;
+  }
+
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--tb-gold, #d4af37) 82%, white);
+    outline-offset: 2px;
   }
 
   html,
@@ -112,6 +189,11 @@
     max-width: 46vw;
     font-size: 18px !important;
     letter-spacing: -0.035em;
+  }
+
+  .landing-menu__prefs button {
+    min-width: 44px;
+    min-height: 44px;
   }
 
   /* Theme, language and the large pricing CTA move into the menu. The phone
@@ -1452,9 +1534,24 @@
   }
 
   .tb-admin-shell .tb-admin-user-check input {
-    width: 21px;
-    height: 21px;
+    width: 22px;
+    height: 22px;
     margin: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1.5px solid var(--at-line-strong);
+    border-radius: 50%;
+    background-color: var(--at-soft);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 12px 10px;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .tb-admin-shell .tb-admin-user-check input:checked {
+    border-color: var(--at-gold);
+    background-color: var(--at-gold);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath d='M1 5.2 4.2 8.4 11 1.6' fill='none' stroke='%23161208' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
 
   /* TBC/Hiring/other operators get scrollable tables with a visible edge. */
@@ -1469,7 +1566,7 @@
   /* Admin dock */
   .tb-admin-dock {
     z-index: 46;
-    padding: 6px 8px calc(8px + var(--m-safe-bottom));
+    padding: 6px 8px calc(14px + var(--m-safe-bottom));
     border-radius: 18px 18px 0 0;
     background: #0d0f15 !important;
     box-shadow: 0 -18px 46px -30px rgba(0, 0, 0, 0.95);
@@ -1482,14 +1579,22 @@
   }
 
   .tb-admin-dock__tab {
-    min-height: 50px;
-    gap: 2px;
+    min-height: 48px;
+    gap: 1px;
     font-size: 9.5px;
   }
 
   .tb-admin-dock__icon {
     height: 32px;
     min-width: 44px;
+  }
+
+  /* Keep the active medallion inside its 32px slot so it cannot overlap the
+     label underneath. */
+  .tb-admin-dock__icon .nav-medallion {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 0;
   }
 
   /* The raised medallion is the active marker; a bottom underline collides
@@ -1562,23 +1667,27 @@
   }
 
   .tb-pub-term__footer {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     align-items: flex-start;
-    gap: 8px;
-    padding: 6px 10px calc(6px + var(--m-safe-bottom));
-    font-size: 8.5px;
+    gap: 0 16px;
+    padding: 8px 10px calc(8px + var(--m-safe-bottom));
+    font-size: 10px;
     line-height: 1.45;
   }
 
+  /* This is a legal disclosure, not decoration. Let it wrap in full and put
+     the links on their own row instead of clamping the sentence. */
   .tb-pub-term__footer > span {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    display: block;
+    flex: 1 1 100%;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: initial;
   }
 
   .tb-pub-term__footer > a {
-    min-height: 28px;
+    min-height: 40px;
+    padding-inline: 2px;
     display: inline-flex;
     align-items: center;
   }
@@ -1655,5 +1764,52 @@
   .auth-shell select,
   .auth-shell textarea {
     font-size: 16px !important;
+  }
+
+  /* ── Apple accessibility preferences ────────────────────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    .tb-ticker__track,
+    .animate-marquee,
+    .pm-marquee__track {
+      animation: none !important;
+      transform: translate3d(0, 0, 0) !important;
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .landing-header,
+    .ex-mobile-bar,
+    .ex-mobile-dock,
+    .tb-admin-dock,
+    .ex-mobile-sheet {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+  }
+
+  @media (prefers-contrast: more) {
+    :root {
+      --m-line: rgba(255, 255, 255, 0.22);
+    }
+
+    html.light {
+      --m-line: rgba(15, 23, 42, 0.2);
+    }
+
+    .ex-mobile-bar,
+    .ex-mobile-dock,
+    .tb-admin-dock,
+    .ex-mobile-sheet {
+      border-color: var(--m-line) !important;
+    }
   }
 }
