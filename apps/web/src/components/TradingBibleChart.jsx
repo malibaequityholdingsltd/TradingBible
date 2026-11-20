@@ -1890,6 +1890,9 @@ export default function TradingBibleChart({
     </>
   );
 
+  // The chart canvas sits inside transformed/overflow-clipped desk surfaces,
+  // so fullscreen must portal to the body. Candle data is cached by
+  // useCandles, which keeps that remount instant instead of blank.
   return fullscreen && typeof document !== 'undefined'
     ? createPortal(<>{content}{modals}</>, document.body)
     : <>{content}{modals}</>;
