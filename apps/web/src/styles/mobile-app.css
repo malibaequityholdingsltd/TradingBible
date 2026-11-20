@@ -467,11 +467,12 @@
   }
   .tb-admin-dock__tab { position: relative; }
 
-  /* The phone dock owns the bottom edge. Launchers return at sm+, and the
-     More sheet keeps Live chat reachable without floating over content. */
+  /* The phone keeps the real floating TV and chat tools, not just links in
+     the More sheet. They sit above the dock; their panels share the same
+     safe area and never cover the tab bar. */
   .tv-tv-btn,
   .tv-chat-btn {
-    display: none !important;
+    display: grid !important;
   }
   .tv-chat-panel {
     right: 8px !important;

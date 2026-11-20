@@ -120,6 +120,7 @@ function SectionTitle({ children, right }) {
 export default function TerminalPremiumPage() {
   const { user } = useAuth();
   const isPhone = useIsPhone();
+  const stageRef = useRef(null);
   const { workspace, patch, versions, saveVersion, restoreVersion, loadPreset, cloudStatus } = usePremiumWorkspace({ autosave: true, restoreWorkspace: true });
   const { symbol, timeframe, chartType, centerTab, watchlist, features } = workspace;
   const [params] = useSearchParams();
@@ -182,6 +183,30 @@ export default function TerminalPremiumPage() {
     if (symParam && symParam !== symbol && ALL_SYMBOLS.some((x) => x.symbol === symParam)) patch({ symbol: symParam });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [symParam]);
+
+  // Phone chart: measure the space between the stage and the fixed dock. The
+  // old viewport-minus-300 guess let the chart run under the tab bar; this
+  // keeps the whole chart visible above the nav without scrolling the page.
+  useEffect(() => {
+    if (!isPhone || centerTab !== 'chart' || chartLayout !== 'single') return undefined;
+    const update = () => {
+      const el = stageRef.current;
+      if (!el) return;
+      const dock = document.querySelector('.ex-mobile-dock');
+      const top = el.getBoundingClientRect().top;
+      const bottom = dock ? dock.getBoundingClientRect().top : window.innerHeight - 62;
+      el.style.setProperty('--term-stage-h', `${Math.max(360, Math.round(bottom - top - 8))}px`);
+    };
+    update();
+    const timer = window.setTimeout(update, 350);
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+    };
+  }, [isPhone, centerTab, chartLayout]);
 
   const quoteSyms = [...new Set([...stripSyms, symbol, ...panes.map((pane) => pane.symbol)].filter(Boolean))];
   const { quotes, status } = useQuotes(quoteSyms, { refreshMs: 15000 });
@@ -489,9 +514,9 @@ export default function TerminalPremiumPage() {
                     </button>
                   ))}
                 </div>
-                {/* Stage: viewport-fit for the single chart (bottom visible, no page scroll),
-                    natural height for multi-panes and tool views */}
-                <div className={`relative mt-3 overflow-hidden rounded-xl border border-white/8 bg-black/30 ${centerTab === 'chart' && chartLayout === 'single' ? 'h-[max(430px,min(640px,calc(100dvh_-_300px)))] sm:h-[max(560px,min(900px,calc(100dvh_-_250px)))]' : 'min-h-[380px] sm:min-h-[420px]'}`}>
+                {/* Stage: fit the single chart above the dock on phones; natural
+                    height for multi-panes and tool views. */}
+                <div ref={stageRef} style={isPhone && centerTab === 'chart' && chartLayout === 'single' ? { height: 'var(--term-stage-h, 430px)' } : undefined} className={`tb-term-stage relative mt-3 overflow-hidden rounded-xl border border-white/8 bg-black/30 ${centerTab === 'chart' && chartLayout === 'single' ? 'h-[max(430px,min(640px,calc(100dvh_-_300px)))] sm:h-[max(560px,min(900px,calc(100dvh_-_250px)))]' : 'min-h-[380px] sm:min-h-[420px]'}`}>
                   {centerTab === 'chart' && chartLayout !== 'single' && (
                     <div className="flex items-center justify-between gap-2 border-b border-white/5 px-2 py-1.5">
                       <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a8577]">Chart layout</span>

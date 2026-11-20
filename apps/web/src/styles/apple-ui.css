@@ -411,3 +411,73 @@ h1, h2, h3, h4, h5, h6,
     border-color: rgba(15, 23, 42, 0.22) !important;
   }
 }
+
+/* ── Floating app chrome and full-page chart ───────────────────────────
+ * The More sheet used to sit over the tab bar, which made the nav vanish.
+ * Keep the dock painted above the sheet and stop the sheet at its top edge.
+ * The terminal chart's fullscreen mode uses the content canvas (below the
+ * app bar, right of the sidebar, above the dock) so navigation stays usable
+ * instead of being covered by a viewport-sized overlay. */
+@media (max-width: 1023px) {
+  .ex-mobile-dock.is-sheet-open {
+    z-index: 86;
+  }
+
+  .ex-sheet.ex-sheet--above-dock {
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    max-height: calc(88dvh - 64px);
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .ex-sheet.ex-sheet--above-dock {
+    bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+    max-height: calc(88dvh - 78px);
+  }
+}
+
+.tb-chart-fullscreen--app {
+  left: 0;
+  right: 0;
+  top: calc(var(--ex-ticker-h, 36px) + 52px);
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  height: auto !important;
+  max-height: none;
+}
+
+@media (max-width: 639px) {
+  .tb-chart-fullscreen--app {
+    top: calc(var(--ex-ticker-h, 36px) + var(--m-bar-h, 56px));
+    bottom: calc(var(--m-dock-h, 62px) + var(--m-safe-bottom, 0px) + 6px);
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .tb-chart-fullscreen--app {
+    bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (min-width: 1024px) {
+  .tb-chart-fullscreen--app {
+    left: var(--ex-sidebar-w, 232px);
+    top: calc(var(--ex-ticker-h, 36px) + var(--ex-topbar-h, 56px));
+    bottom: 0;
+  }
+
+  body:has(.ex-sidebar.is-collapsed) .tb-chart-fullscreen--app {
+    left: var(--ex-sidebar-collapsed, 64px);
+  }
+}
+
+/* Older mobile browsers and embedded webviews can report a zero-height
+ * dynamic viewport before the first layout pass. The public desk still gets
+ * a usable chart canvas instead of a blank content area. */
+.tb-pub-term {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.tb-pub-term [data-tb-chart-root] {
+  min-height: 260px;
+}

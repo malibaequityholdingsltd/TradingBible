@@ -1,8 +1,8 @@
 // TradingBible Service Worker - Offline First, Push Notifications, Background Sync
-const CACHE_NAME = 'tradingbible-v1.7.1';
-const STATIC_CACHE = 'tradingbible-static-v1.7.1';
-const DYNAMIC_CACHE = 'tradingbible-dynamic-v1.7.1';
-const API_CACHE = 'tradingbible-api-v1.7.1';
+const CACHE_NAME = 'tradingbible-v1.7.2';
+const STATIC_CACHE = 'tradingbible-static-v1.7.2';
+const DYNAMIC_CACHE = 'tradingbible-dynamic-v1.7.2';
+const API_CACHE = 'tradingbible-api-v1.7.2';
 
 const STATIC_ASSETS = [
   '/',

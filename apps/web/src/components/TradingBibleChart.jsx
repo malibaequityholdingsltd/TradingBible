@@ -680,7 +680,7 @@ export default function TradingBibleChart({
       lastPriceLine.current = null;
       lastView.current = '';
     };
-  }, [effectiveType, isLight, accentTick, compact, isTv]);
+  }, [effectiveType, isLight, accentTick, compact, isTv, fullscreen]);
 
   // Push price data, volume, compare overlay, indicators and the last-price
   // line whenever the feed changes. The main viewport is fitted once per
@@ -1866,7 +1866,7 @@ export default function TradingBibleChart({
   ) : null;
 
   const content = (
-    <div data-tb-chart-root={activeSymbol} className={`flex min-h-0 ${useLeftRail ? 'flex-row' : 'flex-col'} overflow-hidden border border-white/8 ${height === 'h-full' ? 'h-full' : ''} ${fullscreen ? 'fixed inset-0 z-[100] rounded-none border-0 bg-[#0a0a0f] p-2 pt-[max(0.5rem,env(safe-area-inset-top))]' : `rounded-xl ${isLight ? 'bg-[#fbf9f3]' : 'bg-[#0a0a0f]'} ${className}`}`}>
+    <div data-tb-chart-root={activeSymbol} className={`flex min-h-0 ${useLeftRail ? 'flex-row' : 'flex-col'} overflow-hidden border border-white/8 ${height === 'h-full' ? 'h-full' : ''} ${fullscreen ? `tb-chart-fullscreen fixed z-[100] rounded-none border-0 bg-[#0a0a0f] p-2 pt-[max(0.5rem,env(safe-area-inset-top))] ${publicMode ? 'inset-0' : 'tb-chart-fullscreen--app'}` : `rounded-xl ${isLight ? 'bg-[#fbf9f3]' : 'bg-[#0a0a0f]'} ${className}`}`}>
       {chartRail}
       <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
         {railPanelNode}

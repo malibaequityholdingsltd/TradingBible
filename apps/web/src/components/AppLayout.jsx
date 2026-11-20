@@ -497,7 +497,7 @@ function AppLayoutContent({ children, title }) {
       </main>
 
       <div className="ex-mobile-dockfade" aria-hidden />
-      <nav className="ex-mobile-dock" aria-label="App sections">
+      <nav className={`ex-mobile-dock${moreOpen ? ' is-sheet-open' : ''}`} aria-label="App sections">
         {dockItems.map((item) => {
           const Icon = item.icon;
           const label = t(item.labelKey, null, item.labelKey);
@@ -552,7 +552,7 @@ function AppLayoutContent({ children, title }) {
       {moreOpen && (
         <div className="fixed inset-0 z-[85] lg:hidden" role="dialog" aria-modal="true" aria-label="More sections">
           <button type="button" className="ex-sheet-backdrop" aria-label="Close menu" onClick={() => setMoreOpen(false)} />
-          <div className="ex-sheet">
+          <div className="ex-sheet ex-sheet--above-dock">
             <div className="ex-sheet__grab" aria-hidden />
             <div className="ex-sheet__head">
               <strong>All sections</strong>

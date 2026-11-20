@@ -2,6 +2,13 @@ import React, { createContext, useContext, useCallback, useEffect, useRef, useSt
 import pb from '@/lib/pocketbaseClient';
 import apiServerClient from '@/lib/apiServerClient';
 import { useToast } from '@/hooks/use-toast';
+import {
+  createAlertHistory,
+  listAlertHistory,
+  listAlerts,
+  markAlertHistorySeen,
+  triggerAlert,
+} from '@/lib/alertStore';
 
 const NotifContext = createContext(null);
 
@@ -48,7 +55,7 @@ export function NotificationsProvider({ children }) {
   const loadHistory = useCallback(async () => {
     if (!pb.authStore.isValid) { setHistory([]); return; }
     try {
-      const h = await pb.collection('alert_history').getFullList({ sort: '-created', requestKey: 'notif-hist' });
+      const h = await listAlertHistory();
       setHistory(h);
     } catch { /* ignore */ }
   }, []);
@@ -59,7 +66,8 @@ export function NotificationsProvider({ children }) {
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
     let active;
     try {
-      active = await pb.collection('price_alerts').getFullList({ filter: 'status = "active"', requestKey: 'notif-active' });
+      const all = await listAlerts();
+      active = all.filter((alert) => alert.status === 'active');
     } catch { return; }
     const now = Date.now();
     const live = active.filter((a) => !a.expiresAt || new Date(a.expiresAt).getTime() > now).filter(cooledDown);
@@ -79,19 +87,18 @@ export function NotificationsProvider({ children }) {
       if (triggered(alert, q)) {
         fired = true;
         const labelMap = { above: 'rose above', below: 'fell below', pct_up: 'gained', pct_down: 'dropped' };
-        const isPct = alert.alertType.startsWith('pct');
+        const isPct = String(alert.alertType || '').startsWith('pct');
         const targetStr = isPct ? `${alert.target}%` : alert.target;
-        const message = `${alert.symbol} ${labelMap[alert.alertType]} ${targetStr} (now ${q.price})`;
+        const message = `${alert.symbol} ${labelMap[alert.alertType] || 'hit'} ${targetStr} (now ${q.price})`;
         try {
-          await pb.collection('alert_history').create({
-            symbol: alert.symbol, alertType: alert.alertType, target: alert.target,
-            triggerPrice: q.price, message, seen: false, owner: pb.authStore.record.id,
-          }, { requestKey: `hist-${alert.id}` });
-          await pb.collection('price_alerts').update(alert.id, {
-            lastTriggered: new Date().toISOString(),
+          await createAlertHistory({
+            symbol: alert.symbol,
+            alertType: alert.alertType,
+            target: alert.target,
             triggerPrice: q.price,
-            status: alert.frequency === 'once' ? 'triggered' : 'active',
-          }, { requestKey: `upd-${alert.id}` });
+            message,
+          });
+          await triggerAlert(alert, q.price);
           toast({ title: 'Price Alert Triggered', description: message });
           if (alert.sound) beep();
         } catch { /* ignore */ }
@@ -112,11 +119,9 @@ export function NotificationsProvider({ children }) {
 
   const markAllSeen = useCallback(async () => {
     const toMark = history.filter((h) => !h.seen);
-    await Promise.all(toMark.map((h, i) =>
-      pb.collection('alert_history').update(h.id, { seen: true }, { requestKey: `seen-${i}` }).catch(() => {}),
-    ));
-    loadHistory();
-  }, [history, loadHistory]);
+    markAlertHistorySeen(toMark);
+    setHistory((current) => current.map((row) => ({ ...row, seen: true })));
+  }, [history]);
 
   return (
     <NotifContext.Provider value={{ history, unseen, markAllSeen, reload: loadHistory }}>

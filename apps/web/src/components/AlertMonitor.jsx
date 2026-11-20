@@ -3,6 +3,7 @@ import pb from '@/lib/pocketbaseClient';
 import liveFeed, { isCryptoSymbol } from '@/lib/liveFeed';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { listAlerts, triggerAlert } from '@/lib/alertStore';
 
 // Background service: watches live WebSocket ticks for crypto price alerts and
 // fires them the instant a target is crossed. Runs app-wide while signed in.
@@ -15,7 +16,7 @@ export default function AlertMonitor() {
   const loadAlerts = async () => {
     if (!pb.authStore.isValid) { alertsRef.current = []; return; }
     try {
-      const a = await pb.collection('price_alerts').getFullList({ requestKey: 'alert-monitor' });
+      const a = await listAlerts();
       alertsRef.current = a.filter((x) => x.status === 'active' && isCryptoSymbol(x.symbol));
     } catch { alertsRef.current = []; }
   };
@@ -44,13 +45,11 @@ export default function AlertMonitor() {
         if (firingRef.current.has(a.id)) continue;
         if (!hit(a, tick.price)) continue;
         firingRef.current.add(a.id);
-        a.status = 'triggered';
+        a.status = a.frequency === 'once' ? 'triggered' : 'active';
         try {
-          await pb.collection('price_alerts').update(a.id, {
-            status: 'triggered', triggerPrice: tick.price, lastTriggered: new Date().toISOString(),
-          }, { requestKey: `alert-fire-${a.id}` });
+          await triggerAlert(a, tick.price);
         } catch { /* best effort */ }
-        toast({ title: `Alert: ${a.symbol}`, description: `${a.alertType.replace('_', ' ')} ${a.target} hit at ${tick.price}` });
+        toast({ title: `Alert: ${a.symbol}`, description: `${String(a.alertType).replace('_', ' ')} ${a.target} hit at ${tick.price}` });
         if (a.sound && typeof window !== 'undefined' && window.AudioContext) {
           try {
             const ctx = new AudioContext();
