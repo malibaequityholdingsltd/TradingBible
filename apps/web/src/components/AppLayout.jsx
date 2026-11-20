@@ -524,7 +524,7 @@ function AppLayoutContent({ children, title }) {
         })}
         <button
           type="button"
-          onClick={() => setMoreOpen(true)}
+          onClick={() => setMoreOpen((open) => !open)}
           className={`ex-mobile-dock__item${moreActive ? ' is-active' : ''}`}
           aria-label="More sections"
           aria-expanded={moreOpen}

@@ -448,7 +448,72 @@ h1, h2, h3, h4, h5, h6,
 @media (max-width: 639px) {
   .tb-chart-fullscreen--app {
     top: calc(var(--ex-ticker-h, 36px) + var(--m-bar-h, 56px));
-    bottom: calc(var(--m-dock-h, 62px) + var(--m-safe-bottom, 0px) + 6px);
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .ex-sheet.ex-sheet--above-dock {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    max-height: calc(88dvh - 80px);
+  }
+
+  /* Match the iPad dock: a floating rounded island with the Dashboard
+     medallion raised into a circle instead of the square phone tile. */
+  .ex-mobile-dock {
+    left: 50%;
+    right: auto;
+    bottom: max(10px, env(safe-area-inset-bottom, 0px));
+    width: min(560px, calc(100vw - 24px));
+    transform: translateX(-50%);
+    align-items: end;
+    border: 1px solid var(--m-line);
+    border-radius: 16px;
+    background: #0d0f15;
+    padding: 7px 8px 6px;
+    box-shadow: 0 18px 46px -18px rgba(0, 0, 0, 0.72), 0 1px 0 color-mix(in srgb, white 5%, transparent) inset;
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+  }
+
+  html.light .ex-mobile-dock {
+    background: #ffffff;
+    border-color: rgba(15, 23, 42, 0.12);
+    box-shadow: 0 18px 44px -24px rgba(15, 23, 42, 0.22), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  }
+
+  .ex-mobile-dock__item--hero {
+    min-height: 70px;
+    margin-top: -27px;
+    gap: 3px;
+  }
+
+  .ex-mobile-dock__item--hero .ex-mobile-dock__orb {
+    box-sizing: border-box;
+    width: 58px;
+    height: 58px;
+    padding: 0;
+    border: 2px solid var(--ex-accent);
+    border-radius: 50%;
+    background: var(--ex-panel-2);
+    box-shadow: 0 10px 26px -10px color-mix(in srgb, var(--ex-accent) 58%, transparent), 0 0 0 5px var(--ex-panel);
+  }
+
+  .ex-mobile-dock__item--hero.is-active .ex-mobile-dock__orb {
+    border-color: var(--ex-text);
+    background: color-mix(in srgb, var(--ex-accent) 14%, var(--ex-panel-2));
+  }
+
+  .ex-mobile-dock__item--hero svg {
+    width: 25px;
+    height: 25px;
+    stroke-width: 2;
+  }
+
+  .ex-mobile-dock__item--hero .ex-mobile-dock__label {
+    color: var(--ex-text);
+  }
+
+  html.light .ex-mobile-dock__item--hero .ex-mobile-dock__label {
+    color: #0a0a0f;
   }
 }
 
