@@ -51,6 +51,8 @@ import {
   Unlock,
   Waypoints,
   X,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';
 import {
   AreaSeries,
@@ -848,14 +850,17 @@ export default function TradingBibleChart({
     const viewKey = `${activeSymbol}-${activeTimeframe}-${effectiveType}`;
     if (viewKey !== lastView.current && data.length > 10) {
       lastView.current = viewKey;
+      // Fullscreen gives the chart the whole screen; open wider so the trader
+      // sees context around the recent move instead of a handful of candles.
+      const visibleBars = fullscreen ? 260 : 120;
       try {
-        chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, data.length - 120), to: data.length + 7 });
+        chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, data.length - visibleBars), to: data.length + 7 });
       } catch { /* ignore */ }
     }
     try {
       chart.priceScale('right').applyOptions({ scaleMargins: { top: 0.12, bottom: settings.showVolume ? 0.18 : 0.08 } });
     } catch { /* ignore */ }
-  }, [candles, compareCandles, compareSymbol, indicators, effectiveType, activeSymbol, activeTimeframe, compact, settings.showVolume, chartEpoch]);
+  }, [candles, compareCandles, compareSymbol, indicators, effectiveType, activeSymbol, activeTimeframe, compact, settings.showVolume, chartEpoch, fullscreen]);
 
   // Apply display settings in place so toggling them never resets zoom.
   useEffect(() => {
@@ -998,6 +1003,34 @@ export default function TradingBibleChart({
 
   const resetView = useCallback(() => {
     try { chartApi.current?.timeScale().fitContent(); } catch { /* ignore */ }
+  }, []);
+
+  const zoomView = useCallback((factor) => {
+    const scale = chartApi.current?.timeScale();
+    if (!scale) return;
+    try {
+      const range = scale.getVisibleLogicalRange();
+      if (!range) return;
+      const span = Math.max(10, range.to - range.from);
+      const center = (range.from + range.to) / 2;
+      const maxSpan = Math.max(30, candlesRef.current.length + 12);
+      const nextSpan = Math.min(maxSpan, Math.max(10, span * factor));
+      let from = center - nextSpan / 2;
+      let to = center + nextSpan / 2;
+      if (from < 0) {
+        to -= from;
+        from = 0;
+      }
+      scale.setVisibleLogicalRange({ from, to });
+    } catch { /* ignore */ }
+  }, []);
+
+  const zoomOutView = useCallback(() => zoomView(1.6), [zoomView]);
+  const zoomInView = useCallback(() => zoomView(0.62), [zoomView]);
+
+  const toggleFullscreen = useCallback(() => {
+    lastView.current = '';
+    setFullscreen((value) => !value);
   }, []);
 
   const undo = useCallback(() => {
@@ -1540,6 +1573,11 @@ export default function TradingBibleChart({
           <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-5 w-5 rounded object-contain" onError={(event) => { event.currentTarget.style.display = 'none'; }} />
         </Link>
       )}
+      {!fullscreen && (
+        <button type="button" onClick={toggleFullscreen} title="Fullscreen" aria-label="Fullscreen" className="mx-auto mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] transition hover:border-[#d4af37]/40 hover:text-[#e9e7df]">
+          <Maximize2 className="h-4 w-4" />
+        </button>
+      )}
       <div className="no-scrollbar flex min-h-0 flex-1 flex-col items-center gap-1 overflow-y-auto px-1 py-1.5">
         {showToolbar && (
           <>
@@ -1598,9 +1636,6 @@ export default function TradingBibleChart({
         {!publicMode && (
           <Link to={`/app/alerts?symbol=${encodeURIComponent(activeSymbol)}`} title="Price alert" aria-label="Price alert" className={railIconClass(false)}><Bell className="h-4 w-4" /></Link>
         )}
-        <button type="button" onClick={() => { lastView.current = ''; setFullscreen((value) => !value); }} title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'} aria-label={fullscreen ? 'Exit fullscreen' : 'Fullscreen'} className={railIconClass(fullscreen)}>
-          {fullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-        </button>
       </div>
     </aside>
   ) : null;
@@ -1621,6 +1656,11 @@ export default function TradingBibleChart({
             onError={(event) => { event.currentTarget.style.display = 'none'; }}
           />
         </Link>
+      )}
+      {compact && fullscreen && (
+        <span className="shrink-0 font-mono text-[11px] font-bold text-[#f0ecdd]" title={symbolName(activeSymbol)}>
+          {activeSymbol}
+        </span>
       )}
       {!compact && (
         <div className="hidden min-w-0 flex-1 items-center gap-1.5 overflow-x-auto no-scrollbar sm:flex">
@@ -1684,9 +1724,11 @@ export default function TradingBibleChart({
             </button>
           </>
         )}
-        <button type="button" onClick={() => { lastView.current = ''; setFullscreen((value) => !value); }} className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]" title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}>
-          {fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-        </button>
+        {!fullscreen && (
+          <button type="button" onClick={toggleFullscreen} className="grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]" title="Fullscreen" aria-label="Fullscreen">
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
     </div>
   ) : null;
@@ -1876,6 +1918,15 @@ export default function TradingBibleChart({
         {footer}
         {tvNote}
       </div>
+      {fullscreen && (
+        <div className="tb-chart-zoom-dock" role="group" aria-label="Chart zoom">
+          <button type="button" onClick={zoomOutView} title="Zoom out" aria-label="Zoom out"><ZoomOut className="h-4 w-4" /></button>
+          <button type="button" onClick={resetView} title="Fit chart to screen" aria-label="Fit chart to screen"><Crosshair className="h-4 w-4" /></button>
+          <button type="button" onClick={zoomInView} title="Zoom in" aria-label="Zoom in"><ZoomIn className="h-4 w-4" /></button>
+          <span className="tb-chart-zoom-dock__sep" aria-hidden />
+          <button type="button" onClick={toggleFullscreen} title="Exit fullscreen" aria-label="Exit fullscreen"><Minimize2 className="h-4 w-4" /></button>
+        </div>
+      )}
     </div>
   );
 

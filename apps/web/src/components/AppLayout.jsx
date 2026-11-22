@@ -550,7 +550,7 @@ function AppLayoutContent({ children, title }) {
       )}
 
       {moreOpen && (
-        <div className="fixed inset-0 z-[85] lg:hidden" role="dialog" aria-modal="true" aria-label="More sections">
+        <div className="ex-more-sheet fixed inset-0 z-[85] lg:hidden" role="dialog" aria-modal="true" aria-label="More sections">
           <button type="button" className="ex-sheet-backdrop" aria-label="Close menu" onClick={() => setMoreOpen(false)} />
           <div className="ex-sheet ex-sheet--above-dock">
             <div className="ex-sheet__grab" aria-hidden />

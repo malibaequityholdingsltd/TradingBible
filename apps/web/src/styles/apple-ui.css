@@ -415,9 +415,9 @@ h1, h2, h3, h4, h5, h6,
 /* ── Floating app chrome and full-page chart ───────────────────────────
  * The More sheet used to sit over the tab bar, which made the nav vanish.
  * Keep the dock painted above the sheet and stop the sheet at its top edge.
- * The terminal chart's fullscreen mode uses the content canvas (below the
- * app bar, right of the sidebar, above the dock) so navigation stays usable
- * instead of being covered by a viewport-sized overlay. */
+ * The terminal chart's fullscreen mode is immersive: the chart paints edge to
+ * edge behind the floating dock, while its canvas stops above the dock so the
+ * time axis stays readable and navigation stays one tap away. */
 @media (max-width: 1023px) {
   .ex-mobile-dock.is-sheet-open {
     z-index: 86;
@@ -437,20 +437,91 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .tb-chart-fullscreen--app {
-  left: 0;
-  right: 0;
-  top: calc(var(--ex-ticker-h, 36px) + 52px);
-  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  inset: 0;
   height: auto !important;
   max-height: none;
+  padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Keep the floating dock reachable over the immersive chart. The chart paints
+ * edge to edge behind it; its canvas stops above the dock so no candles or
+ * time labels are hidden. */
+@media (max-width: 1023px) {
+  body:has(.tb-chart-fullscreen--app) .ex-mobile-dock {
+    z-index: 110;
+  }
+
+  body:has(.tb-chart-fullscreen--app) .ex-more-sheet {
+    z-index: 105;
+  }
+}
+
+.tb-chart-zoom-dock {
+  position: absolute;
+  left: 50%;
+  bottom: 56px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 14px;
+  background: rgba(12, 12, 17, 0.88);
+  box-shadow: 0 18px 42px -18px rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.tb-chart-zoom-dock button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 10px;
+  color: #c9c4b4;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.tb-chart-zoom-dock__sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 2px;
+  background: rgba(212, 175, 55, 0.22);
+}
+
+html.light .tb-chart-zoom-dock__sep {
+  background: rgba(166, 124, 30, 0.18);
+}
+
+.tb-chart-zoom-dock button:hover {
+  background: rgba(212, 175, 55, 0.14);
+  color: #f0ecdd;
+}
+
+html.light .tb-chart-zoom-dock {
+  border-color: rgba(166, 124, 30, 0.24);
+  background: rgba(255, 253, 247, 0.9);
+  box-shadow: 0 18px 40px -22px rgba(15, 23, 42, 0.35);
+}
+
+html.light .tb-chart-zoom-dock button {
+  color: #565d68;
+}
+
+html.light .tb-chart-zoom-dock button:hover {
+  background: rgba(166, 124, 30, 0.12);
+  color: #0a0a0f;
+}
+
+@media (max-width: 1023px) {
+  .tb-chart-fullscreen--app .tb-chart-zoom-dock {
+    bottom: calc(132px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @media (max-width: 639px) {
-  .tb-chart-fullscreen--app {
-    top: calc(var(--ex-ticker-h, 36px) + var(--m-bar-h, 56px));
-    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
-  }
-
   .ex-sheet.ex-sheet--above-dock {
     bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     max-height: calc(88dvh - 80px);
@@ -517,21 +588,9 @@ h1, h2, h3, h4, h5, h6,
   }
 }
 
-@media (min-width: 640px) and (max-width: 1023px) {
-  .tb-chart-fullscreen--app {
-    bottom: calc(78px + env(safe-area-inset-bottom, 0px));
-  }
-}
-
 @media (min-width: 1024px) {
   .tb-chart-fullscreen--app {
-    left: var(--ex-sidebar-w, 232px);
-    top: calc(var(--ex-ticker-h, 36px) + var(--ex-topbar-h, 56px));
-    bottom: 0;
-  }
-
-  body:has(.ex-sidebar.is-collapsed) .tb-chart-fullscreen--app {
-    left: var(--ex-sidebar-collapsed, 64px);
+    padding-bottom: 8px;
   }
 }
 
