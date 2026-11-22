@@ -314,6 +314,7 @@ export default function PublicTerminalPage() {
                   brandHref="/terminal"
                   compact={isPhone}
                   publicMode
+                  fullscreenSignal={params.get('fullscreen') === '1' ? 'public-fullscreen' : ''}
                   className="!h-full !rounded-none !border-0"
                 />
               </div>

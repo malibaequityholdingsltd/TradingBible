@@ -64,12 +64,16 @@ export function AppChromeShell({ children }) {
   );
 }
 
+const TERMINAL_PATH = '/app/terminal-pro';
+const TERMINAL_HOME = `${TERMINAL_PATH}?fullscreen=1`;
+const isTerminalLink = (to) => String(to || '').split(/[?#]/, 1)[0] === TERMINAL_PATH;
+
 const NAV_GROUPS = [
   {
     label: 'Trade',
     items: [
       { to: '/app', labelKey: 'nav.dashboard', icon: LayoutDashboard, end: true },
-      { to: '/app/terminal-pro', labelKey: 'nav.terminalPro', icon: SquareTerminal },
+      { to: TERMINAL_HOME, labelKey: 'nav.terminalPro', icon: SquareTerminal },
       { to: '/app/journal', labelKey: 'nav.journal', icon: BookOpen },
       { to: '/app/challenges', labelKey: 'nav.challenges', icon: Trophy },
       { to: '/app/paper', labelKey: 'nav.paper', icon: FlaskConical },
@@ -122,7 +126,7 @@ const NAV_GROUPS = [
 ];
 
 const DOCK = [
-  { to: '/app/terminal-pro', labelKey: 'nav.terminalPro', icon: SquareTerminal },
+  { to: TERMINAL_HOME, labelKey: 'nav.terminalPro', icon: SquareTerminal },
   { to: '/app/wallet', labelKey: 'nav.wallet', icon: Wallet, requiresSubscriber: true },
   { to: '/app', labelKey: 'nav.dashboard', icon: LayoutDashboard, end: true, center: true },
   { to: '/app/challenges', labelKey: 'nav.challenges', icon: Trophy },
@@ -150,7 +154,7 @@ function SidebarBrand({ homeTo }) {
   );
 }
 
-function NavItem({ item, active, locked, onLocked }) {
+function NavItem({ item, active, locked, onLocked, onActivate }) {
   const Icon = item.icon;
   const label = item.label || item.labelKey;
   const className = `ex-nav-item${active ? ' is-active' : ''}${locked ? ' is-locked' : ''}`;
@@ -166,7 +170,7 @@ function NavItem({ item, active, locked, onLocked }) {
   }
 
   return (
-    <NavLink to={item.to} end={item.end} className={className} title={label}>
+    <NavLink to={item.to} end={item.end} className={className} title={label} onClick={onActivate}>
       <Icon aria-hidden />
       <span className="ex-nav-item__label">{label}</span>
       {item.badge ? <span className="ex-nav-item__badge">{item.badge}</span> : null}
@@ -211,6 +215,12 @@ function AppLayoutContent({ children, title }) {
   const { features } = usePlatformSettings();
   const initial = displayInitial(user);
   const signOut = () => { logout(); nav('/'); };
+  // The terminal entry is the fullscreen chart. If the member is already on
+  // Terminal Pro (for example after exiting fullscreen), this event asks the
+  // page to bring the immersive chart back without a hard reload.
+  const focusTerminal = () => {
+    try { window.dispatchEvent(new CustomEvent('tb:terminal-focus')); } catch { /* ignore */ }
+  };
 
   const isAdmin = user?.role === 'admin';
   const isStaff = isStaffUser(user);
@@ -290,9 +300,13 @@ function AppLayoutContent({ children, title }) {
       locked: (item.requiresSubscriber && !isSubscriber) || (item.requiredPlan && !meetsPlan(user, item.requiredPlan)),
     }));
 
-  const isActive = (item) => (item.end
-    ? loc.pathname === item.to
-    : loc.pathname === item.to || loc.pathname.startsWith(`${item.to}/`));
+  const isActive = (item) => {
+    const itemPath = String(item.to || '').split(/[?#]/, 1)[0];
+    return item.end
+      ? loc.pathname === itemPath
+      : loc.pathname === itemPath || loc.pathname.startsWith(`${itemPath}/`);
+  };
+  const isTerminalRoute = loc.pathname === TERMINAL_PATH;
 
   const moreActive = moreOpen || !dockItems.some((item) => isActive(item));
 
@@ -383,6 +397,7 @@ function AppLayoutContent({ children, title }) {
                   active={isActive(item)}
                   locked={item.locked}
                   onLocked={goPricing}
+                  onActivate={isTerminalLink(item.to) ? focusTerminal : undefined}
                 />
               ))}
             </div>
@@ -422,7 +437,7 @@ function AppLayoutContent({ children, title }) {
           <Link to="/app/wallet?tab=cash" className="ex-btn ex-btn--primary ex-btn--sm hidden sm:inline-flex">
             <Plus /> Deposit
           </Link>
-          <Link to="/app/terminal-pro" className="ex-btn ex-btn--secondary ex-btn--sm hidden md:inline-flex">
+          <Link to={TERMINAL_HOME} onClick={focusTerminal} className="ex-btn ex-btn--secondary ex-btn--sm hidden md:inline-flex">
             <ArrowUpRight /> Trade
           </Link>
           {canSeeSignals && (
@@ -478,8 +493,8 @@ function AppLayoutContent({ children, title }) {
         </div>
       </header>
 
-      <main className="ex-main">
-        <div className="ex-main__inner">
+      <main className={`ex-main${isTerminalRoute ? ' ex-main--terminal' : ''}`}>
+        <div className={`ex-main__inner${isTerminalRoute ? ' ex-main__inner--terminal' : ''}`}>
           {adminPreview && (
             <div className="ex-notice ex-notice--accent mb-3 flex items-center justify-between gap-3">
               <span className="min-w-0 truncate">Admin preview — you are viewing the member experience.</span>
@@ -515,6 +530,7 @@ function AppLayoutContent({ children, title }) {
               key={item.to}
               to={item.to}
               end={item.end}
+              onClick={isTerminalLink(item.to) ? focusTerminal : undefined}
               className={({ isActive: active }) => className(active)}
             >
               {item.center ? <span className="ex-mobile-dock__orb"><Icon aria-hidden /></span> : <Icon aria-hidden />}
@@ -604,7 +620,7 @@ function AppLayoutContent({ children, title }) {
                       );
                     }
                     return (
-                      <NavLink key={item.to} to={item.to} end={item.end} onClick={() => setMoreOpen(false)} className={({ isActive: active }) => `ex-sheet__tile${active ? ' is-active' : ''}`}>
+                      <NavLink key={item.to} to={item.to} end={item.end} onClick={() => { setMoreOpen(false); if (isTerminalLink(item.to)) focusTerminal(); }} className={({ isActive: active }) => `ex-sheet__tile${active ? ' is-active' : ''}`}>
                         <Icon /><span>{label}</span>
                       </NavLink>
                     );

@@ -178,8 +178,11 @@ export const FEATURE_ROUTES = {
 };
 
 export function featureForRoute(pathname) {
+  // Nav links may carry a query string (for example the Terminal entry opens
+  // the chart in fullscreen). Route gates still need the bare pathname.
+  const path = String(pathname || '').split(/[?#]/, 1)[0];
   for (const [feature, routes] of Object.entries(FEATURE_ROUTES)) {
-    if (routes.some((r) => pathname === r || pathname.startsWith(`${r}/`))) return feature;
+    if (routes.some((r) => path === r || path.startsWith(`${r}/`))) return feature;
   }
   return null;
 }

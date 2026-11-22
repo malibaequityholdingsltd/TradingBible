@@ -1686,6 +1686,174 @@ html:has(#app-bg) #root { position: relative; z-index: 0; }
 .tb-app-shell .tb-term .term-faint { color: var(--ex-muted); }
 .tb-app-shell .tb-term .term-data { font-variant-numeric: tabular-nums; }
 
+/* Fixed terminal desk ─────────────────────────────────────────────────
+ * The terminal owns the viewport. Nothing grows the document; wide desks
+ * keep their side rails, while phones/tablets open those rails as drawers
+ * and use the data button for the old bottom dock. */
+.ex-main--terminal {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+.ex-main--terminal .ex-main__inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding-bottom: 12px;
+  /* The page-enter animation leaves an identity transform on the inner
+     canvas, which would make fixed drawers size against it instead of the
+     viewport. The terminal is a fixed desk; skip that animation here. */
+  animation: none !important;
+  transform: none !important;
+}
+.ex-main--terminal .ex-main__inner > [data-tb-terminal] {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.ex-main--terminal .ex-main__inner > [data-tb-terminal] > .tb-term {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+.tb-app-shell .tb-term--fixed {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.tb-app-shell .tb-term--fixed .tb-term__grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  align-items: stretch;
+}
+.tb-app-shell .tb-term--fixed .tb-term__center {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.tb-app-shell .tb-term--fixed .tb-term__stage-card {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+.tb-app-shell .tb-term--fixed .tb-term-stage {
+  flex: 1 1 auto;
+  height: auto !important;
+  min-height: 0 !important;
+}
+.tb-app-shell .tb-term--fixed .tb-term-stage--tool { overflow-y: auto; }
+.tb-app-shell .tb-term--fixed .tb-term__rail,
+.tb-app-shell .tb-term--fixed .tb-term__ticket {
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  align-content: start;
+}
+
+.tb-term-rail-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  border: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+@media (min-width: 1280px) {
+  .tb-term-rail-backdrop { display: none; }
+}
+@media (max-width: 1279px) {
+  .tb-app-shell .tb-term--fixed .tb-term__rail,
+  .tb-app-shell .tb-term--fixed .tb-term__ticket {
+    position: fixed;
+    z-index: 95;
+    top: calc(var(--ex-ticker-h) + var(--ex-topbar-h));
+    bottom: 12px;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    width: min(360px, calc(100vw - 24px));
+    max-height: none;
+    gap: 12px;
+    overflow-y: auto;
+    border: 1px solid var(--ex-line);
+    background: var(--ex-bg);
+    padding: 12px;
+    box-shadow: 24px 0 48px rgba(0, 0, 0, 0.45);
+  }
+  .tb-app-shell .tb-term--fixed .tb-term__rail { left: 0; border-left: 0; }
+  .tb-app-shell .tb-term--fixed .tb-term__ticket { right: 0; border-right: 0; }
+}
+@media (max-width: 1023px) {
+  .tb-app-shell .ex-main--terminal .ex-main__inner {
+    padding-bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+  }
+  .tb-app-shell .tb-term--fixed .tb-term__rail,
+  .tb-app-shell .tb-term--fixed .tb-term__ticket {
+    top: calc(var(--ex-ticker-h) + var(--m-bar-h));
+    bottom: calc(78px + env(safe-area-inset-bottom));
+  }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .tb-app-shell .ex-main--terminal .ex-main__inner {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Data dock opened from the command strip / phone hero. */
+.tb-term-data {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+}
+.tb-term-data__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.62);
+}
+.tb-term-data__panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(760px, 100%);
+  max-height: min(78dvh, 640px);
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--ex-line);
+  border-radius: 16px;
+  background: var(--ex-panel);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
+}
+.tb-term-data__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--ex-line);
+  padding: 12px 14px;
+}
+.tb-term-data__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+}
+.tb-term-data__body > .term-panel {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+.tb-term-data__body .max-h-60 {
+  max-height: none;
+  overflow: visible;
+}
+
 /* ── Academy ─────────────────────────────────────────────────────────── */
 
 .tb-app-shell .academy-v2 { background: transparent !important; }

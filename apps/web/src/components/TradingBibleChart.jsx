@@ -339,6 +339,7 @@ export default function TradingBibleChart({
   className = '',
   brandHref = '',
   publicMode = false,
+  fullscreenSignal = '',
 }) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -420,7 +421,7 @@ export default function TradingBibleChart({
   const [objectsOpen, setObjectsOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
-  const [fullscreen, setFullscreen] = useState(false);
+  const [fullscreen, setFullscreen] = useState(() => Boolean(fullscreenSignal));
   const [tool, setTool] = useState('cursor');
   const [pending, setPending] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -467,6 +468,12 @@ export default function TradingBibleChart({
   const mainDataRef = useRef([]);
   const volDataRef = useRef([]);
   const dataKeyRef = useRef('');
+
+  useEffect(() => {
+    if (!fullscreenSignal) return;
+    lastView.current = '';
+    setFullscreen(true);
+  }, [fullscreenSignal]);
 
   useEffect(() => {
     const bump = () => setAccentTick((value) => value + 1);
