@@ -80,6 +80,7 @@ import TradingViewChart from '@/components/TradingViewChart';
 import { TRADINGBIBLE_LOGO } from '@/components/BrandLogo';
 import { DrawingPrimitive } from '@/chart/drawing/DrawingPrimitive';
 import { useDrawingInteraction } from '@/chart/drawing/useDrawingInteraction';
+import { FocusMarketRail, FocusStatusBar, FocusTopBar } from '@/terminal/focus/FocusChrome';
 
 const CHART_TYPES = [
   { id: 'candle', label: 'Candles', icon: CandlestickChart },
@@ -122,9 +123,9 @@ const DEFAULT_SETTINGS = {
   showLastPrice: true,
   crosshair: 'magnet',
   scale: 'normal',
-  upColor: '#34d399',
-  downColor: '#f87171',
-  lineColor: '#d4af37',
+  upColor: '#3ddc97',
+  downColor: '#ff5c7a',
+  lineColor: '#e7c66b',
 };
 
 const DEFAULT_TOOL_STYLE = {
@@ -340,6 +341,7 @@ export default function TradingBibleChart({
   brandHref = '',
   publicMode = false,
   fullscreenSignal = '',
+  desk = null,
 }) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -422,6 +424,7 @@ export default function TradingBibleChart({
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(() => Boolean(fullscreenSignal));
+  const [focusRailOpen, setFocusRailOpen] = useState(false);
   const [tool, setTool] = useState('cursor');
   const [pending, setPending] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -482,6 +485,10 @@ export default function TradingBibleChart({
   }, [fullscreenSignal]);
 
   useEffect(() => {
+    if (!fullscreen) setFocusRailOpen(false);
+  }, [fullscreen]);
+
+  useEffect(() => {
     const bump = () => setAccentTick((value) => value + 1);
     window.addEventListener('tb:theme-changed', bump);
     return () => window.removeEventListener('tb:theme-changed', bump);
@@ -530,23 +537,23 @@ export default function TradingBibleChart({
       autoSize: true,
       layout: {
         background: { color: 'transparent' },
-        textColor: isLight ? '#565d68' : '#b3ae9e',
-        fontFamily: 'Inter, sans-serif',
+        textColor: isLight ? '#5b6270' : '#8d94a1',
+        fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
         // The library's TradingView attribution mark is not shown on the
         // terminal. Its required NOTICE attribution and TradingView link are
         // published on /terms#third-party-notices instead.
         attributionLogo: false,
       },
       grid: {
-        vertLines: { color: isLight ? 'rgba(60,55,40,0.08)' : 'rgba(212,175,55,0.06)' },
-        horzLines: { color: isLight ? 'rgba(60,55,40,0.08)' : 'rgba(212,175,55,0.06)' },
+        vertLines: { color: isLight ? 'rgba(35,45,60,0.055)' : 'rgba(255,255,255,0.035)' },
+        horzLines: { color: isLight ? 'rgba(35,45,60,0.055)' : 'rgba(255,255,255,0.035)' },
       },
       rightPriceScale: {
-        borderColor: isLight ? 'rgba(166,124,30,0.25)' : 'rgba(212,175,55,0.15)',
-        scaleMargins: { top: 0.12, bottom: 0.18 },
+        borderColor: isLight ? 'rgba(35,45,60,0.14)' : 'rgba(255,255,255,0.08)',
+        scaleMargins: { top: 0.10, bottom: 0.16 },
       },
       timeScale: {
-        borderColor: isLight ? 'rgba(166,124,30,0.25)' : 'rgba(212,175,55,0.15)',
+        borderColor: isLight ? 'rgba(35,45,60,0.14)' : 'rgba(255,255,255,0.08)',
         timeVisible: true,
         secondsVisible: false,
         rightOffset: 6,
@@ -571,35 +578,35 @@ export default function TradingBibleChart({
     } else if (effectiveType === 'line') {
       series = chart.addSeries(LineSeries, { color: accent, lineWidth: 2 });
     } else if (effectiveType === 'bar') {
-      series = chart.addSeries(BarSeries, { upColor: '#34d399', downColor: '#f87171' });
+      series = chart.addSeries(BarSeries, { upColor: '#3ddc97', downColor: '#ff5c7a' });
     } else if (effectiveType === 'baseline') {
       series = chart.addSeries(BaselineSeries, {
         baseValue: { type: 'price', price: 0 },
-        topLineColor: '#34d399',
-        topFillColor1: 'rgba(52,211,153,0.25)',
-        topFillColor2: 'rgba(52,211,153,0.02)',
-        bottomLineColor: '#f87171',
-        bottomFillColor1: 'rgba(248,113,113,0.02)',
-        bottomFillColor2: 'rgba(248,113,113,0.25)',
+        topLineColor: '#3ddc97',
+        topFillColor1: 'rgba(61,220,151,0.25)',
+        topFillColor2: 'rgba(61,220,151,0.02)',
+        bottomLineColor: '#ff5c7a',
+        bottomFillColor1: 'rgba(255,92,122,0.02)',
+        bottomFillColor2: 'rgba(255,92,122,0.25)',
         lineWidth: 2,
       });
     } else if (effectiveType === 'hollow') {
       series = chart.addSeries(CandlestickSeries, {
         upColor: 'rgba(0,0,0,0)',
-        downColor: '#f87171',
+        downColor: '#ff5c7a',
         borderVisible: true,
-        borderUpColor: '#34d399',
-        borderDownColor: '#f87171',
-        wickUpColor: '#34d399',
-        wickDownColor: '#f87171',
+        borderUpColor: '#3ddc97',
+        borderDownColor: '#ff5c7a',
+        wickUpColor: '#3ddc97',
+        wickDownColor: '#ff5c7a',
       });
     } else {
       series = chart.addSeries(CandlestickSeries, {
-        upColor: '#34d399',
-        downColor: '#f87171',
+        upColor: '#3ddc97',
+        downColor: '#ff5c7a',
         borderVisible: false,
-        wickUpColor: '#34d399',
-        wickDownColor: '#f87171',
+        wickUpColor: '#3ddc97',
+        wickDownColor: '#ff5c7a',
       });
     }
     mainSeries.current = series;
@@ -639,11 +646,11 @@ export default function TradingBibleChart({
         horzAlign: 'center',
         vertAlign: 'center',
         lines: [{
-          text: 'TradingBible',
-          color: isLight ? 'rgba(60,55,40,0.06)' : 'rgba(212,175,55,0.06)',
-          fontSize: compact ? 34 : 54,
-          fontStyle: 'bold',
-          fontFamily: 'Inter, sans-serif',
+          text: 'TRADINGBIBLE',
+          color: isLight ? 'rgba(35,45,60,0.045)' : 'rgba(231,198,107,0.045)',
+          fontSize: compact ? 30 : 46,
+          fontStyle: '600',
+          fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
         }],
       });
     } catch {
@@ -768,7 +775,7 @@ export default function TradingBibleChart({
     const nextVolume = clean.map((candle) => ({
       time: Math.floor(candle.time / 1000),
       value: Number(candle.volume) || 0,
-      color: Number(candle.close) >= Number(candle.open) ? 'rgba(52,211,153,0.35)' : 'rgba(248,113,113,0.35)',
+      color: Number(candle.close) >= Number(candle.open) ? 'rgba(61,220,151,0.35)' : 'rgba(255,92,122,0.35)',
     }));
     volDataRef.current = applySeriesData(volSeries.current, nextVolume, volDataRef.current);
 
@@ -852,7 +859,7 @@ export default function TradingBibleChart({
     }
     lastPriceLine.current = series.createPriceLine({
       price: last,
-      color: Number(clean[clean.length - 1].close) >= Number(clean[clean.length - 1].open) ? '#34d399' : '#f87171',
+      color: Number(clean[clean.length - 1].close) >= Number(clean[clean.length - 1].open) ? '#3ddc97' : '#ff5c7a',
       lineWidth: 1,
       lineStyle: LineStyle.Dashed,
       axisLabelVisible: true,
@@ -1580,8 +1587,8 @@ export default function TradingBibleChart({
   ) : null;
 
   const chartRail = useLeftRail ? (
-    <aside className="tb-chart-rail flex w-11 shrink-0 flex-col border-r border-white/8 bg-[#0a0a0f] sm:w-12" aria-label="Chart tools">
-      {brandHref && (
+    <aside className={`tb-chart-rail flex w-11 shrink-0 flex-col border-r border-white/8 bg-[#0a0a0f] sm:w-12 ${fullscreen ? 'tb-focus-tools' : ''}`} aria-label="Chart tools">
+      {brandHref && !fullscreen && (
         <Link to={brandHref} aria-label="TradingBible public terminal" title="TradingBible public terminal" className="mx-auto mt-1.5 grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg border border-[#d4af37]/25 bg-[#d4af37]/10 transition hover:border-[#d4af37]/60 hover:bg-[#d4af37]/15">
           <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-5 w-5 rounded object-contain" onError={(event) => { event.currentTarget.style.display = 'none'; }} />
         </Link>
@@ -1653,7 +1660,7 @@ export default function TradingBibleChart({
     </aside>
   ) : null;
 
-  const toolbar = showToolbar && !useLeftRail ? (
+  const toolbar = showToolbar && !useLeftRail && !fullscreen ? (
     <div className="no-scrollbar flex min-w-0 items-center gap-1.5 overflow-x-auto border-b border-white/8 bg-[#0c0c11]/95 px-2 py-1.5">
       {brandHref && (
         <Link
@@ -1798,23 +1805,27 @@ export default function TradingBibleChart({
   ) : null;
 
   const legend = !isTv ? (
-    <div className="pointer-events-none absolute left-2 top-2 z-20 hidden flex-wrap items-center gap-x-2 gap-y-0.5 rounded-lg border border-white/8 bg-[#0a0a0f]/75 px-2 py-1 font-mono text-[10px] text-[#c9c4b4] backdrop-blur-sm sm:flex sm:text-[11px]">
-      <span className="font-bold text-[#f0ecdd]">{activeSymbol}</span>
-      <span className="text-[#8a8577]">{activeTimeframe}</span>
-      {hovered?.open != null ? (
-        <>
-          <span>O <span className="text-[#f0ecdd]">{fmtPrice(hovered.open)}</span></span>
-          <span>H <span className="text-emerald-400">{fmtPrice(hovered.high)}</span></span>
-          <span>L <span className="text-red-400">{fmtPrice(hovered.low)}</span></span>
-          <span>C <span className="text-[#f0ecdd]">{fmtPrice(hovered.close)}</span></span>
-        </>
-      ) : hovered?.value != null ? (
-        <span>C <span className="text-[#f0ecdd]">{fmtPrice(hovered.value)}</span></span>
-      ) : null}
-      {hovered?.volume != null && <span className="hidden sm:inline">V <span className="text-[#8a8577]">{fmtCompact(hovered.volume)}</span></span>}
-      {hovered?.time != null && <span className="hidden text-[#5f5b50] md:inline">{timeLabel(hovered.time)}</span>}
-      {showSim && <span className="rounded bg-amber-400/15 px-1 text-[9px] font-bold text-amber-400">SIMULATED</span>}
-      {showClosed && <span className="rounded bg-[#d4af37]/15 px-1 text-[9px] font-bold text-[#d4af37]">CLOSED</span>}
+    <div className="tb-chart-legend">
+      <div className="tb-chart-legend__id">
+        <b>{activeSymbol}</b>
+        <span>{activeTimeframe}</span>
+      </div>
+      <div className="tb-chart-legend__ohlc">
+        {hovered?.open != null ? (
+          <>
+            <span>O <b>{fmtPrice(hovered.open)}</b></span>
+            <span className="is-up">H <b>{fmtPrice(hovered.high)}</b></span>
+            <span className="is-down">L <b>{fmtPrice(hovered.low)}</b></span>
+            <span>C <b>{fmtPrice(hovered.close)}</b></span>
+          </>
+        ) : hovered?.value != null ? (
+          <span>C <b>{fmtPrice(hovered.value)}</b></span>
+        ) : null}
+      </div>
+      {hovered?.volume != null && <span className="tb-chart-legend__vol">V {fmtCompact(hovered.volume)}</span>}
+      {hovered?.time != null && <span className="tb-chart-legend__time">{timeLabel(hovered.time)}</span>}
+      {showSim && <span className="tb-chart-legend__tag">SIMULATED</span>}
+      {showClosed && <span className="tb-chart-legend__tag is-closed">CLOSED</span>}
     </div>
   ) : null;
 
@@ -1823,7 +1834,7 @@ export default function TradingBibleChart({
     : null;
 
   const chartBody = (
-    <div className={`relative min-h-0 ${height === 'h-full' ? 'flex-1' : ''} ${isLight ? 'bg-[#fbf9f3]' : 'bg-[#0a0a0f]'}`}>
+    <div className={`relative min-h-0 ${fullscreen ? 'tb-focus-chart' : ''} ${height === 'h-full' ? 'flex-1' : ''} ${isLight ? 'bg-[#fbf9f3]' : 'bg-[#0a0a0f]'}`}>
       {isTv ? (
         <div className={height === 'h-full' ? 'h-full w-full' : `${height || 'h-[460px]'} w-full`}>
           <TradingViewChart symbol={activeSymbol} timeframe={activeTimeframe} dark={!isLight} />
@@ -1904,7 +1915,7 @@ export default function TradingBibleChart({
     </div>
   );
 
-  const footer = !compact && !isTv ? (
+  const footer = !compact && !isTv && !fullscreen ? (
     <div className="hidden flex-wrap items-center gap-x-3 gap-y-0.5 border-t border-white/5 bg-[#0c0c11]/80 px-2 py-1 font-mono text-[10px] text-[#5f5b50] sm:flex">
       <span>{candles.length} bars</span>
       <span>{sourceLabel(source)}</span>
@@ -1920,25 +1931,105 @@ export default function TradingBibleChart({
     </div>
   ) : null;
 
+  const focusTop = fullscreen ? (
+    <FocusTopBar
+      brandHref={brandHref}
+      symbol={activeSymbol}
+      symbolName={symbolName(activeSymbol)}
+      timeframe={activeTimeframe}
+      chartType={effectiveType}
+      price={displayPrice}
+      change={displayChange}
+      status={status}
+      showSim={showSim}
+      showClosed={showClosed}
+      indicators={indicators.length}
+      onSymbolChange={changeSymbol}
+      onTimeframeChange={changeTimeframe}
+      onChartTypeChange={changeChartType}
+      onIndicators={() => setPickerOpen(true)}
+      onSnapshot={handleSnapshot}
+      onShare={handleShare}
+      onExit={toggleFullscreen}
+      onOpenMarket={() => setFocusRailOpen(true)}
+      alertHref={publicMode ? '' : `/app/alerts?symbol=${encodeURIComponent(activeSymbol)}`}
+    />
+  ) : null;
+
+  const focusStatus = fullscreen ? (
+    <FocusStatusBar
+      status={status}
+      source={sourceLabel(source)}
+      bars={candles.length}
+      objects={dz.drawings.length}
+      timeframe={activeTimeframe}
+      chartType={effectiveType}
+      workspace={desk?.workspace}
+    />
+  ) : null;
+
+  const focusDesk = desk ? {
+    ...desk,
+    feed: sourceLabel(source),
+    timeframe: activeTimeframe,
+    chartType: effectiveType,
+    price: displayPrice,
+    change: displayChange,
+    symbolName: symbolName(activeSymbol),
+    onSelectSymbol: desk.onSelectSymbol || changeSymbol,
+  } : null;
+
+  const zoomDock = fullscreen ? (
+    <div className="tb-chart-zoom-dock tb-focus-zoom" role="group" aria-label="Chart zoom">
+      <button type="button" onClick={zoomOutView} title="Zoom out" aria-label="Zoom out"><ZoomOut className="h-4 w-4" /></button>
+      <button type="button" onClick={resetView} title="Fit chart to screen" aria-label="Fit chart to screen"><Crosshair className="h-4 w-4" /></button>
+      <button type="button" onClick={zoomInView} title="Zoom in" aria-label="Zoom in"><ZoomIn className="h-4 w-4" /></button>
+      <span className="tb-chart-zoom-dock__sep" aria-hidden />
+      <button type="button" onClick={toggleFullscreen} title="Exit fullscreen" aria-label="Exit fullscreen"><Minimize2 className="h-4 w-4" /></button>
+    </div>
+  ) : null;
+
   const content = (
-    <div data-tb-chart-root={activeSymbol} className={`flex min-h-0 ${useLeftRail ? 'flex-row' : 'flex-col'} overflow-hidden border border-white/8 ${height === 'h-full' ? 'h-full' : ''} ${fullscreen ? `tb-chart-fullscreen fixed z-[100] rounded-none border-0 bg-[#0a0a0f] p-2 pt-[max(0.5rem,env(safe-area-inset-top))] ${publicMode ? 'inset-0' : 'tb-chart-fullscreen--app'}` : `rounded-xl ${isLight ? 'bg-[#fbf9f3]' : 'bg-[#0a0a0f]'} ${className}`}`}>
-      {chartRail}
-      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
-        {railPanelNode}
-        {toolbar}
-        {drawingToolbar}
-        {chartBody}
-        {footer}
-        {tvNote}
-      </div>
-      {fullscreen && (
-        <div className="tb-chart-zoom-dock" role="group" aria-label="Chart zoom">
-          <button type="button" onClick={zoomOutView} title="Zoom out" aria-label="Zoom out"><ZoomOut className="h-4 w-4" /></button>
-          <button type="button" onClick={resetView} title="Fit chart to screen" aria-label="Fit chart to screen"><Crosshair className="h-4 w-4" /></button>
-          <button type="button" onClick={zoomInView} title="Zoom in" aria-label="Zoom in"><ZoomIn className="h-4 w-4" /></button>
-          <span className="tb-chart-zoom-dock__sep" aria-hidden />
-          <button type="button" onClick={toggleFullscreen} title="Exit fullscreen" aria-label="Exit fullscreen"><Minimize2 className="h-4 w-4" /></button>
-        </div>
+    <div data-tb-chart-root={activeSymbol} className={`flex min-h-0 ${useLeftRail && !fullscreen ? 'flex-row' : 'flex-col'} overflow-hidden ${height === 'h-full' ? 'h-full' : ''} ${fullscreen ? `tb-chart-fullscreen tb-focus-root fixed z-[100] rounded-none border-0 ${publicMode ? 'inset-0' : 'tb-chart-fullscreen--app'}` : `rounded-xl border border-white/8 ${isLight ? 'bg-[#fbf9f3]' : 'bg-[#0a0a0f]'} ${className}`}`}>
+      {fullscreen ? (
+        <>
+          {focusTop}
+          <div className="tb-focus-body">
+            {chartRail}
+            <div className="tb-focus-stage">
+              {railPanelNode}
+              {drawingToolbar}
+              {chartBody}
+            </div>
+            {focusDesk ? <FocusMarketRail desk={focusDesk} activeSymbol={activeSymbol} onSelectSymbol={focusDesk.onSelectSymbol} /> : null}
+          </div>
+          {focusStatus}
+          {zoomDock}
+          {focusRailOpen && focusDesk ? (
+            <div className="tb-focus-drawer">
+              <button type="button" className="tb-focus-drawer__backdrop" aria-label="Close market panel" onClick={() => setFocusRailOpen(false)} />
+              <FocusMarketRail
+                desk={focusDesk}
+                activeSymbol={activeSymbol}
+                onSelectSymbol={(next) => { focusDesk.onSelectSymbol?.(next); setFocusRailOpen(false); }}
+                onClose={() => setFocusRailOpen(false)}
+                mobile
+              />
+            </div>
+          ) : null}
+        </>
+      ) : (
+        <>
+          {chartRail}
+          <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+            {railPanelNode}
+            {toolbar}
+            {drawingToolbar}
+            {chartBody}
+            {footer}
+            {tvNote}
+          </div>
+        </>
       )}
     </div>
   );

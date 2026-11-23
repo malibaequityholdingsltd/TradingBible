@@ -262,8 +262,9 @@ export default function TerminalPremiumPage() {
   const challengeAccounts = paperAccounts.filter((a) => String(a.name || '').startsWith('challenge:'));
   const activeAttempt = attempts.find((a) => a.status === 'active');
 
-  const placeChartTrade = async (side) => {
-    const qty = Number(tradeQty);
+  const placeChartTrade = async (side, qtyOverride) => {
+    const qty = Number(qtyOverride ?? tradeQty);
+    if (qtyOverride != null) setTradeQty(String(qtyOverride));
     if (!tradeAccountId) { setTradeMsg('Pick an account first.'); return; }
     if (!(qty > 0)) { setTradeMsg('Qty must be > 0.'); return; }
     if (price == null) { setTradeMsg('Waiting for live quote…'); return; }
@@ -391,99 +392,143 @@ export default function TerminalPremiumPage() {
     ? (watchlistOpen ? 'xl:grid-cols-[15rem_minmax(0,1fr)_17rem]' : 'xl:grid-cols-[minmax(0,1fr)_17rem]')
     : (watchlistOpen ? 'xl:grid-cols-[15rem_minmax(0,1fr)]' : 'xl:grid-cols-[minmax(0,1fr)]');
 
+  // Shared state for the fullscreen Terminal 2.0 rail. The chart owns the
+  // presentation; the page owns the watchlist and paper-account actions.
+  const focusDesk = {
+    watchlist: stripSyms.map((s) => ({
+      symbol: s,
+      name: nameOf(s) || baseOf(s),
+      price: quotes[s]?.price,
+      change: numOrNull(quotes[s]?.changePercent),
+    })),
+    accounts: paperAccounts,
+    accountId: tradeAccountId,
+    onAccountChange: setTradeAccountId,
+    onTrade: (side, qty) => placeChartTrade(side, qty),
+    busy: tradeBusy,
+    message: tradeMsg,
+    qty: tradeQty,
+    positions: trades.filter((trade) => !trade.closedAt && !trade.exit),
+    onAddSymbol: addToStrip,
+    manageHref: '/app/watchlists',
+    workspace: cloudStatus,
+    challenge: activeAttempt ? String(activeAttempt.product_name || activeAttempt.product_key || '') : '',
+    onOpenData: () => setDataOpen(true),
+  };
+
   return (
     <AppLayout title="Terminal Pro">
       <TradingBibleTerminal symbol={symbol} account={{ id: workspace.risk.accountId }} features={features} autosave restoreWorkspace>
         <div ref={pageRef} className="tb-page tb-term tb-term--fixed">
-          {/* ── Phone hero (phone only): one compact row so the chart fits the viewport ── */}
-          <div className="relative flex items-center gap-1.5 rounded-2xl border border-[#d4af37]/25 bg-[#0c0c11]/95 px-2 py-1.5 sm:hidden">
-            <div className="w-24 shrink-0"><SymbolSearchPicker value={symbol} onChange={(s) => { patch({ symbol: s }); log(`symbol → ${s}`); }} buttonClassName="w-full justify-between !py-1.5 font-mono !text-[10px] font-bold" /></div>
-            <div className="flex min-w-0 flex-1 flex-col justify-center leading-none">
-              <span className="term-data whitespace-nowrap font-mono text-sm font-extrabold text-[#f0ecdd]">{fmtPx(price)}</span>
-              <span className={`term-data mt-0.5 whitespace-nowrap font-mono text-[10px] font-bold ${up ? 'text-emerald-400' : 'text-red-400'}`}>
-                {liveChg != null ? `${up ? '▲' : '▼'} ${up ? '+' : ''}${liveChg.toFixed(2)}%` : ''}
-              </span>
-            </div>
-            {live?.source === 'close' ? (
-              <span className="flex shrink-0 items-center gap-0.5 rounded-full bg-[#d4af37]/15 px-1 py-0.5 text-[8px] font-bold text-[#d4af37]" title="Market closed — frozen at the last close">
-                <CircleDot className="h-2 w-2" /> CLOSED
-              </span>
-            ) : (
-              <span className={`flex shrink-0 items-center gap-0.5 rounded-full px-1 py-0.5 text-[8px] font-bold ${status === 'live' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-white/5 text-[#8a8577]'}`}>
-                <CircleDot className="h-2 w-2" /> {status === 'live' ? 'LIVE' : status.toUpperCase()}
-              </span>
-            )}
-            <button type="button" onClick={() => setPanelMenuOpen((open) => !open)} aria-label="Terminal panels" aria-expanded={panelMenuOpen} className={`grid h-10 w-10 shrink-0 place-items-center rounded-[10px] border transition ${panelMenuOpen ? 'border-[#d4af37]/35 bg-[#d4af37]/15 text-[#d4af37]' : 'border-white/10 text-[#8a8577] hover:text-[#e9e7df]'}`}>
-              <SlidersHorizontal className="h-4 w-4" />
-            </button>
-            {panelMenuOpen && <button type="button" aria-label="Close terminal panels menu" onClick={() => setPanelMenuOpen(false)} className="fixed inset-0 z-20 cursor-default" />}
-            {panelMenuOpen && (
-              <div className="absolute right-1 top-full z-30 mt-1 w-48 overflow-hidden rounded-xl border border-[#d4af37]/25 bg-[#0c0c11] p-1 shadow-2xl">
-                <button type="button" onClick={() => { setWatchlistOpen(true); setPanelMenuOpen(false); }} className="flex min-h-[42px] w-full items-center gap-2 rounded-lg px-2.5 text-left text-[11px] font-semibold text-[#e9e7df] hover:bg-white/5"><PanelLeft className="h-3.5 w-3.5 text-[#d4af37]" /> Watchlist & risk</button>
-                <button type="button" onClick={() => { setDataOpen(true); setPanelMenuOpen(false); }} className="flex min-h-[42px] w-full items-center gap-2 rounded-lg px-2.5 text-left text-[11px] font-semibold text-[#e9e7df] hover:bg-white/5"><PanelBottom className="h-3.5 w-3.5 text-[#d4af37]" /> Desk data</button>
-                <button type="button" onClick={() => { setTicketOpen(true); setPanelMenuOpen(false); }} className="flex min-h-[42px] w-full items-center gap-2 rounded-lg px-2.5 text-left text-[11px] font-semibold text-[#e9e7df] hover:bg-white/5"><PanelRight className="h-3.5 w-3.5 text-[#d4af37]" /> Order ticket</button>
+          {/* ── Desk command deck ─────────────────────────────────────── */}
+          <header className="tb-desk-header">
+            <div className="tb-desk-header__lead">
+              <Link
+                to="/terminal"
+                aria-label="Open the TradingBible public terminal"
+                title="Open the TradingBible public terminal"
+                className="tb-desk-brand"
+              >
+                <img
+                  src={TRADINGBIBLE_LOGO}
+                  alt="TradingBible"
+                  onError={(e) => {
+                    const el = e.currentTarget;
+                    if (!el.dataset.fb && brandLogo.urlRemote) { el.dataset.fb = '1'; el.src = brandLogo.urlRemote; } else { el.style.display = 'none'; }
+                  }}
+                />
+              </Link>
+              <div className="tb-desk-header__title">
+                <span className="tb-desk-kicker">TRADINGBIBLE <b>/ TERMINAL PRO</b></span>
+                <strong>{traderName || 'Trader desk'}</strong>
               </div>
-            )}
-          </div>
-          {/* ── Desk command strip (sm+ only) ── */}
-          <div className="term-panel no-scrollbar hidden items-center gap-2 overflow-x-auto rounded-2xl border border-[#d4af37]/25 bg-[#0c0c11]/95 px-3 py-2 sm:flex">
-            <Link
-              to="/terminal"
-              aria-label="Open the TradingBible public terminal"
-              title="Open the TradingBible public terminal"
-              className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-xl bg-[#d4af37]/15 transition hover:bg-[#d4af37]/25"
-            >
-              <img src={TRADINGBIBLE_LOGO} alt="TradingBible" className="h-9 w-9 rounded-xl object-contain" onError={(e) => { const el = e.currentTarget; if (!el.dataset.fb && brandLogo.urlRemote) { el.dataset.fb = '1'; el.src = brandLogo.urlRemote; } else { el.style.display = 'none'; } }} />
-            </Link>
-            <div className="flex min-w-0 flex-1 items-center gap-2 px-1 py-2">
-              {traderName
-                ? <span className="truncate text-sm font-bold text-[#f0ecdd]" title="Signed in trader">{traderName}</span>
-                : <Link to="/app/profile" className="truncate text-sm font-bold text-[#d4af37] hover:underline" title="Add your first and last name">Add name</Link>}
             </div>
-            <div className="my-1 hidden w-px self-stretch bg-white/8 sm:block" aria-hidden />
-            <div className="shrink-0 leading-tight">
-              <span className="term-data whitespace-nowrap font-mono text-xl font-bold text-[#f0ecdd]">{fmtPx(price)}</span>
-              <span className={`term-data ml-2 whitespace-nowrap font-mono text-xs font-semibold ${up ? 'text-emerald-400' : 'text-red-400'}`}>
-                {liveChg != null ? `${up ? '▲' : '▼'} ${up ? '+' : ''}${liveChg.toFixed(2)}%` : ''}
-              </span>
-              {live?.source === 'synthetic' && (
-                <span title="Simulated price — no live feed for this symbol yet" className="ml-1.5 whitespace-nowrap rounded bg-white/10 px-1.5 py-0.5 font-sans text-[10px] font-bold text-[#8a8577]">
-                  SIM
+
+            <div className="tb-desk-header__quote">
+              <SymbolSearchPicker
+                value={symbol}
+                onChange={(s) => { patch({ symbol: s }); log(`symbol → ${s}`); }}
+                buttonClassName="tb-desk-symbol"
+              />
+              <div className="tb-desk-price">
+                <strong>{fmtPx(price)}</strong>
+                <span className={up ? 'is-up' : 'is-down'}>
+                  {liveChg != null ? `${up ? '▲' : '▼'} ${up ? '+' : ''}${liveChg.toFixed(2)}%` : '—'}
                 </span>
-              )}
-            </div>
-            <div className="ml-auto flex shrink-0 items-center gap-2">
-              <button type="button" onClick={() => setWatchlistOpen((open) => !open)} aria-label={watchlistOpen ? 'Hide watchlist rail' : 'Show watchlist rail'} aria-pressed={watchlistOpen} title="Toggle watchlist rail" className={`flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] border px-2 text-[11px] font-semibold transition ${watchlistOpen ? 'border-[#d4af37]/35 bg-[#d4af37]/10 text-[#d4af37]' : 'border-white/10 text-[#8a8577] hover:text-[#e9e7df]'}`}>
-                <PanelLeft className="h-3.5 w-3.5" />
-                <span className="hidden lg:inline">Watchlist</span>
-              </button>
-              <button type="button" onClick={() => setTicketOpen((open) => !open)} aria-label={ticketOpen ? 'Hide order ticket' : 'Show order ticket'} aria-pressed={ticketOpen} title="Toggle order ticket" className={`flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] border px-2 text-[11px] font-semibold transition ${ticketOpen ? 'border-[#d4af37]/35 bg-[#d4af37]/10 text-[#d4af37]' : 'border-white/10 text-[#8a8577] hover:text-[#e9e7df]'}`}>
-                <PanelRight className="h-3.5 w-3.5" />
-                <span className="hidden lg:inline">Ticket</span>
-              </button>
-              <button type="button" onClick={() => setDataOpen((open) => !open)} aria-label={dataOpen ? 'Hide market data' : 'Show market data'} aria-pressed={dataOpen} title="Market data, positions, orders, journal" className={`flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] border px-2 text-[11px] font-semibold transition ${dataOpen ? 'border-[#d4af37]/35 bg-[#d4af37]/10 text-[#d4af37]' : 'border-white/10 text-[#8a8577] hover:text-[#e9e7df]'}`}>
-                <PanelBottom className="h-3.5 w-3.5" />
-                <span className="hidden lg:inline">Data</span>
-              </button>
-              <span className="hidden h-5 w-px bg-white/10 sm:block" aria-hidden />
+              </div>
               {live?.source === 'close' ? (
-                <span className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#d4af37]/15 px-3 py-1.5 text-xs font-bold text-[#d4af37]" title="Market closed — frozen at the last close">
-                  <CircleDot className="h-3.5 w-3.5" /> CLOSED
+                <span className="tb-desk-pill is-closed" title="Market closed — frozen at the last close">
+                  <CircleDot aria-hidden /> CLOSED
                 </span>
               ) : (
-                <span className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold ${status === 'live' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-white/5 text-[#8a8577]'}`}>
-                  <CircleDot className="h-3.5 w-3.5" /> {status === 'live' ? 'LIVE' : status.toUpperCase()}
+                <span className={`tb-desk-pill ${status === 'live' ? 'is-live' : ''}`}>
+                  <CircleDot aria-hidden /> {status === 'live' ? 'LIVE' : String(status || 'feed').toUpperCase()}
                 </span>
               )}
-              <Link to="/app/alerts" aria-label="Alerts" className="grid h-11 w-11 place-items-center rounded-[10px] transition hover:scale-105"><IosIcon icon={Bell} size="md" tone="theme" /></Link>
+              {live?.source === 'synthetic' && <span className="tb-desk-pill is-sim" title="Simulated price — no live feed for this symbol yet">SIM</span>}
             </div>
-          </div>
+
+            <div className="tb-desk-header__actions">
+              <button
+                type="button"
+                onClick={() => setWatchlistOpen((open) => !open)}
+                aria-label={watchlistOpen ? 'Hide watchlist rail' : 'Show watchlist rail'}
+                aria-pressed={watchlistOpen}
+                className={`tb-desk-action ${watchlistOpen ? 'is-on' : ''}`}
+              >
+                <PanelLeft aria-hidden /> <span>Markets</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTicketOpen((open) => !open)}
+                aria-label={ticketOpen ? 'Hide order ticket' : 'Show order ticket'}
+                aria-pressed={ticketOpen}
+                className={`tb-desk-action ${ticketOpen ? 'is-on' : ''}`}
+              >
+                <PanelRight aria-hidden /> <span>Trade</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setDataOpen((open) => !open)}
+                aria-label={dataOpen ? 'Hide market data' : 'Show market data'}
+                aria-pressed={dataOpen}
+                className={`tb-desk-action ${dataOpen ? 'is-on' : ''}`}
+              >
+                <PanelBottom aria-hidden /> <span>Data</span>
+              </button>
+              <button type="button" onClick={() => setCmdOpen(true)} className="tb-desk-action tb-desk-action--command" title="Command palette">
+                <kbd>⌘K</kbd><span>Command</span>
+              </button>
+              <Link to="/app/alerts" aria-label="Alerts" className="tb-desk-action tb-desk-action--icon">
+                <Bell aria-hidden />
+              </Link>
+              <button
+                type="button"
+                onClick={() => setPanelMenuOpen((open) => !open)}
+                aria-label="Terminal panels"
+                aria-expanded={panelMenuOpen}
+                className={`tb-desk-action tb-desk-action--icon tb-desk-menu-btn ${panelMenuOpen ? 'is-on' : ''}`}
+              >
+                <SlidersHorizontal aria-hidden />
+              </button>
+            </div>
+
+            {panelMenuOpen && <button type="button" aria-label="Close terminal panels menu" onClick={() => setPanelMenuOpen(false)} className="tb-desk-menu-backdrop" />}
+            {panelMenuOpen && (
+              <div className="tb-desk-menu">
+                <span className="tb-desk-menu__eyebrow">DESK PANELS</span>
+                <button type="button" onClick={() => { setWatchlistOpen(true); setPanelMenuOpen(false); }}><PanelLeft aria-hidden /> Markets & risk</button>
+                <button type="button" onClick={() => { setTicketOpen(true); setPanelMenuOpen(false); }}><PanelRight aria-hidden /> Order ticket</button>
+                <button type="button" onClick={() => { setDataOpen(true); setPanelMenuOpen(false); }}><PanelBottom aria-hidden /> Desk data</button>
+              </div>
+            )}
+          </header>
 
           {/* ── Desk grid: rail + stage ── */}
-          <div className={`tb-term__grid grid grid-cols-1 items-start gap-4 ${deskColumns}`}>
+          <div className={`tb-term__grid tb-desk-grid grid grid-cols-1 items-start gap-4 ${deskColumns}`}>
             {/* Left instrument rail — inline on wide desks, a drawer on phones/tablets. */}
             {watchlistOpen && (
-            <div className="tb-term__rail grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1">
+            <div className="tb-term__rail tb-desk-rail tb-desk-rail--left grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1">
               <div className="col-span-full flex items-center justify-between gap-2 xl:hidden">
                 <span className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#8a8577]">Watchlist & risk</span>
                 <button type="button" onClick={() => setWatchlistOpen(false)} aria-label="Close watchlist" className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-[#8a8577] hover:text-[#e9e7df]"><X className="h-4 w-4" /></button>
@@ -539,8 +584,8 @@ export default function TerminalPremiumPage() {
             )}
 
             {/* Center stage — first on phones so the chart fills the viewport */}
-            <div className="tb-term__center order-first min-w-0 space-y-4 xl:order-none">
-              <Card className="tb-term__stage-card term-panel !p-3 sm:!p-4">
+            <div className="tb-term__center tb-desk-center order-first min-w-0 space-y-4 xl:order-none">
+              <Card className="tb-term__stage-card tb-desk-stage term-panel !p-3 sm:!p-4">
                 <div className="tb-term-tabs" role="tablist" aria-label="Terminal views">
                   {visibleTabs.map((t) => (
                     <button key={t.id} role="tab" aria-selected={centerTab === t.id} onClick={() => patch({ centerTab: t.id })}
@@ -588,6 +633,7 @@ export default function TerminalPremiumPage() {
                             brandHref="/terminal"
                             compact={isPhone}
                             fullscreenSignal={fullscreenSignal}
+                            desk={focusDesk}
                           />
                         </div>
                       )
@@ -696,7 +742,7 @@ export default function TerminalPremiumPage() {
 
             {/* Right order rail — opt-in so the chart owns the first screen. */}
             {ticketOpen && (
-            <aside className="tb-term__ticket grid min-w-0 gap-3 sm:grid-cols-2 xl:block xl:space-y-3">
+            <aside className="tb-term__ticket tb-desk-rail tb-desk-rail--right grid min-w-0 gap-3 sm:grid-cols-2 xl:block xl:space-y-3">
               <div className="col-span-full flex items-center justify-between gap-2 xl:hidden">
                 <span className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#8a8577]">Order ticket</span>
                 <button type="button" onClick={() => setTicketOpen(false)} aria-label="Close order ticket" className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-[#8a8577] hover:text-[#e9e7df]"><X className="h-4 w-4" /></button>
@@ -807,6 +853,18 @@ export default function TerminalPremiumPage() {
             </aside>
             )}
           </div>
+
+          <footer className="tb-desk-status">
+            <span className={`tb-desk-status__feed ${status === 'live' ? 'is-live' : ''}`}>
+              <i aria-hidden /> {status === 'live' ? 'LIVE' : String(status || 'feed').toUpperCase()}
+              <b>{live?.source || 'market data'}</b>
+            </span>
+            <span>{timeframe} · {chartType}</span>
+            <span>{workspace.risk.accountId ? 'ACCOUNT FILTERED' : 'NO ACCOUNT FILTER'}</span>
+            <span className="tb-desk-status__mid">PAPER EXECUTION <em>·</em> MARKET DATA ONLY</span>
+            <span>{cloudStatus === 'synced' ? 'WORKSPACE SAVED' : String(cloudStatus || 'local').toUpperCase()}</span>
+            <button type="button" onClick={() => setCmdOpen(true)}><kbd>⌘</kbd><kbd>K</kbd> Command</button>
+          </footer>
 
           {(watchlistOpen || ticketOpen) && (
             <button type="button" className="tb-term-rail-backdrop" aria-label="Close terminal panels" onClick={() => { setWatchlistOpen(false); setTicketOpen(false); }} />

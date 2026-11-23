@@ -11,6 +11,7 @@ import '@/styles/capital-ir.css';
 import '@/styles/exchange.css';
 import '@/styles/mobile-v2.css';
 import '@/styles/apple-ui.css';
+import '@/styles/terminal-v2.css';
 import { bootWhiteLabel } from '@/lib/whitelabel';
 
 // Apply saved white-label theme (accent + text colors) before first paint.
