@@ -473,6 +473,12 @@ export default function TradingBibleChart({
     if (!fullscreenSignal) return;
     lastView.current = '';
     setFullscreen(true);
+    // A second Terminal tap while already fullscreen should still return to
+    // the zoomed-out context view instead of keeping a manual zoom.
+    const frame = requestAnimationFrame(() => {
+      try { chartApi.current?.timeScale().fitContent(); } catch { /* ignore */ }
+    });
+    return () => cancelAnimationFrame(frame);
   }, [fullscreenSignal]);
 
   useEffect(() => {
@@ -857,9 +863,9 @@ export default function TradingBibleChart({
     const viewKey = `${activeSymbol}-${activeTimeframe}-${effectiveType}`;
     if (viewKey !== lastView.current && data.length > 10) {
       lastView.current = viewKey;
-      // Fullscreen gives the chart the whole screen; open wider so the trader
-      // sees context around the recent move instead of a handful of candles.
-      const visibleBars = fullscreen ? 260 : 120;
+      // Fullscreen is the context view: open fully zoomed out so the whole
+      // loaded history is visible. The trader can zoom in from the dock.
+      const visibleBars = fullscreen ? data.length : 120;
       try {
         chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, data.length - visibleBars), to: data.length + 7 });
       } catch { /* ignore */ }
