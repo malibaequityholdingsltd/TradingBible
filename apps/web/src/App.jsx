@@ -225,13 +225,32 @@ function StaffProtected({ children }) {
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const STAFF_PORTAL_TOOL_IDS = new Set([
+  'dashboard', 'terminal', 'journal', 'analytics', 'risk', 'signals',
+  'courses', 'webinars', 'students', 'settings',
+]);
+
+function staffPortalToolId(id) {
+  return STAFF_PORTAL_TOOL_IDS.has(String(id || '').toLowerCase());
+}
+
+function decodePathSegment(value) {
+  try { return decodeURIComponent(value); } catch { return value; }
+}
+
+function isPublicStaffProfilePath(pathname) {
+  const match = String(pathname || '').match(/^\/staff\/([^/]+)\/?$/);
+  if (!match) return false;
+  const id = decodePathSegment(match[1]);
+  return UUID_RE.test(id) || !staffPortalToolId(id);
+}
 
 // `/staff/:id` is the public QR profile, but the staff portal also lives under
-// `/staff/*` (terminal, journal, analytics…). Only UUID-shaped ids open the
-// public profile so the portal's tool routes keep working.
+// `/staff/*` (terminal, journal, analytics…). UUIDs and human-readable name
+// slugs open the public profile; the portal's fixed tool ids keep working.
 function StaffProfileGate() {
   const { id } = useParams();
-  if (UUID_RE.test(id || '')) return <StaffBioPage />;
+  if (UUID_RE.test(id || '') || !staffPortalToolId(id)) return <StaffBioPage />;
   return <StaffProtected><StaffPortal /></StaffProtected>;
 }
 
@@ -321,7 +340,7 @@ function MaintenanceGate({ children }) {
 function AppChrome() {
     const { pathname, search } = useLocation();
     const embedded = new URLSearchParams(search).get('embed') === '1';
-    const isPublicStaffProfile = /^\/staff\/[0-9a-f-]{36}\/?$/i.test(pathname);
+    const isPublicStaffProfile = isPublicStaffProfilePath(pathname);
     const hideTicker = embedded || ['/login', '/signup', '/reset', '/onboarding'].includes(pathname) || isPublicStaffProfile;
     // SI coach + TV widgets live here (above the per-route error boundary)
     // so they mount ONCE and survive page navigation without reloading

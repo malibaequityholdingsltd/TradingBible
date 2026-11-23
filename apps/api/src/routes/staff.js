@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { supabaseRest } from '../utils/supabaseClient.js';
 import { deriveEmployeeNo } from '../utils/employeeNo.js';
 import { mergeStaffCard, staffCardFromApplication } from '../utils/staffCard.js';
+import { findStaffAppBySlug, slugifyStaffName, staffSlugMap } from '../utils/staffSlug.js';
 
 // ── Public staff bios (scanned from printed ID card QR codes) ─────────
 // No auth: anyone who scans a physical card opens the public profile.
@@ -9,28 +10,46 @@ import { mergeStaffCard, staffCardFromApplication } from '../utils/staffCard.js'
 // leave the admin portal.
 const router = Router();
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const APP_SELECT = 'id,name,email,status,created,jobId,checks';
+
+async function hiredApplications() {
+	return (await supabaseRest('/rest/v1/job_applications', {
+		query: { select: APP_SELECT, status: 'eq.hired', order: 'created.asc', limit: 500 },
+	}).catch(() => [])) || [];
+}
+
 router.get('/:id', async (req, res, next) => {
 	try {
 		const id = String(req.params.id || '').trim();
 		if (!id) return res.status(400).json({ error: 'id required' });
 
-		// Primary key: job application id (that's what payroll returns and
-		// what the QR code encodes).
-		let app = (await supabaseRest('/rest/v1/job_applications', {
-			query: { select: 'id,name,email,status,created,jobId,checks', id: `eq.${id}`, limit: 1 },
-		}).catch(() => []))?.[0] || null;
-
-		// Fallback: a user id was scanned → resolve their hired application
-		// through the profile email.
-		if (!app) {
-			const user = (await supabaseRest('/rest/v1/users', {
-				query: { select: 'id,email,name', id: `eq.${id}`, limit: 1 },
+		// UUID links are the legacy printed-card format. Keep them working
+		// and let the profile page redirect to the canonical name URL.
+		let app = null;
+		let allHired = null;
+		if (UUID_RE.test(id)) {
+			app = (await supabaseRest('/rest/v1/job_applications', {
+				query: { select: APP_SELECT, id: `eq.${id}`, limit: 1 },
 			}).catch(() => []))?.[0] || null;
-			if (user?.email) {
-				app = (await supabaseRest('/rest/v1/job_applications', {
-					query: { select: 'id,name,email,status,created,jobId,checks', email: `eq.${user.email}`, status: 'eq.hired', order: 'created.asc', limit: 1 },
+
+			// Fallback: a user id was scanned → resolve their hired
+			// application through the profile email.
+			if (!app) {
+				const user = (await supabaseRest('/rest/v1/users', {
+					query: { select: 'id,email,name', id: `eq.${id}`, limit: 1 },
 				}).catch(() => []))?.[0] || null;
+				if (user?.email) {
+					app = (await supabaseRest('/rest/v1/job_applications', {
+						query: { select: APP_SELECT, email: `eq.${user.email}`, status: 'eq.hired', order: 'created.asc', limit: 1 },
+					}).catch(() => []))?.[0] || null;
+				}
 			}
+		} else {
+			// Human-readable profile URL: /staff/malik-nlem.
+			allHired = await hiredApplications();
+			const match = findStaffAppBySlug(allHired, id);
+			app = match?.app || null;
 		}
 		if (!app || app.status !== 'hired') return res.status(404).json({ error: 'staff profile not found' });
 
@@ -54,9 +73,14 @@ router.get('/:id', async (req, res, next) => {
 		// application's checks.staffCard; merge the freshest copy.
 		const s = mergeStaffCard(userStaff, staffCardFromApplication(app));
 
+		if (!allHired) allHired = await hiredApplications();
+		const slugEntry = staffSlugMap(allHired).get(app.id);
+		const slug = slugEntry?.slug || slugifyStaffName(app.name) || app.id;
+
 		res.set('Cache-Control', 'public, max-age=120');
 		res.json({
 			id: app.id,
+			slug,
 			name: app.name || 'Team Member',
 			title: s.title || posting?.title || 'Team Member',
 			department: s.department || posting?.department || null,

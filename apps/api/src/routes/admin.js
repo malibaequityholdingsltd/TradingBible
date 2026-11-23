@@ -8,6 +8,7 @@ import logger from '../utils/logger.js';
 import { supabase, getSupabaseUser, supabaseRest } from '../utils/supabaseClient.js';
 import { provisionEmployee } from '../utils/hiring.js';
 import { mergeStaffCard, staffCardFromApplication, withStaffCard } from '../utils/staffCard.js';
+import { slugifyStaffName, staffSlugMap } from '../utils/staffSlug.js';
 import { tbcBalances as balances } from '../utils/tbc-econ.js';
 import { TBC_META, tbcContracts } from './tbc.js';
 import { supabaseAuth } from '../middleware/supabase-auth.js';
@@ -1577,6 +1578,7 @@ router.post('/jobs/staff', supabaseAuth, async (req, res, next) => {
 		};
 		const staffCardSeed = {
 			source: 'direct',
+			profileSlug: slugifyStaffName(name),
 			title,
 			department,
 			workEmail: email,
@@ -1651,6 +1653,7 @@ router.post('/jobs/staff', supabaseAuth, async (req, res, next) => {
 		const card = {
 			...(result.staff || {}),
 			source: 'direct',
+			profileSlug: slugifyStaffName(name),
 			title,
 			department,
 			workEmail: email,
@@ -1751,6 +1754,7 @@ router.get('/jobs/payroll', supabaseAuth, async (req, res, next) => {
 				staffByEmail[String(u.email || '').trim().toLowerCase()] = { userId: u.id, profileName: u.name || null, ...s };
 			}
 		}
+		const slugs = staffSlugMap(apps);
 		res.json((apps || []).map((a) => {
 			const userStaff = staffByEmail[String(a.email || '').trim().toLowerCase()] || {};
 			// Newer cards may exist only on the application (staff hired
@@ -1759,6 +1763,7 @@ router.get('/jobs/payroll', supabaseAuth, async (req, res, next) => {
 			return {
 				id: a.id, appId: a.id,
 				name: s.profileName || a.name, email: a.email,
+				profileSlug: slugs.get(a.id)?.slug || null,
 				// Manual overrides (set in the ID-card editor or by a direct
 				// appointment) win over the posting defaults.
 				title: s.title || hiringById[a.jobId]?.title || 'Opening',
@@ -1869,18 +1874,39 @@ router.patch('/jobs/staff/:id/card', supabaseAuth, async (req, res, next) => {
 		const cur = mergeStaffCard(userStaff, staffCardFromApplication(app));
 		const body = req.body && typeof req.body === 'object' ? req.body : {};
 		const next = { ...cur };
+		const previousStoredSlug = slugifyStaffName(cur.profileSlug);
+		const previousNameSlug = slugifyStaffName(app.name);
+		const requestedName = 'name' in body ? String(body.name || '').trim().slice(0, 120) : '';
 		// Display name lives on the profile + application rows (used by the
 		// payroll roster, the admin portal and the public bio), not settings.
-		if ('name' in body && String(body.name || '').trim()) {
-			const cleanName = String(body.name).trim().slice(0, 120);
+		if (requestedName) {
 			if (user) {
 				await supabaseRest(`/rest/v1/users?id=eq.${encodeURIComponent(user.id)}`, {
-					method: 'PATCH', body: { name: cleanName }, query: { select: 'id' },
+					method: 'PATCH', body: { name: requestedName }, query: { select: 'id' },
 				}).catch((err) => logger.warn('staff card: profile name update failed', String(err)));
 			}
 			await supabaseRest(`/rest/v1/job_applications?id=eq.${encodeURIComponent(app.id)}`, {
-				method: 'PATCH', body: { name: cleanName }, query: { select: 'id' },
+				method: 'PATCH', body: { name: requestedName }, query: { select: 'id' },
 			}).catch((err) => logger.warn('staff card: application name update failed', String(err)));
+		}
+		// Keep the public URL human-readable and stable. A rename moves the
+		// canonical slug to the new name while retaining the old slug as an
+		// alias so printed cards continue to resolve.
+		const nextNameSlug = slugifyStaffName(requestedName || app.name);
+		if (nextNameSlug) {
+			const aliases = new Set();
+			for (const value of [
+				...(Array.isArray(cur.slugAliases) ? cur.slugAliases : []),
+				...(Array.isArray(cur.slugHistory) ? cur.slugHistory : []),
+			]) {
+				const alias = slugifyStaffName(value);
+				if (alias) aliases.add(alias);
+			}
+			if (previousStoredSlug && previousStoredSlug !== nextNameSlug) aliases.add(previousStoredSlug);
+			if (previousNameSlug && previousNameSlug !== nextNameSlug) aliases.add(previousNameSlug);
+			aliases.delete(nextNameSlug);
+			next.profileSlug = nextNameSlug;
+			next.slugAliases = aliases.size ? [...aliases].slice(-12) : null;
 		}
 		for (const k of ['photoUrl', 'workEmail', 'employeeId', 'department', 'phone', 'location', 'title']) {
 			if (!(k in body)) continue;

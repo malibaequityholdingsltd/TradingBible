@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   BadgeCheck, Building2, Facebook, Fingerprint, Github, Globe, Instagram,
   Linkedin, Mail, Shield, Twitter, Youtube,
@@ -142,6 +142,7 @@ function VirtualCard({ staff }) {
 
 export default function StaffBioPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [staff, setStaff] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -161,7 +162,13 @@ export default function StaffBioPage() {
               : `Could not load profile (${res.status})`,
           );
         }
-        if (alive) setStaff(data);
+        if (alive) {
+          setStaff(data);
+          const canonical = String(data?.slug || '').trim();
+          if (canonical && canonical !== String(id || '')) {
+            navigate(`/staff/${encodeURIComponent(canonical)}`, { replace: true });
+          }
+        }
       } catch (e) {
         if (alive) setError(String(e?.message || e));
       } finally {
@@ -170,7 +177,7 @@ export default function StaffBioPage() {
     };
     if (id) load();
     return () => { alive = false; };
-  }, [id]);
+  }, [id, navigate]);
 
   const socials = staff?.socials && typeof staff.socials === 'object' ? staff.socials : null;
   const socialEntries = socials ? Object.entries(socials).filter(([, url]) => Boolean(url)) : [];

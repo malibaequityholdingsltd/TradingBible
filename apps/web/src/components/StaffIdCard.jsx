@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { brandLogo } from '@/lib/brand';
+import { staffProfileSlug } from '@/lib/staffSlug';
 
 /**
  * US driver's-license style Employee ID card — print-ready.
@@ -86,8 +87,8 @@ const PUBLIC_SITE = String(import.meta.env.VITE_PUBLIC_SITE_URL || 'https://trad
 
 /** Canonical scanned-profile URL encoded in the card QR + barcode link. */
 export function publicBioUrl(staff, origin = '') {
-  const id = staff?.id || staff?.appId || '';
-  return `${String(origin || PUBLIC_SITE).replace(/\/+$/, '')}/staff/${encodeURIComponent(id)}`;
+  const slug = staffProfileSlug(staff) || staff?.id || staff?.appId || '';
+  return `${String(origin || PUBLIC_SITE).replace(/\/+$/, '')}/staff/${encodeURIComponent(slug)}`;
 }
 
 /* Code 39 — real, scannable barcode (encodes the employee number). */

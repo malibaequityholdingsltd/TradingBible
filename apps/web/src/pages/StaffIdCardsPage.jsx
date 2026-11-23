@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '@/components/AdminLayout';
 import StaffIdCard, { companyEmail, employeeNo, publicBioUrl } from '@/components/StaffIdCard';
+import { slugifyStaffName } from '@/lib/staffSlug';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { isAdminUser } from '@/lib/entitlements';
@@ -221,7 +222,11 @@ function StaffEditor({ staff, onClose, onSave }) {
     }
   };
 
-  const previewStaff = { ...staff, ...draft };
+  const previewStaff = {
+    ...staff,
+    ...draft,
+    profileSlug: slugifyStaffName(draft.name) || staff.profileSlug,
+  };
 
   return createPortal(
     <div className="tb-idc fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto bg-black/75 p-4 backdrop-blur-sm sm:p-8" role="dialog" aria-modal="true">
@@ -294,12 +299,12 @@ function StaffEditor({ staff, onClose, onSave }) {
                 <QrCode className="h-3 w-3 text-[#d4af37]" /> QR destination
               </div>
               <a
-                href={publicBioUrl(staff)}
+                href={publicBioUrl(previewStaff)}
                 target="_blank"
                 rel="noreferrer"
                 className="mt-1 block break-all text-[11px] font-semibold leading-relaxed text-[#d4af37] hover:underline"
               >
-                {publicBioUrl(staff)}
+                {publicBioUrl(previewStaff)}
               </a>
               <p className="mt-1 text-[10px] leading-relaxed text-[#8a8577]">
                 Scanning the printed card opens this exact employee profile.

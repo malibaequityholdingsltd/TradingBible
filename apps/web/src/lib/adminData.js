@@ -89,7 +89,7 @@ export const PUBLIC_SITE_PAGES = [
   { id: 'investors-contact', name: 'Investor contact', to: '/investors/contact', group: 'Capital', status: 'live', note: 'Investor relations contact.' },
   { id: 'shareholders', name: 'Shareholder portal', to: '/investors/shareholders', group: 'Capital', status: 'live', note: 'Shareholder record access.' },
   { id: 'tv-public', name: 'TradingBible TV', to: '/tv', group: 'Media', status: 'live', note: 'Ever-paid access.' },
-  { id: 'staff-profile', name: 'Employee profile', to: '/staff/:id', group: 'People', status: 'live', note: 'Opened by scanning an employee ID-card QR.' },
+  { id: 'staff-profile', name: 'Employee profile', to: '/staff/:name', group: 'People', status: 'live', note: 'Opened by scanning an employee ID-card QR; uses the employee name slug.' },
 ];
 
 export const COMPLIANCE_GATES = [
