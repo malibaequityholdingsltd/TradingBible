@@ -125,10 +125,10 @@ export function FocusTopBar({
           <b>{indicators}</b>
         </button>
         <span className="tb-focus-divider" aria-hidden />
-        <button type="button" className="tb-focus-tool" onClick={onSnapshot} title="Snapshot to journal" aria-label="Snapshot to journal">
+        <button type="button" className="tb-focus-tool tb-focus-tool--optional" onClick={onSnapshot} title="Snapshot to journal" aria-label="Snapshot to journal">
           <Camera aria-hidden />
         </button>
-        <button type="button" className="tb-focus-tool" onClick={onShare} title="Share this view" aria-label="Share this view">
+        <button type="button" className="tb-focus-tool tb-focus-tool--optional" onClick={onShare} title="Share this view" aria-label="Share this view">
           <Share2 aria-hidden />
         </button>
         {alertHref ? (

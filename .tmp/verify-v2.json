@@ -1,0 +1,591 @@
+{
+  "desk1440": {
+    "data": {
+      "vw": 1440,
+      "vh": 960,
+      "doc": {
+        "sw": 1431,
+        "cw": 1440,
+        "sh": 960,
+        "ch": 960,
+        "bodyOverflow": "clip visible"
+      },
+      "root": null,
+      "top": null,
+      "body": null,
+      "stage": null,
+      "chart": null,
+      "rail": null,
+      "status": null,
+      "legend": {
+        "x": 571,
+        "y": 319,
+        "w": 451,
+        "h": 24,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "tabs": {
+        "x": 504,
+        "y": 238,
+        "w": 903,
+        "h": 41,
+        "display": "flex",
+        "visible": true,
+        "overflow": "auto"
+      },
+      "deskStage": {
+        "x": 504,
+        "y": 238,
+        "w": 903,
+        "h": 677,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "deskChart": {
+        "x": 513,
+        "y": 308,
+        "w": 885,
+        "h": 576,
+        "display": "flex",
+        "visible": true,
+        "overflow": "hidden"
+      },
+      "controls": {
+        "exit": null,
+        "market": null,
+        "snapshot": null,
+        "share": null,
+        "alerts": null
+      },
+      "tabsText": [
+        "Chart",
+        "Order Flow",
+        "Footprint",
+        "Heatmap",
+        "DOM",
+        "Replay",
+        "Indicators",
+        "News"
+      ]
+    },
+    "errs": []
+  },
+  "focus1440": {
+    "data": {
+      "vw": 1440,
+      "vh": 960,
+      "doc": {
+        "sw": 1431,
+        "cw": 1440,
+        "sh": 960,
+        "ch": 960,
+        "bodyOverflow": "hidden"
+      },
+      "root": {
+        "x": 0,
+        "y": 0,
+        "w": 1431,
+        "h": 960,
+        "display": "flex",
+        "visible": true,
+        "overflow": "hidden"
+      },
+      "top": {
+        "x": 0,
+        "y": 0,
+        "w": 1431,
+        "h": 62,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "body": {
+        "x": 0,
+        "y": 62,
+        "w": 1431,
+        "h": 863,
+        "display": "flex",
+        "visible": true,
+        "overflow": "hidden"
+      },
+      "stage": {
+        "x": 54,
+        "y": 62,
+        "w": 1079,
+        "h": 863,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "chart": {
+        "x": 64,
+        "y": 72,
+        "w": 1059,
+        "h": 843,
+        "display": "block",
+        "visible": true,
+        "overflow": "hidden"
+      },
+      "rail": {
+        "x": 1133,
+        "y": 62,
+        "w": 298,
+        "h": 863,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "status": {
+        "x": 0,
+        "y": 925,
+        "w": 1431,
+        "h": 27,
+        "display": "flex",
+        "visible": true,
+        "overflow": "hidden"
+      },
+      "legend": {
+        "x": 77,
+        "y": 84,
+        "w": 451,
+        "h": 24,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "tabs": {
+        "x": 504,
+        "y": 238,
+        "w": 903,
+        "h": 41,
+        "display": "flex",
+        "visible": true,
+        "overflow": "auto"
+      },
+      "deskStage": {
+        "x": 504,
+        "y": 238,
+        "w": 903,
+        "h": 677,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "deskChart": null,
+      "controls": {
+        "exit": {
+          "w": 32,
+          "h": 31,
+          "display": "flex",
+          "visible": true
+        },
+        "market": {
+          "w": 0,
+          "h": 0,
+          "display": "none",
+          "visible": false
+        },
+        "snapshot": {
+          "w": 32,
+          "h": 31,
+          "display": "flex",
+          "visible": true
+        },
+        "share": {
+          "w": 32,
+          "h": 31,
+          "display": "flex",
+          "visible": true
+        },
+        "alerts": {
+          "w": 32,
+          "h": 31,
+          "display": "flex",
+          "visible": true
+        }
+      },
+      "tabsText": [
+        "Chart",
+        "Order Flow",
+        "Footprint",
+        "Heatmap",
+        "DOM",
+        "Replay",
+        "Indicators",
+        "News"
+      ]
+    },
+    "errs": []
+  },
+  "focus390": {
+    "data": {
+      "vw": 390,
+      "vh": 844,
+      "doc": {
+        "sw": 381,
+        "cw": 390,
+        "sh": 844,
+        "ch": 844,
+        "bodyOverflow": "hidden"
+      },
+      "root": {
+        "x": 0,
+        "y": 0,
+        "w": 381,
+        "h": 844,
+        "display": "flex",
+        "visible": true,
+        "overflow": "hidden"
+      },
+      "top": {
+        "x": 0,
+        "y": 0,
+        "w": 381,
+        "h": 93,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "body": {
+        "x": 0,
+        "y": 93,
+        "w": 381,
+        "h": 667,
+        "display": "flex",
+        "visible": true,
+        "overflow": "hidden"
+      },
+      "stage": {
+        "x": 0,
+        "y": 93,
+        "w": 381,
+        "h": 667,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "chart": {
+        "x": 6,
+        "y": 134,
+        "w": 369,
+        "h": 620,
+        "display": "block",
+        "visible": true,
+        "overflow": "hidden"
+      },
+      "rail": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0,
+        "display": "none",
+        "visible": false,
+        "overflow": "visible"
+      },
+      "status": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0,
+        "display": "none",
+        "visible": false,
+        "overflow": "hidden"
+      },
+      "legend": {
+        "x": 15,
+        "y": 143,
+        "w": 297,
+        "h": 21,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "tabs": {
+        "x": 16,
+        "y": 311,
+        "w": 349,
+        "h": 40,
+        "display": "flex",
+        "visible": true,
+        "overflow": "auto"
+      },
+      "deskStage": {
+        "x": 16,
+        "y": 311,
+        "w": 349,
+        "h": 347,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "deskChart": null,
+      "controls": {
+        "exit": {
+          "w": 30,
+          "h": 30,
+          "display": "flex",
+          "visible": true
+        },
+        "market": {
+          "w": 82,
+          "h": 30,
+          "display": "flex",
+          "visible": true
+        },
+        "snapshot": {
+          "w": 0,
+          "h": 0,
+          "display": "none",
+          "visible": false
+        },
+        "share": {
+          "w": 0,
+          "h": 0,
+          "display": "none",
+          "visible": false
+        },
+        "alerts": {
+          "w": 30,
+          "h": 30,
+          "display": "flex",
+          "visible": true
+        }
+      },
+      "tabsText": [
+        "Chart",
+        "Order Flow",
+        "Footprint",
+        "Heatmap",
+        "DOM",
+        "Replay",
+        "Indicators",
+        "News"
+      ]
+    },
+    "errs": []
+  },
+  "desk390": {
+    "data": {
+      "vw": 390,
+      "vh": 844,
+      "doc": {
+        "sw": 381,
+        "cw": 390,
+        "sh": 844,
+        "ch": 844,
+        "bodyOverflow": "clip visible"
+      },
+      "root": null,
+      "top": null,
+      "body": null,
+      "stage": null,
+      "chart": null,
+      "rail": null,
+      "status": null,
+      "legend": {
+        "x": 31,
+        "y": 476,
+        "w": 297,
+        "h": 21,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "tabs": {
+        "x": 16,
+        "y": 311,
+        "w": 349,
+        "h": 40,
+        "display": "flex",
+        "visible": true,
+        "overflow": "auto"
+      },
+      "deskStage": {
+        "x": 16,
+        "y": 311,
+        "w": 349,
+        "h": 347,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "deskChart": {
+        "x": 23,
+        "y": 375,
+        "w": 336,
+        "h": 256,
+        "display": "flex",
+        "visible": true,
+        "overflow": "hidden"
+      },
+      "controls": {
+        "exit": null,
+        "market": null,
+        "snapshot": null,
+        "share": null,
+        "alerts": null
+      },
+      "tabsText": [
+        "Chart",
+        "Order Flow",
+        "Footprint",
+        "Heatmap",
+        "DOM",
+        "Replay",
+        "Indicators",
+        "News"
+      ]
+    },
+    "errs": []
+  },
+  "focus820": {
+    "data": {
+      "vw": 820,
+      "vh": 1180,
+      "doc": {
+        "sw": 811,
+        "cw": 820,
+        "sh": 1180,
+        "ch": 1180,
+        "bodyOverflow": "hidden"
+      },
+      "root": {
+        "x": 0,
+        "y": 0,
+        "w": 811,
+        "h": 1180,
+        "display": "flex",
+        "visible": true,
+        "overflow": "hidden"
+      },
+      "top": {
+        "x": 0,
+        "y": 0,
+        "w": 811,
+        "h": 62,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "body": {
+        "x": 0,
+        "y": 62,
+        "w": 811,
+        "h": 999,
+        "display": "flex",
+        "visible": true,
+        "overflow": "hidden"
+      },
+      "stage": {
+        "x": 54,
+        "y": 62,
+        "w": 757,
+        "h": 999,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "chart": {
+        "x": 64,
+        "y": 72,
+        "w": 737,
+        "h": 979,
+        "display": "block",
+        "visible": true,
+        "overflow": "hidden"
+      },
+      "rail": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0,
+        "display": "none",
+        "visible": false,
+        "overflow": "visible"
+      },
+      "status": {
+        "x": 0,
+        "y": 1061,
+        "w": 811,
+        "h": 27,
+        "display": "flex",
+        "visible": true,
+        "overflow": "hidden"
+      },
+      "legend": {
+        "x": 77,
+        "y": 84,
+        "w": 451,
+        "h": 24,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "tabs": {
+        "x": 42,
+        "y": 269,
+        "w": 728,
+        "h": 41,
+        "display": "flex",
+        "visible": true,
+        "overflow": "auto"
+      },
+      "deskStage": {
+        "x": 42,
+        "y": 269,
+        "w": 728,
+        "h": 786,
+        "display": "flex",
+        "visible": true,
+        "overflow": "visible"
+      },
+      "deskChart": null,
+      "controls": {
+        "exit": {
+          "w": 31,
+          "h": 31,
+          "display": "flex",
+          "visible": true
+        },
+        "market": {
+          "w": 82,
+          "h": 31,
+          "display": "flex",
+          "visible": true
+        },
+        "snapshot": {
+          "w": 31,
+          "h": 31,
+          "display": "flex",
+          "visible": true
+        },
+        "share": {
+          "w": 31,
+          "h": 31,
+          "display": "flex",
+          "visible": true
+        },
+        "alerts": {
+          "w": 31,
+          "h": 31,
+          "display": "flex",
+          "visible": true
+        }
+      },
+      "tabsText": [
+        "Chart",
+        "Order Flow",
+        "Footprint",
+        "Heatmap",
+        "DOM",
+        "Replay",
+        "Indicators",
+        "News"
+      ]
+    },
+    "errs": []
+  }
+}

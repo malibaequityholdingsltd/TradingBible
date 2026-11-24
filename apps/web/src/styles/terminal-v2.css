@@ -35,6 +35,10 @@
  * FULLSCREEN FOCUS DESK
  * ═══════════════════════════════════════════════════════════════════════ */
 
+/* The app reserves a scrollbar gutter globally. The focus desk is a fixed
+ * overlay, so reclaim that strip and let it paint edge to edge. */
+html:has(.tb-focus-root) { scrollbar-gutter: auto; }
+
 .tb-focus-root {
   display: flex !important;
   flex-direction: column;
@@ -913,6 +917,11 @@
 .tb-focus-zoom button:hover { background: var(--tbv-gold-soft); color: var(--tbv-gold); }
 .tb-focus-zoom .tb-chart-zoom-dock__sep { background: var(--tbv-line); }
 
+/* No floating dock at desktop widths: the status line is the bottom edge. */
+@media (min-width: 1024px) {
+  .tb-focus-root.tb-chart-fullscreen--app { padding-bottom: 0; }
+}
+
 /* ── Chart legend ────────────────────────────────────────────────────── */
 .tb-chart-legend {
   pointer-events: none;
@@ -1154,6 +1163,7 @@
 
 .tb-app-shell .tb-term.tb-term--fixed .tb-term-tabs {
   display: flex;
+  flex: 0 0 auto;
   gap: 2px;
   overflow-x: auto;
   border: 1px solid var(--tbv-line);
@@ -1292,8 +1302,7 @@
   .tb-focus-tool { width: 30px; height: 30px; min-width: 30px; padding: 0; }
   .tb-focus-tool--label { display: none; }
   .tb-focus-divider { display: none; }
-  .tb-focus-tool:nth-of-type(2),
-  .tb-focus-tool:nth-of-type(3) { display: none; }
+  .tb-focus-tool--optional { display: none; }
   .tb-focus-tool--exit { display: inline-flex; }
   .tb-focus-market-btn { display: inline-flex; height: 30px; }
   .tb-focus-body { flex-direction: column; }
@@ -1335,7 +1344,6 @@
 }
 
 @media (max-width: 389px) {
-  .tb-focus-tool:nth-of-type(1) { display: none; }
   .tb-focus-pulse { display: none; }
   .tb-desk-pill { display: none; }
 }
