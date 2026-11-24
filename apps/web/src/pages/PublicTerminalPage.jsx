@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   CandlestickChart, Flame, Gauge, Grid2x2, History, Home, Layers,
@@ -89,6 +89,12 @@ export default function PublicTerminalPage() {
   const [watchSymbols, setWatchSymbols] = useState(() => (
     PUBLIC_WATCHLIST.includes(initial) ? PUBLIC_WATCHLIST : [initial, ...PUBLIC_WATCHLIST]
   ));
+  const exitFullscreen = useCallback(() => {
+    if (params.get('fullscreen') !== '1') return;
+    const next = new URLSearchParams(params);
+    next.delete('fullscreen');
+    setParams(next, { replace: true });
+  }, [params, setParams]);
 
   const quoteSymbols = useMemo(() => [...new Set([symbol, ...watchSymbols])], [symbol, watchSymbols]);
   const { quotes, status } = useQuotes(quoteSymbols);
@@ -315,6 +321,7 @@ export default function PublicTerminalPage() {
                   compact={isPhone}
                   publicMode
                   fullscreenSignal={params.get('fullscreen') === '1' ? 'public-fullscreen' : ''}
+                  onFullscreenExit={exitFullscreen}
                   className="!h-full !rounded-none !border-0"
                 />
               </div>

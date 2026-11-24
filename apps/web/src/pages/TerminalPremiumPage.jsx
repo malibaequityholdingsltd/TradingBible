@@ -2,7 +2,7 @@
 // One workstation, three zones: slim command strip with desk switcher,
 // left instrument rail (watchlist · account · risk), center stage with
 // floating toolbar, full-width data dock. Black/gold identity kept.
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import {
   CandlestickChart, Layers, Grid2x2, ListOrdered, History,
@@ -123,7 +123,7 @@ export default function TerminalPremiumPage() {
   const stageRef = useRef(null);
   const { workspace, patch, versions, saveVersion, restoreVersion, loadPreset, cloudStatus } = usePremiumWorkspace({ autosave: true, restoreWorkspace: true });
   const { symbol, timeframe, chartType, centerTab, watchlist, features } = workspace;
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const location = useLocation();
   const wantsFullscreen = params.get('fullscreen') === '1';
   const [focusNonce, setFocusNonce] = useState(0);
@@ -204,6 +204,12 @@ export default function TerminalPremiumPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wantsFullscreen, location.key, focusNonce]);
   const fullscreenSignal = wantsFullscreen ? `${location.key}:${focusNonce}` : '';
+  const exitFullscreen = useCallback(() => {
+    if (!wantsFullscreen) return;
+    const next = new URLSearchParams(params);
+    next.delete('fullscreen');
+    setParams(next, { replace: true });
+  }, [params, setParams, wantsFullscreen]);
 
   // Phone chart: measure the space between the stage and the fixed dock. The
   // old viewport-minus-300 guess let the chart run under the tab bar; this
@@ -633,6 +639,7 @@ export default function TerminalPremiumPage() {
                             brandHref="/terminal"
                             compact={isPhone}
                             fullscreenSignal={fullscreenSignal}
+                            onFullscreenExit={exitFullscreen}
                             desk={focusDesk}
                           />
                         </div>

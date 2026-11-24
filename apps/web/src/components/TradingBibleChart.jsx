@@ -341,6 +341,7 @@ export default function TradingBibleChart({
   brandHref = '',
   publicMode = false,
   fullscreenSignal = '',
+  onFullscreenExit,
   desk = null,
 }) {
   const { theme } = useTheme();
@@ -1050,8 +1051,10 @@ export default function TradingBibleChart({
 
   const toggleFullscreen = useCallback(() => {
     lastView.current = '';
-    setFullscreen((value) => !value);
-  }, []);
+    const next = !fullscreen;
+    setFullscreen(next);
+    if (!next) onFullscreenExit?.();
+  }, [fullscreen, onFullscreenExit]);
 
   const undo = useCallback(() => {
     dz.undo();
