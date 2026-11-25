@@ -6,7 +6,7 @@ import '@/styles/public-disclosure.css';
 
 export const PUBLIC_TOPICS = [
   ['Product & Features', '/features'],
-  ['Public Terminal', '/terminal'],
+  ['Public Terminal', '/app/terminal'],
   ['Trading Journal', '/features/trading-journal'],
   ['SI Coach', '/features/si-coach'],
   ['Dashboard', '/features/dashboard'],

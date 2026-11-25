@@ -9,7 +9,7 @@ import {
 
 const STEPS = [
   { icon: LayoutDashboard, titleKey: 'nav.dashboard', to: '/app', bodyKey: 'tour.b.dashboard' },
-  { icon: SquareTerminal, titleKey: 'nav.terminalPro', to: '/app/terminal-pro', bodyKey: 'tour.b.terminalPro' },
+  { icon: SquareTerminal, titleKey: 'nav.terminalPro', to: '/app/terminal', bodyKey: 'tour.b.terminalPro' },
   { icon: Grid2x2, titleKey: 'nav.heatmaps', to: '/app/heatmaps', bodyKey: 'tour.b.heatmaps' },
   { icon: BarChart3, titleKey: 'nav.analytics', to: '/app/analytics', bodyKey: 'tour.b.analytics' },
   { icon: Radar, titleKey: 'nav.signals', to: '/app/signals', bodyKey: 'tour.b.signals' },

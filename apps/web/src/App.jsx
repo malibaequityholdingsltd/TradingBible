@@ -138,12 +138,6 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const StaffIdCardsPage = lazy(() => import('./pages/StaffIdCardsPage'));
 
 // Legacy routes merged into Terminal Pro (?symbol= is preserved).
-function SymbolRedirect({ to }) {
-    const { search } = useLocation();
-    const symbol = (new URLSearchParams(search).get('symbol') || '').toUpperCase();
-    return <Navigate to={symbol ? `${to}?symbol=${encodeURIComponent(symbol)}` : to} replace />;
-}
-
 function PageFallback() {
     return (
         <div className="grid min-h-screen place-items-center bg-transparent text-sm text-[#8a8577]">
@@ -265,15 +259,20 @@ function PaidProtected({ children }) {
     return children;
 }
 
-// The public chart terminal is intentionally open to guests. Keep the old
-// /app/terminal-pro links useful: signed-in members get the full desk, while
-// guests are sent to the read-only public terminal instead of a login wall.
+// One canonical terminal address for everyone. Guests get the read-only
+// public terminal; signed-in members get the full desk at the same URL.
+// Legacy /app/terminal-pro and /terminal links redirect here with their query
+// string intact so shared chart links keep working.
 function TerminalEntry() {
     const { isAuthed, isAuthReady } = useAuth();
-    const { search } = useLocation();
     if (!isAuthReady) return <PageFallback />;
-    if (!isAuthed) return <Navigate to={`/terminal${search}`} replace />;
+    if (!isAuthed) return <PublicTerminalPage />;
     return <PaidProtected><TerminalPremiumPage /></PaidProtected>;
+}
+
+function TerminalRedirect() {
+    const { search } = useLocation();
+    return <Navigate to={`/app/terminal${search}`} replace />;
 }
 
 // Platform admins can switch features off from the Admin Portal. FeatureGate
@@ -421,8 +420,8 @@ function RoutesWithBoundary() {
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/pricing" element={<PricingPage />} />
-                    <Route path="/terminal" element={<PublicTerminalPage />} />
-                    <Route path="/chart" element={<Navigate to="/terminal" replace />} />
+                    <Route path="/terminal" element={<TerminalRedirect />} />
+                    <Route path="/chart" element={<TerminalRedirect />} />
                     <Route path="/features" element={<PublicFeaturesPage />} />
                     <Route path="/features/:slug" element={<PublicFeatureDetailPage />} />
                     <Route path="/community" element={<CommunityPublicPage />} />
@@ -496,12 +495,12 @@ function RoutesWithBoundary() {
                     <Route path="/app/analytics" element={<PaidProtected><AnalyticsPage /></PaidProtected>} />
                     <Route path="/app/watchlists" element={<PaidProtected><WatchlistsPage /></PaidProtected>} />
                     <Route path="/app/orderflow" element={<PaidProtected><OrderFlowPage /></PaidProtected>} />
-                    <Route path="/app/terminal" element={<SymbolRedirect to="/app/terminal-pro" />} />
-                    <Route path="/app/terminal-pro" element={<TerminalEntry />} />
+                    <Route path="/app/terminal" element={<TerminalEntry />} />
+                    <Route path="/app/terminal-pro" element={<TerminalRedirect />} />
                     <Route path="/app/alerts" element={<PaidProtected><FeatureGate feature="signals"><AlertsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/signals" element={<PaidProtected><FeatureGate feature="signals"><SignalsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/economic-calendar" element={<EverPaidProtected><FeatureGate feature="economicCalendar"><EconomicCalendarPage /></FeatureGate></EverPaidProtected>} />
-                    <Route path="/app/charts" element={<SymbolRedirect to="/app/terminal-pro" />} />
+                    <Route path="/app/charts" element={<TerminalRedirect />} />
                     <Route path="/app/heatmaps" element={<PaidProtected><FeatureGate feature="chartBuilder"><HeatmapsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/indicators" element={<PaidProtected><FeatureGate feature="chartBuilder"><IndicatorsPage /></FeatureGate></PaidProtected>} />
                     <Route path="/app/journal" element={<PaidProtected><JournalPage /></PaidProtected>} />

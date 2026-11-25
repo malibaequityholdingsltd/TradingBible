@@ -1159,7 +1159,7 @@ export default function TradingBibleChart({
       await onShare();
       return;
     }
-    const base = publicMode ? '/terminal' : '/app/terminal-pro';
+    const base = '/app/terminal';
     const url = `${window.location.origin}${base}?symbol=${encodeURIComponent(activeSymbol)}`;
     try {
       await navigator.clipboard.writeText(url);
@@ -1189,7 +1189,7 @@ export default function TradingBibleChart({
           setTool('cursor');
           return;
         }
-        if (fullscreen) { setFullscreen(false); return; }
+        if (fullscreen) { toggleFullscreen(); return; }
       }
       if (event.key === 'Enter' && tool === 'path') {
         event.preventDefault();
@@ -1217,7 +1217,7 @@ export default function TradingBibleChart({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [railPanel, textPrompt, pickerOpen, settingsOpen, objectsOpen, templatesOpen, actionsOpen, pending, tool, fullscreen, selected, selectedDrawing, locked, removeSelected, undo, redo, cancelInteraction, finishPath]);
+  }, [railPanel, textPrompt, pickerOpen, settingsOpen, objectsOpen, templatesOpen, actionsOpen, pending, tool, fullscreen, selected, selectedDrawing, locked, removeSelected, undo, redo, cancelInteraction, finishPath, toggleFullscreen]);
 
   const lastCandle = candles.length ? candles[candles.length - 1] : null;
   const quotePrice = Number(quote?.price);
@@ -2029,22 +2029,19 @@ export default function TradingBibleChart({
             </div>
           ) : null}
           <div className="tb-focus-body">
-            {showingChart ? (
-              <>
-                {chartRail}
-                <div className="tb-focus-stage">
-                  {railPanelNode}
-                  {drawingToolbar}
-                  {chartBody}
+            {showingChart ? chartRail : null}
+            <div className={`tb-focus-stage${showingChart ? '' : ' tb-focus-stage--panel'}`}>
+              {showingChart ? railPanelNode : null}
+              {showingChart ? drawingToolbar : null}
+              {chartBody}
+              {!showingChart ? (
+                <div className="tb-focus-panel-overlay">
+                  <div className="tb-focus-panel">
+                    {deskPanel || <p className="tb-focus-panel__empty">This desk is not available on your plan.</p>}
+                  </div>
                 </div>
-              </>
-            ) : (
-              <div className="tb-focus-stage tb-focus-stage--panel">
-                <div className="tb-focus-panel">
-                  {deskPanel || <p className="tb-focus-panel__empty">This desk is not available on your plan.</p>}
-                </div>
-              </div>
-            )}
+              ) : null}
+            </div>
             {focusDesk ? <FocusMarketRail desk={focusDesk} activeSymbol={activeSymbol} onSelectSymbol={focusDesk.onSelectSymbol} /> : null}
           </div>
           {focusStatus}

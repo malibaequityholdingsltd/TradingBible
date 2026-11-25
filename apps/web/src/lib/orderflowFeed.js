@@ -39,9 +39,12 @@ export function isFlowSymbol(sym) {
   return Boolean(symbolToPair(sym));
 }
 
+import apiServerClient from '@/lib/apiServerClient';
+
 const WS_BASE = 'wss://stream.binance.com:9443/stream';
-const WS_OPEN_TIMEOUT = 6000;
+const WS_OPEN_TIMEOUT = 1500;
 const MAX_RECONNECT_DELAY = 15000;
+const POLL_MS = 3000;
 
 class OrderflowFeed {
   constructor() {
@@ -54,9 +57,14 @@ class OrderflowFeed {
     this.retry = 0;
     this.reconnectTimer = null;
     this.openTimer = null;
+    this.pollTimer = null;
+    this.pollBusy = false;
+    this.pollFailures = 0;
+    this.pollHealthy = false;
+    this.lastTradeId = new Map();
     if (typeof window !== 'undefined') {
       window.addEventListener('online', () => this.connect());
-      window.addEventListener('offline', () => this.setStatus('offline'));
+      window.addEventListener('offline', () => { this.stopPolling(); this.setStatus('offline'); });
     }
   }
 
@@ -77,7 +85,9 @@ class OrderflowFeed {
   subscribe(symbol, { onDepth, onTrade } = {}) {
     const pair = symbolToPair(symbol);
     if (!pair) return () => {};
+    const first = !this.counts.has(pair);
     this.counts.set(pair, (this.counts.get(pair) || 0) + 1);
+    if (first) this.lastTradeId.delete(pair);
     if (onDepth) {
       if (!this.depthListeners.has(pair)) this.depthListeners.set(pair, new Set());
       this.depthListeners.get(pair).add(onDepth);
@@ -97,6 +107,7 @@ class OrderflowFeed {
         this.counts.delete(pair);
         this.depthListeners.delete(pair);
         this.tradeListeners.delete(pair);
+        this.lastTradeId.delete(pair);
       } else {
         this.counts.set(pair, n);
         if (onDepth) this.depthListeners.get(pair)?.delete(onDepth);
@@ -119,24 +130,41 @@ class OrderflowFeed {
   }
 
   connect() {
-    if (typeof window !== 'undefined' && window.navigator && !window.navigator.onLine) { this.setStatus('offline'); return; }
+    if (typeof window !== 'undefined' && window.navigator && !window.navigator.onLine) { this.stopPolling(); this.setStatus('offline'); return; }
     const pairs = this.activePairs();
-    if (pairs.length === 0) return;
+    if (pairs.length === 0) { this.stopPolling(); return; }
     const streams = pairs.flatMap((p) => [`${p}@depth20@100ms`, `${p}@aggTrade`]);
     const url = `${WS_BASE}?streams=${streams.join('/')}`;
-    if (this.ws && this.ws.url === url && (this.ws.readyState === 0 || this.ws.readyState === 1)) return;
+    if (this.ws && this.ws.url === url && (this.ws.readyState === 0 || this.ws.readyState === 1)) {
+      if (this.ws.readyState === 1) this.stopPolling();
+      return;
+    }
     this.close(true);
     this.setStatus(this.retry > 0 ? 'reconnecting' : 'connecting');
     try {
       this.ws = new WebSocket(url);
-    } catch { this.scheduleReconnect(); return; }
+    } catch {
+      this.startPolling();
+      this.scheduleReconnect();
+      return;
+    }
 
     clearTimeout(this.openTimer);
     this.openTimer = setTimeout(() => {
-      if (!this.ws || this.ws.readyState !== 1) this.scheduleReconnect();
+      if (!this.ws || this.ws.readyState !== 1) {
+        this.startPolling();
+        this.scheduleReconnect();
+      }
     }, WS_OPEN_TIMEOUT);
 
-    this.ws.onopen = () => { this.retry = 0; clearTimeout(this.openTimer); this.setStatus('connected'); };
+    this.ws.onopen = () => {
+      this.retry = 0;
+      this.pollHealthy = false;
+      this.pollFailures = 0;
+      this.stopPolling();
+      clearTimeout(this.openTimer);
+      this.setStatus('connected');
+    };
     this.ws.onmessage = (evt) => {
       try {
         const msg = JSON.parse(evt.data);
@@ -164,20 +192,107 @@ class OrderflowFeed {
             side: d.m ? 'sell' : 'buy',
             ts: d.T || Date.now(),
           };
-          if (Number.isFinite(trade.price) && Number.isFinite(trade.qty)) {
-            this.tradeListeners.get(m[1])?.forEach((fn) => { try { fn(trade); } catch { /* noop */ } });
-          }
+          this.emitTrade(m[1], trade);
         }
       } catch { /* ignore malformed frame */ }
     };
-    this.ws.onclose = () => { if (this.activePairs().length) this.scheduleReconnect(); };
-    this.ws.onerror = () => { try { this.ws.close(); } catch { /* noop */ } };
+    this.ws.onclose = () => {
+      this.startPolling();
+      if (this.activePairs().length) this.scheduleReconnect();
+    };
+    this.ws.onerror = () => {
+      this.startPolling();
+      try { this.ws.close(); } catch { /* noop */ }
+    };
+  }
+
+  emitTrade(pair, trade) {
+    if (!Number.isFinite(trade.price) || !Number.isFinite(trade.qty)) return;
+    if (!trade.ts) trade.ts = Date.now();
+    this.tradeListeners.get(pair)?.forEach((fn) => { try { fn(trade); } catch { /* noop */ } });
+  }
+
+  // REST fallback used when the browser cannot reach Binance's WebSocket
+  // (regional blocks, corporate proxies, offline CSP). It short-polls the
+  // server-side proxy and replays only trades newer than the last seen id.
+  startPolling() {
+    if (typeof window === 'undefined' || this.pollTimer) return;
+    if (this.ws && this.ws.readyState === 1) return;
+    if (!this.activePairs().length) return;
+    const tick = async () => {
+      this.pollTimer = null;
+      if (!this.activePairs().length) { this.stopPolling(); return; }
+      if (this.ws && this.ws.readyState === 1) { this.stopPolling(); return; }
+      await this.pollOnce();
+      if (this.activePairs().length && (!this.ws || this.ws.readyState !== 1)) {
+        this.pollTimer = setTimeout(tick, POLL_MS);
+      }
+    };
+    this.pollTimer = setTimeout(tick, 0);
+  }
+
+  stopPolling() {
+    clearTimeout(this.pollTimer);
+    this.pollTimer = null;
+  }
+
+  async pollOnce() {
+    if (this.pollBusy) return;
+    this.pollBusy = true;
+    try {
+      const pairs = this.activePairs();
+      const results = await Promise.allSettled(pairs.map((pair) => this.pollPair(pair)));
+      if (results.some((r) => r.status === 'fulfilled')) {
+        this.pollFailures = 0;
+        this.pollHealthy = true;
+        this.setStatus('connected');
+      } else {
+        this.pollFailures += 1;
+        this.pollHealthy = false;
+        if (this.pollFailures > 1 && this.status !== 'connected') this.setStatus('reconnecting');
+      }
+    } finally {
+      this.pollBusy = false;
+    }
+  }
+
+  async pollPair(pair) {
+    // A WebSocket that came up while this request was in flight wins.
+    if (this.ws && this.ws.readyState === 1) return;
+    const symbol = PAIR_TO_SYMBOL[pair];
+    if (!symbol) throw new Error('unknown pair');
+    const res = await apiServerClient.fetch(`/orderflow?symbol=${encodeURIComponent(symbol)}`);
+    if (!res.ok) throw new Error(`orderflow ${res.status}`);
+    const data = await res.json();
+    if (this.ws && this.ws.readyState === 1) return;
+    const bids = (data.depth?.bids || []).map(([p, q]) => [Number(p), Number(q)]);
+    const asks = (data.depth?.asks || []).map(([p, q]) => [Number(p), Number(q)]);
+    if (bids.length && asks.length) {
+      const depth = { symbol, bids, asks, ts: Number(data.ts) || Date.now() };
+      this.depthListeners.get(pair)?.forEach((fn) => { try { fn(depth); } catch { /* noop */ } });
+    }
+    const rows = Array.isArray(data.trades) ? data.trades : [];
+    const last = this.lastTradeId.get(pair) || 0;
+    const fresh = rows
+      .filter((t) => Number.isFinite(Number(t.id)) && Number(t.id) > last)
+      .sort((a, b) => Number(a.id) - Number(b.id));
+    const emit = last === 0 ? fresh.slice(-40) : fresh;
+    for (const t of emit) {
+      this.emitTrade(pair, {
+        symbol,
+        price: Number(t.price),
+        qty: Number(t.qty),
+        side: t.side === 'sell' ? 'sell' : 'buy',
+        ts: Number(t.ts) || Date.now(),
+      });
+    }
+    if (fresh.length) this.lastTradeId.set(pair, Number(fresh[fresh.length - 1].id));
   }
 
   scheduleReconnect() {
     clearTimeout(this.reconnectTimer);
     this.retry += 1;
-    this.setStatus('reconnecting');
+    if (!this.pollHealthy) this.setStatus('reconnecting');
     const delay = Math.min(1000 * 2 ** Math.min(this.retry, 5), MAX_RECONNECT_DELAY);
     this.reconnectTimer = setTimeout(() => this.connect(), delay);
   }
@@ -190,7 +305,11 @@ class OrderflowFeed {
       try { this.ws.close(); } catch { /* noop */ }
       this.ws = null;
     }
-    if (!silent && this.activePairs().length === 0) this.setStatus('idle');
+    if (!silent && this.activePairs().length === 0) {
+      this.stopPolling();
+      this.pollHealthy = false;
+      this.setStatus('idle');
+    }
   }
 }
 

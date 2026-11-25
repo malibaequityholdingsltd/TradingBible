@@ -713,7 +713,7 @@ function StaffFrame({ title, subtitle, src, current }) {
 }
 
 export function StaffTerminal() {
-  return <StaffFrame title="Terminal Pro" subtitle="Charts, DOM, order flow and replay" src="/app/terminal-pro" current="terminal" />;
+  return <StaffFrame title="Terminal Pro" subtitle="Charts, DOM, order flow and replay" src="/app/terminal" current="terminal" />;
 }
 
 export function StaffJournal() {

@@ -105,7 +105,7 @@ export default function GlobalSearch({ autoFocus = false, onNavigate = null }) {
       P(t('nav.analyze', null, 'Analyze'), FileText, t('nav.reports', null, 'Reports'), 'reports daily weekly monthly pdf schedule email', '/app/reports'),
       P(t('nav.analyze', null, 'Analyze'), Bot, t('nav.coach', null, 'SI Coach'), 'ai coach chat advice review mistakes discipline score', '/app/coach'),
       P(t('nav.analyze', null, 'Analyze'), Calculator, t('nav.tools', null, 'Risk Tools'), 'risk calculator position size lot stop loss take profit', '/app/tools'),
-      P(t('nav.markets', null, 'Markets'), CandlestickChart, t('nav.terminalPro', null, 'Terminal Pro'), 'terminal pro charts candlestick drawings indicators timeframe orderflow footprint heatmap dom replay watchlists quotes', '/app/terminal-pro'),
+      P(t('nav.markets', null, 'Markets'), CandlestickChart, t('nav.terminalPro', null, 'Terminal Pro'), 'terminal pro charts candlestick drawings indicators timeframe orderflow footprint heatmap dom replay watchlists quotes', '/app/terminal'),
       P(t('nav.markets', null, 'Markets'), Gauge, t('nav.indicators', null, 'Indicators'), 'indicators rsi macd ema bollinger signals', '/app/indicators'),
       P(t('nav.markets', null, 'Markets'), CircleDot, t('nav.heatmaps', null, 'Heatmaps'), 'heatmap bubbles crypto forex stocks movers gainers losers', '/app/heatmaps'),
       P(t('nav.markets', null, 'Markets'), Layers, t('nav.orderflow', null, 'Order Flow'), 'orderflow order flow footprint depth tape volume delta bookmap dom', '/app/orderflow'),
@@ -214,7 +214,7 @@ export default function GlobalSearch({ autoFocus = false, onNavigate = null }) {
       kind: 'symbol', group: t('nav.markets', null, 'Markets'), icon: CandlestickChart,
       title: s.name && s.name !== s.symbol ? `${s.name} · ${s.symbol}` : s.symbol,
       keys: `${s.symbol} ${s.name || ''} ${String(s.symbol).replace(/USD$/, ' / usd')} market chart trade quote price`.toLowerCase(),
-      to: `/app/terminal-pro?symbol=${encodeURIComponent(s.symbol)}`,
+      to: `/app/terminal?symbol=${encodeURIComponent(s.symbol)}`,
     }));
     const acctGroup = t('nav.account', null, 'Account');
     const account = [

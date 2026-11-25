@@ -59,30 +59,47 @@ export function yahooSymbolFor(symbol) {
 	return null;
 }
 
-const HOSTS = ['https://query2.finance.yahoo.com', 'https://query1.finance.yahoo.com'];
+const HOSTS = ['https://query1.finance.yahoo.com', 'https://query2.finance.yahoo.com'];
+
+// Query both Yahoo mirrors in parallel. Sequential fallback made a throttled
+// first host add 8-9s to full-history loads; the fastest healthy mirror wins.
+async function fetchYahooResult(path, cacheKey, ttlMs, timeoutMs) {
+	const cached = getCache(cacheKey);
+	if (cached) return cached;
+	const controllers = [];
+	const attempts = HOSTS.map(async (host) => {
+		const ctrl = new AbortController();
+		controllers.push(ctrl);
+		const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+		try {
+			const res = await fetch(`${host}${path}`, { headers: UA, signal: ctrl.signal });
+			if (!res.ok) throw new Error(`http ${res.status}`);
+			const json = await res.json();
+			const result = json?.chart?.result?.[0];
+			if (!result) throw new Error('no result');
+			return result;
+		} finally {
+			clearTimeout(timer);
+		}
+	});
+	attempts.forEach((p) => p.catch(() => {}));
+	try {
+		const result = await Promise.any(attempts);
+		controllers.forEach((ctrl) => { try { ctrl.abort(); } catch { /* already done */ } });
+		setCache(cacheKey, result, ttlMs);
+		return result;
+	} catch {
+		return null;
+	}
+}
 
 async function fetchChart(ySym, interval, range) {
-	const cached = getCache(`y:${ySym}:${interval}:${range}`);
-	if (cached) return cached;
-	for (const host of HOSTS) {
-		try {
-			const ctrl = new AbortController();
-			const t = setTimeout(() => ctrl.abort(), 9000);
-			const res = await fetch(
-				`${host}/v8/finance/chart/${encodeURIComponent(ySym)}?interval=${interval}&range=${range}`,
-				{ headers: UA, signal: ctrl.signal },
-			).finally(() => clearTimeout(t));
-			if (!res.ok) continue;
-			const j = await res.json();
-			const result = j?.chart?.result?.[0];
-			if (!result) continue;
-			setCache(`y:${ySym}:${interval}:${range}`, result, 45000);
-			return result;
-		} catch {
-			// try next host
-		}
-	}
-	return null;
+	return fetchYahooResult(
+		`/v8/finance/chart/${encodeURIComponent(ySym)}?interval=${interval}&range=${range}`,
+		`y:${ySym}:${interval}:${range}`,
+		45000,
+		9000,
+	);
 }
 
 function toQuote(symbol, result) {
@@ -164,27 +181,12 @@ async function fetchChartPeriod(ySym, interval, period1, period2) {
 	const end = Math.floor(period2 / 300) * 300;
 	const start = period1 === 0 ? 0 : Math.floor(period1 / 300) * 300;
 	const key = `yp:${ySym}:${interval}:${start}:${end}`;
-	const cached = getCache(key);
-	if (cached) return cached;
-	for (const host of HOSTS) {
-		try {
-			const ctrl = new AbortController();
-			const t = setTimeout(() => ctrl.abort(), 12000);
-			const res = await fetch(
-				`${host}/v8/finance/chart/${encodeURIComponent(ySym)}?interval=${interval}&period1=${start}&period2=${end}`,
-				{ headers: UA, signal: ctrl.signal },
-			).finally(() => clearTimeout(t));
-			if (!res.ok) continue;
-			const j = await res.json();
-			const result = j?.chart?.result?.[0];
-			if (!result) continue;
-			setCache(key, result, 5 * 60 * 1000);
-			return result;
-		} catch {
-			// try next host
-		}
-	}
-	return null;
+	return fetchYahooResult(
+		`/v8/finance/chart/${encodeURIComponent(ySym)}?interval=${interval}&period1=${start}&period2=${end}`,
+		key,
+		5 * 60 * 1000,
+		12000,
+	);
 }
 
 export async function yahooCandles(symbol, interval, limit) {

@@ -345,7 +345,7 @@ export default function AnalyticsPage() {
         )}
 
         <div className="ex-grid-3 mt-3">
-          <Link to="/app/terminal-pro" className="ex-card ex-card--pad ex-card--hover">
+          <Link to="/app/terminal" className="ex-card ex-card--pad ex-card--hover">
             <div className="flex items-center gap-2"><CandlestickChart className="h-4 w-4 text-[var(--ex-accent)]" /><h2 className="ex-card-title">{t('ana.advCharts', null, 'Advanced charts')}</h2></div>
             <p className="mt-1.5 text-[11px] leading-relaxed text-[var(--ex-muted)]">{t('ana.openCharts', null, 'Open the full chart workspace with drawings, layouts and live quotes.')}</p>
             <span className="mt-2 flex items-center gap-1 text-[10.5px] font-semibold text-[var(--ex-accent)]">Open terminal <ArrowRight className="h-3 w-3" /></span>

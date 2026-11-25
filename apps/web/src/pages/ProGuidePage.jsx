@@ -26,7 +26,7 @@ const CHAPTERS = [
       { id: 'trade.plan', title: 'Pick your plan', body: 'Premium unlocks the terminal, journal, analytics, SI coach and reports. Enterprise API and white-label licensing are separate.', to: '/pricing', cta: 'Compare plans' },
       { id: 'trade.broker', title: 'Connect a live broker', body: 'Sync executions automatically — no manual entry, no missing fills.', to: '/app/brokers', cta: 'Connect broker', auto: 'broker' },
       { id: 'trade.trade', title: 'Log your first trades', body: 'Three logged trades unlocks your P&L curve, win rate and trader score.', to: '/app/journal', cta: 'Open journal', auto: 'trades' },
-      { id: 'trade.terminal', title: 'Set up the terminal', body: 'Watchlists, quotes and one-tap tickets arranged your way.', to: '/app/terminal-pro', cta: 'Open terminal' },
+      { id: 'trade.terminal', title: 'Set up the terminal', body: 'Watchlists, quotes and one-tap tickets arranged your way.', to: '/app/terminal', cta: 'Open terminal' },
     ],
   },
   {
@@ -50,7 +50,7 @@ const CHAPTERS = [
       { id: 'markets.tv', title: 'Tune into TradingBible TV', body: 'Live desks, 24/7. Minimize it and it keeps playing while you work.', to: '/tv', cta: 'Open TV' },
       { id: 'markets.signals', title: 'Follow a signal', body: 'Entry, stop and targets with live status — paper-trade it first.', to: '/app/signals', cta: 'View signals' },
       { id: 'markets.calendar', title: 'Check the calendar', body: 'CPI, NFP, FOMC — never hold size through red-folders blind again.', to: '/app/economic-calendar', cta: 'Open calendar' },
-      { id: 'markets.charts', title: 'Work the Terminal Pro desk', body: 'Multi-chart layouts, indicators, drawings and timeframes that persist across sessions.', to: '/app/terminal-pro', cta: 'Open Terminal Pro' },
+      { id: 'markets.charts', title: 'Work the Terminal Pro desk', body: 'Multi-chart layouts, indicators, drawings and timeframes that persist across sessions.', to: '/app/terminal', cta: 'Open Terminal Pro' },
     ],
   },
   {

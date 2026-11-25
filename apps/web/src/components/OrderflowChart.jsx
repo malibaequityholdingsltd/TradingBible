@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
 	Pause, Play, RotateCcw, Crosshair, X, Maximize2,
 } from 'lucide-react';
-import orderflowFeed from '@/lib/orderflowFeed';
+import orderflowFeed, { isFlowSymbol } from '@/lib/orderflowFeed';
 import { useI18n } from '@/lib/i18n';
 
 const COLS = 180;
@@ -65,8 +65,8 @@ function emptyCol(rows) {
 // One self-contained order-flow pane: own buffers, own feed subscription,
 // canvas heatmap + VWAP + stats + (when expanded) ladder + tape.
 export default function OrderflowChart({
-	symbol, colSecs, rows, minTrade, intensity, paused, candleSecs,
-	expanded, focused, onFocus, onRemove, canRemove, onSample,
+	symbol, colSecs = 2, rows = 61, minTrade = 0, intensity = 1, paused = false, candleSecs = 60,
+	expanded, focused, onFocus, onRemove, canRemove, onSample, onSymbolChange,
 }) {
 	const [status, setStatus] = useState('idle');
 	const [stats, setStats] = useState({ last: 0, high: 0, low: 0, vol: 0, buyVol: 0, sellVol: 0, count: 0, biggest: 0, spread: 0, vwap: 0 });
@@ -160,7 +160,10 @@ export default function OrderflowChart({
 					const mid = (bestBid + bestAsk) / 2;
 					b.lastPrice = mid;
 					if (!b.anchor) {
-						b.tick = niceTick(mid / 500);
+						// Roughly 1% of price across the visible ladder so BTC's
+						// book is not stretched over a $12k range (which left the
+						// heat cells clustered in one row).
+						b.tick = niceTick(mid / 6000);
 						b.anchor = Math.round(mid / b.tick) * b.tick;
 						b.ts.high = mid; b.ts.low = mid;
 					}
@@ -460,6 +463,28 @@ export default function OrderflowChart({
 	const buyShare = stats.vol > 0 ? (stats.buyVol / stats.vol) * 100 : 50;
 	const vwapDist = stats.vwap && stats.last ? ((stats.last - stats.vwap) / stats.vwap) * 100 : 0;
 	const statusColor = status === 'connected' ? 'text-emerald-400' : status === 'reconnecting' || status === 'connecting' ? 'text-[#d4af37]' : 'text-red-400';
+
+	if (!isFlowSymbol(symbol)) {
+		return (
+			<div className="glass flex min-h-[320px] flex-col items-center justify-center gap-3 rounded-2xl border border-[#d4af37]/15 p-6 text-center">
+				<span className="term-label text-[#d4af37]">Order flow · crypto book</span>
+				<p className="max-w-md text-sm text-[#c9c4b4]">
+					{symbol.replace('USD', '/USD')} has no public order book. Order Flow needs a crypto
+					market with a live Binance book.
+				</p>
+				{onSymbolChange ? (
+					<button
+						onClick={() => onSymbolChange('BTCUSD')}
+						className="rounded-lg border border-[#d4af37]/35 bg-[#d4af37]/10 px-3 py-2 text-xs font-bold uppercase tracking-wider text-[#e8c95a] transition hover:border-[#d4af37]/70"
+					>
+						Open BTC/USD order flow
+					</button>
+				) : (
+					<p className="text-xs text-[#8a8577]">Choose a crypto symbol to open its book.</p>
+				)}
+			</div>
+		);
+	}
 
 	return (
 		<div className={`glass flex h-full flex-col overflow-hidden rounded-2xl ${focused ? 'ring-1 ring-[#d4af37]/50' : ''}`}>

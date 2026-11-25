@@ -101,7 +101,7 @@ function MarketRow({ symbol, quote }) {
   const change = quote?.changePercent;
   const up = Number(change) >= 0;
   return (
-    <Link to={`/app/terminal-pro?symbol=${encodeURIComponent(symbol)}`} className="ex-market-row">
+    <Link to={`/app/terminal?symbol=${encodeURIComponent(symbol)}`} className="ex-market-row">
       <span className="ex-market-row__symbol">
         <span className="ex-market-row__mark">{symbol.slice(0, 2)}</span>
         <span className="min-w-0">
@@ -166,7 +166,7 @@ export default function DashboardPage() {
           </div>
           <div className="ex-page-actions">
             <GoldButton to="/app/wallet?tab=cash"><Plus /> Deposit</GoldButton>
-            <GhostButton to="/app/terminal-pro"><CandlestickChart /> Trade</GhostButton>
+            <GhostButton to="/app/terminal"><CandlestickChart /> Trade</GhostButton>
           </div>
         </header>
 
@@ -260,7 +260,7 @@ export default function DashboardPage() {
                   <div className="ex-card-title">Open positions</div>
                   <div className="ex-card-sub">Live risk currently on the book</div>
                 </div>
-                <Link to="/app/terminal-pro" className="ex-btn ex-btn--ghost ex-btn--sm">Open terminal <ArrowRight /></Link>
+                <Link to="/app/terminal" className="ex-btn ex-btn--ghost ex-btn--sm">Open terminal <ArrowRight /></Link>
               </div>
               {openTrades.length ? (
                 <div className="ex-table-wrap">

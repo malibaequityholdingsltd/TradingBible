@@ -179,7 +179,7 @@ export default function PublicTerminalPage() {
           No orders, funds movement or broker connection. Market data may be delayed or unavailable.
         </p>
         <Link
-          to={memberNext('/app/terminal-pro')}
+          to={memberNext('/app/terminal')}
           className="mt-2.5 flex items-center justify-between gap-2 rounded-md border border-[#d4af37]/20 bg-[#d4af37]/[0.06] px-2.5 py-1.5 text-[10px] font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/45"
         >
           {isAuthed ? 'Open Terminal Pro' : 'Open member terminal'} <LockKeyhole className="h-3 w-3" />
@@ -192,7 +192,7 @@ export default function PublicTerminalPage() {
     <div className="tb-pub-term fixed inset-0 z-[60] flex h-[100dvh] flex-col overflow-hidden bg-[#07070a] text-[#e9e7df]">
       <header className="tb-pub-term__header relative z-30 flex h-12 shrink-0 items-center gap-1.5 border-b border-white/[0.08] bg-[#0a0a0f]/95 px-2">
         <Link
-          to="/terminal"
+          to="/app/terminal"
           aria-label="TradingBible public terminal"
           title="TradingBible public terminal"
           className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg border border-[#d4af37]/25 bg-[#d4af37]/10 transition hover:border-[#d4af37]/60"
@@ -246,7 +246,7 @@ export default function PublicTerminalPage() {
             <Home className="h-3.5 w-3.5" />
           </Link>
           <Link
-            to={isAuthed ? '/app/terminal-pro' : '/login'}
+            to={isAuthed ? '/app/terminal' : '/login'}
             className="flex h-8 items-center gap-1.5 rounded-md border border-[#d4af37]/25 bg-[#d4af37]/10 px-2 text-[10px] font-semibold text-[#e8c95a] transition hover:border-[#d4af37]/50"
           >
             <LogIn className="h-3.5 w-3.5" />
@@ -317,7 +317,7 @@ export default function PublicTerminalPage() {
                   onChartTypeChange={setChartType}
                   height="h-full"
                   hidePicker={false}
-                  brandHref="/terminal"
+                  brandHref="/app/terminal"
                   compact={isPhone}
                   publicMode
                   fullscreenSignal={params.get('fullscreen') === '1' ? 'public-fullscreen' : ''}
@@ -328,7 +328,7 @@ export default function PublicTerminalPage() {
             )}
             {tab !== 'chart' && (
               <div className="h-full overflow-y-auto p-2 sm:p-3">
-                {tab === 'orderflow' && <TBOrderflow symbol={symbol} />}
+                {tab === 'orderflow' && <TBOrderflow symbol={symbol} onSymbolChange={setSymbol} />}
                 {tab === 'footprint' && <TBFootprint symbol={symbol} onSymbolChange={selectSymbol} />}
                 {tab === 'heatmap' && <TBHeatmap onSelect={(next) => selectSymbol(next?.symbol || next)} />}
                 {tab === 'replay' && <ReplayPanel symbol={symbol} timeframe={timeframe} />}

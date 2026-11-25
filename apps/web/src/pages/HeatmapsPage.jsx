@@ -27,7 +27,7 @@ export default function HeatmapsPage() {
       <div className="tb-page">
         <PageBar
           actions={
-            <GhostButton to="/app/terminal-pro?view=heatmap" className="!px-3.5 !py-2 !text-xs">Terminal Pro</GhostButton>
+            <GhostButton to="/app/terminal?view=heatmap" className="!px-3.5 !py-2 !text-xs">Terminal Pro</GhostButton>
           }
         />
         <Card>
@@ -44,7 +44,7 @@ export default function HeatmapsPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <AddToWatchlist symbol={selected.symbol} />
-                  <GoldButton to={`/app/terminal-pro?symbol=${encodeURIComponent(selected.symbol)}`} className="!min-h-[36px] !px-3 !py-1.5 !text-xs">{t('mkt.openFull')} <ArrowUpRight className="h-3.5 w-3.5" /></GoldButton>
+                  <GoldButton to={`/app/terminal?symbol=${encodeURIComponent(selected.symbol)}`} className="!min-h-[36px] !px-3 !py-1.5 !text-xs">{t('mkt.openFull')} <ArrowUpRight className="h-3.5 w-3.5" /></GoldButton>
                   <button onClick={() => setSelected(null)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/15 text-[#8a8577] hover:text-[#e9e7df]"><X className="h-4 w-4" /></button>
                 </div>
               </div>

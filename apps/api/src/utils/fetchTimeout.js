@@ -19,6 +19,10 @@ export async function fetchTimeout(url, { timeoutMs = 8000, ...init } = {}) {
 // preference. Throws the last error when every host fails.
 export async function firstUpstream(hosts, buildUrl, { timeoutMs = 8000, init } = {}) {
 	const attempts = hosts.map(async (host) => fetchTimeout(buildUrl(host), { ...(init || {}), timeoutMs }));
+	// The race returns as soon as the first host succeeds. Attach handlers to
+	// every attempt so a slow losing host cannot surface a late AbortError as
+	// an unhandled rejection and take the API process down.
+	attempts.forEach((p) => p.catch(() => {}));
 	const errors = [];
 	for (const p of attempts) {
 		try {

@@ -129,8 +129,8 @@ function getMailCopy(emailData = {}) {
 export async function authSendEmailHandler(req, res, next) {
   try {
     if (!transporter) {
-      console.warn('SMTP not configured, skipping email send');
-      return res.status(200).json({});
+      console.error('[auth-email] SMTP not configured; refusing to report a code as sent.');
+      return res.status(503).json({ error: 'Email delivery is not configured' });
     }
 
     const payload = req.rawBody?.length ? req.rawBody.toString('utf8') : JSON.stringify(req.body || {});
@@ -165,7 +165,10 @@ export async function authSendEmailHandler(req, res, next) {
     const textBody = `TradingBible ${mail.subject}\n\n${String(emailData?.token || '')}\n${buildActionUrl(emailData, String(emailData?.email_action_type || '').toLowerCase())}`.trim();
     const htmlBody = brandShell({ title: mail.title, body: mail.body });
     // Hostinger requires envelope-from == SMTP user exactly, otherwise 553.
-    // First try display-name From, then fall back to bare address.
+    // First try display-name From, then fall back to bare address. If both
+    // attempts fail, return a non-2xx so Supabase (and the UI) never reports
+    // a code as sent when no email actually left the server.
+    let delivered = false;
     try {
       await transporter.sendMail({
         from: `"${smtpFromName}" <${smtpFromEmail}>`,
@@ -175,9 +178,10 @@ export async function authSendEmailHandler(req, res, next) {
         text: textBody,
         html: htmlBody,
       });
+      delivered = true;
     } catch (firstErr) {
       const msg = String(firstErr?.message || '');
-      console.error('SMTP send attempt 1 failed:', msg, 'to', to);
+      console.error('[auth-email] send attempt 1 failed:', msg, 'to', to);
       if (/553|sender|owned|rejected/i.test(msg)) {
         try {
           await transporter.sendMail({
@@ -188,14 +192,15 @@ export async function authSendEmailHandler(req, res, next) {
             text: textBody,
             html: htmlBody,
           });
+          delivered = true;
         } catch (secondErr) {
-          console.error('SMTP send attempt 2 failed:', String(secondErr?.message || secondErr), 'to', to, 'token', String(emailData?.token || '').slice(0, 2) + '****');
+          console.error('[auth-email] send attempt 2 failed:', String(secondErr?.message || secondErr), 'to', to);
         }
-      } else {
-        console.error('SMTP send failed:', msg, 'to', to);
       }
-      // Always return 200 so Supabase OTP is still created — user can resend,
-      // use OAuth, or contact support. Never block login with a 500.
+    }
+
+    if (!delivered) {
+      return res.status(502).json({ error: 'Email delivery failed' });
     }
 
     return res.status(200).json({});

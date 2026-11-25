@@ -66,7 +66,7 @@ function SignalCard({ symbol, timeframe, onResult, onSave }) {
       <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/5 pt-3">
         <span className="font-mono text-xs text-[#8a8577]">px {sig.price}</span>
         <div className="flex flex-wrap gap-2">
-          <GhostButton to={`/app/terminal-pro?symbol=${symbol}`} className="min-h-[36px] px-2.5 py-1 text-[11px]">{t('sig.chart')}</GhostButton>
+          <GhostButton to={`/app/terminal?symbol=${symbol}`} className="min-h-[36px] px-2.5 py-1 text-[11px]">{t('sig.chart')}</GhostButton>
           {side && <button onClick={() => onSave(symbol, timeframe, sig, planLevels(sig.price, candles), side)} className="flex min-h-[36px] items-center gap-1 rounded-xl bg-[#d4af37]/15 px-2.5 py-1 text-[11px] text-[#d4af37] hover:bg-[#d4af37]/25"><Save className="h-3 w-3" /> {t('c.add')}</button>}
         </div>
       </div>

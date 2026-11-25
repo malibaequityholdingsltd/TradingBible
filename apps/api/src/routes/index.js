@@ -5,6 +5,7 @@ import marketData from './market-data.js';
 import marketNews from './market-news.js';
 import quotes from './quotes.js';
 import candles from './candles.js';
+import orderflow from './orderflow.js';
 import indicator from './indicator.js';
 import heatmap from './heatmap.js';
 import economicCalendar from './economic-calendar.js';
@@ -56,6 +57,7 @@ export default () => {
     router.get('/market-news', marketNews);
     router.get('/quotes', quotes);
     router.get('/candles', candles);
+    router.get('/orderflow', orderflow);
     router.get('/indicator', indicator);
     router.get('/heatmap', heatmap);
     router.get('/economic-calendar', economicCalendar);

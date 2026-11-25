@@ -379,6 +379,19 @@ html:has(.tb-focus-root) { scrollbar-gutter: auto; }
 .tb-focus-tab.is-active svg { opacity: 1; }
 
 .tb-focus-stage--panel { overflow: hidden; }
+/* Keep the chart mounted (so switching back is instant) but hide its canvas,
+ * legend and floating controls behind the desk panel. */
+.tb-focus-stage--panel > .tb-focus-chart { visibility: hidden; }
+.tb-focus-panel-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  padding: 10px;
+  background:
+    radial-gradient(900px 500px at 45% 20%, rgba(231, 198, 107, 0.025), transparent 70%),
+    var(--tbv-bg);
+}
 .tb-focus-panel {
   flex: 1 1 auto;
   min-height: 0;
@@ -1330,7 +1343,8 @@ html:has(.tb-focus-root) { scrollbar-gutter: auto; }
   .tb-focus-market-btn { display: inline-flex; }
   .tb-focus-tabs { padding: 0 6px; }
   .tb-focus-tab { height: 36px; padding: 0 9px; font-size: 9px; }
-  .tb-focus-stage--panel { padding: 6px; }
+  .tb-focus-stage--panel { padding: 0; }
+  .tb-focus-panel-overlay { padding: 6px; }
   .tb-focus-panel { border-radius: 8px; padding: 6px; }
   .tb-focus-top { gap: 10px; }
   .tb-focus-tool--label span,

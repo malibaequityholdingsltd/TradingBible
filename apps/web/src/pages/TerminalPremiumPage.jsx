@@ -125,7 +125,8 @@ export default function TerminalPremiumPage() {
   const { symbol, timeframe, chartType, centerTab, watchlist, features } = workspace;
   const [params, setParams] = useSearchParams();
   const location = useLocation();
-  const wantsFullscreen = params.get('fullscreen') === '1';
+  const wantsFullscreen = params.get('fullscreen') === '1'
+    || (params.get('desk') !== '1' && (!params.get('view') || params.get('view') === 'chart'));
   const [focusNonce, setFocusNonce] = useState(0);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [chartLayout, setChartLayout] = useState('single'); // single | split | quad
@@ -139,6 +140,9 @@ export default function TerminalPremiumPage() {
   // Both desk sidebars belong on a desktop terminal. Below xl they become
   // drawers, so they start closed to keep the chart full-width on tablets.
   const [ticketOpen, setTicketOpen] = useState(() => (typeof window === 'undefined' ? true : window.innerWidth >= 1280));
+  // The fullscreen desk has its own active view so switching tabs never
+  // unmounts the chart (and never leaves the immersive URL).
+  const [focusTab, setFocusTab] = useState('chart');
   const [dataOpen, setDataOpen] = useState(false);
   const [panelMenuOpen, setPanelMenuOpen] = useState(false);
   const [logs, setLogs] = useState([]);
@@ -203,15 +207,26 @@ export default function TerminalPremiumPage() {
     if (!wantsFullscreen) return;
     if (centerTab !== 'chart') patch({ centerTab: 'chart' });
     if (chartLayout !== 'single') setChartLayout('single');
+    setFocusTab('chart');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wantsFullscreen, location.key, focusNonce]);
   const fullscreenSignal = wantsFullscreen ? `${location.key}:${focusNonce}` : '';
   const exitFullscreen = useCallback(() => {
-    if (!wantsFullscreen) return;
     const next = new URLSearchParams(params);
+    if (next.get('desk') === '1' && !next.has('fullscreen')) return;
     next.delete('fullscreen');
+    next.set('desk', '1');
     setParams(next, { replace: true });
-  }, [params, setParams, wantsFullscreen]);
+  }, [params, setParams]);
+  // Leaving the immersive desk returns to the same tab on the dashboard.
+  const handleFullscreenExit = useCallback(() => {
+    const tab = focusTab;
+    exitFullscreen();
+    if (tab !== 'chart') {
+      patch({ centerTab: tab });
+      setFocusTab('chart');
+    }
+  }, [exitFullscreen, focusTab, patch]);
 
   // Phone chart: measure the space between the stage and the fixed dock. The
   // old viewport-minus-300 guess let the chart run under the tab bar; this
@@ -333,7 +348,7 @@ export default function TerminalPremiumPage() {
   // Share the terminal view: native share sheet where available, otherwise
   // copy the link (deep link carries symbol + view).
   const shareView = async () => {
-    const url = `${window.location.origin}/app/terminal-pro?symbol=${encodeURIComponent(symbol)}&view=${encodeURIComponent(centerTab)}`;
+    const url = `${window.location.origin}/app/terminal?symbol=${encodeURIComponent(symbol)}&view=${encodeURIComponent(centerTab)}`;
     const text = `TradingBible Terminal — ${symbol} ${timeframe}`;
     try {
       if (navigator.share) { await navigator.share({ title: 'TradingBible Terminal', text, url }); log('view shared'); return; }
@@ -424,6 +439,43 @@ export default function TerminalPremiumPage() {
     onOpenData: () => setDataOpen(true),
   };
 
+  // The same desk panels run in the dashboard stage and in the fullscreen
+  // tab strip. `inFocus` lets the focus shell own scrolling while the
+  // dashboard stage keeps its own scroll area.
+  const renderDeskPanel = (tab, inFocus = false) => {
+    const wrap = inFocus ? 'p-2' : 'h-full min-h-0 overflow-y-auto p-2';
+    if (tab === 'orderflow' && hasFeature(features, 'orderflow')) {
+      return <div className={wrap}><TBOrderflow symbol={symbol} onSymbolChange={(s) => { patch({ symbol: s }); log(`symbol → ${s}`); }} /></div>;
+    }
+    if (tab === 'footprint' && hasFeature(features, 'footprint')) {
+      return <div className={wrap}><TBFootprint symbol={symbol} onSymbolChange={(s) => { patch({ symbol: s }); log(`symbol → ${s}`); }} /></div>;
+    }
+    if (tab === 'heatmap' && hasFeature(features, 'heatmap')) {
+      return (
+        <div className={wrap}>
+          <TBHeatmap
+            category={workspace.heatmap.category}
+            period={workspace.heatmap.period}
+            onSelect={(s) => patch({ symbol: typeof s === 'string' ? s : s?.symbol })}
+          />
+        </div>
+      );
+    }
+    if (tab === 'dom' && hasFeature(features, 'dom')) {
+      return <div className={wrap}><DomPanel symbol={symbol} price={price} onPaperOrder={paperOrder} /></div>;
+    }
+    if (tab === 'replay' && hasFeature(features, 'replay')) {
+      return <div className={wrap}><ReplayPanel symbol={symbol} timeframe={timeframe} /></div>;
+    }
+    if (tab === 'indicators' && hasFeature(features, 'indicators')) {
+      return <div className={wrap}><TBIndicators symbol={symbol} timeframe={timeframe} /></div>;
+    }
+    if (tab === 'news' && hasFeature(features, 'news')) {
+      return <div className={wrap}><TBNews symbol={symbol} /></div>;
+    }
+    return null;
+  };
+
   return (
     <AppLayout title="Terminal Pro">
       <TradingBibleTerminal symbol={symbol} account={{ id: workspace.risk.accountId }} features={features} autosave restoreWorkspace>
@@ -432,9 +484,9 @@ export default function TerminalPremiumPage() {
           <header className="tb-desk-header">
             <div className="tb-desk-header__lead">
               <Link
-                to="/terminal"
-                aria-label="Open the TradingBible public terminal"
-                title="Open the TradingBible public terminal"
+                to="/app/terminal"
+                aria-label="Open the TradingBible terminal"
+                title="Open the TradingBible terminal"
                 className="tb-desk-brand"
               >
                 <img
@@ -638,11 +690,15 @@ export default function TerminalPremiumPage() {
                             onLayoutChange={setChartLayout}
                             height="h-full"
                             hidePicker={false}
-                            brandHref="/terminal"
+                            brandHref="/app/terminal"
                             compact={isPhone}
                             fullscreenSignal={fullscreenSignal}
-                            onFullscreenExit={exitFullscreen}
+                            onFullscreenExit={handleFullscreenExit}
                             desk={focusDesk}
+                            deskTabs={visibleTabs}
+                            deskTab={focusTab}
+                            onDeskTabChange={(id) => { setFocusTab(id); log(`desk view → ${id}`); }}
+                            deskPanel={focusTab !== 'chart' ? renderDeskPanel(focusTab, true) : null}
                           />
                         </div>
                       )
@@ -674,15 +730,7 @@ export default function TerminalPremiumPage() {
                         </div>
                       )
                   )}
-                  {centerTab === 'orderflow' && hasFeature(features, 'orderflow') && <div className="p-2"><TBOrderflow symbol={symbol} /></div>}
-                  {centerTab === 'footprint' && hasFeature(features, 'footprint') && <div className="p-2"><TBFootprint symbol={symbol} onSymbolChange={(s) => { patch({ symbol: s }); log(`symbol → ${s}`); }} /></div>}
-                  {centerTab === 'heatmap' && hasFeature(features, 'heatmap') && (
-                    <div className="p-2"><TBHeatmap category={workspace.heatmap.category} period={workspace.heatmap.period} onSelect={(s) => patch({ symbol: typeof s === 'string' ? s : s?.symbol })} /></div>
-                  )}
-                  {centerTab === 'dom' && hasFeature(features, 'dom') && <div className="p-2"><DomPanel symbol={symbol} price={price} onPaperOrder={paperOrder} /></div>}
-                  {centerTab === 'replay' && hasFeature(features, 'replay') && <div className="p-2"><ReplayPanel symbol={symbol} timeframe={timeframe} /></div>}
-                  {centerTab === 'indicators' && hasFeature(features, 'indicators') && <div className="p-2"><TBIndicators symbol={symbol} timeframe={timeframe} /></div>}
-                  {centerTab === 'news' && hasFeature(features, 'news') && <div className="p-2"><TBNews symbol={symbol} /></div>}
+                  {centerTab !== 'chart' && renderDeskPanel(centerTab)}
                   {/* Floating command cluster — pinned flush to the stage floor.
                       The stage clips overflow, so it can never pass the layout.
                       The chart view uses its own in-chart toolbar instead. */}

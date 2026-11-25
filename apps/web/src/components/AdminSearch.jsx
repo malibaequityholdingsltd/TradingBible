@@ -76,7 +76,7 @@ export default function AdminSearch() {
     return [
       ...adminPages,
       P('Trader App', LayoutDashboard, 'Trader Dashboard', 'app dashboard home overview portfolio', '/app'),
-      P('Trader App', MonitorPlay, 'Terminal Pro', 'terminal charts workstation trading desk candles', '/app/terminal-pro'),
+      P('Trader App', MonitorPlay, 'Terminal Pro', 'terminal charts workstation trading desk candles', '/app/terminal'),
       P('Trader App', BookOpen, 'Trade Journal', 'journal trades entries exits notes diary', '/app/journal'),
       P('Trader App', BarChart3, 'Analytics', 'analytics equity drawdown performance discipline score', '/app/analytics'),
       P('Trader App', LineChart, 'Signals', 'signals indicator market ideas long short', '/app/signals'),

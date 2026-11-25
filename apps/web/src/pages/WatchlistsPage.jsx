@@ -130,7 +130,7 @@ export default function WatchlistsPage() {
           actions={(
             <>
               <GoldButton onClick={() => setCreating(true)} className="!min-h-[40px] !px-4"><Plus className="h-4 w-4" /> New watchlist</GoldButton>
-              <GhostButton to="/app/terminal-pro" className="!min-h-[40px] !px-4"><LineChart className="h-4 w-4" /> Terminal Pro</GhostButton>
+              <GhostButton to="/app/terminal" className="!min-h-[40px] !px-4"><LineChart className="h-4 w-4" /> Terminal Pro</GhostButton>
             </>
           )}
         />
@@ -165,7 +165,7 @@ export default function WatchlistsPage() {
               <>
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                   <h2 className="mr-auto text-lg font-semibold text-[#f0ecdd]">{active.name}</h2>
-                  <GhostButton to={`/app/terminal-pro${symbols[0] ? `?symbol=${encodeURIComponent(symbols[0])}` : ''}`} className="!min-h-0 !px-2.5 !py-1.5 !text-xs"><LineChart className="h-3.5 w-3.5" /> Terminal Pro</GhostButton>
+                  <GhostButton to={`/app/terminal${symbols[0] ? `?symbol=${encodeURIComponent(symbols[0])}` : ''}`} className="!min-h-0 !px-2.5 !py-1.5 !text-xs"><LineChart className="h-3.5 w-3.5" /> Terminal Pro</GhostButton>
                   <span className={`h-1.5 w-1.5 rounded-full ${status === 'live' ? 'bg-emerald-400 animate-pulse' : 'bg-[#d4af37]'}`} />
                   {!active.isDefault && <GhostButton onClick={() => setDefault(active.id)} className="!min-h-0 !px-2.5 !py-1.5 !text-xs"><Star className="h-3.5 w-3.5" /> {t('wl.pin')}</GhostButton>}
                   <div className="flex overflow-hidden rounded-lg border border-[#d4af37]/15">
@@ -233,7 +233,7 @@ export default function WatchlistsPage() {
                             <span>L {fmt(r.low)}</span>
                             <span>Vol {fmtVol(r.volume)}</span>
                             <span className="ml-auto inline-flex items-center gap-2">
-                              <Link to={`/app/terminal-pro?symbol=${encodeURIComponent(r.symbol)}`} aria-label={`Open ${r.symbol} in Terminal Pro`} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37]"><LineChart className="h-4 w-4" /></Link>
+                              <Link to={`/app/terminal?symbol=${encodeURIComponent(r.symbol)}`} aria-label={`Open ${r.symbol} in Terminal Pro`} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/20 text-[#d4af37]"><LineChart className="h-4 w-4" /></Link>
                               <button onClick={() => removeSymbol(active.id, r.symbol)} aria-label={`Remove ${r.symbol}`} className="grid h-8 w-8 place-items-center rounded-lg border border-red-400/20 text-red-400"><X className="h-4 w-4" /></button>
                             </span>
                           </div>
@@ -262,7 +262,7 @@ export default function WatchlistsPage() {
                               <td className="py-2.5 text-right font-mono text-[#c9c4b4]">{fmtVol(r.volume)}</td>
                               <td className="py-2.5 text-right">
                                 <span className="inline-flex items-center gap-1">
-                                  <Link to={`/app/terminal-pro?symbol=${encodeURIComponent(r.symbol)}`} title="Open in Terminal Pro" className="text-[#8a8577] hover:text-[#d4af37]"><LineChart className="h-4 w-4" /></Link>
+                                  <Link to={`/app/terminal?symbol=${encodeURIComponent(r.symbol)}`} title="Open in Terminal Pro" className="text-[#8a8577] hover:text-[#d4af37]"><LineChart className="h-4 w-4" /></Link>
                                   <button onClick={() => removeSymbol(active.id, r.symbol)} className="text-[#5f5b50] hover:text-red-400"><X className="h-4 w-4" /></button>
                                 </span>
                               </td>

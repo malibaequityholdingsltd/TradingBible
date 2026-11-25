@@ -42,6 +42,7 @@ export function TBChart({
   onTimeframeChange, onChartTypeChange, onOpenReplay, layout, onLayoutChange,
   height = '', compact = false, showToolbar = true, hidePicker = false,
   brandHref = '', publicMode = false, fullscreenSignal = '', onFullscreenExit, desk = null,
+  deskTabs = [], deskTab = 'chart', onDeskTabChange, deskPanel = null,
 }) {
   return (
     <TradingBibleChart
@@ -66,18 +67,22 @@ export function TBChart({
       fullscreenSignal={fullscreenSignal}
       onFullscreenExit={onFullscreenExit}
       desk={desk}
+      deskTabs={deskTabs}
+      deskTab={deskTab}
+      onDeskTabChange={onDeskTabChange}
+      deskPanel={deskPanel}
     />
   );
 }
 
-export function TBOrderflow({ symbol }) {
+export function TBOrderflow({ symbol, onSymbolChange }) {
   return (
     <div>
       {/* Order-flow canvas is engineered as a dark pro stage (like a
           Bloomberg panel) — intentionally dark in both themes so the
           heat cells, delta and auction graphics stay exactly calibrated. */}
       <div className="term-stage overflow-hidden rounded-xl border border-[#d4af37]/25">
-        <OrderflowChart symbol={symbol} />
+        <OrderflowChart symbol={symbol} onSymbolChange={onSymbolChange} />
       </div>
       <div className="mt-1.5 flex justify-between gap-2">
         <span className="term-faint text-xs">Pro dark stage · calibrated for microstructure contrast</span>

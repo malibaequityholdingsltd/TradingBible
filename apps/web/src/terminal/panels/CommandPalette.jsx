@@ -8,7 +8,7 @@ import { TIMEFRAMES } from '@/lib/chartTimeframes';
 import { DESK_PRESETS } from '@/terminal/premiumStore';
 
 const PAGES = [
-  ['Terminal Pro', '/app/terminal-pro'], ['Order Flow', '/app/orderflow'], ['Heatmaps', '/app/heatmaps'],
+  ['Terminal Pro', '/app/terminal'], ['Order Flow', '/app/orderflow'], ['Heatmaps', '/app/heatmaps'],
   ['Journal', '/app/journal'], ['Backtest', '/app/backtest'], ['Paper', '/app/paper'],
   ['Challenges', '/app/challenges'], ['Brokers', '/app/brokers'], ['Wallet', '/app/wallet'],
 ];

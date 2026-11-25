@@ -64,8 +64,8 @@ export function AppChromeShell({ children }) {
   );
 }
 
-const TERMINAL_PATH = '/app/terminal-pro';
-const TERMINAL_HOME = `${TERMINAL_PATH}?fullscreen=1`;
+const TERMINAL_PATH = '/app/terminal';
+const TERMINAL_HOME = TERMINAL_PATH;
 const isTerminalLink = (to) => String(to || '').split(/[?#]/, 1)[0] === TERMINAL_PATH;
 
 const NAV_GROUPS = [

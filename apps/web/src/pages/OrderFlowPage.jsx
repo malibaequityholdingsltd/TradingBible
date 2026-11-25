@@ -176,7 +176,7 @@ export default function OrderFlowPage() {
 						<span className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4af37]">{market === 'crypto' || market === 'all' ? t('of.depthHead', { a: panes.length, b: MAX_PANES }) : t('of.tapeHead', { a: tapePanes.length, b: MAX_PANES })}</span>
 					</div>
 					<span className="ml-auto flex items-center gap-1.5">
-						<GhostButton to="/app/terminal-pro?view=orderflow" className="!min-h-0 !px-2.5 !py-1.5 !text-xs">Terminal Pro</GhostButton>
+						<GhostButton to="/app/terminal?view=orderflow" className="!min-h-0 !px-2.5 !py-1.5 !text-xs">Terminal Pro</GhostButton>
 						<button onClick={() => setPaused((p) => !p)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d4af37]/25 text-[#d4af37] transition hover:border-[#d4af37]/60" aria-label={paused ? t('of.resumeAll') : t('of.pauseAll')}>
 							{paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
 						</button>

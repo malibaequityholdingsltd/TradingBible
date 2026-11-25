@@ -57,7 +57,7 @@ function WatchlistWidget() {
             const chg = numOrNull(q?.changePercent);
             const pos = (chg ?? 0) >= 0;
             return (
-              <Link key={sym || s} to={`/app/terminal-pro?symbol=${encodeURIComponent(sym)}`} className="ex-widget__row">
+              <Link key={sym || s} to={`/app/terminal?symbol=${encodeURIComponent(sym)}`} className="ex-widget__row">
                 <span className="ex-widget__symbol">{sym || '—'}</span>
                 <span className="flex items-center gap-2">
                   <span className="ex-widget__value text-[var(--ex-text-2)]">{fmt(q?.price)}</span>
@@ -104,7 +104,7 @@ function MiniSignal({ symbol }) {
   const meta = sig ? SIGNAL_META[sig.signalType] : null;
   const Icon = String(sig?.signalType || '').includes('buy') ? ArrowUpRight : String(sig?.signalType || '').includes('sell') ? ArrowDownRight : Minus;
   return (
-    <Link to={`/app/terminal-pro?symbol=${encodeURIComponent(symbol)}`} className="ex-widget__row">
+    <Link to={`/app/terminal?symbol=${encodeURIComponent(symbol)}`} className="ex-widget__row">
       <span className="ex-widget__symbol">{txt(symbol, '—')}</span>
       {meta ? <span className="flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ color: meta.color, background: meta.bg }}><Icon className="h-3 w-3" />{t('sig.st_' + sig.signalType)}</span> : <span className="text-[10px] text-[var(--ex-muted)]">…</span>}
     </Link>

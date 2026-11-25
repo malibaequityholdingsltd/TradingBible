@@ -6,7 +6,7 @@
 // changes, update this file and the route table together.
 
 export const PRODUCT_SURFACES = [
-  { id: 'terminal', name: 'Terminal Pro', to: '/app/terminal-pro', gate: 'Premium', area: 'Trading', note: 'Charts, workspace, order tickets and broker-synced context.' },
+  { id: 'terminal', name: 'Terminal Pro', to: '/app/terminal', gate: 'Premium', area: 'Trading', note: 'Charts, workspace, order tickets and broker-synced context.' },
   { id: 'journal', name: 'Trade Journal', to: '/app/journal', gate: 'Premium', area: 'Trading', note: 'Manual and broker-synced entries, exits, notes and review.' },
   { id: 'analytics', name: 'Trader Analytics', to: '/app/analytics', gate: 'Premium', area: 'Trading', note: 'Equity, drawdown, performance and discipline analytics.' },
   { id: 'signals', name: 'Signals', to: '/app/signals', gate: 'Premium', area: 'Markets', note: 'Published signal ideas, market tab and resolution.' },
