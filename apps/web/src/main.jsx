@@ -60,9 +60,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 );
 console.log('[main.jsx] App mounted');
 
-// PWA service worker registration (production only).
+// Service workers are intentionally not registered. The old worker cached
+// market-data responses and could leave the terminal stuck on LOADING. The
+// deployed /sw.js is now a kill switch that unregisters existing workers.
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
-	window.addEventListener('load', () => {
-		navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(() => {});
-	});
+	navigator.serviceWorker.getRegistrations?.()
+		.then((regs) => Promise.all(regs.map((reg) => reg.unregister().catch(() => {}))))
+		.catch(() => {});
 }
