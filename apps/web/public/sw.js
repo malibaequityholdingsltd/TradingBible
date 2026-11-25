@@ -1,8 +1,8 @@
 // TradingBible Service Worker - Offline First, Push Notifications, Background Sync
-const CACHE_NAME = 'tradingbible-v1.9.0';
-const STATIC_CACHE = 'tradingbible-static-v1.9.0';
-const DYNAMIC_CACHE = 'tradingbible-dynamic-v1.9.0';
-const API_CACHE = 'tradingbible-api-v1.9.0';
+const CACHE_NAME = 'tradingbible-v1.9.1';
+const STATIC_CACHE = 'tradingbible-static-v1.9.1';
+const DYNAMIC_CACHE = 'tradingbible-dynamic-v1.9.1';
+const API_CACHE = 'tradingbible-api-v1.9.1';
 
 const STATIC_ASSETS = [
   '/',
@@ -29,6 +29,10 @@ const API_PATTERNS = [
   /^https?:\/\/.*\/ads\/channels/,
 ];
 
+// Live market data must always hit the network. Caching these responses in
+// the SW made the terminal sit on a stale/empty candle body until reload.
+const LIVE_API = /\/(candles|quotes|orderflow|heatmap|market-news|economic-calendar|indicator|market-data)(\?|$)/;
+
 // Install - cache static assets. Activation stays behind the user prompt so
 // an open tab is not switched to a new bundle unexpectedly.
 self.addEventListener('install', (event) => {
@@ -37,7 +41,7 @@ self.addEventListener('install', (event) => {
       return cache.addAll(STATIC_ASSETS).catch((err) => {
         console.warn('[SW] Some static assets failed to cache:', err);
       })
-    })
+    }).then(() => self.skipWaiting())
   );
 });
 
@@ -66,7 +70,7 @@ self.addEventListener('fetch', (event) => {
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
 
   // API requests - Network First with cache fallback
-  if (API_PATTERNS.some(pattern => pattern.test(request.url))) {
+  if (API_PATTERNS.some(pattern => pattern.test(request.url)) && !LIVE_API.test(url.pathname)) {
     event.respondWith(networkFirstWithCache(event.request, API_CACHE));
     return;
   }
@@ -224,4 +228,4 @@ self.addEventListener('message', (event) => {
   }
 });
 
-console.log('[SW] TradingBible Service Worker v1.9.0 loaded');
+console.log('[SW] TradingBible Service Worker v1.9.1 loaded');
