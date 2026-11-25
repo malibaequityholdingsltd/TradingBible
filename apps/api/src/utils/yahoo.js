@@ -165,6 +165,13 @@ const CANDLE_PLAN = {
 	'1d': ['1d', '1y', 1], '1w': ['1wk', '2y', 1], '1M': ['1mo', 'max', 1],
 };
 
+// Range values for full-history requests. These are Yahoo's maximum lookback
+// per interval; the small CANDLE_PLAN ranges above are for live tail refreshes.
+const FULL_RANGE = {
+	'1m': '7d', '5m': '60d', '15m': '60d', '30m': '60d',
+	'1h': '730d', '4h': '730d', '1d': 'max', '1w': 'max', '1M': 'max',
+};
+
 // Yahoo's documented maximum lookback for intraday candles. Daily and longer
 // can go back to the instrument's first trade; intraday is capped by Yahoo.
 const FULL_INTRADAY_SECONDS = {
@@ -194,15 +201,17 @@ export async function yahooCandles(symbol, interval, limit) {
 	const plan = CANDLE_PLAN[interval];
 	if (!ySym || !plan) return null;
 	const [yInt, range, group] = plan;
-	let result = null;
-	if (limit > 1000) {
-		const now = Math.round(Date.now() / 1000);
-		// Yahoo rejects intraday windows that reach even a few minutes past
-		// its maximum lookback, so keep a small safety margin.
-		const start = ['1d', '1w', '1M'].includes(interval)
-			? 0
-			: now - (FULL_INTRADAY_SECONDS[interval] || 60 * 86400) + 2 * 3600;
-		result = await fetchChartPeriod(ySym, yInt, start, now);
+	// Daily/weekly/monthly use a period request from epoch: Yahoo's range=max
+	// silently downsamples daily bars to ~monthly (169 rows for AAPL instead
+	// of 11,582). Intraday uses a plain max-range request; requesting period1
+	// at the exact intraday boundary is rejected by Yahoo and made first loads
+	// take a minute while it fell through every provider.
+	let result;
+	if (limit > 1000 && ['1d', '1w', '1M'].includes(interval)) {
+		result = await fetchChartPeriod(ySym, yInt, 0, Math.round(Date.now() / 1000));
+	} else {
+		const fullRange = limit > 1000 ? (FULL_RANGE[interval] || range) : range;
+		result = await fetchChart(ySym, yInt, fullRange);
 	}
 	if (!result) result = await fetchChart(ySym, yInt, range);
 	const ts = result?.timestamp;
