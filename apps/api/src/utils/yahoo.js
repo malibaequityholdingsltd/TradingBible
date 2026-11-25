@@ -16,7 +16,7 @@ function getCache(key) {
 	return null;
 }
 function setCache(key, value, ttlMs) {
-	if (cache.size > 500) cache.clear();
+	if (cache.size > 2000) cache.clear();
 	cache.set(key, { value, expires: Date.now() + ttlMs });
 }
 
@@ -93,11 +93,11 @@ async function fetchYahooResult(path, cacheKey, ttlMs, timeoutMs) {
 	}
 }
 
-async function fetchChart(ySym, interval, range) {
+async function fetchChart(ySym, interval, range, ttlMs = 45000) {
 	return fetchYahooResult(
 		`/v8/finance/chart/${encodeURIComponent(ySym)}?interval=${interval}&range=${range}`,
 		`y:${ySym}:${interval}:${range}`,
-		45000,
+		ttlMs,
 		9000,
 	);
 }
@@ -211,7 +211,8 @@ export async function yahooCandles(symbol, interval, limit) {
 		result = await fetchChartPeriod(ySym, yInt, 0, Math.round(Date.now() / 1000));
 	} else {
 		const fullRange = limit > 1000 ? (FULL_RANGE[interval] || range) : range;
-		result = await fetchChart(ySym, yInt, fullRange);
+		const ttl = limit > 1000 ? 5 * 60 * 1000 : 45000;
+		result = await fetchChart(ySym, yInt, fullRange, ttl);
 	}
 	if (!result) result = await fetchChart(ySym, yInt, range);
 	const ts = result?.timestamp;
