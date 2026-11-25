@@ -343,6 +343,10 @@ export default function TradingBibleChart({
   fullscreenSignal = '',
   onFullscreenExit,
   desk = null,
+  deskTabs = [],
+  deskTab = 'chart',
+  onDeskTabChange,
+  deskPanel = null,
 }) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -383,7 +387,7 @@ export default function TradingBibleChart({
   }, [onChartTypeChange]);
 
   const candleSymbol = isTv ? null : activeSymbol;
-  const { candles, status, refresh, source } = useCandles(candleSymbol, activeTimeframe, { limit: 500, refreshMs: 15000 });
+  const { candles, status, refresh, source } = useCandles(candleSymbol, activeTimeframe, { limit: 20000, full: true, refreshMs: 15000 });
   // Compare is stored per symbol. A single global value let the ETHUSD pane
   // in a split layout erase the main XAUUSD chart's ETHUSD comparison.
   const [compareMap, setCompareMap] = useState(readCompareMap);
@@ -394,7 +398,7 @@ export default function TradingBibleChart({
     setCompareMap((previous) => ({ ...previous, [activeSymbol]: clean }));
   }, [activeSymbol]);
   const compareFeedSymbol = compareSymbol && compareSymbol !== activeSymbol ? compareSymbol : null;
-  const { candles: compareCandles } = useCandles(isTv ? null : compareFeedSymbol, activeTimeframe, { limit: 500, refreshMs: 30000 });
+  const { candles: compareCandles } = useCandles(isTv ? null : compareFeedSymbol, activeTimeframe, { limit: 2000, full: true, refreshMs: 30000 });
   const dz = useDrawings(activeSymbol);
 
   const [indicators, setIndicators] = useState(() => readIndicators(symbol));
@@ -1934,6 +1938,11 @@ export default function TradingBibleChart({
     </div>
   ) : null;
 
+  const focusTabs = fullscreen && Array.isArray(deskTabs) ? deskTabs : [];
+  const activeDeskTab = focusTabs.some((tab) => tab.id === deskTab) ? deskTab : 'chart';
+  const showingChart = activeDeskTab === 'chart';
+  const activeDeskTabLabel = focusTabs.find((tab) => tab.id === activeDeskTab)?.label || '';
+
   const focusTop = fullscreen ? (
     <FocusTopBar
       brandHref={brandHref}
@@ -1967,6 +1976,7 @@ export default function TradingBibleChart({
       objects={dz.drawings.length}
       timeframe={activeTimeframe}
       chartType={effectiveType}
+      viewLabel={activeDeskTabLabel}
       workspace={desk?.workspace}
     />
   ) : null;
@@ -1982,7 +1992,7 @@ export default function TradingBibleChart({
     onSelectSymbol: desk.onSelectSymbol || changeSymbol,
   } : null;
 
-  const zoomDock = fullscreen ? (
+  const zoomDock = fullscreen && showingChart ? (
     <div className="tb-chart-zoom-dock tb-focus-zoom" role="group" aria-label="Chart zoom">
       <button type="button" onClick={zoomOutView} title="Zoom out" aria-label="Zoom out"><ZoomOut className="h-4 w-4" /></button>
       <button type="button" onClick={resetView} title="Fit chart to screen" aria-label="Fit chart to screen"><Crosshair className="h-4 w-4" /></button>
@@ -1997,13 +2007,44 @@ export default function TradingBibleChart({
       {fullscreen ? (
         <>
           {focusTop}
-          <div className="tb-focus-body">
-            {chartRail}
-            <div className="tb-focus-stage">
-              {railPanelNode}
-              {drawingToolbar}
-              {chartBody}
+          {focusTabs.length > 0 ? (
+            <div className="tb-focus-tabs" role="tablist" aria-label="Terminal views">
+              {focusTabs.map((tab) => {
+                const Icon = tab.icon;
+                const active = activeDeskTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => onDeskTabChange?.(tab.id)}
+                    className={`tb-focus-tab${active ? ' is-active' : ''}`}
+                  >
+                    {Icon ? <Icon aria-hidden /> : null}
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
             </div>
+          ) : null}
+          <div className="tb-focus-body">
+            {showingChart ? (
+              <>
+                {chartRail}
+                <div className="tb-focus-stage">
+                  {railPanelNode}
+                  {drawingToolbar}
+                  {chartBody}
+                </div>
+              </>
+            ) : (
+              <div className="tb-focus-stage tb-focus-stage--panel">
+                <div className="tb-focus-panel">
+                  {deskPanel || <p className="tb-focus-panel__empty">This desk is not available on your plan.</p>}
+                </div>
+              </div>
+            )}
             {focusDesk ? <FocusMarketRail desk={focusDesk} activeSymbol={activeSymbol} onSelectSymbol={focusDesk.onSelectSymbol} /> : null}
           </div>
           {focusStatus}

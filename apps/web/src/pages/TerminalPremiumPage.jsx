@@ -136,7 +136,9 @@ export default function TerminalPremiumPage() {
   const [verOpen, setVerOpen] = useState(false);
   const [saveVerOpen, setSaveVerOpen] = useState(false);
   const [watchlistOpen, setWatchlistOpen] = useState(() => (typeof window === 'undefined' ? true : window.innerWidth >= 1280));
-  const [ticketOpen, setTicketOpen] = useState(false);
+  // Both desk sidebars belong on a desktop terminal. Below xl they become
+  // drawers, so they start closed to keep the chart full-width on tablets.
+  const [ticketOpen, setTicketOpen] = useState(() => (typeof window === 'undefined' ? true : window.innerWidth >= 1280));
   const [dataOpen, setDataOpen] = useState(false);
   const [panelMenuOpen, setPanelMenuOpen] = useState(false);
   const [logs, setLogs] = useState([]);

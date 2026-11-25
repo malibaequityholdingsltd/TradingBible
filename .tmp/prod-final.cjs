@@ -1,0 +1,30 @@
+const { chromium } = require('playwright');
+const fs=require('fs');
+(async()=>{
+const session=JSON.parse(fs.readFileSync('/private/var/folders/d8/r_3bqr_d3s38sf940z6fnn6w0000gn/T/opencode/admin-session.json','utf8'));
+const browser=await chromium.launch({headless:true,channel:'chrome'});
+const context=await browser.newContext({viewport:{width:1440,height:960}});
+await context.addInitScript(({session})=>{localStorage.setItem('sb-yxuzrishocchfbofqazt-auth-token',JSON.stringify(session));localStorage.setItem('tb:admin-preview','1');localStorage.setItem('tb:tour-dismissed','1');},{session});
+const page=await context.newPage();
+const errs=[]; page.on('pageerror',e=>errs.push(String(e).slice(0,150)));
+await page.goto('https://tradingbible.app/app/terminal-pro?fullscreen=1',{waitUntil:'domcontentloaded',timeout:90000});
+await page.waitForTimeout(6000);
+const open={url:page.url(),focus:await page.locator('.tb-focus-root').count(),exit:await page.locator('.tb-focus-top [aria-label="Exit fullscreen"]').count(),w:await page.evaluate(()=>document.querySelector('.tb-focus-root')?.getBoundingClientRect().width)};
+await page.locator('.tb-focus-top [aria-label="Exit fullscreen"]').click();
+await page.waitForTimeout(1000);
+const exited={url:page.url(),focus:await page.locator('.tb-focus-root').count()};
+await page.reload({waitUntil:'domcontentloaded'}); await page.waitForTimeout(4500);
+const reloaded={url:page.url(),focus:await page.locator('.tb-focus-root').count(),tabs:await page.evaluate(()=>document.querySelector('.tb-term-tabs')?.getBoundingClientRect().height)};
+await page.screenshot({path:'.tmp/prod-final-desk.png'});
+// public exit
+const pub=await browser.newContext({viewport:{width:390,height:844}});
+const p2=await pub.newPage();
+await p2.goto('https://tradingbible.app/terminal?fullscreen=1',{waitUntil:'domcontentloaded',timeout:90000});
+await p2.waitForTimeout(5000);
+const pubOpen={url:p2.url(),focus:await p2.locator('.tb-focus-root').count()};
+await p2.locator('.tb-focus-top [aria-label="Exit fullscreen"]').click();
+await p2.waitForTimeout(900);
+const pubExit={url:p2.url(),focus:await p2.locator('.tb-focus-root').count()};
+console.log(JSON.stringify({open,exited,reloaded,pubOpen,pubExit,errs},null,2));
+await browser.close();
+})();

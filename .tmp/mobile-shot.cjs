@@ -1,0 +1,24 @@
+const { chromium } = require('playwright');
+const fs=require('fs');
+(async()=>{
+const session=JSON.parse(fs.readFileSync('/private/var/folders/d8/r_3bqr_d3s38sf940z6fnn6w0000gn/T/opencode/admin-session.json','utf8'));
+const browser=await chromium.launch({headless:true,channel:'chrome'});
+const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2});
+await context.addInitScript(({session})=>{localStorage.setItem('sb-yxuzrishocchfbofqazt-auth-token',JSON.stringify(session));localStorage.setItem('tb:admin-preview','1');localStorage.setItem('tb:tour-dismissed','1');},{session});
+const page=await context.newPage();
+await page.goto('http://localhost:3002/app/terminal-pro?fullscreen=1',{waitUntil:'domcontentloaded',timeout:60000});
+await page.waitForTimeout(4500);
+await page.screenshot({path:'.tmp/final-focus-390b.png'});
+await page.locator('button[aria-label="Open market and order panel"]').click();
+await page.waitForTimeout(600);
+await page.locator('.tb-focus-rail__close').click();
+await page.waitForTimeout(400);
+console.log('drawer',await page.locator('.tb-focus-drawer').count());
+await page.locator('[aria-label="Exit fullscreen"]').click();
+await page.waitForTimeout(800);
+console.log('url after exit',page.url());
+await page.goto('http://localhost:3002/app/terminal-pro',{waitUntil:'domcontentloaded'});
+await page.waitForTimeout(3500);
+await page.screenshot({path:'.tmp/final-desk-390.png'});
+await browser.close();
+})();

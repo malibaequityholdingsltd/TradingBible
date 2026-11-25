@@ -33,7 +33,7 @@ export function binanceSymbolFor(symbol) {
 import { avCandles, isRateLimited } from '../utils/alphaVantage.js';
 import { yahooCandles } from '../utils/yahoo.js';
 import { isWeekendClosed } from '../utils/marketHours.js';
-import { firstUpstream } from '../utils/fetchTimeout.js';
+import { firstUpstream, fetchTimeout } from '../utils/fetchTimeout.js';
 
 // Last real candle set per symbol+interval — the freeze source when a
 // market is closed and every live provider fails. Never synthesize a
@@ -134,7 +134,11 @@ export default async (req, res) => {
 	const symbol = String(req.query.symbol || 'BTCUSD').toUpperCase();
 	const interval = String(req.query.interval || '1h');
 	let limit = parseInt(req.query.limit, 10) || 150;
-	limit = Math.min(Math.max(limit, 20), 500);
+	// Full-history requests use a much larger cap. Binance returns at most
+	// 1000 klines per call, so the fallback below pages backwards; Yahoo can
+	// return the whole requested window in one response.
+	const MAX_LIMIT = 20000;
+	limit = Math.min(Math.max(limit, 20), MAX_LIMIT);
 
 	if (!VALID_INTERVALS.includes(interval)) {
 		return res.status(422).json({ error: `interval must be one of ${VALID_INTERVALS.join(', ')}` });
@@ -159,14 +163,34 @@ export default async (req, res) => {
 		try {
 			const upstream = await firstUpstream(
 				['https://data-api.binance.vision', 'https://api.binance.com', 'https://api.binance.us'],
-				(host) => `${host}/api/v3/klines?symbol=${binanceSymbol}&interval=${interval}&limit=${limit}`,
+				(host) => `${host}/api/v3/klines?symbol=${binanceSymbol}&interval=${interval}&limit=${Math.min(limit, 1000)}`,
 				{ timeoutMs: 8000 },
 			);
-			const rows = await upstream.json();
-			const candles = rows.map((r) => ({
+			const mapRows = (rows) => (Array.isArray(rows) ? rows : []).map((r) => ({
 				time: r[0],
 				open: +r[1], high: +r[2], low: +r[3], close: +r[4], volume: +r[5],
 			}));
+			let candles = mapRows(await upstream.json());
+			// Binance caps each response at 1000 klines. Walk backwards from
+			// the oldest row until the requested history is filled.
+			if (candles.length && limit > candles.length) {
+				const endpoint = new URL(upstream.url);
+				let cursor = candles[0].time - 1;
+				let guard = 0;
+				while (candles.length < limit && cursor > 0 && guard < 20) {
+					guard += 1;
+					const page = Math.min(1000, limit - candles.length);
+					const url = new URL(endpoint.toString());
+					url.searchParams.set('endTime', String(cursor));
+					url.searchParams.set('limit', String(page));
+					const res = await fetchTimeout(url.toString(), { timeoutMs: 8000 });
+					if (!res.ok) break;
+					const older = mapRows(await res.json());
+					if (!older.length) break;
+					candles = [...older, ...candles];
+					cursor = older[0].time - 1;
+				}
+			}
 			if (candles.length) return res.json({ symbol, interval, source: 'binance', candles });
 		} catch {
 			// all hosts failed — fall through to AV / synthetic below so

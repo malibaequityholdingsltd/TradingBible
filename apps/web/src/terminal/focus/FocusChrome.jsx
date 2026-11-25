@@ -148,7 +148,7 @@ export function FocusTopBar({
   );
 }
 
-export function FocusStatusBar({ status, source, bars, objects, timeframe, chartType, workspace }) {
+export function FocusStatusBar({ status, source, bars, objects, timeframe, chartType, viewLabel = '', workspace }) {
   return (
     <footer className="tb-focus-status">
       <span className="tb-focus-status__feed">
@@ -159,7 +159,7 @@ export function FocusStatusBar({ status, source, bars, objects, timeframe, chart
       <span>{bars} bars</span>
       <span>{objects} objects</span>
       <span className="tb-focus-status__mid">PAPER DESK <em>·</em> MARKET DATA ONLY</span>
-      <span>{timeframe} · {chartType}</span>
+      <span>{viewLabel ? viewLabel.toUpperCase() : `${timeframe} · ${chartType}`}</span>
       <span className="tb-focus-status__workspace">{workspace === 'synced' ? 'WORKSPACE SAVED' : String(workspace || 'LOCAL').toUpperCase()}</span>
       <span className="tb-focus-status__keys"><kbd>⌘</kbd><kbd>K</kbd></span>
     </footer>

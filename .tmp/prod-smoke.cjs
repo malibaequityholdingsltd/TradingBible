@@ -1,0 +1,24 @@
+const { chromium } = require('playwright');
+const fs = require('fs');
+(async()=>{
+const session=JSON.parse(fs.readFileSync('/private/var/folders/d8/r_3bqr_d3s38sf940z6fnn6w0000gn/T/opencode/admin-session.json','utf8'));
+const browser=await chromium.launch({headless:true,channel:'chrome'});
+const context=await browser.newContext({viewport:{width:1440,height:960}});
+await context.addInitScript(({session})=>{localStorage.setItem('sb-yxuzrishocchfbofqazt-auth-token',JSON.stringify(session));localStorage.setItem('tb:admin-preview','1');}, {session});
+const page=await context.newPage();
+const errors=[]; page.on('pageerror',e=>errors.push(String(e).slice(0,150)));
+await page.goto('https://tradingbible.app/app/terminal-pro?fullscreen=1',{waitUntil:'networkidle',timeout:90000});
+await page.waitForTimeout(5000);
+const before=await page.evaluate(()=>({url:location.href,vw:innerWidth,docW:document.documentElement.scrollWidth,root:document.querySelector('.tb-focus-root')?.getBoundingClientRect().toJSON(),status:document.querySelector('.tb-focus-status')?.getBoundingClientRect().toJSON(),legend:document.querySelector('.tb-chart-legend')?.getBoundingClientRect().toJSON(),exit:!!document.querySelector('[aria-label="Exit fullscreen"]')}));
+await page.screenshot({path:'.tmp/prod-focus-1440.png'});
+await page.click('[aria-label="Exit fullscreen"]');
+await page.waitForTimeout(1200);
+const after={url:page.url(),focus:await page.locator('.tb-focus-root').count()};
+await page.setViewportSize({width:390,height:844});
+await page.goto('https://tradingbible.app/app/terminal-pro?fullscreen=1',{waitUntil:'networkidle',timeout:90000});
+await page.waitForTimeout(4000);
+const mobile=await page.evaluate(()=>({vw:innerWidth,docW:document.documentElement.scrollWidth,root:document.querySelector('.tb-focus-root')?.getBoundingClientRect().toJSON(),exit:document.querySelector('[aria-label="Exit fullscreen"]')?.getBoundingClientRect().toJSON(),market:document.querySelector('[aria-label="Open market and order panel"]')?.getBoundingClientRect().toJSON(),dock:document.querySelector('.ex-mobile-dock')?.getBoundingClientRect().toJSON()}));
+await page.screenshot({path:'.tmp/prod-focus-390.png'});
+console.log(JSON.stringify({before,after,mobile,errors},null,2));
+await browser.close();
+})();

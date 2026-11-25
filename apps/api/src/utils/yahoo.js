@@ -148,12 +148,61 @@ const CANDLE_PLAN = {
 	'1d': ['1d', '1y', 1], '1w': ['1wk', '2y', 1], '1M': ['1mo', 'max', 1],
 };
 
+// Yahoo's documented maximum lookback for intraday candles. Daily and longer
+// can go back to the instrument's first trade; intraday is capped by Yahoo.
+const FULL_INTRADAY_SECONDS = {
+	'1m': 7 * 86400,
+	'5m': 60 * 86400,
+	'15m': 60 * 86400,
+	'30m': 60 * 86400,
+	'1h': 730 * 86400,
+	'4h': 730 * 86400,
+};
+
+async function fetchChartPeriod(ySym, interval, period1, period2) {
+	// Bucket the end time so a short-lived cache still serves repeated loads.
+	const end = Math.floor(period2 / 300) * 300;
+	const start = period1 === 0 ? 0 : Math.floor(period1 / 300) * 300;
+	const key = `yp:${ySym}:${interval}:${start}:${end}`;
+	const cached = getCache(key);
+	if (cached) return cached;
+	for (const host of HOSTS) {
+		try {
+			const ctrl = new AbortController();
+			const t = setTimeout(() => ctrl.abort(), 12000);
+			const res = await fetch(
+				`${host}/v8/finance/chart/${encodeURIComponent(ySym)}?interval=${interval}&period1=${start}&period2=${end}`,
+				{ headers: UA, signal: ctrl.signal },
+			).finally(() => clearTimeout(t));
+			if (!res.ok) continue;
+			const j = await res.json();
+			const result = j?.chart?.result?.[0];
+			if (!result) continue;
+			setCache(key, result, 5 * 60 * 1000);
+			return result;
+		} catch {
+			// try next host
+		}
+	}
+	return null;
+}
+
 export async function yahooCandles(symbol, interval, limit) {
 	const ySym = yahooSymbolFor(symbol);
 	const plan = CANDLE_PLAN[interval];
 	if (!ySym || !plan) return null;
 	const [yInt, range, group] = plan;
-	const result = await fetchChart(ySym, yInt, range);
+	let result = null;
+	if (limit > 1000) {
+		const now = Math.round(Date.now() / 1000);
+		// Yahoo rejects intraday windows that reach even a few minutes past
+		// its maximum lookback, so keep a small safety margin.
+		const start = ['1d', '1w', '1M'].includes(interval)
+			? 0
+			: now - (FULL_INTRADAY_SECONDS[interval] || 60 * 86400) + 2 * 3600;
+		result = await fetchChartPeriod(ySym, yInt, start, now);
+	}
+	if (!result) result = await fetchChart(ySym, yInt, range);
 	const ts = result?.timestamp;
 	const q = result?.indicators?.quote?.[0];
 	if (!ts || !q || !ts.length) return null;
