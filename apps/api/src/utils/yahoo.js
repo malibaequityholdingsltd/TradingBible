@@ -191,7 +191,7 @@ async function fetchChartPeriod(ySym, interval, period1, period2) {
 	return fetchYahooResult(
 		`/v8/finance/chart/${encodeURIComponent(ySym)}?interval=${interval}&period1=${start}&period2=${end}`,
 		key,
-		5 * 60 * 1000,
+		30 * 60 * 1000,
 		12000,
 	);
 }
@@ -211,7 +211,7 @@ export async function yahooCandles(symbol, interval, limit) {
 		result = await fetchChartPeriod(ySym, yInt, 0, Math.round(Date.now() / 1000));
 	} else {
 		const fullRange = limit > 1000 ? (FULL_RANGE[interval] || range) : range;
-		const ttl = limit > 1000 ? 5 * 60 * 1000 : 45000;
+		const ttl = limit > 1000 ? 30 * 60 * 1000 : 45000;
 		result = await fetchChart(ySym, yInt, fullRange, ttl);
 	}
 	if (!result) result = await fetchChart(ySym, yInt, range);
